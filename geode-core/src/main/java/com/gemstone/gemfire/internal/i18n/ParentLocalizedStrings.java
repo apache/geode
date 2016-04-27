@@ -2359,11 +2359,11 @@ class ParentLocalizedStrings {
   public static final StringId TransactionImpl_TRANSACTIONIMPLREGISTERSYNCHRONIZATIONSYNCHRONIZATION_IS_NULL = new StringId(3362, "TransactionImpl::registerSynchronization:Synchronization is null");
   public static final StringId TransactionManagerImpl_NO_TRANSACTION_PRESENT = new StringId(3363, "no transaction present");
   public static final StringId TransactionManagerImpl_TRANSACTIONMANAGER_INVALID = new StringId(3364, "TransactionManager invalid");
-  // okay to reuse 3365
-  // okay to reuse 3366
-  // okay to reuse 3367
-  // okay to reuse 3368
-  // okay to reuse 3369
+  public static final StringId UDA_MANAGER_Class_Not_Found = new StringId(3365, "The class {0} for UDA {1} could not be found");
+  public static final StringId UDA_MANAGER_Uda_Exists = new StringId(3366, "UDA with name {0} already exists");
+  public static final StringId UDA_MANAGER_Class_Conflict = new StringId(3367, "UDA with name {0} is already registered with UDA class {1} which conflicts with the UDA class {2}");
+  public static final StringId UDA_MANAGER_Aggregator_Not_Found= new StringId(3368, "No UDA registered with name {0}");
+  public static final StringId UDA_MANAGER_Udas_Not_Collected= new StringId(3369, "UDAs defined in the system could not be collected");  
   // okay to reuse 3370
   // okay to reuse 3371
   // okay to reuse 3372

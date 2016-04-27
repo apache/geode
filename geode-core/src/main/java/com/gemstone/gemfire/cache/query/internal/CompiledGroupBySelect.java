@@ -181,6 +181,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
     ObjectType elementType = baseResults.getCollectionType().getElementType();
     boolean isStruct = elementType != null && elementType.isStructType();
     boolean isBucketNodes = context.getBucketList() != null;
+    boolean isPRQueryNode = context.getIsPRQueryNode();
     boolean createOrderedResultSet = isBucketNodes && this.orderByAttrs != null;
     boolean[] objectChangedMarker = new boolean[]{false};
     int limitValue = evaluateLimitValue(context, limit);
@@ -197,7 +198,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
       boolean unterminated = iter.hasNext();
       while (iter.hasNext()) {
         current = iter.next();
-        accumulate(isStruct, aggregators, current, objectChangedMarker);
+        accumulate(isStruct, aggregators, current, objectChangedMarker, isPRQueryNode);
       }
       if (unterminated) {
         this.terminateAndAddToResults(isStruct, newResults, aggregators,
@@ -286,8 +287,8 @@ public class CompiledGroupBySelect extends CompiledSelect {
     Object[] orderByTupleHolderCurrent = null;
     Object[] orderByTupleHolderPrev = null;
     Object orderByCurrent = null;
-    Object orderByPrev = null;
-   
+    Object orderByPrev = null;  
+    boolean isPRQueryNode = context.getIsPRQueryNode();
     boolean isSingleOrderBy = this.orderByAttrs.size() <= 1;
     if (!isSingleOrderBy) {
       orderByTupleHolderPrev = new Object[orderByAttrs.size()];
@@ -311,13 +312,13 @@ public class CompiledGroupBySelect extends CompiledSelect {
       if (isFirst
           || areOrderByTupleEqual(isSingleOrderBy, orderByPrev, orderByCurrent,
               orderByTupleHolderPrev, orderByTupleHolderCurrent)) {
-        accumulate(isStruct, aggregators, current, objectChangedMarker);
+        accumulate(isStruct, aggregators, current, objectChangedMarker, isPRQueryNode);
         unterminated = true;
         isFirst = false;
       } else {
         keepAdding = terminateAndAddToResults(isStruct, newResults, aggregators, prev,
             context, isStructFields, limitValue);
-        this.accumulate(isStruct, aggregators, current, objectChangedMarker);
+        this.accumulate(isStruct, aggregators, current, objectChangedMarker, isPRQueryNode);
         unterminated = true;
       }
       // swap the holder arrays
@@ -350,15 +351,16 @@ public class CompiledGroupBySelect extends CompiledSelect {
     if(limitValue == 0) {
       return false;
     }
-    
+    boolean isBucketNodes = context.getBucketList() != null;
+   
     for (Aggregator aggregator : aggregators) {
       if (isStruct) {
         int pos = this.aggregateColsPos.nextSetBit(bitstart);
         bitstart = pos + 1;
-        Object scalarResult = aggregator.terminate();
+        Object scalarResult = isBucketNodes? aggregator : aggregator.terminate();
         newRowArray[pos] = scalarResult;
       } else {
-        newObject = aggregator.terminate();
+        newObject = isBucketNodes? aggregator: aggregator.terminate();
       }
     }
     
@@ -402,19 +404,28 @@ public class CompiledGroupBySelect extends CompiledSelect {
   }
 
   private void accumulate(boolean isStruct, Aggregator[] aggregators,
-      Object current, boolean[] objectChangedMarker) {
+      Object current, boolean[] objectChangedMarker,
+      boolean isPRQueryNode) {
     int bitstart = 0;
     for (Aggregator aggregator : aggregators) {
       if (isStruct) {
         int pos = this.aggregateColsPos.nextSetBit(bitstart);
         bitstart = pos + 1;
         Struct struct = (Struct) current;
-        Object scalar = PDXUtils.convertPDX(struct.getFieldValues()[pos], false, true, true, true, objectChangedMarker, isStruct);
-        
-        aggregator.accumulate(scalar);
+        Object scalar = PDXUtils.convertPDX(struct.getFieldValues()[pos], false, true, true, 
+            true, objectChangedMarker, isStruct);
+        if(isPRQueryNode) {
+          aggregator.merge((Aggregator)scalar);
+        }else {
+          aggregator.accumulate(scalar);
+        }
       } else {
         current =   PDXUtils.convertPDX(current, false, true, true, true, objectChangedMarker, isStruct);
-        aggregator.accumulate(current);
+        if(isPRQueryNode) {
+          aggregator.merge((Aggregator)current);
+        }else {
+          aggregator.accumulate(current);
+        }
       }
     }
   }
@@ -503,7 +514,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
           }
         }
 
-        // the grpup by expr is not an alias check for path
+        // the group by expr is not an alias check for path
         StringBuffer groupByExprBuffer = new StringBuffer();
         grpBy.generateCanonicalizedExpression(groupByExprBuffer, context);
         final String grpByExprStr = groupByExprBuffer.toString();

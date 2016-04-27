@@ -24,9 +24,11 @@ package com.gemstone.gemfire.cache.query.internal.aggregate;
 
 public class CountDistinct extends DistinctAggregator {
 
+  public CountDistinct() {
+  }
+
   @Override
   public Object terminate() {
     return Integer.valueOf(this.distinct.size());
   }
-
 }

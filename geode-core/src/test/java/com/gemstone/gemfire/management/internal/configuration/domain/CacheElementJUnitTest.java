@@ -112,6 +112,7 @@ public class CacheElementJUnitTest {
     int order = 0;
     assertEntry("cache-transaction-manager", order++, entries.next());
     assertEntry("dynamic-region-factory", order++, entries.next());
+    assertEntry("uda-manager", order++, entries.next());
     assertEntry("gateway-hub", order++, entries.next());
     assertEntry("gateway-sender", order++, entries.next());
     assertEntry("gateway-receiver", order++, entries.next());

@@ -316,6 +316,10 @@ public class QCompiler implements OQLLexerTokenTypes {
     push (new CompiledAggregateFunction(expr, aggFuncType, distinctOnly));
   }
   
+  public void uda (CompiledValue expr,int aggFuncType, String name) {
+    push (new CompiledUDAFunction(expr, aggFuncType, name ));
+  }
+  
   public void iteratorDef () {
     // find type id  and colln on the stack
     

@@ -1,4 +1,4 @@
-// $ANTLR 2.7.4: "oql.g" -> "OQLParser.java"$
+// $ANTLR 2.7.7 (20060906): "oql.g" -> "OQLParser.java"$
 
 package com.gemstone.gemfire.cache.query.internal.parse;
 import java.util.*;
@@ -293,7 +293,7 @@ public OQLParser(ParserSharedInputState state) {
 				synPredMatched153 = false;
 			}
 			rewind(_m153);
-			inputState.guessing--;
+inputState.guessing--;
 		}
 		if ( synPredMatched153 ) {
 			identifier();
@@ -1644,7 +1644,7 @@ public OQLParser(ParserSharedInputState state) {
 		expr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop268:
+		_loop269:
 		do {
 			if ((LA(1)==TOK_COMMA)) {
 				match(TOK_COMMA);
@@ -1652,7 +1652,7 @@ public OQLParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop268;
+				break _loop269;
 			}
 			
 		} while (true);
@@ -1766,7 +1766,7 @@ public OQLParser(ParserSharedInputState state) {
 				synPredMatched183 = false;
 			}
 			rewind(_m183);
-			inputState.guessing--;
+inputState.guessing--;
 		}
 		if ( synPredMatched183 ) {
 			lp = LT(1);
@@ -1947,7 +1947,7 @@ public OQLParser(ParserSharedInputState state) {
 					synPredMatched195 = false;
 				}
 				rewind(_m195);
-				inputState.guessing--;
+inputState.guessing--;
 			}
 			if ( synPredMatched195 ) {
 				AST tmp99_AST = null;
@@ -2594,17 +2594,6 @@ public OQLParser(ParserSharedInputState state) {
 		
 		{
 		switch ( LA(1)) {
-		case LITERAL_distinct:
-		case LITERAL_listtoset:
-		case LITERAL_element:
-		case LITERAL_flatten:
-		case LITERAL_nvl:
-		case LITERAL_to_date:
-		{
-			conversionExpr();
-			astFactory.addASTChild(currentAST, returnAST);
-			break;
-		}
 		case LITERAL_exists:
 		case LITERAL_first:
 		case LITERAL_last:
@@ -2688,46 +2677,51 @@ public OQLParser(ParserSharedInputState state) {
 			break;
 		}
 		default:
-			boolean synPredMatched246 = false;
-			if (((LA(1)==QuotedIdentifier||LA(1)==Identifier) && (LA(2)==TOK_LPAREN))) {
-				int _m246 = mark();
-				synPredMatched246 = true;
-				inputState.guessing++;
-				try {
-					{
-					identifier();
-					match(TOK_LPAREN);
-					identifier();
-					match(TOK_COLON);
+			if ((_tokenSet_28.member(LA(1))) && (LA(2)==TOK_LPAREN)) {
+				conversionExpr();
+				astFactory.addASTChild(currentAST, returnAST);
+			}
+			else {
+				boolean synPredMatched246 = false;
+				if (((LA(1)==QuotedIdentifier||LA(1)==Identifier) && (LA(2)==TOK_LPAREN))) {
+					int _m246 = mark();
+					synPredMatched246 = true;
+					inputState.guessing++;
+					try {
+						{
+						identifier();
+						match(TOK_LPAREN);
+						identifier();
+						match(TOK_COLON);
+						}
 					}
+					catch (RecognitionException pe) {
+						synPredMatched246 = false;
+					}
+					rewind(_m246);
+inputState.guessing--;
 				}
-				catch (RecognitionException pe) {
-					synPredMatched246 = false;
+				if ( synPredMatched246 ) {
+					objectConstruction();
+					astFactory.addASTChild(currentAST, returnAST);
 				}
-				rewind(_m246);
-				inputState.guessing--;
+				else if ((LA(1)==QuotedIdentifier||LA(1)==Identifier) && (LA(2)==TOK_LPAREN)) {
+					methodInvocation(true);
+					astFactory.addASTChild(currentAST, returnAST);
+				}
+				else if ((LA(1)==QuotedIdentifier||LA(1)==Identifier) && (_tokenSet_27.member(LA(2)))) {
+					identifier();
+					astFactory.addASTChild(currentAST, returnAST);
+				}
+			else {
+				throw new NoViableAltException(LT(1), getFilename());
 			}
-			if ( synPredMatched246 ) {
-				objectConstruction();
-				astFactory.addASTChild(currentAST, returnAST);
+			}}
 			}
-			else if ((LA(1)==QuotedIdentifier||LA(1)==Identifier) && (LA(2)==TOK_LPAREN)) {
-				methodInvocation(true);
-				astFactory.addASTChild(currentAST, returnAST);
-			}
-			else if ((LA(1)==QuotedIdentifier||LA(1)==Identifier) && (_tokenSet_27.member(LA(2)))) {
-				identifier();
-				astFactory.addASTChild(currentAST, returnAST);
-			}
-		else {
-			throw new NoViableAltException(LT(1), getFilename());
+			primaryExpr_AST = (AST)currentAST.root;
+			returnAST = primaryExpr_AST;
 		}
-		}
-		}
-		primaryExpr_AST = (AST)currentAST.root;
-		returnAST = primaryExpr_AST;
-	}
-	
+		
 	public final void index() throws RecognitionException, TokenStreamException {
 		
 		returnAST = null;
@@ -2868,6 +2862,9 @@ public OQLParser(ParserSharedInputState state) {
 		returnAST = null;
 		ASTPair currentAST = new ASTPair();
 		AST conversionExpr_AST = null;
+		Token  n = null;
+		com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc n_AST = null;
+		AST tokExpr1_AST = null;
 		
 		{
 		switch ( LA(1)) {
@@ -2960,6 +2957,28 @@ public OQLParser(ParserSharedInputState state) {
 			}
 			break;
 		}
+		case Identifier:
+		{
+			{
+			n = LT(1);
+			n_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc)astFactory.create(n,"com.gemstone.gemfire.cache.query.internal.parse.ASTAggregateFunc");
+			astFactory.makeASTRoot(currentAST, n_AST);
+			match(Identifier);
+			match(TOK_LPAREN);
+			expr();
+			tokExpr1_AST = (AST)returnAST;
+			astFactory.addASTChild(currentAST, returnAST);
+			match(TOK_RPAREN);
+			if ( inputState.guessing==0 ) {
+				conversionExpr_AST = (AST)currentAST.root;
+				
+				((ASTAggregateFunc)conversionExpr_AST).setAggregateFunctionType(UDA);
+				((ASTAggregateFunc)conversionExpr_AST).setUDAName(n.getText());
+				
+			}
+			}
+			break;
+		}
 		default:
 		{
 			throw new NoViableAltException(LT(1), getFilename());
@@ -2980,33 +2999,33 @@ public OQLParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_first:
 		{
-			AST tmp156_AST = null;
-			tmp156_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp156_AST);
+			AST tmp158_AST = null;
+			tmp158_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp158_AST);
 			match(LITERAL_first);
 			break;
 		}
 		case LITERAL_last:
 		{
-			AST tmp157_AST = null;
-			tmp157_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp157_AST);
+			AST tmp159_AST = null;
+			tmp159_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp159_AST);
 			match(LITERAL_last);
 			break;
 		}
 		case LITERAL_unique:
 		{
-			AST tmp158_AST = null;
-			tmp158_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp158_AST);
+			AST tmp160_AST = null;
+			tmp160_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp160_AST);
 			match(LITERAL_unique);
 			break;
 		}
 		case LITERAL_exists:
 		{
-			AST tmp159_AST = null;
-			tmp159_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp159_AST);
+			AST tmp161_AST = null;
+			tmp161_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp161_AST);
 			match(LITERAL_exists);
 			break;
 		}
@@ -3032,15 +3051,15 @@ public OQLParser(ParserSharedInputState state) {
 		
 		{
 		if ((LA(1)==LITERAL_is_undefined)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr tmp162_AST = null;
-			tmp162_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr");
-			astFactory.makeASTRoot(currentAST, tmp162_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr tmp164_AST = null;
+			tmp164_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr");
+			astFactory.makeASTRoot(currentAST, tmp164_AST);
 			match(LITERAL_is_undefined);
 		}
 		else if ((LA(1)==LITERAL_is_defined)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr tmp163_AST = null;
-			tmp163_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr");
-			astFactory.makeASTRoot(currentAST, tmp163_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr tmp165_AST = null;
+			tmp165_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTUndefinedExpr");
+			astFactory.makeASTRoot(currentAST, tmp165_AST);
 			match(LITERAL_is_defined);
 		}
 		else {
@@ -3086,9 +3105,9 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST structConstruction_AST = null;
 		
-		AST tmp167_AST = null;
-		tmp167_AST = astFactory.create(LT(1));
-		astFactory.makeASTRoot(currentAST, tmp167_AST);
+		AST tmp169_AST = null;
+		tmp169_AST = astFactory.create(LT(1));
+		astFactory.makeASTRoot(currentAST, tmp169_AST);
 		match(LITERAL_struct);
 		match(TOK_LPAREN);
 		fieldList();
@@ -3110,25 +3129,25 @@ public OQLParser(ParserSharedInputState state) {
 			switch ( LA(1)) {
 			case LITERAL_array:
 			{
-				AST tmp170_AST = null;
-				tmp170_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp170_AST);
+				AST tmp172_AST = null;
+				tmp172_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp172_AST);
 				match(LITERAL_array);
 				break;
 			}
 			case LITERAL_set:
 			{
-				com.gemstone.gemfire.cache.query.internal.parse.ASTConstruction tmp171_AST = null;
-				tmp171_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTConstruction)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTConstruction");
-				astFactory.makeASTRoot(currentAST, tmp171_AST);
+				com.gemstone.gemfire.cache.query.internal.parse.ASTConstruction tmp173_AST = null;
+				tmp173_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTConstruction)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTConstruction");
+				astFactory.makeASTRoot(currentAST, tmp173_AST);
 				match(LITERAL_set);
 				break;
 			}
 			case LITERAL_bag:
 			{
-				AST tmp172_AST = null;
-				tmp172_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp172_AST);
+				AST tmp174_AST = null;
+				tmp174_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp174_AST);
 				match(LITERAL_bag);
 				break;
 			}
@@ -3142,13 +3161,13 @@ public OQLParser(ParserSharedInputState state) {
 			astFactory.addASTChild(currentAST, returnAST);
 		}
 		else if ((LA(1)==LITERAL_list)) {
-			AST tmp173_AST = null;
-			tmp173_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp173_AST);
+			AST tmp175_AST = null;
+			tmp175_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp175_AST);
 			match(LITERAL_list);
-			AST tmp174_AST = null;
-			tmp174_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp174_AST);
+			AST tmp176_AST = null;
+			tmp176_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp176_AST);
 			match(TOK_LPAREN);
 			{
 			if ((_tokenSet_4.member(LA(1)))) {
@@ -3156,27 +3175,27 @@ public OQLParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 				{
 				if ((LA(1)==TOK_DOTDOT)) {
-					AST tmp175_AST = null;
-					tmp175_AST = astFactory.create(LT(1));
-					astFactory.addASTChild(currentAST, tmp175_AST);
+					AST tmp177_AST = null;
+					tmp177_AST = astFactory.create(LT(1));
+					astFactory.addASTChild(currentAST, tmp177_AST);
 					match(TOK_DOTDOT);
 					expr();
 					astFactory.addASTChild(currentAST, returnAST);
 				}
 				else if ((LA(1)==TOK_RPAREN||LA(1)==TOK_COMMA)) {
 					{
-					_loop278:
+					_loop279:
 					do {
 						if ((LA(1)==TOK_COMMA)) {
-							AST tmp176_AST = null;
-							tmp176_AST = astFactory.create(LT(1));
-							astFactory.addASTChild(currentAST, tmp176_AST);
+							AST tmp178_AST = null;
+							tmp178_AST = astFactory.create(LT(1));
+							astFactory.addASTChild(currentAST, tmp178_AST);
 							match(TOK_COMMA);
 							expr();
 							astFactory.addASTChild(currentAST, returnAST);
 						}
 						else {
-							break _loop278;
+							break _loop279;
 						}
 						
 					} while (true);
@@ -3195,9 +3214,9 @@ public OQLParser(ParserSharedInputState state) {
 			}
 			
 			}
-			AST tmp177_AST = null;
-			tmp177_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp177_AST);
+			AST tmp179_AST = null;
+			tmp179_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp179_AST);
 			match(TOK_RPAREN);
 		}
 		else {
@@ -3292,9 +3311,9 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST stringLiteral_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp178_AST = null;
-		tmp178_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-		astFactory.addASTChild(currentAST, tmp178_AST);
+		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp180_AST = null;
+		tmp180_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+		astFactory.addASTChild(currentAST, tmp180_AST);
 		match(StringLiteral);
 		stringLiteral_AST = (AST)currentAST.root;
 		returnAST = stringLiteral_AST;
@@ -3312,7 +3331,7 @@ public OQLParser(ParserSharedInputState state) {
 		expr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop271:
+		_loop272:
 		do {
 			if ((LA(1)==TOK_COMMA)) {
 				match(TOK_COMMA);
@@ -3323,7 +3342,7 @@ public OQLParser(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop271;
+				break _loop272;
 			}
 			
 		} while (true);
@@ -3349,27 +3368,27 @@ public OQLParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case LITERAL_nil:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp182_AST = null;
-			tmp182_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp182_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp184_AST = null;
+			tmp184_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp184_AST);
 			match(LITERAL_nil);
 			objectLiteral_AST = (AST)currentAST.root;
 			break;
 		}
 		case LITERAL_null:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp183_AST = null;
-			tmp183_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp183_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp185_AST = null;
+			tmp185_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp185_AST);
 			match(LITERAL_null);
 			objectLiteral_AST = (AST)currentAST.root;
 			break;
 		}
 		case LITERAL_undefined:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp184_AST = null;
-			tmp184_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp184_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp186_AST = null;
+			tmp186_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp186_AST);
 			match(LITERAL_undefined);
 			objectLiteral_AST = (AST)currentAST.root;
 			break;
@@ -3390,15 +3409,15 @@ public OQLParser(ParserSharedInputState state) {
 		
 		{
 		if ((LA(1)==LITERAL_true)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp185_AST = null;
-			tmp185_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp185_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp187_AST = null;
+			tmp187_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp187_AST);
 			match(LITERAL_true);
 		}
 		else if ((LA(1)==LITERAL_false)) {
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp186_AST = null;
-			tmp186_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp186_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp188_AST = null;
+			tmp188_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp188_AST);
 			match(LITERAL_false);
 		}
 		else {
@@ -3420,33 +3439,33 @@ public OQLParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case NUM_INT:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp187_AST = null;
-			tmp187_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp187_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp189_AST = null;
+			tmp189_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp189_AST);
 			match(NUM_INT);
 			break;
 		}
 		case NUM_LONG:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp188_AST = null;
-			tmp188_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp188_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp190_AST = null;
+			tmp190_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp190_AST);
 			match(NUM_LONG);
 			break;
 		}
 		case NUM_FLOAT:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp189_AST = null;
-			tmp189_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp189_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp191_AST = null;
+			tmp191_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp191_AST);
 			match(NUM_FLOAT);
 			break;
 		}
 		case NUM_DOUBLE:
 		{
-			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp190_AST = null;
-			tmp190_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-			astFactory.addASTChild(currentAST, tmp190_AST);
+			com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp192_AST = null;
+			tmp192_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+			astFactory.addASTChild(currentAST, tmp192_AST);
 			match(NUM_DOUBLE);
 			break;
 		}
@@ -3466,13 +3485,13 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST charLiteral_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp191_AST = null;
-		tmp191_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-		astFactory.makeASTRoot(currentAST, tmp191_AST);
+		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp193_AST = null;
+		tmp193_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+		astFactory.makeASTRoot(currentAST, tmp193_AST);
 		match(LITERAL_char);
-		AST tmp192_AST = null;
-		tmp192_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp192_AST);
+		AST tmp194_AST = null;
+		tmp194_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp194_AST);
 		match(StringLiteral);
 		charLiteral_AST = (AST)currentAST.root;
 		returnAST = charLiteral_AST;
@@ -3484,13 +3503,13 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST dateLiteral_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp193_AST = null;
-		tmp193_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-		astFactory.makeASTRoot(currentAST, tmp193_AST);
+		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp195_AST = null;
+		tmp195_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+		astFactory.makeASTRoot(currentAST, tmp195_AST);
 		match(LITERAL_date);
-		AST tmp194_AST = null;
-		tmp194_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp194_AST);
+		AST tmp196_AST = null;
+		tmp196_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp196_AST);
 		match(StringLiteral);
 		dateLiteral_AST = (AST)currentAST.root;
 		returnAST = dateLiteral_AST;
@@ -3502,13 +3521,13 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST timeLiteral_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp195_AST = null;
-		tmp195_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-		astFactory.makeASTRoot(currentAST, tmp195_AST);
+		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp197_AST = null;
+		tmp197_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+		astFactory.makeASTRoot(currentAST, tmp197_AST);
 		match(LITERAL_time);
-		AST tmp196_AST = null;
-		tmp196_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp196_AST);
+		AST tmp198_AST = null;
+		tmp198_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp198_AST);
 		match(StringLiteral);
 		timeLiteral_AST = (AST)currentAST.root;
 		returnAST = timeLiteral_AST;
@@ -3520,13 +3539,13 @@ public OQLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST timestampLiteral_AST = null;
 		
-		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp197_AST = null;
-		tmp197_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
-		astFactory.makeASTRoot(currentAST, tmp197_AST);
+		com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral tmp199_AST = null;
+		tmp199_AST = (com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral)astFactory.create(LT(1),"com.gemstone.gemfire.cache.query.internal.parse.ASTLiteral");
+		astFactory.makeASTRoot(currentAST, tmp199_AST);
 		match(LITERAL_timestamp);
-		AST tmp198_AST = null;
-		tmp198_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp198_AST);
+		AST tmp200_AST = null;
+		tmp200_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp200_AST);
 		match(StringLiteral);
 		timestampLiteral_AST = (AST)currentAST.root;
 		returnAST = timestampLiteral_AST;
@@ -3600,6 +3619,7 @@ public OQLParser(ParserSharedInputState state) {
 		"COUNT",
 		"MAX",
 		"MIN",
+		"UDA",
 		"\"trace\"",
 		"\"import\"",
 		"\"as\"",
@@ -3690,112 +3710,112 @@ public OQLParser(ParserSharedInputState state) {
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { 2327943626784L, 576460615267125096L, 2089665L, 0L, 0L, 0L};
+		long[] data = { 2327943626784L, 1152921230534250192L, 4179330L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
-		long[] data = { 2327970839714L, -3236942208L, 2097151L, 0L, 0L, 0L};
+		long[] data = { 2327970839714L, -6473884416L, 4194303L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
-		long[] data = { 0L, 360L, 0L, 0L};
+		long[] data = { 0L, 720L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
 	private static final long[] mk_tokenSet_3() {
-		long[] data = { 2327943626784L, 576460615267124736L, 2089665L, 0L, 0L, 0L};
+		long[] data = { 2327943626784L, 1152921230534249472L, 4179330L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
 	private static final long[] mk_tokenSet_4() {
-		long[] data = { 2327939432480L, 576460615267124224L, 2089665L, 0L, 0L, 0L};
+		long[] data = { 2327939432480L, 1152921230534248448L, 4179330L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_4 = new BitSet(mk_tokenSet_4());
 	private static final long[] mk_tokenSet_5() {
-		long[] data = { 210L, 2326528L, 0L, 0L};
+		long[] data = { 210L, 4653056L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
 	private static final long[] mk_tokenSet_6() {
-		long[] data = { 2327970839794L, -3235647984L, 2097151L, 0L, 0L, 0L};
+		long[] data = { 2327970839794L, -6471295968L, 4194303L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
 	private static final long[] mk_tokenSet_7() {
-		long[] data = { 210L, 2342912L, 0L, 0L};
+		long[] data = { 210L, 4685824L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
 	private static final long[] mk_tokenSet_8() {
-		long[] data = { 25778192594L, 2326528L, 0L, 0L};
+		long[] data = { 25778192594L, 4653056L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_8 = new BitSet(mk_tokenSet_8());
 	private static final long[] mk_tokenSet_9() {
-		long[] data = { 2327939563552L, 576460615267124224L, 2089665L, 0L, 0L, 0L};
+		long[] data = { 2327939563552L, 1152921230534248448L, 4179330L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_9 = new BitSet(mk_tokenSet_9());
 	private static final long[] mk_tokenSet_10() {
-		long[] data = { 2327970840160L, -3237986800L, 2097151L, 0L, 0L, 0L};
+		long[] data = { 2327970840160L, -6475973600L, 4194303L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_10 = new BitSet(mk_tokenSet_10());
 	private static final long[] mk_tokenSet_11() {
-		long[] data = { 146L, 2293760L, 0L, 0L};
+		long[] data = { 146L, 4587520L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_11 = new BitSet(mk_tokenSet_11());
 	private static final long[] mk_tokenSet_12() {
-		long[] data = { 146L, 2162688L, 0L, 0L};
+		long[] data = { 146L, 4325376L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_12 = new BitSet(mk_tokenSet_12());
 	private static final long[] mk_tokenSet_13() {
-		long[] data = { 146L, 65536L, 0L, 0L};
+		long[] data = { 146L, 131072L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_13 = new BitSet(mk_tokenSet_13());
 	private static final long[] mk_tokenSet_14() {
-		long[] data = { 2327970839650L, -3237986816L, 2097151L, 0L, 0L, 0L};
+		long[] data = { 2327970839650L, -6475973632L, 4194303L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_14 = new BitSet(mk_tokenSet_14());
 	private static final long[] mk_tokenSet_15() {
-		long[] data = { 2327970839650L, -3237986800L, 2097151L, 0L, 0L, 0L};
+		long[] data = { 2327970839650L, -6475973600L, 4194303L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_15 = new BitSet(mk_tokenSet_15());
 	private static final long[] mk_tokenSet_16() {
-		long[] data = { 2327970839600L, -3237990912L, 2097151L, 0L, 0L, 0L};
+		long[] data = { 2327970839600L, -6475981824L, 4194303L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_16 = new BitSet(mk_tokenSet_16());
 	private static final long[] mk_tokenSet_17() {
-		long[] data = { 25769803776L, -36028797018963968L, 8191L, 0L, 0L, 0L};
+		long[] data = { 25769803776L, -72057594037927936L, 16383L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_17 = new BitSet(mk_tokenSet_17());
 	private static final long[] mk_tokenSet_18() {
-		long[] data = { 2328004394994L, 576460749080886800L, 2089665L, 0L, 0L, 0L};
+		long[] data = { 2328004394994L, 1152921498161773600L, 4179330L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_18 = new BitSet(mk_tokenSet_18());
 	private static final long[] mk_tokenSet_19() {
-		long[] data = { 2327939432480L, 576460615132906496L, 2089665L, 0L, 0L, 0L};
+		long[] data = { 2327939432480L, 1152921230265812992L, 4179330L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_19 = new BitSet(mk_tokenSet_19());
 	private static final long[] mk_tokenSet_20() {
-		long[] data = { 2328004394994L, 576460749080884752L, 2089665L, 0L, 0L, 0L};
+		long[] data = { 2328004394994L, 1152921498161769504L, 4179330L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_20 = new BitSet(mk_tokenSet_20());
 	private static final long[] mk_tokenSet_21() {
-		long[] data = { 25803359186L, 4964732944L, 0L, 0L};
+		long[] data = { 25803359186L, 9929465888L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_21 = new BitSet(mk_tokenSet_21());
@@ -3805,29 +3825,34 @@ public OQLParser(ParserSharedInputState state) {
 	}
 	public static final BitSet _tokenSet_22 = new BitSet(mk_tokenSet_22());
 	private static final long[] mk_tokenSet_23() {
-		long[] data = { 53248L, 25769803776L, 0L, 0L};
+		long[] data = { 53248L, 51539607552L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_23 = new BitSet(mk_tokenSet_23());
 	private static final long[] mk_tokenSet_24() {
-		long[] data = { 196608L, 103079215104L, 0L, 0L};
+		long[] data = { 196608L, 206158430208L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_24 = new BitSet(mk_tokenSet_24());
 	private static final long[] mk_tokenSet_25() {
-		long[] data = { 25818035154L, 133813751824L, 0L, 0L};
+		long[] data = { 25818035154L, 267627503648L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_25 = new BitSet(mk_tokenSet_25());
 	private static final long[] mk_tokenSet_26() {
-		long[] data = { 49152L, 412316860416L, 0L, 0L};
+		long[] data = { 49152L, 824633720832L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_26 = new BitSet(mk_tokenSet_26());
 	private static final long[] mk_tokenSet_27() {
-		long[] data = { 25834815442L, 133813760016L, 0L, 0L};
+		long[] data = { 25834815442L, 267627520032L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_27 = new BitSet(mk_tokenSet_27());
+	private static final long[] mk_tokenSet_28() {
+		long[] data = { 17179869184L, 34084860463104L, 0L, 0L};
+		return data;
+	}
+	public static final BitSet _tokenSet_28 = new BitSet(mk_tokenSet_28());
 	
 	}

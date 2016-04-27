@@ -16,19 +16,26 @@
  */
 package com.gemstone.gemfire.cache.query.internal.aggregate;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.HashSet;
-import java.util.Set;
 
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.cache.query.Aggregator;
 import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.Version;
 
 /**
  * The class used to hold the distinct values. This will get instantiated on the
  * bucket node as part of distinct queries for sum, count, average.
  * 
+ * 
  *
  */
-public class DistinctAggregator extends AbstractAggregator {
-  protected final Set<Object> distinct;
+public class DistinctAggregator extends AbstractAggregator implements DataSerializableFixedID {
+  protected HashSet<Object> distinct;
 
   public DistinctAggregator() {
     this.distinct = new HashSet<Object>();
@@ -42,14 +49,35 @@ public class DistinctAggregator extends AbstractAggregator {
   }
 
   @Override
-  public void init() {
-    // TODO Auto-generated method stub
-
-  }
+  public void init() {}
 
   @Override
   public Object terminate() {
     return this.distinct;
   }
 
+  @Override
+  public void merge(Aggregator otherAgg) {
+    this.distinct.addAll(((DistinctAggregator) otherAgg).distinct);
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return null;
+  }
+
+  @Override
+  public int getDSFID() {
+    return AGG_FUNC_DISTINCT_AGG;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    DataSerializer.writeHashSet(this.distinct, out);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    this.distinct = DataSerializer.readHashSet(in);
+  }
 }

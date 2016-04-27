@@ -16,8 +16,9 @@
  */
 package com.gemstone.gemfire.cache.query.internal.aggregate;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.math.BigDecimal;
+
+import junit.framework.TestCase;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -41,9 +42,20 @@ public class AggregatorJUnitTest extends TestCase{
     count.accumulate(null);
     assertEquals(2, ((Number)count.terminate()).intValue());
     
-    CountPRQueryNode countPrQ = new CountPRQueryNode();
-    countPrQ.accumulate(new Integer(5));
-    countPrQ.accumulate(new Integer(6));    
+    Count  countPrQ = new Count();
+    Count count1 = new Count();
+    for(int i = 1; i <=5; ++i) {
+      count1.accumulate(100);
+    }
+    
+    Count count2 = new Count();
+    for(int i = 1; i <=6; ++i) {
+      count2.accumulate(100);
+    }
+    
+    countPrQ.merge(count1);
+    countPrQ.merge(count2);
+       
     assertEquals(11, ((Number)countPrQ.terminate()).intValue());    
   }
   
@@ -58,20 +70,20 @@ public class AggregatorJUnitTest extends TestCase{
     count.accumulate(null);
     assertEquals(2, ((Number)count.terminate()).intValue());
     
-    CountDistinctPRQueryNode cdpr = new CountDistinctPRQueryNode();
+    CountDistinct cdpr = new CountDistinct();
     
-    Set<Integer> set1 = new HashSet<Integer>();
-    set1.add(1);
-    set1.add(2);
-    set1.add(3);
+    CountDistinct cd1  = new CountDistinct();
+    cd1.accumulate(1);
+    cd1.accumulate(2);
+    cd1.accumulate(3);
     
-    Set<Integer> set2 = new HashSet<Integer>();
-    set2.add(3);
-    set2.add(4);
-    set2.add(5);
+    CountDistinct cd2  = new CountDistinct();
+    cd1.accumulate(3);
+    cd1.accumulate(4);
+    cd1.accumulate(5);
     
-    cdpr.accumulate(set1);
-    cdpr.accumulate(set2);
+    cdpr.merge(cd1);
+    cdpr.merge(cd2);
     assertEquals(5, ((Number)cdpr.terminate()).intValue());    
   }
   
@@ -81,7 +93,25 @@ public class AggregatorJUnitTest extends TestCase{
     sum.accumulate(new Integer(5));
     sum.accumulate(new Integer(6));
     sum.accumulate(null);
-    assertEquals(11, ((Number)sum.terminate()).intValue());      
+    assertEquals(11, ((Number)sum.terminate()).intValue());  
+    
+    Sum sumPR = new Sum();
+    
+    Sum sum1 = new Sum();
+    sum1.accumulate(new Integer(5));
+    sum1.accumulate(new Integer(6));
+    sum1.accumulate(null);
+    
+    Sum sum2 = new Sum();
+    sum2.accumulate(new Integer(7));
+    sum2.accumulate(new Integer(8));
+    
+    
+    sumPR.merge(sum1);
+    sumPR.merge(sum2);
+    
+    assertEquals(26, ((Number)sumPR.terminate()).intValue());  
+    
   }
   
   @Test
@@ -94,20 +124,22 @@ public class AggregatorJUnitTest extends TestCase{
     sum.accumulate(new Integer(6));
     assertEquals(11, ((Number)sum.terminate()).intValue());
     
-    SumDistinctPRQueryNode sdpr = new SumDistinctPRQueryNode();
+    SumDistinct sdpr = new SumDistinct();
    
-    Set<Integer> set1 = new HashSet<Integer>();
-    set1.add(5);
-    set1.add(6);
-    set1.add(3);
+    SumDistinct sd1 = new SumDistinct();   
+    sd1.accumulate(5);
+    sd1.accumulate(6);
+    sd1.accumulate(3);
     
-    Set<Integer> set2 = new HashSet<Integer>();
-    set2.add(3);
-    set2.add(7);
-    set2.add(8);
+    SumDistinct sd2 = new SumDistinct();    
+    sd1.accumulate(3);
+    sd1.accumulate(7);
+    sd1.accumulate(8);
+   
     
-    sdpr.accumulate(set1);
-    sdpr.accumulate(set2);
+    sdpr.merge(sd1);
+    sdpr.merge(sd2);
+   
     assertEquals(29, ((Number)sdpr.terminate()).intValue());
   }
   
@@ -128,29 +160,27 @@ public class AggregatorJUnitTest extends TestCase{
     assertEquals(expected, ((Number)avg.terminate()).floatValue());
     
    
-    AvgBucketNode abn = new AvgBucketNode();
-    abn.accumulate(new Integer(1));
-    abn.accumulate(new Integer(2));
-    abn.accumulate(new Integer(3));
-    abn.accumulate(new Integer(4));
-    abn.accumulate(new Integer(5));
-    abn.accumulate(new Integer(6));
-    abn.accumulate(new Integer(7));
-    abn.accumulate(new Integer(7));
-    abn.accumulate(null);
-    abn.accumulate(null); 
-    Object[] arr = (Object[]) abn.terminate();
-    assertEquals(8, ((Integer)arr[0]).intValue());
-    assertEquals(35, ((Number)arr[1]).intValue());
+    Avg avgQ = new Avg();
     
+    Avg abn1 = new Avg();
+    abn1.accumulate(new Integer(1));
+    abn1.accumulate(new Integer(2));
+    abn1.accumulate(new Integer(3));
+    abn1.accumulate(new Integer(4));
     
-    AvgPRQueryNode apqn = new AvgPRQueryNode();
-    Object[] val1 = new Object[]{new Integer(7), new Double(43)};
-    Object[] val2 = new Object[]{new Integer(5), new Double(273.86)};
-    apqn.accumulate(val1);
-    apqn.accumulate(val2);
-    expected = (43+273.86f)/12.0f ;
-    assertEquals(expected, ((Number)apqn.terminate()).floatValue());    
+    Avg abn2 = new Avg();
+    abn2.accumulate(new Integer(5));
+    abn2.accumulate(new Integer(6));
+    abn2.accumulate(new Integer(7));
+    abn2.accumulate(new Integer(8));
+    abn2.accumulate(null);
+    abn2.accumulate(null); 
+    
+    avgQ.merge(abn1);
+    avgQ.merge(abn2);
+    
+    expected = (1+2+3 +4 +5 +6 + 7 + 8)/8.0f ;
+    assertEquals(expected, ((Number)avgQ.terminate()).floatValue());    
   }
   
   @Test
@@ -173,22 +203,22 @@ public class AggregatorJUnitTest extends TestCase{
     assertEquals(expected, ((Number)avg.terminate()).floatValue());
     
    
-    AvgDistinctPRQueryNode adpqn = new AvgDistinctPRQueryNode();
+    AvgDistinct adpqn = new AvgDistinct();
     
-    Set<Integer> set1 = new HashSet<Integer>();
-    set1.add(5);
-    set1.add(6);
-    set1.add(3);
-    set1.add(4);
+    AvgDistinct ad1 = new AvgDistinct();
+    ad1.accumulate(5);
+    ad1.accumulate(6);
+    ad1.accumulate(3);
+    ad1.accumulate(4);
     
-    Set<Integer> set2 = new HashSet<Integer>();
-    set2.add(3);
-    set2.add(7);
-    set2.add(8);
-    set2.add(4);
+    AvgDistinct ad2 = new AvgDistinct();
+    ad2.accumulate(3);
+    ad2.accumulate(7);
+    ad2.accumulate(8);
+    ad2.accumulate(4);
     
-    adpqn.accumulate(set1);
-    adpqn.accumulate(set2);
+    adpqn.merge(ad1);
+    adpqn.merge(ad2);
    
     expected = (3+4+5+6+7+8)/6.0f ;
     assertEquals(expected, ((Number)adpqn.terminate()).floatValue());    
@@ -209,6 +239,31 @@ public class AggregatorJUnitTest extends TestCase{
     min.accumulate(new Integer(2));
     min.accumulate(null);
     assertEquals(1,((Integer)min.terminate()).intValue());
+  }
+  
+  @Test 
+  public void testDowncast() throws Exception {
+   new BigDecimal(1d).longValueExact();
+    Sum sum = new Sum();
+    sum.accumulate(new Integer(Integer.MAX_VALUE));
+    sum.accumulate(new Integer(6));
+    Number result = (Number)sum.terminate();
+    assertTrue( result instanceof Long);
+    assertEquals(Integer.MAX_VALUE + 6l, result.longValue());
+    
+    sum = new Sum();
+    sum.accumulate(new Long(5));
+    sum.accumulate(new Integer(6));
+    result = (Number)sum.terminate();
+    assertTrue( result instanceof Integer);
+    assertEquals(11, result.intValue());
+    
+    sum = new Sum();
+    sum.accumulate(Float.MAX_VALUE);
+    result = (Number)sum.terminate();
+    assertTrue( result instanceof Double);
+    assertEquals(Float.MAX_VALUE, result.floatValue());
+    
   }
  
 }

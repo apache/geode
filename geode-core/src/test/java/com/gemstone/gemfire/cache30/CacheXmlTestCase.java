@@ -38,7 +38,7 @@ public class CacheXmlTestCase extends CacheTestCase {
   private File xmlFile;
   
   /** set this to false if a test needs a non-loner distributed system */
-  static boolean lonerDistributedSystem = true;
+  protected static boolean lonerDistributedSystem = true;
 
   public CacheXmlTestCase(String name) {
     super(name);

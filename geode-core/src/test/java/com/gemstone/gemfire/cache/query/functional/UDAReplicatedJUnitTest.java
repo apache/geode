@@ -14,34 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.aggregate;
+package com.gemstone.gemfire.cache.query.functional;
 
-import com.gemstone.gemfire.cache.query.Aggregator;
+import org.junit.experimental.categories.Category;
 
-/**
- * Computes the count of the rows on the PR query node
- * 
- *
- */
-public class CountPRQueryNode implements Aggregator {
-  private int count = 0;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.CacheUtils;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-  /**
-   * Recieves the input of the individual counts from the bucket nodes.
-   */
-  @Override
-  public void accumulate(Object value) {
-    this.count += ((Integer) value).intValue();
-  }
+@Category(IntegrationTest.class)
+public class UDAReplicatedJUnitTest extends UDATestImpl {
 
   @Override
-  public void init() {
+  public Region createRegion(String regionName, Class valueConstraint) {
+    Region r1 = CacheUtils.createRegion(regionName, valueConstraint);
+    return r1;
 
   }
-
-  @Override
-  public Object terminate() {
-    return Integer.valueOf(count);
-  }
-
 }

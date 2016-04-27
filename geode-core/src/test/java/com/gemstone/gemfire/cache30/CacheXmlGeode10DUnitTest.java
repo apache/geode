@@ -22,7 +22,10 @@ package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.query.Aggregator;
+import com.gemstone.gemfire.cache.query.internal.aggregate.uda.UDAManager;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
@@ -30,6 +33,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.ResourceManagerCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
+import java.util.Map;
 
 
 public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
@@ -230,5 +234,75 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     } finally {
       System.clearProperty("gemfire."+DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME);
     }
+  }
+  
+  public void testUDA() {
+    final CacheCreation cache = new CacheCreation();
+    cache.addUDA("uda1", UDACLass1.class.getName());
+    cache.addUDA("uda2", UDACLass2.class.getName());
+    cache.addUDA("uda3", UDACLass3.class.getName());
+    testXml(cache);
+
+    final Cache c = getCache();
+    assertNotNull(c);
+    UDAManager udaMgr = ((GemFireCacheImpl) c).getUDAManager();
+    Map<String, String> map = udaMgr.getUDAs();
+    assertEquals(map.get("uda1"), UDACLass1.class.getName());
+    assertEquals(map.get("uda2"), UDACLass2.class.getName());
+    assertEquals(map.get("uda3"), UDACLass3.class.getName());
+  }
+  
+  public class UDACLass1 implements Aggregator {
+
+    @Override
+    public void accumulate(Object value) {}
+
+    @Override
+    public void init() {}
+
+    @Override
+    public Object terminate() {
+      return null;
+    }
+
+    @Override
+    public void merge(Aggregator otherAggregator) {}
+    
+  }
+  
+  public class UDACLass2 implements Aggregator {
+
+    @Override
+    public void accumulate(Object value) {}
+
+    @Override
+    public void init() {}
+
+    @Override
+    public Object terminate() {
+      return null;
+    }
+
+    @Override
+    public void merge(Aggregator otherAggregator) {}
+    
+  }
+  
+  public class UDACLass3 implements Aggregator {
+
+    @Override
+    public void accumulate(Object value) {}
+
+    @Override
+    public void init() {}
+
+    @Override
+    public Object terminate() {
+      return null;
+    }
+
+    @Override
+    public void merge(Aggregator otherAggregator) {}
+    
   }
 }

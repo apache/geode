@@ -625,6 +625,11 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
 
   /** Name of region property specifying the cloning **/
   public static final String CLONING_ENABLED = "cloning-enabled";
+  /** The name of the <code>uda</code> element */
+  public static final String UDA_MANAGER = "uda-manager";
+  public static final String UDA = "uda";
+  public static final String UDA_NAME = "name";
+  public static final String UDA_CLASS = "class";
 
   // begin constants for connection pool
   public static final String CONNECTION_POOL = "pool";

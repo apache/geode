@@ -140,6 +140,8 @@ import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
 import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
+import com.gemstone.gemfire.cache.query.internal.aggregate.uda.UDAManager;
+import com.gemstone.gemfire.cache.query.internal.aggregate.uda.UDAManagerImpl;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache.query.internal.cq.CqServiceProvider;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -491,6 +493,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
    * lock used to access prLockService
    */
   private final Object prLockServiceLock = new Object();
+  private final UDAManagerImpl udaMgr;
   
   /**
    * DistributedLockService for GatewaySenders. Remains null until the
@@ -859,7 +862,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
               .toLocalizedString());
         }
       }
-
+      this.udaMgr = new UDAManagerImpl();
       this.rootRegions = new HashMap();
       
       this.cqService = CqServiceProvider.create(this);
@@ -1196,6 +1199,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     
     startRestAgentServer(this);
     
+    udaMgr.collectUDAsFromRemote();
     int time = Integer.getInteger("gemfire.CLIENT_FUNCTION_TIMEOUT",
         DEFAULT_CLIENT_FUNCTION_TIMEOUT);
     clientFunctionTimeout = time >= 0 ? time : DEFAULT_CLIENT_FUNCTION_TIMEOUT;
@@ -1975,6 +1979,10 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   public PersistentMemberManager getPersistentMemberManager() {
     return persistentMemberManager;
   }
+  
+  public UDAManagerImpl getUDAManager() {
+    return this.udaMgr;
+  }
 
   public ClientMetadataService getClientMetadataService() {
     synchronized (this.clientMetaDatServiceLock) {
@@ -2181,7 +2189,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
             }
             destroyPartitionedRegionLockService();
           }
-
+          udaMgr.clear();
           closeDiskStores();
           diskMonitor.close();
           

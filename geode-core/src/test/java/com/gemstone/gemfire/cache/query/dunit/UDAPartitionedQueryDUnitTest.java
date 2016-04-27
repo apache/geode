@@ -23,31 +23,31 @@ import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.query.functional.GroupByTestImpl;
+import com.gemstone.gemfire.cache.query.functional.UDATestImpl;
+import com.gemstone.gemfire.cache.query.functional.UDATestInterface;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- * 
- *
- */
 @Category(DistributedTest.class)
-public class GroupByPartitionedQueryDUnitTest extends GroupByDUnitImpl {
+public class UDAPartitionedQueryDUnitTest extends UDADUnitImpl {
 
-  public GroupByPartitionedQueryDUnitTest(String name) {
+
+  public UDAPartitionedQueryDUnitTest(String name) {
     super(name);
   }
 
   @Override
-  protected GroupByTestImpl createTestInstance() {
+  protected UDATestInterface createTestInstance() {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
 
-    GroupByTestImpl test = new GroupByTestImpl() {
+    UDATestImpl test = new UDATestImpl() {
 
       @Override
       public Region createRegion(String regionName, Class valueConstraint) {
@@ -98,6 +98,5 @@ public class GroupByPartitionedQueryDUnitTest extends GroupByDUnitImpl {
         .setValueConstraint(valueConstraint)
         .setPartitionAttributes(paf.create()).create(regionName);
   }
-
 
 }

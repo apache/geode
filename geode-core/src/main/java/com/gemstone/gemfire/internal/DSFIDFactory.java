@@ -70,6 +70,13 @@ import com.gemstone.gemfire.cache.query.internal.StructBag;
 import com.gemstone.gemfire.cache.query.internal.StructImpl;
 import com.gemstone.gemfire.cache.query.internal.StructSet;
 import com.gemstone.gemfire.cache.query.internal.Undefined;
+import com.gemstone.gemfire.cache.query.internal.aggregate.Avg;
+import com.gemstone.gemfire.cache.query.internal.aggregate.Count;
+import com.gemstone.gemfire.cache.query.internal.aggregate.DistinctAggregator;
+import com.gemstone.gemfire.cache.query.internal.aggregate.MaxMin;
+import com.gemstone.gemfire.cache.query.internal.aggregate.Sum;
+import com.gemstone.gemfire.cache.query.internal.aggregate.uda.UDADistributionAdvisor;
+import com.gemstone.gemfire.cache.query.internal.aggregate.uda.UDAMessage;
 import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
 import com.gemstone.gemfire.cache.query.internal.types.CollectionTypeImpl;
@@ -275,6 +282,7 @@ import com.gemstone.gemfire.internal.cache.TXRemoteCommitMessage.TXRemoteCommitR
 import com.gemstone.gemfire.internal.cache.TXRemoteRollbackMessage;
 import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.internal.cache.UpdateAttributesProcessor;
+import com.gemstone.gemfire.internal.cache.UpdateAttributesProcessor.CollectAttributesMessage;
 import com.gemstone.gemfire.internal.cache.UpdateEntryVersionOperation.UpdateEntryVersionMessage;
 import com.gemstone.gemfire.internal.cache.UpdateOperation;
 import com.gemstone.gemfire.internal.cache.VMCachedDeserializable;
@@ -1043,6 +1051,14 @@ public final class DSFIDFactory implements DataSerializableFixedID {
         DestroyRegionOnDataStoreMessage.class);
     registerDSFID(SHUTDOWN_ALL_GATEWAYHUBS_REQUEST,
         ShutdownAllGatewayHubsRequest.class);
+    registerDSFID(AGG_FUNC_AVG, Avg.class);
+    registerDSFID(AGG_FUNC_COUNT, Count.class);
+    registerDSFID(AGG_FUNC_SUM, Sum.class);
+    registerDSFID(AGG_FUNC_DISTINCT_AGG, DistinctAggregator.class);
+    registerDSFID(AGG_FUNC_MAX_MIN, MaxMin.class);
+    registerDSFID(UDA_PROFILE, UDADistributionAdvisor.UDAProfile.class);
+    registerDSFID(UDA_MESSAGE, UDAMessage.class);
+    registerDSFID(COLLECT_ATTRIBUTES_MESSAGE, CollectAttributesMessage.class);
     registerDSFID(BUCKET_COUNT_LOAD_PROBE, BucketCountLoadProbe.class);
   }
 
@@ -1098,39 +1114,48 @@ public final class DSFIDFactory implements DataSerializableFixedID {
 	  case PR_DESTROY_ON_DATA_STORE_MESSAGE:
         return readDestroyOnDataStore(in);
       default:
-        final Constructor<?> cons;
-        if (dsfid >= Byte.MIN_VALUE && dsfid <= Byte.MAX_VALUE) {
-          cons = dsfidMap[dsfid + Byte.MAX_VALUE + 1];
-        } else {
-          cons = (Constructor<?>) dsfidMap2.get(dsfid);
-        }
-        if (cons != null) {
-          try {
-            Object ds = cons
-                    .newInstance((Object[]) null);
-            InternalDataSerializer.invokeFromData(ds, in);
-            return ds;
-          } catch (InstantiationException ie) {
-            throw new IOException(ie.getMessage(), ie);
-          } catch (IllegalAccessException iae) {
-            throw new IOException(iae.getMessage(), iae);
-          } catch (InvocationTargetException ite) {
-            Throwable targetEx = ite.getTargetException();
-            if (targetEx instanceof IOException) {
-              throw (IOException) targetEx;
-            } else if (targetEx instanceof ClassNotFoundException) {
-              throw (ClassNotFoundException) targetEx;
-            } else {
-              throw new IOException(ite.getMessage(), targetEx);
-            }
-          }
-        }
-        throw new DSFIDNotFoundException("Unknown DataSerializableFixedID: "
-                + dsfid, dsfid);
+        Object ds = getDSFIDInstance(dsfid);
+        InternalDataSerializer.invokeFromData(ds, in);
+        return ds;      
 
     }
   }
-
+  
+  /**
+   * Returns the instance of class which is registered with the given iD
+   * 
+   * @param dsfid ID with which the DataSerializableFixedID class is registered
+   * @return Object DataSerializableFixedID instance
+   * @throws IOException
+   * @throws ClassNotFoundException
+   */
+  public static Object getDSFIDInstance(int dsfid) throws IOException, ClassNotFoundException {
+    final Constructor<?> cons;
+    if (dsfid >= Byte.MIN_VALUE && dsfid <= Byte.MAX_VALUE) {
+      cons = dsfidMap[dsfid + Byte.MAX_VALUE + 1];
+    } else {
+      cons = (Constructor<?>) dsfidMap2.get(dsfid);
+    }
+    if (cons != null) {
+      try {
+        return cons.newInstance((Object[]) null);
+      } catch (InstantiationException ie) {
+        throw new IOException(ie.getMessage(), ie);
+      } catch (IllegalAccessException iae) {
+        throw new IOException(iae.getMessage(), iae);
+      } catch (InvocationTargetException ite) {
+        Throwable targetEx = ite.getTargetException();
+        if (targetEx instanceof IOException) {
+          throw (IOException) targetEx;
+        } else if (targetEx instanceof ClassNotFoundException) {
+          throw (ClassNotFoundException) targetEx;
+        } else {
+          throw new IOException(ite.getMessage(), targetEx);
+        }
+      }
+    }
+    throw new DSFIDNotFoundException("Unknown DataSerializableFixedID: " + dsfid, dsfid);
+  }
  
   //////////////////  Reading Internal Objects  /////////////////
   /**

@@ -14,32 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.aggregate;
+package com.gemstone.gemfire.cache.query.internal.aggregate.uda;
 
-import java.util.Set;
+import java.util.Map;
+
+import com.gemstone.gemfire.cache.query.NameResolutionException;
+import com.gemstone.gemfire.cache.query.UDAExistsException;
 
 /**
- * Computes the sum of distinct values on the PR query node.
+ * Interface for creating & removing UDAs.
  * 
- *
+ * @see UDAManagerImpl
+ * @author ashahid
+ * @since 9.0
  */
-public class SumDistinctPRQueryNode extends DistinctAggregator {
-
-  /**
-   * The input data is the Set of values(distinct) receieved from each of the
-   * bucket nodes.
-   */
-  @Override
-  public void accumulate(Object value) {
-    this.distinct.addAll((Set) value);
-  }
-
-  @Override
-  public Object terminate() {
-    double sum = 0;
-    for (Object o : this.distinct) {
-      sum += ((Number) o).doubleValue();
-    }
-    return downCast(sum);
-  }
+public interface UDAManager {
+  public Map<String, String> getUDAs() ;
+  public void createUDA(String name, String fqClass) throws UDAExistsException, NameResolutionException;
+  public void removeUDA(String name) ;
 }

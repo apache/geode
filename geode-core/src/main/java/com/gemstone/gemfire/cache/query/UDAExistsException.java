@@ -14,30 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.aggregate;
 
-import java.util.Set;
+package com.gemstone.gemfire.cache.query;
 
 /**
- * Computes the count of the distinct rows on the PR query node.
+ * This Exception is thrown if a UDA with a given name already exists in the system,
+ * and a new UDA is being registered with the same name
  * 
+ * @author ashahid
  *
  */
-public class CountDistinctPRQueryNode extends DistinctAggregator {
+public class UDAExistsException extends QueryException{
 
+  private static final long serialVersionUID = -1643528839352144L;  
+  
+  public UDAExistsException(String msg) {
+    super(msg);
+  }
+  
   /**
-   * The input data is the Set containing distinct values from each of the
-   * bucket nodes.
+   * Constructs instance of UDAExistsException with error message and cause
+   * @param msg the error message
+   * @param cause a Throwable that is a cause of this exception
    */
-  @Override
-  public void accumulate(Object value) {
-    this.distinct.addAll((Set) value);
-
+  public UDAExistsException(String msg, Throwable cause) {
+    super(msg, cause);
   }
-
-  @Override
-  public Object terminate() {
-    return Integer.valueOf(this.distinct.size());
-  }
-
 }

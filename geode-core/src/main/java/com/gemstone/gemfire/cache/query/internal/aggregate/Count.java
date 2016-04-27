@@ -16,8 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.internal.aggregate;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
+import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.query.Aggregator;
 import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.Version;
 
 /**
  * Computes the count of the non distinct rows for replicated & PR based
@@ -25,9 +32,12 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * 
  *
  */
-public class Count implements Aggregator {
-  private int count = 0;
+public class Count extends AbstractAggregator implements DataSerializableFixedID {
+  private long count = 0;
 
+  public Count(){    
+  }
+  
   @Override
   public void accumulate(Object value) {
     if (value != null && value != QueryService.UNDEFINED) {
@@ -37,12 +47,35 @@ public class Count implements Aggregator {
 
   @Override
   public void init() {
-
   }
 
   @Override
   public Object terminate() {
-    return Integer.valueOf(count);
+    return downCast(count);
+  }
+  
+  @Override 
+  public void merge(Aggregator countAgg) {
+    this.count += ((Count)countAgg).count;
   }
 
+  @Override
+  public Version[] getSerializationVersions() {   
+    return null;
+  }
+
+  @Override
+  public int getDSFID() {    
+    return AGG_FUNC_COUNT;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    DataSerializer.writePrimitiveLong(this.count, out);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {    
+    this.count = DataSerializer.readPrimitiveLong(in);
+  }
 }

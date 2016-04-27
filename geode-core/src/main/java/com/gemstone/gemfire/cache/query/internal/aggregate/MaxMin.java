@@ -16,8 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.internal.aggregate;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
+import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.query.Aggregator;
 import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.Version;
 
 /**
  * Computes the Max or Min
@@ -25,12 +32,16 @@ import com.gemstone.gemfire.cache.query.QueryService;
  *
  */
 
-public class MaxMin implements Aggregator {
-  private final boolean findMax;
+public class MaxMin implements Aggregator, DataSerializableFixedID  {
+  private final boolean findMax; 
   private Comparable currentOptima;
 
   public MaxMin(boolean findMax) {
     this.findMax = findMax;
+  }
+  
+  public MaxMin() {
+    this.findMax = false;
   }
 
   @Override
@@ -63,5 +74,29 @@ public class MaxMin implements Aggregator {
   public Object terminate() {
     return currentOptima;
   }
+  
+  @Override
+  public void merge(Aggregator maxMin) {
+    this.accumulate( ((MaxMin)maxMin).currentOptima);
+  }
 
+  @Override
+  public Version[] getSerializationVersions() {   
+    return null;
+  }
+
+  @Override
+  public int getDSFID() {
+    return AGG_FUNC_MAX_MIN;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {    
+    DataSerializer.writeObject(this.currentOptima, out);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    this.currentOptima = DataSerializer.readObject(in);    
+  }
 }

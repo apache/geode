@@ -14,21 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.cache.query.internal.aggregate;
+package com.gemstone.gemfire.internal.cache.xmlcache;
 
-/**
- * Computes the final average of distinct values for the partitioned region
- * based queries. This aggregator is initialized on the PR query node & acts on
- * the results obtained from bucket nodes.
- * 
- *
- */
-public class AvgDistinctPRQueryNode extends SumDistinctPRQueryNode {
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.gemstone.gemfire.cache.query.NameResolutionException;
+import com.gemstone.gemfire.cache.query.UDAExistsException;
+import com.gemstone.gemfire.cache.query.internal.aggregate.uda.UDAManager;
+
+public class UDAManagerCreation implements UDAManager {
+  private Map<String, String> map = new HashMap<String, String>();
+  
   @Override
-  public Object terminate() {
-    double sum = ((Number) super.terminate()).doubleValue();
-    double result = sum / this.distinct.size();
-    return downCast(result);
+  public Map<String, String> getUDAs() {
+    return Collections.unmodifiableMap(this.map);
+  }
+  
+  @Override
+  public void createUDA(String name, String fqClass) {
+    this.map.put(name, fqClass);  
+  }
+  
+  @Override
+  public void removeUDA(String name) {
+    this.map.remove(name);
   }
 }

@@ -74,10 +74,14 @@ import com.gemstone.gemfire.cache.query.IndexInvalidException;
 import com.gemstone.gemfire.cache.query.IndexNameConflictException;
 import com.gemstone.gemfire.cache.query.IndexType;
 import com.gemstone.gemfire.cache.query.MultiIndexCreationException;
+import com.gemstone.gemfire.cache.query.NameResolutionException;
 import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.RegionNotFoundException;
+import com.gemstone.gemfire.cache.query.UDAExistsException;
+import com.gemstone.gemfire.cache.query.internal.aggregate.uda.UDAManager;
+import com.gemstone.gemfire.cache.query.internal.aggregate.uda.UDAManagerImpl;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
@@ -199,7 +203,8 @@ public class CacheCreation implements InternalCache {
    */
   protected final Map diskStores = new LinkedHashMap();
   protected final Map hdfsStores = new LinkedHashMap();
-  
+  private final UDAManagerCreation udaMgrCreation = new UDAManagerCreation();
+
   private final List<File> backups = new ArrayList<File>();
 
   private CacheConfig cacheConfig = new CacheConfig();
@@ -309,6 +314,10 @@ public class CacheCreation implements InternalCache {
 
   public int getSearchTimeout() {
     return this.searchTimeout;
+  }
+
+  public void addUDA(String udaName, String udaClass) {
+    this.udaMgrCreation.createUDA(udaName, udaClass);
   }
 
   public void setSearchTimeout(int seconds) {
@@ -459,7 +468,18 @@ public class CacheCreation implements InternalCache {
         cache.getCacheTransactionManager()!=null) {
       cache.getCacheTransactionManager().setWriter(this.txMgrCreation.getWriter());
     }
-    
+
+    UDAManagerImpl udaMgrImpl = cache.getUDAManager();
+    for (Map.Entry<String, String> entry : this.udaMgrCreation.getUDAs().entrySet()) {
+      try {
+        udaMgrImpl.createUDA(entry.getKey(), entry.getValue());
+      } catch (UDAExistsException udae) {
+        throw new RuntimeException(LocalizedStrings.UDA_MANAGER_Uda_Exists.toLocalizedString(entry.getKey()));
+      } catch (NameResolutionException nre) {
+        throw new RuntimeException(LocalizedStrings.UDA_MANAGER_Class_Not_Found.toLocalizedString(entry.getValue(), entry.getKey()));
+      }
+
+    }
     for (GatewaySender senderCreation : this.getGatewaySenders()) {
       GatewaySenderFactory factory = (GatewaySenderFactory)cache
           .createGatewaySenderFactory();
@@ -1684,10 +1704,25 @@ public class CacheCreation implements InternalCache {
     public boolean clearDefinedIndexes() {
       throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
     }
-    
+
+    @Override
+    public void createUDA(String udaName, String udaClass) throws UDAExistsException, NameResolutionException {
+      getUDAManager().createUDA(udaName, udaClass);
+
+    }
+
+    @Override
+    public void removeUDA(String udaName) {
+      getUDAManager().removeUDA(udaName);
+    }
+
   };
 
   @Override
+  public UDAManager getUDAManager() {
+    return this.udaMgrCreation;
+  }
+  
   public <T extends CacheService> T getService(Class<T> clazz) {
     throw new UnsupportedOperationException();
   }
