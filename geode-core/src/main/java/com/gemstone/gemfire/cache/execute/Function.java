@@ -35,6 +35,7 @@ import com.gemstone.gemfire.lang.Identifiable;
  *
  * @since 6.0
  */
+@FunctionalInterface
 public interface Function extends Identifiable<String> {
 
   /**
@@ -53,7 +54,9 @@ public interface Function extends Identifiable<String> {
    * @return whether this function returns a Result back to the caller.
    * @since 6.0
    */
-  public boolean hasResult();
+  public default boolean hasResult() {
+    return true;
+  }
 
   /**
    * The method which contains the logic to be executed. This method should be
@@ -75,7 +78,9 @@ public interface Function extends Identifiable<String> {
    * @return string identifying this function
    * @since 6.0
    */
-  public String getId();
+  public default String getId() {
+    return getClass().getCanonicalName();
+  }
 
   /**
    * <p>Return true to indicate to GemFire the method
@@ -94,7 +99,9 @@ public interface Function extends Identifiable<String> {
    * @since 6.0
    * @see FunctionService
    */
-  public boolean optimizeForWrite();
+  public default boolean optimizeForWrite() {
+    return false;
+  }
   
   /**
    * Specifies whether the function is eligible for re-execution (in case of
@@ -105,6 +112,8 @@ public interface Function extends Identifiable<String> {
    * 
    * @since 6.5
    */
-  public boolean isHA();
+  public default boolean isHA() {
+    return true;
+  }
 
 }
