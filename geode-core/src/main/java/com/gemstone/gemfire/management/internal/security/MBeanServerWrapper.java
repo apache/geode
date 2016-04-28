@@ -207,7 +207,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       try {
         setAttribute(name, attribute);
       } catch (Exception e) {
-        throw new GemFireSecurityException("error setting attribute "+attribute+" of "+name);
+        throw new GemFireSecurityException("error setting attribute "+attribute+" of "+name, e);
       }
     }
     return attributes;
@@ -237,7 +237,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     try {
       beanInfo = mbs.getMBeanInfo(objectName);
     } catch (IntrospectionException e) {
-      throw new GemFireSecurityException("error getting beanInfo of "+objectName);
+      throw new GemFireSecurityException("error getting beanInfo of "+objectName, e);
     }
     // If there is no annotation defined either in the class level or method level, we should consider this operation/attribute freely accessible
     ResourceOperationContext result = null;

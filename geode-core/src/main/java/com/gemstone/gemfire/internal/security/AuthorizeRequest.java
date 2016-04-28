@@ -95,23 +95,6 @@ public class AuthorizeRequest {
         new Object[] {id, authzFactoryName});
     }
   }
- 
-  public AccessControl getAuthzCallback() {
-
-    return this.authzCallback;
-  }
-
-  public Principal getPrincipal() {
-    return principal;
-  }
-
-  public boolean isPrincipalSerializable() {
-    return isPrincipalSerializable;
-  }
-
-  public LogWriterI18n getLogger() {
-    return logger;
-  }
 
   public GetOperationContext getAuthorize(String regionName, Object key,
       Object callbackArg) throws NotAuthorizedException {
