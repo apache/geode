@@ -29,7 +29,6 @@ import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
-import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
@@ -37,13 +36,9 @@ import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.data.PortfolioData;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
-import com.gemstone.gemfire.cache.query.partitioned.PRQueryDUnitHelper;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionQueryEvaluator.TestHook;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
@@ -64,15 +59,7 @@ import com.gemstone.gemfire.test.dunit.Wait;
 public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
     CacheTestCase {
 
-  PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper("");
-
   String name;
-
-  final int redundancy = 0;
-
-  private int cnt=0;
-
-  private int cntDest=1;
 
   public static volatile boolean hooked = false;
 
@@ -95,7 +82,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
     vm0.invoke(new CacheSerializableRunnable("Create local region with synchronous index maintenance") {
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
         Region partitionRegion = null;
         IndexManager.testHook = null;
         try {
@@ -138,10 +125,10 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
 
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
 
         // Do a put in region.
-        Region r = PRQHelp.getCache().getRegion(name);
+        Region r = getCache().getRegion(name);
 
         for (int i=0; i<100; i++) {
           r.put(i, new PortfolioData(i));
@@ -151,7 +138,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
         IndexManager.testHook = new IndexManagerTestHook();
 
         // Destroy one of the values.
-        PRQHelp.getCache().getLogger().fine("Destroying the value");
+        getCache().getLogger().fine("Destroying the value");
         r.destroy(1);
 
         IndexManager.testHook = null;
@@ -162,16 +149,16 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
 
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
 
-        Query statusQuery = PRQHelp.getCache().getQueryService()
+        Query statusQuery = getCache().getQueryService()
             .newQuery("select * from /" + name + " p where p.ID > -1");
 
         while (!hooked) {
           Wait.pause(100);
         }
         try {
-          PRQHelp.getCache().getLogger().fine("Querying the region");
+          getCache().getLogger().fine("Querying the region");
           SelectResults results = (SelectResults)statusQuery.execute();
           assertEquals(100, results.size());
         } catch (Exception e) {
@@ -197,7 +184,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
     vm0.invoke(new CacheSerializableRunnable("Create local region with synchronous index maintenance") {
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
         Region partitionRegion = null;
         IndexManager.testHook = null;
         try {
@@ -240,10 +227,10 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
 
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
 
         // Do a put in region.
-        Region r = PRQHelp.getCache().getRegion(name);
+        Region r = getCache().getRegion(name);
 
         for (int i=0; i<100; i++) {
           r.put(i, new PortfolioData(i));
@@ -253,7 +240,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
         IndexManager.testHook = new IndexManagerTestHook();
 
         // Destroy one of the values.
-        PRQHelp.getCache().getLogger().fine("Destroying the value");
+        getCache().getLogger().fine("Destroying the value");
         r.destroy(1);
 
         IndexManager.testHook = null;
@@ -264,16 +251,16 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
 
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
 
-        Query statusQuery = PRQHelp.getCache().getQueryService()
+        Query statusQuery = getCache().getQueryService()
             .newQuery("select * from /" + name + " p where p.ID > -1");
 
         while (!hooked) {
           Wait.pause(100);
         }
         try {
-          PRQHelp.getCache().getLogger().fine("Querying the region");
+          getCache().getLogger().fine("Querying the region");
           SelectResults results = (SelectResults)statusQuery.execute();
           assertEquals(100, results.size());
         } catch (Exception e) {
@@ -300,7 +287,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
         "Create local region with synchronous index maintenance") {
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
         Region partitionRegion = null;
         IndexManager.testHook = null;
         try {
@@ -348,10 +335,8 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
 
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
-
         // Do a put in region.
-        Region r = PRQHelp.getCache().getRegion(name);
+        Region r = getCache().getRegion(name);
 
         for (int i = 0; i < 100; i++) {
           r.put(i, new PortfolioData(i));
@@ -361,7 +346,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
         IndexManager.testHook = new IndexManagerTestHook();
 
         // Destroy one of the values.
-        PRQHelp.getCache().getLogger().fine("Destroying the value");
+        getCache().getLogger().fine("Destroying the value");
         r.destroy(1);
 
         IndexManager.testHook = null;
@@ -373,16 +358,14 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
 
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
-
-        Query statusQuery = PRQHelp.getCache().getQueryService()
+        Query statusQuery = getCache().getQueryService()
             .newQuery("select * from /" + name + " p where p.ID > -1");
 
         while (!hooked) {
           Wait.pause(100);
         }
         try {
-          PRQHelp.getCache().getLogger().fine("Querying the region");
+          getCache().getLogger().fine("Querying the region");
           SelectResults results = (SelectResults)statusQuery.execute();
           assertEquals(100, results.size());
         } catch (Exception e) {
@@ -409,7 +392,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
         "Create local region with synchronous index maintenance") {
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
         Region partitionRegion = null;
         IndexManager.testHook = null;
         try {
@@ -457,10 +440,8 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
 
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
-
         // Do a put in region.
-        Region r = PRQHelp.getCache().getRegion(name);
+        Region r = getCache().getRegion(name);
 
         for (int i = 0; i < 100; i++) {
           r.put(i, new PortfolioData(i));
@@ -470,7 +451,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
         IndexManager.testHook = new IndexManagerTestHook();
 
         // Destroy one of the values.
-        PRQHelp.getCache().getLogger().fine("Destroying the value");
+        getCache().getLogger().fine("Destroying the value");
         r.destroy(1);
 
         IndexManager.testHook = null;
@@ -482,16 +463,14 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
 
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
-
-        Query statusQuery = PRQHelp.getCache().getQueryService()
+        Query statusQuery = getCache().getQueryService()
             .newQuery("select * from /" + name + " p where p.ID > -1");
 
         while (!hooked) {
           Wait.pause(100);
         }
         try {
-          PRQHelp.getCache().getLogger().fine("Querying the region");
+          getCache().getLogger().fine("Querying the region");
           SelectResults results = (SelectResults)statusQuery.execute();
           assertEquals(100, results.size());
         } catch (Exception e) {
@@ -517,7 +496,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
    vm0.invoke(new CacheSerializableRunnable("Create local region with synchronous index maintenance") {
      @Override
      public void run2() throws CacheException {
-       Cache cache = PRQHelp.getCache();
+       Cache cache = getCache();
        Region partitionRegion = null;
        IndexManager.testHook = null;
        try {
@@ -551,10 +530,10 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
 
      @Override
      public void run2() throws CacheException {
-       Cache cache = PRQHelp.getCache();
+       Cache cache = getCache();
 
        // Do a put in region.
-       Region r = PRQHelp.getCache().getRegion(name);
+       Region r = getCache().getRegion(name);
 
        for (int i=0; i<100; i++) {
          r.put(i, new PortfolioData(i));
@@ -564,7 +543,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
        IndexManager.testHook = new IndexManagerNoWaitTestHook();
 
        // Destroy one of the values.
-       PRQHelp.getCache().getLogger().fine("Destroying the value");
+       getCache().getLogger().fine("Destroying the value");
        r.destroy(1);
 
        IndexManager.testHook = null;
@@ -575,16 +554,16 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
 
      @Override
      public void run2() throws CacheException {
-       Cache cache = PRQHelp.getCache();
+       Cache cache = getCache();
 
-       Query statusQuery = PRQHelp.getCache().getQueryService()
+       Query statusQuery = getCache().getQueryService()
            .newQuery("select * from /" + name + " p where p.ID > -1");
 
        while (!hooked) {
          Wait.pause(10);
        }
        try {
-         PRQHelp.getCache().getLogger().fine("Querying the region");
+         getCache().getLogger().fine("Querying the region");
          SelectResults results = (SelectResults)statusQuery.execute();
          assertEquals(100, results.size());
        } catch (Exception e) {
@@ -610,7 +589,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
    vm0.invoke(new CacheSerializableRunnable("Create local region with synchronous index maintenance") {
      @Override
      public void run2() throws CacheException {
-       Cache cache = PRQHelp.getCache();
+       Cache cache = getCache();
        Region partitionRegion = null;
        IndexManager.testHook = null;
        try {
@@ -644,10 +623,8 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
 
      @Override
      public void run2() throws CacheException {
-       Cache cache = PRQHelp.getCache();
-
        // Do a put in region.
-       Region r = PRQHelp.getCache().getRegion(name);
+       Region r = getCache().getRegion(name);
 
        for (int i=0; i<100; i++) {
          r.put(i, new PortfolioData(i));
@@ -657,7 +634,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
        IndexManager.testHook = new IndexManagerNoWaitTestHook();
 
        // Destroy one of the values.
-       PRQHelp.getCache().getLogger().fine("Destroying the value");
+       getCache().getLogger().fine("Destroying the value");
        r.destroy(1);
 
        IndexManager.testHook = null;
@@ -668,16 +645,14 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
 
      @Override
      public void run2() throws CacheException {
-       Cache cache = PRQHelp.getCache();
-
-       Query statusQuery = PRQHelp.getCache().getQueryService()
+       Query statusQuery = getCache().getQueryService()
            .newQuery("select * from /" + name + " p where p.ID > -1");
 
        while (!hooked) {
          Wait.pause(10);
        }
        try {
-         PRQHelp.getCache().getLogger().fine("Querying the region");
+         getCache().getLogger().fine("Querying the region");
          SelectResults results = (SelectResults)statusQuery.execute();
          assertEquals(100, results.size());
        } catch (Exception e) {

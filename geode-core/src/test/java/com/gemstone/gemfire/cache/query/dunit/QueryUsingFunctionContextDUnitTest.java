@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import static com.gemstone.gemfire.cache.query.Utils.createPortfoliosAndPositions;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -125,13 +127,11 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   
   public static String[] queriesForRR = new String[]{"<trace> select * from /"+repRegionName+" where ID>=0"};
 
-  private static PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper("");
   /**
    * @param name
    */
   public QueryUsingFunctionContextDUnitTest(String name) {
     super(name);
-
   }
 
   @Override
@@ -671,7 +671,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
 
   public void fillValuesInRegions() {
     //Create common Portflios and NewPortfolios
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
 
     //Fill local region
     server1.invoke(getCacheSerializableRunnableForPRPuts(localRegionName,
@@ -1015,7 +1015,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
           region.put(new Integer(j), portfolio[j]);
         LogWriterUtils.getLogWriter()
             .info(
-                "PRQueryDUnitHelper#getCacheSerializableRunnableForPRPuts: Inserted Portfolio data on Region "
+                "getCacheSerializableRunnableForPRPuts: Inserted Portfolio data on Region "
                     + regionName);
       }
     };

@@ -24,6 +24,8 @@ package com.gemstone.gemfire.cache.query.partitioned;
  * 
  */
 
+import static com.gemstone.gemfire.cache.query.Utils.createPortfolioData;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -53,18 +55,12 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
 
     super(name);
   }
-
-  static Properties props = new Properties();
-
-  int totalNumBuckets = 100;
-
-  int threadSleepTime = 500;
-
-  int querySleepTime = 2000;
-
-  int queryTestCycle = 10;
-
-  PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper("");
+  public void setCacheInVMs(VM... vms) {
+    for (VM vm : vms) {
+      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    }
+  }
+  PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();
 
   final String name = "Portfolios";
 
@@ -98,7 +94,7 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
-    
+    setCacheInVMs(vm0,vm1,vm2,vm3);
     List vmList = new LinkedList();
     vmList.add(vm1);
     vmList.add(vm2);
@@ -108,7 +104,7 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Creating Accessor node on VM0");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRAccessorCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Successfully Created Accessor node on VM0");
@@ -117,11 +113,11 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Creating PR's across all VM1 , VM2, VM3");
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     vm2.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     
     
     LogWriterUtils.getLogWriter()
@@ -133,7 +129,7 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Creating Local Region on VM0");
     vm0.invoke(PRQHelp
-        .getCacheSerializableRunnableForLocalRegionCreation(localName));
+        .getCacheSerializableRunnableForLocalRegionCreation(localName, PortfolioData.class));
     LogWriterUtils.getLogWriter()
         .info(
             "PRQueryRegionDestroyedDUnitTest#testPRWithRegionDestroyInOneDatastoreWithDelay: Successfully Created Local Region on VM0");
@@ -141,7 +137,7 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
     // Generating portfolio object array to be populated across the PR's & Local
     // Regions
 
-    final PortfolioData[] portfolio = PRQHelp.createPortfolioData(cnt, cntDest);
+    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
  
 
     // Putting the data into the accessor node
@@ -192,7 +188,7 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
       int k = (random.nextInt(vmList.size()));
       
       ((VM)(vmList.get(k))).invoke(PRQHelp.getCacheSerializableRunnableForRegionClose(
-          name, redundancy));
+          name, redundancy, PortfolioData.class));
     
     
       ThreadUtils.join(async0, 30 * 1000);
