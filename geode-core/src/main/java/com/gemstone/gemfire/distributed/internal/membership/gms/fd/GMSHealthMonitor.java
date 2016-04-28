@@ -519,7 +519,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     catch (IOException e) {
       // this is expected if it is a connection-timeout or other failure
       // to connect
-    } 
+    }
+    catch (IllegalStateException e) {
+      if (!isStopping) {
+        logger.trace("Unexpected exception", e);
+      }
+    }
     finally {
       try {
         if (clientSocket != null) {
