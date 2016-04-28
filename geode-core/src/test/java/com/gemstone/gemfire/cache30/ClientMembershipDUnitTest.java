@@ -81,23 +81,23 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
   private void waitForAcceptsInProgressToBe(final int target)
       throws Exception {
-    WaitCriterion ev = new WaitCriterion() {
-      String excuse;
-
-      public boolean done() {
-        int actual = getAcceptsInProgress();
-        if (actual == getAcceptsInProgress()) {
-          return true;
-        }
-        excuse = "accepts in progress (" + actual + ") never became " + target;
-        return false;
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Awaitility.await().pollInterval(200, TimeUnit.MILLISECONDS).atMost(60, TimeUnit.SECONDS)
+//    WaitCriterion ev = new WaitCriterion() {
+//      String excuse;
+//
+//      public boolean done() {
+//        int actual = getAcceptsInProgress();
+//        if (actual == getAcceptsInProgress()) {
+//          return true;
+//        }
+//        excuse = "accepts in progress (" + actual + ") never became " + target;
+//        return false;
+//      }
+//
+//      public String description() {
+//        return excuse;
+//      }
+//    };
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100,TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
         .until(() -> {
           int actual = getAcceptsInProgress();
           if (actual == getAcceptsInProgress()) {
