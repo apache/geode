@@ -41,7 +41,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -93,22 +92,12 @@ import com.gemstone.gemfire.cache.TransactionDataNotColocatedException;
 import com.gemstone.gemfire.cache.TransactionDataRebalancedException;
 import com.gemstone.gemfire.cache.TransactionException;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueStats;
 import com.gemstone.gemfire.cache.execute.EmtpyRegionFunctionException;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreFactoryImpl;
-import com.gemstone.gemfire.cache.hdfs.internal.hoplog.CompactionStatus;
-import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSFlushQueueFunction;
-import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSForceCompactionArgs;
-import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSForceCompactionFunction;
-import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSForceCompactionResultCollector;
-import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSLastCompactionTimeFunction;
-import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HDFSRegionDirector;
-import com.gemstone.gemfire.cache.hdfs.internal.hoplog.HoplogOrganizer;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
 import com.gemstone.gemfire.cache.partition.PartitionNotAvailableException;
 import com.gemstone.gemfire.cache.query.FunctionDomainException;
@@ -224,7 +213,6 @@ import com.gemstone.gemfire.internal.cache.partitioned.PutAllPRMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.PutMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.PutMessage.PutResult;
 import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor;
-import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor.BucketVisitor;
 import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
 import com.gemstone.gemfire.internal.cache.partitioned.RemoveAllPRMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.RemoveIndexesMessage;
@@ -256,7 +244,6 @@ import com.gemstone.gemfire.internal.offheap.annotations.Released;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.sequencelog.RegionLogger;
 import com.gemstone.gemfire.internal.util.TransformUtils;
-import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
 import com.gemstone.gemfire.i18n.StringId;
 
@@ -708,16 +695,8 @@ public class PartitionedRegion extends LocalRegion implements
   private final PartitionListener[] partitionListeners;
 
   private boolean isShadowPR = false;
-  private boolean isShadowPRForHDFS = false;
-  
+
   private AbstractGatewaySender parallelGatewaySender = null;
-  
-  private final ThreadLocal<Boolean> queryHDFS = new ThreadLocal<Boolean>() {
-    @Override
-    protected Boolean initialValue() {
-      return false;
-    }
-  };
   
   public PartitionedRegion(String regionname, RegionAttributes ra,
       LocalRegion parentRegion, GemFireCacheImpl cache,
@@ -738,12 +717,6 @@ public class PartitionedRegion extends LocalRegion implements
     // (which prevents pridmap cleanup).
     cache.getDistributedSystem().addDisconnectListener(dsPRIdCleanUpListener);
     
-    // add an async queue for the region if the store name is not null. 
-    if (this.getHDFSStoreName() != null) {
-      String eventQueueName = getHDFSEventQueueName();
-      super.addAsyncEventQueueId(eventQueueName);
-    }
-
     // this.userScope = ra.getScope();
     this.partitionAttributes = ra.getPartitionAttributes();
     this.localMaxMemory = this.partitionAttributes.getLocalMaxMemory();
@@ -822,8 +795,6 @@ public class PartitionedRegion extends LocalRegion implements
     if (internalRegionArgs.isUsedForParallelGatewaySenderQueue()) {
       this.isShadowPR = true;
       this.parallelGatewaySender = internalRegionArgs.getParallelGatewaySender();
-      if (internalRegionArgs.isUsedForHDFSParallelGatewaySenderQueue())
-        this.isShadowPRForHDFS = true;
     }
     
     
@@ -867,38 +838,10 @@ public class PartitionedRegion extends LocalRegion implements
     });
   }
 
-  @Override
-  public final boolean isHDFSRegion() {
-    return this.getHDFSStoreName() != null;
-  }
-
-  @Override
-  public final boolean isHDFSReadWriteRegion() {
-    return isHDFSRegion() && !getHDFSWriteOnly();
-  }
-
-  @Override
-  protected final boolean isHDFSWriteOnly() {
-    return isHDFSRegion() && getHDFSWriteOnly();
-  }
-
-  public final void setQueryHDFS(boolean includeHDFS) {
-    queryHDFS.set(includeHDFS);
-  }
-
-  @Override
-  public final boolean includeHDFSResults() {
-    return queryHDFS.get();
-  }
-
   public final boolean isShadowPR() {
     return isShadowPR;
   }
 
-  public final boolean isShadowPRForHDFS() {
-    return isShadowPRForHDFS;
-  }
-  
   public AbstractGatewaySender getParallelGatewaySender() {
     return parallelGatewaySender;
   }
@@ -1664,7 +1607,7 @@ public class PartitionedRegion extends LocalRegion implements
       try {
         final boolean loc = (this.localMaxMemory > 0) && retryNode.equals(getMyId());
         if (loc) {
-          ret = this.dataStore.getEntryLocally(bucketId, key, access, allowTombstones, true);
+          ret = this.dataStore.getEntryLocally(bucketId, key, access, allowTombstones);
         } else {
           ret = getEntryRemotely(retryNode, bucketIdInt, key, access, allowTombstones);
           // TODO:Suranjan&Yogesh : there should be better way than this one
@@ -2123,8 +2066,7 @@ public class PartitionedRegion extends LocalRegion implements
           bucketStorageAssigned=false;
           // if this is a Delta update, then throw exception since the key doesn't
           // exist if there is no bucket for it yet
-          // For HDFS region, we will recover key, so allow bucket creation
-          if (!this.dataPolicy.withHDFS() && event.hasDelta()) {
+          if (event.hasDelta()) {
             throw new EntryNotFoundException(LocalizedStrings.
               PartitionedRegion_CANNOT_APPLY_A_DELTA_WITHOUT_EXISTING_ENTRY
                 .toLocalizedString());
@@ -3319,9 +3261,9 @@ public class PartitionedRegion extends LocalRegion implements
    */
    @Override
   public Object get(Object key, Object aCallbackArgument,
-      boolean generateCallbacks, boolean disableCopyOnRead, boolean preferCD,
-      ClientProxyMembershipID requestingClient,
-      EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws TimeoutException, CacheLoaderException
+                    boolean generateCallbacks, boolean disableCopyOnRead, boolean preferCD,
+                    ClientProxyMembershipID requestingClient,
+                    EntryEventImpl clientEvent, boolean returnTombstones) throws TimeoutException, CacheLoaderException
   {
     validateKey(key);
     validateCallbackArg(aCallbackArgument);
@@ -3335,7 +3277,7 @@ public class PartitionedRegion extends LocalRegion implements
       // if scope is local and there is no loader, then
       // don't go further to try and get value
       Object value = getDataView().findObject(getKeyInfo(key, aCallbackArgument), this, true/*isCreate*/, generateCallbacks,
-                                      null /*no local value*/, disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones, allowReadFromHDFS);
+                                      null /*no local value*/, disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
       if (value != null && !Token.isInvalid(value)) {
         miss = false;
       }
@@ -3381,7 +3323,7 @@ public class PartitionedRegion extends LocalRegion implements
     if (primary == null) {
       return null;
     }
-    if (isTX() || this.hdfsStoreName != null) {
+    if (isTX()) {
       return getNodeForBucketWrite(bucketId, null);
     }
     InternalDistributedMember result =  getRegionAdvisor().getPreferredNode(bucketId);
@@ -3395,7 +3337,7 @@ public class PartitionedRegion extends LocalRegion implements
    */
   private InternalDistributedMember getNodeForBucketReadOrLoad(int bucketId) {
     InternalDistributedMember targetNode;
-    if (!this.haveCacheLoader && (this.hdfsStoreName == null)) {
+    if (!this.haveCacheLoader) {
       targetNode = getNodeForBucketRead(bucketId);
     }
     else {
@@ -3528,9 +3470,16 @@ public class PartitionedRegion extends LocalRegion implements
   }
 
   @Override
-  protected Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate,
-      TXStateInterface tx, boolean generateCallbacks, Object localValue, boolean disableCopyOnRead, boolean preferCD, ClientProxyMembershipID requestingClient,
-      EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS)
+  protected Object findObjectInSystem(KeyInfo keyInfo,
+                                      boolean isCreate,
+                                      TXStateInterface tx,
+                                      boolean generateCallbacks,
+                                      Object localValue,
+                                      boolean disableCopyOnRead,
+                                      boolean preferCD,
+                                      ClientProxyMembershipID requestingClient,
+                                      EntryEventImpl clientEvent,
+                                      boolean returnTombstones)
       throws CacheLoaderException, TimeoutException
   {
     Object obj = null;
@@ -3566,7 +3515,7 @@ public class PartitionedRegion extends LocalRegion implements
         return null;
       }
       
-      obj = getFromBucket(targetNode, bucketId, key, aCallbackArgument, disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones, allowRetry, allowReadFromHDFS);
+      obj = getFromBucket(targetNode, bucketId, key, aCallbackArgument, disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones, allowRetry);
     }
     finally {
       this.prStats.endGet(startTime);
@@ -4149,15 +4098,22 @@ public class PartitionedRegion extends LocalRegion implements
 
   /**
    * no docs
-   * @param preferCD 
+   * @param preferCD
    * @param requestingClient the client requesting the object, or null if not from a client
    * @param clientEvent TODO
    * @param returnTombstones TODO
    * @param allowRetry if false then do not retry
    */
   private Object getFromBucket(final InternalDistributedMember targetNode,
-      int bucketId, final Object key, final Object aCallbackArgument,
-      boolean disableCopyOnRead, boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowRetry, boolean allowReadFromHDFS) {
+                               int bucketId,
+                               final Object key,
+                               final Object aCallbackArgument,
+                               boolean disableCopyOnRead,
+                               boolean preferCD,
+                               ClientProxyMembershipID requestingClient,
+                               EntryEventImpl clientEvent,
+                               boolean returnTombstones,
+                               boolean allowRetry) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     
     final int retryAttempts = calcRetry();
@@ -4187,7 +4143,7 @@ public class PartitionedRegion extends LocalRegion implements
       try {
         if (isLocal) {
           obj = this.dataStore.getLocally(bucketId, key, aCallbackArgument,
-              disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones, false, allowReadFromHDFS);
+              disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones, false);
         }
         else {
             if (localCacheEnabled && null != (obj = localCacheGet(key))) { // OFFHEAP: copy into heap cd; TODO optimize for preferCD case
@@ -4196,14 +4152,14 @@ public class PartitionedRegion extends LocalRegion implements
               }
               return obj;
             }
-            else if (this.haveCacheLoader || this.hdfsStoreName != null) {
+            else if (this.haveCacheLoader) {
               // If the region has a cache loader, 
               // the target node is the primary server of the bucket. But, if the 
               // value can be found in a local bucket, we should first try there. 
 
               /* MergeGemXDHDFSToGFE -readoing from local bucket was disabled in GemXD*/
 			  if (null != ( obj = getFromLocalBucket(bucketId, key, aCallbackArgument,
-                  disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones, allowReadFromHDFS))) {
+                  disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones))) {
                 return obj;
               } 
             }
@@ -4211,7 +4167,7 @@ public class PartitionedRegion extends LocalRegion implements
           //  Test hook
           if (((LocalRegion)this).isTest())
             ((LocalRegion)this).incCountNotFoundInLocal();
-          obj = getRemotely(retryNode, bucketId, key, aCallbackArgument, preferCD, requestingClient, clientEvent, returnTombstones, allowReadFromHDFS);
+          obj = getRemotely(retryNode, bucketId, key, aCallbackArgument, preferCD, requestingClient, clientEvent, returnTombstones);
  
           // TODO:Suranjan&Yogesh : there should be better way than this one
           String name = Thread.currentThread().getName();
@@ -4309,9 +4265,9 @@ public class PartitionedRegion extends LocalRegion implements
    *   
    */
   public Object getFromLocalBucket(int bucketId, final Object key,
-		final Object aCallbackArgument, boolean disableCopyOnRead,
-		boolean preferCD, ClientProxyMembershipID requestingClient,
-		EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS)
+                                   final Object aCallbackArgument, boolean disableCopyOnRead,
+                                   boolean preferCD, ClientProxyMembershipID requestingClient,
+                                   EntryEventImpl clientEvent, boolean returnTombstones)
 		throws ForceReattemptException, PRLocallyDestroyedException {
     Object obj;
     // try reading locally. 
@@ -4320,7 +4276,7 @@ public class PartitionedRegion extends LocalRegion implements
       return null; // fixes 51657
     }
     if (readNode.equals(getMyId()) && null != ( obj = this.dataStore.getLocally(bucketId, key, aCallbackArgument,
-      disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones, true, allowReadFromHDFS))) {
+      disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones, true))) {
 	  if (logger.isTraceEnabled()) {
             logger.trace("getFromBucket: Getting key {} ({}) locally - success", key, key.hashCode());
 	  }
@@ -5116,7 +5072,13 @@ public class PartitionedRegion extends LocalRegion implements
    *                 if the peer is no longer available
    */
   public Object getRemotely(InternalDistributedMember targetNode,
-      int bucketId, final Object key, final Object aCallbackArgument, boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws PrimaryBucketException,
+                            int bucketId,
+                            final Object key,
+                            final Object aCallbackArgument,
+                            boolean preferCD,
+                            ClientProxyMembershipID requestingClient,
+                            EntryEventImpl clientEvent,
+                            boolean returnTombstones) throws PrimaryBucketException,
       ForceReattemptException {
     Object value;
     if (logger.isDebugEnabled()) {
@@ -5124,7 +5086,7 @@ public class PartitionedRegion extends LocalRegion implements
           getPRId(), BUCKET_ID_SEPARATOR, bucketId, key);
     }
     GetResponse response = GetMessage.send(targetNode, this, key,
-        aCallbackArgument, requestingClient, returnTombstones, allowReadFromHDFS);
+        aCallbackArgument, requestingClient, returnTombstones);
     this.prStats.incPartitionMessagesSent();
     value = response.waitForResponse(preferCD);
     if (clientEvent != null) {
@@ -7078,9 +7040,6 @@ public class PartitionedRegion extends LocalRegion implements
   public int entryCount(Set<Integer> buckets,
       boolean estimate) {
     Map<Integer, SizeEntry> bucketSizes = null;
- 	if (isHDFSReadWriteRegion() && (includeHDFSResults() || estimate)) {
-      bucketSizes = getSizeForHDFS( buckets, estimate);
-	} else {
     if (buckets != null) {
       if (this.dataStore != null) {
         List<Integer> list = new ArrayList<Integer>();	
@@ -7112,7 +7071,6 @@ public class PartitionedRegion extends LocalRegion implements
         }
       }
     }
- 	}
 
     int size = 0;
     if (bucketSizes != null) {
@@ -7135,81 +7093,7 @@ public class PartitionedRegion extends LocalRegion implements
       return 0;
     }
   }
-  private Map<Integer, SizeEntry> getSizeForHDFS(final Set<Integer> buckets, boolean estimate) {
-    // figure out which buckets to include
-    Map<Integer, SizeEntry> bucketSizes = new HashMap<Integer, SizeEntry>();
-    getRegionAdvisor().accept(new BucketVisitor<Map<Integer, SizeEntry>>() {
-      @Override
-      public boolean visit(RegionAdvisor advisor, ProxyBucketRegion pbr,
-          Map<Integer, SizeEntry> map) {
-        if (buckets == null || buckets.contains(pbr.getBucketId())) {
-          map.put(pbr.getBucketId(), null);
-          // ensure that the bucket has been created
-          pbr.getPartitionedRegion().getOrCreateNodeForBucketWrite(pbr.getBucketId(), null);
-        }
-        return true;
-      }
-    }, bucketSizes);
 
-    RetryTimeKeeper retry = new RetryTimeKeeper(retryTimeout);
-
-    while (true) {
-      // get the size from local buckets
-      if (dataStore != null) {
-        Map<Integer, SizeEntry> localSizes;
-        if (estimate) {
-          localSizes = dataStore.getSizeEstimateForLocalPrimaryBuckets();
-        } else {
-          localSizes = dataStore.getSizeForLocalPrimaryBuckets();
-        }
-        for (Map.Entry<Integer, SizeEntry> me : localSizes.entrySet()) {
-          if (bucketSizes.containsKey(me.getKey())) {
-            bucketSizes.put(me.getKey(), me.getValue());
-          }
-        }
-      }
-      // all done
-      int count = 0;
-      Iterator it = bucketSizes.values().iterator();
-      while (it.hasNext()) {
-        if (it.next() != null) count++;
-      }
-      if (bucketSizes.size() == count) {
-        return bucketSizes;
-      }
-      
-      Set<InternalDistributedMember> remotes = getRegionAdvisor().adviseDataStore(true);
-      remotes.remove(getMyId());
-      
-      // collect remote sizes
-      if (!remotes.isEmpty()) {
-        Map<Integer, SizeEntry> remoteSizes = new HashMap<Integer, PartitionedRegion.SizeEntry>();
-        try {
-          remoteSizes = getSizeRemotely(remotes, estimate);
-        } catch (ReplyException e) {
-          // Remote member will never throw ForceReattemptException or
-          // PrimaryBucketException, so any exception on the remote member
-          // should be re-thrown
-          e.handleAsUnexpected();
-        }
-        for (Map.Entry<Integer, SizeEntry> me : remoteSizes.entrySet()) {
-          Integer k = me.getKey();
-          if (bucketSizes.containsKey(k) && me.getValue().isPrimary()) {
-            bucketSizes.put(k, me.getValue());
-          }
-        }
-      }
-      
-      if (retry.overMaximum()) {
-        checkReadiness();
-        PRHARedundancyProvider.timedOut(this, null, null, "calculate size", retry.getRetryTime());
-      }
-      
-      // throttle subsequent attempts
-      retry.waitForBucketsRecovery();
-    }
-  }
-  
   /**
    * This method gets a PartitionServerSocketConnection to targetNode and sends
    * size request to the node. It returns size of all the buckets "primarily"
@@ -7607,9 +7491,7 @@ public class PartitionedRegion extends LocalRegion implements
       .append("; isClosed=").append(this.isClosed)
       .append("; retryTimeout=").append(this.retryTimeout)
       .append("; serialNumber=").append(getSerialNumber())
-	  .append("; hdfsStoreName=").append(getHDFSStoreName())
-      .append("; hdfsWriteOnly=").append(getHDFSWriteOnly())
-      
+
       .append("; partition attributes=").append(getPartitionAttributes().toString())
       .append("; on VM ").append(getMyId())
       .append("]")
@@ -7752,18 +7634,6 @@ public class PartitionedRegion extends LocalRegion implements
   @Override
   public void destroyRegion(Object aCallbackArgument)
       throws CacheWriterException, TimeoutException {
-    //For HDFS regions, we need a data store
-    //to do the global destroy so that it can delete
-    //the data from HDFS as well.
-    if(!isDataStore() && this.dataPolicy.withHDFS()) {
-      if(destroyOnDataStore(aCallbackArgument)) {
-        //If we were able to find a data store to do the destroy,
-        //stop here.
-        //otherwise go ahead and destroy the region from this member
-        return;
-      }
-    }
-
     checkForColocatedChildren();
     getDataView().checkSupportsRegionDestroy();
     checkForLimitedOrNoAccess();
@@ -7811,7 +7681,6 @@ public class PartitionedRegion extends LocalRegion implements
 
     boolean keepWaiting = true;
 
-    AsyncEventQueueImpl hdfsQueue = getHDFSEventQueue();
     while(true) {
       List<String> pausedSenders = new ArrayList<String>();
       List<ConcurrentParallelGatewaySenderQueue> parallelQueues = new ArrayList<ConcurrentParallelGatewaySenderQueue>();
@@ -7928,11 +7797,6 @@ public class PartitionedRegion extends LocalRegion implements
           keepWaiting = false;
         }
       }
-    }
-    
-    if(hdfsQueue != null) {
-      hdfsQueue.destroy();
-      cache.removeAsyncEventQueue(hdfsQueue);
     }
   }
         
@@ -8114,9 +7978,6 @@ public class PartitionedRegion extends LocalRegion implements
     final boolean isClose = event.getOperation().isClose();
     destroyPartitionedRegionLocally(!isClose);
     destroyCleanUp(event, serials);
-	if(!isClose) {
-      destroyHDFSData();
-    }
     return true;
   }
 
@@ -8408,8 +8269,6 @@ public class PartitionedRegion extends LocalRegion implements
         }
       }
     }
-    
-    HDFSRegionDirector.getInstance().clear(getFullPath());
     
     RegionLogger.logDestroy(getName(), cache.getMyId(), null, op.isClose());
   }
@@ -11055,11 +10914,6 @@ public class PartitionedRegion extends LocalRegion implements
         }
       }
       
-      //hoplogs - pause HDFS dispatcher while we 
-      //clear the buckets to avoid missing some files
-      //during the clear
-      pauseHDFSDispatcher();
-
       try {
         // now clear the bucket regions; we go through the primary bucket
         // regions so there is distribution for every bucket but that
@@ -11075,7 +10929,6 @@ public class PartitionedRegion extends LocalRegion implements
           }
         }
       } finally {
-        resumeHDFSDispatcher();
         // release the bucket locks
         for (BucketRegion br : lockedRegions) {
           try {
@@ -11091,247 +10944,6 @@ public class PartitionedRegion extends LocalRegion implements
     }
     
   }
-  
-  /**Destroy all data in HDFS, if this region is using HDFS persistence.*/
-  private void destroyHDFSData() {
-    if(getHDFSStoreName() == null) {
-      return;
-    }
-    
-    try {
-      hdfsManager.destroyData();
-    } catch (IOException e) {
-      logger.warn(LocalizedStrings.HOPLOG_UNABLE_TO_DELETE_HDFS_DATA, e);
-    }
-  }
-
-  private void pauseHDFSDispatcher() {
-    if(!isHDFSRegion()) {
-      return;
-    }
-    AbstractGatewaySenderEventProcessor eventProcessor = getHDFSEventProcessor();
-    if (eventProcessor == null) return;
-    eventProcessor.pauseDispatching();
-    eventProcessor.waitForDispatcherToPause();
-  }
-  
-  /**
-   * Get the statistics for the HDFS event queue associated with this region,
-   * if any
-   */
-  public AsyncEventQueueStats getHDFSEventQueueStats() {
-    AsyncEventQueueImpl asyncQ = getHDFSEventQueue();
-    if(asyncQ == null) {
-      return null;
-    }
-    return asyncQ.getStatistics();
-  }
-  
-  protected AbstractGatewaySenderEventProcessor getHDFSEventProcessor() {
-    final AsyncEventQueueImpl asyncQ = getHDFSEventQueue();
-    final AbstractGatewaySender gatewaySender = (AbstractGatewaySender)asyncQ.getSender();
-    AbstractGatewaySenderEventProcessor eventProcessor = gatewaySender.getEventProcessor();
-    return eventProcessor;
-  }
-
-  public AsyncEventQueueImpl getHDFSEventQueue() {
-    String asyncQId = getHDFSEventQueueName();
-    if(asyncQId == null) {
-      return null;
-    }
-    final AsyncEventQueueImpl asyncQ =  (AsyncEventQueueImpl)this.getCache().getAsyncEventQueue(asyncQId);
-    return asyncQ;
-  }
-  
-  private void resumeHDFSDispatcher() {
-    if(!isHDFSRegion()) {
-      return;
-    }
-    AbstractGatewaySenderEventProcessor eventProcessor = getHDFSEventProcessor();
-    if (eventProcessor == null) return;
-    eventProcessor.resumeDispatching();
-  }
-
-  protected String getHDFSEventQueueName() {
-    if (!this.getDataPolicy().withHDFS()) return null;
-    String colocatedWith = this.getPartitionAttributes().getColocatedWith();
-    String eventQueueName;
-    if (colocatedWith != null) {
-      PartitionedRegion leader = ColocationHelper.getLeaderRegionName(this);
-      eventQueueName = HDFSStoreFactoryImpl.getEventQueueName(leader
-          .getFullPath());
-    }
-    else {
-      eventQueueName = HDFSStoreFactoryImpl.getEventQueueName(getFullPath());
-    }
-    return eventQueueName;
-  }
-
-  /**
-   * schedules compaction on all members where this region is hosted.
-   * 
-   * @param isMajor
-   *          true for major compaction
-   * @param maxWaitTime
-   *          time to wait for the operation to complete, 0 will wait forever
-   */
-  @Override
-  public void forceHDFSCompaction(boolean isMajor, Integer maxWaitTime) {
-    if (!this.isHDFSReadWriteRegion()) {
-      if (this.isHDFSRegion()) {
-        throw new UnsupportedOperationException(
-            LocalizedStrings.HOPLOG_CONFIGURED_AS_WRITEONLY
-                .toLocalizedString(getName()));
-      }
-      throw new UnsupportedOperationException(
-          LocalizedStrings.HOPLOG_DOES_NOT_USE_HDFSSTORE
-              .toLocalizedString(getName()));
-    }
-    // send request to remote data stores
-    long start = System.currentTimeMillis();
-    int waitTime = maxWaitTime * 1000;
-    HDFSForceCompactionArgs args = new HDFSForceCompactionArgs(getRegionAdvisor().getBucketSet(), isMajor, waitTime);
-    HDFSForceCompactionResultCollector rc = new HDFSForceCompactionResultCollector();
-    AbstractExecution execution = (AbstractExecution) FunctionService.onRegion(this).withArgs(args).withCollector(rc);
-    execution.setWaitOnExceptionFlag(true); // wait for all exceptions
-    if (logger.isDebugEnabled()) {
-      logger.debug("HDFS: ForceCompat invoking function with arguments "+args);
-    }
-    execution.execute(HDFSForceCompactionFunction.ID);
-    List<CompactionStatus> result = rc.getResult();
-    Set<Integer> successfulBuckets = rc.getSuccessfulBucketIds();
-    if (rc.shouldRetry()) {
-      int retries = 0;
-      while (retries < HDFSForceCompactionFunction.FORCE_COMPACTION_MAX_RETRIES) {
-        waitTime -= System.currentTimeMillis() - start;
-        if (maxWaitTime > 0 && waitTime < 0) {
-          break;
-        }
-        start = System.currentTimeMillis();
-        retries++;
-        Set<Integer> retryBuckets = new HashSet<Integer>(getRegionAdvisor().getBucketSet());
-        retryBuckets.removeAll(successfulBuckets);
-        
-        for (int bucketId : retryBuckets) {
-          getNodeForBucketWrite(bucketId, new PartitionedRegion.RetryTimeKeeper(waitTime));
-          long now = System.currentTimeMillis();
-          waitTime -= now - start;
-          start = now;
-        }
-        
-        args = new HDFSForceCompactionArgs(retryBuckets, isMajor, waitTime);
-        rc = new HDFSForceCompactionResultCollector();
-        execution = (AbstractExecution) FunctionService.onRegion(this).withArgs(args).withCollector(rc);
-        execution.setWaitOnExceptionFlag(true); // wait for all exceptions
-        if (logger.isDebugEnabled()) {
-          logger.debug("HDFS: ForceCompat re-invoking function with arguments "+args+" filter:"+retryBuckets);
-        }
-        execution.execute(HDFSForceCompactionFunction.ID);
-        result = rc.getResult();
-        successfulBuckets.addAll(rc.getSuccessfulBucketIds());
-      }
-    }
-    if (successfulBuckets.size() != getRegionAdvisor().getBucketSet().size()) {
-      checkReadiness();
-      Set<Integer> uncessfulBuckets = new HashSet<Integer>(getRegionAdvisor().getBucketSet());
-      uncessfulBuckets.removeAll(successfulBuckets);
-      throw new FunctionException("Could not run compaction on following buckets:"+uncessfulBuckets);
-    }
-  }
-
-  /**
-   * Schedules compaction on local buckets
-   * @param buckets the set of buckets to compact
-   * @param isMajor true for major compaction
-   * @param time TODO use this
-   * @return a list of futures for the scheduled compaction tasks
-   */
-  public List<Future<CompactionStatus>> forceLocalHDFSCompaction(Set<Integer> buckets, boolean isMajor, long time) {
-    List<Future<CompactionStatus>> futures = new ArrayList<Future<CompactionStatus>>();
-    if (!isDataStore() || hdfsManager == null || buckets == null || buckets.isEmpty()) {
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "HDFS: did not schedule local " + (isMajor ? "Major" : "Minor") + " compaction");
-      }
-      // nothing to do
-      return futures;
-    }
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          "HDFS: scheduling local " + (isMajor ? "Major" : "Minor") + " compaction for buckets:"+buckets);
-    }
-    Collection<HoplogOrganizer> organizers = hdfsManager.getBucketOrganizers(buckets);
-    
-    for (HoplogOrganizer hoplogOrganizer : organizers) {
-      Future<CompactionStatus> f = hoplogOrganizer.forceCompaction(isMajor);
-      futures.add(f);
-    }
-    return futures;
-  }
-  
-  @Override
-  public void flushHDFSQueue(int maxWaitTime) {
-    if (!this.isHDFSRegion()) {
-      throw new UnsupportedOperationException(
-          LocalizedStrings.HOPLOG_DOES_NOT_USE_HDFSSTORE
-              .toLocalizedString(getName()));
-    }
-    HDFSFlushQueueFunction.flushQueue(this, maxWaitTime);
-  }
-  
-  @Override
-  public long lastMajorHDFSCompaction() {
-    if (!this.isHDFSReadWriteRegion()) {
-      if (this.isHDFSRegion()) {
-        throw new UnsupportedOperationException(
-            LocalizedStrings.HOPLOG_CONFIGURED_AS_WRITEONLY
-                .toLocalizedString(getName()));
-      }
-      throw new UnsupportedOperationException(
-          LocalizedStrings.HOPLOG_DOES_NOT_USE_HDFSSTORE
-              .toLocalizedString(getName()));
-    }
-    List<Long> result = (List<Long>) FunctionService.onRegion(this)
-        .execute(HDFSLastCompactionTimeFunction.ID)
-        .getResult();
-    if (logger.isDebugEnabled()) {
-      logger.debug("HDFS: Result of LastCompactionTimeFunction "+result);
-    }
-    long min = Long.MAX_VALUE;
-    for (long ts : result) {
-      if (ts !=0 && ts < min) {
-        min = ts;
-      }
-    }
-    min = min == Long.MAX_VALUE ? 0 : min;
-    return min;
-  }
-
-  public long lastLocalMajorHDFSCompaction() {
-    if (!isDataStore() || hdfsManager == null) {
-      // nothing to do
-      return 0;
-    }
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          "HDFS: getting local Major compaction time");
-    }
-    Collection<HoplogOrganizer> organizers = hdfsManager.getBucketOrganizers();
-    long minTS = Long.MAX_VALUE;
-    for (HoplogOrganizer hoplogOrganizer : organizers) {
-      long ts = hoplogOrganizer.getLastMajorCompactionTimestamp();
-      if (ts !=0 && ts < minTS) {
-        minTS = ts;
-      }
-    }
-    minTS = minTS == Long.MAX_VALUE ? 0 : minTS;
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          "HDFS: local Major compaction time: "+minTS);
-    }
-    return minTS;
-  }
-
 
   public void shadowPRWaitForBucketRecovery() {
     assert this.isShadowPR();

@@ -264,7 +264,7 @@ public class WanCommandsController extends AbstractCommandsController {
                                     @RequestParam(value = CliStrings.RESUME_GATEWAYSENDER__GROUP, required = false) final String[] groups,
                                     @RequestParam(value = CliStrings.RESUME_GATEWAYSENDER__MEMBER, required = false) final String[] members)
   {
-    CommandStringBuilder command = new CommandStringBuilder(CliStrings.RESUME_GATEWAYSENDER__ID);
+    CommandStringBuilder command = new CommandStringBuilder(CliStrings.RESUME_GATEWAYSENDER);
 
     command.addOption(CliStrings.RESUME_GATEWAYSENDER__ID, decode(gatewaySenderId));
 

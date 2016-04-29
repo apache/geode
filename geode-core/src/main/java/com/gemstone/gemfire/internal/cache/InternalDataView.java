@@ -39,17 +39,22 @@ public interface InternalDataView {
    * @param keyInfo
    * @param localRegion
    * @param updateStats
-   * @param disableCopyOnRead 
-   * @param preferCD 
+   * @param disableCopyOnRead
+   * @param preferCD
    * @param clientEvent TODO
    * @param returnTombstones TODO
    * @param retainResult if true then the result may be a retained off-heap reference
    * @return the object associated with the key
    */
   @Retained
-  Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion,
-      boolean updateStats, boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent, 
-      boolean returnTombstones, boolean allowReadFromHDFS, boolean retainResult);
+  Object getDeserializedValue(KeyInfo keyInfo,
+                              LocalRegion localRegion,
+                              boolean updateStats,
+                              boolean disableCopyOnRead,
+                              boolean preferCD,
+                              EntryEventImpl clientEvent,
+                              boolean returnTombstones,
+                              boolean retainResult);
 
   /**
    * @param event
@@ -182,8 +187,8 @@ public interface InternalDataView {
    * @return the Object associated with the key
    */
   Object findObject(KeyInfo key, LocalRegion r, boolean isCreate, boolean generateCallbacks,
-      Object value, boolean disableCopyOnRead, boolean preferCD, ClientProxyMembershipID requestingClient,
-      EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS);
+                    Object value, boolean disableCopyOnRead, boolean preferCD, ClientProxyMembershipID requestingClient,
+                    EntryEventImpl clientEvent, boolean returnTombstones);
 
 
   /**
@@ -224,13 +229,18 @@ public interface InternalDataView {
    * 
    * @param localRegion
    * @param key
-   * @param doNotLockEntry 
+   * @param doNotLockEntry
    * @param requestingClient the client that made the request, or null if not from a client
    * @param clientEvent the client event, if any
    * @param returnTombstones TODO
    * @return the serialized value from the cache
    */
-  Object getSerializedValue(LocalRegion localRegion, KeyInfo key, boolean doNotLockEntry, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws DataLocationException;
+  Object getSerializedValue(LocalRegion localRegion,
+                            KeyInfo key,
+                            boolean doNotLockEntry,
+                            ClientProxyMembershipID requestingClient,
+                            EntryEventImpl clientEvent,
+                            boolean returnTombstones) throws DataLocationException;
 
   abstract void checkSupportsRegionDestroy() throws UnsupportedOperationInTransactionException;
   abstract void checkSupportsRegionInvalidate() throws UnsupportedOperationInTransactionException;

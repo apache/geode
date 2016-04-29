@@ -23,9 +23,6 @@ import static com.gemstone.gemfire.test.dunit.Wait.*;
 import java.util.List;
 import java.util.Properties;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
@@ -47,11 +44,16 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * Dunit class for testing gemfire function commands : execute function, destroy function, list function
  */
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class FunctionCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -59,10 +61,14 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
   private static final String REGION_ONE = "RegionOne";
   private static final String REGION_TWO = "RegionTwo";
 
+  public FunctionCommandsDUnitTest(boolean useHttpOnConnect){
+    super(useHttpOnConnect);
+  }
+
   void setupWith2Regions() {
     final VM vm1 = Host.getHost(0).getVM(1);
     final VM vm2 = Host.getHost(0).getVM(2);
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     vm1.invoke(new SerializableRunnable() {
       public void run() {
@@ -130,14 +136,14 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
 
   }
 
-  public static String getMemberId() {
-    Cache cache = new FunctionCommandsDUnitTest().getCache(); // TODO: get rid of this kind of stuff
+  public String getMemberId() {
+    Cache cache = getCache();
     return cache.getDistributedSystem().getDistributedMember().getId();
   }
 
   @Test
   public void testExecuteFunctionOnRegion() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     final Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
@@ -165,7 +171,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
 
   void setupForBug51480() {
     final VM vm1 = Host.getHost(0).getVM(1);
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     vm1.invoke(new SerializableRunnable() {
       public void run() {
         final Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
@@ -246,11 +252,11 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
-    createDefaultSetup(localProps);
+    setUpJmxManagerOnVm0ThenConnect(localProps);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(() -> FunctionCommandsDUnitTest.getMemberId());
+    final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
 
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       public void run() {
@@ -277,7 +283,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
-    createDefaultSetup(localProps);
+    setUpJmxManagerOnVm0ThenConnect(localProps);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
     final VM vm1 = Host.getHost(0).getVM(1);
@@ -311,7 +317,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
-    createDefaultSetup(localProps);
+    setUpJmxManagerOnVm0ThenConnect(localProps);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RETURN_ARGS);
     FunctionService.registerFunction(function);
 
@@ -347,7 +353,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group0");
-    createDefaultSetup(localProps);
+    setUpJmxManagerOnVm0ThenConnect(localProps);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
 
@@ -403,11 +409,11 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void testDestroyOnMember() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(() -> FunctionCommandsDUnitTest.getMemberId());
+    final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
     String command = "destroy function --id=" + function.getId() + " --member=" + vm1MemberId;
     getLogWriter().info("testDestroyOnMember command=" + command);
     CommandResult cmdResult = executeCommand(command);
@@ -426,7 +432,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group0");
-    createDefaultSetup(localProps);
+    setUpJmxManagerOnVm0ThenConnect(localProps);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
 
@@ -490,7 +496,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     // Create the default setup, putting the Manager VM into Group1
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
-    createDefaultSetup(localProps);
+    setUpJmxManagerOnVm0ThenConnect(localProps);
 
     // Find no functions
     CommandResult cmdResult = executeCommand(CliStrings.LIST_FUNCTION);

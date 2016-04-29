@@ -72,9 +72,9 @@ public class VM implements Serializable {
   }
 
   /**
-   * Creates a new {@code VM} that runs on a given host with a given process 
+   * Creates a new {@code VM} that runs on a given host with a given process
    * id.
-   * 
+   *
    * TODO: change pid to reflect value from {@link ProcessUtils#identifyPid()}
    */
   public VM(final Host host, final int pid, final RemoteDUnitVMIF client) {
@@ -99,7 +99,7 @@ public class VM implements Serializable {
   }
 
   /**
-   * Invokes a static zero-arg method  with an {@link Object} or {@code void} 
+   * Invokes a static zero-arg method  with an {@link Object} or {@code void}
    * return type in this {@code VM}.  If the return type of the method is
    * {@code void}, {@code null} is returned.
    *
@@ -107,12 +107,12 @@ public class VM implements Serializable {
    *         The class on which to invoke the method
    * @param  methodName
    *         The name of the method to invoke
-   *         
+   *
    * @throws RMIException
    *         Wraps any underlying exception thrown while invoking the method in
    *         this VM
-   *         
-   * @deprecated Please use {@link #invoke(SerializableCallableIF)} instead        
+   *
+   * @deprecated Please use {@link #invoke(SerializableCallableIF)} instead
    */
   public Object invoke(final Class targetClass, final String methodName) {
     return invoke(targetClass, methodName, new Object[0]);
@@ -127,8 +127,8 @@ public class VM implements Serializable {
    *         The class on which to invoke the method
    * @param  methodName
    *         The name of the method to invoke
-   *         
-   * @deprecated Please use {@link #invoke(SerializableCallableIF)} instead       
+   *
+   * @deprecated Please use {@link #invoke(SerializableCallableIF)} instead
    */
   public AsyncInvocation invokeAsync(final Class targetClass, final String methodName) {
     return invokeAsync(targetClass, methodName, null);
@@ -146,12 +146,12 @@ public class VM implements Serializable {
    * @param  args
    *         Arguments passed to the method call (must be
    *         {@link java.io.Serializable}).
-   *         
+   *
    * @throws RMIException
    *         Wraps any underlying exception thrown while invoking the method in
    *         this {@code VM}
-   *         
-   * @deprecated Please use {@link #invoke(SerializableCallableIF)} instead        
+   *
+   * @deprecated Please use {@link #invoke(SerializableCallableIF)} instead
    */
   public Object invoke(final Class targetClass, final String methodName, final Object[] args) {
     if (!this.available) {
@@ -164,12 +164,12 @@ public class VM implements Serializable {
       return result.getResult();
 
     } else {
-      throw new RMIException(this, targetClass.getName(), methodName, result.getException(), result.getStackTrace()); 
+      throw new RMIException(this, targetClass.getName(), methodName, result.getException(), result.getStackTrace());
     }
   }
 
   /**
-   * Asynchronously invokes an instance method with an {@link Object} or 
+   * Asynchronously invokes an instance method with an {@link Object} or
    * {@code void} return type in this {@code VM}.  If the return type of the
    * method is {@code void}, {@code null} is returned.
    *
@@ -180,7 +180,7 @@ public class VM implements Serializable {
    * @param  args
    *         Arguments passed to the method call (must be {@link
    *         java.io.Serializable}).
-   *         
+   *
    * @deprecated Please use {@link #invoke(SerializableCallableIF)} instead
    */
   public AsyncInvocation invokeAsync(final Object targetObject, final String methodName, final Object[] args) {
@@ -212,7 +212,7 @@ public class VM implements Serializable {
    *
    * @param  runnable
    *         The {@code Runnable} to be run
-   *         
+   *
    * @see SerializableRunnable
    */
   public AsyncInvocation invokeAsync(final SerializableRunnableIF runnable) {
@@ -220,15 +220,15 @@ public class VM implements Serializable {
   }
   
   /**
-   * Invokes the {@code run} method of a {@link Runnable} in this VM.  Recall 
-   * that {@code run} takes no arguments and has no return value.  The 
-   * {@code Runnable} is wrapped in a {@link NamedRunnable} having the given 
+   * Invokes the {@code run} method of a {@link Runnable} in this VM.  Recall
+   * that {@code run} takes no arguments and has no return value.  The
+   * {@code Runnable} is wrapped in a {@link NamedRunnable} having the given
    * name so it shows up in DUnit logs.
    *
    * @param  runnable
    *         The {@code Runnable} to be run
-   * @param  name 
-   *         The name of the {@code Runnable}, which will be logged in DUnit 
+   * @param  name
+   *         The name of the {@code Runnable}, which will be logged in DUnit
    *         output
    *
    * @see SerializableRunnable
@@ -238,12 +238,12 @@ public class VM implements Serializable {
   }
   
   /**
-   * Invokes the {@code call} method of a {@link Callable} in this {@code VM}.  
+   * Invokes the {@code call} method of a {@link Callable} in this {@code VM}.
    *
    * @param  callable
    *         The {@code Callable} to be run
-   * @param  name 
-   *         The name of the {@code Callable}, which will be logged in dunit 
+   * @param  name
+   *         The name of the {@code Callable}, which will be logged in dunit
    *         output
    *
    * @see SerializableCallable
@@ -270,8 +270,8 @@ public class VM implements Serializable {
    *
    * @param  runnable
    *         The {@code Runnable} to be run
-   * @param  name 
-   *         The name of the {@code Runnable}, which will be logged in DUnit 
+   * @param  name
+   *         The name of the {@code Runnable}, which will be logged in DUnit
    *         output
    *
    * @see SerializableRunnable
@@ -298,8 +298,8 @@ public class VM implements Serializable {
    *
    * @param  callable
    *         The {@code Callable} to be run
-   * @param  name 
-   *         The name of the {@code Callable}, which will be logged in DUnit 
+   * @param  name
+   *         The name of the {@code Callable}, which will be logged in DUnit
    *         output
    *
    * @see SerializableCallable
@@ -309,7 +309,7 @@ public class VM implements Serializable {
   }
   
   /**
-   * Invokes the {@code call} method of a {@link Callable} in this {@code VM}. 
+   * Invokes the {@code call} method of a {@link Callable} in this {@code VM}.
    *
    * @param  callable
    *         The {@code Callable} to be run
@@ -335,7 +335,7 @@ public class VM implements Serializable {
   }
 
   /**
-   * Invokes an instance method with no arguments on an object that is 
+   * Invokes an instance method with no arguments on an object that is
    * serialized into this {@code VM}.  The return type of the method can be
    * either {@link Object} or {@code void}.  If the return type of the method
    * is {@code void}, {@code null} is returned.
@@ -348,8 +348,8 @@ public class VM implements Serializable {
    * @throws RMIException
    *         Wraps any underlying exception thrown while invoking the method in
    *         this {@code VM}
-   *         
-   * @deprecated Please use {@link #invoke(SerializableCallableIF)} instead.        
+   *
+   * @deprecated Please use {@link #invoke(SerializableCallableIF)} instead.
    */
   public Object invoke(final Object targetObject, final String methodName) {
     return invoke(targetObject, methodName, new Object[0]);

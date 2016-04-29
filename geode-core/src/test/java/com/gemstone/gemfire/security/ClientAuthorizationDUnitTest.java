@@ -48,7 +48,7 @@ import com.gemstone.gemfire.test.junit.categories.SecurityTest;
  * of all operations with both valid and invalid credentials/modules with
  * pre-operation callbacks. It also checks for authorization in case of
  * failover.
- * 
+ *
  * @since 5.5
  */
 @Category({ DistributedTest.class, SecurityTest.class })
@@ -616,12 +616,11 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
       // Perform the operation from selected client
       if (useThisVM) {
-        doOp(new Byte(opCode.toOrdinal()), currentOp.getIndices(), opFlags, expectedResult);
+        doOp(opCode, currentOp.getIndices(), opFlags, expectedResult);
 
       } else {
-        byte ordinal = opCode.toOrdinal();
         int[] indices = currentOp.getIndices();
-        clientVM.invoke(() -> ClientAuthorizationTestCase.doOp(ordinal, indices, opFlags, expectedResult));
+        clientVM.invoke(() -> ClientAuthorizationTestCase.doOp(opCode, indices, opFlags, expectedResult));
       }
     }
   }

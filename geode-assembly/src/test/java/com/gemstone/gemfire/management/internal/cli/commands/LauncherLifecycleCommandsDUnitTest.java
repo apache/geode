@@ -83,6 +83,9 @@ import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
+
 /**
  * The LauncherLifecycleCommandsDUnitTest class is a test suite of integration tests testing the contract and
  * functionality of the GemFire launcher lifecycle commands inside Gfsh.

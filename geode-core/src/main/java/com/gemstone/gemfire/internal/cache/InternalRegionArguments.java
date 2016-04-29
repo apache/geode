@@ -37,7 +37,6 @@ public final class InternalRegionArguments
   private boolean isUsedForPartitionedRegionAdmin;
   private boolean isUsedForSerialGatewaySenderQueue;
   private boolean isUsedForParallelGatewaySenderQueue;
-  private boolean isUsedForHDFSParallelGatewaySenderQueue = false;
   private int bucketRedundancy;
   private boolean isUsedForPartitionedRegionBucket;
   private RegionAdvisor partitionedRegionAdvisor;
@@ -273,26 +272,11 @@ public final class InternalRegionArguments
     this.isUsedForParallelGatewaySenderQueue = queueFlag;
     return this;
   }
-  public InternalRegionArguments setIsUsedForHDFSParallelGatewaySenderQueue(
-      boolean queueFlag) {
-    this.isUsedForHDFSParallelGatewaySenderQueue = queueFlag;
-    return this;
-  }
 
   public boolean isUsedForParallelGatewaySenderQueue() {
     return this.isUsedForParallelGatewaySenderQueue;
   }
   
-  public boolean isUsedForHDFSParallelGatewaySenderQueue() {
-    return this.isUsedForHDFSParallelGatewaySenderQueue;
-  }
-  
-  public boolean isReadWriteHDFSRegion() {
-    return isUsedForPartitionedRegionBucket()
-        && getPartitionedRegion().getHDFSStoreName() != null
-        && !getPartitionedRegion().getHDFSWriteOnly();
-  }
-
   public InternalRegionArguments setParallelGatewaySender(
       AbstractGatewaySender pgSender) {
     this.parallelGatewaySender = pgSender;

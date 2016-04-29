@@ -41,8 +41,12 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.apache.jasper.servlet.JspServlet;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -68,23 +72,13 @@ public class SessionReplicationIntegrationJUnitTest {
 
   private FilterHolder filterHolder;
 
-  private static final File tmpdir;
-
-  private static final String gemfire_log;
-
-  static {
-    // Create a per-user scratch directory
-    tmpdir = new File(System.getProperty("java.io.tmpdir"), // TODO: use junit rule TemporaryFolder
-        "gemfire_modules-" + System.getProperty("user.name"));
-    tmpdir.mkdirs();
-    tmpdir.deleteOnExit();
-
-    gemfire_log = tmpdir.getPath() +
-        System.getProperty("file.separator") + "gemfire_modules.log";
-  }
+  @Rule
+  public TemporaryFolder tmpdir = new TemporaryFolder();
 
   @Before
   public void setUp() throws Exception {
+    File gemfireLogFile = new File(tmpdir.newFolder(), "gemfire_modules.log");
+
     request = HttpTester.newRequest();
 
     tester = new MyServletTester();
@@ -92,7 +86,7 @@ public class SessionReplicationIntegrationJUnitTest {
 
     filterHolder = tester.addFilter(SessionCachingFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
     filterHolder.setInitParameter("gemfire.property.mcast-port", "0");
-    filterHolder.setInitParameter("gemfire.property.log-file", gemfire_log);
+    filterHolder.setInitParameter("gemfire.property.log-file", gemfireLogFile.getAbsolutePath());
     filterHolder.setInitParameter("cache-type", "peer-to-peer");
 
     servletHolder = tester.addServlet(BasicServlet.class, "/hello");
@@ -107,10 +101,6 @@ public class SessionReplicationIntegrationJUnitTest {
 
   @After
   public void tearDown() throws Exception {
-//    if (tester.isStarted()) {
-//      ContextManager.getInstance().removeContext(
-//          servletHolder.getServlet().getServletConfig().getServletContext());
-//    }
     tester.stop();
   }
 
@@ -1467,7 +1457,7 @@ public class SessionReplicationIntegrationJUnitTest {
     ServletHolder jspHolder = tester.addServlet(JspServlet.class, "/test/*");
     jspHolder.setInitOrder(1);
 
-    jspHolder.setInitParameter("scratchdir", tmpdir.getPath());
+    jspHolder.setInitParameter("scratchdir", tmpdir.toString());
 
     Callback c_1 = new Callback() {
       @Override

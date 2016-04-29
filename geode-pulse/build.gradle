@@ -70,6 +70,7 @@ dependencies {
 
   testCompile project(':geode-junit')
   testCompile project(':geode-core')
+  testCompile files(project(':geode-core').sourceSets.test.output)
 
   testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:' + project.'selenium.version'
   testCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'

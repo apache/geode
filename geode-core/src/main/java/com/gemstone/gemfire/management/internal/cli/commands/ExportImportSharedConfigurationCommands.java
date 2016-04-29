@@ -16,14 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -43,10 +35,21 @@ import com.gemstone.gemfire.management.internal.cli.result.FileResult;
 import com.gemstone.gemfire.management.internal.cli.result.InfoResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
-
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /****
  * Commands for the shared configuration
@@ -61,6 +64,7 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
 
   @CliCommand(value = { CliStrings.EXPORT_SHARED_CONFIG }, help = CliStrings.EXPORT_SHARED_CONFIG__HELP)
   @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.ExportImportSharedConfigurationCommands$ExportInterceptor",  readsSharedConfiguration=true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result exportSharedConfig(
       @CliOption(key = { CliStrings.EXPORT_SHARED_CONFIG__FILE}, 
       mandatory = true,
@@ -111,6 +115,7 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
 
   @CliCommand(value = { CliStrings.IMPORT_SHARED_CONFIG }, help = CliStrings.IMPORT_SHARED_CONFIG__HELP)
   @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.ExportImportSharedConfigurationCommands$ImportInterceptor", writesToSharedConfiguration=true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
   @SuppressWarnings("unchecked")
   public Result importSharedConfig(
       @CliOption(key = { CliStrings.IMPORT_SHARED_CONFIG__ZIP},

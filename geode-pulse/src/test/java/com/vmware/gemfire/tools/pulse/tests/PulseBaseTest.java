@@ -33,7 +33,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-public class PulseBaseTest extends PulseTest {
+import static com.vmware.gemfire.tools.pulse.tests.PulseAbstractTest.driver;
+
+public class PulseBaseTest {
 	WebElement element = null;
 	public static int maxWaitTime = 20;
 

@@ -40,7 +40,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.net.InetAddress;
 import java.util.List;
 
-import static com.vmware.gemfire.tools.pulse.tests.PulseTest.getPulseWarPath;
+import static com.vmware.gemfire.tools.pulse.tests.PulseAbstractTest.getPulseWarPath;
 
 /**
  *

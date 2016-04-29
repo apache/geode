@@ -16,10 +16,12 @@
  */
 package com.gemstone.gemfire.management;
 
+import static com.gemstone.gemfire.cache.operations.OperationContext.*;
+
 import java.util.Map;
 
 import com.gemstone.gemfire.distributed.DistributedMember;
-
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 
 /**
  * MBean that provides access to information and management functionality for a
@@ -133,9 +135,10 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * <td>Locator is Started in the VM</td>
  * </tr>
  * </table>
- * 
+ *
  * @since 7.0
  */
+@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
 public interface MemberMXBean {
 
   /**
@@ -159,19 +162,22 @@ public interface MemberMXBean {
    * 
    * @return A list of names of the disk stores that were compacted.
    */
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public String[] compactAllDiskStores();
   
   /**
    * Creates a Manager MBean on this member.
    * 
-   * @return True if the Manager MBean was successfully create, false otherwise.
+   * @return True if the Manager MBean was successfully created, false otherwise.
    */
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
   public boolean createManager();
   
   /**
    * Shuts down the member. This is an asynchronous call and it will 
    * return immediately without waiting for a result.
    */
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
   public void shutDownMember();
   
   /**
@@ -192,6 +198,7 @@ public interface MemberMXBean {
    * 
    * @return Result of the execution in JSON format.
    */
+  @ResourceOperation()
   String processCommand(String commandString);
   
   /**
@@ -203,6 +210,7 @@ public interface MemberMXBean {
    *          Environmental properties to use during command execution.
    * @return Result of the execution in JSON format.
    */
+  @ResourceOperation()
   String processCommand(String commandString, Map<String, String> env);
   
   /**
@@ -216,6 +224,7 @@ public interface MemberMXBean {
    *          Binary data specific to the command being executed.
    * @return Result of the execution in JSON format.
    */
+  @ResourceOperation()
   String processCommand(String commandString, Map<String, String> env, Byte[][] binaryData);
 
   /**
@@ -225,13 +234,6 @@ public interface MemberMXBean {
    *          Whether to include disk stores owned by a region.
    */
   public String[] listDiskStores(boolean includeRegionOwned);
-
-  /**
-   * 
-   * @return  list of HDFSStore's present in the Cache
-   */
-  
-  public String[] getHDFSStores();
 
   /**
    * Returns the GemFire specific properties for this member.

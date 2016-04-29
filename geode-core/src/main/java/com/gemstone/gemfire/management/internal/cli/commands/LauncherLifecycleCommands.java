@@ -16,45 +16,9 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import java.awt.Desktop;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EmptyStackException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.Query;
-import javax.management.QueryExp;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
-
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.AbstractLauncher;
 import com.gemstone.gemfire.distributed.AbstractLauncher.ServiceState;
@@ -76,7 +40,6 @@ import com.gemstone.gemfire.internal.lang.ObjectUtils;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.lang.SystemUtils;
 import com.gemstone.gemfire.internal.process.ClusterConfigurationNotAvailableException;
-import com.gemstone.gemfire.internal.process.NonBlockingProcessStreamReader;
 import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
 import com.gemstone.gemfire.internal.process.ProcessStreamReader;
 import com.gemstone.gemfire.internal.process.ProcessStreamReader.InputListener;
@@ -112,10 +75,46 @@ import com.gemstone.gemfire.management.internal.cli.util.VisualVmNotFoundExcepti
 import com.gemstone.gemfire.management.internal.configuration.domain.SharedConfigurationStatus;
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusResponse;
-
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.Query;
+import javax.management.QueryExp;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
+import java.awt.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EmptyStackException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The LauncherLifecycleCommands class encapsulates all GemFire launcher commands for GemFire tools (like starting
@@ -578,7 +577,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
         }
 
         getGfsh().setOperationInvoker(new JmxOperationInvoker(memberEndpoint.getHost(), memberEndpoint.getPort(),
-          null, null, configurationProperties));
+          null, null, configurationProperties, null));
 
         String shellAndLogMessage = CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, memberEndpoint.toString(false));
 
@@ -829,6 +828,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   @CliCommand(value=CliStrings.STOP_LOCATOR, help=CliStrings.STOP_LOCATOR__HELP)
   @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_LOCATOR, CliStrings.TOPIC_GEMFIRE_LIFECYCLE})
+  @ResourceOperation(resource= OperationContext.Resource.CLUSTER, operation = OperationContext.OperationCode.MANAGE)
   public Result stopLocator(@CliOption(key = CliStrings.STOP_LOCATOR__MEMBER,
                                        optionContext = ConverterHint.LOCATOR_MEMBER_IDNAME,
                                        unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE,
@@ -1947,6 +1947,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.STOP_SERVER, help = CliStrings.STOP_SERVER__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_SERVER, CliStrings.TOPIC_GEMFIRE_LIFECYCLE })
+  @ResourceOperation(resource= OperationContext.Resource.CLUSTER, operation = OperationContext.OperationCode.MANAGE)
   public Result stopServer(@CliOption(key = CliStrings.STOP_SERVER__MEMBER,
                                       optionContext = ConverterHint.MEMBERIDNAME,
                                       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,

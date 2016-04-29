@@ -17,6 +17,10 @@
 package com.gemstone.gemfire.management;
 
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.operations.OperationContext;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  * MBean that provides access to an {@link AsyncEventQueue}.
@@ -24,6 +28,7 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
  * @since 7.0
  * 
  */
+@ResourceOperation(resource = Resource.CLUSTER, operation = OperationContext.OperationCode.READ)
 public interface AsyncEventQueueMXBean {
 
   /**

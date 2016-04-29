@@ -193,16 +193,8 @@ public class EntryEventImpl
   /** version tag for concurrency checks */
   protected VersionTag versionTag;
 
-  /** boolean to indicate that this operation should be optimized by not fetching from HDFS*/
-  private transient boolean fetchFromHDFS = true;
-  
   private transient boolean isPutDML = false;
 
-  /** boolean to indicate that the RegionEntry for this event was loaded from HDFS*/
-  private transient boolean loadedFromHDFS= false;
-  
-  private transient boolean isCustomEviction = false;
-  
   /** boolean to indicate that the RegionEntry for this event has been evicted*/
   private transient boolean isEvicted = false;
   
@@ -658,14 +650,6 @@ public class EntryEventImpl
     return this.op.isEviction();
   }
 
-  public final boolean isCustomEviction() {
-    return this.isCustomEviction;
-  }
-  
-  public final void setCustomEviction(boolean customEvict) {
-    this.isCustomEviction = customEvict;
-  }
-  
   public final void setEvicted() {
     this.isEvicted = true;
   }
@@ -3047,13 +3031,6 @@ public class EntryEventImpl
   public boolean isOldValueOffHeap() {
     return isOffHeapReference(this.oldValue);
   }
-  public final boolean isFetchFromHDFS() {
-    return fetchFromHDFS;
-  }
-
-  public final void setFetchFromHDFS(boolean fetchFromHDFS) {
-    this.fetchFromHDFS = fetchFromHDFS;
-  }
 
   public final boolean isPutDML() {
     return this.isPutDML;
@@ -3061,13 +3038,5 @@ public class EntryEventImpl
 
   public final void setPutDML(boolean val) {
     this.isPutDML = val;
-  }
-
-  public final boolean isLoadedFromHDFS() {
-    return loadedFromHDFS;
-  }
-
-  public final void setLoadedFromHDFS(boolean loadedFromHDFS) {
-    this.loadedFromHDFS = loadedFromHDFS;
   }
 }

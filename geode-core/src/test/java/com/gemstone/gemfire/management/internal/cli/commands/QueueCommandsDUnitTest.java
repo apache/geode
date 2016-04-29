@@ -28,9 +28,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.distributed.Locator;
@@ -49,6 +46,10 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * A distributed test suite of test cases for testing the queue commands that are part of Gfsh.
@@ -56,11 +57,16 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
  * @since 8.0
  */
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class QueueCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
 
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
+
+  public QueueCommandsDUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
+  }
 
   @Override
   public final void preSetUp() throws Exception {
@@ -75,7 +81,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
 
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group0");
-    createDefaultSetup(localProps);
+    setUpJmxManagerOnVm0ThenConnect(localProps);
 
     CommandResult cmdResult = executeCommand(CliStrings.LIST_ASYNC_EVENT_QUEUES);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -285,7 +291,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
     Properties managerProps = new Properties();
     managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-    createDefaultSetup(managerProps);
+    setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);

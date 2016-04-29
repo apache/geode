@@ -137,8 +137,6 @@ public class SerialWANPropogationDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createReceiver());
     vm3.invoke(() -> WANTestBase.createReceiver());
 
-    Thread.sleep(5000);
-
     vm4.invoke(() -> WANTestBase.validateRegionSize(
         getTestMethodName() + "_RR", 1000 ));
 
@@ -384,8 +382,6 @@ public class SerialWANPropogationDUnitTest extends WANTestBase {
       e.printStackTrace();
       fail();
     }
-    //sleep for some time to let all the events propagate to remote site
-    Thread.sleep(20);
     //vm4.invoke(() -> WANTestBase.verifyQueueSize( "ln", 0 ));
     vm2.invoke(() -> WANTestBase.validateRegionSize(
         getTestMethodName() + "_RR_1", 1000 ));

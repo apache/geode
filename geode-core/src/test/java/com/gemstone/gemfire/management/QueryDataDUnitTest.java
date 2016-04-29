@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management;
 
+import static com.gemstone.gemfire.cache.query.Utils.createPortfoliosAndPositions;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -111,8 +113,6 @@ public class QueryDataDUnitTest extends ManagementTestBase {
   static String repRegionName4 = "TestRepRegion4"; // default name
   static String localRegionName = "TestLocalRegion"; // default name
 
-  private static PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper("");
-
   public static String[] queries = new String[] {
       "select * from /" + PartitionedRegionName1 + " where ID>=0",
       "Select * from /" + PartitionedRegionName1 + " r1, /" + PartitionedRegionName2 + " r2 where r1.ID = r2.ID",
@@ -203,7 +203,7 @@ public class QueryDataDUnitTest extends ManagementTestBase {
 
   public void fillValuesInRegions() {
     // Create common Portflios and NewPortfolios
-    final Portfolio[] portfolio = PRQHelp.createPortfoliosAndPositions(cntDest);
+    final Portfolio[] portfolio = createPortfoliosAndPositions(cntDest);
 
     // Fill local region
     managedNode1.invoke(getCacheSerializableRunnableForPRPuts(localRegionName, portfolio, cnt, cntDest));

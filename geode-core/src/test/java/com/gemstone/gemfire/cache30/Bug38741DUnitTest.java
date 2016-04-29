@@ -308,7 +308,7 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
             BucketRegion br = (BucketRegion) r;
             try {
               KeyInfo keyInfo = new KeyInfo(k1, null, bucketId);
-              RawValue rv = br.getSerialized(keyInfo, false, false, null, null, false, false);
+              RawValue rv = br.getSerialized(keyInfo, false, false, null, null, false);
               Object val = rv.getRawValue();
               assertTrue(val instanceof CachedDeserializable);
               CachedDeserializable cd = (CachedDeserializable)val;

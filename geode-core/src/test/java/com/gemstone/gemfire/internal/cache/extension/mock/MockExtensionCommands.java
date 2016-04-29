@@ -17,13 +17,6 @@
 
 package com.gemstone.gemfire.internal.cache.extension.mock;
 
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -39,6 +32,16 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.List;
+import java.util.Set;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  * Mock Extension gfsh commands.
@@ -78,6 +81,7 @@ public class MockExtensionCommands implements CommandMarker {
    */
   @CliCommand(value = CREATE_MOCK_REGION_EXTENSION)
   @CliMetaData(writesToSharedConfiguration = true)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result createMockRegionExtension(@CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName,
       @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(CreateMockRegionExtensionFunction.INSTANCE, true,
@@ -98,6 +102,7 @@ public class MockExtensionCommands implements CommandMarker {
    */
   @CliCommand(value = ALTER_MOCK_REGION_EXTENSION)
   @CliMetaData(writesToSharedConfiguration = true)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result alterMockRegionExtension(@CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName,
       @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(AlterMockRegionExtensionFunction.INSTANCE, true,
@@ -116,6 +121,7 @@ public class MockExtensionCommands implements CommandMarker {
    */
   @CliCommand(value = DESTROY_MOCK_REGION_EXTENSION)
   @CliMetaData(writesToSharedConfiguration = true)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result destroyMockRegionExtension(@CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName) {
     return executeFunctionOnAllMembersTabulateResultPersist(DestroyMockRegionExtensionFunction.INSTANCE, true,
         DestroyMockRegionExtensionFunction.toArgs(regionName));
@@ -132,6 +138,7 @@ public class MockExtensionCommands implements CommandMarker {
    */
   @CliCommand(value = CREATE_MOCK_CACHE_EXTENSION)
   @CliMetaData(writesToSharedConfiguration = true)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result createMockCacheExtension(@CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(CreateMockCacheExtensionFunction.INSTANCE, true, CreateMockCacheExtensionFunction.toArgs(value));
   }
@@ -146,6 +153,7 @@ public class MockExtensionCommands implements CommandMarker {
    * @since 8.1
    */
   @CliCommand(value = ALTER_MOCK_CACHE_EXTENSION)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   @CliMetaData(writesToSharedConfiguration = true)
   public Result alterMockCacheExtension(@CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(AlterMockCacheExtensionFunction.INSTANCE, true, AlterMockCacheExtensionFunction.toArgs(value));
@@ -158,6 +166,7 @@ public class MockExtensionCommands implements CommandMarker {
    * @since 8.1
    */
   @CliCommand(value = DESTROY_MOCK_CACHE_EXTENSION)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   @CliMetaData(writesToSharedConfiguration = true)
   public Result destroyMockCacheExtension() {
     return executeFunctionOnAllMembersTabulateResultPersist(DestroyMockCacheExtensionFunction.INSTANCE, false);

@@ -16,6 +16,17 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.InvalidValueException;
 import com.gemstone.gemfire.UnmodifiableException;
@@ -26,11 +37,6 @@ import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
-
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.*;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that
@@ -515,19 +521,26 @@ public abstract class AbstractDistributionConfig
 
     // special case: log-level and security-log-level attributes are String type, but the setter accepts int
     if(attName.equalsIgnoreCase(LOG_LEVEL_NAME) || attName.equalsIgnoreCase(SECURITY_LOG_LEVEL_NAME)){
-      attValue = LogWriterImpl.levelNameToCode((String)attValue);
+      if(attValue instanceof String) {
+        attValue = LogWriterImpl.levelNameToCode((String) attValue);
+      }
+    }
+
+    if (attName.startsWith(SECURITY_PREFIX_NAME)) {
+      this.setSecurity(attName,attValue.toString());
+    }
+
+    if (attName.startsWith(SSL_SYSTEM_PROPS_NAME) || attName.startsWith(SYS_PROP_NAME)) {
+      this.setSSLProperty(attName, attValue.toString());
     }
 
     Method setter = setters.get(attName);
     if (setter == null) {
-      // if we cann't find the defined setter, look for two more special cases
-      if (attName.startsWith(SECURITY_PREFIX_NAME)) {
-        this.setSecurity(attName,(String)attValue);
-        getAttSourceMap().put(attName, source);
-        return;
-      }
-      if (attName.startsWith(SSL_SYSTEM_PROPS_NAME) || attName.startsWith(SYS_PROP_NAME)) {
-        this.setSSLProperty(attName, (String) attValue);
+      // if we cann't find the defined setter, but the attributeName starts with these special characters
+      // since we already set it in the respecitive properties above, we need to set the source then return
+      if (attName.startsWith(SECURITY_PREFIX_NAME) ||
+        attName.startsWith(SSL_SYSTEM_PROPS_NAME) ||
+        attName.startsWith(SYS_PROP_NAME)) {
         getAttSourceMap().put(attName, source);
         return;
       }
@@ -1107,12 +1120,15 @@ public abstract class AbstractDistributionConfig
     
     m.put(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME,"Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
     
-    
     m.put(START_DEV_REST_API_NAME, "If true then the developer(API) REST service will be started when the cache is created. Defaults to false.");
     m.put(OFF_HEAP_MEMORY_SIZE_NAME, LocalizedStrings.AbstractDistributionConfig_OFF_HEAP_MEMORY_SIZE_0.toLocalizedString(DEFAULT_OFF_HEAP_MEMORY_SIZE));
-    dcAttDescriptions = Collections.unmodifiableMap(m);
     m.put(LOCK_MEMORY_NAME, LocalizedStrings.AbstractDistributionConfig_LOCK_MEMORY.toLocalizedString(DEFAULT_LOCK_MEMORY));
     m.put(DISTRIBUTED_TRANSACTIONS_NAME, "Flag to indicate whether all transactions including JTA should be distributed transactions.  Default is false, meaning colocated transactions.");
+
+    m.put(SHIRO_INIT_NAME, "The name of the shiro configuration file in the classpath, e.g. shiro.ini");
+
+    dcAttDescriptions = Collections.unmodifiableMap(m);
+
   }
   /**
    * Used by unit tests.

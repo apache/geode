@@ -58,31 +58,10 @@ dependencies {
   compile ('mx4j:mx4j-remote:' + project.'mx4j.version') {
     ext.optional = true;
   }
-  compile ('mx4j:mx4j-tools:' + project.'mx4j.version') { 
+  compile ('mx4j:mx4j-tools:' + project.'mx4j.version') {
     ext.optional = true;
   }
   compile ('net.java.dev.jna:jna:' + project.'jna.version')
-  provided ('org.apache.hadoop:hadoop-common:' + project.'hadoop.version') {
-    transitive=false
-  }
-  provided ('org.apache.hadoop:hadoop-annotations:' + project.'hadoop.version') {
-    transitive=false
-  }
-  provided ('org.apache.hadoop:hadoop-hdfs:' + project.'hadoop.version') {
-    transitive=false
-  }
-  provided ('org.apache.hadoop:hadoop-mapreduce-client-core:' + project.'hadoop.version') {
-    transitive=false
-  }
-  provided ('org.apache.hbase:hbase:' + project.'hbase.version') {
-    transitive=false
-  }
-
-  compile ('com.google.guava:guava:' + project.'guava.version') {
-    ext.optional = true
-  }
-  //jsr305 is included only to prevent javadoc warnings about missing annotations in the guava jar
-  provided 'com.google.code.findbugs:jsr305:' + project.'jsr305.version'
 
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
@@ -118,6 +97,8 @@ dependencies {
   compile ('org.xerial.snappy:snappy-java:' + project.'snappy-java.version') {
     ext.optional = true
   }
+
+  compile 'org.apache.shiro:shiro-core:' + project.'shiro.version'
  
   compile project(':geode-common')
   compile project(':geode-joptsimple')
@@ -131,7 +112,6 @@ dependencies {
   // External
   testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
   testRuntime 'org.apache.derby:derby:' + project.'derby.version'
-  testRuntime 'org.apache.hadoop:hadoop-auth:' + project.'hadoop.version'
   testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
   testRuntime 'commons-collections:commons-collections:' + project.'commons-collections.version'
   testRuntime 'commons-configuration:commons-configuration:' + project.'commons-configuration.version'

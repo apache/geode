@@ -162,17 +162,6 @@ public class ClusterRegionService implements PulseService {
         regionJSON.put("isEnableOffHeapMemory", VALUE_OFF);
       }
 
-      Boolean isHDFSWriteOnly = reg.isHdfsWriteOnly();
-      if (regionType.startsWith("HDFS")) {
-        if (isHDFSWriteOnly) {
-          regionJSON.put("isHDFSWriteOnly", VALUE_ON);
-        } else {
-          regionJSON.put("isHDFSWriteOnly", VALUE_OFF);
-        }
-      } else {
-        regionJSON.put("isHDFSWriteOnly", VALUE_NA);
-      }
-
       String regCompCodec = reg.getCompressionCodec();
       if (StringUtils.isNotNullNotEmptyNotWhiteSpace(regCompCodec)) {
         regionJSON.put("compressionCodec", reg.getCompressionCodec());

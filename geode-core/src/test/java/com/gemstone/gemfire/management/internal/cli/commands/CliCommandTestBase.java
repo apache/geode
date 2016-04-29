@@ -16,6 +16,20 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
@@ -27,20 +41,11 @@ import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
+import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import org.junit.runners.Parameterized;
 
 /**
  * Base class for all the CLI/gfsh command dunit tests.
@@ -49,18 +54,37 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
   private static final long serialVersionUID = 1L;
 
-  protected static final String USE_HTTP_SYSTEM_PROPERTY = "useHTTP";
-
   private ManagementService managementService;
 
   private transient HeadlessGfsh shell;
 
-  private boolean useHttpOnConnect = Boolean.getBoolean("useHTTP");
+  protected boolean useHttpOnConnect = false;
+  protected boolean enableAuth = false;
+  protected String jsonAuthorization = "cacheServer.json";
+  protected String username = "super-user";
+  protected String password = "1234567";
 
-  private int httpPort;
-  private int jmxPort;
+  protected int httpPort;
+  protected int jmxPort;
 
-  private String jmxHost;
+  protected String jmxHost;
+
+  public CliCommandTestBase(){
+    this(false);
+  }
+
+  // Junit will use the parameters to initialize the test class and run the tests with different parameters
+  public CliCommandTestBase(boolean useHttpOnConnect){
+    this.useHttpOnConnect = useHttpOnConnect;
+  }
+
+  @Parameterized.Parameters
+  public static Collection parameters() {
+    return Arrays.asList(new Object[][] {
+        { false},  // useHttpOnConnect=false,
+        { true } // useHttpOnConnect=true,
+    });
+  }
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
@@ -83,20 +107,28 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * @return the default testable GemFire shell.
    */
   @SuppressWarnings("serial")
-  protected final HeadlessGfsh createDefaultSetup(final Properties props) {
-    Object[] result = Host.getHost(0).getVM(0).invoke("create Default setup",() -> {
-      final Object[] returnValue = new Object[3];
+  protected HeadlessGfsh setUpJmxManagerOnVm0ThenConnect(final Properties props) {
+    setUpJMXManagerOnVM(0, props);
+    shellConnect();
+    return shell;
+  }
+
+  protected void setUpJMXManagerOnVM(int vm, final Properties props) {
+    Object[] result = (Object[]) Host.getHost(0).getVM(vm).invoke("setUpJmxManagerOnVm0ThenConnect", () -> {
+      final Object[] results = new Object[3];
       final Properties localProps = (props != null ? props : new Properties());
 
       try {
         jmxHost = InetAddress.getLocalHost().getHostName();
-      } catch (UnknownHostException ignore) {
+      }
+      catch (UnknownHostException ignore) {
         jmxHost = "localhost";
       }
 
       if (!localProps.containsKey(DistributionConfig.NAME_NAME)) {
         localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
       }
+
       final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
 
       jmxPort = ports[0];
@@ -108,32 +140,33 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
       localProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
       localProps.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
 
+      if (enableAuth) {
+        localProps.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME,
+          JSONAuthorization.class.getName() + ".create");
+        localProps.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
+
+        JSONAuthorization.setUpWithJsonFile(jsonAuthorization);
+      }
+
       getSystem(localProps);
       verifyManagementServiceStarted(getCache());
 
-      returnValue[0] = jmxHost;
-      returnValue[1] = jmxPort;
-      returnValue[2] = httpPort;
+      results[0] = jmxHost;
+      results[1] = jmxPort;
+      results[2] = httpPort;
 
-      return returnValue;
+      return results;
     });
 
     this.jmxHost = (String) result[0];
     this.jmxPort = (Integer) result[1];
     this.httpPort = (Integer) result[2];
-
-    return defaultShellConnect();
-  }
-
-  protected boolean useHTTPByTest() {
-    return false;
   }
 
   /**
    * Destroy all of the components created for the default setup.
    */
-  @SuppressWarnings("serial")
-  protected final void destroyDefaultSetup() {
+    protected final void destroyDefaultSetup() {
     if (this.shell != null) {
       executeCommand(shell, "exit");
       this.shell.terminate();
@@ -151,7 +184,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    * @param cache Cache to use when creating the management service
    */
   private void verifyManagementServiceStarted(Cache cache) {
-    assert (cache != null);
+    assertTrue(cache != null);
 
     this.managementService = ManagementService.getExistingManagementService(cache);
     assertNotNull(this.managementService);
@@ -184,30 +217,33 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
   }
 
   /**
-   * Connect the default shell to the default JMX server.
-   *
-   * @return The default shell.
-   */
-  private HeadlessGfsh defaultShellConnect() {
-    HeadlessGfsh shell = getDefaultShell();
-    shellConnect(this.jmxHost, this.jmxPort, this.httpPort, shell);
-    return shell;
-  }
-
-  /**
    * Connect a shell to the JMX server at the given host and port
+   *
    *
    * @param host    Host of the JMX server
    * @param jmxPort Port of the JMX server
    * @param shell   Shell to connect
    */
   protected void shellConnect(final String host, final int jmxPort, final int httpPort, HeadlessGfsh shell) {
-    assert (host != null);
-    assert (shell != null);
+    assertTrue(host != null);
+    assertTrue(shell != null);
 
+    connect(host, jmxPort, httpPort, shell);
+  }
+
+  protected CommandResult shellConnect(){
+    return connect(this.jmxHost, this.jmxPort, this.httpPort, getDefaultShell());
+  }
+
+  protected CommandResult connect(final String host, final int jmxPort, final int httpPort, HeadlessGfsh shell){
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.CONNECT);
-    String endpoint;
 
+    if(enableAuth) {
+      command.addOption(CliStrings.CONNECT__USERNAME, username);
+      command.addOption(CliStrings.CONNECT__PASSWORD, password);
+    }
+
+    String endpoint;
     if (useHttpOnConnect) {
       endpoint = "http://" + host + ":" + httpPort + "/gemfire/v1";
       command.addOption(CliStrings.CONNECT__USE_HTTP, Boolean.TRUE.toString());
@@ -216,6 +252,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
       endpoint = host + "[" + jmxPort + "]";
       command.addOption(CliStrings.CONNECT__JMX_MANAGER, endpoint);
     }
+    System.out.println(getClass().getSimpleName()+" using endpoint: "+endpoint);
 
     CommandResult result = executeCommand(shell, command.toString());
 
@@ -226,6 +263,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
     info("Successfully connected to managing node using " + (useHttpOnConnect ? "HTTP" : "JMX"));
     assertEquals(true, shell.isConnectedAndReady());
+    return result;
   }
 
   /**

@@ -53,7 +53,7 @@ limitations under the License.
   </mvc:annotation-driven>
 
   <mvc:interceptors>
-    <bean class="com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor"/>
+    <bean class="com.gemstone.gemfire.management.internal.web.controllers.support.LoginHandlerInterceptor"/>
   </mvc:interceptors>
 
 </beans>

@@ -36,35 +36,35 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
   public void testConcurrentSerialAsyncEventQueueAttributes() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm4.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
+    vm1.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
 
-    vm4.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
+    vm1.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
         false, 100, 150, true, true, "testDS", true, 5, OrderPolicy.THREAD ));
 
-    vm4.invoke(() -> AsyncEventQueueTestBase.validateConcurrentAsyncEventQueueAttributes( "ln", 100, 150, AsyncEventQueueFactoryImpl.DEFAULT_BATCH_TIME_INTERVAL, true, "testDS", true, true, 5, OrderPolicy.THREAD ));
+    vm1.invoke(() -> AsyncEventQueueTestBase.validateConcurrentAsyncEventQueueAttributes( "ln", 100, 150, AsyncEventQueueFactoryImpl.DEFAULT_BATCH_TIME_INTERVAL, true, "testDS", true, true, 5, OrderPolicy.THREAD ));
   }
   
  
   public void testConcurrentParallelAsyncEventQueueAttributesOrderPolicyKey() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm4.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
+    vm1.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
 
-    vm4.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
+    vm1.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
         true, 100, 150, true, true, "testDS", true, 5, OrderPolicy.KEY ));
 
-    vm4.invoke(() -> AsyncEventQueueTestBase.validateConcurrentAsyncEventQueueAttributes( "ln", 100, 150, AsyncEventQueueFactoryImpl.DEFAULT_BATCH_TIME_INTERVAL, true, "testDS", true, true, 5, OrderPolicy.KEY ));
+    vm1.invoke(() -> AsyncEventQueueTestBase.validateConcurrentAsyncEventQueueAttributes( "ln", 100, 150, AsyncEventQueueFactoryImpl.DEFAULT_BATCH_TIME_INTERVAL, true, "testDS", true, true, 5, OrderPolicy.KEY ));
   }
 
   public void testConcurrentParallelAsyncEventQueueAttributesOrderPolicyPartition() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
-    vm4.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
+    vm1.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
 
-    vm4.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
+    vm1.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
         true, 100, 150, true, true, "testDS", true, 5, OrderPolicy.PARTITION ));
 
-    vm4.invoke(() -> AsyncEventQueueTestBase.validateConcurrentAsyncEventQueueAttributes( "ln", 100, 150, AsyncEventQueueFactoryImpl.DEFAULT_BATCH_TIME_INTERVAL, true, "testDS", true, true, 5, OrderPolicy.PARTITION ));
+    vm1.invoke(() -> AsyncEventQueueTestBase.validateConcurrentAsyncEventQueueAttributes( "ln", 100, 150, AsyncEventQueueFactoryImpl.DEFAULT_BATCH_TIME_INTERVAL, true, "testDS", true, true, 5, OrderPolicy.PARTITION ));
   }
   
   /**
@@ -79,37 +79,37 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
   public void testReplicatedSerialAsyncEventQueueWithMultipleDispatcherThreadsOrderPolicyKey() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
+    vm1.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
+    vm3.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
     vm4.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
-    vm5.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
-    vm6.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
-    vm7.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
 
+    vm1.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
+        false, 100, 10, true, false, null, false, 3, OrderPolicy.KEY ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
+        false, 100, 10, true, false, null, false, 3, OrderPolicy.KEY ));
+    vm3.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
+        false, 100, 10, true, false, null, false, 3, OrderPolicy.KEY ));
     vm4.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
         false, 100, 10, true, false, null, false, 3, OrderPolicy.KEY ));
-    vm5.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
-        false, 100, 10, true, false, null, false, 3, OrderPolicy.KEY ));
-    vm6.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
-        false, 100, 10, true, false, null, false, 3, OrderPolicy.KEY ));
-    vm7.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
-        false, 100, 10, true, false, null, false, 3, OrderPolicy.KEY ));
 
+    vm1.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue( getTestMethodName() + "_RR", "ln", isOffHeap() ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue( getTestMethodName() + "_RR", "ln", isOffHeap() ));
+    vm3.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue( getTestMethodName() + "_RR", "ln", isOffHeap() ));
     vm4.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue( getTestMethodName() + "_RR", "ln", isOffHeap() ));
-    vm5.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue( getTestMethodName() + "_RR", "ln", isOffHeap() ));
-    vm6.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue( getTestMethodName() + "_RR", "ln", isOffHeap() ));
-    vm7.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue( getTestMethodName() + "_RR", "ln", isOffHeap() ));
 
-    vm4.invoke(() -> AsyncEventQueueTestBase.doPuts( getTestMethodName() + "_RR",
+    vm1.invoke(() -> AsyncEventQueueTestBase.doPuts( getTestMethodName() + "_RR",
         100 ));
     
+    vm1.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
+    vm3.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
     vm4.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
-    vm5.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
-    vm6.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
-    vm7.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
     
-    vm4.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener( "ln", 100 ));// primary sender
-    vm5.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener( "ln", 0 ));// secondary
-    vm6.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener( "ln", 0 ));// secondary
-    vm7.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener( "ln", 0 ));// secondary
+    vm1.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener( "ln", 100 ));// primary sender
+    vm2.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener( "ln", 0 ));// secondary
+    vm3.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener( "ln", 0 ));// secondary
+    vm4.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener( "ln", 0 ));// secondary
   }
   
   /**
@@ -124,30 +124,30 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
   public void testReplicatedSerialAsyncEventQueueWithMultipleDispatcherThreadsOrderPolicyThread() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
+    vm1.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
+    vm3.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
     vm4.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
-    vm5.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
-    vm6.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
-    vm7.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
 
+    vm1.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
+        false, 100, 10, true, false, null, false, 3, OrderPolicy.THREAD ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
+        false, 100, 10, true, false, null, false, 3, OrderPolicy.THREAD ));
+    vm3.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
+        false, 100, 10, true, false, null, false, 3, OrderPolicy.THREAD ));
     vm4.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
         false, 100, 10, true, false, null, false, 3, OrderPolicy.THREAD ));
-    vm5.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
-        false, 100, 10, true, false, null, false, 3, OrderPolicy.THREAD ));
-    vm6.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
-        false, 100, 10, true, false, null, false, 3, OrderPolicy.THREAD ));
-    vm7.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
-        false, 100, 10, true, false, null, false, 3, OrderPolicy.THREAD ));
 
+    vm1.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue( getTestMethodName() + "_RR", "ln", isOffHeap() ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue( getTestMethodName() + "_RR", "ln", isOffHeap() ));
+    vm3.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue( getTestMethodName() + "_RR", "ln", isOffHeap() ));
     vm4.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue( getTestMethodName() + "_RR", "ln", isOffHeap() ));
-    vm5.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue( getTestMethodName() + "_RR", "ln", isOffHeap() ));
-    vm6.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue( getTestMethodName() + "_RR", "ln", isOffHeap() ));
-    vm7.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue( getTestMethodName() + "_RR", "ln", isOffHeap() ));
 
-    AsyncInvocation inv1 = vm4.invokeAsync(() -> AsyncEventQueueTestBase.doPuts( getTestMethodName() + "_RR",
+    AsyncInvocation inv1 = vm1.invokeAsync(() -> AsyncEventQueueTestBase.doPuts( getTestMethodName() + "_RR",
         50 ));
-    AsyncInvocation inv2 = vm4.invokeAsync(() -> AsyncEventQueueTestBase.doNextPuts( getTestMethodName() + "_RR",
+    AsyncInvocation inv2 = vm1.invokeAsync(() -> AsyncEventQueueTestBase.doNextPuts( getTestMethodName() + "_RR",
       50, 100 ));
-    AsyncInvocation inv3 = vm4.invokeAsync(() -> AsyncEventQueueTestBase.doNextPuts( getTestMethodName() + "_RR",
+    AsyncInvocation inv3 = vm1.invokeAsync(() -> AsyncEventQueueTestBase.doNextPuts( getTestMethodName() + "_RR",
       100, 150 ));
     
     try {
@@ -160,15 +160,15 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
           ie);
     }
     
+    vm1.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
+    vm3.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
     vm4.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
-    vm5.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
-    vm6.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
-    vm7.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
 
-    vm4.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener( "ln", 150 ));// primary sender
-    vm5.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener( "ln", 0 ));// secondary
-    vm6.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener( "ln", 0 ));// secondary
-    vm7.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener( "ln", 0 ));// secondary
+    vm1.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener( "ln", 150 ));// primary sender
+    vm2.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener( "ln", 0 ));// secondary
+    vm3.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener( "ln", 0 ));// secondary
+    vm4.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener( "ln", 0 ));// secondary
   }
   
   /**
@@ -183,39 +183,39 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
   public void testPartitionedParallelAsyncEventQueueWithMultipleDispatcherThreadsOrderPolicyKey() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
+    vm1.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
+    vm3.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
     vm4.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
-    vm5.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
-    vm6.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
-    vm7.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
 
+    vm1.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
+        true, 100, 10, true, false, null, false, 3, OrderPolicy.KEY ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
+        true, 100, 10, true, false, null, false, 3, OrderPolicy.KEY ));
+    vm3.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
+        true, 100, 10, true, false, null, false, 3, OrderPolicy.KEY ));
     vm4.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
         true, 100, 10, true, false, null, false, 3, OrderPolicy.KEY ));
-    vm5.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
-        true, 100, 10, true, false, null, false, 3, OrderPolicy.KEY ));
-    vm6.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
-        true, 100, 10, true, false, null, false, 3, OrderPolicy.KEY ));
-    vm7.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln",
-        true, 100, 10, true, false, null, false, 3, OrderPolicy.KEY ));
 
+    vm1.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", isOffHeap() ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", isOffHeap() ));
+    vm3.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", isOffHeap() ));
     vm4.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", isOffHeap() ));
-    vm5.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", isOffHeap() ));
-    vm6.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", isOffHeap() ));
-    vm7.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", isOffHeap() ));
 
-    vm4.invoke(() -> AsyncEventQueueTestBase.doPuts( getTestMethodName() + "_PR",
+    vm1.invoke(() -> AsyncEventQueueTestBase.doPuts( getTestMethodName() + "_PR",
         100 ));
     
+    vm1.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
+    vm3.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
     vm4.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
-    vm5.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
-    vm6.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
-    vm7.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
   
+    int vm1size = (Integer)vm1.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln"));
+    int vm2size = (Integer)vm2.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln"));
+    int vm3size = (Integer)vm3.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln"));
     int vm4size = (Integer)vm4.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln"));
-    int vm5size = (Integer)vm5.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln"));
-    int vm6size = (Integer)vm6.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln"));
-    int vm7size = (Integer)vm7.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln"));
   
-    assertEquals(vm4size + vm5size + vm6size + vm7size, 100);
+    assertEquals(vm1size + vm2size + vm3size + vm4size, 100);
   
   }
   
@@ -232,38 +232,38 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
   public void testPartitionedParallelAsyncEventQueueWithMultipleDispatcherThreadsOrderPolicyPartition() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
+    vm1.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
+    vm3.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
     vm4.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
-    vm5.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
-    vm6.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
-    vm7.invoke(() -> AsyncEventQueueTestBase.createCache( lnPort ));
 
+    vm1.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln", true, 100, 10, true, false, null, false, 3,
+            OrderPolicy.PARTITION ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln", true, 100, 10, true, false, null, false, 3,
+            OrderPolicy.PARTITION ));
+    vm3.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln", true, 100, 10, true, false, null, false, 3,
+            OrderPolicy.PARTITION ));
     vm4.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln", true, 100, 10, true, false, null, false, 3,
             OrderPolicy.PARTITION ));
-    vm5.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln", true, 100, 10, true, false, null, false, 3,
-            OrderPolicy.PARTITION ));
-    vm6.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln", true, 100, 10, true, false, null, false, 3,
-            OrderPolicy.PARTITION ));
-    vm7.invoke(() -> AsyncEventQueueTestBase.createConcurrentAsyncEventQueue( "ln", true, 100, 10, true, false, null, false, 3,
-            OrderPolicy.PARTITION ));
 
+    vm1.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", isOffHeap() ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", isOffHeap() ));
+    vm3.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", isOffHeap() ));
     vm4.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", isOffHeap() ));
-    vm5.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", isOffHeap() ));
-    vm6.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", isOffHeap() ));
-    vm7.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue( getTestMethodName() + "_PR", "ln", isOffHeap() ));
 
-    vm4.invoke(() -> AsyncEventQueueTestBase.doPuts( getTestMethodName() + "_PR",
+    vm1.invoke(() -> AsyncEventQueueTestBase.doPuts( getTestMethodName() + "_PR",
         100 ));
 
+    vm1.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
+    vm2.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
+    vm3.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
     vm4.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
-    vm5.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
-    vm6.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
-    vm7.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty( "ln" ));
 
+    int vm1size = (Integer)vm1.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln" ));
+    int vm2size = (Integer)vm2.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln" ));
+    int vm3size = (Integer)vm3.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln" ));
     int vm4size = (Integer)vm4.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln" ));
-    int vm5size = (Integer)vm5.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln" ));
-    int vm6size = (Integer)vm6.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln" ));
-    int vm7size = (Integer)vm7.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize( "ln" ));
 
-    assertEquals(100, vm4size + vm5size + vm6size + vm7size);
+    assertEquals(100, vm1size + vm2size + vm3size + vm4size);
   }
 }

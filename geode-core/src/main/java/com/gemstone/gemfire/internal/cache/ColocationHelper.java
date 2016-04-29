@@ -107,9 +107,6 @@ public class ColocationHelper {
   }
     private static PartitionedRegion getColocatedPR(
       final PartitionedRegion partitionedRegion, final String colocatedWith) {
-    logger.info(LocalizedMessage.create(
-        LocalizedStrings.HOPLOG_0_COLOCATE_WITH_REGION_1_NOT_INITIALIZED_YET,
-        new Object[] { partitionedRegion.getFullPath(), colocatedWith }));
     PartitionedRegion colocatedPR = (PartitionedRegion) partitionedRegion
         .getCache().getPartitionedRegion(colocatedWith, false);
     assert colocatedPR != null;

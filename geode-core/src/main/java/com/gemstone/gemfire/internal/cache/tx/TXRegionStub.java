@@ -42,8 +42,8 @@ public interface TXRegionStub {
   boolean containsValueForKey(KeyInfo keyInfo);
 
   Object findObject(KeyInfo keyInfo, boolean isCreate,
-      boolean generateCallbacks, Object value, boolean preferCD,
-      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean allowReadFromHDFS);
+                    boolean generateCallbacks, Object value, boolean preferCD,
+                    ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent);
 
   Object getEntryForIterator(KeyInfo keyInfo, boolean allowTombstone);
 

@@ -16,33 +16,10 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.management.ObjectName;
-
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.GatewayReceiverMXBean;
 import com.gemstone.gemfire.management.GatewaySenderMXBean;
@@ -67,111 +44,135 @@ import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import javax.management.ObjectName;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 public class WanCommands implements CommandMarker {
 
   private Gfsh getGfsh() {
     return Gfsh.getCurrentInstance();
   }
-  
+
   @CliCommand(value = CliStrings.CREATE_GATEWAYSENDER, help = CliStrings.CREATE_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN, writesToSharedConfiguration=true)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result createGatewaySender(
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.CREATE_GATEWAYSENDER__GROUP__HELP)
       @CliMetaData (valueSeparator = ",") String[] onGroups,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__MEMBER, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__MEMBER,
       optionContext = ConverterHint.MEMBERIDNAME,
       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-      help = CliStrings.CREATE_GATEWAYSENDER__MEMBER__HELP) 
+      help = CliStrings.CREATE_GATEWAYSENDER__MEMBER__HELP)
       @CliMetaData (valueSeparator = ",") String onMember,
-          
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ID, 
-      mandatory = true, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ID,
+      mandatory = true,
       help = CliStrings.CREATE_GATEWAYSENDER__ID__HELP) String id,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, 
-      mandatory = true, 
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID,
+      mandatory = true,
       help = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID__HELP) Integer remoteDistributedSystemId,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__PARALLEL, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__PARALLEL,
       help = CliStrings.CREATE_GATEWAYSENDER__PARALLEL__HELP) Boolean parallel,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__MANUALSTART, 
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__MANUALSTART,
       help = CliStrings.CREATE_GATEWAYSENDER__MANUALSTART__HELP) Boolean manualStart,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE,
       help = CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE__HELP) Integer socketBufferSize,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT,
       help = CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT__HELP) Integer socketReadTimeout,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION, 
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION,
       help = CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION__HELP) Boolean enableBatchConflation,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__BATCHSIZE, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__BATCHSIZE,
       help = CliStrings.CREATE_GATEWAYSENDER__BATCHSIZE__HELP) Integer batchSize,
-          
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__BATCHTIMEINTERVAL, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__BATCHTIMEINTERVAL,
       help = CliStrings.CREATE_GATEWAYSENDER__BATCHTIMEINTERVAL__HELP) Integer batchTimeInterval,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ENABLEPERSISTENCE, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ENABLEPERSISTENCE,
       help = CliStrings.CREATE_GATEWAYSENDER__ENABLEPERSISTENCE__HELP) Boolean enablePersistence,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__DISKSTORENAME, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__DISKSTORENAME,
       help = CliStrings.CREATE_GATEWAYSENDER__DISKSTORENAME__HELP) String diskStoreName,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__DISKSYNCHRONOUS, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__DISKSYNCHRONOUS,
       help = CliStrings.CREATE_GATEWAYSENDER__DISKSYNCHRONOUS__HELP) Boolean diskSynchronous,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__MAXQUEUEMEMORY, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__MAXQUEUEMEMORY,
       help = CliStrings.CREATE_GATEWAYSENDER__MAXQUEUEMEMORY__HELP) Integer maxQueueMemory,
-          
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD,
       help = CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD__HELP) Integer alertThreshold,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS,
       help = CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS__HELP) Integer dispatcherThreads,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY,
       help = CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY__HELP) String orderPolicy,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER,
       help = CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER__HELP)
-      @CliMetaData (valueSeparator = ",") 
+      @CliMetaData (valueSeparator = ",")
       String[] gatewayEventFilters,
-          
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER,
       help = CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER__HELP)
-      @CliMetaData (valueSeparator = ",") 
+      @CliMetaData (valueSeparator = ",")
       String[] gatewayTransportFilter) {
 
     Result result = null;
 
     XmlEntity xmlEntity = null;
     try {
-      GatewaySenderFunctionArgs gatewaySenderFunctionArgs = 
+      GatewaySenderFunctionArgs gatewaySenderFunctionArgs =
         new GatewaySenderFunctionArgs(id,
-            remoteDistributedSystemId, parallel, manualStart, socketBufferSize, socketReadTimeout, 
-            enableBatchConflation, batchSize, batchTimeInterval, enablePersistence, diskStoreName, 
-            diskSynchronous, maxQueueMemory, alertThreshold, dispatcherThreads, orderPolicy, 
+            remoteDistributedSystemId, parallel, manualStart, socketBufferSize, socketReadTimeout,
+            enableBatchConflation, batchSize, batchTimeInterval, enablePersistence, diskStoreName,
+            diskSynchronous, maxQueueMemory, alertThreshold, dispatcherThreads, orderPolicy,
             gatewayEventFilters, gatewayTransportFilter);
-      
+
       Set<DistributedMember> membersToCreateGatewaySenderOn = CliUtil.findAllMatchingMembers(onGroups, onMember == null ? null : onMember.split(","));
-      
+
       ResultCollector<?, ?> resultCollector = CliUtil.executeFunction(GatewaySenderCreateFunction.INSTANCE, gatewaySenderFunctionArgs, membersToCreateGatewaySenderOn);
       @SuppressWarnings("unchecked")
       List<CliFunctionResult> gatewaySenderCreateResults = (List<CliFunctionResult>) resultCollector.getResult();
-      
+
       TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
       final String errorPrefix = "ERROR: ";
       for (CliFunctionResult gatewaySenderCreateResult : gatewaySenderCreateResults) {
         boolean success  = gatewaySenderCreateResult.isSuccessful();
         tabularResultData.accumulate("Member", gatewaySenderCreateResult.getMemberIdOrName());
         tabularResultData.accumulate("Status", (success ? "" : errorPrefix) + gatewaySenderCreateResult.getMessage());
-        
+
         if (success && xmlEntity == null) {
           xmlEntity = gatewaySenderCreateResult.getXmlEntity();
         }
@@ -183,7 +184,7 @@ public class WanCommands implements CommandMarker {
     } catch (CommandResultException crex) {
       result = handleCommandResultException(crex);
     }
-    
+
     if (xmlEntity != null) {
       result.setCommandPersisted((new SharedConfigurationWriter()).addXmlEntity(xmlEntity, onGroups));
     }
@@ -192,22 +193,23 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.START_GATEWAYSENDER, help = CliStrings.START_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result startGatewaySender(
-      @CliOption(key = CliStrings.START_GATEWAYSENDER__ID, 
-      mandatory = true, 
+      @CliOption(key = CliStrings.START_GATEWAYSENDER__ID,
+      mandatory = true,
       optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.START_GATEWAYSENDER__ID__HELP) String senderId,
-      
+
       @CliOption(key = CliStrings.START_GATEWAYSENDER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.START_GATEWAYSENDER__GROUP__HELP)
       @CliMetaData (valueSeparator = ",") String onGroup,
-      
-      @CliOption(key = CliStrings.START_GATEWAYSENDER__MEMBER, 
+
+      @CliOption(key = CliStrings.START_GATEWAYSENDER__MEMBER,
       optionContext = ConverterHint.MEMBERIDNAME,
-      help = CliStrings.START_GATEWAYSENDER__MEMBER__HELP) 
+      help = CliStrings.START_GATEWAYSENDER__MEMBER__HELP)
       @CliMetaData (valueSeparator = ",") String onMember) {
-    
+
     Result result = null;
     final String id = senderId.trim();
 
@@ -235,11 +237,11 @@ public class WanCommands implements CommandMarker {
       List<Callable<List>> callables = new ArrayList<Callable<List>>();
 
       for (final DistributedMember member : dsMembers) {
-        
+
         callables.add(new Callable<List>() {
-          
+
           public List call() throws Exception {
-            
+
             GatewaySenderMXBean bean = null;
             ArrayList<String> statusList = new ArrayList<String>();
             if (cache.getDistributedSystem().getDistributedMember().getId()
@@ -280,10 +282,10 @@ public class WanCommands implements CommandMarker {
           }
         });
       }
-      
+
       Iterator<DistributedMember> memberIterator = dsMembers.iterator();
       List<Future<List>> futures = null;
-      
+
       try {
         futures = execService.invokeAll(callables);
       }
@@ -293,7 +295,7 @@ public class WanCommands implements CommandMarker {
                 CliStrings.GATEWAY_SENDER_0_COULD_NOT_BE_INVOKED_DUE_TO_1,
                 new Object[] { id, ite.getMessage() }));
       }
-      
+
       for (Future<List> future : futures) {
         DistributedMember member = memberIterator.next();
         List<String> memberStatus = null;
@@ -328,28 +330,29 @@ public class WanCommands implements CommandMarker {
       result = ResultBuilder.createGemFireErrorResult(CliStrings.GATEWAY_ERROR
           + e.getMessage());
     }
-    
+
     return result;
   }
 
   @CliCommand(value = CliStrings.PAUSE_GATEWAYSENDER, help = CliStrings.PAUSE_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result pauseGatewaySender(
-      @CliOption(key = CliStrings.PAUSE_GATEWAYSENDER__ID, 
-      mandatory = true, 
+      @CliOption(key = CliStrings.PAUSE_GATEWAYSENDER__ID,
+      mandatory = true,
       optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.PAUSE_GATEWAYSENDER__ID__HELP) String senderId,
-      
+
       @CliOption(key = CliStrings.PAUSE_GATEWAYSENDER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
-      help = CliStrings.PAUSE_GATEWAYSENDER__GROUP__HELP) 
+      help = CliStrings.PAUSE_GATEWAYSENDER__GROUP__HELP)
       @CliMetaData (valueSeparator = ",")  String onGroup,
-      
-      @CliOption(key = CliStrings.PAUSE_GATEWAYSENDER__MEMBER, 
+
+      @CliOption(key = CliStrings.PAUSE_GATEWAYSENDER__MEMBER,
       optionContext = ConverterHint.MEMBERIDNAME,
-      help = CliStrings.PAUSE_GATEWAYSENDER__MEMBER__HELP) 
+      help = CliStrings.PAUSE_GATEWAYSENDER__MEMBER__HELP)
       @CliMetaData (valueSeparator = ",") String onMember) {
-    
+
     Result result = null;
     if (senderId != null)
       senderId = senderId.trim();
@@ -371,7 +374,7 @@ public class WanCommands implements CommandMarker {
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
       Set<DistributedMember> dsMembers = null;
-      
+
       dsMembers = CliUtil.findAllMatchingMembers(onGroup, onMember);
       for (DistributedMember member : dsMembers) {
         if (cache.getDistributedSystem().getDistributedMember().getId().equals(
@@ -426,22 +429,23 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.RESUME_GATEWAYSENDER, help = CliStrings.RESUME_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @ResourceOperation(resource=Resource.DATA, operation = OperationCode.MANAGE)
   public Result resumeGatewaySender(
-      @CliOption(key = CliStrings.RESUME_GATEWAYSENDER__ID, 
-      mandatory = true, 
+      @CliOption(key = CliStrings.RESUME_GATEWAYSENDER__ID,
+      mandatory = true,
       optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.RESUME_GATEWAYSENDER__ID__HELP) String senderId,
-      
+
       @CliOption(key = CliStrings.RESUME_GATEWAYSENDER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
-      help = CliStrings.RESUME_GATEWAYSENDER__GROUP__HELP) 
+      help = CliStrings.RESUME_GATEWAYSENDER__GROUP__HELP)
       @CliMetaData (valueSeparator = ",") String onGroup,
-      
-      @CliOption(key = CliStrings.RESUME_GATEWAYSENDER__MEMBER, 
+
+      @CliOption(key = CliStrings.RESUME_GATEWAYSENDER__MEMBER,
       optionContext = ConverterHint.MEMBERIDNAME,
-      help = CliStrings.RESUME_GATEWAYSENDER__MEMBER__HELP) 
+      help = CliStrings.RESUME_GATEWAYSENDER__MEMBER__HELP)
       @CliMetaData (valueSeparator = ",") String onMember) {
-    
+
     Result result = null;
     if (senderId != null)
       senderId = senderId.trim();
@@ -565,26 +569,27 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.STOP_GATEWAYSENDER, help = CliStrings.STOP_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result stopGatewaySender(
-      @CliOption(key = CliStrings.STOP_GATEWAYSENDER__ID, 
-      mandatory = true, 
+      @CliOption(key = CliStrings.STOP_GATEWAYSENDER__ID,
+      mandatory = true,
       optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.STOP_GATEWAYSENDER__ID__HELP) String senderId,
-      
+
       @CliOption(key = CliStrings.STOP_GATEWAYSENDER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.STOP_GATEWAYSENDER__GROUP__HELP)
       @CliMetaData (valueSeparator = ",") String onGroup,
-      
-      @CliOption(key = CliStrings.STOP_GATEWAYSENDER__MEMBER, 
+
+      @CliOption(key = CliStrings.STOP_GATEWAYSENDER__MEMBER,
       optionContext = ConverterHint.MEMBERIDNAME,
-      help = CliStrings.STOP_GATEWAYSENDER__MEMBER__HELP) 
+      help = CliStrings.STOP_GATEWAYSENDER__MEMBER__HELP)
       @CliMetaData (valueSeparator = ",") String onMember) {
-    
+
     Result result = null;
     if (senderId != null)
       senderId = senderId.trim();
-   
+
     try {
       Cache cache = CacheFactory.getAnyInstance();
       SystemManagementService service = (SystemManagementService) ManagementService
@@ -637,42 +642,43 @@ public class WanCommands implements CommandMarker {
     }
     return result;
   }
-  
+
   @CliCommand(value = CliStrings.CREATE_GATEWAYRECEIVER, help = CliStrings.CREATE_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @ResourceOperation( resource=Resource.DATA, operation = OperationCode.MANAGE)
   public Result createGatewayReceiver(
       @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.CREATE_GATEWAYRECEIVER__GROUP__HELP)
       @CliMetaData (valueSeparator = ",") String[] onGroups,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__MEMBER, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__MEMBER,
       optionContext = ConverterHint.MEMBERIDNAME,
       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-      help = CliStrings.CREATE_GATEWAYRECEIVER__MEMBER__HELP) 
+      help = CliStrings.CREATE_GATEWAYRECEIVER__MEMBER__HELP)
       @CliMetaData (valueSeparator = ",") String onMember,
-          
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART,
       help = CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART__HELP) Boolean manualStart,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT,
       help = CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT__HELP) Integer startPort,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT, 
+      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT,
       help = CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT__HELP) Integer endPort,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS,
       help = CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS__HELP) String bindAddress,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS, 
+      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS,
       help = CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS__HELP) Integer maximumTimeBetweenPings,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE,
       help = CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE__HELP) Integer socketBufferSize,
-      
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER, 
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER,
       help = CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER__HELP)
-      @CliMetaData (valueSeparator = ",") 
+      @CliMetaData (valueSeparator = ",")
       String[] gatewayTransportFilters) {
 
     Result result = null;
@@ -696,7 +702,7 @@ public class WanCommands implements CommandMarker {
         boolean success = gatewayReceiverCreateResult.isSuccessful();
         tabularResultData.accumulate("Member", gatewayReceiverCreateResult.getMemberIdOrName());
         tabularResultData.accumulate("Status", (success ? "" : errorPrefix) + gatewayReceiverCreateResult.getMessage());
-        
+
         if (success && xmlEntity == null) {
           xmlEntity = gatewayReceiverCreateResult.getXmlEntity();
         }
@@ -709,22 +715,23 @@ public class WanCommands implements CommandMarker {
     catch (CommandResultException crex) {
       result = handleCommandResultException(crex);
     }
-    
+
     if (xmlEntity != null) {
       result.setCommandPersisted((new SharedConfigurationWriter()).addXmlEntity(xmlEntity, onGroups));
     }
-    
+
     return result;
   }
 
   @CliCommand(value = CliStrings.LOAD_BALANCE_GATEWAYSENDER, help = CliStrings.LOAD_BALANCE_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result loadBalanceGatewaySender(
-      @CliOption(key = CliStrings.LOAD_BALANCE_GATEWAYSENDER__ID, 
-      mandatory = true, 
+      @CliOption(key = CliStrings.LOAD_BALANCE_GATEWAYSENDER__ID,
+      mandatory = true,
       optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.LOAD_BALANCE_GATEWAYSENDER__ID__HELP) String senderId) {
-    
+
     Result result = null;
     if (senderId != null) {
       senderId = senderId.trim();
@@ -784,15 +791,16 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.START_GATEWAYRECEIVER, help = CliStrings.START_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result startGatewayReceiver(
       @CliOption(key = CliStrings.START_GATEWAYRECEIVER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
-      help = CliStrings.START_GATEWAYRECEIVER__GROUP__HELP) 
+      help = CliStrings.START_GATEWAYRECEIVER__GROUP__HELP)
       @CliMetaData (valueSeparator = ",")  String onGroup,
-      
-      @CliOption(key = CliStrings.START_GATEWAYRECEIVER__MEMBER, 
+
+      @CliOption(key = CliStrings.START_GATEWAYRECEIVER__MEMBER,
       optionContext = ConverterHint.MEMBERIDNAME,
-      help = CliStrings.START_GATEWAYRECEIVER__MEMBER__HELP) 
+      help = CliStrings.START_GATEWAYRECEIVER__MEMBER__HELP)
       @CliMetaData (valueSeparator = ",") String onMember) {
     Result result = null;
 
@@ -845,18 +853,19 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.STOP_GATEWAYRECEIVER, help = CliStrings.STOP_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result stopGatewayReceiver(
-      
-      @CliOption(key = CliStrings.STOP_GATEWAYRECEIVER__GROUP, 
+
+      @CliOption(key = CliStrings.STOP_GATEWAYRECEIVER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
-      help = CliStrings.STOP_GATEWAYRECEIVER__GROUP__HELP) 
+      help = CliStrings.STOP_GATEWAYRECEIVER__GROUP__HELP)
       @CliMetaData (valueSeparator = ",") String onGroup,
-      
-      @CliOption(key = CliStrings.STOP_GATEWAYRECEIVER__MEMBER, 
+
+      @CliOption(key = CliStrings.STOP_GATEWAYRECEIVER__MEMBER,
       optionContext = ConverterHint.MEMBERIDNAME,
-      help = CliStrings.STOP_GATEWAYRECEIVER__MEMBER__HELP) 
+      help = CliStrings.STOP_GATEWAYRECEIVER__MEMBER__HELP)
       @CliMetaData (valueSeparator = ",") String onMember) {
-    
+
     Result result = null;
 
     try {
@@ -918,6 +927,7 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.LIST_GATEWAY, help = CliStrings.LIST_GATEWAY__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result listGateway(
       @CliOption(key = CliStrings.LIST_GATEWAY__MEMBER,
       optionContext = ConverterHint.MEMBERIDNAME,
@@ -925,9 +935,9 @@ public class WanCommands implements CommandMarker {
       @CliMetaData (valueSeparator = ",") String onMember,
       @CliOption(key = CliStrings.LIST_GATEWAY__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
-      help = CliStrings.LIST_GATEWAY__GROUP__HELP) 
+      help = CliStrings.LIST_GATEWAY__GROUP__HELP)
       @CliMetaData (valueSeparator = ",") String onGroup) {
-    
+
     Result result = null;
     Cache cache = CacheFactory.getAnyInstance();
     try {
@@ -1008,22 +1018,23 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.STATUS_GATEWAYSENDER, help = CliStrings.STATUS_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result statusGatewaySender(
-      @CliOption(key = CliStrings.STATUS_GATEWAYSENDER__ID, 
-      mandatory = true, 
+      @CliOption(key = CliStrings.STATUS_GATEWAYSENDER__ID,
+      mandatory = true,
       optionContext = ConverterHint.GATEWAY_SENDER_ID,
       help = CliStrings.STATUS_GATEWAYSENDER__ID__HELP) String senderId,
-      
+
       @CliOption(key = CliStrings.STATUS_GATEWAYSENDER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
-      help = CliStrings.STATUS_GATEWAYSENDER__GROUP__HELP) 
+      help = CliStrings.STATUS_GATEWAYSENDER__GROUP__HELP)
       @CliMetaData (valueSeparator = ",") String onGroup,
-      
-      @CliOption(key = CliStrings.STATUS_GATEWAYSENDER__MEMBER, 
+
+      @CliOption(key = CliStrings.STATUS_GATEWAYSENDER__MEMBER,
       optionContext = ConverterHint.MEMBERIDNAME,
       help = CliStrings.STATUS_GATEWAYSENDER__MEMBER__HELP)
       @CliMetaData (valueSeparator = ",") String onMember) {
-    
+
     Result result = null;
     if (senderId != null)
       senderId = senderId.trim();
@@ -1074,17 +1085,18 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.STATUS_GATEWAYRECEIVER, help = CliStrings.STATUS_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result statusGatewayReceiver(
-      @CliOption(key = CliStrings.STATUS_GATEWAYRECEIVER__GROUP, 
+      @CliOption(key = CliStrings.STATUS_GATEWAYRECEIVER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.STATUS_GATEWAYRECEIVER__GROUP__HELP)
       @CliMetaData (valueSeparator = ",")  String onGroup,
-      
-      @CliOption(key = CliStrings.STATUS_GATEWAYRECEIVER__MEMBER, 
+
+      @CliOption(key = CliStrings.STATUS_GATEWAYRECEIVER__MEMBER,
       optionContext = ConverterHint.MEMBERIDNAME,
-      help = CliStrings.STATUS_GATEWAYRECEIVER__MEMBER__HELP) 
+      help = CliStrings.STATUS_GATEWAYRECEIVER__MEMBER__HELP)
       @CliMetaData (valueSeparator = ",") String onMember) {
-    
+
     Result result = null;
 
     try {
@@ -1240,7 +1252,7 @@ public class WanCommands implements CommandMarker {
     }
 
   }
-  
+
   private void accumulateStartResult(TabularResultData resultData,
       String member, String Status, String message) {
     if (member != null) {
@@ -1264,7 +1276,7 @@ public class WanCommands implements CommandMarker {
     }
     return isAvailable;
   }
-  
+
   private Result handleCommandResultException(CommandResultException crex) {
     Result result = null;
     if (crex.getResult() != null) {

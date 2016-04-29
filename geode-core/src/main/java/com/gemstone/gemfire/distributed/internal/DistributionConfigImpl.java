@@ -17,6 +17,21 @@
 
 package com.gemstone.gemfire.distributed.internal;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -25,14 +40,6 @@ import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.*;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that
@@ -387,6 +394,8 @@ public class DistributionConfigImpl
   
   /** Whether pages should be locked into memory or allowed to swap to disk */
   private boolean lockMemory = DEFAULT_LOCK_MEMORY;
+
+  private String shiroInit = "";
   
   //////////////////////  Constructors  //////////////////////
 
@@ -566,6 +575,7 @@ public class DistributionConfigImpl
     
     this.lockMemory = other.getLockMemory();
     this.distributedTransactions = other.getDistributedTransactions();
+    this.shiroInit = other.getShiroInit();
   }
 
   /**
@@ -1995,7 +2005,6 @@ public class DistributionConfigImpl
   }
 
   public void setSecurity(String attName, String attValue) {
-    checkAttribute(attName, attValue);
     security.setProperty(attName, attValue);
   }
 
@@ -2036,7 +2045,6 @@ public class DistributionConfigImpl
   }
 
   public void setSSLProperty(String attName, String attValue) {
-    checkAttribute(attName, attValue);
     if (attName.startsWith(SYS_PROP_NAME)) {
       attName = attName.substring(SYS_PROP_NAME.length());
     }
@@ -2266,6 +2274,16 @@ public class DistributionConfigImpl
   @Override
   public void setLockMemory(final boolean value) {
     this.lockMemory = value;
+  }
+
+  @Override
+  public void setShiroInit(String value) {
+    this.shiroInit = value;
+  }
+
+  @Override
+  public String getShiroInit() {
+    return this.shiroInit;
   }
 
   ///////////////////////  Utility Methods  ///////////////////////

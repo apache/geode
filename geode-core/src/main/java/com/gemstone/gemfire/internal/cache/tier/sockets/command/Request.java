@@ -242,7 +242,7 @@ public class Request extends BaseCommand {
 
     boolean isObject = true;
     ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
-    Object data  = ((LocalRegion) region).get(key, callbackArg, true, true, true, id, null, false, true/*allowReadFromHDFS*/);
+    Object data  = ((LocalRegion) region).get(key, callbackArg, true, true, true, id, null, false);
     
     // If the value in the VM is a CachedDeserializable,
     // get its value. If it is Token.REMOVED, Token.DESTROYED,

@@ -274,7 +274,6 @@ declarative caching XML file elements unless indicated otherwise.
         </xsd:element>
         <xsd:element maxOccurs="unbounded" minOccurs="0" name="pool" type="gf:pool-type" />
         <xsd:element maxOccurs="unbounded" minOccurs="0" name="disk-store" type="gf:disk-store-type" />
-        <xsd:element maxOccurs="unbounded" minOccurs="0" name="hdfs-store" type="gf:hdfs-store-type" />
         <xsd:element maxOccurs="1" minOccurs="0" name="pdx" type="gf:pdx-type" />
         <xsd:element maxOccurs="unbounded" minOccurs="0" name="region-attributes" type="gf:region-attributes-type" />
         <xsd:choice maxOccurs="unbounded" minOccurs="0">
@@ -826,8 +825,6 @@ As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name inst
     <xsd:attribute name="pool-name" type="xsd:string" use="optional" />
     <xsd:attribute name="disk-store-name" type="xsd:string" use="optional" />
     <xsd:attribute name="disk-synchronous" type="xsd:boolean" use="optional" />
-    <xsd:attribute name="hdfs-store-name" type="xsd:string" use="optional" />
-    <xsd:attribute name="hdfs-write-only" type="xsd:boolean" use="optional" />
     <xsd:attribute name="publisher" type="xsd:boolean" use="optional" />
     <xsd:attribute name="refid" type="xsd:string" use="optional" />
     <xsd:attribute name="scope" type="gf:region-attributesScope" use="optional" />
@@ -1131,34 +1128,6 @@ As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name inst
     <xsd:attribute name="queue-size" type="xsd:string" use="optional" />
     <xsd:attribute name="disk-usage-warning-percentage" type="xsd:string" use="optional" />
     <xsd:attribute name="disk-usage-critical-percentage" type="xsd:string" use="optional" />
-  </xsd:complexType>
-
-  <xsd:complexType mixed="true" name="hdfs-store-type">
-    <xsd:annotation>
-      <xsd:documentation>
-        A "hdfs-store" element specifies a HdfsStore for persistence.
-      </xsd:documentation>
-    </xsd:annotation>
-    <xsd:attribute name="name" type="xsd:string" use="required" />
-    <xsd:attribute name="namenode-url" type="xsd:string" use="optional" />
-    <xsd:attribute name="home-dir" type="xsd:string" use="optional" />
-    <xsd:attribute name="max-memory" type="xsd:string" use="optional" />
-    <xsd:attribute name="read-cache-size" type="xsd:string" use="optional" />
-    <xsd:attribute name="batch-size" type="xsd:string" use="optional" />
-    <xsd:attribute name="batch-interval" type="xsd:string" use="optional" />
-    <xsd:attribute name="dispatcher-threads" type="xsd:string" use="optional" />
-    <xsd:attribute name="buffer-persistent" type="xsd:boolean" use="optional" />
-    <xsd:attribute name="disk-store" type="xsd:string" use="optional" />
-    <xsd:attribute name="synchronous-disk-write" type="xsd:string" use="optional" />
-    <xsd:attribute name="hdfs-client-config-file" type="xsd:string" use="optional" />
-    <xsd:attribute name="purge-interval" type="xsd:string" use="optional" />
-    <xsd:attribute name="major-compaction" type="xsd:string" use="optional" />
-    <xsd:attribute name="major-compaction-interval" type="xsd:string" use="optional" />
-    <xsd:attribute name="major-compaction-threads" type="xsd:integer" use="optional" />
-    <xsd:attribute name="minor-compaction" type="xsd:string" use="optional" />
-    <xsd:attribute name="minor-compaction-threads" type="xsd:integer" use="optional" />
-    <xsd:attribute name="max-write-only-file-size" type="xsd:integer" use="optional" />
-    <xsd:attribute name="write-only-file-rollover-interval" type="xsd:string" use="optional" />    
   </xsd:complexType>
 
   <xsd:complexType name="pdx-type">

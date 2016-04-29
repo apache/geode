@@ -39,12 +39,6 @@ class RegionMapFactory {
     //.getDataPolicy().withPartitioning());
     if (owner.isProxy() /*|| owner instanceof PartitionedRegion*/) { // TODO enabling this causes eviction tests to fail
       return new ProxyRegionMap(owner, attrs, internalRegionArgs);
-    } else if (internalRegionArgs.isReadWriteHDFSRegion()) {
-      if (owner.getEvictionController() == null) {
-        return new HDFSRegionMapImpl(owner, attrs, internalRegionArgs);
-      }
-      return new HDFSLRURegionMap(owner, attrs, internalRegionArgs);
-    //else if (owner.getEvictionController() != null && isNotPartitionedRegion) {
     } else if (owner.getEvictionController() != null ) {
       return new VMLRURegionMap(owner, attrs,internalRegionArgs);
     } else {

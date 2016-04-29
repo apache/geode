@@ -73,10 +73,6 @@ public class PulseLogWriter implements LogWriter {
         fileHandler.setFormatter(messageformatter);
       }
 
-      // Remove any existing handlers
-      // e.g. consoleHandler
-      logger.setUseParentHandlers(false);
-
       // Add File Handler to logger object
       logger.addHandler(fileHandler);
     } catch (SecurityException e) {

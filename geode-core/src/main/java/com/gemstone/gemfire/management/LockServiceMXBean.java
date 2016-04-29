@@ -16,18 +16,23 @@
  */
 package com.gemstone.gemfire.management;
 
+import com.gemstone.gemfire.distributed.internal.locks.DLockService;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+
 import java.util.Map;
 
-import com.gemstone.gemfire.distributed.internal.locks.DLockService;
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  * MBean that provides access to information and management functionality for a
  * {@link DLockService}.  Since any number of DLockService objects can be created
  * by a member there may be 0 or more instances of this MBean available.
- * 
+ *
  * @since 7.0
  * 
  */
+@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
 public interface LockServiceMXBean {
 
   /**
@@ -68,6 +73,7 @@ public interface LockServiceMXBean {
   /**
    * Requests that this member become the granter.
    */
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void becomeLockGrantor();
 
   /**

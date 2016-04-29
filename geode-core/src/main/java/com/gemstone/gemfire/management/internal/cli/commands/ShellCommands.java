@@ -16,40 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Writer;
-import java.net.ConnectException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.KeyStore;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.ExitShellRequest;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.DSFIDFactory;
@@ -86,6 +52,38 @@ import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
 import com.gemstone.gemfire.management.internal.web.http.support.SimpleHttpRequester;
 import com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker;
 import com.gemstone.gemfire.management.internal.web.shell.RestHttpOperationInvoker;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.ExitShellRequest;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Writer;
+import java.net.ConnectException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.KeyStore;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  *
@@ -194,9 +192,23 @@ public class ShellCommands implements CommandMarker {
           ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage()));
       }
     } else if (useHttp) {      
+      Gfsh gemfireShell = getGfsh();
       try{
-        
-        final Map<String, String> sslConfigProps = this.readSSLConfiguration(useSsl, keystoreToUse,keystorePasswordToUse, 
+
+        Map<String,String> securityProperties = new HashMap<String, String>();
+
+        if (userName != null && userName.length() > 0) {
+          if (passwordToUse == null || passwordToUse.length() == 0) {
+            passwordToUse = gemfireShell.readWithMask("http password: ", '*');
+          }
+          if (passwordToUse == null || passwordToUse.length() == 0) {
+            throw new IllegalArgumentException(CliStrings.CONNECT__MSG__JMX_PASSWORD_MUST_BE_SPECIFIED);
+          }
+          securityProperties.put("security-username", userName);
+          securityProperties.put("security-password", passwordToUse);
+        }
+
+        final Map<String, String> sslConfigProps = this.readSSLConfiguration(useSsl, keystoreToUse,keystorePasswordToUse,
             truststoreToUse, truststorePasswordToUse, sslCiphersToUse, sslProtocolsToUse, gfSecurityPropertiesPath);
      
         if (useSsl) {
@@ -206,18 +218,22 @@ public class ShellCommands implements CommandMarker {
           }
         }
 
+        Iterator<String> it = sslConfigProps.keySet().iterator();
+        while(it.hasNext()){
+          String secKey = it.next();
+          securityProperties.put(secKey, sslConfigProps.get(secKey));
+        }
+
         // This is so that SSL termination results in https URLs being returned
         String query = (url.startsWith("https")) ? "?scheme=https" : "";
 
-        LogWrapper.getInstance().warning(String.format("Sending HTTP request for Link Index at (%1$s)...", url.concat("/index")));
+        LogWrapper.getInstance().warning(String.format("Sending HTTP request for Link Index at (%1$s)...", url.concat("/index").concat(query)));
 
-        LinkIndex linkIndex = new SimpleHttpRequester(CONNECT_LOCATOR_TIMEOUT_MS).get(url.concat("/index").concat(query), LinkIndex.class);
+        LinkIndex linkIndex = new SimpleHttpRequester(gemfireShell, CONNECT_LOCATOR_TIMEOUT_MS, securityProperties).exchange(url.concat("/index").concat(query), LinkIndex.class);
 
         LogWrapper.getInstance().warning(String.format("Received Link Index (%1$s)", linkIndex.toString()));
 
-        Gfsh gemfireShell = getGfsh();
-
-        HttpOperationInvoker operationInvoker = new RestHttpOperationInvoker(linkIndex, gemfireShell, url);
+        HttpOperationInvoker operationInvoker = new RestHttpOperationInvoker(linkIndex, gemfireShell, url, securityProperties);
 
         Initializer.init(operationInvoker);
         gemfireShell.setOperationInvoker(operationInvoker);
@@ -230,11 +246,11 @@ public class ShellCommands implements CommandMarker {
       } catch (IOException ioe) {
         String errorMessage = ioe.getMessage();
         result = ResultBuilder.createConnectionErrorResult(errorMessage);
-        ioe.printStackTrace();
+        if (gemfireShell.getDebug()) {ioe.printStackTrace();}
       } catch (Exception e) {
         String errorMessage = e.getMessage();
         result = ResultBuilder.createConnectionErrorResult(errorMessage);
-        e.printStackTrace();
+        if (gemfireShell.getDebug()) {e.printStackTrace();}
       }
     } else {
 
@@ -299,7 +315,7 @@ public class ShellCommands implements CommandMarker {
           gfshInstance.logToFile("Connecting to manager via SSL.", null);
         }
 
-        JmxOperationInvoker operationInvoker = new JmxOperationInvoker(memberRmiHostPort.getHost(), memberRmiHostPort.getPort(), userName, passwordToUse, sslConfigProps);
+        JmxOperationInvoker operationInvoker = new JmxOperationInvoker(memberRmiHostPort.getHost(), memberRmiHostPort.getPort(), userName, passwordToUse, sslConfigProps, gfSecurityPropertiesPath);
         gfshInstance.setOperationInvoker(operationInvoker);
         infoResultData.addLine(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, memberRmiHostPort.toString(false)));
         LogWrapper.getInstance().info(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, memberRmiHostPort.toString(false)));
@@ -609,7 +625,7 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
   }
 
   // Copied from DistributedSystem.java
-  private static URL getFileUrl(String fileName) {
+  public static URL getFileUrl(String fileName) {
     File file = new File(fileName);
 
     if (file.exists()) {

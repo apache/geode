@@ -27,10 +27,6 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -55,12 +51,18 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.apache.commons.io.FileUtils;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /***
  * DUnit test to test export and import of shared configuration.
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("unchecked")
+@RunWith(Parameterized.class)
 public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -69,6 +71,10 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
 
   File newDeployableJarFile = new File("DeployCommandsDUnit1.jar");
   private transient ClassBuilder classBuilder = new ClassBuilder();
+
+  public SharedConfigurationCommandsDUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
+  }
 
   @Test
   public void testExportImportSharedConfiguration() {
@@ -83,7 +89,7 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
     final String startArchiveFileName = "stats.gfs";
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
 
-    // TODO Sourabh - the code below is similar to CliCommandTestBase.createDefaultSetup(..); we may want to consider
+    // TODO Sourabh - the code below is similar to CliCommandTestBase.setUpJmxManagerOnVm0ThenConnect(..); we may want to consider
     // refactoring this and combine the duplicate code blocks using either the Template Method and/or Strategy design
     // patterns.  We can talk about this.
     // Start the Locator and wait for shared configuration to be available

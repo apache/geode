@@ -26,32 +26,41 @@
 	http://www.springframework.org/schema/context
 	http://www.springframework.org/schema/context/spring-context-3.2.xsd">
 
-	<http auto-config="true">
+	<http auto-config="true" use-expressions="true">
 
 		<!-- Can be invoked w/o auth -->
-		<intercept-url pattern="/Login.html" access="IS_AUTHENTICATED_ANONYMOUSLY" />
-		<intercept-url pattern="/pulse/pulseVersion" access="IS_AUTHENTICATED_ANONYMOUSLY" />
-		<intercept-url pattern="/pulse/authenticateUser" access="IS_AUTHENTICATED_ANONYMOUSLY" />
-		<intercept-url pattern="/pulse/pulseProductSupport" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/Login.html" access="permitAll"  />
+		<intercept-url pattern="/pulse/pulseVersion" access="permitAll" />
+		<intercept-url pattern="/pulse/authenticateUser" access="permitAll" />
+		<intercept-url pattern="/pulse/pulseProductSupport" access="permitAll" />
 		<!-- Can be invoked w/o auth -->
 
+		<!-- Restricted urls -->		
+		<intercept-url pattern="/DataBrowser.html" access="hasRole('CLUSTER:READ') and hasRole('DATA:READ')" />
+		<intercept-url pattern="/clusterDetail.html" access="hasRole('CLUSTER:READ')" />
+		<intercept-url pattern="/MemberDetails.html" access="hasRole('CLUSTER:READ')" />
+		<intercept-url pattern="/regionDetail.html" access="hasRole('CLUSTER:READ')" />
+		<intercept-url pattern="/pulse/*" access="hasRole('CLUSTER:READ')" />
+		<intercept-url pattern="/clearAlerts" access="hasRole('CLUSTER:READ')" />
+		<intercept-url pattern="/acknowledgeAlert" access="hasRole('CLUSTER:READ')" />
+		<!-- /dataBrowserRegions, /dataBrowserQuery, /dataBrowserQueryHistory, /dataBrowserExport -->
+		<intercept-url pattern="/dataBrowser*" access="hasRole('CLUSTER:READ') and hasRole('DATA:READ')" />
+		<intercept-url pattern="/getQueryStatisticsGridModel/*" access="hasRole('CLUSTER:READ') and hasRole('DATA:READ')" />
+		
 		<!-- Restricted urls -->
-		<!-- Hide Data Browser tab for Pulse-Cheetah Release -->
-		<!-- <intercept-url pattern="/DataBrowser.html" access="ROLE_RESTRICTED" /> -->
-		<!-- Restricted urls -->
-
-		<!-- Can be invoked only with auth -->
-		<intercept-url pattern="/*.html" access="ROLE_USER,ROLE_GEMFIRETESTING,ROLE_PULSEUSER" />
-		<intercept-url pattern="/pulse/*" access="ROLE_USER,ROLE_GEMFIRETESTING,ROLE_PULSEUSER" />
-		<!-- Can be invoked only with auth -->
-
 		<form-login login-page="/Login.html"
 			authentication-failure-handler-ref="authenticationFailureHandler"
 			default-target-url="/clusterDetail.html" />
-
-		<logout logout-url="/pulse/clusterLogout" logout-success-url="/Login.html" />
+		
+		<logout logout-url="/pulse/clusterLogout" success-handler-ref="customLogoutSuccessHandler"/>
+		
 	</http>
 
+	<beans:bean name="customLogoutSuccessHandler" 
+	class="com.vmware.gemfire.tools.pulse.internal.security.LogoutHandler">
+		<beans:constructor-arg value="/Login.html"/>		
+	</beans:bean>
+	
 	<beans:bean id="authenticationFailureHandler"
 		class="org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler">
 		<beans:property name="exceptionMappings">
@@ -63,15 +72,27 @@
 			</beans:props>
 		</beans:property>
 	</beans:bean>
+	
+	<beans:bean id="gemAuthenticationProvider" 
+		class="com.vmware.gemfire.tools.pulse.internal.security.GemFireAuthenticationProvider">
+  	</beans:bean>
 
-	<!-- Default user authentication based on in-memory user service -->
+	
+	<!-- Default user authentication -->
 	<beans:beans profile="pulse.authentication.default">
 		<authentication-manager>
 			<authentication-provider>
 				<user-service>
-					<user name="admin" password="admin" authorities="ROLE_USER" />
+					<user name="admin" password="admin" authorities="CLUSTER:READ,DATA:READ" />
 				</user-service>
 			</authentication-provider>
+		</authentication-manager>
+	</beans:beans>
+	
+	<!-- Default user authentication based on gemfire integrated security -->
+	<beans:beans profile="pulse.authentication.gemfire">
+		<authentication-manager alias="authenticationManager">
+			<authentication-provider ref="gemAuthenticationProvider"/>
 		</authentication-manager>
 	</beans:beans>
 
@@ -79,5 +100,5 @@
 	<beans:beans profile="pulse.authentication.custom">
 		<beans:import resource="classpath:pulse-authentication-custom.xml" />
 	</beans:beans>
-
+   
 </beans:beans>

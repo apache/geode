@@ -1316,7 +1316,6 @@ public class BucketAdvisor extends CacheDistributionAdvisor  {
             ((BucketRegion)br).processPendingSecondaryExpires();
           }
           if (br instanceof BucketRegionQueue) { // Shouldn't it be AbstractBucketRegionQueue
-            // i.e. this stats is not getting incremented for HDFSBucketRegionQueue!!
             BucketRegionQueue brq = (BucketRegionQueue)br;
             brq.incQueueSize(brq.size());
           }

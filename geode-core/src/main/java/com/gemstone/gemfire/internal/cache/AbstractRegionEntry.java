@@ -870,15 +870,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
         removeEntry = true;
       }
 
-      // See #47887, we do not insert a tombstone for evicted HDFS
-      // entries since the value is still present in HDFS
-      // Check if we have to evict or just do destroy.
-      boolean forceRemoveEntry = 
-          (event.isEviction() || event.isExpiration()) 
-          && event.getRegion().isUsedForPartitionedRegionBucket()
-          && event.getRegion().getPartitionedRegion().isHDFSRegion();
-
-      if (removeEntry || forceRemoveEntry) {
+      if (removeEntry) {
         boolean isThisTombstone = isTombstone();
         if(inTokenMode && !event.getOperation().isEviction()) {
           setValue(region, Token.DESTROYED);  
@@ -1398,27 +1390,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
   /**
    * {@inheritDoc}
    */
-  @Override
-  public final boolean isMarkedForEviction() {
-    return areAnyBitsSet(MARKED_FOR_EVICTION);
-  }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public final void setMarkedForEviction() {
-    setBits(MARKED_FOR_EVICTION);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public final void clearMarkedForEviction() {
-    clearBits(~MARKED_FOR_EVICTION);
-  }
-  
   @Override
   public final synchronized void decRefCount(NewLRUClockHand lruList, LocalRegion lr) {
     if (TXManagerImpl.decRefCount(this)) {

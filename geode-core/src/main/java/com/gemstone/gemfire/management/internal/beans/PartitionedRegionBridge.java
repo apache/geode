@@ -76,14 +76,7 @@ public class PartitionedRegionBridge<K, V>  extends RegionMBeanBridge<K, V> {
   
   
   public static <K, V> PartitionedRegionBridge<K, V> getInstance(Region<K, V> region) {
-
-    if (region.getAttributes().getDataPolicy().withHDFS()) {
-      PartitionedRegionBridge<K, V> bridge = new HDFSRegionBridge<K, V>(region);
-      return bridge;
-    } else {
-      return new PartitionedRegionBridge<K, V> (region);
-    }
-
+    return new PartitionedRegionBridge<K, V> (region);
   }
   
   
@@ -308,9 +301,5 @@ public class PartitionedRegionBridge<K, V>  extends RegionMBeanBridge<K, V> {
   
   public int getLocalMaxMemory() {
     return partitionAttributesData.getLocalMaxMemory();
-  }
-
-  public long getEstimatedSizeForHDFSRegion() {
-    return -1;
   }
 }

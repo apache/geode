@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache.query.partitioned;
 
+import static com.gemstone.gemfire.cache.query.Utils.createPortfolioData;
+
 import com.gemstone.gemfire.cache.query.data.PortfolioData;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
@@ -35,8 +37,14 @@ public class PRBasicRemoveIndexDUnitTest extends PartitionedRegionDUnitTestCase
   public PRBasicRemoveIndexDUnitTest (String name) {
     super(name);
   }
+
+  public void setCacheInVMs(VM... vms) {
+    for (VM vm : vms) {
+      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    }
+  }
   
-  PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper("");
+  PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();
   
   /**
    * Name of the partitioned region for the test.
@@ -67,19 +75,19 @@ public class PRBasicRemoveIndexDUnitTest extends PartitionedRegionDUnitTestCase
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
-    
+    setCacheInVMs(vm0, vm1, vm2, vm3);
     LogWriterUtils.getLogWriter().info(
         "PRBasicRemoveIndexDUnitTest.testPRBasicIndexCreate test now starts ....");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     vm2.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     
-    final PortfolioData[] portfolio = PRQHelp.createPortfolioData(start, end);
+    final PortfolioData[] portfolio = createPortfolioData(start, end);
     // Putting the data into the PR's created
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio,
         start, end));
@@ -110,18 +118,18 @@ public class PRBasicRemoveIndexDUnitTest extends PartitionedRegionDUnitTestCase
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
-    
+    setCacheInVMs(vm0, vm1, vm2, vm3);
     LogWriterUtils.getLogWriter().info(
         "PRBasicRemoveIndexDUnitTest.testPRBasicIndexCreate test now starts ....");
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     vm2.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
-        redundancy));
+        redundancy, PortfolioData.class));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name,
-        redundancy));
-    final PortfolioData[] portfolio = PRQHelp.createPortfolioData(start, end);
+        redundancy, PortfolioData.class));
+    final PortfolioData[] portfolio = createPortfolioData(start, end);
     // Putting the data into the PR's created
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio,
         start, end));
@@ -134,8 +142,5 @@ public class PRBasicRemoveIndexDUnitTest extends PartitionedRegionDUnitTestCase
     
 //  remove indexes
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForRemoveIndex(name, true));
-    
-    
   }
-  
 }

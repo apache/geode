@@ -111,7 +111,7 @@ public class HeadlessGfsh implements ResultHandler {
     return status;
   }
 
-  int getCommandExecutionStatus() {
+  public int getCommandExecutionStatus() {
     return shell.getCommandExecutionStatus();
   }
 

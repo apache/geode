@@ -39,7 +39,6 @@ import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.data.PortfolioData;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager.TestHook;
-import com.gemstone.gemfire.cache.query.partitioned.PRQueryDUnitHelper;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
@@ -57,8 +56,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * 
  */
 public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase {
-
-  PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper("");
 
   String name;
 
@@ -92,7 +89,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase 
         "Create local region with synchronous index maintenance") {
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
         Region partitionRegion = null;
         IndexManager.testHook = null;
         try {
@@ -140,10 +137,10 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase 
 
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
 
         // Do a put in region.
-        Region r = PRQHelp.getCache().getRegion(name);
+        Region r = getCache().getRegion(name);
 
         for (int i = 0; i < 100; i++) {
           r.put(i, new PortfolioData(i));
@@ -153,7 +150,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase 
         IndexManager.testHook = new IndexManagerTestHook();
 
         // Destroy one of the values.
-        PRQHelp.getCache().getLogger().fine("Destroying the value");
+        getCache().getLogger().fine("Destroying the value");
         r.destroy(1);
 
         IndexManager.testHook = null;
@@ -165,7 +162,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase 
 
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
 
         while (!hooked) {
           Wait.pause(100);
@@ -204,7 +201,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase 
         "Create local region with synchronous index maintenance") {
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
         
         Region partitionRegion = null;
         IndexManager.testHook = null;
@@ -305,7 +302,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase 
 
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
 
         while (!hooked) {
           Wait.pause(100);
@@ -355,7 +352,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase 
       
       @Override
       public void run2() throws CacheException {
-        Cache cache = PRQHelp.getCache();
+        Cache cache = getCache();
         Region region = cache.createRegionFactory(RegionShortcut.LOCAL).create(regionName);
         QueryService qService = cache.getQueryService();
         
@@ -391,7 +388,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase 
       @Override
       public void run2() throws CacheException {
         
-        Region region = PRQHelp.getCache().getRegion(regionName);
+        Region region = getCache().getRegion(regionName);
         for (int i=0; i<100; i++) {
           if (i == 50) IndexManager.testHook = new LocalTestHook();
           region.put(i, new Portfolio(i));
@@ -405,7 +402,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase 
       
       @Override
       public void run2() throws CacheException {
-        Region region = PRQHelp.getCache().getRegion(regionName);
+        Region region = getCache().getRegion(regionName);
         
         while(!hooked) {
           Wait.pause(100);
@@ -417,7 +414,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase 
         }
 
         try {
-            QueryService qservice = PRQHelp.getCache().getQueryService();
+            QueryService qservice = getCache().getQueryService();
             Index index = qservice.getIndex(region, "idIndex");
             if (((CompactRangeIndex)index).getIndexStorage().size() > 1) {
               fail("After clear region size is supposed to be zero as all index updates are blocked. Current region size is: "+ region.size());
@@ -436,7 +433,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase 
       
       @Override
       public void run2() throws CacheException {
-        Region region = PRQHelp.getCache().getRegion(regionName);
+        Region region = getCache().getRegion(regionName);
         if (region.size() > 50) {
           fail("After clear region size is supposed to be 50 as all index updates are blocked " + region.size());
         }

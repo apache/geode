@@ -22,9 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
@@ -54,8 +51,13 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -64,6 +66,10 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
   private static final String indexName = "Id1";
   private static final String parRegPersName = "ParRegPers";
   private static final String repRegPersName = "RepRegPer";
+
+  public IndexCommandsDUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
+  }
 
   Region<?, ?> createParReg(String regionName, Cache cache, Class keyConstraint, Class valueConstraint) {
     RegionFactory regionFactory = cache.createRegionFactory();
@@ -133,7 +139,6 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     return regionFactory.create(regionName);
   }
 
-  @Test
   public void testCreateKeyIndexOnRegionWithPersistence() {
     setupSystemPersist();
 
@@ -163,7 +168,6 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(Status.OK.equals(commandResult.getStatus()));
   }
 
-  @Test
   public void testCreateAndDestroyIndex() {
     setupSystem();
     /***
@@ -205,7 +209,6 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertFalse(resultAsString.contains(indexName));
   }
 
-  @Test
   public void testCreateIndexMultipleIterators() {
     setupSystem();
 
@@ -644,7 +647,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     Properties managerProps = new Properties();
     managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-    createDefaultSetup(managerProps);
+    setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);
@@ -762,7 +765,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
   private void setupSystem() {
     disconnectAllFromDS();
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     final String parRegName = "StocksParReg";
 
     final VM manager = Host.getHost(0).getVM(0);
@@ -792,7 +795,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
   private void setupSystemPersist() {
     disconnectAllFromDS();
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     final String parRegName = "StocksParReg";
 
     final VM manager = Host.getHost(0).getVM(0);

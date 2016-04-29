@@ -3738,6 +3738,13 @@ public interface DistributionConfig extends Config, LogConfig {
   @ConfigAttributeSetter(name=LOCK_MEMORY_NAME)
   public void setLockMemory(boolean value);
 
+  @ConfigAttribute(type=String.class)
+  public String SHIRO_INIT_NAME="shiro-init";
+
+  @ConfigAttributeSetter(name=SHIRO_INIT_NAME)
+  public void setShiroInit(String value);
+  @ConfigAttributeGetter(name=SHIRO_INIT_NAME)
+  public String getShiroInit();
 
 
   //*************** Initializers to gather all the annotations in this class ************************

@@ -16,14 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -37,11 +29,18 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.configuration.domain.SharedConfigurationStatus;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
 
-/********
- * 
- *
- */
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
+
 
 public class StatusCommands extends AbstractCommandsSupport implements CommandMarker {
   static final FetchSharedConfigurationStatusFunction fetchSharedConfigStatusFunction = new FetchSharedConfigurationStatusFunction(); 
@@ -49,6 +48,7 @@ public class StatusCommands extends AbstractCommandsSupport implements CommandMa
   @SuppressWarnings("unchecked")
   @CliCommand (value = CliStrings.STATUS_SHARED_CONFIG, help = CliStrings.STATUS_SHARED_CONFIG_HELP)
   @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_LOCATOR)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result statusSharedConfiguration() {
     final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     final Set<DistributedMember> locators = new HashSet<DistributedMember>(cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());

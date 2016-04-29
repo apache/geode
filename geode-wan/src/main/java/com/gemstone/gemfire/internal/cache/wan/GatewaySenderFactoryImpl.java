@@ -181,10 +181,6 @@ public class GatewaySenderFactoryImpl implements
     this.attrs.isBucketSorted = isBucketSorted;
     return this;
   }
-  public GatewaySenderFactory setIsHDFSQueue(boolean isHDFSQueue){
-    this.attrs.isHDFSQueue = isHDFSQueue;
-    return this;
-  }
   public GatewaySender create(String id, int remoteDSId) {
     int myDSId = InternalDistributedSystem.getAnyInstance()
         .getDistributionManager().getDistributedSystemId();

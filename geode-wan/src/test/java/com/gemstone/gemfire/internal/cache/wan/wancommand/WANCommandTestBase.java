@@ -16,14 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.wancommand;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
 import javax.management.remote.JMXConnectorServer;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -51,7 +50,18 @@ import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
-public class WANCommandTestBase extends CliCommandTestBase {
+import javax.management.remote.JMXConnectorServer;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
+import static com.gemstone.gemfire.test.dunit.Assert.fail;
+
+public abstract class WANCommandTestBase extends CliCommandTestBase {
 
   static Cache cache;
   private JMXConnectorServer jmxConnectorServer;
@@ -82,52 +92,48 @@ public class WANCommandTestBase extends CliCommandTestBase {
     enableManagement();
   }
 
-  public static Integer createFirstLocatorWithDSId(int dsId) {
-    WANCommandTestBase test = new WANCommandTestBase();
+  public Integer createFirstLocatorWithDSId(int dsId) {
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
     props.setProperty(DistributionConfig.START_LOCATOR_NAME, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    InternalDistributedSystem ds = test.getSystem(props);
+    InternalDistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
     return port;
   }
 
-  public static Integer createFirstRemoteLocator(int dsId, int remoteLocPort) {
-    WANCommandTestBase test = new WANCommandTestBase();
+  public Integer createFirstRemoteLocator(int dsId, int remoteLocPort) {
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
-    Properties props = test.getDistributedSystemProperties();
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
     props.setProperty(DistributionConfig.START_LOCATOR_NAME, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
     props.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + remoteLocPort + "]");
-    test.getSystem(props);
+    getSystem(props);
     return port;
   }
 
-  public static void createCache(Integer locPort){
-    WANCommandTestBase test = new WANCommandTestBase();
-    Properties props = test.getDistributedSystemProperties();
+  public void createCache(Integer locPort){
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
-    InternalDistributedSystem ds = test.getSystem(props);
+    InternalDistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
   }
 
-  public static void createCacheWithGroups(Integer locPort, String groups){
-    WANCommandTestBase test = new WANCommandTestBase();
-    Properties props = test.getDistributedSystemProperties();
+  public void createCacheWithGroups(Integer locPort, String groups){
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
     props.setProperty(DistributionConfig.GROUPS_NAME, groups);
-    InternalDistributedSystem ds = test.getSystem(props);
+    InternalDistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
   }
 
-  public static void createSender(String dsName, int remoteDsId,
+  public void createSender(String dsName, int remoteDsId,
       boolean isParallel, Integer maxMemory,
       Integer batchSize, boolean isConflation, boolean isPersistent,
       GatewayEventFilter filter, boolean isManulaStart) {
@@ -176,7 +182,7 @@ public class WANCommandTestBase extends CliCommandTestBase {
     }
   }
 
-  public static void startSender(String senderId){
+  public void startSender(String senderId){
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
       Set<GatewaySender> senders = cache.getGatewaySenders();
@@ -193,7 +199,7 @@ public class WANCommandTestBase extends CliCommandTestBase {
     }
   }
 
-  public static void pauseSender(String senderId){
+  public void pauseSender(String senderId){
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
       Set<GatewaySender> senders = cache.getGatewaySenders();
@@ -210,14 +216,13 @@ public class WANCommandTestBase extends CliCommandTestBase {
     }
   }
 
-  public static int createAndStartReceiver(int locPort) {
-    WANCommandTestBase test = new WANCommandTestBase();
-    Properties props = test.getDistributedSystemProperties();
+  public int createAndStartReceiver(int locPort) {
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
 
-    InternalDistributedSystem ds = test.getSystem(props);
+    InternalDistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
@@ -229,19 +234,18 @@ public class WANCommandTestBase extends CliCommandTestBase {
          receiver.start();
     } catch (IOException e) {
       e.printStackTrace();
-      fail("Test " + test.getName() + " failed to start GatewayRecevier");
+      fail("Test " + getName() + " failed to start GatewayRecevier");
     }
     return port;
   }
 
-  public static int createReceiver(int locPort) {
-    WANCommandTestBase test = new WANCommandTestBase();
-    Properties props = test.getDistributedSystemProperties();
+  public int createReceiver(int locPort) {
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
 
-    InternalDistributedSystem ds = test.getSystem(props);
+    InternalDistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
@@ -252,15 +256,14 @@ public class WANCommandTestBase extends CliCommandTestBase {
     return port;
   }
 
-  public static int createReceiverWithGroup(int locPort, String groups) {
-    WANCommandTestBase test = new WANCommandTestBase();
-    Properties props =  test.getDistributedSystemProperties();
+  public int createReceiverWithGroup(int locPort, String groups) {
+    Properties props =  getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
     props.setProperty(DistributionConfig.GROUPS_NAME, groups);
 
-    InternalDistributedSystem ds = test.getSystem(props);
+    InternalDistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
@@ -271,8 +274,7 @@ public class WANCommandTestBase extends CliCommandTestBase {
     return port;
   }
 
-  public static void startReceiver() {
-    WANCommandTestBase test = new WANCommandTestBase();
+  public void startReceiver() {
     try {
       Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
       for (GatewayReceiver receiver : receivers) {
@@ -280,27 +282,25 @@ public class WANCommandTestBase extends CliCommandTestBase {
       }
     } catch (IOException e) {
       e.printStackTrace();
-      fail("Test " + test.getName() + " failed to start GatewayRecevier");
+      fail("Test " + getName() + " failed to start GatewayRecevier");
     }
   }
 
-  public static void stopReceiver() {
-    WANCommandTestBase test = new WANCommandTestBase();
+  public void stopReceiver() {
     Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
     for (GatewayReceiver receiver : receivers) {
       receiver.stop();
     }
   }
 
-  public static int createAndStartReceiverWithGroup(int locPort, String groups) {
-    WANCommandTestBase test = new WANCommandTestBase();
-    Properties props = test.getDistributedSystemProperties();
+  public int createAndStartReceiverWithGroup(int locPort, String groups) {
+    Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
         + "]");
     props.setProperty(DistributionConfig.GROUPS_NAME, groups);
 
-    InternalDistributedSystem ds = test.getSystem(props);
+    InternalDistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
@@ -312,17 +312,17 @@ public class WANCommandTestBase extends CliCommandTestBase {
       receiver.start();
     } catch (IOException e) {
       e.printStackTrace();
-      fail("Test " + test.getName() + " failed to start GatewayRecevier on port " + port);
+      fail("Test " + getName() + " failed to start GatewayRecevier on port " + port);
     }
     return port;
   }
 
-  public static DistributedMember getMember(){
+  public DistributedMember getMember(){
     return cache.getDistributedSystem().getDistributedMember();
   }
 
 
-  public static int getLocatorPort(){
+  public int getLocatorPort(){
     return Locator.getLocators().get(0).getPort();
   }
 
@@ -338,7 +338,7 @@ public class WANCommandTestBase extends CliCommandTestBase {
 
   }
 
-  public static void verifySenderState(String senderId, boolean isRunning, boolean isPaused) {
+  public void verifySenderState(String senderId, boolean isRunning, boolean isPaused) {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
       Set<GatewaySender> senders = cache.getGatewaySenders();
@@ -357,7 +357,7 @@ public class WANCommandTestBase extends CliCommandTestBase {
     }
   }
 
-  public static void verifySenderAttributes(String senderId, int remoteDsID,
+  public void verifySenderAttributes(String senderId, int remoteDsID,
       boolean isParallel, boolean manualStart, int socketBufferSize,
       int socketReadTimeout, boolean enableBatchConflation, int batchSize,
       int batchTimeInterval, boolean enablePersistence,
@@ -440,19 +440,17 @@ public class WANCommandTestBase extends CliCommandTestBase {
     }
   }
 
-  public static void verifyReceiverState(boolean isRunning) {
-    WANCommandTestBase test = new WANCommandTestBase();
+  public void verifyReceiverState(boolean isRunning) {
     Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
     for (GatewayReceiver receiver : receivers) {
       assertEquals(isRunning, receiver.isRunning());
     }
   }
 
-  public static void verifyReceiverCreationWithAttributes(boolean isRunning,
+  public void verifyReceiverCreationWithAttributes(boolean isRunning,
       int startPort, int endPort, String bindAddress, int maxTimeBetweenPings,
       int socketBufferSize, List<String> expectedGatewayTransportFilters) {
 
-    WANCommandTestBase test = new WANCommandTestBase();
     Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
     assertEquals("Number of receivers is incorrect", 1, receivers.size());
     for (GatewayReceiver receiver : receivers) {

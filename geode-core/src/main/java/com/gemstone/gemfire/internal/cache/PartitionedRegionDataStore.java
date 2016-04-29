@@ -64,7 +64,6 @@ import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
-import com.gemstone.gemfire.cache.hdfs.HDFSIOException;
 import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.cache.query.internal.QCompiler;
 import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
@@ -2059,13 +2058,13 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
       ForceReattemptException, PRLocallyDestroyedException
   {
 	  return getLocally(bucketId, key,aCallbackArgument, disableCopyOnRead, preferCD, requestingClient, 
-			  clientEvent, returnTombstones, false, false);
+			  clientEvent, returnTombstones, false);
   }
   /**
    * Returns value corresponding to this key.
    * @param key
    *          the key to look for
-   * @param preferCD 
+   * @param preferCD
    * @param requestingClient the client making the request, or null
    * @param clientEvent client's event (for returning version tag)
    * @param returnTombstones whether tombstones should be returned
@@ -2076,21 +2075,28 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
    * @throws PrimaryBucketException if the locally managed bucket is not primary
    * @throws PRLocallyDestroyedException if the PartitionRegion is locally destroyed
    */
-  public Object getLocally(int bucketId, final Object key,
-      final Object aCallbackArgument, boolean disableCopyOnRead, boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, 
-      boolean returnTombstones, boolean opScopeIsLocal, boolean allowReadFromHDFS) throws PrimaryBucketException,
+  public Object getLocally(int bucketId,
+                           final Object key,
+                           final Object aCallbackArgument,
+                           boolean disableCopyOnRead,
+                           boolean preferCD,
+                           ClientProxyMembershipID requestingClient,
+                           EntryEventImpl clientEvent,
+                           boolean returnTombstones,
+                           boolean opScopeIsLocal) throws PrimaryBucketException,
       ForceReattemptException, PRLocallyDestroyedException
   {
     final BucketRegion bucketRegion = getInitializedBucketForId(key, Integer.valueOf(bucketId));
     //  check for primary (when a loader is present) done deeper in the BucketRegion
     Object ret=null;
     if (logger.isDebugEnabled()) {
-      logger.debug("getLocally:  key {}) bucketId={}{}{} region {} returnTombstones {} allowReadFromHDFS {}", key,
-          this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR, bucketId, bucketRegion.getName(), returnTombstones, allowReadFromHDFS);
+      logger.debug("getLocally:  key {}) bucketId={}{}{} region {} returnTombstones {} ", key,
+          this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR, bucketId, bucketRegion.getName(), returnTombstones);
     }
     invokeBucketReadHook();
     try {
-      ret = bucketRegion.get(key, aCallbackArgument, true, disableCopyOnRead , preferCD, requestingClient, clientEvent, returnTombstones, opScopeIsLocal, allowReadFromHDFS, false);
+      ret = bucketRegion.get(key, aCallbackArgument, true, disableCopyOnRead , preferCD, requestingClient, clientEvent, returnTombstones, opScopeIsLocal,
+        false);
       checkIfBucketMoved(bucketRegion);
     }
     catch (RegionDestroyedException rde) {
@@ -2122,7 +2128,11 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
    * @throws PrimaryBucketException if the locally managed bucket is not primary
    * @see #getLocally(int, Object, Object, boolean, boolean, ClientProxyMembershipID, EntryEventImpl, boolean)
    */
-  public RawValue getSerializedLocally(KeyInfo keyInfo, boolean doNotLockEntry, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS) throws PrimaryBucketException,
+  public RawValue getSerializedLocally(KeyInfo keyInfo,
+                                       boolean doNotLockEntry,
+                                       ClientProxyMembershipID requestingClient,
+                                       EntryEventImpl clientEvent,
+                                       boolean returnTombstones) throws PrimaryBucketException,
       ForceReattemptException {
     final BucketRegion bucketRegion = getInitializedBucketForId(keyInfo.getKey(), keyInfo.getBucketId());
     //  check for primary (when loader is present) done deeper in the BucketRegion
@@ -2133,7 +2143,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
     invokeBucketReadHook();
 
     try {
-      RawValue result = bucketRegion.getSerialized(keyInfo, true, doNotLockEntry, requestingClient, clientEvent, returnTombstones, allowReadFromHDFS);
+      RawValue result = bucketRegion.getSerialized(keyInfo, true, doNotLockEntry, requestingClient, clientEvent, returnTombstones);
       checkIfBucketMoved(bucketRegion);
       return result;
     } catch (RegionDestroyedException rde) {
@@ -2157,7 +2167,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
    * @param access
    *          true if caller wants last accessed time updated
    * @param allowTombstones whether a tombstoned entry can be returned
-   * 
+   *
    * @throws ForceReattemptException
    *           if bucket region is not present in this process
    * @return a RegionEntry for the given key, which will be null if the key is
@@ -2168,7 +2178,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
    *           if the PartitionRegion is locally destroyed
    */
   public EntrySnapshot getEntryLocally(int bucketId, final Object key,
-      boolean access, boolean allowTombstones, boolean allowReadFromHDFS)
+                                       boolean access, boolean allowTombstones)
       throws EntryNotFoundException, PrimaryBucketException,
       ForceReattemptException, PRLocallyDestroyedException
   {
@@ -2181,12 +2191,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
     EntrySnapshot res = null;
     RegionEntry ent = null;
     try {
-      if (allowReadFromHDFS) {
-        ent = bucketRegion.entries.getEntry(key);
-      }
-      else {
-        ent = bucketRegion.entries.getOperationalEntryInVM(key);
-      }
+      ent = bucketRegion.entries.getEntry(key);
 
       if (ent == null) {
         this.getPartitionedRegion().checkReadiness();
@@ -2296,14 +2301,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
     try{
       if (r != null) {
         Set keys = r.keySet(allowTombstones);
-        if (getPartitionedRegion().isHDFSReadWriteRegion()) {
-          // hdfs regions can't copy all keys into memory
-          ret = keys;
-
-        } else  { 
         // A copy is made so that the bucket is free to move
         ret = new HashSet(r.keySet(allowTombstones));
-		}
         checkIfBucketMoved(r);
       }
     }

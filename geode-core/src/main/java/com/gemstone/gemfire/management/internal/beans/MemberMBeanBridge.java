@@ -32,16 +32,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import javax.management.JMRuntimeException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-
-import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsType;
@@ -49,7 +45,6 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.hdfs.internal.HDFSStoreImpl;
 import com.gemstone.gemfire.cache.persistence.PersistentID;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
@@ -92,7 +87,6 @@ import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
 import com.gemstone.gemfire.internal.cache.persistence.BackupManager;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.ManagerLogWriter;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppender;
@@ -129,8 +123,11 @@ import com.gemstone.gemfire.management.internal.cli.CommandResponseBuilder;
 import com.gemstone.gemfire.management.internal.cli.remote.CommandExecutionContext;
 import com.gemstone.gemfire.management.internal.cli.remote.MemberCommandService;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
+import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+import com.gemstone.gemfire.security.GemFireSecurityException;
+import org.apache.logging.log4j.Logger;
 
 /**
  * This class acts as an Bridge between MemberMBean and GemFire Cache and
@@ -1010,32 +1007,6 @@ public class MemberMBeanBridge {
     return listDiskStores(true);
   }
 
-  
-
-  
-  /**
-   * @return list all the HDFSStore's name at cache level
-   */
-  
-  public String[] getHDFSStores() {
-    GemFireCacheImpl cacheImpl = (GemFireCacheImpl) cache;
-    String[] retStr = null;
-    Collection<HDFSStoreImpl> hdfsStoreCollection = null;
-    hdfsStoreCollection = cacheImpl.getHDFSStores();
-      
-    if (hdfsStoreCollection != null && hdfsStoreCollection.size() > 0) {
-      retStr = new String[hdfsStoreCollection.size()];
-      Iterator<HDFSStoreImpl> it = hdfsStoreCollection.iterator();
-      int i = 0;
-      while (it.hasNext()) {
-        retStr[i] = it.next().getName();
-        i++;
-
-      }
-    }
-    return retStr;
-  }
-      
   /**
    * 
    * @return log of the member.
@@ -1758,7 +1729,6 @@ public class MemberMBeanBridge {
     if (isGfshRequest) {
       CommandExecutionContext.setShellRequest();
     }
-//    System.out.println("isGfshRequest :: "+isGfshRequest);
     
     Result result = ((MemberCommandService)commandService).processCommand(commandString, env);
     if (!(result instanceof CommandResult)) {// TODO - Abhishek - Shouldn't be needed
@@ -1766,11 +1736,19 @@ public class MemberMBeanBridge {
         result = ResultBuilder.createInfoResult(result.nextLine());
       }
     }
+
     if (isGfshRequest) {
       String responseJson = CommandResponseBuilder.createCommandResponseJson(getMember(), (CommandResult) result);
   //    System.out.println("responseJson :: "+responseJson);
       return responseJson;
     } else {
+      // throw GemFireSecurityException is the returned error code is 415
+      if(((CommandResult) result).getResultData() instanceof ErrorResultData){
+        ErrorResultData resultData = (ErrorResultData) ((CommandResult)result).getResultData();
+        if(resultData.getErrorCode()==ResultBuilder.ERRORCODE_UNAUTHORIZED){
+          throw new GemFireSecurityException(resultData.getGfJsonObject().toString());
+        }
+      }
       return ResultBuilder.resultAsString(result);
     }
   }

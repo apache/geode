@@ -373,13 +373,20 @@ public final class HARegion extends DistributedRegion
   
   /**
    * @return the deserialized value
-   * @see DistributedRegion#findObjectInSystem(KeyInfo, boolean, TXStateInterface, boolean, Object, boolean, boolean, ClientProxyMembershipID, EntryEventImpl, boolean, boolean)
+   * @see LocalRegion#findObjectInSystem(KeyInfo, boolean, TXStateInterface, boolean, Object, boolean, boolean, ClientProxyMembershipID, EntryEventImpl, boolean)
    *      
    */
   @Override
-  protected Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate,
-      TXStateInterface txState, boolean generateCallbacks, Object localValue, boolean disableCopyOnRead,
-      boolean preferCD, ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean allowReadFromHDFS)
+  protected Object findObjectInSystem(KeyInfo keyInfo,
+                                      boolean isCreate,
+                                      TXStateInterface txState,
+                                      boolean generateCallbacks,
+                                      Object localValue,
+                                      boolean disableCopyOnRead,
+                                      boolean preferCD,
+                                      ClientProxyMembershipID requestingClient,
+                                      EntryEventImpl clientEvent,
+                                      boolean returnTombstones)
     throws CacheLoaderException, TimeoutException  {
 
     Object value = null;

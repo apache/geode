@@ -16,17 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -47,6 +36,20 @@ import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData.S
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /***
  *
@@ -61,6 +64,7 @@ public class MemberCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.LIST_MEMBER }, help = CliStrings.LIST_MEMBER__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEMFIRE_SERVER)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result listMember(
 		  @CliOption(key = { CliStrings.LIST_MEMBER__GROUP },
 		             unspecifiedDefaultValue = "",
@@ -105,6 +109,7 @@ public class MemberCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.DESCRIBE_MEMBER }, help = CliStrings.DESCRIBE_MEMBER__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEMFIRE_SERVER)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result describeMember(
   	@CliOption(key = CliStrings.DESCRIBE_MEMBER__IDENTIFIER,
   	             optionContext = ConverterHint.ALL_MEMBER_IDNAME,

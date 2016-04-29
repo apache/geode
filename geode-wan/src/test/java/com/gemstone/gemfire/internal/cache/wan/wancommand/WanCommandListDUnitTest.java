@@ -16,16 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.wancommand;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
-import static com.gemstone.gemfire.test.dunit.Wait.*;
-
-import java.util.List;
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
@@ -34,6 +24,15 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.List;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.test.dunit.Wait.pause;
 
 @Category(DistributedTest.class)
 public class WanCommandListDUnitTest extends WANCommandTestBase {
@@ -43,19 +42,19 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   @Test
   public void testListGatewayWithNoSenderReceiver() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
+    vm3.invoke(() -> createCache( punePort ));
+    vm4.invoke(() -> createCache( punePort ));
+    vm5.invoke(() -> createCache( punePort ));
     
     pause(10000);
     String command = CliStrings.LIST_GATEWAY;
@@ -72,33 +71,33 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   @Test
   public void testListGatewaySender() {
 
-    Integer punePort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer punePort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + punePort + "]");
-    createDefaultSetup(props);
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, punePort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, punePort ));
 
-    vm6.invoke(() -> WANCommandTestBase.createAndStartReceiver( nyPort ));
-    vm7.invoke(() -> WANCommandTestBase.createAndStartReceiver( nyPort ));
+    vm6.invoke(() -> createAndStartReceiver( nyPort ));
+    vm7.invoke(() -> createAndStartReceiver( nyPort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm3.invoke(() -> WANCommandTestBase.createSender(
+    vm3.invoke(() -> createCache( punePort ));
+    vm3.invoke(() -> createSender(
         "ln_Serial", 2, false, 100, 400, false, false, null, false ));
-    vm3.invoke(() -> WANCommandTestBase.createSender(
+    vm3.invoke(() -> createSender(
         "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
 
-    vm4.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm4.invoke(() -> WANCommandTestBase.createSender(
+    vm4.invoke(() -> createCache( punePort ));
+    vm4.invoke(() -> createSender(
         "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
-    vm4.invoke(() -> WANCommandTestBase.createSender(
+    vm4.invoke(() -> createSender(
         "ln_Serial", 2, false, 100, 400, false, false, null, false ));
 
-    vm5.invoke(() -> WANCommandTestBase.createCache( punePort ));
-    vm5.invoke(() -> WANCommandTestBase.createSender(
+    vm5.invoke(() -> createCache( punePort ));
+    vm5.invoke(() -> createSender(
         "ln_Serial", 2, false, 100, 400, false, false, null, false ));
 
     pause(10000);
@@ -125,28 +124,28 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   @Test
   public void testListGatewayReceiver() {
 
-    Integer lnPort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + lnPort + "]");
-    createDefaultSetup(props);
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, lnPort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, lnPort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createAndStartReceiver( lnPort ));
-    vm4.invoke(() -> WANCommandTestBase.createAndStartReceiver( lnPort ));
+    vm3.invoke(() -> createAndStartReceiver( lnPort ));
+    vm4.invoke(() -> createAndStartReceiver( lnPort ));
 
     vm5
-        .invoke(() -> WANCommandTestBase.createCache( nyPort ));
-    vm5.invoke(() -> WANCommandTestBase.createSender(
+        .invoke(() -> createCache( nyPort ));
+    vm5.invoke(() -> createSender(
         "ln_Serial", 1, false, 100, 400, false, false, null, false ));
     vm6
-        .invoke(() -> WANCommandTestBase.createCache( nyPort ));
-    vm6.invoke(() -> WANCommandTestBase.createSender(
+        .invoke(() -> createCache( nyPort ));
+    vm6.invoke(() -> createSender(
         "ln_Serial", 1, false, 100, 400, false, false, null, false ));
-    vm6.invoke(() -> WANCommandTestBase.createSender(
+    vm6.invoke(() -> createSender(
         "ln_Parallel", 1, true, 100, 400, false, false, null, false ));
 
     pause(10000);
@@ -175,36 +174,36 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   @Test
   public void testListGatewaySenderGatewayReceiver() throws GfJsonException {
 
-    Integer lnPort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + lnPort + "]");
-    createDefaultSetup(props);
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, lnPort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, lnPort ));
 
-    vm6.invoke(() -> WANCommandTestBase.createAndStartReceiver( nyPort ));
+    vm6.invoke(() -> createAndStartReceiver( nyPort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCache( lnPort ));
-    vm3.invoke(() -> WANCommandTestBase.createSender(
+    vm3.invoke(() -> createCache( lnPort ));
+    vm3.invoke(() -> createSender(
         "ln_Serial", 2, false, 100, 400, false, false, null, false ));
-    vm3.invoke(() -> WANCommandTestBase.createSender(
+    vm3.invoke(() -> createSender(
         "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
 
-    vm4.invoke(() -> WANCommandTestBase.createCache( lnPort ));
-    vm4.invoke(() -> WANCommandTestBase.createSender(
+    vm4.invoke(() -> createCache( lnPort ));
+    vm4.invoke(() -> createSender(
         "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
-    vm4.invoke(() -> WANCommandTestBase.createSender(
+    vm4.invoke(() -> createSender(
         "ln_Serial", 2, false, 100, 400, false, false, null, false ));
 
-    vm5.invoke(() -> WANCommandTestBase.createAndStartReceiver( lnPort ));
+    vm5.invoke(() -> createAndStartReceiver( lnPort ));
 
-    vm7.invoke(() -> WANCommandTestBase.createCache( nyPort ));
-    vm7.invoke(() -> WANCommandTestBase.createSender(
+    vm7.invoke(() -> createCache( nyPort ));
+    vm7.invoke(() -> createSender(
         "ln_Serial", 1, false, 100, 400, false, false, null, false ));
-    vm7.invoke(() -> WANCommandTestBase.createSender(
+    vm7.invoke(() -> createSender(
         "ln_Parallel", 1, true, 100, 400, false, false, null, false ));
 
     pause(10000);
@@ -237,39 +236,39 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   @Test
   public void testListGatewaySenderGatewayReceiver_group() {
 
-    Integer lnPort = (Integer) vm1.invoke(() -> WANCommandTestBase.createFirstLocatorWithDSId( 1 ));
+    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
     props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + lnPort + "]");
-    createDefaultSetup(props);
+    setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> WANCommandTestBase.createFirstRemoteLocator( 2, lnPort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, lnPort ));
 
-    vm6.invoke(() -> WANCommandTestBase.createAndStartReceiver( nyPort ));
+    vm6.invoke(() -> createAndStartReceiver( nyPort ));
 
-    vm3.invoke(() -> WANCommandTestBase.createCacheWithGroups( lnPort, "Serial_Sender, Paralle_Sender"));
-    vm3.invoke(() -> WANCommandTestBase.createSender(
+    vm3.invoke(() -> createCacheWithGroups( lnPort, "Serial_Sender, Paralle_Sender"));
+    vm3.invoke(() -> createSender(
         "ln_Serial", 2, false, 100, 400, false, false, null, false ));
-    vm3.invoke(() -> WANCommandTestBase.createSender(
+    vm3.invoke(() -> createSender(
         "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
 
-    vm4.invoke(() -> WANCommandTestBase.createCacheWithGroups( lnPort,"Serial_Sender, Paralle_Sender"));
-    vm4.invoke(() -> WANCommandTestBase.createSender(
+    vm4.invoke(() -> createCacheWithGroups( lnPort,"Serial_Sender, Paralle_Sender"));
+    vm4.invoke(() -> createSender(
         "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
-    vm4.invoke(() -> WANCommandTestBase.createSender(
+    vm4.invoke(() -> createSender(
         "ln_Serial", 2, false, 100, 400, false, false, null, false ));
 
-    vm5.invoke(() -> WANCommandTestBase.createAndStartReceiverWithGroup( lnPort, "Paralle_Sender,Receiver_Group" ));
-    vm5.invoke(() -> WANCommandTestBase.createSender(
+    vm5.invoke(() -> createAndStartReceiverWithGroup( lnPort, "Paralle_Sender,Receiver_Group" ));
+    vm5.invoke(() -> createSender(
       "ln_Parallel", 2, true, 100, 400, false, false, null, false ));
     
 
-    vm7.invoke(() -> WANCommandTestBase.createCache( nyPort ));
-    vm7.invoke(() -> WANCommandTestBase.createSender(
+    vm7.invoke(() -> createCache( nyPort ));
+    vm7.invoke(() -> createSender(
         "ln_Serial", 1, false, 100, 400, false, false, null, false ));
-    vm7.invoke(() -> WANCommandTestBase.createSender(
+    vm7.invoke(() -> createSender(
         "ln_Parallel", 1, true, 100, 400, false, false, null, false ));
 
     pause(10000);

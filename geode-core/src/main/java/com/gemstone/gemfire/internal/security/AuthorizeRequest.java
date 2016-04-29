@@ -95,11 +95,6 @@ public class AuthorizeRequest {
         new Object[] {id, authzFactoryName});
     }
   }
- 
-  public AccessControl getAuthzCallback() {
-
-    return this.authzCallback;
-  }
 
   public GetOperationContext getAuthorize(String regionName, Object key,
       Object callbackArg) throws NotAuthorizedException {

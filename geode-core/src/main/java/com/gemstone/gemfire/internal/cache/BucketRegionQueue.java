@@ -441,7 +441,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
   }
 
-  protected void addToEventQueue(Object key, boolean didPut, EntryEventImpl event, int sizeOfHDFSEvent) {
+  protected void addToEventQueue(Object key, boolean didPut, EntryEventImpl event) {
     if (didPut) {
       if (this.initialized) {
         this.eventSeqNumQueue.add(key);

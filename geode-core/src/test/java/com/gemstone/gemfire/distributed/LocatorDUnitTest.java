@@ -1535,6 +1535,10 @@ public class LocatorDUnitTest extends DistributedTestCase {
           }
         };
         Wait.waitForCriterion(waitCriterion, 30 * 1000, 1000, true);
+        waitUntilLocatorBecomesCoordinator(vm1);
+        waitUntilLocatorBecomesCoordinator(vm2);
+        waitUntilLocatorBecomesCoordinator(vm3);
+        waitUntilLocatorBecomesCoordinator(vm4);
 
         int netviewId = vm1.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.getViewId());
         assertEquals(netviewId, (int) vm2.invoke("checking ViewID", () -> GMSJoinLeaveTestHelper.getViewId()));
@@ -1558,6 +1562,33 @@ public class LocatorDUnitTest extends DistributedTestCase {
       }
     } finally {
     }
+  }
+  
+  private void waitUntilLocatorBecomesCoordinator(VM vm) {
+    SerializableRunnable sr = new SerializableRunnable("waitUntilLocatorBecomesCoordinator") {
+
+      @Override
+      public void run() throws Exception {
+        final WaitCriterion waitCriterion = new WaitCriterion() {
+          public boolean done() {
+            try {
+              InternalDistributedMember c = GMSJoinLeaveTestHelper.getCurrentCoordinator();
+              return c.getVmKind() == DistributionManager.LOCATOR_DM_TYPE;
+            } catch (Exception e) {
+              e.printStackTrace();
+              com.gemstone.gemfire.test.dunit.Assert.fail("unexpected exception", e);
+            }
+            return false; // NOTREACHED
+          }
+
+          public String description() {
+            return null;
+          }
+        };
+        Wait.waitForCriterion(waitCriterion, 15 * 1000, 200, true);
+      }
+    };
+    vm.invoke(sr);
   }
 
   private void startLocatorSync(VM vm, Object[] args) {

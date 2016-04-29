@@ -35,10 +35,6 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -69,8 +65,14 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -90,12 +92,16 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
 
+  public CreateAlterDestroyRegionCommandsDUnitTest(boolean useHttpOnConnect){
+    super(useHttpOnConnect);
+  }
+
   /**
    * Asserts that the "compressor" option for the "create region" command succeeds for a recognized compressor.
    */
   @Test
   public void testCreateRegionWithGoodCompressor() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     VM vm = Host.getHost(0).getVM(1);
 
     // Create a cache in vm 1
@@ -131,7 +137,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
    */
   @Test
   public void testCreateRegionWithBadCompressor() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     VM vm = Host.getHost(0).getVM(1);
 
@@ -161,7 +167,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
    */
   @Test
   public void testCreateRegionWithNoCompressor() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     VM vm = Host.getHost(0).getVM(1);
 
@@ -193,7 +199,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
   @Test
   public void testDestroyDistributedRegion() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     for (int i = 1; i <= 2; i++) {
       Host.getHost(0).getVM(i).invoke(() -> {
@@ -249,7 +255,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
   @Test
   public void testDestroyLocalRegions() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     for (int i = 1; i <= 3; i++) {
       Host.getHost(0).getVM(i).invoke(() -> {
@@ -290,7 +296,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
   @Test
   public void testDestroyLocalAndDistributedRegions() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     for (int i = 1; i <= 2; i++) {
       Host.getHost(0).getVM(i).invoke(() -> {
@@ -358,7 +364,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
   @Category(FlakyTest.class) // GEODE-973: random ports, BindException, java.rmi.server.ExportException: Port already in use
   @Test
   public void testCreateRegion46391() throws IOException {
-    createDefaultSetup(null); // GEODE-973: getRandomAvailablePort
+    setUpJmxManagerOnVm0ThenConnect(null); // GEODE-973: getRandomAvailablePort
     String command = CliStrings.CREATE_REGION + " --" + CliStrings.CREATE_REGION__REGION + "=" + this.region46391 + " --" + CliStrings.CREATE_REGION__REGIONSHORTCUT + "=REPLICATE";
 
     getLogWriter().info("testCreateRegion46391 create region command=" + command);
@@ -392,7 +398,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
   @Ignore("bug51924")
   @Test
   public void testAlterRegion() throws IOException {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     CommandResult cmdResult = executeCommand(CliStrings.LIST_REGION);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -794,7 +800,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     Properties managerProps = new Properties();
     managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-    createDefaultSetup(managerProps);
+    setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);
@@ -928,7 +934,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     Properties managerProps = new Properties();
     managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
-    createDefaultSetup(managerProps);
+    setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);

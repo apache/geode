@@ -31,9 +31,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
@@ -55,6 +52,10 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * The ListIndexCommandDUnitTest class is distributed test suite of test cases for testing the index-based GemFire shell
@@ -66,11 +67,16 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
  */
 @SuppressWarnings("unused")
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class ListIndexCommandDUnitTest extends CliCommandTestBase {
 
   protected static final int DEFAULT_REGION_INITIAL_CAPACITY = 10000;
 
   private final AtomicLong idGenerator = new AtomicLong(0l);
+
+  public ListIndexCommandDUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
+  }
 
   protected static String toString(final Result result) {
     assert result != null : "The Result object from the command execution cannot be null!";
@@ -87,7 +93,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
 
   @Override
   public final void postSetUp() throws Exception {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     setupGemFire();
   }
 

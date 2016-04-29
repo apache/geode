@@ -27,6 +27,7 @@ import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
 import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
 
+import javax.management.remote.JMXConnector;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,7 +54,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * Class Cluster This class is the Data Model for the data used for the Pulse
  * Web UI.
@@ -1516,7 +1516,6 @@ public class Cluster extends Thread {
     private boolean diskSynchronous;
     private boolean enableOffHeapMemory;
     private String compressionCodec = "";
-    private boolean hdfsWriteOnly;
 
     private List<String> memberName = new ArrayList<String>();
     private List<RegionOnMember> regionOnMembers  = new ArrayList<RegionOnMember>();
@@ -1767,14 +1766,6 @@ public class Cluster extends Thread {
 
     public void setCompressionCodec(String compressionCodec) {
       this.compressionCodec = compressionCodec;
-    }
-
-    public boolean isHdfsWriteOnly() {
-      return hdfsWriteOnly;
-    }
-
-    public void setHdfsWriteOnly(boolean hdfsWriteOnly) {
-      this.hdfsWriteOnly = hdfsWriteOnly;
     }
 
     public Cluster.RegionOnMember[] getRegionOnMembers() {
@@ -2376,7 +2367,7 @@ public class Cluster extends Thread {
         }
       } catch (Exception e) {
         if (LOGGER.infoEnabled()) {
-          LOGGER.info("Exception Occured while updating cluster data : " + e.getMessage());
+          LOGGER.info("Exception Occurred while updating cluster data : " + e.getMessage());
         }
       }
 
@@ -2384,7 +2375,7 @@ public class Cluster extends Thread {
         Thread.sleep(POLL_INTERVAL);
       } catch (InterruptedException e) {
         if (LOGGER.infoEnabled()) {
-          LOGGER.info("InterruptedException Occured : " + e.getMessage());
+          LOGGER.info("InterruptedException Occurred : " + e.getMessage());
         }
       }
     }
@@ -2889,6 +2880,14 @@ public class Cluster extends Thread {
 
   public boolean deleteQueryById(String userId, String queryId) {
     return this.getDataBrowser().deleteQueryById(userId, queryId);
+  }
+  
+  public JMXConnector connectToGemFire() {
+    if(this.updater instanceof JMXDataUpdater) {
+      return ((JMXDataUpdater) this.updater).getJMXConnection(false);
+    } else {
+      return null;
+    }
   }
 
   /**
