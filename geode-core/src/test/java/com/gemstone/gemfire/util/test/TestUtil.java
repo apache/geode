@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import junit.framework.AssertionFailedError;
-
 import com.gemstone.gemfire.internal.FileUtil;
 
 public class TestUtil {
@@ -42,7 +40,7 @@ public class TestUtil {
   public static String getResourcePath(Class<?> clazz, String name) {
     URL resource = clazz.getResource(name);
     if(resource == null) {
-      throw new AssertionFailedError("Could not find resource " + name);
+      throw new RuntimeException("Could not find resource " + name);
     }
     try {
       String path = resource.toURI().getPath();
@@ -57,9 +55,5 @@ public class TestUtil {
     } catch (URISyntaxException | IOException e) {
       throw new RuntimeException("Failed getting path to resource " + name, e);
     }
-  }
-
-  private TestUtil() {
-    
   }
 }

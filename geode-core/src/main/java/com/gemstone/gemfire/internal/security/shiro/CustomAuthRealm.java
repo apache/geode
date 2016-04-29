@@ -36,7 +36,6 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.security.AccessControl;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
 
 import org.apache.logging.log4j.LogManager;
@@ -116,8 +115,8 @@ public class CustomAuthRealm extends AuthorizingRealm{
           cachedAuthZCallback.put(principal, authzCallback);
           return authzCallback;
         } catch (Exception ex) {
-          throw new AuthenticationFailedException(
-              LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHENTICATOR_OBJECT.toLocalizedString(), ex);
+          throw new AuthenticationException(
+              ex.toString(), ex);
         }
       }
     } else {
@@ -131,25 +130,25 @@ public class CustomAuthRealm extends AuthorizingRealm{
           cachedPostAuthZCallback.put(principal, postAuthzCallback);
           return postAuthzCallback;
         } catch (Exception ex) {
-          throw new AuthenticationFailedException(
-              LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHENTICATOR_OBJECT.toLocalizedString(), ex);
+          throw new AuthenticationException(
+              ex.toString(), ex);
         }
       }
     }
     return null;
   }
 
-  private Authenticator getAuthenticator(Properties gfSecurityProperties) throws AuthenticationFailedException {
+  private Authenticator getAuthenticator(Properties gfSecurityProperties) throws AuthenticationException {
     Authenticator auth;
     try {
       Method instanceGetter = ClassLoadUtil.methodFromName(this.authenticatorFactoryName);
       auth = (Authenticator) instanceGetter.invoke(null, (Object[]) null);
     } catch (Exception ex) {
-      throw new AuthenticationFailedException(
-          LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHENTICATOR_OBJECT.toLocalizedString(), ex);
+      throw new AuthenticationException(
+          ex.toString(), ex);
     }
     if (auth == null) {
-      throw new AuthenticationFailedException(
+      throw new AuthenticationException(
           LocalizedStrings.HandShake_AUTHENTICATOR_INSTANCE_COULD_NOT_BE_OBTAINED.toLocalizedString());
     }
     auth.init(gfSecurityProperties);

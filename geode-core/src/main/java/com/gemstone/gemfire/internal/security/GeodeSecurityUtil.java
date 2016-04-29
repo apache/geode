@@ -53,6 +53,7 @@ public class GeodeSecurityUtil {
       logger.info("Logging in "+username+"/"+password);
       currentUser.login(token);
     } catch (ShiroException e) {
+      logger.info(e.getMessage(), e);
       throw new AuthenticationFailedException(e.getMessage(), e);
     }
   }
@@ -67,6 +68,7 @@ public class GeodeSecurityUtil {
       currentUser.logout();
     }
     catch(ShiroException e){
+      logger.info(e.getMessage(), e);
       throw new AuthenticationFailedException(e.getMessage(), e);
     }
     // clean out Shiro's thread local content

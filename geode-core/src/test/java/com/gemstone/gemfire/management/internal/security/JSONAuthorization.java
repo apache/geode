@@ -64,7 +64,9 @@ public class JSONAuthorization implements AccessControl, Authenticator {
     return new JSONAuthorization();
   }
 
-  public JSONAuthorization() {
+  public JSONAuthorization() throws IOException, JSONException {
+    // initialize with a default json file
+    setUpWithJsonFile("shiro-ini.json");
   }
 
   public JSONAuthorization(String jsonFileName) throws IOException, JSONException {
