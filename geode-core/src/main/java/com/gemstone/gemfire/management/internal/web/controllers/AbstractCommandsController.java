@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import javax.management.JMX;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -33,19 +34,23 @@ import javax.management.ObjectName;
 import javax.management.Query;
 import javax.management.QueryExp;
 
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
 import com.gemstone.gemfire.management.DistributedSystemMXBean;
+import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.MemberMXBean;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
+import com.gemstone.gemfire.management.internal.SystemManagementService;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor;
+import com.gemstone.gemfire.management.internal.web.controllers.support.LoginHandlerInterceptor;
 import com.gemstone.gemfire.management.internal.web.controllers.support.MemberMXBeanAdapter;
 import com.gemstone.gemfire.management.internal.web.util.UriUtils;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
@@ -55,9 +60,9 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * The AbstractCommandsController class is the abstract base class encapsulating common functionality across all
@@ -80,6 +85,26 @@ public abstract class AbstractCommandsController {
   protected static final String REST_API_VERSION = "/v1";
 
   private MemberMXBean managingMemberMXBeanProxy;
+
+
+
+  private Class accessControlKlass;
+
+
+  // Convert a predefined exception to an HTTP Status code
+  @ResponseStatus(value=HttpStatus.UNAUTHORIZED, reason="Not authenticated")  // 401
+  @ExceptionHandler(com.gemstone.gemfire.security.AuthenticationFailedException.class)
+  public void authenticate() {
+
+  }
+
+  // Convert a predefined exception to an HTTP Status code
+  @ResponseStatus(value=HttpStatus.FORBIDDEN, reason="Access Denied")  // 403
+  @ExceptionHandler(java.lang.SecurityException.class)
+  public void authorize() {
+
+  }
+
 
   /**
    * Asserts the argument is valid, as determined by the caller passing the result of an evaluated expression to this
@@ -407,19 +432,27 @@ public abstract class AbstractCommandsController {
    */
   protected synchronized MemberMXBean getManagingMemberMXBean() {
     if (managingMemberMXBeanProxy == null) {
-      final MBeanServer platformMBeanServer = getMBeanServer();
+      SystemManagementService service = (SystemManagementService) ManagementService
+          .getExistingManagementService(GemFireCacheImpl.getInstance());
+      MBeanServer mbs = getMBeanServer();
 
-      final DistributedSystemMXBean distributedSystemMXBean = JMX.newMXBeanProxy(platformMBeanServer,
+      final DistributedSystemMXBean distributedSystemMXBean = JMX.newMXBeanProxy(mbs,
         MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
 
-      //managingMemberMXBeanProxy = createMemberMXBeanForManagerUsingAdapter(platformMBeanServer,
-      //  distributedSystemMXBean.getMemberObjectName());
-
-      managingMemberMXBeanProxy = createMemberMXBeanForManagerUsingProxy(platformMBeanServer,
+      managingMemberMXBeanProxy = createMemberMXBeanForManagerUsingProxy(mbs,
         distributedSystemMXBean.getMemberObjectName());
     }
 
     return managingMemberMXBeanProxy;
+  }
+
+  protected synchronized ObjectName getMemberObjectName() {
+    final MBeanServer platformMBeanServer = getMBeanServer();
+
+    final DistributedSystemMXBean distributedSystemMXBean = JMX.newMXBeanProxy(platformMBeanServer,
+        MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
+
+    return distributedSystemMXBean.getMemberObjectName();
   }
 
   /**
@@ -456,12 +489,12 @@ public abstract class AbstractCommandsController {
    * Gets the environment setup during this HTTP/command request for the current command process execution.
    * 
    * @return a mapping of environment variables to values.
-   * @see com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor#getEnvironment()
+   * @see LoginHandlerInterceptor#getEnvironment()
    */
   protected Map<String, String> getEnvironment() {
     final Map<String, String> environment = new HashMap<String, String>();
 
-    environment.putAll(EnvironmentVariablesHandlerInterceptor.getEnvironment());
+    environment.putAll(LoginHandlerInterceptor.getEnvironment());
     environment.put(Gfsh.ENV_APP_NAME, Gfsh.GFSH_APP_NAME);
 
     return environment;
@@ -509,13 +542,26 @@ public abstract class AbstractCommandsController {
    * @param command a String value containing a valid command String as would be entered by the user in Gfsh.
    * @return a result of the command execution as a String, typically marshalled in JSON to be serialized back to Gfsh.
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
-   * @see com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor#getEnvironment()
+   * @see LoginHandlerInterceptor#getEnvironment()
    * @see #getEnvironment()
    * @see #processCommand(String, java.util.Map, byte[][])
    */
   protected String processCommand(final String command) {
     return processCommand(command, getEnvironment(), null);
   }
+  protected Callable<ResponseEntity<String>> getProcessCommandCallable(final String command){
+    return getProcessCommandCallable(command, null);
+  }
+
+  protected Callable<ResponseEntity<String>> getProcessCommandCallable(final String command, final byte[][] fileData){
+    Callable callable = new Callable<ResponseEntity<String>>() {
+      @Override public ResponseEntity<String> call() throws Exception {
+        return new ResponseEntity<String>(processCommand(command, fileData), HttpStatus.OK);
+      }
+    };
+    return GeodeSecurityUtil.associateWith(callable);
+  }
+
 
   /**
    * Executes the specified command as entered by the user using the GemFire Shell (Gfsh).  Note, Gfsh performs
@@ -526,7 +572,7 @@ public abstract class AbstractCommandsController {
    * the Manager, usually for the 'deploy' Gfsh command.
    * @return a result of the command execution as a String, typically marshalled in JSON to be serialized back to Gfsh.
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
-   * @see com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor#getEnvironment()
+   * @see LoginHandlerInterceptor#getEnvironment()
    * @see #getEnvironment()
    * @see #processCommand(String, java.util.Map, byte[][])
    */
@@ -545,7 +591,7 @@ public abstract class AbstractCommandsController {
    * between Gfsh and the Manager, and thus need to specify this key/value pair mapping.
    * @return a result of the command execution as a String, typically marshalled in JSON to be serialized back to Gfsh.
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
-   * @see com.gemstone.gemfire.management.internal.web.controllers.support.EnvironmentVariablesHandlerInterceptor#getEnvironment()
+   * @see LoginHandlerInterceptor#getEnvironment()
    * @see #processCommand(String, java.util.Map, byte[][])
    */
   protected String processCommand(final String command, final Map<String, String> environment) {
@@ -567,11 +613,13 @@ public abstract class AbstractCommandsController {
    * @see com.gemstone.gemfire.management.MemberMXBean#processCommand(String, java.util.Map, Byte[][])
    */
   protected String processCommand(final String command, final Map<String, String> environment, final byte[][] fileData) {
-    logger.info(LogMarker.CONFIG, "Processing Command ({}) with Environment ({}) having File Data ({})...",
-        command, environment, (fileData != null));
-    
-    return getManagingMemberMXBean().processCommand(command, environment, ArrayUtils.toByteArray(fileData));
+    logger.info(LogMarker.CONFIG, "Processing Command ({}) with Environment ({}) having File Data ({})...", command,
+        environment, (fileData != null));
+    String result =  getManagingMemberMXBean().processCommand(command, environment, ArrayUtils.toByteArray(fileData));
+
+    return result;
   }
+
 
   /**
    * The MemberMXBeanProxy class is a proxy for the MemberMXBean interface transforming an operation on the member

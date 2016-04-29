@@ -16,6 +16,24 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.cache.operations.OperationContext.*;
+
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -60,28 +78,14 @@ import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.util.RegionPath;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Pattern;
-
 /**
- * 
+ *
  * @since 7.0
  */
 public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
@@ -104,6 +108,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
 
   @CliCommand (value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
   @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result createRegion(
       @CliOption (key = CliStrings.CREATE_REGION__REGION,
                   mandatory = true,
@@ -432,6 +437,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   
   @CliCommand (value = CliStrings.ALTER_REGION, help = CliStrings.ALTER_REGION__HELP)
   @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
+  @ResourceOperation(resource=Resource.DATA, operation = OperationCode.MANAGE)
   public Result alterRegion(
       @CliOption (key = CliStrings.ALTER_REGION__REGION,
                   mandatory = true,
@@ -990,13 +996,13 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = { CliStrings.DESTROY_REGION }, help = CliStrings.DESTROY_REGION__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
+  @ResourceOperation(resource=Resource.DATA, operation = OperationCode.MANAGE)
   public Result destroyRegion(
       @CliOption(key = CliStrings.DESTROY_REGION__REGION,
           optionContext = ConverterHint.REGIONPATH,
           mandatory = true,
           help = CliStrings.DESTROY_REGION__REGION__HELP)
       String regionPath) {
-
     if (regionPath == null) {
       return ResultBuilder.createInfoResult(CliStrings.DESTROY_REGION__MSG__SPECIFY_REGIONPATH_TO_DESTROY);
     }

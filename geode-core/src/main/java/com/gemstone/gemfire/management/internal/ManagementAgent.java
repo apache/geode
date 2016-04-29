@@ -30,8 +30,13 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
-
+import java.util.Set;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXServiceURL;
 import javax.management.remote.rmi.RMIConnectorServer;
@@ -39,10 +44,7 @@ import javax.management.remote.rmi.RMIJRMPServerImpl;
 import javax.management.remote.rmi.RMIServerImpl;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
-import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-
+import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -55,8 +57,15 @@ import com.gemstone.gemfire.internal.tcp.TCPConduit;
 import com.gemstone.gemfire.management.ManagementException;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.ManagerMXBean;
-import com.gemstone.gemfire.management.internal.security.ManagementInterceptor;
+import com.gemstone.gemfire.management.internal.security.AccessControlMBean;
+import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.unsafe.ReadOpFileAccessController;
+import com.gemstone.gemfire.internal.security.shiro.JMXShiroAuthenticator;
+
+import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 
 /**
  * Agent implementation that controls the JMX server end points for JMX clients
@@ -80,9 +89,9 @@ public class ManagementAgent {
   private boolean running = false;
   private Registry registry;
   private JMXConnectorServer cs;
+  private JMXShiroAuthenticator shiroAuthenticator;
   private final DistributionConfig config;
   private boolean isHttpServiceRunning = false;
-  private ManagementInterceptor securityInterceptor;
 
   /**
    * This system property is set to true when the embedded HTTP server is
@@ -192,6 +201,10 @@ public class ManagementAgent {
         if (logger.isDebugEnabled()) {
           logger.debug(message);
         }
+
+        if (isCustomAuthorizer()){
+          System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
+        }
       }
 
       // Find developer REST WAR file
@@ -294,10 +307,6 @@ public class ManagementAgent {
     }
   }
 
-  private boolean isRunningInTomcat() {
-    return (System.getProperty("catalina.base") != null || System.getProperty("catalina.home") != null);
-  }
-
   private void setStatusMessage(ManagerMXBean mBean, String message) {
     mBean.setPulseURL("");
     mBean.setStatusMessage(message);
@@ -385,28 +394,6 @@ public class ManagementAgent {
     // Environment map. KIRK: why is this declared as HashMap?
     final HashMap<String, Object> env = new HashMap<String, Object>();
 
-    boolean integratedSecEnabled = System.getProperty("resource-authenticator") != null;
-    if (integratedSecEnabled) {
-      securityInterceptor = new ManagementInterceptor(logger);
-      env.put(JMXConnectorServer.AUTHENTICATOR, securityInterceptor);
-    } else {
-      /* Disable the old authenticator mechanism */
-      String pwFile = this.config.getJmxManagerPasswordFile();
-      if (pwFile != null && pwFile.length() > 0) {
-        env.put("jmx.remote.x.password.file", pwFile);
-      }
-
-      String accessFile = this.config.getJmxManagerAccessFile();
-      if (accessFile != null && accessFile.length() > 0) {
-        // Lets not use default connector based authorization
-        // env.put("jmx.remote.x.access.file", accessFile);
-        // Rewire the mbs hierarchy to set accessController
-        ReadOpFileAccessController controller = new ReadOpFileAccessController(accessFile);
-        controller.setMBeanServer(mbs);
-        mbs = controller;
-      }
-    }
-
     // Manually creates and binds a JMX RMI Connector Server stub with the
     // registry created above: the port we pass here is the port that can
     // be specified in "service:jmx:rmi://"+hostname+":"+port - where the
@@ -459,25 +446,76 @@ public class ManagementAgent {
         super.start();
       }
     };
-    // This may be the 1.6 way of doing it but the problem is it does not use
-    // our "stub".
-    // cs = JMXConnectorServerFactory.newJMXConnectorServer(url, env, mbs);
 
-    if (integratedSecEnabled) {
-      cs.setMBeanServerForwarder(securityInterceptor.getMBeanServerForwarder());
-      logger.info("Starting RMI Connector with Security Interceptor");
+    String shiroConfig = this.config.getShiroInit();
+    if (! StringUtils.isBlank(shiroConfig) || isCustomAuthenticator()) {
+      shiroAuthenticator = new JMXShiroAuthenticator();
+      env.put(JMXConnectorServer.AUTHENTICATOR, shiroAuthenticator);
+      cs.addNotificationListener(shiroAuthenticator, null, cs.getAttributes());
+      // always going to assume authorization is needed as well, if no custom AccessControl, then the CustomAuthRealm
+      // should take care of that
+      MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper();
+      cs.setMBeanServerForwarder(mBeanServerWrapper);
+      registerAccessControlMBean();
+    }
+
+    else {
+      /* Disable the old authenticator mechanism */
+      String pwFile = this.config.getJmxManagerPasswordFile();
+      if (pwFile != null && pwFile.length() > 0) {
+        env.put("jmx.remote.x.password.file", pwFile);
+      }
+
+      String accessFile = this.config.getJmxManagerAccessFile();
+      if (accessFile != null && accessFile.length() > 0) {
+        // Lets not use default connector based authorization
+        // env.put("jmx.remote.x.access.file", accessFile);
+        // Rewire the mbs hierarchy to set accessController
+        ReadOpFileAccessController controller = new ReadOpFileAccessController(accessFile);
+        controller.setMBeanServer(mbs);
+        mbs = controller;
+      }
     }
 
     cs.start();
     if (logger.isDebugEnabled()) {
       logger.debug("Finished starting jmx manager agent.");
     }
-    // System.out.println("Server started at: "+cs.getAddress());
+  }
 
-    // Start the CleanThread daemon... KIRK: not sure what CleanThread is...
-    //
-    // final Thread clean = new CleanThread(cs);
-    // clean.start();
+  private void registerAccessControlMBean() {
+    try {
+      AccessControlMBean acc = new AccessControlMBean();
+      ObjectName accessControlMBeanON = new ObjectName(ResourceConstants.OBJECT_NAME_ACCESSCONTROL);
+      MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+
+      Set<ObjectName> names = platformMBeanServer.queryNames(accessControlMBeanON, null);
+      if (names.isEmpty()) {
+        try {
+          platformMBeanServer.registerMBean(acc, accessControlMBeanON);
+          logger.info("Registered AccessContorlMBean on " + accessControlMBeanON);
+        } catch (InstanceAlreadyExistsException e) {
+          throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource", e);
+        } catch (MBeanRegistrationException e) {
+          throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource", e);
+        } catch (NotCompliantMBeanException e) {
+          throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource", e);
+        }
+      }
+    } catch (MalformedObjectNameException e) {
+      throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource", e);
+    }
+  }
+
+
+  private boolean isCustomAuthenticator() {
+    String factoryName = config.getSecurityClientAuthenticator();
+    return factoryName != null && !factoryName.isEmpty();
+  }
+
+  private boolean isCustomAuthorizer() {
+    String factoryName = config.getSecurityClientAccessor();
+    return factoryName != null && !factoryName.isEmpty();
   }
 
   private static class GemFireRMIClientSocketFactory implements RMIClientSocketFactory,

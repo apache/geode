@@ -16,8 +16,12 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+/**
+ * Interface for AccessControlMBean
+ * @since 9.0
+ */
 public interface AccessControlMXBean {
 
-  public boolean authorize(String role);
+  public boolean authorize(String resource, String permission);
   
 }

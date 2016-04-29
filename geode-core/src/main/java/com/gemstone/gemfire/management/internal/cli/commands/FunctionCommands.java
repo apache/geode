@@ -15,19 +15,6 @@
  * limitations under the License.
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
 
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.Cache;
@@ -63,6 +50,23 @@ import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  * 
@@ -78,6 +82,7 @@ public class FunctionCommands implements CommandMarker {
   
   @CliCommand(value = CliStrings.EXECUTE_FUNCTION, help = CliStrings.EXECUTE_FUNCTION__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_FUNCTION })
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.WRITE)
   public Result executeFunction(
       //TODO: Add optioncontext for functionID
       @CliOption(key = CliStrings.EXECUTE_FUNCTION__ID, 
@@ -450,6 +455,7 @@ public class FunctionCommands implements CommandMarker {
   @CliCommand(value = CliStrings.DESTROY_FUNCTION, help = CliStrings.DESTROY_FUNCTION__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_FUNCTION } ,
       interceptor = "com.gemstone.gemfire.management.internal.cli.commands.FunctionCommands$Interceptor")  
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   //TODO: Add optioncontext for functionId
   public Result destroyFunction(
       @CliOption(key = CliStrings.DESTROY_FUNCTION__ID, 
@@ -573,6 +579,7 @@ public class FunctionCommands implements CommandMarker {
   
   @CliCommand(value = CliStrings.LIST_FUNCTION, help = CliStrings.LIST_FUNCTION__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_FUNCTION })
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result listFunction(
       @CliOption(key = CliStrings.LIST_FUNCTION__MATCHES, 
                  help = CliStrings.LIST_FUNCTION__MATCHES__HELP)String matches,

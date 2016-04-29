@@ -23,6 +23,13 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import com.gemstone.gemfire.security.Authenticator;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+
+import org.apache.logging.log4j.Logger;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 /**
@@ -35,7 +42,13 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * @since 8.0
  */
 @SuppressWarnings("unused")
-public class EnvironmentVariablesHandlerInterceptor extends HandlerInterceptorAdapter {
+public class LoginHandlerInterceptor extends HandlerInterceptorAdapter {
+
+  private static final Logger logger = LogService.getLogger();
+
+  private Cache cache;
+
+  private Authenticator auth = null;
 
   private static final ThreadLocal<Map<String, String>> ENV = new ThreadLocal<Map<String, String>>() {
     @Override
@@ -45,6 +58,8 @@ public class EnvironmentVariablesHandlerInterceptor extends HandlerInterceptorAd
   };
 
   protected static final String ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX = "vf.gf.env.";
+
+  protected static final String SECURITY_VARIABLE_REQUEST_HEADER_PREFIX = "security-";
 
   public static Map<String, String> getEnvironment() {
     return ENV.get();
@@ -65,10 +80,27 @@ public class EnvironmentVariablesHandlerInterceptor extends HandlerInterceptorAd
       }
     }
 
+
+
+    for (Enumeration<String> requestHeaders = request.getHeaderNames(); requestHeaders.hasMoreElements();) {
+
+      final String requestHeader = requestHeaders.nextElement();
+
+      if (requestHeader.startsWith(SECURITY_VARIABLE_REQUEST_HEADER_PREFIX)) {
+        requestParameterValues.put(requestHeader, request.getHeader(requestHeader));
+      }
+
+    }
+
+    String username = requestParameterValues.get(ResourceConstants.USER_NAME);
+    String password = requestParameterValues.get(ResourceConstants.PASSWORD);
+    GeodeSecurityUtil.login(username, password);
+
     ENV.set(requestParameterValues);
 
     return true;
   }
+
 
   @Override
   public void afterCompletion(final HttpServletRequest request,
@@ -78,15 +110,13 @@ public class EnvironmentVariablesHandlerInterceptor extends HandlerInterceptorAd
     throws Exception
   {
     afterConcurrentHandlingStarted(request, response, handler);
+    GeodeSecurityUtil.logout();
   }
 
   @Override
-  public void afterConcurrentHandlingStarted(final HttpServletRequest request,
-                                             final HttpServletResponse response,
-                                             final Object handler)
-    throws Exception
-  {
+  public void afterConcurrentHandlingStarted(
+    HttpServletRequest request, HttpServletResponse response, Object handler)
+    throws Exception {
     ENV.remove();
   }
-
 }

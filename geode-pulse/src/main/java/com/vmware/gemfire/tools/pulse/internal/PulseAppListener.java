@@ -19,6 +19,17 @@
 
 package com.vmware.gemfire.tools.pulse.internal;
 
+import com.vmware.gemfire.tools.pulse.internal.controllers.PulseController;
+import com.vmware.gemfire.tools.pulse.internal.data.PulseConfig;
+import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
+import com.vmware.gemfire.tools.pulse.internal.data.Repository;
+import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
+import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -30,21 +41,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.logging.Level;
-
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-
-import com.vmware.gemfire.tools.pulse.internal.controllers.PulseController;
-import com.vmware.gemfire.tools.pulse.internal.data.PulseConfig;
-import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
-import com.vmware.gemfire.tools.pulse.internal.data.Repository;
-import com.vmware.gemfire.tools.pulse.internal.log.PulseLogWriter;
-import com.vmware.gemfire.tools.pulse.internal.util.StringUtils;
 
 /**
  * This class is used for checking the application running mode i.e. Embedded or
@@ -73,6 +74,11 @@ public class PulseAppListener implements ServletContextListener {
   
   private boolean sysPulseUseSSLLocator;
   private boolean sysPulseUseSSLManager;
+  
+  //This property determines if pulse webApp login is authenticated against
+  //GemFire integrated security or custom spring-security config provided 
+  //in pulse-authentication-custom.xml 
+  private boolean useGemFireCredentials;
 
   @Override
   public void contextDestroyed(ServletContextEvent event) {
@@ -89,7 +95,7 @@ public class PulseAppListener implements ServletContextListener {
 
   @Override
   public void contextInitialized(ServletContextEvent event) {
-
+    
     messagesToBeLogged = messagesToBeLogged
         .concat(formatLogString(resourceBundle
             .getString("LOG_MSG_CONTEXT_INITIALIZED")));
@@ -188,10 +194,11 @@ public class PulseAppListener implements ServletContextListener {
       loadJMXUserDetails();
       // Load locator and/or manager details
       loadLocatorManagerDetails();
-
+       
+      useGemFireCredentials = areWeUsingGemFireSecurityProfile(event); 
     }
 
-    // Set user details in repository
+    // Set user details in repository    
     repository.setJmxUserName(jmxUserName);
     repository.setJmxUserPassword(jmxUserPassword);
 
@@ -204,7 +211,40 @@ public class PulseAppListener implements ServletContextListener {
     initializeSSL();
     repository.setUseSSLLocator(sysPulseUseSSLLocator);
     repository.setUseSSLManager(sysPulseUseSSLManager);
+    
+    repository.setUseGemFireCredentials(useGemFireCredentials);
 
+  }
+
+  /**
+   * Return true if pulse is configure to authenticate using gemfire
+   * integrated security
+   * 
+   * @param event
+   * @return
+   */
+  private boolean areWeUsingGemFireSecurityProfile(ServletContextEvent event) {
+    String profile = null;
+    WebApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(event.getServletContext());
+    if (ctx.getEnvironment() != null) {
+      String[] profiles = ctx.getEnvironment().getActiveProfiles();
+      if (profiles != null && profiles.length > 0) {
+        StringBuilder sb = new StringBuilder();
+        for (String p : profiles)
+          sb.append(p).append(",");
+        LOGGER.info("#SpringProfilesConfigured : " + sb.toString());
+        profile = ctx.getEnvironment().getActiveProfiles()[0];
+        LOGGER.info("#First Profile : " + profile);
+      } else {
+        LOGGER.info("No SpringProfileConfigured using default spring profile");
+        return false;
+      }
+    }
+    if (PulseConstants.APPLICATION_PROPERTY_PULSE_SEC_PROFILE_GEMFIRE.equals(profile)) {
+      LOGGER.info("Using gemfire integrated security profile");
+      return true;
+    }      
+    return false;
   }
 
   // Function to load pulse version details from properties file

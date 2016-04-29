@@ -26,10 +26,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -56,15 +52,25 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * Dunit class for testing gemfire function commands : GC, Shutdown
  */
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
   private static String cachedLogLevel;
+
+  public MiscellaneousCommandsDUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
+  }
 
   @Override
   protected final void preTearDownCliCommandTestBase() throws Exception {
@@ -84,7 +90,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
-    createDefaultSetup(localProps);
+    setUpJmxManagerOnVm0ThenConnect(localProps);
     String command = "gc --group=Group1";
     CommandResult cmdResult = executeCommand(command);
     cmdResult.resetToFirstLine();
@@ -104,16 +110,16 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  public static String getMemberId() {
-    Cache cache = new GemfireDataCommandsDUnitTest().getCache();
+  public String getMemberId() {
+    Cache cache = getCache();
     return cache.getDistributedSystem().getDistributedMember().getId();
   }
 
   @Test
   public void testGCForMemberID() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(() -> MiscellaneousCommandsDUnitTest.getMemberId());
+    final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
     String command = "gc --member=" + vm1MemberId;
     CommandResult cmdResult = executeCommand(command);
     cmdResult.resetToFirstLine();
@@ -138,9 +144,9 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     Properties props = new Properties();
     try {
       props.setProperty("log-file", "testShowLogDefault.log");
-      createDefaultSetup(props);
+      setUpJmxManagerOnVm0ThenConnect(props);
       final VM vm1 = Host.getHost(0).getVM(0);
-      final String vm1MemberId = (String) vm1.invoke(() -> MiscellaneousCommandsDUnitTest.getMemberId());
+      final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
       String command = "show log --member=" + vm1MemberId;
       CommandResult cmdResult = executeCommand(command);
       if (cmdResult != null) {
@@ -161,9 +167,9 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     Properties props = new Properties();
     props.setProperty("log-file", "testShowLogNumLines.log");
     try {
-      createDefaultSetup(props);
+      setUpJmxManagerOnVm0ThenConnect(props);
       final VM vm1 = Host.getHost(0).getVM(0);
-      final String vm1MemberId = (String) vm1.invoke(() -> MiscellaneousCommandsDUnitTest.getMemberId());
+      final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
       String command = "show log --member=" + vm1MemberId + " --lines=50";
       CommandResult cmdResult = executeCommand(command);
       if (cmdResult != null) {
@@ -208,7 +214,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     final VM vm2 = Host.getHost(0).getVM(2);
 
 
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     vm1.invoke(new SerializableRunnable() {
       public void run() {
         // no need to close cache as it will be closed as part of teardown2
@@ -334,7 +340,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     final VM vm0 = Host.getHost(0).getVM(0);
     final VM vm1 = Host.getHost(0).getVM(1);
 
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     vm1.invoke(new SerializableRunnable() {
       public void run() {
         // no need to close cache as it will be closed as part of teardown2
@@ -354,7 +360,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     final VM vm1 = Host.getHost(0).getVM(1);
 
     System.setProperty(CliStrings.IGNORE_INTERCEPTORS, "true");
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
     vm1.invoke(new SerializableRunnable() {
       public void run() {
         // no need to close cache as it will be closed as part of teardown2
@@ -460,7 +466,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     final String grp1 = "Group1";
     final String grp2 = "Group2";
 
-    createDefaultSetup(localProps);
+    setUpJmxManagerOnVm0ThenConnect(localProps);
 
     String vm1id = (String) vm1.invoke(new SerializableCallable() {
       @Override

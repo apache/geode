@@ -513,7 +513,7 @@ public class XmlAuthorization implements AccessControl {
 
           if (operationNode.getNodeName() == TAG_OP) {
             final String operationName = getNodeValue(operationNode);
-            final OperationCode code = OperationCode.parse(operationName);
+            final OperationCode code = OperationCode.valueOf(operationName);
 
             if (code == null) {
               throw new SAXParseException("Unknown operation [" + operationName + ']', null);

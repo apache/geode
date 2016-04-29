@@ -16,22 +16,26 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-public class AccessControlContext extends ResourceOperationContext {
-  
-  private ResourceOperationCode code;
-  
-  public AccessControlContext(String code){
-    this.code = ResourceOperationCode.parse(code);
-  }
+import com.gemstone.gemfire.security.GemFireSecurityException;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+
+/**
+ * AccessControlMBean Implementation. This retrieves JMXPrincipal from AccessController
+ * and performs authorization for given role using gemfire AccessControl Plugin
+ *
+ * @since 9.0
+ */
+public class AccessControlMBean implements AccessControlMXBean {
 
   @Override
-  public ResourceOperationCode getResourceOperationCode() {
-    return code;
+  public boolean authorize(String resource, String permission) {
+    try {
+      GeodeSecurityUtil.authorize(resource, permission);
+      return true;
+    }
+    catch (GemFireSecurityException e){
+      return false;
+    }
   }
-
-  @Override
-  public OperationCode getOperationCode() {   
-    return OperationCode.RESOURCE;
-  }  
 
 }

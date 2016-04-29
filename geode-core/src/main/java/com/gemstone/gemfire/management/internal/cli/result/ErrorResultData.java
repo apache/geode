@@ -37,8 +37,12 @@ public class ErrorResultData extends InfoResultData {
     super(gfJsonObject);
   }
   
-  public int getErrorCode(int errorCode) {
-    return (Integer) contentObject.get(ERROR_CODE);
+  public int getErrorCode() {
+    Integer code = (Integer) contentObject.get(ERROR_CODE);
+    if(code==null){
+      return ResultBuilder.ERRORCODE_DEFAULT;
+    }
+    return code;
   }
   
   /**
@@ -57,7 +61,7 @@ public class ErrorResultData extends InfoResultData {
     
     return this;
   }
-  
+
   /**
    * 
    * @param headerText

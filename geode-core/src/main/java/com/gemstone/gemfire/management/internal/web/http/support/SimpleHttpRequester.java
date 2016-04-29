@@ -16,12 +16,32 @@
  */
 package com.gemstone.gemfire.management.internal.web.http.support;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpRequest;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RequestCallback;
+import org.springframework.web.client.ResponseErrorHandler;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+
+import com.gemstone.gemfire.internal.lang.StringUtils;
+import com.gemstone.gemfire.internal.util.IOUtils;
+import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+
 
 /**
  * The SimpleHttpRequester class is a Adapter/facade for the Spring RestTemplate class for abstracting HTTP requests
@@ -38,12 +58,17 @@ public class SimpleHttpRequester {
 
   private final RestTemplate restTemplate;
 
+  private String user;
+
+  private String pwd;
+
+  private Map<String,String> securityProperties;
   /**
    * Default constructor to create an instance of the SimpleHttpRequester class using the default connection timeout
    * of 30 seconds.
    */
-  public SimpleHttpRequester() {
-    this(DEFAULT_CONNECT_TIMEOUT);
+  public SimpleHttpRequester(Gfsh gfsh,Map<String,String> securityProperties) {
+    this(gfsh, DEFAULT_CONNECT_TIMEOUT, securityProperties);
   }
 
   /**
@@ -52,12 +77,54 @@ public class SimpleHttpRequester {
    * @param connectTimeout an integer value specifying the timeout value in milliseconds for establishing the HTTP
    * connection to the HTTP server.
    */
-  public SimpleHttpRequester(final int connectTimeout) {
+  public SimpleHttpRequester(final Gfsh gfsh, final int connectTimeout, Map<String,String> securityProperties) {
     final SimpleClientHttpRequestFactory clientHttpRequestFactory = new SimpleClientHttpRequestFactory();
 
     clientHttpRequestFactory.setConnectTimeout(connectTimeout);
 
+    this.securityProperties = securityProperties;
     this.restTemplate = new RestTemplate(clientHttpRequestFactory);
+
+    this.restTemplate.setErrorHandler(new ResponseErrorHandler() {
+      @Override
+      public boolean hasError(final ClientHttpResponse response) throws IOException {
+        final HttpStatus status = response.getStatusCode();
+
+        switch (status) {
+        case BAD_REQUEST: // 400 *
+        case UNAUTHORIZED: // 401
+        case FORBIDDEN: // 403
+        case NOT_FOUND: // 404 *
+        case METHOD_NOT_ALLOWED: // 405 *
+        case NOT_ACCEPTABLE: // 406 *
+        case REQUEST_TIMEOUT: // 408
+        case CONFLICT: // 409
+        case REQUEST_ENTITY_TOO_LARGE: // 413
+        case REQUEST_URI_TOO_LONG: // 414
+        case UNSUPPORTED_MEDIA_TYPE: // 415 *
+        case TOO_MANY_REQUESTS: // 429
+        case INTERNAL_SERVER_ERROR: // 500 *
+        case NOT_IMPLEMENTED: // 501
+        case BAD_GATEWAY: // 502 ?
+        case SERVICE_UNAVAILABLE: // 503
+          return true;
+        default:
+          return false;
+        }
+      }
+
+      @Override
+      public void handleError(final ClientHttpResponse response) throws IOException {
+        final String message = String.format("The HTTP request failed with: %1$d - %2$s", response.getRawStatusCode(),
+            response.getStatusText());
+
+        throw new RuntimeException(message);
+
+      }
+
+
+    });
+
   }
 
   /**
@@ -126,7 +193,7 @@ public class SimpleHttpRequester {
   }
 
   /**
-   * Performs an HTTP PUT operation on the requested resource identified/located by the specified URL.
+   * Performs an HTTP PUT operation on the requested resource identifiedR/located by the specified URL.
    * <p/>
    * @param url a String value identifying or locating the resource intended for the HTTP operation.
    * @param urlVariables an array of variables to substitute in the URI/URL template.
@@ -134,6 +201,36 @@ public class SimpleHttpRequester {
    */
   public void put(final String url, final Object requestBody, final Object... urlVariables) {
     getRestTemplate().put(url, requestBody, urlVariables);
+  }
+
+  /**
+   * Performs an HTTP GET operation on the requested resource identified/located
+   * by the specified URL.
+   * <p/>
+   *
+   * @param url
+   *          a String value identifying or locating the resource intended for
+   *          the HTTP operation.
+   * @param urlVariables
+   *          an array of variables to substitute in the URI/URL template.
+   * @see org.springframework.web.client.RestTemplate#getForObject(String,
+   *      Class, Object...)
+   */
+  public <T> T exchange(final String url, final Class<T> responseType, final Object... urlVariables) {
+    ResponseEntity<T> response = getRestTemplate().exchange(url, HttpMethod.GET, getRequestEntity(), responseType);
+    return response.getBody();
+  }
+
+  protected HttpEntity<?> getRequestEntity() {
+    HttpHeaders requestHeaders = new HttpHeaders();
+    if(this.securityProperties != null){
+      requestHeaders.setAll(securityProperties);
+    }
+
+    HttpEntity<?> requestEntity = new HttpEntity(requestHeaders);
+
+    return requestEntity;
+
   }
 
 }

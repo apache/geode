@@ -17,13 +17,13 @@
 
 package com.gemstone.gemfire.security;
 
-import java.util.Properties;
-import java.security.Principal;
-
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.CacheCallback;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+
+import java.security.Principal;
+import java.util.Properties;
 
 /**
  * Specifies the mechanism to verify credentials for a client or peer.
@@ -59,8 +59,12 @@ public interface Authenticator extends CacheCallback {
    * @throws AuthenticationFailedException
    *                 if some exception occurs during the initialization
    */
-  public void init(Properties securityProps, LogWriter systemLogger,
+  void init(Properties securityProps, LogWriter systemLogger,
       LogWriter securityLogger) throws AuthenticationFailedException;
+
+  default void init(Properties securityProps)  throws AuthenticationFailedException{
+    init(securityProps, null, null);
+  }
 
   /**
    * Verify the credentials provided in the properties for the client/peer as
@@ -80,7 +84,11 @@ public interface Authenticator extends CacheCallback {
    * @throws AuthenticationFailedException
    *                 If the authentication of the client/peer fails.
    */
-  public Principal authenticate(Properties props, DistributedMember member)
+  Principal authenticate(Properties props, DistributedMember member)
       throws AuthenticationFailedException;
+
+  default Principal authenticate(Properties props) throws AuthenticationFailedException{
+    return authenticate(props, null);
+  }
 
 }

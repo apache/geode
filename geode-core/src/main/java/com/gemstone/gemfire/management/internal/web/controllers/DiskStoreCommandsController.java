@@ -21,8 +21,6 @@ import java.util.concurrent.Callable;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -68,11 +66,7 @@ public class DiskStoreCommandsController extends AbstractCommandsController {
       command.addOption(CliStrings.BACKUP_DISK_STORE__BASELINEDIR, decode(baselineDir));
     }
 
-    return new Callable<ResponseEntity<String>>() {
-      @Override public ResponseEntity<String> call() throws Exception {
-        return new ResponseEntity<String>(processCommand(command.toString()), HttpStatus.OK);
-      }
-    };
+    return getProcessCommandCallable(command.toString());
   }
 
   @RequestMapping(method = RequestMethod.POST, value = "/diskstores/{name}", params = "op=compact")
@@ -87,11 +81,7 @@ public class DiskStoreCommandsController extends AbstractCommandsController {
       command.addOption(CliStrings.COMPACT_DISK_STORE__GROUP, StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
     }
 
-    return new Callable<ResponseEntity<String>>() {
-      @Override public ResponseEntity<String> call() throws Exception {
-        return new ResponseEntity<String>(processCommand(command.toString()), HttpStatus.OK);
-      }
-    };
+    return getProcessCommandCallable(command.toString());
   }
 
   @RequestMapping(method = RequestMethod.POST, value = "/diskstores")

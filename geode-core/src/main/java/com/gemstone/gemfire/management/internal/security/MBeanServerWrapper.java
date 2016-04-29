@@ -18,16 +18,17 @@ package com.gemstone.gemfire.management.internal.security;
 
 import java.io.ObjectInputStream;
 import java.util.Set;
-
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
+import javax.management.Descriptor;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
 import javax.management.InvalidAttributeValueException;
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanException;
+import javax.management.MBeanFeatureInfo;
 import javax.management.MBeanInfo;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
@@ -37,65 +38,81 @@ import javax.management.NotificationListener;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.OperationsException;
+import javax.management.Query;
 import javax.management.QueryExp;
 import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 import javax.management.remote.MBeanServerForwarder;
 
+import com.gemstone.gemfire.management.internal.ManagementConstants;
+import com.gemstone.gemfire.security.GemFireSecurityException;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+
+/**
+ * This class intercepts all MBean requests for GemFire MBeans and passed it to
+ * ManagementInterceptor for authorization
+ * @since 9.0
+ *
+ */
 public class MBeanServerWrapper implements MBeanServerForwarder {
-  
   private MBeanServer mbs;
-  private ManagementInterceptor interceptor;
   
-  public MBeanServerWrapper(ManagementInterceptor interceptor){
-    this.interceptor = interceptor;
+  public MBeanServerWrapper(){
   }
-  
-  private void doAuthorization(ObjectName name, String methodName, Object[] methodParams){
-    interceptor.authorize(name,methodName, methodParams);
+
+  private void doAuthorizationPost(ResourceOperationContext context){
+    if(context == null)
+      return;
+
+    //interceptor.postAuthorize(context);
+  }
+
+  private void checkDomain(ObjectName name){
+    if (ManagementConstants.OBJECTNAME__DEFAULTDOMAIN.equals(name.getDomain()))
+      throw new SecurityException(ResourceConstants.ACCESS_DENIED_MESSAGE);
   }
 
   @Override
   public ObjectInstance createMBean(String className, ObjectName name) throws ReflectionException,
-      InstanceAlreadyExistsException, MBeanRegistrationException, MBeanException, NotCompliantMBeanException {
-    doAuthorization(name, "createMBean", new Object[]{name});
+      InstanceAlreadyExistsException, MBeanException, NotCompliantMBeanException {
+    checkDomain(name);
     return mbs.createMBean(className, name);
   }
 
   @Override
   public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName)
-      throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException, MBeanException,
+      throws ReflectionException, InstanceAlreadyExistsException, MBeanException,
       NotCompliantMBeanException, InstanceNotFoundException {
-    doAuthorization(name, "createMBean", new Object[]{name});
+    checkDomain(name);
     return mbs.createMBean(className, name, loaderName);
   }
 
   @Override
   public ObjectInstance createMBean(String className, ObjectName name, Object[] params, String[] signature)
-      throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException, MBeanException,
+      throws ReflectionException, InstanceAlreadyExistsException, MBeanException,
       NotCompliantMBeanException {
-    doAuthorization(name, "createMBean", new Object[]{name, params});
-    return mbs.createMBean(className,name,params,signature);
+    checkDomain(name);
+    return mbs.createMBean(className, name, params, signature);
   }
 
   @Override
   public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName, Object[] params,
-      String[] signature) throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException,
+      String[] signature) throws ReflectionException, InstanceAlreadyExistsException,
       MBeanException, NotCompliantMBeanException, InstanceNotFoundException {
-    doAuthorization(name, "createMBean", new Object[]{name});
+    checkDomain(name);
     return mbs.createMBean(className, name, loaderName, params, signature);
   }
 
   @Override
   public ObjectInstance registerMBean(Object object, ObjectName name) throws InstanceAlreadyExistsException,
       MBeanRegistrationException, NotCompliantMBeanException {
-    doAuthorization(name, "registerMBean", new Object[]{name});
+    checkDomain(name);
     return mbs.registerMBean(object, name);
   }
 
   @Override
   public void unregisterMBean(ObjectName name) throws InstanceNotFoundException, MBeanRegistrationException {
-    doAuthorization(name, "registerMBean", new Object[]{});
+    checkDomain(name);
     mbs.unregisterMBean(name);
   }
 
@@ -104,14 +121,22 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     return mbs.getObjectInstance(name);
   }
 
+  private static QueryExp notAccessControlMBean = Query.not(Query.isInstanceOf(Query.value(AccessControlMXBean.class.getName())));
   @Override
   public Set<ObjectInstance> queryMBeans(ObjectName name, QueryExp query) {
-    return mbs.queryMBeans(name, query);
+    // We need to filter out the AccessControlMXBean so that the clients wouldn't see it
+    if(query!=null)
+      return mbs.queryMBeans(name, Query.and(query, notAccessControlMBean));
+    else
+      return mbs.queryMBeans(name,notAccessControlMBean);
   }
 
   @Override
   public Set<ObjectName> queryNames(ObjectName name, QueryExp query) {
-    return mbs.queryNames(name, query);
+    if(query!=null)
+      return mbs.queryNames(name, Query.and(query, notAccessControlMBean));
+    else
+      return mbs.queryNames(name,notAccessControlMBean);
   }
 
   @Override
@@ -125,39 +150,117 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   }
 
   @Override
-  public Object getAttribute(ObjectName name, String attribute) throws MBeanException, AttributeNotFoundException,
-      InstanceNotFoundException, ReflectionException {
-    doAuthorization(name, "getAttribute",  new Object[]{attribute});
-    return mbs.getAttribute(name, attribute);
+  public Object getAttribute(ObjectName name, String attribute) throws MBeanException, InstanceNotFoundException,
+      ReflectionException {
+    ResourceOperationContext ctx = getOperationContext(name, attribute, false);
+    GeodeSecurityUtil.authorize(ctx);
+    Object result;
+    try {
+      result = mbs.getAttribute(name, attribute);
+    } catch (AttributeNotFoundException nex) {
+      return null;
+    }
+    if (ctx != null) {
+      ctx.setPostOperationResult(result);
+    }
+    doAuthorizationPost(ctx);
+    return result;
   }
 
   @Override
   public AttributeList getAttributes(ObjectName name, String[] attributes) throws InstanceNotFoundException,
       ReflectionException {
-    doAuthorization(name, "getAttributes", new Object[]{attributes});
-    return mbs.getAttributes(name, attributes);
+    AttributeList results = new AttributeList();
+    for(String attribute:attributes){
+      try {
+        Object value = getAttribute(name, attribute);
+        Attribute att = new Attribute(attribute, value);
+        results.add(att);
+      } catch (Exception e) {
+        throw new GemFireSecurityException("error getting value of "+attribute+" from "+name, e);
+      }
+    }
+    return results;
   }
 
   @Override
   public void setAttribute(ObjectName name, Attribute attribute) throws InstanceNotFoundException,
       AttributeNotFoundException, InvalidAttributeValueException, MBeanException, ReflectionException {
-    doAuthorization(name, "setAttribute", new Object[]{attribute});
+    ResourceOperationContext ctx = getOperationContext(name, attribute.getName(), false);
+    GeodeSecurityUtil.authorize(ctx);
     mbs.setAttribute(name, attribute);
   }
 
   @Override
   public AttributeList setAttributes(ObjectName name, AttributeList attributes) throws InstanceNotFoundException,
       ReflectionException {
-    doAuthorization(name, "setAttributes", new Object[]{attributes});
-    return mbs.setAttributes(name, attributes);
+    // call setAttribute instead to use the authorization logic
+    for(Attribute attribute:attributes.asList()){
+      try {
+        setAttribute(name, attribute);
+      } catch (Exception e) {
+        throw new GemFireSecurityException("error setting attribute "+attribute+" of "+name, e);
+      }
+    }
+    return attributes;
   }
 
   @Override
   public Object invoke(ObjectName name, String operationName, Object[] params, String[] signature)
       throws InstanceNotFoundException, MBeanException, ReflectionException {
-    doAuthorization(name, operationName, new Object[]{params, signature});
-    return mbs.invoke(name, operationName, params, signature);
+
+    ResourceOperationContext ctx = getOperationContext(name, operationName, true);
+    GeodeSecurityUtil.authorize(ctx);
+
+    Object result = mbs.invoke(name, operationName, params, signature);
+    if(ctx!=null)
+      ctx.setPostOperationResult(result);
+    doAuthorizationPost(ctx);
+    return result;
   }
+
+  // TODO: cache this
+  private ResourceOperationContext getOperationContext(ObjectName objectName, String featureName, boolean isOp)
+      throws InstanceNotFoundException, ReflectionException {
+    MBeanInfo beanInfo = null;
+    try {
+      beanInfo = mbs.getMBeanInfo(objectName);
+    } catch (IntrospectionException e) {
+      throw new GemFireSecurityException("error getting beanInfo of "+objectName, e);
+    }
+    // If there is no annotation defined either in the class level or method level, we should consider this operation/attribute freely accessible
+    ResourceOperationContext result = null;
+
+    // find the context in the beanInfo if defined in the class level
+    result = getOperationContext(beanInfo.getDescriptor(), result);
+
+    MBeanFeatureInfo[] featureInfos = null;
+    if(isOp){
+      featureInfos = beanInfo.getOperations();
+    }
+    else{
+      featureInfos = beanInfo.getAttributes();
+    }
+    // still look into the attributes/operations to see if it's defined in the method level
+    for(MBeanFeatureInfo info:featureInfos){
+      if(info.getName().equals(featureName)){
+        // found the featureInfo of this method on the bean
+        result = getOperationContext(info.getDescriptor(), result);
+        break;
+      }
+    }
+    return result;
+  }
+
+  private ResourceOperationContext getOperationContext(Descriptor descriptor, ResourceOperationContext defaultValue){
+    String resource = (String)descriptor.getFieldValue("resource");
+    String operationCode = (String)descriptor.getFieldValue("operation");
+    if(resource!=null && operationCode!=null){
+      return new ResourceOperationContext(resource, operationCode, null);
+    }
+    return defaultValue;
+  }
+
 
   @Override
   public String getDefaultDomain() {
@@ -240,6 +343,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     return mbs.instantiate(className, params, signature);
   }
 
+  @SuppressWarnings("deprecation")
   @Override
   public ObjectInputStream deserialize(ObjectName name, byte[] data) throws InstanceNotFoundException,
       OperationsException {

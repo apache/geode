@@ -29,9 +29,12 @@
 
 package com.vmware.gemfire.tools.pulse.tests;
 
+import com.gemstone.gemfire.test.junit.categories.UITest;
 import junit.framework.Assert;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
@@ -39,9 +42,14 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-public class PulseAutomatedTest extends PulseBaseTest {
+@Category(UITest.class)
+public class PulseAutomatedTest extends PulseAbstractTest {
 
-		
+	@BeforeClass
+	public static void beforeClassSetup() throws Exception {
+		setUpServer("pulseUser", "12345", "/pulse-auth.json");
+	}
+
 	@Test
 	public void serverGroupGridDataValidation() {
 		navigateToServerGroupGridView();
@@ -182,6 +190,7 @@ public class PulseAutomatedTest extends PulseBaseTest {
 	}
 
 	@Test
+	@Ignore("Issue with highlighting")
 	public void verifyHostTooltipsOfTopologyGraphTest() {		
 		for (int i = 1; i <=3; i++) {
 			clickElementUsingXpath(PulseTestLocators.TopNavigation.clusterViewLinkXpath);
@@ -748,7 +757,7 @@ public class PulseAutomatedTest extends PulseBaseTest {
 	    	}
 	    }	
 		
-		sendKeysUsingId(PulseTestLocators.DataBrowser.queryEditorTxtBoxId, PulseTest.QUERY_TYPE_ONE);
+		sendKeysUsingId(PulseTestLocators.DataBrowser.queryEditorTxtBoxId, PulseAbstractTest.QUERY_TYPE_ONE);
 		clickElementUsingId(PulseTestLocators.DataBrowser.btnExecuteQueryId);
 			
 		//Get required datetime format and extract date and hours from date time.
@@ -767,7 +776,7 @@ public class PulseAutomatedTest extends PulseBaseTest {
 	  System.out.println("Query Text from History Table: " + queryText);
 		System.out.println("Query Time from History Table: " + historyDateTime);
   	    //verify the query text, query datetime in history panel
-	    Assert.assertTrue(PulseTest.QUERY_TYPE_ONE.equals(queryText));
+	    Assert.assertTrue(PulseAbstractTest.QUERY_TYPE_ONE.equals(queryText));
 	    Assert.assertTrue(historyDateTime.contains(queryTime[0]));
 	   
 	}	

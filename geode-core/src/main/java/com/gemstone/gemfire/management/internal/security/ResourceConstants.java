@@ -17,37 +17,26 @@
 package com.gemstone.gemfire.management.internal.security;
 
 public class ResourceConstants {
-	
-	//public static final String LIST_DS = "LIST_DS";
-	public static final String READ_DS = "READ_DS";
-	public static final String SET_DS = "SET_DS";
-	public static final String CHANGE_ALERT_LEVEL_DS = "CHANGE_ALERT_LEVEL_DS";
-	public static final String BACKUP_DS = "BACKUP_DS";
-	public static final String REMOVE_DISKSTORE_DS = "REMOVE_DISKSTORE_DS";
-	public static final String SHUTDOWN_DS = "SHUTDOWN_DS";
-	public static final String QUERYDATA_DS = "QUERYDATA_DS";
-	public static final String ADMIN_DS = "ADMIN_DS";
-	
-	/*
-	public static final String REBALANCE = "REBALANCE";
-	public static final String PUT = "PUT";
-	public static final String EXPORT_DATA = "EXPORT_DATA";
-	public static final String IMPORT_DATA = "IMPORT_DATA";
-	public static final String LOCATE_ENTRY = "LOCATE_ENTRY";*/
-	
-	public static final String PULSE_DASHBOARD = "PULSE_DASHBOARD";
-  public static final String PULSE_DATABROWSER = "PULSE_DATABROWSER";
-  public static final String PULSE_ADMIN_V1 = "PULSE_ADMIN_V1";
-  public static final String PULSE_WEBGFSH = "PULSE_WEBGFSH";  
-	
+
 	public static final String DEFAULT_LABEL="";
 	
-	public static final String RESORUCE_SEC_DESCRIPTOR = "resource.secDescriptor";
+	public static final String RESOURCE_SEC_DESCRIPTOR = "resource.secDescriptor";
 	public static final String RESORUCE_AUTH_ACCESSOR = "resource-auth-accessor";
 	public static final String RESORUCE_AUTHENTICATOR = "resource-authenticator";
   public static final String RESORUCE_DEFAULT_SEC_DESCRIPTOR = "resourceSecDesc.json";
-  
-  //All ResourceOperation Codes
+  public static final String CREATE_MBEAN = "createMBean";
+  public static final String UNREGISTER_MBEAN = "unregisterMBean";
+  public static final String SET_PREFIX = "set";
+  public static final String SET_ATTRIBUTE = "setAttribute";
+  public static final String SET_ATTRIBUTES= "setAttributes";
+  public static final String GET_ATTRIBUTES= "getAttributes";
+  public static final String GET_ATTRIBUTE = "getAttribute";
+  public static final String GET_PREFIX = "get";
+  public static final String GET_IS_PREFIX = "is";
+  public static final String REGISTER_MBEAN = "registerMBean";
+  public static final String PROCESS_COMMAND ="processCommand";
+  public static final String ACCESS_DENIED_MESSAGE = "Access Denied";
+  public static final String WRONGE_CREDENTIALS_MESSAGE = "Wrong Credentials";
   
   public static final String ALTER_REGION = "ALTER_REGION";
   public static final String ALTER_RUNTIME = "ALTER_RUNTIME";
@@ -89,7 +78,7 @@ public class ResourceConstants {
   public static final String REMOVE = "REMOVE";
   public static final String RENAME_PDX = "RENAME_PDX";
   public static final String RESUME_GW_SENDER = "RESUME_GW_SENDER";
-  public static final String REVOKE_MISSING_DISKSTORE = "REVOKE_MISSING_DISKSTORE";
+  public static final String REVOKE_MISSING_DISKSTORE = "REVOKE_MISSING";
   public static final String SHOW_DEADLOCKS = "SHOW_DEADLOCKS";
   public static final String SHOW_LOG = "SHOW_LOG";
   public static final String SHOW_METRICS = "SHOW_METRICS";
@@ -102,6 +91,7 @@ public class ResourceConstants {
   public static final String BACKUP_MEMBERS = "BACKUP_MEMBERS";
   public static final String ROLL_DISKSTORE = "ROLL_DISKSTORE";
   public static final String FORCE_COMPACTION = "FORCE_COMPACTION";
+  public static final String FORCE_ROLL = "FORCE_ROLL";
   public static final String FLUSH_DISKSTORE = "FLUSH_DISKSTORE";
   public static final String START_GW_RECEIVER = "START_GW_RECEIVER";
   public static final String START_GW_SENDER = "START_GW_SENDER";
@@ -109,7 +99,54 @@ public class ResourceConstants {
   public static final String START_MANAGER = "START_MANAGER";
   public static final String STOP_MANAGER = "STOP_MANAGER";
   public static final String CREATE_MANAGER = "CREATE_MANAGER";
+  public static final String STOP_CONTINUOUS_QUERY = "STOP_CONTINUOUS_QUERY";
+  public static final String SET_DISK_USAGE = "SET_DISK_USAGE";
 
   
+  public static final String CREATE_HDFS_STORE = "CREATE_HDFS_STORE";
+  public static final String ALTER_HDFS_STORE = "ALTER_HDFS_STORE";
+  public static final String DESTROY_HDFS_STORE = "DESTROY_HDFS_STORE";
+
+  public static final String PULSE_DASHBOARD = "PULSE_DASHBOARD";
+  public static final String PULSE_DATABROWSER = "PULSE_DATABROWSER";
+
+  public static final String DATA_READ = "DATA_READ";
+  public static final String DATA_WRITE = "DATA_WRITE";
+  public static final String MONITOR = "MONITOR";
+  public static final String ADMIN = "ADMIN";
+
+  public static final String OBJECT_NAME_ACCESSCONTROL = "GemFire:service=AccessControl,type=Distributed";
+  public static final String USER_NAME = "security-username";
+  public static final String PASSWORD = "security-password";
+
+  public static final String MBEAN_TYPE_DISTRIBUTED = "Distributed";
+  public static final String MBEAN_TYPE_MEMBER = "Member";
+
+  public static final String MBEAN_SERVICE_MANAGER = "Manager";
+  public static final String MBEAN_SERVICE_CACHESERVER="CacheServer";
+  public static final String MBEAN_SERVICE_REGION = "Region";
+  public static final String MBEAN_SERVICE_LOCKSERVICE = "LockService";
+  public static final String MBEAN_SERVICE_DISKSTORE = "DiskStore";
+  public static final String MBEAN_SERVICE_GATEWAY_RECEIVER = "GatewayReceiver";
+  public static final String MBEAN_SERVICE_GATEWAY_SENDER = "GatewaySender";
+  public static final String MBEAN_SERVICE_ASYNCEVENTQUEUE = "AsyncEventQueue";
+  public static final String MBEAN_SERVICE_LOCATOR = "Locator";
+  public static final String MBEAN_SERVICE_SYSTEM = "System";
+
+  public static final String MBEAN_KEY_SERVICE ="service";
+  public static final String MBEAN_KEY_TYPE ="type";
+
+  public static final String GETTER_IS= "is";
+  public static final String GETTER_GET = "get";
+  public static final String GETTER_FETCH = "fetch";
+  public static final String GETTER_SHOW = "show";
+  public static final String GETTER_HAS = "has";
+  public static final String GETTER_VIEW = "view";
+  public static final String GETTER_LIST = "list";
+  public static final String GETTER_DESCRIBE = "describe";
+  public static final String GETTER_STATUS = "status";
+
+  public static final String MANAGEMENT_PACKAGE = "com.gemstone.gemfire.management";
+
 
 }

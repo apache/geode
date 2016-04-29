@@ -31,8 +31,6 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- */
 @Category(UnitTest.class)
 public class GfshHistoryJUnitTest {
 

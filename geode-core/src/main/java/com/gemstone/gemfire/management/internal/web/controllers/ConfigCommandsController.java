@@ -23,8 +23,6 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.management.internal.web.util.ConvertUtils;
-
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -168,11 +166,7 @@ public class ConfigCommandsController extends AbstractMultiPartCommandsControlle
       command.addOption(CliStrings.EXPORT_CONFIG__DIR, decode(directory));
     }
 
-    return new Callable<ResponseEntity<String>>() {
-      @Override public ResponseEntity<String> call() throws Exception {
-        return new ResponseEntity<String>(processCommand(command.toString()), HttpStatus.OK);
-      }
-    };
+    return getProcessCommandCallable(command.toString());
   }
 
   @RequestMapping(method = RequestMethod.GET, value = "/config/cluster")
@@ -187,11 +181,7 @@ public class ConfigCommandsController extends AbstractMultiPartCommandsControlle
       command.addOption(CliStrings.EXPORT_SHARED_CONFIG__DIR, directory);
     }
 
-    return new Callable<ResponseEntity<String>>() {
-      @Override public ResponseEntity<String> call() throws Exception {
-        return new ResponseEntity<String>(processCommand(command.toString()), HttpStatus.OK);
-      }
-    };
+    return getProcessCommandCallable(command.toString());
   }
 
   @RequestMapping(method = RequestMethod.POST, value = "/config/cluster")
@@ -203,11 +193,7 @@ public class ConfigCommandsController extends AbstractMultiPartCommandsControlle
 
     command.addOption(CliStrings.IMPORT_SHARED_CONFIG__ZIP, zipFileName);
 
-    return new Callable<ResponseEntity<String>>() {
-      @Override public ResponseEntity<String> call() throws Exception {
-        return new ResponseEntity<String>(processCommand(command.toString(), ConvertUtils.convert(zipFileResources)), HttpStatus.OK);
-      }
-    };
+    return getProcessCommandCallable(command.toString(), ConvertUtils.convert(zipFileResources));
   }
 
 }

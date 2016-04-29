@@ -24,9 +24,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
@@ -39,23 +36,28 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * Dunit class for testing gemfire function commands : export logs
  */
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class MiscellaneousCommandsExportLogsPart2DUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public static String getMemberId() {
-    Cache cache = new GemfireDataCommandsDUnitTest().getCache();
-    return cache.getDistributedSystem().getDistributedMember().getId();
+  public MiscellaneousCommandsExportLogsPart2DUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
   }
+
 
   void setupForExportLogs() {
     final VM vm1 = Host.getHost(0).getVM(1);
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     vm1.invoke(new SerializableRunnable() {
       public void run() {

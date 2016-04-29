@@ -25,9 +25,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
@@ -41,24 +38,33 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Dunit class for testing gemfire function commands : export logs
  */
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public static String getMemberId() {
-    Cache cache = new GemfireDataCommandsDUnitTest().getCache();
+  public MiscellaneousCommandsExportLogsPart3DUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
+  }
+
+  public String getMemberId() {
+    Cache cache = getCache();
     return cache.getDistributedSystem().getDistributedMember().getId();
   }
 
   void setupForExportLogs() {
     final VM vm1 = Host.getHost(0).getVM(1);
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     vm1.invoke(new SerializableRunnable() {
       public void run() {
@@ -87,7 +93,7 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
-    createDefaultSetup(localProps);
+    setUpJmxManagerOnVm0ThenConnect(localProps);
     String dir = getCurrentTimeString();
 
     Date startDate = new Date(System.currentTimeMillis() - 2 * 60 * 1000);
@@ -120,7 +126,7 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
 
   @Test
   public void testExportLogsForMember() throws IOException {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     Date startDate = new Date(System.currentTimeMillis() - 2 * 60 * 1000);
     SimpleDateFormat sf = new SimpleDateFormat("yyyy/MM/dd");
@@ -130,7 +136,7 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     String end = sf.format(enddate);
 
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(() -> MiscellaneousCommandsDUnitTest.getMemberId());
+    final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
     String dir = getCurrentTimeString();
 
     String logLevel = LogWriterImpl.levelToString(LogWriterImpl.INFO_LEVEL);

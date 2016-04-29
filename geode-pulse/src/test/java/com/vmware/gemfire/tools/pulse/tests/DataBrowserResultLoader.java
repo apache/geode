@@ -44,19 +44,19 @@ public class DataBrowserResultLoader {
     try {
       ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-      if (queryString.equals(PulseTest.QUERY_TYPE_ONE)) {
+      if (queryString.equals(PulseAbstractTest.QUERY_TYPE_ONE)) {
         url = classLoader.getResource("testQueryResultClusterSmall.txt");
-      } else if (queryString.equals(PulseTest.QUERY_TYPE_TWO)) {
+      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_TWO)) {
         url = classLoader.getResource("testQueryResultSmall.txt");
-      } else if (queryString.equals(PulseTest.QUERY_TYPE_THREE)) {
+      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_THREE)) {
         url = classLoader.getResource("testQueryResult.txt");
-      } else if (queryString.equals(PulseTest.QUERY_TYPE_FOUR)) {
+      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_FOUR)) {
         url = classLoader.getResource("testQueryResultWithStructSmall.txt");
-      } else if (queryString.equals(PulseTest.QUERY_TYPE_FIVE)) {
+      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_FIVE)) {
         url = classLoader.getResource("testQueryResultClusterWithStruct.txt");
-      } else if (queryString.equals(PulseTest.QUERY_TYPE_SIX)) {
+      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_SIX)) {
         url = classLoader.getResource("testQueryResultHashMapSmall.txt");
-      } else if (queryString.equals(PulseTest.QUERY_TYPE_SEVENE)) {
+      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_SEVENE)) {
         url = classLoader.getResource("testQueryResult1000.txt");
       } else {
         url = classLoader.getResource("testQueryResult.txt");

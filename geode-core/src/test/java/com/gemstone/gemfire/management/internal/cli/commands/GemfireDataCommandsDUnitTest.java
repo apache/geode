@@ -33,9 +33,6 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -82,12 +79,17 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * Dunit class for testing gemfire data commands : get, put, remove, select, rebalance
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
+@RunWith(Parameterized.class)
 public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -120,8 +122,12 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
   final static int COUNT = 5;
 
-  public static String getMemberId() {
-    Cache cache = new GemfireDataCommandsDUnitTest().getCache();
+  public GemfireDataCommandsDUnitTest(boolean useHttpOnConnect){
+    super(useHttpOnConnect);
+  }
+
+  public String getMemberId() {
+    Cache cache = getCache();
     return cache.getDistributedSystem().getDistributedMember().getId();
   }
 
@@ -130,7 +136,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     final VM vm2 = Host.getHost(0).getVM(2);
     Properties props = new Properties();
     props.setProperty(DistributionConfig.NAME_NAME, testName + "Manager");
-    HeadlessGfsh gfsh = createDefaultSetup(props);
+    HeadlessGfsh gfsh = setUpJmxManagerOnVm0ThenConnect(props);
     assertNotNull(gfsh);
     assertEquals(true, gfsh.isConnectedAndReady());
 
@@ -201,8 +207,8 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    final String vm1MemberId = (String) vm1.invoke(() -> GemfireDataCommandsDUnitTest.getMemberId());
-    final String vm2MemberId = (String) vm2.invoke(() -> GemfireDataCommandsDUnitTest.getMemberId());
+    final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
+    final String vm2MemberId = (String) vm2.invoke(() -> getMemberId());
     getLogWriter().info("Vm1 ID : " + vm1MemberId);
     getLogWriter().info("Vm2 ID : " + vm2MemberId);
 
@@ -1549,7 +1555,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       }
       exportFile.deleteOnExit();
 
-      createDefaultSetup(null);
+      setUpJmxManagerOnVm0ThenConnect(null);
 
       manager.invoke(new SerializableCallable() {
         public Object call() {
@@ -1649,7 +1655,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
   void setupWith2Regions() {
     final VM vm1 = Host.getHost(0).getVM(1);
     final VM vm2 = Host.getHost(0).getVM(2);
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     vm1.invoke(new SerializableRunnable() {
       public void run() {
@@ -1878,7 +1884,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
   void setupTestRebalanceForEntireDS() {
     final VM vm1 = Host.getHost(0).getVM(1);
     final VM vm2 = Host.getHost(0).getVM(2);
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     vm1.invoke(new SerializableRunnable() {
       public void run() {

@@ -20,8 +20,10 @@ package com.gemstone.gemfire.management.internal.web.shell;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.gemstone.gemfire.internal.lang.Filter;
 import com.gemstone.gemfire.internal.lang.Initable;
@@ -95,12 +97,12 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
    * 
    * @param linkIndex the LinkIndex containing Links to all REST API web service endpoints in GemFire' REST interface.
    * @param gfsh a reference to the instance of the GemFire shell using this OperationInvoker to process commands.
-   * @see #RestHttpOperationInvoker(com.gemstone.gemfire.management.internal.web.domain.LinkIndex, com.gemstone.gemfire.management.internal.cli.shell.Gfsh, String)
+   * @see #RestHttpOperationInvoker(com.gemstone.gemfire.management.internal.web.domain.LinkIndex, com.gemstone.gemfire.management.internal.cli.shell.Gfsh,  Map)
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
    * @see com.gemstone.gemfire.management.internal.web.domain.LinkIndex
    */
-  public RestHttpOperationInvoker(final LinkIndex linkIndex, final Gfsh gfsh) {
-    this(linkIndex, gfsh, CliStrings.CONNECT__DEFAULT_BASE_URL);
+  public RestHttpOperationInvoker(final LinkIndex linkIndex, final Gfsh gfsh, Map<String,String> securityProperties) {
+    this(linkIndex, gfsh, CliStrings.CONNECT__DEFAULT_BASE_URL, securityProperties);
   }
 
   /**
@@ -116,11 +118,12 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
    * @see com.gemstone.gemfire.management.internal.web.domain.LinkIndex
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
    */
-  public RestHttpOperationInvoker(final LinkIndex linkIndex, final Gfsh gfsh, final String baseUrl) {
-    super(gfsh, baseUrl);
+  public RestHttpOperationInvoker(final LinkIndex linkIndex, final Gfsh gfsh, final String baseUrl, Map<String,String> securityProperties) {
+    super(gfsh, baseUrl, securityProperties);
     assertNotNull(linkIndex, "The Link Index resolving commands to REST API web service endpoints cannot be null!");
     this.linkIndex = linkIndex;
-    this.httpOperationInvoker = new SimpleHttpOperationInvoker(gfsh, baseUrl);
+    this.httpOperationInvoker = new SimpleHttpOperationInvoker(gfsh, baseUrl, securityProperties);
+
   }
 
   /**
@@ -149,6 +152,14 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
             httpRequest.getHeaders().set(HttpHeader.USER_AGENT.getName(), USER_AGENT_HTTP_REQUEST_HEADER_VALUE);
             httpRequest.getHeaders().setAccept(getAcceptableMediaTypes());
             httpRequest.getHeaders().setContentLength(0l);
+
+            if(securityProperties != null){
+              Iterator<Entry<String, String>> it = securityProperties.entrySet().iterator();
+              while(it.hasNext()){
+                Entry<String,String> entry= it.next();
+                httpRequest.getHeaders().add(entry.getKey(), entry.getValue());
+              }
+            }
 
             ClientHttpResponse httpResponse = httpRequest.execute();
 
@@ -217,9 +228,6 @@ public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker imple
    */
   protected ClientHttpRequest createHttpRequest(final CommandRequest command) {
     ClientHttpRequest request = createHttpRequest(findLink(command));
-
-    //request.getParameters().setAll(new HashMap<String, Object>(CollectionUtils.removeKeys(
-    //  new HashMap<String, String>(command.getParameters()), ExcludeNoValueFilter.INSTANCE)));
 
     Map<String, String> commandParameters = command.getParameters();
 

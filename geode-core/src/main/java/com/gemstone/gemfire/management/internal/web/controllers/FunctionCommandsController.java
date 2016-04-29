@@ -21,8 +21,6 @@ import java.util.concurrent.Callable;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -109,12 +107,7 @@ public class FunctionCommandsController extends AbstractCommandsController {
     if (hasValue(resultCollector)) {
       command.addOption(CliStrings.EXECUTE_FUNCTION__RESULTCOLLECTOR, resultCollector);
     }
-
-    return new Callable<ResponseEntity<String>>() {
-      @Override public ResponseEntity<String> call() throws Exception {
-        return new ResponseEntity<String>(processCommand(command.toString()), HttpStatus.OK);
-      }
-    };
+    return getProcessCommandCallable(command.toString());
   }
 
   @RequestMapping(method = RequestMethod.DELETE, value = "/functions/{id}")

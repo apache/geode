@@ -16,13 +16,28 @@
  */
 package com.vmware.gemfire.tools.pulse.controllers;
 
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.powermock.api.mockito.PowerMockito.spy;
+import static org.powermock.api.mockito.PowerMockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.io.File;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import com.vmware.gemfire.tools.pulse.internal.PulseAppListener;
 import com.vmware.gemfire.tools.pulse.internal.controllers.PulseController;
 import com.vmware.gemfire.tools.pulse.internal.data.Cluster;
 import com.vmware.gemfire.tools.pulse.internal.data.PulseConfig;
 import com.vmware.gemfire.tools.pulse.internal.data.Repository;
+
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,33 +52,12 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import javax.servlet.ServletContextListener;
-import java.io.File;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.UUID;
-
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  */
@@ -110,6 +104,7 @@ public class PulseControllerJUnitTest {
   @Before
   public void setup() throws Exception {
     this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
+
 
     cluster = Mockito.spy(Cluster.class);
 
@@ -701,24 +696,7 @@ public class PulseControllerJUnitTest {
   }
 
   @Test
-  public void clusterLogout() throws Exception {
-    MockHttpSession mockSession = new MockHttpSession(wac.getServletContext(), UUID.randomUUID().toString());
-    assertFalse(mockSession.isInvalid());
-
-    this.mockMvc.perform(get("/clusterLogout").principal(principal)
-        .session(mockSession)
-        .accept(MediaType.parseMediaType(MediaType.APPLICATION_JSON_UTF8_VALUE)))
-        .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrl("../Login.html"));
-
-    assertTrue(mockSession.isInvalid());
-  }
-
-  @Test
   public void pulseVersion() throws Exception {
-    ServletContextListener listener = new PulseAppListener();
-    listener.contextInitialized(null);
-
     this.mockMvc.perform(get("/pulseVersion")
         .accept(MediaType.parseMediaType(MediaType.APPLICATION_JSON_UTF8_VALUE)))
         .andExpect(status().isOk())

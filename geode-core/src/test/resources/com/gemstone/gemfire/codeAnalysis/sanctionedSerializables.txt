@@ -128,6 +128,8 @@ com/gemstone/gemfire/cache/execute/EmtpyRegionFunctionException,true,1
 com/gemstone/gemfire/cache/execute/FunctionAdapter,false
 com/gemstone/gemfire/cache/execute/FunctionException,true,4893171227542647452
 com/gemstone/gemfire/cache/execute/FunctionInvocationTargetException,true,1,id:com/gemstone/gemfire/distributed/DistributedMember
+com/gemstone/gemfire/cache/operations/OperationContext$OperationCode,false
+com/gemstone/gemfire/cache/operations/OperationContext$Resource,false
 com/gemstone/gemfire/cache/partition/PartitionNotAvailableException,true,1
 com/gemstone/gemfire/cache/persistence/ConflictingPersistentDataException,true,-2629287782021455875
 com/gemstone/gemfire/cache/persistence/PartitionOfflineException,true,-6471045959318795870,offlineMembers:java/util/Set

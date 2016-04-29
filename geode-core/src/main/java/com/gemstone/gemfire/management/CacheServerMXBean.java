@@ -17,6 +17,10 @@
 package com.gemstone.gemfire.management;
 
 import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+
+import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
+import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  * MBean that provides access to information and management functionality for a
@@ -52,6 +56,7 @@ import com.gemstone.gemfire.cache.server.CacheServer;
  * @since 7.0
  * 
  */
+@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
 public interface CacheServerMXBean {
 
   /**
@@ -278,6 +283,7 @@ public interface CacheServerMXBean {
    * @param indexName
    *          Name of the index to be removed.
    */
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void removeIndex(String indexName) throws Exception;
 
   /**
@@ -294,7 +300,8 @@ public interface CacheServerMXBean {
    * target cache server - other copies of the CQ on other servers are
    * not affected. Using the client side CQ methods to modify a CQ.
    */
-  @Deprecated 
+  @Deprecated
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
   public void executeContinuousQuery(String queryName) throws Exception;
 
   /**
@@ -308,6 +315,7 @@ public interface CacheServerMXBean {
    * not affected. Using the client side CQ methods to modify a CQ.         
    */
   @Deprecated
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void stopContinuousQuery(String queryName) throws Exception;
 
   /**
@@ -320,6 +328,7 @@ public interface CacheServerMXBean {
    * not affected. Using the client side CQ methods to modify a CQ.         
    */
   @Deprecated
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void closeAllContinuousQuery(String regionName) throws Exception;
   
   
@@ -333,6 +342,7 @@ public interface CacheServerMXBean {
    * not affected. Using the client side CQ methods to modify a CQ.         
    */
   @Deprecated
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void closeContinuousQuery(String queryName) throws Exception;
 
 

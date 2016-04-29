@@ -1,0 +1,188 @@
+{
+  "roles": [
+    {
+      "name": "cluster",
+      "operationsAllowed": [
+        "CLUSTER:MANAGE",
+        "CLUSTER:WRITE",
+        "CLUSTER:READ"
+      ]
+    },
+    {
+      "name": "data",
+      "operationsAllowed": [
+        "DATA:MANAGE",
+        "DATA:WRITE",
+        "DATA:READ"
+      ]
+    },
+    {
+      "name": "manage",
+      "operationsAllowed": [
+        "CLUSTER:MANAGE",
+        "DATA:MANAGE"
+      ]
+    },
+    {
+      "name": "write",
+      "operationsAllowed": [
+        "CLUSTER:WRITE",
+        "DATA:WRITE"
+      ]
+    },
+    {
+      "name": "read",
+      "operationsAllowed": [
+        "CLUSTER:READ",
+        "DATA:READ"
+      ]
+    },
+    {
+      "name": "cluster-manage",
+      "operationsAllowed": [
+        "CLUSTER:MANAGE"
+      ]
+    },
+    {
+      "name": "cluster-write",
+      "operationsAllowed": [
+        "CLUSTER:WRITE"
+      ]
+    },
+    {
+      "name": "cluster-read",
+      "operationsAllowed": [
+        "CLUSTER:READ"
+      ]
+    },
+    {
+      "name": "data-manage",
+      "operationsAllowed": [
+        "DATA:MANAGE"
+      ]
+    },
+    {
+      "name": "data-write",
+      "operationsAllowed": [
+        "DATA:WRITE"
+      ]
+    },
+    {
+      "name": "data-read",
+      "operationsAllowed": [
+        "DATA:READ"
+      ]
+    },
+    {
+      "name": "region1-use",
+      "operationsAllowed": [
+        "DATA:READ",
+        "DATA:WRITE"
+      ],
+      "regions": "null,region1"
+    },
+    {
+      "name": "secure-use",
+      "operationsAllowed": [
+        "DATA:READ",
+        "DATA:WRITE"
+      ],
+      "regions": "null,region1,secureRegion"
+    }
+  ],
+  "users": [
+    {
+      "name": "super-user",
+      "password": "1234567",
+      "roles": [
+        "cluster",
+        "data"
+      ]
+    },
+    {
+      "name": "cluster-admin",
+      "password": "1234567",
+      "roles": [
+        "cluster"
+      ]
+    },
+    {
+      "name": "data-admin",
+      "password": "1234567",
+      "roles": [
+        "cluster-read",
+        "data-manage"
+      ]
+    },
+    {
+      "name": "data-user",
+      "password": "1234567",
+      "roles": [
+        "data-write",
+        "data-read"
+      ]
+    },
+    {
+      "name": "region1-user",
+      "password": "1234567",
+      "roles": [
+        "region1-use"
+      ]
+    },
+    {
+      "name": "secure-user",
+      "password": "1234567",
+      "roles": [
+        "secure-use"
+      ]
+    },
+    {
+      "name": "stranger",
+      "password": "1234567",
+      "roles": [
+      ]
+    },
+    {
+      "name": "data-reader",
+      "password": "1234567",
+      "roles": [
+        "data-read"
+      ]
+    },
+    {
+      "name": "data-writer",
+      "password": "1234567",
+      "roles": [
+        "data-write"
+      ]
+    },
+    {
+      "name": "data-manager",
+      "password": "1234567",
+      "roles": [
+        "data-manage"
+      ]
+    },
+    {
+      "name": "cluster-reader",
+      "password": "1234567",
+      "roles": [
+        "cluster-read"
+      ]
+    },
+    {
+      "name": "cluster-writer",
+      "password": "1234567",
+      "roles": [
+        "cluster-write"
+      ]
+    },
+    {
+      "name": "cluster-manager",
+      "password": "1234567",
+      "roles": [
+        "cluster-manage"
+      ]
+    }
+  ]
+}

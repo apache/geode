@@ -25,9 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheLoader;
 import com.gemstone.gemfire.cache.CacheLoaderException;
@@ -52,6 +49,10 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * The GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest class is test suite of test cases testing the Gfsh
@@ -64,12 +65,18 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
  */
 @SuppressWarnings("unused")
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends CliCommandTestBase {
 
   private static final String GEMFIRE_MANAGER_NAME = "GemManagerNode";
   private static final String GEMFIRE_SERVER_NAME = "GemServerDataNode";
   private static final String GEMFIRE_LOG_LEVEL = System.getProperty("logLevel", "config");
   private static final String USERS_REGION_NAME = "Users";
+
+
+  public GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest(boolean useHttpOnConnect){
+    super(useHttpOnConnect);
+  }
 
   protected static String getRegionPath(final String regionName) {
     return (regionName.startsWith(Region.SEPARATOR) ? regionName : String.format("%1$s%2$s", Region.SEPARATOR,
@@ -92,7 +99,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
   @Override
   public final void postSetUp() throws Exception {
     Properties managerDistributedSystemProperties = createDistributedSystemProperties(GEMFIRE_MANAGER_NAME);
-    HeadlessGfsh gfsh = createDefaultSetup(managerDistributedSystemProperties);
+    HeadlessGfsh gfsh = setUpJmxManagerOnVm0ThenConnect(managerDistributedSystemProperties);
 
     assertNotNull(gfsh);
     assertTrue(gfsh.isConnectedAndReady());

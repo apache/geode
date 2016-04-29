@@ -16,18 +16,16 @@
  */
 package com.gemstone.gemfire.management;
 
-import java.util.Map;
+import static com.gemstone.gemfire.cache.operations.OperationContext.*;
 
+import java.util.Map;
 import javax.management.ObjectName;
 
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.management.internal.security.Resource;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-import com.gemstone.gemfire.management.internal.security.ResourceOperationContext.ResourceOperationCode;
 
 /**
  * MBean that provides access to information and management operations for a
@@ -74,13 +72,16 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperationContex
  * @since 7.0
  *
  */
+@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
 public interface DistributedSystemMXBean {
 
   /**
    * Returns the ID of thie DistributedSystem.
+   * allow anyone to access this method
    *
    * @return The DistributedSystem ID or -1 if not set.
    */
+  @ResourceOperation()
   public int getDistributedSystemId();
 
   /**
@@ -91,7 +92,6 @@ public interface DistributedSystemMXBean {
   /**
    * Returns a list of names for all members.
    */
-  @ResourceOperation(resource = Resource.DISTRIBUTED_SYSTEM)
   public String[] listMembers();
 
   /**
@@ -102,7 +102,7 @@ public interface DistributedSystemMXBean {
    *          members.
    * @return a list of names for locator members.
    */
-  
+
   public String[] listLocatorMembers(boolean onlyStandAloneLocators);
 
   /**
@@ -152,7 +152,7 @@ public interface DistributedSystemMXBean {
    *          Minimum level for alerts to be delivered.
    *          Must be one of: WARNING, ERROR, SEVERE or NONE.
    */
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.CHANGE_ALERT_LEVEL_DS) 
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.WRITE)
   public void changeAlertLevel(String alertLevel) throws Exception;
 
   /**
@@ -235,7 +235,7 @@ public interface DistributedSystemMXBean {
    *          path of the directory for baseline backup.
    * @return The results of the backup request.
    */
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.BACKUP_DS)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
   public DiskBackupStatus backupAllMembers(String targetDirPath, String baselineDirPath)
       throws Exception;
 
@@ -320,7 +320,7 @@ public interface DistributedSystemMXBean {
    *
    * @return List of names of all distributed members that were shutdown.
    */
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.SHUTDOWN_DS)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
   public String[] shutDownAllMembers() throws Exception;
 
   /**
@@ -340,7 +340,7 @@ public interface DistributedSystemMXBean {
    *          UUID of the disk store to remove
    * @return True if the request is successful, false otherwise.
    */
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.REMOVE_DISKSTORE_DS)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public boolean revokeMissingDiskStores(String diskStoreId)
       throws Exception;
 
@@ -353,7 +353,9 @@ public interface DistributedSystemMXBean {
   /**
    * Returns the object name for a {@link MemberMXBean} used to access
    * this distributed member.
+   * allow anyone to access this method
    */
+  @ResourceOperation()
   public ObjectName getMemberObjectName();
 
   /**
@@ -616,7 +618,7 @@ public interface DistributedSystemMXBean {
    *          will be set.
    * @return a JSON formated string containing data and its type
    */
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.QUERYDATA_DS)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
   public String queryData(String queryString, String members, int limit) throws Exception;
   
   /**
@@ -646,7 +648,7 @@ public interface DistributedSystemMXBean {
    *          will be set.
    * @return a byte[] which is a compressed JSON string.
    */
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.QUERYDATA_DS)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
   public byte[] queryDataForCompressedResult(String queryString, String members, int limit) throws Exception;
   
   
@@ -672,7 +674,7 @@ public interface DistributedSystemMXBean {
    */
   public int getQueryResultSetLimit();
 
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.QUERYDATA_DS)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void setQueryResultSetLimit(int queryResultSetLimit);
 
   /**
@@ -682,6 +684,6 @@ public interface DistributedSystemMXBean {
    */
   public int getQueryCollectionsDepth();
 
-  @ResourceOperation( resource=Resource.DISTRIBUTED_SYSTEM, operation=ResourceConstants.QUERYDATA_DS)
+  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public void setQueryCollectionsDepth(int queryCollectionsDepth);
 }

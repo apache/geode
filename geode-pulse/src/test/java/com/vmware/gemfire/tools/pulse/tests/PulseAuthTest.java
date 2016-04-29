@@ -14,13 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.security;
+package com.vmware.gemfire.tools.pulse.tests;
 
-public enum Resource {
-  DISTRIBUTED_SYSTEM,
-  MEMBER,
-  REGION,
-  DISKSTORE,
-  GATEWAY_SENDER,
-  GATEWAT_LISTENER,  
+import com.gemstone.gemfire.test.junit.categories.UITest;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.experimental.categories.Category;
+import org.junit.runners.MethodSorters;
+
+@Category(UITest.class)
+@FixMethodOrder(MethodSorters.JVM)
+public class PulseAuthTest extends PulseAbstractTest {
+
+  @BeforeClass
+  public static void beforeClassSetup() throws Exception {
+    setUpServer("pulseUser", "12345", "/pulse-auth.json");
+  }
 }

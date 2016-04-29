@@ -54,7 +54,6 @@ import com.gemstone.gemfire.management.internal.cli.parser.GfshOptionParser;
 import com.gemstone.gemfire.management.internal.cli.parser.Option;
 import com.gemstone.gemfire.management.internal.cli.parser.jopt.JoptOptionParser;
 import com.gemstone.gemfire.management.internal.cli.util.ClasspathScanLoadHelper;
-import com.gemstone.gemfire.management.internal.security.CLIOperationContext;
 
 /**
  * 
@@ -456,8 +455,6 @@ public class CommandManager {
             }
           }
         }
-        
-        CLIOperationContext.registerCommand(this, method, commandTarget);
         
       } else if (method.getAnnotation(CliAvailabilityIndicator.class) != null) {
         // Now add this availability Indicator to the list of

@@ -17,11 +17,7 @@
 
 package com.gemstone.gemfire.cache.operations;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
+import org.apache.shiro.authz.permission.WildcardPermission;
 
 /**
  * Encapsulates a cache operation and the data associated with it for both the
@@ -29,435 +25,272 @@ import com.gemstone.gemfire.cache.Region;
  * operations will extend this with the specifics as required e.g. a getKey()
  * method for a GET operation. Implementations for all the cache operations that
  * require authorization are provided.
- * 
+ *
  * Implementations of this interface are <b>not</b> expected to be thread-safe.
- * 
+ *
  * @since 5.5
  */
-public abstract class OperationContext {
+public abstract class OperationContext extends WildcardPermission{
 
-  /**
-   * Enumeration for various cache operations. Implementations for each of the
-   * supported operation listed here are provided.
-   * 
-   * @since 5.5
-   */
-  public static final class OperationCode {
+  public enum Resource {
+    NULL,
+    CLUSTER,
+    DATA
+  };
 
-    private static final byte OP_GET = 1;
-
-    private static final byte OP_PUT = 2;
-
-    private static final byte OP_DESTROY = 3;
-
-    private static final byte OP_INVALIDATE = 4;
-
-    private static final byte OP_REGISTER_INTEREST = 5;
-
-    private static final byte OP_UNREGISTER_INTEREST = 6;
-
-    private static final byte OP_CONTAINS_KEY = 7;
-
-    private static final byte OP_KEY_SET = 8;
-
-    private static final byte OP_QUERY = 9;
-
-    private static final byte OP_EXECUTE_CQ = 10;
-
-    private static final byte OP_STOP_CQ = 11;
-
-    private static final byte OP_CLOSE_CQ = 12;
-
-    private static final byte OP_REGION_CLEAR = 13;
-
-    private static final byte OP_REGION_CREATE = 14;
-
-    private static final byte OP_REGION_DESTROY = 15;
-    
-    private static final byte OP_PUTALL = 16;
-    
-    private static final byte OP_EXECUTE_FUNCTION = 17;
-    
-    private static final byte OP_GET_DURABLE_CQS = 18;
-    
-    private static final byte OP_REMOVEALL = 19;
-    
-    private static final byte OP_RESOURCE = 20;
-    
-    private static final OperationCode[] VALUES = new OperationCode[22];
-
-    private static final Map OperationNameMap = new HashMap();
+  public enum OperationCode {
+    @Deprecated
+    GET,
+    @Deprecated
+    PUT,
+    @Deprecated
+    PUTALL,
+    @Deprecated
+    REMOVEALL,
+    @Deprecated
+    DESTROY,
+    @Deprecated
+    INVALIDATE,
+    @Deprecated
+    REGISTER_INTEREST,
+    @Deprecated
+    UNREGISTER_INTEREST,
+    @Deprecated
+    CONTAINS_KEY,
+    @Deprecated
+    KEY_SET,
+    @Deprecated
+    QUERY,
+    @Deprecated
+    EXECUTE_CQ,
+    @Deprecated
+    STOP_CQ,
+    @Deprecated
+    CLOSE_CQ,
+    @Deprecated
+    REGION_CLEAR,
+    @Deprecated
+    REGION_CREATE,
+    @Deprecated
+    REGION_DESTROY,
+    @Deprecated
+    EXECUTE_FUNCTION,
+    @Deprecated
+    GET_DURABLE_CQS,
+    NULL,
+    MANAGE,
+    WRITE,
+    READ;
 
     /**
-     * An entry get operation.
-     * 
-     * @see Region#get(Object)
+     * Check if this is an entry get operation.
+     *
+     * @return true if this is an entry get operation
+     * @deprecated Use {@code getOperationCode() == GET} instead
      */
-    public static final OperationCode GET = new OperationCode("GET", OP_GET);
-
-    /**
-     * An entry create/update operation.
-     * 
-     * @see Region#put(Object, Object)
-     */
-    public static final OperationCode PUT = new OperationCode("PUT", OP_PUT);
-
-    /**
-     * An map putAll operation.
-     * 
-     * @see Region#putAll(Map map)
-     */
-    public static final OperationCode PUTALL = new OperationCode("PUTALL", OP_PUTALL);
-    
-    /**
-     * A region removeAll operation.
-     * 
-     * @see Region#removeAll(java.util.Collection)
-     * @since 8.1
-     */
-    public static final OperationCode REMOVEALL = new OperationCode("REMOVEALL", OP_REMOVEALL);
-    
-    /**
-     * An entry destroy operation.
-     * 
-     * @see Region#destroy(Object, Object)
-     */
-    public static final OperationCode DESTROY = new OperationCode("DESTROY",
-        OP_DESTROY);
-
-    /**
-     * An entry invalidate operation.
-     * 
-     * @see Region#invalidate(Object, Object)
-     */
-    public static final OperationCode INVALIDATE = new OperationCode(
-        "INVALIDATE", OP_INVALIDATE);
-
-    /**
-     * A register interest operation.
-     * 
-     * @see Region#registerInterest(Object)
-     */
-    public static final OperationCode REGISTER_INTEREST = new OperationCode(
-        "REGISTER_INTEREST", OP_REGISTER_INTEREST);
-
-    /**
-     * An unregister interest operation.
-     * 
-     * @see Region#unregisterInterest
-     */
-    public static final OperationCode UNREGISTER_INTEREST = new OperationCode(
-        "UNREGISTER_INTEREST", OP_UNREGISTER_INTEREST);
-
-    /**
-     * A region <code>containsKey</code> operation.
-     * 
-     * @see Region#containsKey
-     */
-    public static final OperationCode CONTAINS_KEY = new OperationCode(
-        "CONTAINS_KEY", OP_CONTAINS_KEY);
-
-    /**
-     * A region <code>keySet</code> operation.
-     * 
-     * @see Region#keySet
-     */
-    public static final OperationCode KEY_SET = new OperationCode("KEY_SET",
-        OP_KEY_SET);
-
-    /**
-     * A cache query operation.
-     * 
-     * @see Region#query
-     */
-    public static final OperationCode QUERY = new OperationCode("QUERY",
-        OP_QUERY);
-
-    /**
-     * A continuous query execution operation.
-     */
-    public static final OperationCode EXECUTE_CQ = new OperationCode(
-        "EXECUTE_CQ", OP_EXECUTE_CQ);
-
-    /**
-     * A continuous query stop operation.
-     */
-    public static final OperationCode STOP_CQ = new OperationCode("STOP_CQ",
-        OP_STOP_CQ);
-
-    /**
-     * A continuous query close operation.
-     */
-    public static final OperationCode CLOSE_CQ = new OperationCode("CLOSE_CQ",
-        OP_CLOSE_CQ);
-
-    /**
-     * A region clear operation.
-     * 
-     * @see Region#clear
-     */
-    public static final OperationCode REGION_CLEAR = new OperationCode(
-        "REGION_CLEAR", OP_REGION_CLEAR);
-
-    /**
-     * A region create operation.
-     * 
-     * @see Region#createSubregion
-     * @see Cache#createRegion
-     */
-    public static final OperationCode REGION_CREATE = new OperationCode(
-        "REGION_CREATE", OP_REGION_CREATE);
-
-    /**
-     * A region destroy operation.
-     * 
-     * @see Region#destroyRegion(Object)
-     */
-    public static final OperationCode REGION_DESTROY = new OperationCode(
-        "REGION_DESTROY", OP_REGION_DESTROY);
-    
-    /**
-     * A function execution operation
-     */
-    public static final OperationCode EXECUTE_FUNCTION = new OperationCode(
-        "EXECUTE_FUNCTION", OP_EXECUTE_FUNCTION);
-    
-    /**
-     * A get durable continuous query operation
-     */
-    public static final OperationCode GET_DURABLE_CQS = new OperationCode(
-        "GET_DURABLE_CQS", OP_GET_DURABLE_CQS);
-    
-    
-    /**
-     * A resource operation. See ResourceOperationContext for more details
-     */
-    public static final OperationCode RESOURCE = new OperationCode(
-        "RESOURCE", OP_RESOURCE);
-
-    /** The name of this operation. */
-    private final String name;
-
-    /**
-     * One of the following: OP_GET, OP_CREATE, OP_UPDATE, OP_INVALIDATE,
-     * OP_DESTROY, OP_REGISTER_INTEREST, OP_REGISTER_INTEREST_REGEX,
-     * OP_UNREGISTER_INTEREST, OP_UNREGISTER_INTEREST_REGEX, OP_QUERY,
-     * OP_REGION_CREATE, OP_REGION_DESTROY, OP_PUTALL
-     */
-    private final byte opCode;
-
-    /** Creates a new instance of Operation. */
-    private OperationCode(String name, byte opCode) {
-      this.name = name;
-      this.opCode = opCode;
-      VALUES[opCode] = this;
-      OperationNameMap.put(name, this);
-    }
-
-    /**
-     * Returns true if this is a entry get operation.
-     */
+    @Deprecated
     public boolean isGet() {
-      return (this.opCode == OP_GET);
+      return (this == GET);
     }
 
     /**
-     * Returns true if this is a entry create/update operation.
+     * Check if this is a entry create/update operation.
+     *
+     * @return true if this is a entry create/update operation.
+     * @deprecated Use {@code getOperationCode() == PUT} instead
      */
+    @Deprecated
     public boolean isPut() {
-      return (this.opCode == OP_PUT);
+      return (this == PUT);
     }
-    
+
     /**
-     * Returns true if this is a map putAll operation.
+     * Check if this is a map putAll operation.
+     *
+     * @return true if this is a map putAll operation.
+     * @deprecated Use {@code getOperationCode() == PUTALL} instead
      */
+    @Deprecated
     public boolean isPutAll() {
-      return (this.opCode == OP_PUTALL);
+      return (this == PUTALL);
     }
-    
+
     /**
-     * Returns true if this is a region removeAll operation.
+     * Check if this is a region removeAll operation.
+     *
+     * @return true if this is a region removeAll operation.
+     * @deprecated Use {@code getOperationCode() == REMOVEALL} instead
      * @since 8.1
      */
+    @Deprecated
     public boolean isRemoveAll() {
-      return (this.opCode == OP_REMOVEALL);
+      return (this == REMOVEALL);
     }
 
     /**
-     * Returns true if this is an entry destroy operation.
+     * Check if this is an entry destroy operation.
+     *
+     * @return true if this is an entry destroy operation.
+     * @deprecated Use {@code getOperationCode() == DESTROY} instead
      */
+    @Deprecated
     public boolean isDestroy() {
-      return (this.opCode == OP_DESTROY);
+      return (this == DESTROY);
     }
 
     /**
-     * Returns true if this is an entry invalidate operation.
+     * Check if this is an entry invalidate operation.
+     *
+     * @return true if this is an entry invalidate operation.
+     * @deprecated Use {@code getOperationCode() == INVALIDATE} instead
      */
+    @Deprecated
     public boolean isInvalidate() {
-      return (this.opCode == OP_INVALIDATE);
+      return (this == INVALIDATE);
     }
 
     /**
-     * Returns true if this is a register interest operation.
+     * Check if this is a register interest operation.
+     *
+     * @return true if this is a register interest operation.
+     * @deprecated Use {@code getOperationCode() == REGISTER_INTEREST} instead
      */
+    @Deprecated
     public boolean isRegisterInterest() {
-      return (this.opCode == OP_REGISTER_INTEREST);
+      return (this == REGISTER_INTEREST);
     }
 
     /**
-     * Returns true if this is an unregister interest operation.
+     * Check if this is an unregister interest operation.
+     *
+     * @return true if this is an unregister interest operation.
+     * @deprecated Use {@code getOperationCode() ==  UNREGISTER_INTEREST} instead
      */
+    @Deprecated
     public boolean isUnregisterInterest() {
-      return (this.opCode == OP_UNREGISTER_INTEREST);
+      return (this == UNREGISTER_INTEREST);
     }
 
     /**
-     * Returns true if this is a region <code>containsKey</code> operation.
+     * Check if this is a region <code>containsKey</code> operation.
+     *
+     * @return true if this is a region <code>containsKey</code> operation.
+     * @deprecated Use {@code getOperationCode() == CONTAINS_KEY} instead
      */
+    @Deprecated
     public boolean isContainsKey() {
-      return (this.opCode == OP_CONTAINS_KEY);
+      return (this == CONTAINS_KEY);
     }
 
     /**
-     * Returns true if this is a region <code>keySet</code> operation.
+     * Check if this is a region <code>keySet</code> operation.
+     *
+     * @return true if this is a region <code>keySet</code> operation.
+     * @deprecated Use {@code getOperationCode() == KEY_SET} instead
      */
+    @Deprecated
     public boolean isKeySet() {
-      return (this.opCode == OP_KEY_SET);
+      return (this == KEY_SET);
     }
 
     /**
-     * Returns true if this is a cache query operation.
+     * Check if this is a cache query operation.
+     *
+     * @return true if this is a cache query operation.
+     * @deprecated Use {@code getOperationCode() == QUERY} instead
      */
+    @Deprecated
     public boolean isQuery() {
-      return (this.opCode == OP_QUERY);
+      return (this == QUERY);
     }
 
     /**
-     * Returns true if this is a continuous query execution operation.
+     * Check if this is a continuous query execution operation.
+     *
+     * @return true if this is a continuous query execution operation.
+     * @deprecated Use {@code getOperationCode() == EXECUTE_CQ} instead
      */
+    @Deprecated
     public boolean isExecuteCQ() {
-      return (this.opCode == OP_EXECUTE_CQ);
+      return (this == EXECUTE_CQ);
     }
 
     /**
-     * Returns true if this is a continuous query stop operation.
+     * Check if this is a continuous query stop operation.
+     *
+     * @return true if this is a continuous query stop operation.
+     * @deprecated Use {@code getOperationCode() == STOP_CQ} instead
      */
+    @Deprecated
     public boolean isStopCQ() {
-      return (this.opCode == OP_STOP_CQ);
+      return (this == STOP_CQ);
     }
 
     /**
-     * Returns true if this is a continuous query close operation.
+     * Check if this is a continuous query close operation.
+     *
+     * @return true if this is a continuous query close operation.
+     * @deprecated Use {@code getOperationCode() == CLOSE_CQ} instead
      */
+    @Deprecated
     public boolean isCloseCQ() {
-      return (this.opCode == OP_CLOSE_CQ);
+      return (this == CLOSE_CQ);
     }
 
     /**
-     * Returns true if this is a region clear operation.
+     * Check if this is a region clear operation.
+     *
+     * @return true if this is a region clear operation.
+     * @deprecated Use {@code getOperationCode() == REGION_CLEAR} instead
      */
+    @Deprecated
     public boolean isRegionClear() {
-      return (this.opCode == OP_REGION_CLEAR);
+      return (this == REGION_CLEAR);
     }
 
     /**
-     * Returns true if this is a region create operation.
+     * Check if this is a region create operation.
+     *
+     * @return true if this is a region create operation.
+     * @deprecated Use {@code getOperationCode() == REGION_CREATE} instead
      */
+    @Deprecated
     public boolean isRegionCreate() {
-      return (this.opCode == OP_REGION_CREATE);
+      return (this == REGION_CREATE);
     }
 
     /**
-     * Returns true if this is a region destroy operation.
+     * Check if this is a region destroy operation.
+     *
+     * @return true if this is a region destroy operation.
+     * @deprecated Use {@code getOperationCode() == REGION_DESTROY} instead
      */
+    @Deprecated
     public boolean isRegionDestroy() {
-      return (this.opCode == OP_REGION_DESTROY);
+      return (this == REGION_DESTROY);
     }
-    
+
     /**
-     * Returns true if this is a execute region function operation.
+     * Check if this is a execute region function operation.
+     *
+     * @return true if this is a execute region function operation.
+     * @deprecated Use {@code getOperationCode() == EXECUTE_FUNCTION} instead
      */
+    @Deprecated
     public boolean isExecuteRegionFunction() {
-      return (this.opCode == OP_EXECUTE_FUNCTION);
+      return (this == EXECUTE_FUNCTION);
     }
 
     /**
-     * Returns true if this is a get durable cqs operation.
+     * Check if this is a get durable cqs operation.
+     *
+     * @return true if this is a get durable cqs operation.
+     * @deprecated Use {@code getOperationCode() == GET_DURABLE_CQS} instead
      */
+    @Deprecated
     public boolean isGetDurableCQs() {
-      return (this.opCode == OP_GET_DURABLE_CQS);
+      return (this == GET_DURABLE_CQS);
     }
-    
-    /**
-     * Returns the <code>OperationCode</code> represented by specified byte.
-     */
-    public static OperationCode fromOrdinal(byte opCode) {
-      return VALUES[opCode];
-    }
-
-    /**
-     * Returns the <code>OperationCode</code> represented by specified string.
-     */
-    public static OperationCode parse(String operationName) {
-      return (OperationCode)OperationNameMap.get(operationName);
-    }
-
-    /**
-     * Returns the byte representing this operation code.
-     * 
-     * @return a byte representing this operation.
-     */
-    public byte toOrdinal() {
-      return this.opCode;
-    }
-
-    /**
-     * Returns a string representation for this operation.
-     * 
-     * @return the name of this operation.
-     */
-    @Override
-    final public String toString() {
-      return this.name;
-    }
-
-    /**
-     * Indicates whether other object is same as this one.
-     * 
-     * @return true if other object is same as this one.
-     */
-    @Override
-    final public boolean equals(final Object obj) {
-      if (obj == this) {
-        return true;
-      }
-      if (!(obj instanceof OperationCode)) {
-        return false;
-      }
-      final OperationCode other = (OperationCode)obj;
-      return (other.opCode == this.opCode);
-    }
-
-    /**
-     * Indicates whether other <code>OperationCode</code> is same as this one.
-     * 
-     * @return true if other <code>OperationCode</code> is same as this one.
-     */
-    final public boolean equals(final OperationCode opCode) {
-      return (opCode != null && opCode.opCode == this.opCode);
-    }
-
-    /**
-     * Returns a hash code value for this <code>OperationCode</code> which is
-     * the same as the byte representing its operation type.
-     * 
-     * @return the hashCode of this operation.
-     */
-    @Override
-    final public int hashCode() {
-      return this.opCode;
-    }
-
   }
 
   /**
@@ -466,9 +299,21 @@ public abstract class OperationContext {
    */
   public abstract OperationCode getOperationCode();
 
+  public Resource getResource(){
+    return Resource.NULL;
+  }
+
+  /**
+   *
+   * @return
+   */
+  public String getRegionName(){
+    return "NULL";
+  }
+
   /**
    * True if the context is for post-operation.
-   * 
+   *
    * The <code>OperationContext</code> interface encapsulates the data both
    * before the operation is performed and after the operation is complete. For
    * example, for a query operation the <code>Query</code> object as well as
@@ -484,20 +329,20 @@ public abstract class OperationContext {
    * <code>isPut()</code>, <code>isPutAll()</code>, <code>isDestroy()</code>, <code>isRemoveAll()</code>,
    * <code>isInvalidate()</code>, <code>isRegionCreate()</code>, <code>isRegionClear()</code>, <code>isRegionDestroy()</code>.
    * Otherwise, returns false.
-   * 
+   *
    * @since 6.6
    */
   public boolean isClientUpdate() {
     if (isPostOperation()) {
-      switch (getOperationCode().opCode) {
-        case OperationCode.OP_PUT:
-        case OperationCode.OP_PUTALL:
-        case OperationCode.OP_DESTROY:
-        case OperationCode.OP_REMOVEALL:
-        case OperationCode.OP_INVALIDATE:
-        case OperationCode.OP_REGION_CREATE:
-        case OperationCode.OP_REGION_DESTROY:
-        case OperationCode.OP_REGION_CLEAR:
+      switch (getOperationCode()) {
+        case PUT:
+        case PUTALL:
+        case DESTROY:
+        case REMOVEALL:
+        case INVALIDATE:
+        case REGION_CREATE:
+        case REGION_DESTROY:
+        case REGION_CLEAR:
           return true;
       }
     }
@@ -512,8 +357,9 @@ public abstract class OperationContext {
     OperationCode opCode = context.getOperationCode();
     return context.isPostOperation()
         && (opCode.isPut() || opCode.isPutAll() || opCode.isDestroy()
-            || opCode.isRemoveAll()
-            || opCode.isInvalidate() || opCode.isRegionCreate()
-            || opCode.isRegionDestroy() || opCode.isRegionClear());
+        || opCode.isRemoveAll()
+        || opCode.isInvalidate() || opCode.isRegionCreate()
+        || opCode.isRegionDestroy() || opCode.isRegionClear());
   }
+
 }

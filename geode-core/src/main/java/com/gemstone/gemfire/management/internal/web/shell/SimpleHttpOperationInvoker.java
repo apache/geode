@@ -18,6 +18,7 @@
 package com.gemstone.gemfire.management.internal.web.shell;
 
 import java.net.URI;
+import java.util.Map;
 
 import com.gemstone.gemfire.management.internal.cli.CommandRequest;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
@@ -62,11 +63,11 @@ public class SimpleHttpOperationInvoker extends AbstractHttpOperationInvoker {
    * using HTTP processing.
    * 
    * @param gfsh a reference to the instance of the GemFire shell using this OperationInvoker to process commands.
-   * @see #SimpleHttpOperationInvoker(com.gemstone.gemfire.management.internal.cli.shell.Gfsh, String)
+   * @see #SimpleHttpOperationInvoker(com.gemstone.gemfire.management.internal.cli.shell.Gfsh, String, Map)
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
    */
-  public SimpleHttpOperationInvoker(final Gfsh gfsh) {
-    this(gfsh, REST_API_URL);
+  public SimpleHttpOperationInvoker(final Gfsh gfsh, Map<String,String> securityProperties) {
+    this(gfsh, REST_API_URL, securityProperties);
   }
 
   /**
@@ -79,8 +80,8 @@ public class SimpleHttpOperationInvoker extends AbstractHttpOperationInvoker {
    * @param baseUrl the base URL to the GemFire Manager's HTTP service.
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
    */
-  public SimpleHttpOperationInvoker(final Gfsh gfsh, final String baseUrl) {
-    super(gfsh, baseUrl);
+  public SimpleHttpOperationInvoker(final Gfsh gfsh, final String baseUrl, Map<String,String> securityProperties) {
+    super(gfsh, baseUrl, securityProperties);
   }
 
   /**

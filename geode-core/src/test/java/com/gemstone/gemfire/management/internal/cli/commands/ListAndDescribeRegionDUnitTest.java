@@ -21,9 +21,6 @@ import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
 
 import java.util.Properties;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAttributes;
@@ -47,8 +44,13 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
 
   private static final String REGION1 = "region1";
@@ -60,6 +62,9 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
   private static final String PR1 = "PR1";
   private static final String LOCALREGIONONMANAGER = "LocalRegionOnManager";
 
+  public ListAndDescribeRegionDUnitTest(boolean useHttpOnConnect) {
+    super(useHttpOnConnect);
+  }
 
   static class CacheListener2 extends CacheListenerAdapter {
   }
@@ -87,7 +92,7 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
 
   private void setupSystem() {
     final Properties managerProps = createProperties("Manager", "G1");
-    createDefaultSetup(managerProps);
+    setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     final Properties server1Props = createProperties("Server1", "G2");
     final Host host = Host.getHost(0);

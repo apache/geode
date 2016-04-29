@@ -16,8 +16,31 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.client.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.NetworkUtils.*;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import javax.management.ObjectName;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
+import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.query.CqAttributesFactory;
 import com.gemstone.gemfire.cache.query.QueryService;
@@ -47,22 +70,10 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.jayway.awaitility.Awaitility;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import javax.management.ObjectName;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-import static com.gemstone.gemfire.test.dunit.NetworkUtils.getServerHostName;
 
 /**
  * Dunit class for testing gemfire Client commands : list client , describe client
@@ -577,7 +588,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
   private void setupSystemForListClient() throws Exception {
     disconnectAllFromDS();
-    createDefaultSetup(getServerProperties());
+    setUpJmxManagerOnVm0ThenConnect(getServerProperties());
 
     final VM server1 = Host.getHost(0).getVM(1);
     final VM client1 = Host.getHost(0).getVM(2);
@@ -590,7 +601,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
   private void setupSystem() throws Exception {
     disconnectAllFromDS();
-    createDefaultSetup(getServerProperties());
+    setUpJmxManagerOnVm0ThenConnect(getServerProperties());
 
     final VM manager = Host.getHost(0).getVM(0);
     final VM server1 = Host.getHost(0).getVM(1);
@@ -616,7 +627,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
   private void setupSystem2() throws Exception {
     disconnectAllFromDS();
-    createDefaultSetup(getServerProperties());
+    setUpJmxManagerOnVm0ThenConnect(getServerProperties());
 
     final VM manager = Host.getHost(0).getVM(0);
     final VM server1 = Host.getHost(0).getVM(1);
@@ -644,7 +655,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
   private void setupSystem3() throws Exception {
     disconnectAllFromDS();
-    createDefaultSetup(getServerProperties());
+    setUpJmxManagerOnVm0ThenConnect(getServerProperties());
 
     final VM manager = Host.getHost(0).getVM(0);
     final VM server1 = Host.getHost(0).getVM(1);
@@ -1001,7 +1012,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
   private void setUpNonSubscribedClient() throws Exception {
     disconnectAllFromDS();
-    createDefaultSetup(getServerProperties());
+    setUpJmxManagerOnVm0ThenConnect(getServerProperties());
 
     final VM manager = Host.getHost(0).getVM(0);
     final VM server1 = Host.getHost(0).getVM(1);
@@ -1030,7 +1041,7 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
   private String[] setupSystemWithSubAndNonSubClient() throws Exception {
     disconnectAllFromDS();
-    createDefaultSetup(getServerProperties());
+    setUpJmxManagerOnVm0ThenConnect(getServerProperties());
 
     final VM manager = Host.getHost(0).getVM(0);
     final VM server1 = Host.getHost(0).getVM(1);

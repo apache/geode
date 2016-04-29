@@ -71,7 +71,7 @@ import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 /**
  * Base class for tests for authorization from client to server. It contains
  * utility functions for the authorization tests from client to server.
- * 
+ *
  * @since 5.5
  */
 public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestCase {
@@ -240,8 +240,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     return str;
   }
 
-  protected static void doOp(final byte opCode, final int[] indices, final int flagsI, final int expectedResult) throws InterruptedException {
-    OperationCode op = OperationCode.fromOrdinal(opCode);
+  protected static void doOp(OperationCode op, final int[] indices, final int flagsI, final int expectedResult) throws InterruptedException {
     boolean operationOmitted = false;
     final int flags = flagsI;
     Region region = getRegion();
@@ -773,12 +772,11 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
       // Perform the operation from selected client
       if (useThisVM) {
-        doOp(opCode.toOrdinal(), currentOp.getIndices(), new Integer(opFlags), new Integer(expectedResult));
+        doOp(opCode, currentOp.getIndices(), new Integer(opFlags), new Integer(expectedResult));
       } else {
-        byte ordinal = opCode.toOrdinal();
         int[] indices = currentOp.getIndices();
         clientVM.invoke("ClientAuthorizationTestCase.doOp",
-            () -> ClientAuthorizationTestCase.doOp( new Byte(ordinal), indices, new Integer(opFlags), new Integer(expectedResult) ));
+            () -> ClientAuthorizationTestCase.doOp( opCode, indices, new Integer(opFlags), new Integer(expectedResult) ));
       }
     }
   }
@@ -885,7 +883,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
    * Implements the {@link CqListener} interface and counts the number of
    * different operations and also queues up the received updates to precise
    * checking of each update.
-   * 
+   *
    * @since 5.5
    */
   private static class AuthzCqListener implements CqListener {
@@ -973,7 +971,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
   /**
    * This class specifies flags that can be used to alter the behaviour of
    * operations being performed by the <code>doOp</code> function.
-   * 
+   *
    * @since 5.5
    */
   protected static class OpFlags {
@@ -1130,7 +1128,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
   /**
    * This class encapsulates an {@link OperationCode} with associated flags, the
    * client to perform the operation, and the number of operations to perform.
-   * 
+   *
    * @since 5.5
    */
   protected static class OperationWithAction {
@@ -1275,7 +1273,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
    * Simple interface to generate credentials with authorization based on key
    * indices also. This is utilized by the post-operation authorization tests
    * where authorization is based on key indices.
-   * 
+   *
    * @since 5.5
    */
   protected interface TestCredentialGenerator {
@@ -1301,7 +1299,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
   /**
    * Contains a {@link AuthzCredentialGenerator} and implements the
    * {@link TestCredentialGenerator} interface.
-   * 
+   *
    * @since 5.5
    */
   protected static class TestAuthzCredentialGenerator implements TestCredentialGenerator {

@@ -23,8 +23,10 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -40,6 +42,7 @@ import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.web.domain.Link;
 import com.gemstone.gemfire.management.internal.web.domain.QueryParameterSource;
 import com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest;
@@ -114,6 +117,9 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   // the base URL of the GemFire Manager's embedded HTTP service and REST API interface
   private final String baseUrl;
 
+
+  protected Map<String,String> securityProperties;
+
   /**
    * Default, public, no-arg constructor to create an instance of the AbstractHttpOperationInvoker class 
    * for testing purposes.
@@ -132,11 +138,11 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @param gfsh a reference to the instance of the GemFire shell (Gfsh) using this HTTP-based OperationInvoker for
    * command processing.
    * @throws AssertionError if the reference to the Gfsh instance is null.
-   * @see #AbstractHttpOperationInvoker(com.gemstone.gemfire.management.internal.cli.shell.Gfsh, String)
+   * @see #AbstractHttpOperationInvoker(com.gemstone.gemfire.management.internal.cli.shell.Gfsh, String, Map)
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
    */
-  public AbstractHttpOperationInvoker(final Gfsh gfsh) {
-    this(gfsh, REST_API_URL);
+  public AbstractHttpOperationInvoker(final Gfsh gfsh, Map<String,String> securityProperties) {
+    this(gfsh, REST_API_URL, securityProperties);
   }
 
   /**
@@ -151,11 +157,12 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @throws AssertionError if the reference to the Gfsh instance is null.
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
    */
-  public AbstractHttpOperationInvoker(final Gfsh gfsh, final String baseUrl) {
+  public AbstractHttpOperationInvoker(final Gfsh gfsh, final String baseUrl, Map<String,String> securityProperties) {
     assertNotNull(gfsh, "The reference to the GemFire shell (Gfsh) cannot be null!");
 
     this.gfsh = gfsh;
     this.baseUrl = StringUtils.defaultIfBlank(baseUrl, REST_API_URL);
+    this.securityProperties = securityProperties;
 
     // constructs an instance of a single-threaded, scheduled Executor to send periodic HTTP requests to the Manager's
     // HTTP service or Web Service to assess the "alive" state
@@ -202,11 +209,12 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
         final String message = String.format("The HTTP request failed with: %1$d - %2$s", response.getRawStatusCode(),
           response.getStatusText());
 
-        gfsh.logSevere(message, null);
+        //gfsh.logSevere(message, null);
 
         if (gfsh.getDebug()) {
           gfsh.logSevere(readBody(response), null);
         }
+        throw new RuntimeException(message);
       }
 
       private String readBody(final ClientHttpResponse response) throws IOException {
@@ -358,6 +366,14 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
     final ClientHttpRequest request = new ClientHttpRequest(link);
     request.addHeaderValues(HttpHeader.USER_AGENT.getName(), USER_AGENT_HTTP_REQUEST_HEADER_VALUE);
     request.getHeaders().setAccept(getAcceptableMediaTypes());
+
+    if(this.securityProperties != null){
+      Iterator<Entry<String, String>> it = this.securityProperties.entrySet().iterator();
+      while(it.hasNext()){
+        Entry<String,String> entry= it.next();
+        request.addHeaderValues(entry.getKey(), entry.getValue());
+      }
+    }
     return request;
   }
 
@@ -559,6 +575,8 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
       printInfo("HTTP response headers: %1$s", response.getHeaders());
       printInfo("HTTP response status: %1$d - %2$s", response.getStatusCode().value(),
         response.getStatusCode().getReasonPhrase());
+
+      printInfo("HTTP response body: ", response.getBody());
     }
 
     return response;

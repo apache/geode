@@ -16,19 +16,22 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import static com.gemstone.gemfire.cache.operations.OperationContext.*;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import javax.management.DescriptorKey;
 
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface ResourceOperation {
-  
-  Resource resource();
-  String label() default ResourceConstants.DEFAULT_LABEL;
-  String operation() default ResourceConstants.LIST_DS;
+  @DescriptorKey("resource")
+  Resource resource() default Resource.NULL;
 
+  @DescriptorKey("operation")
+  OperationCode operation() default OperationCode.NULL;
 }
