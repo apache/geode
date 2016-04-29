@@ -45,7 +45,7 @@ public class ResourceOperationContext extends OperationContext {
     if (operation != null) this.operation = OperationCode.valueOf(operation);
     if (regionName !=null ) this.regionName = regionName;
 
-    setParts(this.resource.name()+":"+this.operation.name()+":"+regionName);
+    setParts(this.resource.name()+":"+this.operation.name()+":"+this.regionName);
   }
 
   @Override
