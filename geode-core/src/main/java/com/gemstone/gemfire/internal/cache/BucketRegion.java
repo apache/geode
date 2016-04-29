@@ -2407,6 +2407,16 @@ implements Bucket
   }
 
   @Override
+  public void setCloningEnabled(boolean isCloningEnabled){
+    this.partitionedRegion.setCloningEnabled(isCloningEnabled);
+  }
+
+  @Override
+  public boolean getCloningEnabled(){
+    return this.partitionedRegion.getCloningEnabled();
+  }
+
+  @Override
   protected void generateLocalFilterRouting(InternalCacheEvent event) {
     if (event.getLocalFilterInfo() == null) {
       super.generateLocalFilterRouting(event);

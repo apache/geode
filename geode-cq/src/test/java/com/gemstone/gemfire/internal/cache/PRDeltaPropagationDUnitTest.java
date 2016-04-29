@@ -156,6 +156,123 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
   }
 
   /**
+   *  Monitor number of times constructor is called
+   *  Without copy or cloning, we should have 1 instance
+   */
+  public void testConstructorCountWithoutCloning() throws Throwable {
+
+    clearConstructorCounts();
+    createCacheInAllPRVms();
+    createDeltaPR(Boolean.FALSE);
+    
+    // Verify that cloning is disabled
+    assertFalse(((LocalRegion)deltaPR).getCloningEnabled());
+
+    verifyNoCopy();
+    
+    putInitial();  // Does multiple puts
+   
+    verifyConstructorCount(1);
+  }
+  
+  /**
+   *  Monitor number of times constructor is called
+   *  With cloning, we should have more than 1 instance
+   *  on members receiving delta updates
+   */
+  public void testConstructorCountWithCloning() throws Throwable {
+
+    clearConstructorCounts();
+    createCacheInAllPRVms();
+    createDeltaPRWithCloning(Boolean.FALSE);
+        
+    // Verify that cloning is enabled
+    assertTrue(((LocalRegion)deltaPR).getCloningEnabled());
+
+    verifyNoCopy();
+    
+    putInitial();  // Does multiple puts
+   
+    verifyConstructorCount(2);
+
+  }
+
+  /**
+   *  Create partition with cloning disabled, then
+   *  enable cloning and verify proper operation 
+   */
+  public void testConstructorCountWithMutator() throws Throwable {
+
+    clearConstructorCounts();
+    createCacheInAllPRVms();
+    createDeltaPR(Boolean.FALSE);
+        
+    // Verify that cloning is disabled
+    assertFalse(((LocalRegion)deltaPR).getCloningEnabled());
+
+    verifyNoCopy();
+    
+    PRDeltaTestImpl myDTI = putInitial();  // Does multiple puts
+   
+    // With cloning disabled only single instance
+    verifyConstructorCount(1);
+
+    // Now set cloning enabled
+    setPRCloning(true);
+    // Verify that cloning is enabled
+    assertTrue(((LocalRegion)deltaPR).getCloningEnabled());
+  
+    // With cloning enabled each put/delta should create a new instance
+    putMore(myDTI);  
+    
+    verifyConstructorCount(3);
+  }
+
+  private void verifyConstructorCount(int timesConstructed) throws Exception {
+        
+    long buildCount0 = getBuildCount();
+    long buildCount1 = (long)dataStore1.invoke(() -> PRDeltaPropagationDUnitTest.getBuildCount());
+    long buildCount2 = (long)dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.getBuildCount());
+    
+    assertEquals(1, buildCount0);
+    assertEquals(timesConstructed, buildCount1);
+    assertEquals(timesConstructed, buildCount2);
+  }
+
+  private void setPRCloning(boolean cloning) {
+    setCloningEnabled(cloning);
+    dataStore1.invoke(() -> PRDeltaPropagationDUnitTest.setCloningEnabled(cloning));
+    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.setCloningEnabled(cloning));
+  }
+  
+  private static void setCloningEnabled(boolean cloningEnabled) {
+    ((LocalRegion)deltaPR).setCloningEnabled(cloningEnabled);
+  }
+  
+  private void verifyNoCopy() {
+    // Ensure not some other reason to make a copy
+    FilterProfile fp = ((LocalRegion)deltaPR).getFilterProfile();
+    boolean copy = ((LocalRegion)deltaPR).getCompressor() == null &&
+        (((LocalRegion)deltaPR).isCopyOnRead()
+        || (fp != null && fp.getCqCount() > 0));
+    assertFalse(copy);
+  }
+  
+  private void clearConstructorCounts() throws Throwable {
+    setBuildCount(0);
+    dataStore1.invoke(() -> PRDeltaPropagationDUnitTest.setBuildCount(0));
+    dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.setBuildCount(0));
+  }
+  
+  public static long getBuildCount() throws Exception {
+    return DeltaTestImpl.getTimesConstructed();
+  }
+
+  public static void setBuildCount(long cnt) throws Exception {
+    DeltaTestImpl.setTimesConstructed(cnt);
+  }
+
+  /**
    * Check delta propagation works properly with PR failover.    
    */
 
@@ -760,17 +877,26 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     }
   }
 
-  private static void createDeltaPR(Boolean flag) {
+  private static void createDeltaPR(Boolean setExpiry) {
     Object args[] = new Object[] { "DeltaPR", new Integer(1), new Integer(50),
-        new Integer(8), flag, null };
-    createPR("DeltaPR", new Integer(1), new Integer(0), new Integer(8), flag, null);
+        new Integer(8), setExpiry, false, null };
+    createPR("DeltaPR", new Integer(1), new Integer(0), new Integer(8), setExpiry, false, null);
+    dataStore1.invoke(PRDeltaPropagationDUnitTest.class, "createPR", args);
+    dataStore2.invoke(PRDeltaPropagationDUnitTest.class, "createPR", args);
+
+  }
+
+  private static void createDeltaPRWithCloning(Boolean setExpiry) {
+    Object args[] = new Object[] { "DeltaPR", new Integer(1), new Integer(50),
+        new Integer(8), setExpiry, true, null };
+    createPR("DeltaPR", new Integer(1), new Integer(0), new Integer(8), setExpiry, true, null);
     dataStore1.invoke(PRDeltaPropagationDUnitTest.class, "createPR", args);
     dataStore2.invoke(PRDeltaPropagationDUnitTest.class, "createPR", args);
 
   }
 
   public static void createPR(String partitionedRegionName, Integer redundancy,
-      Integer localMaxMemory, Integer totalNumBuckets, Boolean setExpiry, Compressor compressor) {
+      Integer localMaxMemory, Integer totalNumBuckets, Boolean setExpiry, Boolean withCloning, Compressor compressor) {
 
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
     PartitionAttributes prAttr = paf.setRedundantCopies(redundancy.intValue())
@@ -779,7 +905,8 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     AttributesFactory attr = new AttributesFactory();
     attr.setPartitionAttributes(prAttr);
     attr.setDataPolicy(DataPolicy.PARTITION);
-    attr.setConcurrencyChecksEnabled(true);
+    attr.setConcurrencyChecksEnabled(true);    
+    attr.setCloningEnabled(withCloning);    
     if (setExpiry) {
       attr.setStatisticsEnabled(true);
       attr.setEntryIdleTimeout(new ExpirationAttributes(1,
@@ -800,14 +927,16 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
   public static Integer createCacheServerWithPR(String partitionedRegionName,
       Integer redundancy, Integer localMaxMemory, Integer totalNumBuckets,
       Boolean setExpiry, Compressor compressor) {
-    new PRDeltaPropagationDUnitTest("temp").createCache(new Properties());
+    
+    createCacheInVm();
+    
     createPR(partitionedRegionName, redundancy, localMaxMemory,
-        totalNumBuckets, setExpiry, compressor);
-    assertNotNull(deltaPR);
+        totalNumBuckets, setExpiry, Boolean.FALSE, compressor);
     deltaPR.put(DELTA_KEY, new PRDeltaTestImpl());
     
     CacheServer server1 = cache.addCacheServer();
     assertNotNull(server1);
+    
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server1.setPort(port);
     try {
@@ -996,18 +1125,39 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
   }
 
   public static void put() throws Exception {
-    DeltaTestImpl test = new DeltaTestImpl();
+    PRDeltaTestImpl test = new PRDeltaTestImpl();
     deltaPR.put(DELTA_KEY, test);
 
     test.setIntVar(10);
     deltaPR.put(DELTA_KEY, test);
 
-    test = new DeltaTestImpl();
+    test = new PRDeltaTestImpl();
+    
     test.setStr("DELTA");
     deltaPR.put(DELTA_KEY, test);
-
   }
 
+  public static PRDeltaTestImpl putInitial() throws Exception {
+    PRDeltaTestImpl test = new PRDeltaTestImpl();
+    deltaPR.put(DELTA_KEY, test);
+
+    test.setIntVar(10);
+    deltaPR.put(DELTA_KEY, test);
+
+    test.setStr("DELTA");
+    deltaPR.put(DELTA_KEY, test);
+    
+    return test;
+  }
+
+  public static void putMore(PRDeltaTestImpl val) throws Exception {
+    val.setIntVar(13);
+    put(val);
+
+    val.setStr("DELTA2");
+    put(val);
+  }
+  
   public static void put(PRDeltaTestImpl val) throws Exception {
     deltaPR.put(DELTA_KEY, val);
   }
@@ -1141,9 +1291,8 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
   static class PRDeltaTestImpl extends DeltaTestImpl {
     int deltaSent = 0;
     int deltaApplied = 0;
-
+    
     public PRDeltaTestImpl() {
-
     }
 
     public void toDelta(DataOutput out) throws IOException {
