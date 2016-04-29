@@ -171,7 +171,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void testExecuteFunctionOnRegionWithCustomResultCollector() {
-    createDefaultSetup(null);
+    setUpJmxManagerOnVm0ThenConnect(null);
 
     final Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RETURN_ARGS);
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
@@ -384,7 +384,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     Properties localProps = new Properties();
     localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
-    createDefaultSetup(localProps);
+    setUpJmxManagerOnVm0ThenConnect(localProps);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RETURN_ARGS);
     FunctionService.registerFunction(function);
 
