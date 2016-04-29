@@ -210,7 +210,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
    */
   protected boolean offHeap;
 
-  protected boolean cloningEnable = false;
+  private boolean cloningEnable = false;
 
   protected DiskWriteAttributes diskWriteAttributes;
 
