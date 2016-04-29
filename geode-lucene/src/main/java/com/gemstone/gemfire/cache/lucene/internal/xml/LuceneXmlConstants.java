@@ -27,5 +27,6 @@ public class LuceneXmlConstants {
   public static final String REGION = "index";
   public static final String INDEX = "index";
   public static final String FIELD = "field";
+  public static final String ANALYZER = "analyzer";
 
 }

@@ -41,7 +41,7 @@ public class LuceneIndexForReplicatedRegion extends LuceneIndexImpl {
   }
 
   @Override
-  public Map<String, Analyzer> getFieldAnalyzerMap() {
+  public Map<String, Analyzer> getFieldAnalyzers() {
     throw new UnsupportedOperationException("Lucene indexes on replicated regions is not yet implemented");
   }
 

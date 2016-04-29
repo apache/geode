@@ -19,12 +19,10 @@
 
 package com.gemstone.gemfire.cache.lucene.internal.xml;
 
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -41,7 +39,7 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
   private Region region;
   private String name;
   private Set<String> fieldNames = new LinkedHashSet<String>();
-  private Map<String, Analyzer> fieldFieldAnalyzerMap;
+  private Map<String, Analyzer> fieldAnalyzers;
 
   
   public void setRegion(Region region) {
@@ -52,18 +50,17 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
     this.name = name;
   }
 
-  public Map<String, Analyzer> getFieldFieldAnalyzerMap() {
-    return fieldFieldAnalyzerMap;
-  }
-
-  public void setFieldFieldAnalyzerMap(
-      Map<String, Analyzer> fieldFieldAnalyzerMap) {
-    this.fieldFieldAnalyzerMap = fieldFieldAnalyzerMap;
+  public void setFieldAnalyzers(
+      Map<String, Analyzer> fieldAnalyzers) {
+    this.fieldAnalyzers = fieldAnalyzers;
   }
   
   @Override
-  public Map<String, Analyzer> getFieldAnalyzerMap() {
-    return this.fieldFieldAnalyzerMap;
+  public Map<String, Analyzer> getFieldAnalyzers() {
+    if (this.fieldAnalyzers == null) {
+      this.fieldAnalyzers = new HashMap<>();
+    }
+    return this.fieldAnalyzers;
   }
 
   public String getName() {
@@ -87,7 +84,6 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
   @Override
   public void onCreate(Extensible<Region<?, ?>> source,
       Extensible<Region<?, ?>> target) {
-    target.getExtensionPoint().addExtension(this);
     Cache cache = target.getExtensionPoint().getTarget().getCache();
     LuceneServiceImpl service = (LuceneServiceImpl) LuceneServiceProvider.get(cache);
     Region region = target.getExtensionPoint().getTarget();
@@ -97,15 +93,25 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
     //TODO - this may only work for PRs. We need to intercept the attributes
     //before the region is created with a RegionListener.
     region.getAttributesMutator().addAsyncEventQueueId(aeqId);
-    service.afterDataRegionCreated(getName(), new StandardAnalyzer(), getRegionPath(), getFieldNames());
+    Analyzer analyzer = null;
+    if (this.fieldAnalyzers == null) {
+      analyzer = new StandardAnalyzer();
+    } else {
+      analyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(), this.fieldAnalyzers);
+    }
+    service.afterDataRegionCreated(getName(), analyzer, getRegionPath(), this.fieldAnalyzers, getFieldNames());
   }
 
-  public void addField(String name) {
+  protected void addField(String name) {
     this.fieldNames.add(name);
+  }
+
+  protected void addFieldAndAnalyzer(String name, Analyzer analyzer) {
+    this.fieldNames.add(name);
+    getFieldAnalyzers().put(name, analyzer);
   }
 
   public void addFieldNames(String[] fieldNames) {
     this.fieldNames.addAll(Arrays.asList(fieldNames));
-    
   }
 }

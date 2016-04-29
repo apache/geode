@@ -27,20 +27,10 @@
     version="1.0">
 
 	<region name="region" refid="PARTITION">
-    	<lucene:index name="index1">
-    	  <lucene:field name="a"/>
-    	  <lucene:field name="b"/>
-    	  <lucene:field name="c"/>
-    	  <lucene:field name="d"/>
-    	</lucene:index>
-    	<lucene:index name="index2">
-    	  <lucene:field name="f"/>
-    	  <lucene:field name="g"/>
-    	</lucene:index>
-		<lucene:index name="index3">
-		  <lucene:field name="h" analyzer="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
-		  <lucene:field name="i" analyzer="org.apache.lucene.analysis.core.SimpleAnalyzer"/>
-		  <lucene:field name="j" analyzer="org.apache.lucene.analysis.standard.ClassicAnalyzer"/>
+		<lucene:index name="index">
+		  <lucene:field name="a" analyzer="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
+		  <lucene:field name="b" analyzer="org.apache.lucene.analysis.core.SimpleAnalyzer"/>
+		  <lucene:field name="c" analyzer="org.apache.lucene.analysis.standard.ClassicAnalyzer"/>
 		</lucene:index>
     </region>
 </cache>

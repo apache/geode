@@ -54,6 +54,6 @@ public interface LuceneIndex {
   /**
    * @return the field to analyzer map
    */
-  public Map<String, Analyzer> getFieldAnalyzerMap();
+  public Map<String, Analyzer> getFieldAnalyzers();
   
 }

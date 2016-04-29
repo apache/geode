@@ -2127,6 +2127,8 @@ public class LocalizedStrings extends ParentLocalizedStrings {
   public static final StringId SwaggerConfig_DOC_TITLE = new StringId(6621, "Apache Geode Documentation");
   public static final StringId SwaggerConfig_DOC_LINK = new StringId(6622, "http://geode.incubator.apache.org/docs/");
 
+  public static final StringId LuceneXmlParser_CLASS_0_IS_NOT_AN_INSTANCE_OF_ANALYZER = new StringId(6623, "Class \"{0}\" is not an instance of Analyzer.");
+
   /** Testing strings, messageId 90000-99999 **/
   
   /** These are simple messages for testing, translated with Babelfish. **/

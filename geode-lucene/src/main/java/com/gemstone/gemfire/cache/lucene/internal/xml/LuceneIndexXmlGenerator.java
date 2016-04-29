@@ -21,6 +21,7 @@ package com.gemstone.gemfire.cache.lucene.internal.xml;
 
 import static com.gemstone.gemfire.cache.lucene.internal.xml.LuceneXmlConstants.*;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -57,6 +58,10 @@ public class LuceneIndexXmlGenerator implements XmlGenerator<Region<?, ?>> {
     for(String field : index.getFieldNames()) {
       AttributesImpl fieldAttr = new AttributesImpl();
       XmlGeneratorUtils.addAttribute(fieldAttr, NAME, field);
+      Analyzer analyzer = index.getFieldAnalyzers().get(field);
+      if (analyzer != null) {
+        XmlGeneratorUtils.addAttribute(fieldAttr, ANALYZER, analyzer.getClass().getName());
+      }
       XmlGeneratorUtils.emptyElement(handler, PREFIX, FIELD, fieldAttr);
     }
     XmlGeneratorUtils.endElement(handler, PREFIX, INDEX);

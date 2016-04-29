@@ -22,6 +22,7 @@ package com.gemstone.gemfire.cache.lucene.internal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -102,19 +103,21 @@ public class LuceneServiceImpl implements InternalLuceneService {
   public void createIndex(String indexName, String regionPath, String... fields) {
     StandardAnalyzer analyzer = new StandardAnalyzer();
     
-    createIndex(indexName, regionPath, analyzer, fields);
+    createIndex(indexName, regionPath, analyzer, null, fields);
   }
   
   @Override
-  public void createIndex(String indexName, String regionPath, Map<String, Analyzer> analyzerPerField) {
-    Analyzer analyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(), analyzerPerField);
-    String[] fields = (String[])analyzerPerField.keySet().toArray(new String[analyzerPerField.keySet().size()]);
+  public void createIndex(String indexName, String regionPath, Map<String, Analyzer> fieldAnalyzers) {
+    Analyzer analyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(), fieldAnalyzers);
+    Set<String> fieldsSet = fieldAnalyzers.keySet();
+    String[] fields = (String[])fieldsSet.toArray(new String[fieldsSet.size()]);
 
-    createIndex(indexName, regionPath, analyzer, fields);
+    createIndex(indexName, regionPath, analyzer, fieldAnalyzers, fields);
   }
 
   private void createIndex(final String indexName, String regionPath,
-      final Analyzer analyzer, final String... fields) {
+      final Analyzer analyzer, final Map<String, Analyzer> fieldAnalyzers,
+      final String... fields) {
 
     if(!regionPath.startsWith("/")) {
       regionPath = "/" + regionPath;
@@ -143,7 +146,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
       @Override
       public void afterCreate(Region region) {
         if(region.getFullPath().equals(dataRegionPath)) {
-          afterDataRegionCreated(indexName, analyzer, dataRegionPath, fields);
+          afterDataRegionCreated(indexName, analyzer, dataRegionPath, fieldAnalyzers, fields);
           cache.removeRegionListener(this);
         }
       }
@@ -158,11 +161,11 @@ public class LuceneServiceImpl implements InternalLuceneService {
    */
   public void afterDataRegionCreated(final String indexName,
       final Analyzer analyzer, final String dataRegionPath,
-      final String... fields) {
+      final Map<String, Analyzer> fieldAnalyzers, final String... fields) {
     LuceneIndexImpl index = createIndexRegions(indexName, dataRegionPath);
     index.setSearchableFields(fields);
-    // for this API, set index to use the default StandardAnalyzer for each field
     index.setAnalyzer(analyzer);
+    index.setFieldAnalyzers(fieldAnalyzers);
     index.initialize();
     registerIndex(index);
   }

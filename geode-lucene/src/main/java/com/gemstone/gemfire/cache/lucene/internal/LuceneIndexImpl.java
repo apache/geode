@@ -19,6 +19,7 @@
 
 package com.gemstone.gemfire.cache.lucene.internal;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -47,6 +48,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected String indexName;
   protected String regionPath;
   protected boolean hasInitialized = false;
+  protected Map<String, Analyzer> fieldAnalyzers;
 
   @Override
   public String getName() {
@@ -68,10 +70,8 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   }
 
   @Override
-  public Map<String, Analyzer> getFieldAnalyzerMap() {
-    // TODO Auto-generated method stub
-    // Will do that later: Gester
-    return null;
+  public Map<String, Analyzer> getFieldAnalyzers() {
+    return this.fieldAnalyzers;
   }
 
   public RepositoryManager getRepositoryManager() {
@@ -90,6 +90,10 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     return this.analyzer;
   }
 
+  public void setFieldAnalyzers(Map<String, Analyzer> fieldAnalyzers) {
+    this.fieldAnalyzers = Collections.unmodifiableMap(fieldAnalyzers);
+  }
+
   protected abstract void initialize();
   
   /**
@@ -101,7 +105,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     creation.setName(this.getName());
     creation.addFieldNames(this.getFieldNames());
     creation.setRegion(dataRegion);
-    creation.setFieldFieldAnalyzerMap(this.getFieldAnalyzerMap());
+    creation.setFieldAnalyzers(this.getFieldAnalyzers());
     dataRegion.getExtensionPoint().addExtension(creation);
   }
 }

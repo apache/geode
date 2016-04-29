@@ -21,8 +21,13 @@ package com.gemstone.gemfire.cache.lucene.internal.xml;
 
 import static org.junit.Assert.*;
 
+import java.util.Map;
 import java.util.Stack;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.xml.sax.SAXException;
@@ -35,38 +40,78 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class LuceneIndexXmlParserJUnitTest {
-  
-  @Test
-  public void generateWithFields() throws SAXException {
-    LuceneXmlParser parser = new LuceneXmlParser();
-    AttributesImpl attrs = new AttributesImpl();
+
+  private LuceneXmlParser parser;
+
+  private RegionCreation rc;
+
+  private Stack<Object> stack;
+
+  @Before
+  public void setUp() {
+    this.parser = new LuceneXmlParser();
     CacheCreation cache = new CacheCreation();
-    RegionCreation rc = new RegionCreation(cache, "region");
-    Stack<Object> stack = new Stack<Object>();
+    this.rc = new RegionCreation(cache, "region");
+    this.stack = new Stack<Object>();
     stack.push(cache);
     stack.push(rc);
-    parser.setStack(stack);
-    XmlGeneratorUtils.addAttribute(attrs, LuceneXmlConstants.NAME, "index");
-    parser.startElement(LuceneXmlConstants.NAMESPACE, LuceneXmlConstants.INDEX, null, attrs);
-    
-    AttributesImpl field1 = new AttributesImpl();
-    XmlGeneratorUtils.addAttribute(field1, LuceneXmlConstants.NAME, "field1");
-    AttributesImpl field2 = new AttributesImpl();
-    XmlGeneratorUtils.addAttribute(field2, LuceneXmlConstants.NAME, "field2");
-    
-    parser.startElement(LuceneXmlConstants.NAMESPACE, LuceneXmlConstants.FIELD, null, field1);
-    parser.endElement(LuceneXmlConstants.NAMESPACE, LuceneXmlConstants.FIELD, null);
-    parser.startElement(LuceneXmlConstants.NAMESPACE, LuceneXmlConstants.FIELD, null, field2);
-    parser.endElement(LuceneXmlConstants.NAMESPACE, LuceneXmlConstants.FIELD, null);
-    
-    
-    parser.endElement(LuceneXmlConstants.NAMESPACE, LuceneXmlConstants.INDEX, null);
-    assertEquals(rc, stack.peek());
-    
-    LuceneIndexCreation index = (LuceneIndexCreation) rc.getExtensionPoint().getExtensions().iterator().next();
-    assertEquals("index", index.getName());
-    assertArrayEquals(new String[] {"field1", "field2"}, index.getFieldNames());
+    this.parser.setStack(stack);
   }
-  
 
+  @After
+  public void tearDown() {
+    this.parser = null;
+    this.rc = null;
+    this.stack = null;
+  }
+
+  @Test
+  public void generateWithFields() throws SAXException {
+    AttributesImpl attrs = new AttributesImpl();
+    XmlGeneratorUtils.addAttribute(attrs, LuceneXmlConstants.NAME, "index");
+    this.parser.startElement(LuceneXmlConstants.NAMESPACE, LuceneXmlConstants.INDEX, null, attrs);
+
+    addField("field1");
+    addField("field2");
+    addField("field3", KeywordAnalyzer.class.getName());
+
+    this.parser.endElement(LuceneXmlConstants.NAMESPACE, LuceneXmlConstants.INDEX, null);
+    assertEquals(this.rc, this.stack.peek());
+    
+    LuceneIndexCreation index = (LuceneIndexCreation) this.rc.getExtensionPoint().getExtensions().iterator().next();
+    assertEquals("index", index.getName());
+    assertArrayEquals(new String[] {"field1", "field2", "field3"}, index.getFieldNames());
+
+    // Assert analyzers
+    Map<String, Analyzer> fieldAnalyzers = index.getFieldAnalyzers();
+    assertEquals(1, fieldAnalyzers.size());
+    assertTrue(fieldAnalyzers.containsKey("field3"));
+    assertTrue(fieldAnalyzers.get("field3") instanceof KeywordAnalyzer);
+  }
+
+  @Test
+  public void attemptInvalidAnalyzerClass() throws SAXException {
+    AttributesImpl attrs = new AttributesImpl();
+    XmlGeneratorUtils.addAttribute(attrs, LuceneXmlConstants.NAME, "index");
+    this.parser.startElement(LuceneXmlConstants.NAMESPACE, LuceneXmlConstants.INDEX, null, attrs);
+    try {
+      addField("field", "some.invalid.class");
+      fail("Should not have been able to add a field with an invalid analyzer class name");
+    } catch (Exception e) {
+    }
+  }
+
+  private void addField(String fieldName) throws SAXException {
+    addField(fieldName, null);
+  }
+
+  private void addField(String fieldName, String analyzerClassName) throws SAXException {
+    AttributesImpl field = new AttributesImpl();
+    XmlGeneratorUtils.addAttribute(field, LuceneXmlConstants.NAME, fieldName);
+    if (analyzerClassName != null) {
+      XmlGeneratorUtils.addAttribute(field, LuceneXmlConstants.ANALYZER, analyzerClassName);
+    }
+    this.parser.startElement(LuceneXmlConstants.NAMESPACE, LuceneXmlConstants.FIELD, null, field);
+    this.parser.endElement(LuceneXmlConstants.NAMESPACE, LuceneXmlConstants.FIELD, null);
+  }
 }
