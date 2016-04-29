@@ -20,7 +20,7 @@ package com.gemstone.gemfire.management.internal.security;
 import java.util.Properties;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.security.CustomAuthRealm;
+import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.apache.shiro.SecurityUtils;

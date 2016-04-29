@@ -46,7 +46,7 @@ import javax.management.remote.MBeanServerForwarder;
 
 import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 /**
  * This class intercepts all MBean requests for GemFire MBeans and passed it to

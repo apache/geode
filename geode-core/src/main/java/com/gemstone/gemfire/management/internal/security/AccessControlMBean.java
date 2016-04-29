@@ -17,7 +17,7 @@
 package com.gemstone.gemfire.management.internal.security;
 
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 /**
  * AccessControlMBean Implementation. This retrieves JMXPrincipal from AccessController

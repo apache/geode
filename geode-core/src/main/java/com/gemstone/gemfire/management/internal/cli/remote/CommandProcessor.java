@@ -31,7 +31,7 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.util.CommentSkipHelper;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 import org.springframework.shell.core.Parser;
 import org.springframework.shell.event.ParseResult;

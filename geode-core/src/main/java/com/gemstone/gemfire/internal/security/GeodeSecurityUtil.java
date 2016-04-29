@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.security;
+package com.gemstone.gemfire.internal.security;
 
 import java.util.concurrent.Callable;
 
@@ -25,6 +25,8 @@ import com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.management.internal.security.ResourceOperationContext;
+import com.gemstone.gemfire.security.AuthenticationFailedException;
+import com.gemstone.gemfire.security.GemFireSecurityException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;

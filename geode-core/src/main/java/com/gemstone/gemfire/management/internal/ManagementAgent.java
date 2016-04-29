@@ -61,7 +61,7 @@ import com.gemstone.gemfire.management.internal.security.AccessControlMBean;
 import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.unsafe.ReadOpFileAccessController;
-import com.gemstone.gemfire.security.JMXShiroAuthenticator;
+import com.gemstone.gemfire.internal.security.shiro.JMXShiroAuthenticator;
 
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;

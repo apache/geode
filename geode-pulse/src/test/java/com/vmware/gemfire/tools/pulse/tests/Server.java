@@ -42,8 +42,8 @@ import com.gemstone.gemfire.management.internal.security.AccessControlMBean;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.security.CustomAuthRealm;
-import com.gemstone.gemfire.security.JMXShiroAuthenticator;
+import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
+import com.gemstone.gemfire.internal.security.shiro.JMXShiroAuthenticator;
 import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
 
 import org.apache.shiro.SecurityUtils;

@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.apache.shiro.SecurityUtils;
