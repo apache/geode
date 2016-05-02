@@ -16,9 +16,9 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,13 +38,13 @@ import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
 import com.gemstone.gemfire.security.NotAuthorizedException;
-import com.gemstone.gemfire.util.test.TestUtil;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class JSONAuthorization implements AccessControl, Authenticator {
+public class ExampleJSONAuthorization implements AccessControl, Authenticator {
 
   public static class Role {
     List<OperationContext> permissions = new ArrayList<>();
@@ -60,18 +60,23 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 
   private static Map<String, User> acl = null;
 
-  public static JSONAuthorization create() throws IOException, JSONException {
-    return new JSONAuthorization();
+  public static ExampleJSONAuthorization create() throws IOException, JSONException {
+    return new ExampleJSONAuthorization();
   }
 
-  public JSONAuthorization() throws IOException, JSONException {}
-
-  public JSONAuthorization(String jsonFileName) throws IOException, JSONException {
-    setUpWithJsonFile(jsonFileName);
+  public ExampleJSONAuthorization() throws IOException, JSONException {
+    setUpWithJsonFile("security.json");
   }
 
   public static void setUpWithJsonFile(String jsonFileName) throws IOException, JSONException {
-    String json = readFile(TestUtil.getResourcePath(JSONAuthorization.class, jsonFileName));
+    InputStream input = ExampleJSONAuthorization.class.getResourceAsStream(jsonFileName);
+    if(input==null){
+      throw new RuntimeException("Could not find resource " + jsonFileName);
+    }
+
+    StringWriter writer = new StringWriter();
+    IOUtils.copy(input, writer, "UTF-8");
+    String json = writer.toString();
     readSecurityDescriptor(json);
   }
 
@@ -189,13 +194,4 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 
   }
 
-  private static String readFile(String name) throws IOException, JSONException {
-    File file = new File(name);
-    FileReader reader = new FileReader(file);
-    char[] buffer = new char[(int) file.length()];
-    reader.read(buffer);
-    String json = new String(buffer);
-    reader.close();
-    return json;
-  }
 }

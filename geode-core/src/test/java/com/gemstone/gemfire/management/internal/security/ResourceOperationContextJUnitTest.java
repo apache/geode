@@ -37,7 +37,7 @@ public class ResourceOperationContextJUnitTest {
     context = new ResourceOperationContext();
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(OperationCode.NULL, context.getOperationCode());
-    assertEquals("NULL", context.getRegionName());
+    assertEquals(null, context.getRegionName());
   }
 
   @Test
@@ -51,17 +51,17 @@ public class ResourceOperationContextJUnitTest {
     context = new ResourceOperationContext(null, null, null);
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(OperationCode.NULL, context.getOperationCode());
-    assertEquals("NULL", context.getRegionName());
+    assertEquals(null, context.getRegionName());
 
     context = new ResourceOperationContext(null, null);
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(OperationCode.NULL, context.getOperationCode());
-    assertEquals("NULL", context.getRegionName());
+    assertEquals(null, context.getRegionName());
 
     context = new ResourceOperationContext("DATA", null, null);
     assertEquals(Resource.DATA, context.getResource());
     assertEquals(OperationCode.NULL, context.getOperationCode());
-    assertEquals("NULL", context.getRegionName());
+    assertEquals(null, context.getRegionName());
 
     context = new ResourceOperationContext(null, "MANAGE", "REGIONA");
     assertEquals(Resource.NULL, context.getResource());

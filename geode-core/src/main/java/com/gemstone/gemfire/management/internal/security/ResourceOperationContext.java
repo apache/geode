@@ -18,8 +18,6 @@ package com.gemstone.gemfire.management.internal.security;
 
 import com.gemstone.gemfire.cache.operations.OperationContext;
 
-import org.apache.shiro.authz.Permission;
-
 /**
  * This is base class for OperationContext for resource (JMX and CLI) operations
  */
@@ -30,7 +28,7 @@ public class ResourceOperationContext extends OperationContext {
   private Resource resource = Resource.NULL;
   private OperationCode operation = OperationCode.NULL;
 
-  private String regionName = "NULL";
+  private String regionName = null;
 
   public ResourceOperationContext() {
     this(null, null, null);
@@ -80,10 +78,5 @@ public class ResourceOperationContext extends OperationContext {
 
   public Object getOperationResult() {
     return this.opResult;
-  }
-
-  @Override
-  public boolean implies(Permission p){
-    return super.implies(p);
   }
 }
