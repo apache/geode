@@ -163,7 +163,38 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
       getLogWriter().info("testExecuteFunctionOnRegion cmdResult=" + cmdResult);
       String stringResult = commandResultToString(cmdResult);
       getLogWriter().info("testExecuteFunctionOnRegion stringResult=" + stringResult);
-      assert (stringResult.contains("Execution summary"));
+      assertTrue(stringResult.contains("Execution summary"));
+    } else {
+      fail("testExecuteFunctionOnRegion did not return CommandResult");
+    }
+  }
+
+  @Test
+  public void testExecuteFunctionOnRegionWithCustomResultCollector() {
+    setUpJmxManagerOnVm0ThenConnect(null);
+
+    final Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RETURN_ARGS);
+    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
+      public void run() {
+        RegionFactory<Integer, Integer> dataRegionFactory = getCache().createRegionFactory(RegionShortcut.REPLICATE);
+        Region region = dataRegionFactory.create(REGION_NAME);
+        assertNotNull(region);
+        FunctionService.registerFunction(function);
+      }
+    });
+
+    String command = "execute function --id=" + function.getId() + " --region=" + REGION_NAME +
+        " --arguments=arg1,arg2" +
+        " --result-collector=" + ToUpperResultCollector.class.getName();
+    getLogWriter().info("testExecuteFunctionOnRegion command=" + command);
+    CommandResult cmdResult = executeCommand(command);
+    if (cmdResult != null) {
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+      getLogWriter().info("testExecuteFunctionOnRegion cmdResult=" + cmdResult);
+      String stringResult = commandResultToString(cmdResult);
+      getLogWriter().info("testExecuteFunctionOnRegion stringResult=" + stringResult);
+      assertTrue(stringResult.contains("Execution summary"));
+      assertTrue(stringResult.contains("ARG1"));
     } else {
       fail("testExecuteFunctionOnRegion did not return CommandResult");
     }
@@ -240,7 +271,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       String stringResult = commandResultToString(cmdResult);
       getLogWriter().info("testExecuteFunctionOnRegionBug51480 stringResult=" + stringResult);
-      assert (stringResult.contains("Execution summary"));
+      assertTrue(stringResult.contains("Execution summary"));
     } else {
       fail("testExecuteFunctionOnRegionBug51480 did not return CommandResult");
 
@@ -343,6 +374,43 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
       getLogWriter().info("testExecuteFunctionOnMembersWithArgs stringResult:" + stringResult);
       assertTrue(stringResult.contains("Execution summary"));
       assertTrue(stringResult.contains("arg1"));
+    } else {
+      fail("testExecuteFunctionOnMembersWithArgs did not return CommandResult");
+    }
+  }
+
+  @Test
+  public void testExecuteFunctionOnMembersWithArgsAndCustomResultCollector() {
+    Properties localProps = new Properties();
+    localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
+    localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
+    setUpJmxManagerOnVm0ThenConnect(localProps);
+    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RETURN_ARGS);
+    FunctionService.registerFunction(function);
+
+
+    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
+      public void run() {
+        RegionFactory<Integer, Integer> dataRegionFactory = getCache().createRegionFactory(RegionShortcut.REPLICATE);
+        Region region = dataRegionFactory.create(REGION_NAME);
+        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RETURN_ARGS);
+        assertNotNull(region);
+        FunctionService.registerFunction(function);
+      }
+    });
+
+    String command = "execute function --id=" + function.getId() + " --arguments=\"arg1,arg2\"" +
+        " --result-collector=" + ToUpperResultCollector.class.getName();
+
+    getLogWriter().info("testExecuteFunctionOnMembersWithArgs command=" + command);
+    CommandResult cmdResult = executeCommand(command);
+    if (cmdResult != null) {
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+      getLogWriter().info("testExecuteFunctionOnMembersWithArgs cmdResult:" + cmdResult);
+      String stringResult = commandResultToString(cmdResult);
+      getLogWriter().info("testExecuteFunctionOnMembersWithArgs stringResult:" + stringResult);
+      assertTrue(stringResult.contains("Execution summary"));
+      assertTrue(stringResult.contains("ARG1"));
     } else {
       fail("testExecuteFunctionOnMembersWithArgs did not return CommandResult");
     }

@@ -179,6 +179,7 @@ public class PerTestClassLoaderRunner extends NamedRunner {
     return new RunBefores(statement, befores, target);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   protected List<MethodRule> rules(Object target) {
     List<MethodRule> result = testClassFromClassLoader.getAnnotatedMethodValues(target,
@@ -190,6 +191,7 @@ public class PerTestClassLoaderRunner extends NamedRunner {
     return result;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   protected List<TestRule> getTestRules(Object target) {
     List<TestRule> result = testClassFromClassLoader.getAnnotatedMethodValues(target,

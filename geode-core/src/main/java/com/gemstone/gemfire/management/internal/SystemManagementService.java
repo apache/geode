@@ -172,6 +172,9 @@ public final class SystemManagementService extends BaseManagementService {
       SecurityManager securityManager = new DefaultSecurityManager(realm);
       SecurityUtils.setSecurityManager(securityManager);
     }
+    else{
+      SecurityUtils.setSecurityManager(null);
+    }
 
     this.notificationHub = new NotificationHub(repo);
     if (system.getConfig().getJmxManager()) {
