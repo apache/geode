@@ -49,7 +49,6 @@ public interface CollectorManager<C extends IndexResultCollector> {
    * Reduce the results of individual collectors into a meaningful result. This method must be called after collection
    * is finished on all provided collectors.
    * 
-   * @throws IOException
    */
-  C reduce(Collection<C> results) throws IOException;
+  C reduce(Collection<C> results);
 }

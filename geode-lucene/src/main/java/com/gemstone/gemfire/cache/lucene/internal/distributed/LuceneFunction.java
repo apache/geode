@@ -29,6 +29,7 @@ import org.apache.lucene.search.Query;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
+import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
@@ -41,6 +42,7 @@ import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.internal.InternalEntity;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
+import com.gemstone.gemfire.internal.cache.execute.BucketMovedException;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
@@ -63,14 +65,12 @@ public class LuceneFunction extends FunctionAdapter implements InternalEntity {
 
     LuceneFunctionContext<IndexResultCollector> searchContext = (LuceneFunctionContext) ctx.getArguments();
     if (searchContext == null) {
-      resultSender.sendException(new IllegalArgumentException("Missing search context"));
-      return;
+      throw new IllegalArgumentException("Missing search context");
     }
 
     LuceneQueryProvider queryProvider = searchContext.getQueryProvider();
     if (queryProvider == null) {
-      resultSender.sendException(new IllegalArgumentException("Missing query provider"));
-      return;
+      throw new IllegalArgumentException("Missing query provider");
     }
     
     LuceneService service = LuceneServiceProvider.get(region.getCache());
@@ -81,8 +81,8 @@ public class LuceneFunction extends FunctionAdapter implements InternalEntity {
     try {
       query = queryProvider.getQuery(index);
     } catch (QueryException e) {
-      resultSender.sendException(e);
-      return;
+      logger.warn("", e);
+      throw new FunctionException(e);
     }
 
     if (logger.isDebugEnabled()) {
@@ -104,24 +104,11 @@ public class LuceneFunction extends FunctionAdapter implements InternalEntity {
         repo.query(query, resultLimit, collector);
         results.add(collector);
       }
-    } catch (IOException e) {
-      logger.warn("", e);
-      resultSender.sendException(e);
-      return;
-    } catch (BucketNotFoundException e) {
-      logger.warn("", e);
-      resultSender.sendException(e);
-      return;
-    }
-
-    TopEntriesCollector mergedResult;
-    try {
-      mergedResult = (TopEntriesCollector) manager.reduce(results);
+      TopEntriesCollector mergedResult = (TopEntriesCollector) manager.reduce(results);
       resultSender.lastResult(mergedResult);
-    } catch (IOException e) {
+    } catch (IOException|BucketNotFoundException e) {
       logger.warn("", e);
-      resultSender.sendException(e);
-      return;
+      throw new FunctionException(e);
     }
   }
 

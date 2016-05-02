@@ -287,10 +287,10 @@ public class TopEntriesFunctionCollectorJUnitTest {
     TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r2_1, r2_2);
   }
 
-  @Test(expected = FunctionException.class)
+  @Test(expected = RuntimeException.class)
   public void testExceptionDuringMerge() throws Exception {
     TopEntriesCollectorManager mockManager = mock(TopEntriesCollectorManager.class);
-    Mockito.doThrow(new IOException()).when(mockManager).reduce(any(Collection.class));
+    Mockito.doThrow(new RuntimeException()).when(mockManager).reduce(any(Collection.class));
 
     LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(null, null, mockManager);
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
