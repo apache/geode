@@ -1594,12 +1594,17 @@ public abstract class DistributedSystem implements StatisticsFactory {
 
       } else {
         boolean existingSystemDisconnecting = true;
-        while (!existingSystems.isEmpty() && existingSystemDisconnecting) {
+        boolean isReconnecting = false;
+        while (!existingSystems.isEmpty() && existingSystemDisconnecting && !isReconnecting) {
           Assert.assertTrue(existingSystems.size() == 1);
 
           InternalDistributedSystem existingSystem =
               (InternalDistributedSystem) existingSystems.get(0);
           existingSystemDisconnecting = existingSystem.isDisconnecting();
+          // a reconnecting DS will block on GemFireCache.class and a ReconnectThread
+          // holds that lock and invokes this method, so we break out of the loop
+          // if we detect this condition
+          isReconnecting = existingSystem.isReconnectingDS();
           if (existingSystemDisconnecting) {
             boolean interrupted = Thread.interrupted();
             try {

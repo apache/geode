@@ -337,6 +337,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
 
   private final ConcurrentMap pathToRegion = new ConcurrentHashMap();
 
+  protected volatile boolean isInitialized = false;
   protected volatile boolean isClosing = false;
   protected volatile boolean closingGatewaySendersByShutdownAll = false;
   protected volatile boolean closingGatewayReceiversByShutdownAll = false;
@@ -1187,6 +1188,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
         DEFAULT_CLIENT_FUNCTION_TIMEOUT);
     clientFunctionTimeout = time >= 0 ? time : DEFAULT_CLIENT_FUNCTION_TIMEOUT;
 
+    isInitialized = true;
   }
 
   /**
@@ -2344,7 +2346,15 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
 
   // see Cache.waitUntilReconnected(long, TimeUnit)
   public boolean waitUntilReconnected(long time, TimeUnit units) throws InterruptedException {
-    return this.system.waitUntilReconnected(time,  units);
+    boolean systemReconnected = this.system.waitUntilReconnected(time,  units);
+    if (!systemReconnected) {
+      return false;
+    }
+    GemFireCacheImpl cache = getInstance();
+    if (cache == null || !cache.isInitialized()) {
+      return false;
+    }
+    return true;
   }
   
   // see Cache.stopReconnecting()
@@ -2354,8 +2364,8 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   
   // see Cache.getReconnectedCache()
   public Cache getReconnectedCache() {
-    Cache c = GemFireCacheImpl.getInstance();
-    if (c == this) {
+    GemFireCacheImpl c = GemFireCacheImpl.getInstance();
+    if (c == this || !c.isInitialized()) {
       c = null;
     }
     return c;
@@ -3500,6 +3510,10 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
       }
     } catch (DistributedSystemDisconnectedException ignore) {
     }
+  }
+
+  public boolean isInitialized() {
+    return this.isInitialized;
   }
 
   public boolean isClosed() {

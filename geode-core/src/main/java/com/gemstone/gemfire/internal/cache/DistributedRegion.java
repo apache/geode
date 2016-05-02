@@ -944,8 +944,10 @@ public class DistributedRegion extends LocalRegion implements
   protected boolean lostReliability(final InternalDistributedMember id,
       final Set newlyMissingRoles)
   {
-    if (DistributedRegion.ignoreReconnect)
+    if (DistributedRegion.ignoreReconnect) { // test hook
       return false;
+    }
+
     boolean async = false;
     try {
       if (getMembershipAttributes().getLossAction().isReconnect()) {
@@ -998,12 +1000,11 @@ public class DistributedRegion extends LocalRegion implements
           public void run()
           {
             try {
-              // TODO: may need to check isReconnecting and checkReadiness...
-              if (logger.isDebugEnabled()) {
-                logger.debug("Reliability loss with policy of reconnect and membership thread doing reconnect");
-              }
+              logger.debug("Reliability loss with policy of reconnect and membership thread doing reconnect");
+
               initializationLatchAfterMemberTimeout.await();
               getSystem().tryReconnect(false, "Role Loss", getCache());
+
               synchronized (missingRequiredRoles) {
                 // any number of threads may be waiting on missingRequiredRoles
                 missingRequiredRoles.notifyAll();
