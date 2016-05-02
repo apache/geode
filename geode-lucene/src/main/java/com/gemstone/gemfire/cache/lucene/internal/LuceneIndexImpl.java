@@ -91,7 +91,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   }
 
   public void setFieldAnalyzers(Map<String, Analyzer> fieldAnalyzers) {
-    this.fieldAnalyzers = Collections.unmodifiableMap(fieldAnalyzers);
+    this.fieldAnalyzers = fieldAnalyzers == null ? null : Collections.unmodifiableMap(fieldAnalyzers);
   }
 
   protected abstract void initialize();
