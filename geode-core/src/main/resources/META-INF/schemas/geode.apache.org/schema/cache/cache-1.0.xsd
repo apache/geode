@@ -254,6 +254,7 @@ declarative caching XML file elements unless indicated otherwise.
             <xsd:attribute name="disk-synchronous" type="xsd:boolean" use="optional" />
             <xsd:attribute name="dispatcher-threads" type="xsd:string" use="optional" />
             <xsd:attribute name="order-policy" type="xsd:string" use="optional" />
+            <xsd:attribute default="true" name="ignore-eviction-expiration" type="xsd:boolean" use="optional" />
           </xsd:complexType>
         </xsd:element>
 

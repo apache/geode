@@ -83,6 +83,8 @@ public class GatewaySenderAttributes {
   
   public boolean isMetaQueue = GatewaySenderAttributes.DEFAULT_IS_META_QUEUE;
   
+  public boolean ignoreEvictionAndExpiration = GatewaySender.DEFAULT_IGNORE_EVICTION_EXPIRATION;
+  
   public int getSocketBufferSize() {
     return this.socketBufferSize;
   }
@@ -192,4 +194,9 @@ public class GatewaySenderAttributes {
   public boolean isMetaQueue() {
     return this.isMetaQueue;
   }
+  
+  public boolean isIgnoreEvictionAndExpiration() {
+    return this.ignoreEvictionAndExpiration;
+  }
+
 }

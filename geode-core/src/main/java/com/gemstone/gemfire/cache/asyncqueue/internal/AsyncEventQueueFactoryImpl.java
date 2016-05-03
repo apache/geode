@@ -277,7 +277,7 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
     this.attrs.eventFilters = asyncQueueCreation.getGatewayEventFilters();
     this.attrs.eventSubstitutionFilter = asyncQueueCreation.getGatewayEventSubstitutionFilter();
     this.attrs.isForInternalUse = true;
-
+    this.attrs.ignoreEvictionAndExpiration = asyncQueueCreation.isIgnoreEvictionAndExpiration();
   }
 
   public AsyncEventQueueFactory setParallel(boolean isParallel) {
@@ -290,6 +290,12 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
   }
   public AsyncEventQueueFactory setIsMetaQueue(boolean isMetaQueue) {
     this.attrs.isMetaQueue = isMetaQueue;
+    return this;
+  }
+
+  @Override
+  public AsyncEventQueueFactory setIgnoreEvictionAndExpiration(boolean ignore) {
+    this.attrs.ignoreEvictionAndExpiration = ignore;
     return this;
   }
 }

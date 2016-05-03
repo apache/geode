@@ -1147,8 +1147,7 @@ public class LocalRegion extends AbstractRegion
   @Override
   public boolean generateEventID()
   {     
-    return !(isUsedForPartitionedRegionAdmin()
-        || isUsedForPartitionedRegionBucket() );
+    return !isUsedForPartitionedRegionAdmin();
   }
 
   public final Object destroy(Object key, Object aCallbackArgument)
@@ -6647,10 +6646,10 @@ public class LocalRegion extends AbstractRegion
   protected void notifyGatewaySender(EnumListenerEvent operation,
       EntryEventImpl event) {
     
-    if (event.isConcurrencyConflict()) { // usually concurrent cache modification problem
+    if (isPdxTypesRegion() || event.isConcurrencyConflict() /* usually concurrent cache modification problem */) { 
       return;
     }
-    
+
     // Return if the inhibit all notifications flag is set
     if (event.inhibitAllNotifications()){
       if(logger.isDebugEnabled()) {
@@ -6659,34 +6658,31 @@ public class LocalRegion extends AbstractRegion
       return;
     }
     
-    if (!event.getOperation().isLocal()) {
-      Set<String> allGatewaySenderIds = null;
-      checkSameSenderIdsAvailableOnAllNodes();
-      if (event.getOperation() == Operation.UPDATE_VERSION_STAMP) {
-        allGatewaySenderIds = getGatewaySenderIds();
-      } else {
-        allGatewaySenderIds = getAllGatewaySenderIds();
-      }
-      
-      List<Integer> allRemoteDSIds = getRemoteDsIds(allGatewaySenderIds);
+    
+    Set<String> allGatewaySenderIds = null;
+    checkSameSenderIdsAvailableOnAllNodes();
+    if (event.getOperation() == Operation.UPDATE_VERSION_STAMP) {
+      allGatewaySenderIds = getGatewaySenderIds();
+    } else {
+      allGatewaySenderIds = getAllGatewaySenderIds();
+    }
 
-      if (allRemoteDSIds != null) {
-        for (GatewaySender sender : getCache().getAllGatewaySenders()) {
-          if (!isPdxTypesRegion()) {
-            if (allGatewaySenderIds.contains(sender.getId())) {
-              //TODO: This is a BUG. Why return and not continue?
-              if((!this.getDataPolicy().withStorage()) && sender.isParallel()){
-                return;
-              }
-              if(logger.isDebugEnabled()) {
-                logger.debug("Notifying the GatewaySender : {}", sender.getId());
-              }
-              ((AbstractGatewaySender)sender).distribute(operation, event,
-                  allRemoteDSIds);
-            }
+    List<Integer> allRemoteDSIds = getRemoteDsIds(allGatewaySenderIds);
+    if (allRemoteDSIds != null) {
+      for (GatewaySender sender : getCache().getAllGatewaySenders()) {
+        if (allGatewaySenderIds.contains(sender.getId())) {
+          //TODO: This is a BUG. Why return and not continue?
+          if((!this.getDataPolicy().withStorage()) && sender.isParallel()){
+            return;
           }
+          if(logger.isDebugEnabled()) {
+            logger.debug("Notifying the GatewaySender : {}", sender.getId());
+          }
+          ((AbstractGatewaySender)sender).distribute(operation, event,
+              allRemoteDSIds);
         }
       }
+
       
 //      if (shouldNotifyGatewaySender()) {
 //        // Get All WAN site DSID's to be sent to each WAN site so that they

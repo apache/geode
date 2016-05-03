@@ -43,6 +43,7 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
   private boolean isBucketSorted = false;
   private int dispatcherThreads = 1;
   private OrderPolicy orderPolicy = OrderPolicy.KEY;
+  private boolean ignoreEvictionAndExpiration = true;
   
   public AsyncEventQueueCreation() {
   }
@@ -62,6 +63,7 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
     this.asyncEventListener = eventListener;
     this.isBucketSorted = senderAttrs.isBucketSorted; 
     this.gatewayEventSubstitutionFilter = senderAttrs.eventSubstitutionFilter;
+    this.ignoreEvictionAndExpiration = senderAttrs.ignoreEvictionAndExpiration;
   }
   
   @Override
@@ -210,5 +212,14 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
   
   public void setBucketSorted(boolean isBucketSorted) {
     this.isBucketSorted = isBucketSorted;
+  }
+
+  public void setIgnoreEvictionAndExpiration(boolean ignore) {
+    this.ignoreEvictionAndExpiration = ignore;
+  }
+  
+  @Override
+  public boolean isIgnoreEvictionAndExpiration() {
+    return this.ignoreEvictionAndExpiration;
   }
 }

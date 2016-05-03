@@ -20,8 +20,16 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import java.util.List;
+import java.util.Properties;
+
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.Declarable;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
@@ -231,4 +239,74 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
       System.clearProperty("gemfire."+DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME);
     }
   }
+
+  @SuppressWarnings("rawtypes")
+  public void testAsyncEventQueueIsEnableEvictionAndExpirationAttribute() {
+
+    final String regionName = "testAsyncEventQueueIsEnableEvictionAndExpirationAttribute";
+
+    // Create AsyncEventQueue with Listener
+    final CacheCreation cache = new CacheCreation();
+    AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
+
+    
+    AsyncEventListener listener = new MyAsyncEventListenerGeode10();
+
+    // Test for default ignoreEvictionAndExpiration attribute value (which is true)
+    String aeqId1 = "aeqWithDefaultIgnoreEE";
+    factory.create(aeqId1,listener);
+    AsyncEventQueue aeq1 = cache.getAsyncEventQueue(aeqId1);
+    assertTrue(aeq1.isIgnoreEvictionAndExpiration());
+
+    // Test by setting ignoreEvictionAndExpiration attribute value.
+    String aeqId2 = "aeqWithIgnoreEEsetToFalse";
+    factory.setIgnoreEvictionAndExpiration(false);
+    factory.create(aeqId2,listener);
+
+    AsyncEventQueue aeq2 = cache.getAsyncEventQueue(aeqId2);
+    assertFalse(aeq2.isIgnoreEvictionAndExpiration());
+
+    // Create region and set the AsyncEventQueue
+    final RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
+    attrs.addAsyncEventQueueId(aeqId2);
+
+    final Region regionBefore = cache.createRegion(regionName, attrs);
+    assertNotNull(regionBefore);
+    assertTrue(regionBefore.getAttributes().getAsyncEventQueueIds().size() == 1);
+
+
+    testXml(cache);
+
+    final Cache c = getCache();
+    assertNotNull(c);
+
+    aeq1 = c.getAsyncEventQueue(aeqId1);
+    assertTrue(aeq1.isIgnoreEvictionAndExpiration());
+
+    aeq2 = c.getAsyncEventQueue(aeqId2);
+    assertFalse(aeq2.isIgnoreEvictionAndExpiration());
+
+    final Region regionAfter = c.getRegion(regionName);
+    assertNotNull(regionAfter);
+    assertTrue(regionAfter.getAttributes().getAsyncEventQueueIds().size() == 1);
+
+    regionAfter.localDestroyRegion();
+
+    // Clear AsyncEventQueues.
+    c.close();
+  }
+
+  public static class MyAsyncEventListenerGeode10 implements AsyncEventListener, Declarable {
+
+    public boolean processEvents(List<AsyncEvent> events) {
+      return true;
+    }
+
+    public void close() {
+    }
+
+    public void init(Properties properties) {
+    }
+  }
+
 }

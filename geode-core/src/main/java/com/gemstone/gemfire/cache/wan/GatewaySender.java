@@ -96,6 +96,8 @@ public interface GatewaySender {
 
   public static final int DEFAULT_DISPATCHER_THREADS = 5;
   
+  public static final boolean DEFAULT_IGNORE_EVICTION_EXPIRATION = true;
+  
   public static final OrderPolicy DEFAULT_ORDER_POLICY = OrderPolicy.KEY;
   /**
    * The default maximum amount of memory (MB) to allow in the queue before

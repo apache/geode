@@ -62,23 +62,8 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
     String memberId = "";
 
     try {
-      final Object[] args = (Object[]) context.getArguments();
-      final String asyncEventQueueId = (String) args[0];
-      final boolean isParallel = (Boolean) args[1];
-      final boolean enableBatchConflation = (Boolean) args[2];
-      final int batchSize = (Integer) args[3];
-      final int batchTimeInterval =(Integer) args[4];
-      final boolean persistent = (Boolean) args[5];
-      final String diskStoreName = (String) args[6];
-      final boolean diskSynchronous =(Boolean) args[7];
-      final int maxQueueMemory = (Integer) args[8];
-      final int dispatcherThreads =(Integer) args[9]; 
-      final String orderPolicy= (String) args[10];
-      final String[] gatewayEventFilters =(String[]) args[11];
-      final String gatewaySubstitutionFilter = (String) args[12];
-      final String listenerClassName = (String) args[13];
-      final Properties listenerProperties = (Properties) args[14];
-
+      AsyncEventQueueFunctionArgs aeqArgs =  (AsyncEventQueueFunctionArgs)context.getArguments();
+      
       GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
 
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
@@ -89,32 +74,39 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
         memberId = member.getName();
       }
 
-      AsyncEventQueueFactory asyncEventQueueFactory = cache.createAsyncEventQueueFactory();
-      asyncEventQueueFactory.setParallel(isParallel);
-      asyncEventQueueFactory.setBatchConflationEnabled(enableBatchConflation);
-      asyncEventQueueFactory.setBatchSize(batchSize);
-      asyncEventQueueFactory.setBatchTimeInterval(batchTimeInterval);
-      asyncEventQueueFactory.setPersistent(persistent);
-      asyncEventQueueFactory.setDiskStoreName(diskStoreName);
-      asyncEventQueueFactory.setDiskSynchronous(diskSynchronous);
-      asyncEventQueueFactory.setMaximumQueueMemory(maxQueueMemory);
-      asyncEventQueueFactory.setDispatcherThreads(dispatcherThreads);
-      asyncEventQueueFactory.setOrderPolicy(OrderPolicy.valueOf(orderPolicy));
+      AsyncEventQueueFactory asyncEventQueueFactory = cache.createAsyncEventQueueFactory()
+          .setParallel(aeqArgs.isParallel())
+          .setBatchConflationEnabled(aeqArgs.isEnableBatchConflation())
+          .setBatchSize(aeqArgs.getBatchSize())
+          .setBatchTimeInterval(aeqArgs.getBatchTimeInterval())
+          .setPersistent(aeqArgs.isPersistent())
+          .setDiskStoreName(aeqArgs.getDiskStoreName())
+          .setDiskSynchronous(aeqArgs.isDiskSynchronous())
+          .setIgnoreEvictionAndExpiration(aeqArgs.isIgnoreEvictionAndExpiration())
+          .setMaximumQueueMemory(aeqArgs.getMaxQueueMemory())
+          .setDispatcherThreads(aeqArgs.getDispatcherThreads())
+          .setOrderPolicy(OrderPolicy.valueOf(aeqArgs.getOrderPolicy()));
+
+      String[] gatewayEventFilters = aeqArgs.getGatewayEventFilters();
       if (gatewayEventFilters != null) {
         for (String gatewayEventFilter : gatewayEventFilters) {
           Class<?> gatewayEventFilterKlass = forName(gatewayEventFilter, CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER);
           asyncEventQueueFactory.addGatewayEventFilter((GatewayEventFilter) newInstance(gatewayEventFilterKlass, CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER));
         }
       }
+      
+      String gatewaySubstitutionFilter = aeqArgs.getGatewaySubstitutionFilter();
       if (gatewaySubstitutionFilter != null) {
         Class<?> gatewayEventSubstitutionFilterKlass = forName(gatewaySubstitutionFilter, CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER);
         asyncEventQueueFactory.setGatewayEventSubstitutionListener((GatewayEventSubstitutionFilter<?,?>) newInstance(gatewayEventSubstitutionFilterKlass, CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER));
       }
-      
+    
+      String listenerClassName = aeqArgs.getListenerClassName();
       Object listenerInstance;
       Class<?> listenerClass = InternalDataSerializer.getCachedClass(listenerClassName);
       listenerInstance = listenerClass.newInstance();
 
+      Properties listenerProperties = aeqArgs.getListenerProperties();
       if (listenerProperties != null && !listenerProperties.isEmpty()) {
         if (!(listenerInstance instanceof Declarable)) {
           throw new IllegalArgumentException("Listener properties were provided, but the listener specified does not implement Declarable.");
@@ -127,9 +119,9 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
         cache.addDeclarableProperties(declarablesMap);
       }
 
-      asyncEventQueueFactory.create(asyncEventQueueId, (AsyncEventListener) listenerInstance);
+      asyncEventQueueFactory.create(aeqArgs.getAsyncEventQueueId(), (AsyncEventListener) listenerInstance);
 
-      XmlEntity xmlEntity = new XmlEntity(CacheXml.ASYNC_EVENT_QUEUE, "id", asyncEventQueueId);
+      XmlEntity xmlEntity = new XmlEntity(CacheXml.ASYNC_EVENT_QUEUE, "id", aeqArgs.getAsyncEventQueueId());
       context.getResultSender().lastResult(new CliFunctionResult(memberId, xmlEntity, "Success"));
 
     } catch (CacheClosedException cce) {

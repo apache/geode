@@ -147,4 +147,13 @@ public interface AsyncEventQueue {
    *         <code>AsyncEventQueue</code>
    */
   public GatewayEventSubstitutionFilter getGatewayEventSubstitutionFilter();
+ 
+  /**
+   * Represents if eviction and expiration events/operations are ignored (not passed)
+   * with <code>AsyncEventListener</code>.
+   * 
+   * @return boolen True if eviction and expiration operations are ignored.
+   */
+  public boolean isIgnoreEvictionAndExpiration();
+  
 }
