@@ -1445,9 +1445,7 @@ public class InternalDistributedSystem
    * the attempt has been cancelled.
    */
   public boolean isReconnectCancelled() {
-    synchronized(reconnectCancelledLock) {
-      return reconnectCancelled;
-    }
+    return reconnectCancelled;
   }
 
   /**
@@ -2476,17 +2474,14 @@ public class InternalDistributedSystem
   /**
    * If true then this DS will never reconnect.
    */
-  private boolean reconnectCancelled = false;
-  private Object reconnectCancelledLock = new Object();
+  private volatile boolean reconnectCancelled = false;
 
   /** Make sure this instance of DS never does a reconnect.
    * Also if reconnect is in progress cancel it.
    */
   public void cancelReconnect() {
 //    (new ManagerLogWriter(LogWriterImpl.FINE_LEVEL, System.out)).fine("cancelReconnect invoked", new Exception("stack trace"));
-    synchronized(this.reconnectCancelledLock) {
-      this.reconnectCancelled = true;
-    }
+    this.reconnectCancelled = true;
     if (isReconnecting()) {
       synchronized (this.reconnectLock) { // should the synchronized be first on this and
     	  // then on this.reconnectLock.
@@ -3024,10 +3019,8 @@ public class InternalDistributedSystem
       InternalDistributedSystem recon = this.reconnectDS;
 
       while (isReconnecting()) {
-        synchronized(this.reconnectCancelledLock) {
-          if (this.reconnectCancelled) {
-            break;
-          }
+        if (this.reconnectCancelled) {
+          break;
         }
         if (time != 0) {
           this.reconnectLock.wait(sleepTime);
@@ -3050,9 +3043,7 @@ public class InternalDistributedSystem
   @Override
   public void stopReconnecting() {
 //    (new ManagerLogWriter(LogWriterImpl.FINE_LEVEL, System.out)).fine("stopReconnecting invoked", new Exception("stack trace"));
-    synchronized(this.reconnectCancelledLock) {
-      this.reconnectCancelled = true;
-    }
+    this.reconnectCancelled = true;
     synchronized(this.reconnectLock) {
       this.reconnectLock.notify();
     }
