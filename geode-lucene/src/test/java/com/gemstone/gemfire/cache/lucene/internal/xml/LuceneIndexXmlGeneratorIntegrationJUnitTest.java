@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -40,13 +41,20 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class LuceneIndexXmlGeneratorIntegrationJUnitTest {
+
+  private Cache cache;
+
+  @After
+  public void closeCache() {
+    cache.close();
+  }
   
   /**
    * Test of generating and reading cache configuration back in.
    */
   @Test
   public void generateWithFields() {
-    Cache cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set("mcast-port", "0").create();
     LuceneService service = LuceneServiceProvider.get(cache);
     service.createIndex("index", "region", "a", "b", "c");
     cache.createRegionFactory(RegionShortcut.PARTITION).create("region");
