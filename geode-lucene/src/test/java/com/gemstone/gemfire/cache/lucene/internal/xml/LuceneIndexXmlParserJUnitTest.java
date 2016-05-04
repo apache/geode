@@ -30,10 +30,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.internal.cache.extension.SimpleExtensionPoint;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
+import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.XmlGeneratorUtils;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
@@ -50,8 +54,13 @@ public class LuceneIndexXmlParserJUnitTest {
   @Before
   public void setUp() {
     this.parser = new LuceneXmlParser();
-    CacheCreation cache = new CacheCreation();
-    this.rc = new RegionCreation(cache, "region");
+    CacheCreation cache = Mockito.mock(CacheCreation.class);
+    RegionCreation regionCreation = Mockito.mock(RegionCreation.class);
+    RegionAttributesCreation rac = Mockito.mock(RegionAttributesCreation.class);
+    Mockito.when(regionCreation.getFullPath()).thenReturn("/region");
+    Mockito.when(regionCreation.getAttributes()).thenReturn(rac);
+    Mockito.when(regionCreation.getExtensionPoint()).thenReturn(new SimpleExtensionPoint(this.rc,this.rc));
+    this.rc = regionCreation;
     this.stack = new Stack<Object>();
     stack.push(cache);
     stack.push(rc);

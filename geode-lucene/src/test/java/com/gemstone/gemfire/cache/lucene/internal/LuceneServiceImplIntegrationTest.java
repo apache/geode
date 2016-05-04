@@ -60,7 +60,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class LuceneServiceImplJUnitTest {
+public class LuceneServiceImplIntegrationTest {
 
   Cache cache;
   ClientCache clientCache;

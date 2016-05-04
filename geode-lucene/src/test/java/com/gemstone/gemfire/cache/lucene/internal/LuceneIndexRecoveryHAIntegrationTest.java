@@ -58,7 +58,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.jayway.awaitility.Awaitility;
 
 @Category(IntegrationTest.class)
-public class LuceneIndexRecoveryHAJUnitTest {
+public class LuceneIndexRecoveryHAIntegrationTest {
 
   private static final String INDEX = "index";
   private static final String REGION = "indexedRegion";
