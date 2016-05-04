@@ -170,7 +170,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
 
     verifyNoCopy();
     
-    put();  // Does multiple puts
+    putInitial();  // Does multiple puts
    
     verifyConstructorCount(1);
   }
@@ -191,7 +191,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
 
     verifyNoCopy();
     
-    put();  // Does multiple puts
+    putInitial();  // Does multiple puts
    
     verifyConstructorCount(2);
 
@@ -212,7 +212,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
 
     verifyNoCopy();
     
-    PRDeltaTestImpl myDTI = put();  // Does multiple puts
+    PRDeltaTestImpl myDTI = putInitial();  // Does multiple puts
    
     // With cloning disabled only single instance
     verifyConstructorCount(1);
@@ -1124,7 +1124,20 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     dataStore2.invoke(() -> PRDeltaPropagationDUnitTest.createCacheInVm());
   }
 
-  public static PRDeltaTestImpl put() throws Exception {
+  public static void put() throws Exception {
+    PRDeltaTestImpl test = new PRDeltaTestImpl();
+    deltaPR.put(DELTA_KEY, test);
+
+    test.setIntVar(10);
+    deltaPR.put(DELTA_KEY, test);
+
+    test = new PRDeltaTestImpl();
+    
+    test.setStr("DELTA");
+    deltaPR.put(DELTA_KEY, test);
+  }
+
+  public static PRDeltaTestImpl putInitial() throws Exception {
     PRDeltaTestImpl test = new PRDeltaTestImpl();
     deltaPR.put(DELTA_KEY, test);
 
