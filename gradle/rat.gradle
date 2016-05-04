@@ -37,7 +37,6 @@ rat {
     'native/**',
     'wrapper/**',
     '**/build/**',
-    '.buildinfo',
 
     // SBT
     'geode-spark-connector/**/target/**',
