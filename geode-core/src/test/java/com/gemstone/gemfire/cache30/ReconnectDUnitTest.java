@@ -163,8 +163,13 @@ public class ReconnectDUnitTest extends CacheTestCase
     return factory.create();
   }
 
-  // quorum check fails, then succeeds
+  /*
+  TODO this test is not actually using quorum checks.  To do that it needs to
+  have the locator disconnect & reconnect
+   */
+
   public void testReconnectWithQuorum() throws Exception {
+    // quorum check fails, then succeeds
     IgnoredException.addIgnoredException("killing member's ds");
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
