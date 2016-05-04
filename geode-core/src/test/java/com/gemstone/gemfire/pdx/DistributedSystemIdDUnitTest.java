@@ -37,6 +37,11 @@ public class DistributedSystemIdDUnitTest extends DistributedTestCase {
     super(name);
   }
 
+  @Override
+  public void preSetUp() {
+    disconnectAllFromDS(); // GEODE-558 test fails due to infection from another test
+  }
+
   public void testMatchingIds() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -53,7 +58,6 @@ public class DistributedSystemIdDUnitTest extends DistributedTestCase {
     
   }
   
-  @Category(FlakyTest.class) // GEODE-558: random ports, test pollution (TODO: disconnect DS in setup?)
   public void testInfectiousId() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
