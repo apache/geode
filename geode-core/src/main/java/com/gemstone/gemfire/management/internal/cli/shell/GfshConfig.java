@@ -60,6 +60,17 @@ public class GfshConfig {
     this(HISTORY_FILE.getAbsolutePath(), DEFAULT_PROMPT, MAX_HISTORY_SIZE, null, null, null, null, null);
   }
 
+  public boolean deleteHistoryFile(){
+    if(historyFileName==null)
+      return true;
+
+    File file = new File(historyFileName);
+    if(!file.exists())
+      return true;
+
+    return file.delete();
+  }
+
   public GfshConfig(String historyFileName, String defaultPrompt,
       int historySize, String logDir, Level logLevel, Integer logLimit,
       Integer logCount, String initFileName) {

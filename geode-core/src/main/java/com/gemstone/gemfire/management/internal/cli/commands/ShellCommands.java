@@ -16,6 +16,33 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Writer;
+import java.net.ConnectException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.KeyStore;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.DSFIDFactory;
@@ -52,38 +79,12 @@ import com.gemstone.gemfire.management.internal.web.domain.LinkIndex;
 import com.gemstone.gemfire.management.internal.web.http.support.SimpleHttpRequester;
 import com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker;
 import com.gemstone.gemfire.management.internal.web.shell.RestHttpOperationInvoker;
+
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.ExitShellRequest;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Writer;
-import java.net.ConnectException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.KeyStore;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
 
 /**
  *
@@ -868,7 +869,6 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
       int historySizeWordLength = historySizeString.length();
 
       GfshHistory gfshHistory = gfsh.getGfshHistory();
-      //List<?> gfshHistoryList = gfshHistory.getHistoryList();
       Iterator<?> it = gfshHistory.entries();
       boolean flagForLineNumbers = (saveHistoryTo != null && saveHistoryTo
           .length() > 0) ? false : true;
@@ -944,8 +944,7 @@ private void configureHttpsURLConnection(Map<String, String> sslConfigProps) thr
   Result executeClearHistory(){
     try{
       Gfsh gfsh = Gfsh.getCurrentInstance();
-      GfshHistory gfshHistory = gfsh.getGfshHistory();
-      gfshHistory.clear();
+      gfsh.clearHistory();
     }catch(Exception e){
       LogWrapper.getInstance().info(CliUtil.stackTraceAsString(e) );
       return ResultBuilder.createGemFireErrorResult("Exception occured while clearing history " + e.getMessage());

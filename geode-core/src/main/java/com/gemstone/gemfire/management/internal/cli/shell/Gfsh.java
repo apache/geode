@@ -36,19 +36,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import jline.Terminal;
-
-import jline.console.ConsoleReader;
-import org.springframework.shell.core.AbstractShell;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.ExecutionStrategy;
-import org.springframework.shell.core.ExitShellRequest;
-import org.springframework.shell.core.JLineLogHandler;
-import org.springframework.shell.core.JLineShell;
-import org.springframework.shell.core.Parser;
-import org.springframework.shell.event.ShellStatus.Status;
-
 import com.gemstone.gemfire.internal.Banner;
 import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.lang.ClassUtils;
@@ -72,6 +59,19 @@ import com.gemstone.gemfire.management.internal.cli.shell.jline.GfshHistory;
 import com.gemstone.gemfire.management.internal.cli.shell.jline.GfshUnsupportedTerminal;
 import com.gemstone.gemfire.management.internal.cli.shell.unsafe.GfshSignalHandler;
 import com.gemstone.gemfire.management.internal.cli.util.CommentSkipHelper;
+
+import org.springframework.shell.core.AbstractShell;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.Converter;
+import org.springframework.shell.core.ExecutionStrategy;
+import org.springframework.shell.core.ExitShellRequest;
+import org.springframework.shell.core.JLineLogHandler;
+import org.springframework.shell.core.JLineShell;
+import org.springframework.shell.core.Parser;
+import org.springframework.shell.event.ShellStatus.Status;
+
+import jline.Terminal;
+import jline.console.ConsoleReader;
 
 /**
  * Extends an interactive shell provided by <a
@@ -607,11 +607,11 @@ public class Gfsh extends JLineShell {
     String originalString = expandedPropCommandsMap.get(processedLine);
     if (originalString != null) {
       // In history log the original command string & expanded line as a comment
-      super.logCommandToOutput(GfshHistory.toHistoryLoggable(originalString));
-      super.logCommandToOutput(GfshHistory.toHistoryLoggable("// Post substitution"));
-      super.logCommandToOutput(GfshHistory.toHistoryLoggable("//" + processedLine));
+      super.logCommandToOutput(GfshHistory.redact(originalString));
+      super.logCommandToOutput(GfshHistory.redact("// Post substitution"));
+      super.logCommandToOutput(GfshHistory.redact("//" + processedLine));
     } else {
-      super.logCommandToOutput(GfshHistory.toHistoryLoggable(processedLine));
+      super.logCommandToOutput(GfshHistory.redact(processedLine));
     }
   }
 
@@ -1028,6 +1028,13 @@ public class Gfsh extends JLineShell {
   @Override
   protected String getHistoryFileName() {
     return gfshConfig.getHistoryFileName();
+  }
+
+  public void clearHistory() {
+    gfshHistory.clear();
+    if(!gfshConfig.deleteHistoryFile()){
+      printAsWarning("Gfsh history file is not deleted");
+    }
   }
 
   public String getLogFilePath() {

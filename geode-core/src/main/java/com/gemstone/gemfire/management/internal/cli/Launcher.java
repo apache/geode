@@ -22,14 +22,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.shell.core.ExitShellRequest;
-
 import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.PureJavaMode;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.shell.GfshConfig;
+import com.gemstone.gemfire.management.internal.cli.shell.jline.GfshHistory;
+
+import org.springframework.shell.core.ExitShellRequest;
+
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -220,7 +222,8 @@ public final class Launcher {
           // Execute all of the commands in the list, one at a time.
           for (int i = 0; i < commandsToExecute.size() && exitRequest == ExitShellRequest.NORMAL_EXIT; i++) {
             String command = commandsToExecute.get(i);
-            System.out.println(GfshParser.LINE_SEPARATOR + "(" + (i + 1) + ") Executing - " + command
+            // sanitize the output string to not show the password
+            System.out.println(GfshParser.LINE_SEPARATOR + "(" + (i + 1) + ") Executing - " + GfshHistory.redact(command)
                 + GfshParser.LINE_SEPARATOR);
             if (!gfsh.executeScriptLine(command) || gfsh.getLastExecutionStatus() != 0) {
               exitRequest = ExitShellRequest.FATAL_EXIT;

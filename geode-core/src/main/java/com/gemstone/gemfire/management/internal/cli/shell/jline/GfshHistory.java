@@ -16,14 +16,12 @@
  */
 package com.gemstone.gemfire.management.internal.cli.shell.jline;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.PreprocessorUtils;
 
 import jline.console.history.MemoryHistory;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Overrides jline.History to add History without newline characters.
@@ -40,7 +38,7 @@ public class GfshHistory extends MemoryHistory {
 
   public void addToHistory(String buffer) {
     if (isAutoFlush()) {
-      super.add(toHistoryLoggable(buffer));
+      super.add(redact(buffer));
     }
   }
 
@@ -52,7 +50,7 @@ public class GfshHistory extends MemoryHistory {
     this.autoFlush = autoFlush;
   }
   
-  public static String toHistoryLoggable(String buffer) {
+  public static String redact(String buffer) {
     String trimmed = PreprocessorUtils.trim(buffer, false).getString();
 
     Matcher matcher = passwordRe.matcher(trimmed);
