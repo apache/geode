@@ -27,13 +27,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.gemstone.gemfire.InternalGemFireException;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelException;
@@ -186,8 +184,7 @@ public class InternalLocator extends Locator implements ConnectListener {
   private volatile boolean isSharedConfigurationStarted = false; 
   
   private volatile Thread restartThread;
-  
-  
+
   public boolean isSharedConfigurationEnabled() {
     return this.config.getEnableClusterConfiguration();
   }
@@ -528,7 +525,6 @@ public class InternalLocator extends Locator implements ConnectListener {
     InetAddress bindAddress,
     String hostnameForClients,
     java.util.Properties distributedSystemProperties, DistributionConfigImpl cfg, boolean startDistributedSystem) {
-    this.port = port;
     this.logFile = logF;
     this.bindAddress = bindAddress;
     this.hostnameForClients = hostnameForClients;
@@ -551,8 +547,6 @@ public class InternalLocator extends Locator implements ConnectListener {
           bindAddress.getHostAddress());
     }
     
-    
-
     if (distributedSystemProperties != null) {
       env.putAll(distributedSystemProperties);
     }
@@ -607,14 +601,15 @@ public class InternalLocator extends Locator implements ConnectListener {
     
     this.locatorListener = WANServiceProvider.createLocatorMembershipListener();
     if(locatorListener != null) {
-      this.locatorListener.setPort(this.port);
+      // We defer setting the port until the handler is init'd - that way we'll have an actual port in the
+      // case where we're starting with port = 0.
       this.locatorListener.setConfig(this.getConfig());
     }
-    this.handler = new PrimaryHandler(this.port, this, locatorListener);
+    this.handler = new PrimaryHandler(this, locatorListener);
   
     ThreadGroup group = LoggingThreadGroup.createThreadGroup("Distribution locators", logger);
     stats = new LocatorStats();
-    server = new TcpServer(this.port, this.bindAddress, null, this.config,
+    server = new TcpServer(port, this.bindAddress, null, this.config,
         this.handler, new DelayedPoolStatHelper(), group, this.toString());
   }
 
@@ -735,7 +730,7 @@ public class InternalLocator extends Locator implements ConnectListener {
         else {
           sb.append(SocketCreator.getLocalHost().getHostAddress());
         }
-        sb.append('[').append(port).append(']');
+        sb.append('[').append(getPort()).append(']');
         thisLocator = sb.toString();
       }
       
@@ -844,7 +839,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     
     this.locatorDiscoverer = WANServiceProvider.createLocatorDiscoverer();
     if(this.locatorDiscoverer != null) {
-      this.locatorDiscoverer.discover(this.port, config, locatorListener);
+      this.locatorDiscoverer.discover(getPort(), config, locatorListener);
     }
   }
   
@@ -875,7 +870,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
     this.productUseLog.monitorUse(distributedSystem);
     
-    ServerLocator sl = new ServerLocator(this.port, 
+    ServerLocator sl = new ServerLocator(getPort(),
                                          this.bindAddress,
                                          this.hostnameForClients,
                                          this.logFile,
@@ -957,7 +952,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     if (this.server.isAlive()) {
       logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_STOPPING__0, this));
       try {
-        stopLocator(this.port, this.bindAddress);
+        stopLocator(getPort(), this.bindAddress);
       } catch ( ConnectException ignore ) {
         // must not be running
       }
@@ -1234,7 +1229,19 @@ public class InternalLocator extends Locator implements ConnectListener {
   public ServerLocator getServerLocatorAdvisee() {
     return this.serverLocator;
   }
-  
+
+  /**
+   * Return the port on which the locator is actually listening. If called before the locator has actually
+   * started, this method will return null.
+   *
+   * @return the port the locator is listening on or null if it has not yet been started
+   */
+  public Integer getPort() {
+    if (server != null) {
+      return server.getPort();
+    }
+    return null;
+  }
   
   /******
    * 
@@ -1290,19 +1297,23 @@ public class InternalLocator extends Locator implements ConnectListener {
     private final LocatorMembershipListener locatorListener;
     //private final List<LocatorJoinMessage> locatorJoinMessages;
     private Object locatorJoinObject = new Object();
-    InternalLocator interalLocator;
+    private InternalLocator internalLocator;
     boolean willHaveServerLocator;  // flag to avoid warning about missing handlers during startup
     
-    public PrimaryHandler(int port, InternalLocator locator,
+    public PrimaryHandler(InternalLocator locator,
         LocatorMembershipListener listener) {
       this.locatorListener = listener;
-      interalLocator = locator;
+      internalLocator = locator;
       //this.locatorJoinMessages = new ArrayList<LocatorJoinMessage>();
     }
 
     // this method is synchronized to make sure that no new handlers are added while
     //initialization is taking place.
     public synchronized void init(TcpServer tcpServer) {
+      if (this.locatorListener != null) {
+        // This is deferred until now as the initial requested port could have been 0
+        this.locatorListener.setPort(internalLocator.getPort());
+      }
       this.tcpServer = tcpServer;
       for(Iterator itr = allHandlers.iterator(); itr.hasNext();) {
         TcpHandler handler = (TcpHandler) itr.next();
@@ -1364,7 +1375,7 @@ public class InternalLocator extends Locator implements ConnectListener {
         handler.shutDown();
       }
       } finally {
-        this.interalLocator.handleShutdown();
+        this.internalLocator.handleShutdown();
       }
     }
     

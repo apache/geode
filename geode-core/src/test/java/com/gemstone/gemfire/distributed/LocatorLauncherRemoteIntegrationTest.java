@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -48,6 +50,8 @@ import com.gemstone.gemfire.internal.process.ProcessType;
 import com.gemstone.gemfire.internal.process.ProcessUtils;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * Integration tests for launching a Locator in a forked process.
@@ -55,8 +59,31 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * @since 8.0
  */
 @Category(IntegrationTest.class)
+@RunWith(Parameterized.class)
 public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLauncherRemoteIntegrationTestCase {
+
+  protected volatile Process process;
+  protected volatile ProcessStreamReader processOutReader;
+  protected volatile ProcessStreamReader processErrReader;
   
+  @Before
+  public final void setUpLocatorLauncherRemoteTest() throws Exception {
+  }
+
+  @After
+  public final void tearDownLocatorLauncherRemoteTest() throws Exception {
+    if (this.process != null) {
+      this.process.destroy();
+      this.process = null;
+    }
+    if (this.processOutReader != null && this.processOutReader.isRunning()) {
+      this.processOutReader.stop();
+    }
+    if (this.processErrReader != null && this.processErrReader.isRunning()) {
+      this.processErrReader.stop();
+    }
+  }
+
   @Test
   public void testIsAttachAPIFound() throws Exception {
     final ProcessControllerFactory factory = new ProcessControllerFactory();
@@ -368,6 +395,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
   @Test
   public void testStartUsingPortInUseFails() throws Throwable {
     this.socket = SocketCreator.getDefaultInstance().createServerSocket(this.locatorPort, 50, null, -1);
+    this.locatorPort = this.socket.getLocalPort();
     
     final List<String> jvmArguments = getJvmArguments();
     
@@ -437,6 +465,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     AtomicBoolean outputContainedExpectedString = new AtomicBoolean();
 
     this.socket = SocketCreator.getDefaultInstance().createServerSocket(this.locatorPort, 50, null, -1);
+    this.locatorPort = this.socket.getLocalPort();
     
     assertFalse(AvailablePort.isPortAvailable(this.locatorPort, AvailablePort.SOCKET));
     assertTrue(this.socket.isBound());

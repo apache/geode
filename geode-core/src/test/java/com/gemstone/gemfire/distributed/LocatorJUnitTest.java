@@ -24,10 +24,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.IntSupplier;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,15 +55,29 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 @Category(IntegrationTest.class)
+@RunWith(Parameterized.class)
 public class LocatorJUnitTest {
 
   private static final int REQUEST_TIMEOUT = 5 * 1000;
 
   private Locator locator;
-  private int port;
   private File tmpFile;
+  private int port;
+
+  @Parameterized.Parameters
+  public static Collection<Object> data() {
+    return Arrays.asList(new Object[] {
+        (IntSupplier) () -> 0,
+        (IntSupplier) () -> AvailablePortHelper.getRandomAvailableTCPPort()
+    });
+  }
+
+  @Parameterized.Parameter
+  public IntSupplier portSupplier;
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -66,8 +85,8 @@ public class LocatorJUnitTest {
   @Before
   public void setUp() throws IOException {
     tmpFile = File.createTempFile("locator", ".log");
-    port = getRandomAvailablePort(SOCKET);
-    File locatorFile = new File("locator"+port+".dat");
+    this.port = portSupplier.getAsInt();
+    File locatorFile = new File("locator" + this.port + ".dat");
     if (locatorFile.exists()) {
       locatorFile.delete();
     }
@@ -89,7 +108,6 @@ public class LocatorJUnitTest {
     Properties dsprops = new Properties();
     int jmxPort = getRandomAvailablePort(SOCKET);
     dsprops.setProperty("mcast-port", "0");
-    dsprops.setProperty("locators", "localhost[" + port + "]");
     dsprops.setProperty("jmx-manager-port", ""+jmxPort);
     dsprops.setProperty("jmx-manager-start", "true");
     dsprops.setProperty("jmx-manager-http-port", "0");
@@ -108,18 +126,18 @@ public class LocatorJUnitTest {
   @Test
   public void testBasicInfo() throws Exception {
     locator = Locator.startLocator(port, tmpFile);
-   assertTrue(locator.isPeerLocator());
-   assertFalse(locator.isServerLocator());
-    String[] info = InternalLocator.getLocatorInfo(InetAddress.getLocalHost(), port);
-   assertNotNull(info);
-   assertTrue(info.length > 1);
+    assertTrue(locator.isPeerLocator());
+    assertFalse(locator.isServerLocator());
+    int boundPort = (port == 0) ? locator.getPort() : port;
+    String[] info = InternalLocator.getLocatorInfo(InetAddress.getLocalHost(), boundPort);
+    assertNotNull(info);
+    assertTrue(info.length > 1);
   }
 
   @Test
   public void testNoThreadLeftBehind() throws Exception {
     Properties dsprops = new Properties();
     dsprops.setProperty("mcast-port", "0");
-    dsprops.setProperty("locators", "localhost[" + port + "]");
     dsprops.setProperty("jmx-manager-start", "false");
     dsprops.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
 
@@ -137,9 +155,9 @@ public class LocatorJUnitTest {
         }
       }
       if (threadCount < Thread.activeCount()) {
-          OSProcess.printStacks(0);
-          fail("expected " + threadCount + " threads or fewer but found " + Thread.activeCount()
-              +".  Check log file for a thread dump.");
+        OSProcess.printStacks(0);
+        fail("expected " + threadCount + " threads or fewer but found " + Thread.activeCount()
+            +".  Check log file for a thread dump.");
         }
     }
   }
@@ -153,7 +171,7 @@ public class LocatorJUnitTest {
    assertFalse(locator.isPeerLocator());
    assertTrue(locator.isServerLocator());
     Thread.sleep(1000);
-    doServerLocation();
+    doServerLocation(locator.getPort());
   }
 
   @Test
@@ -163,10 +181,10 @@ public class LocatorJUnitTest {
     props.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
 
     locator = Locator.startLocatorAndDS(port, tmpFile, null, props);
-   assertTrue(locator.isPeerLocator());
-   assertTrue(locator.isServerLocator());
+    assertTrue(locator.isPeerLocator());
+    assertTrue(locator.isServerLocator());
     Thread.sleep(1000);
-    doServerLocation();
+    doServerLocation(locator.getPort());
     locator.stop();
   }
 
@@ -185,19 +203,18 @@ public class LocatorJUnitTest {
     }
   }
 
-  private void doServerLocation() throws Exception {
+  private void doServerLocation(int realPort) throws Exception {
     {
       ClientConnectionRequest request = new ClientConnectionRequest(Collections.EMPTY_SET, "group1");
-      ClientConnectionResponse response = (ClientConnectionResponse) TcpClient.requestToServer(InetAddress.getLocalHost(), port, request, REQUEST_TIMEOUT);
-     assertEquals(null, response.getServer());
+      ClientConnectionResponse response = (ClientConnectionResponse) TcpClient.requestToServer(InetAddress.getLocalHost(), realPort, request, REQUEST_TIMEOUT);
+      assertEquals(null, response.getServer());
     }
 
     {
       QueueConnectionRequest request = new QueueConnectionRequest(ClientProxyMembershipID.getNewProxyMembership(InternalDistributedSystem.getAnyInstance()), 3, Collections.EMPTY_SET, "group1",true);
-      QueueConnectionResponse response = (QueueConnectionResponse) TcpClient.requestToServer(InetAddress.getLocalHost(), port, request, REQUEST_TIMEOUT);
-     assertEquals(new ArrayList(), response.getServers());
-     assertFalse(response.isDurableQueueFound());
+      QueueConnectionResponse response = (QueueConnectionResponse) TcpClient.requestToServer(InetAddress.getLocalHost(), realPort, request, REQUEST_TIMEOUT);
+      assertEquals(new ArrayList(), response.getServers());
+      assertFalse(response.isDurableQueueFound());
     }
   }
-
 }

@@ -16,15 +16,16 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static org.junit.Assert.*;
-
+import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Subclass of LocatorLauncherLocalDUnitTest which forces the code to not find 
@@ -34,6 +35,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * @since 8.0
  */
 @Category(IntegrationTest.class)
+@RunWith(Parameterized.class)
 public class LocatorLauncherLocalFileIntegrationTest extends LocatorLauncherLocalIntegrationTest {
 
   @Before

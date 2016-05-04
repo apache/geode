@@ -43,6 +43,8 @@ import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
 import com.gemstone.gemfire.internal.process.ProcessType;
 import com.gemstone.gemfire.internal.process.ProcessUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * Tests usage of LocatorLauncher as a local API in existing JVM.
@@ -50,8 +52,9 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * @since 8.0
  */
 @Category(IntegrationTest.class)
+@RunWith(Parameterized.class)
 public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncherIntegrationTestCase {
-  
+
   @Before
   public final void setUpLocatorLauncherLocalIntegrationTest() throws Exception {
     disconnectFromDS();
@@ -320,6 +323,11 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
   
   @Test
   public void testStartWithDefaultPortInUseFails() throws Throwable {
+    // Test makes no sense in this case
+    if (this.locatorPort == 0) {
+      return;
+    }
+
     this.socket = SocketCreator.getDefaultInstance().createServerSocket(this.locatorPort, 50, null, -1);
     assertTrue(this.socket.isBound());
     assertFalse(this.socket.isClosed());
@@ -480,13 +488,13 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
     }
   } // testStartWithExistingPidFileFails
   */
-  
+
   @Test
   public void testStartUsingPort() throws Throwable {
     // generate one free port and then use it instead of default
     final int freeTCPPort = AvailablePortHelper.getRandomAvailableTCPPort();
     assertTrue(AvailablePort.isPortAvailable(freeTCPPort, AvailablePort.SOCKET));
-    
+
     this.launcher = new Builder()
         .setMemberName(getUniqueName())
         .setPort(freeTCPPort)
@@ -531,13 +539,17 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
   
   @Test
   public void testStartUsingPortInUseFails() throws Throwable {
+    // Test makes no sense in this case
+    if (this.locatorPort == 0) {
+      return;
+    }
+
     // generate one free port and then use it instead of default
-    final int freeTCPPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    this.socket = SocketCreator.getDefaultInstance().createServerSocket(freeTCPPort, 50, null, -1);
+    this.socket = SocketCreator.getDefaultInstance().createServerSocket(this.locatorPort, 50, null, -1);
     
     this.launcher = new Builder()
         .setMemberName(getUniqueName())
-        .setPort(freeTCPPort)
+        .setPort(this.locatorPort)
         .setRedirectOutput(true)
         .setWorkingDirectory(this.workingDirectory)
         .set(DistributionConfig.CLUSTER_CONFIGURATION_DIR, this.clusterConfigDirectory)

@@ -108,8 +108,6 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testDefaultProperties() {
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
@@ -165,8 +163,6 @@ public class InternalDistributedSystemJUnitTest
 
     Properties props = new Properties();
     props.put(DistributionConfig.NAME_NAME, name);
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
@@ -309,8 +305,6 @@ public class InternalDistributedSystemJUnitTest
   public void testGetLogLevel() {
     Level logLevel = Level.FINER;
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
@@ -336,8 +330,6 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testGetStatisticSamplingEnabled() {
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
@@ -350,8 +342,6 @@ public class InternalDistributedSystemJUnitTest
   public void testGetStatisticSampleRate() {
     String rate = String.valueOf(DistributionConfig.MIN_STATISTIC_SAMPLE_RATE);
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
@@ -391,8 +381,6 @@ public class InternalDistributedSystemJUnitTest
   public void testGetStatisticArchiveFile() {
     String fileName = "testGetStatisticArchiveFile";
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
@@ -409,8 +397,6 @@ public class InternalDistributedSystemJUnitTest
   public void _testGetAckWaitThreshold() {
     String time = String.valueOf(DistributionConfig.MIN_ACK_WAIT_THRESHOLD);
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
@@ -440,8 +426,6 @@ public class InternalDistributedSystemJUnitTest
   public void testGetCacheXmlFile() {
     String fileName = "blah";
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
@@ -454,8 +438,6 @@ public class InternalDistributedSystemJUnitTest
   public void testGetArchiveDiskSpaceLimit() {
     String value = String.valueOf(DistributionConfig.MIN_ARCHIVE_DISK_SPACE_LIMIT);
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
@@ -481,8 +463,6 @@ public class InternalDistributedSystemJUnitTest
   public void testGetArchiveFileSizeLimit() {
     String value = String.valueOf(DistributionConfig.MIN_ARCHIVE_FILE_SIZE_LIMIT);
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
@@ -508,8 +488,6 @@ public class InternalDistributedSystemJUnitTest
   public void testGetLogDiskSpaceLimit() {
     String value = String.valueOf(DistributionConfig.MIN_LOG_DISK_SPACE_LIMIT);
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
@@ -535,8 +513,6 @@ public class InternalDistributedSystemJUnitTest
   public void testGetLogFileSizeLimit() {
     String value = String.valueOf(DistributionConfig.MIN_LOG_FILE_SIZE_LIMIT);
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
@@ -562,8 +538,6 @@ public class InternalDistributedSystemJUnitTest
   public void testAccessingClosedDistributedSystem() {
     Properties props = new Properties();
 
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
@@ -659,8 +633,6 @@ public class InternalDistributedSystemJUnitTest
     Level level = Level.FINE;
 
     Properties props = new Properties();
-//     int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-//     props.setProperty("mcast-port", String.valueOf(unusedPort));
     // a loner is all this test needs
     props.setProperty("mcast-port", "0");
     props.setProperty("locators", "");
@@ -684,7 +656,7 @@ public class InternalDistributedSystemJUnitTest
     Assert.assertTrue(locator.isPeerLocator());
 //    Assert.assertFalse(locator.isServerLocator()); server location is forced on while licensing is disabled in GemFire
 //    Assert.assertIndexDetailsEquals("127.0.0.1", locator.getBindAddress().getHostAddress());  removed this check for ipv6 testing
-    Assert.assertEquals(unusedPort, locator.getPort());
+    Assert.assertEquals(unusedPort, locator.getPort().intValue());
     deleteStateFile(unusedPort);
   }
 

@@ -105,6 +105,28 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
 
   }
 
+  public void testPeerLocationWithPortZero() throws Exception {
+    // Start the locator with port=0
+    int locPort = startLocator(locator, true, 0);
+    locatorMBeanExist(locator, locPort, true);
+
+    Host host = Host.getHost(0);
+    String host0 = getServerHostName(host);
+    Properties props = new Properties();
+    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.setProperty(DistributionConfig.LOCATORS_NAME, host0 + "[" + locPort
+        + "]");
+    props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
+    props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "false");
+    props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "0");
+    props.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
+    createCache(managingNode, props);
+    startManagingNode(managingNode);
+    DistributedMember locatorMember = getMember(locator);
+    remoteLocatorMBeanExist(managingNode,locatorMember);
+
+  }
+
   /**
    * Tests a locator which is co-located with already existing cache
    * 
@@ -118,10 +140,23 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
 
   }
 
+  public void testColocatedLocatorWithPortZero() throws Exception {
+    initManagement(false);
+    int locPort = startLocator(locator, false, 0);
+    locatorMBeanExist(locator, locPort, false);
+
+  }
+
   public void testListManagers() throws Exception {
     initManagement(false);
     int locPort = AvailablePortHelper.getRandomAvailableTCPPort();
     startLocator(locator, false, locPort);
+    listManagers(locator, locPort, false);
+  }
+
+  public void testListManagersWithPortZero() throws Exception {
+    initManagement(false);
+    int locPort = startLocator(locator, false, 0);
     listManagers(locator, locPort, false);
   }
 
@@ -144,6 +179,23 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     listWillingManagers(locator, locPort, false);
   }
 
+  public void testWillingManagersWithPortZero() throws Exception {
+    int locPort = startLocator(locator, true, 0);
+
+    Host host = Host.getHost(0);
+    String host0 = getServerHostName(host);
+
+    Properties props = new Properties();
+    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.setProperty(DistributionConfig.LOCATORS_NAME, host0 + "[" + locPort
+        + "]");
+    props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
+
+    createCache(managedNode2, props);
+    createCache(managedNode3, props);
+
+    listWillingManagers(locator, locPort, false);
+  }
 
   /**
    * Starts a locator with given configuration.
@@ -152,10 +204,9 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
    * @param vm
    *          reference to VM
    */
-  protected String startLocator(final VM vm, final boolean isPeer,
-      final int port) {
+  protected Integer startLocator(final VM vm, final boolean isPeer, final int port) {
 
-    return (String) vm.invoke(new SerializableCallable("Start Locator In VM") {
+    return (Integer) vm.invoke(new SerializableCallable("Start Locator In VM") {
 
       public Object call() throws Exception {
 
@@ -174,16 +225,16 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
           Assert.fail("While resolving bind address ", uhe);
         }
 
+        Locator locator = null;
         try {
           File logFile = new File(getTestMethodName() + "-locator" + port + ".log");
-          Locator locator = Locator.startLocatorAndDS(port, logFile, bindAddr,
-              props, isPeer, true, null);
+          locator = Locator.startLocatorAndDS(port, logFile, bindAddr, props, isPeer, true, null);
         } catch (IOException ex) {
           Assert.fail("While starting locator on port " + port, ex);
         }
 
         assertTrue(InternalLocator.hasLocator());
-        return null;
+        return locator.getPort();
       }
     });
   }

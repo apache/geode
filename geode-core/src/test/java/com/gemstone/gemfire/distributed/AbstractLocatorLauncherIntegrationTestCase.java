@@ -16,7 +16,10 @@
  */
 package com.gemstone.gemfire.distributed;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.Callable;
+import java.util.function.IntSupplier;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,13 +33,26 @@ import com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.DistributionLocator;
+import org.junit.runners.Parameterized;
 
 /**
  * @since 8.0
  */
 public abstract class AbstractLocatorLauncherIntegrationTestCase extends AbstractLauncherIntegrationTestCase {
 
+  @Parameterized.Parameters
+  public static Collection<Object> data() {
+    return Arrays.asList(new Object[] {
+        (IntSupplier) () -> 0,
+        (IntSupplier) () -> AvailablePortHelper.getRandomAvailableTCPPort()
+    });
+  }
+
+  @Parameterized.Parameter
+  public IntSupplier portSupplier;
+
   protected volatile int locatorPort;
+
   protected volatile LocatorLauncher launcher;
   protected volatile String workingDirectory;
   protected volatile String clusterConfigDirectory;
@@ -49,9 +65,8 @@ public abstract class AbstractLocatorLauncherIntegrationTestCase extends Abstrac
 
   @Before
   public final void setUpAbstractLocatorLauncherIntegrationTestCase() throws Exception {
-    final int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    System.setProperty(DistributionLocator.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, String.valueOf(port));
-    this.locatorPort = port;
+    this.locatorPort = portSupplier.getAsInt();
+    System.setProperty(DistributionLocator.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, String.valueOf(this.locatorPort));
     this.workingDirectory = this.temporaryFolder.getRoot().getCanonicalPath();
     this.clusterConfigDirectory = this.temporaryFolder.newFolder(SharedConfiguration.CLUSTER_CONFIG_DISK_DIR_PREFIX + getUniqueName()).getCanonicalPath();
   }

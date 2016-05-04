@@ -408,6 +408,10 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
    * @return an Integer value indicating the port number on which the Locator is listening for client requests.
    */
   public Integer getPort() {
+    if (locator != null) {
+      return locator.getPort();
+    }
+
     return this.port;
   }
 

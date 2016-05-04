@@ -73,9 +73,6 @@ public abstract class Locator {
   /** The file to which this locator logs */
   protected File logFile;
 
-  /** The port on which this locator listens */
-  protected int port;
-
   /** The bind address for this locator */
   protected InetAddress bindAddress;
 
@@ -423,9 +420,7 @@ public abstract class Locator {
   /**
    * Returns the port on which this locator runs
    */
-  public int getPort() {
-    return this.port;
-  }
+  public abstract Integer getPort();
 
   /**
    * Returns the distributed system started by this locator, if any
@@ -504,7 +499,7 @@ public abstract class Locator {
       }
     }
     StringBuilder locatorString = new StringBuilder(String.valueOf(ba));
-    locatorString.append('[').append(this.port).append(']');
+    locatorString.append('[').append(this.getPort()).append(']');
     return locatorString.toString();
   }
 

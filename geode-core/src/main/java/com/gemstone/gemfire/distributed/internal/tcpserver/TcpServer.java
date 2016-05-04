@@ -182,31 +182,22 @@ public class TcpServer {
   
   public void start() throws IOException {
     this.shuttingDown = false;
-    handler.init(this);
     startServerThread();
+    handler.init(this);
   }
   
   private void startServerThread() throws IOException {
     if (srv_sock == null || srv_sock.isClosed()) {
       if (bind_address == null) {
-        srv_sock = SocketCreator.getDefaultInstance().createServerSocket(port,
-            BACKLOG);
-        // srv_sock=new ServerSocket(port, 20); // backlog of 20 connections
+        srv_sock = SocketCreator.getDefaultInstance().createServerSocket(port, BACKLOG);
         bind_address = srv_sock.getInetAddress();
-      } else
-        srv_sock = SocketCreator.getDefaultInstance().createServerSocket(port,
-            BACKLOG, bind_address);
+      } else {
+        srv_sock = SocketCreator.getDefaultInstance().createServerSocket(port, BACKLOG, bind_address);
+      }
 
-        // TODO:GEODE-1243: srv_Sock now has a real port even though this.port is still zero -- update it or use a second var
-
-      // srv_sock=new ServerSocket(port, 20, bind_address); // backlog of 20
-      // connections
-      {
-        if (log.isInfoEnabled())
-          log.info("Locator was created at " + new Date());
-        if (log.isInfoEnabled())
-          log.info("Listening on port " + port + " bound on address "
-              + bind_address);
+      if (log.isInfoEnabled()) {
+        log.info("Locator was created at " + new Date());
+        log.info("Listening on port " + getPort() + " bound on address " + bind_address);
       }
       srv_sock.setReuseAddress(true); // GemStoneAddition
     }
@@ -245,6 +236,20 @@ public class TcpServer {
   
   public SocketAddress getBindAddress() {
     return srv_sock.getLocalSocketAddress(); 
+  }
+
+  /**
+   * Returns the value of the bound port. If the server was initialized with a port of 0 indicating that any
+   * ephemeral port should be used, this method will return the actual bound port.
+   *
+   * @return the port bound to this socket or 0 if the socket is closed or otherwise not connected
+   */
+  public int getPort() {
+    if (srv_sock != null && !srv_sock.isClosed()) {
+      return srv_sock.getLocalPort();
+    }
+
+    return 0;
   }
 
   protected void run() {

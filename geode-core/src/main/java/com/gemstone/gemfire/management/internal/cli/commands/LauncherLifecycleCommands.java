@@ -432,7 +432,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
         infoResultData.addLine(locatorState.toString());
 
         String locatorHostName = StringUtils.defaultIfBlank(locatorLauncher.getHostnameForClients(), getLocalHost());
-        int locatorPort = locatorLauncher.getPort();
+        int locatorPort = Integer.parseInt(locatorState.getPort());
 
         // AUTO-CONNECT
         // If the connect succeeds add the connected message to the result,
