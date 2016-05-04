@@ -131,7 +131,40 @@ sourceSets {
     output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
   }
 }
- 
+
+ext.readScmInfo = {
+  try {
+    def git = org.ajoberstar.grgit.Grgit.open(currentDir: projectDir)
+    try {
+      return [
+        'Source-Repository': git.branch.getCurrent().name,
+        'Source-Revision'  : git.head().id,
+        'Source-Date'      : git.head().getDate().format('yyyy-MM-dd HH:mm:ss Z')
+      ] as Properties
+    } finally {
+      git.close()
+    }
+  } catch (IllegalArgumentException e) {
+    // if we're building from the source distribution, we don't have git so
+    // use cached info written during the assembly process
+    def buildInfo = file "$rootDir/.buildinfo"
+    if (buildInfo.exists()) {
+      def props = new Properties()
+      new FileInputStream(buildInfo).withStream { fis ->
+        props.load(fis)
+      }
+      return props
+    }
+
+    logger.warn( '***** Unable to find Git workspace. Using default version information *****' )
+    return [
+      'Source-Repository': 'UNKNOWN',
+      'Source-Revision'  : 'UNKNOWN',
+      'Source-Date'      : new Date().format('yyyy-MM-dd HH:mm:ss Z')
+    ] as Properties
+  }
+}
+
 // Creates the version properties file and writes it to the classes dir
 task createVersionPropertiesFile {
   def propertiesFile = file(generatedResources + "/com/gemstone/gemfire/internal/GemFireVersion.properties");
@@ -139,38 +172,15 @@ task createVersionPropertiesFile {
   inputs.dir compileJava.destinationDir
 
   doLast {
-
-    try {
-      def grgit = org.ajoberstar.grgit.Grgit.open(currentDir: projectDir)
-      ext.branch = grgit.branch.getCurrent().name
-      ext.commitId = grgit.head().id
-      ext.sourceDate = grgit.head().getDate().format('yyyy-MM-dd HH:mm:ss Z')
-      grgit.close()
-    } catch (Exception e) {
-      logger.warn( '***** Unable to find Git workspace. Using default version information *****' )
-      ext.branch = 'UNKNOWN'
-      ext.commitId = 'UNKNOWN'
-      ext.sourceDate = new Date().format('yyyy-MM-dd HH:mm:ss Z')
-    }
-
-    ext.osArch = System.getProperty('os.arch')
-    ext.osName = System.getProperty('os.name')
-    ext.osVersion = System.getProperty('os.version')
-    ext.buildDate = new Date().format('yyyy-MM-dd HH:mm:ss Z')
-    ext.buildNumber = new Date().format('MMddyy')
-    ext.jdkVersion = System.getProperty('java.version')
-
     def props = [
       "Product-Name"      : "Apache Geode (incubating)",
       "Product-Version"   : version,
-      "Build-Id"          : System.env.USER + ' ' + ext.buildNumber,
-      "Build-Date"        : ext.buildDate,
-      "Build-Platform"    : ext.osName + ' ' + ext.osVersion + ' ' + ext.osArch,
-      "Build-Java-Version": ext.jdkVersion,
-      "Source-Date"       : ext.sourceDate,
-      "Source-Revision"   : ext.commitId,
-      "Source-Repository" : ext.branch
+      "Build-Id"          : "${System.env.USER} ${new Date().format('MMddyy')}".toString(),
+      "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
+      "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
+      "Build-Java-Version": System.properties['java.version']
     ] as Properties
+    props.putAll(readScmInfo())
 
     propertiesFile.getParentFile().mkdirs();
     new FileOutputStream(propertiesFile).withStream { fos ->

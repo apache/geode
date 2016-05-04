@@ -227,6 +227,17 @@ task docs(type: Javadoc) {
    }
 }
 
+task writeBuildInfo {
+  def buildInfo = file "$buildDir/.buildinfo"
+  outputs.file buildInfo
+  doLast {
+    buildInfo.getParentFile().mkdirs();
+    new FileOutputStream(buildInfo).withStream { fos ->
+      project(':geode-core').readScmInfo().store(fos, '')
+    }
+  }
+}
+
 gradle.taskGraph.whenReady( { graph ->
   tasks.withType(AbstractArchiveTask).findAll {
     it.name.toLowerCase().contains("dist")
@@ -242,6 +253,7 @@ distributions {
   src {
     baseName = 'apache-geode-src'
     contents {
+      from writeBuildInfo
       from (rootDir) {
         exclude 'KEYS'
         exclude 'gradlew'
