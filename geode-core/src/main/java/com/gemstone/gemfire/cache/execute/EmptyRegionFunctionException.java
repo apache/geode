@@ -24,7 +24,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * @since 6.5
  * 
  */
-public class EmtpyRegionFunctionException extends FunctionException {
+public class EmptyRegionFunctionException extends FunctionException {
 
   private static final long serialVersionUID = 1L;
 
@@ -34,7 +34,7 @@ public class EmtpyRegionFunctionException extends FunctionException {
    * @param cause
    *                a Throwable cause of this exception
    */
-  public EmtpyRegionFunctionException(Throwable cause) {
+  public EmptyRegionFunctionException(Throwable cause) {
     super(cause);
   }
 
@@ -44,7 +44,7 @@ public class EmtpyRegionFunctionException extends FunctionException {
    * @param msg
    *                Exception message
    */
-  public EmtpyRegionFunctionException(String msg) {
+  public EmptyRegionFunctionException(String msg) {
     super(msg);
   }
 
@@ -56,7 +56,7 @@ public class EmtpyRegionFunctionException extends FunctionException {
    * @param cause
    *                a Throwable cause of this exception
    */
-  public EmtpyRegionFunctionException(String msg, Throwable cause) {
+  public EmptyRegionFunctionException(String msg, Throwable cause) {
     super(msg, cause);
   }
 
