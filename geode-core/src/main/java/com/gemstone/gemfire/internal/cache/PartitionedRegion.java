@@ -92,7 +92,7 @@ import com.gemstone.gemfire.cache.TransactionDataNotColocatedException;
 import com.gemstone.gemfire.cache.TransactionDataRebalancedException;
 import com.gemstone.gemfire.cache.TransactionException;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import com.gemstone.gemfire.cache.execute.EmptyRegionFunctionException;
+import com.gemstone.gemfire.cache.execute.EmtpyRegionFunctionException;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionException;
@@ -3879,7 +3879,7 @@ public class PartitionedRegion extends LocalRegion implements
         logger.debug("Executing on bucketset : {} executeOnBucketSet Member to buckets map is : {} bucketSet is empty",
             bucketSet, memberToBuckets);
       }
-      throw new EmptyRegionFunctionException(
+      throw new EmtpyRegionFunctionException(
           LocalizedStrings.PartitionedRegion_FUNCTION_NOT_EXECUTED_AS_REGION_IS_EMPTY
               .toLocalizedString());
     }
@@ -4023,7 +4023,7 @@ public class PartitionedRegion extends LocalRegion implements
         .groupByMemberToBuckets(this, bucketSet, function.optimizeForWrite());
 
     if (memberToBuckets.isEmpty()) {
-      throw new EmptyRegionFunctionException(LocalizedStrings.PartitionedRegion_FUNCTION_NOT_EXECUTED_AS_REGION_IS_EMPTY.toLocalizedString()
+      throw new EmtpyRegionFunctionException(LocalizedStrings.PartitionedRegion_FUNCTION_NOT_EXECUTED_AS_REGION_IS_EMPTY.toLocalizedString()
           );
     }
     

@@ -90,8 +90,10 @@ public class BasicI18nJUnitTest extends TestCase {
   private Set<String> getStringIdDefiningClasses() {
     final Set<String> StringIdDefiningClasses = new LinkedHashSet<String>();
     final String pkg = "com.gemstone.gemfire.internal.i18n.";
-//    StringIdDefiningClasses.add(pkg + "ParentLocalizedStrings");
+    StringIdDefiningClasses.add(pkg + "ParentLocalizedStrings");
     StringIdDefiningClasses.add(pkg + "LocalizedStrings");
+    // JGroupsStrings are no longer localizable
+//    StringIdDefiningClasses.add(pkg + "JGroupsStrings");
     StringIdDefiningClasses.add("com.gemstone.gemfire.management.internal.ManagementStrings");
     return StringIdDefiningClasses;
   }

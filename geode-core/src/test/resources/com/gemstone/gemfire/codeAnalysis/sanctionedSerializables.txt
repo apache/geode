@@ -124,7 +124,7 @@ com/gemstone/gemfire/cache/client/SubscriptionNotEnabledException,true,-82124467
 com/gemstone/gemfire/cache/client/internal/ContainsKeyOp$MODE,false
 com/gemstone/gemfire/cache/client/internal/TXSynchronizationOp$CompletionType,false
 com/gemstone/gemfire/cache/client/internal/pooling/ConnectionDestroyedException,true,-6918516787578041316
-com/gemstone/gemfire/cache/execute/EmptyRegionFunctionException,true,1
+com/gemstone/gemfire/cache/execute/EmtpyRegionFunctionException,true,1
 com/gemstone/gemfire/cache/execute/FunctionAdapter,false
 com/gemstone/gemfire/cache/execute/FunctionException,true,4893171227542647452
 com/gemstone/gemfire/cache/execute/FunctionInvocationTargetException,true,1,id:com/gemstone/gemfire/distributed/DistributedMember

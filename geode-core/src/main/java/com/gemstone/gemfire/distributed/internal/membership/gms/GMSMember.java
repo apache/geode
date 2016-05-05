@@ -399,16 +399,8 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     Version.writeOrdinal(out, this.versionOrdinal, true);
     
     int flags = 0;
-<<<<<<< Updated upstream
     if (networkPartitionDetectionEnabled) flags |= NPD_ENABLED_BIT;
     if (preferredForCoordinator) flags |= PREFERRED_FOR_COORD_BIT;
-||||||| merged common ancestors
-    if (splitBrainEnabled) flags |= SB_ENABLED;
-    if (preferredForCoordinator) flags |= PREFERRED_FOR_COORD;
-=======
-    if (networkPartitionDetectionEnabled) flags |= SB_ENABLED;
-    if (preferredForCoordinator) flags |= PREFERRED_FOR_COORD;
->>>>>>> Stashed changes
     out.writeShort(flags);
 
     DataSerializer.writeInetAddress(inetAddr, out);
@@ -429,16 +421,8 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.versionOrdinal = Version.readOrdinal(in);
     
     int flags = in.readShort();
-<<<<<<< Updated upstream
     this.networkPartitionDetectionEnabled = (flags & NPD_ENABLED_BIT) != 0;
     this.preferredForCoordinator = (flags & PREFERRED_FOR_COORD_BIT) != 0;
-||||||| merged common ancestors
-    this.splitBrainEnabled = (flags & SB_ENABLED) != 0;
-    this.preferredForCoordinator = (flags & PREFERRED_FOR_COORD) != 0;
-=======
-    this.networkPartitionDetectionEnabled = (flags & SB_ENABLED) != 0;
-    this.preferredForCoordinator = (flags & PREFERRED_FOR_COORD) != 0;
->>>>>>> Stashed changes
     
     this.inetAddr = DataSerializer.readInetAddress(in);
     this.udpPort = in.readInt();
