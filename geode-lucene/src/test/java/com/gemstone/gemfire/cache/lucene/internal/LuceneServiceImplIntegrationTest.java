@@ -61,10 +61,11 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
-public class LuceneServiceImplJUnitTest {
+@Category(IntegrationTest.class)
+public class LuceneServiceImplIntegrationTest {
 
   Cache cache;
   ClientCache clientCache;

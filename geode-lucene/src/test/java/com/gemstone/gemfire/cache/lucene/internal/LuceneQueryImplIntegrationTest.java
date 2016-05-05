@@ -46,7 +46,7 @@ import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollecto
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class LuceneQueryImplJUnitTest {
+public class LuceneQueryImplIntegrationTest {
   private static int LIMIT = 123;
   private Cache cache;
   private Region<Object, Object> region;
