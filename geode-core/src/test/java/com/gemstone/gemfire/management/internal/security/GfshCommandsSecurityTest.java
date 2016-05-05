@@ -19,8 +19,6 @@ package com.gemstone.gemfire.management.internal.security;
 
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import com.gemstone.gemfire.internal.AvailablePortHelper;
@@ -38,11 +36,8 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 @Category(IntegrationTest.class)
-@RunWith(Parameterized.class)
 public class GfshCommandsSecurityTest {
   private static int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
   private static int jmxPort = ports[0];
@@ -57,16 +52,8 @@ public class GfshCommandsSecurityTest {
   @Rule
   public GfshShellConnectionRule gfshConnection = null;
 
-  public GfshCommandsSecurityTest(boolean useHttp){
-    gfshConnection = new GfshShellConnectionRule(jmxPort, httpPort, useHttp);
-  }
-
-  @Parameterized.Parameters
-  public static Collection parameters() {
-    return Arrays.asList(new Object[][] {
-        { false},  // useHttp=false,
-        { true } // useHttp=true,
-    });
+  public GfshCommandsSecurityTest(){
+    gfshConnection = new GfshShellConnectionRule(jmxPort, httpPort, false);
   }
 
   @Before

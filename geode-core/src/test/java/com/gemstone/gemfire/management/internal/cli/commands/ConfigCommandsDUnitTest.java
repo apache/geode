@@ -57,11 +57,10 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 /**
  * Dunit class for testing GemFire config commands : export config
@@ -69,7 +68,6 @@ import org.junit.runners.Parameterized;
  * @since 7.0
  */
 @Category(DistributedTest.class)
-@RunWith(Parameterized.class)
 @SuppressWarnings("serial")
 public class ConfigCommandsDUnitTest extends CliCommandTestBase {
 
@@ -83,10 +81,6 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
   File shellPropsFile = new File("Shell-gf.properties");
   File subDir = new File("ConfigCommandsDUnitTestSubDir");
   File subManagerConfigFile = new File(subDir, managerConfigFile.getName());
-
-  public ConfigCommandsDUnitTest(boolean useHttpOnConnect) {
-    super(useHttpOnConnect);
-  }
 
   @Override
   protected void preTearDownCliCommandTestBase() throws Exception {

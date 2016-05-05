@@ -32,23 +32,17 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 /***
  * DUnit test for 'show stack-trace' command
  */
 @Category(DistributedTest.class)
-@RunWith(Parameterized.class)
 public class ShowStackTraceDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
-
-  public ShowStackTraceDUnitTest(boolean useHttpOnConnect) {
-    super(useHttpOnConnect);
-  }
 
   private void createCache(Properties props) {
     getSystem(props);

@@ -33,10 +33,9 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 /**
  * Unit tests for configuring user commands.
@@ -44,7 +43,6 @@ import org.junit.runners.Parameterized;
  * @since 8.0
  */
 @Category(DistributedTest.class)
-@RunWith(Parameterized.class)
 public class UserCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -53,10 +51,6 @@ public class UserCommandsDUnitTest extends CliCommandTestBase {
       "ext");
   final File jarFile = new File(this.jarDirectory, "UserCommandsDUnit.jar");
   boolean deleteJarDirectory = false;
-
-  public UserCommandsDUnitTest(boolean useHttpOnConnect) {
-    super(useHttpOnConnect);
-  }
 
   @Override
   public final void postSetUp() throws Exception {

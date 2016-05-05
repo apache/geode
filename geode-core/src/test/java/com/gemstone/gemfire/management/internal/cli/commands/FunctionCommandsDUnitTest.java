@@ -44,26 +44,20 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 /**
  * Dunit class for testing gemfire function commands : execute function, destroy function, list function
  */
 @Category(DistributedTest.class)
-@RunWith(Parameterized.class)
 public class FunctionCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
   private static final String REGION_NAME = "FunctionCommandsReplicatedRegion";
   private static final String REGION_ONE = "RegionOne";
   private static final String REGION_TWO = "RegionTwo";
-
-  public FunctionCommandsDUnitTest(boolean useHttpOnConnect){
-    super(useHttpOnConnect);
-  }
 
   void setupWith2Regions() {
     final VM vm1 = Host.getHost(0).getVM(1);

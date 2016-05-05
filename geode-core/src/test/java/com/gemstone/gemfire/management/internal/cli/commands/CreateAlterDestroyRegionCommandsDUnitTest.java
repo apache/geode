@@ -72,7 +72,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 @Category(DistributedTest.class)
-@RunWith(Parameterized.class)
 public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -91,11 +90,6 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
   String alterVm2Name;
 
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
-
-  public CreateAlterDestroyRegionCommandsDUnitTest(boolean useHttpOnConnect){
-    super(useHttpOnConnect);
-  }
-
   /**
    * Asserts that the "compressor" option for the "create region" command succeeds for a recognized compressor.
    */

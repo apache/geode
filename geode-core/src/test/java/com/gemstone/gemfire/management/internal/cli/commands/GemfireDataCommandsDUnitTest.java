@@ -89,7 +89,6 @@ import org.junit.runners.Parameterized;
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-@RunWith(Parameterized.class)
 public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -121,10 +120,6 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
   private static final String carTemplate = "\"('attributes':?map,'make':'?make','model':'?model','colors':?list,'attributeSet':?set)\"";
 
   final static int COUNT = 5;
-
-  public GemfireDataCommandsDUnitTest(boolean useHttpOnConnect){
-    super(useHttpOnConnect);
-  }
 
   public String getMemberId() {
     Cache cache = getCache();

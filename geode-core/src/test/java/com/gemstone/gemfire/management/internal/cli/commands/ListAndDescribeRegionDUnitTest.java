@@ -50,7 +50,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 @Category(DistributedTest.class)
-@RunWith(Parameterized.class)
 public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
 
   private static final String REGION1 = "region1";
@@ -61,10 +60,6 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
   private static final String SUBREGION1C = "subregion1C";
   private static final String PR1 = "PR1";
   private static final String LOCALREGIONONMANAGER = "LocalRegionOnManager";
-
-  public ListAndDescribeRegionDUnitTest(boolean useHttpOnConnect) {
-    super(useHttpOnConnect);
-  }
 
   static class CacheListener2 extends CacheListenerAdapter {
   }

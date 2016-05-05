@@ -38,24 +38,18 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Dunit class for testing gemfire function commands : export logs
  */
 @Category(DistributedTest.class)
-@RunWith(Parameterized.class)
 public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
-
-  public MiscellaneousCommandsExportLogsPart3DUnitTest(boolean useHttpOnConnect) {
-    super(useHttpOnConnect);
-  }
 
   public String getMemberId() {
     Cache cache = getCache();

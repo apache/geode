@@ -83,14 +83,9 @@ import org.junit.runners.Parameterized;
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-@RunWith(Parameterized.class)
 public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
-
-  public DiskStoreCommandsDUnitTest(boolean useHttpOnConnect){
-    super(useHttpOnConnect);
-  }
 
   @Test
   public void testMissingDiskStore() {

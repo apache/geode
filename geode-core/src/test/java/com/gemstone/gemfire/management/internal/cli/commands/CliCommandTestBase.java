@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -44,8 +42,6 @@ import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-
-import org.junit.runners.Parameterized;
 
 /**
  * Base class for all the CLI/gfsh command dunit tests.
@@ -68,23 +64,6 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
   protected int jmxPort;
 
   protected String jmxHost;
-
-  public CliCommandTestBase(){
-    this(false);
-  }
-
-  // Junit will use the parameters to initialize the test class and run the tests with different parameters
-  public CliCommandTestBase(boolean useHttpOnConnect){
-    this.useHttpOnConnect = useHttpOnConnect;
-  }
-
-  @Parameterized.Parameters
-  public static Collection parameters() {
-    return Arrays.asList(new Object[][] {
-        { false},  // useHttpOnConnect=false,
-        { true } // useHttpOnConnect=true,
-    });
-  }
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {

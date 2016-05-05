@@ -51,20 +51,14 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 @Category(DistributedTest.class)
-@RunWith(Parameterized.class)
 public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
-
-  public ShowMetricsDUnitTest(boolean useHttpOnConnect) {
-    super(useHttpOnConnect);
-  }
 
   private void createLocalSetUp() {
     Properties localProps = new Properties();

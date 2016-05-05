@@ -52,25 +52,19 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 /**
  * Dunit class for testing gemfire function commands : GC, Shutdown
  */
 @Category(DistributedTest.class)
-@RunWith(Parameterized.class)
 public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
   private static String cachedLogLevel;
-
-  public MiscellaneousCommandsDUnitTest(boolean useHttpOnConnect) {
-    super(useHttpOnConnect);
-  }
 
   @Override
   protected final void preTearDownCliCommandTestBase() throws Exception {

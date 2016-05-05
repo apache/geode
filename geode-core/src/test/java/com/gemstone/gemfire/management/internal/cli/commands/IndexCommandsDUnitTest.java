@@ -51,13 +51,11 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 @Category(DistributedTest.class)
-@RunWith(Parameterized.class)
 public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -66,10 +64,6 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
   private static final String indexName = "Id1";
   private static final String parRegPersName = "ParRegPers";
   private static final String repRegPersName = "RepRegPer";
-
-  public IndexCommandsDUnitTest(boolean useHttpOnConnect) {
-    super(useHttpOnConnect);
-  }
 
   Region<?, ?> createParReg(String regionName, Cache cache, Class keyConstraint, Class valueConstraint) {
     RegionFactory regionFactory = cache.createRegionFactory();

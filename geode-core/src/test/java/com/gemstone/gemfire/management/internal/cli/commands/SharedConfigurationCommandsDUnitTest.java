@@ -51,18 +51,16 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 /***
  * DUnit test to test export and import of shared configuration.
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("unchecked")
-@RunWith(Parameterized.class)
 public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -71,10 +69,6 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
 
   File newDeployableJarFile = new File("DeployCommandsDUnit1.jar");
   private transient ClassBuilder classBuilder = new ClassBuilder();
-
-  public SharedConfigurationCommandsDUnitTest(boolean useHttpOnConnect) {
-    super(useHttpOnConnect);
-  }
 
   @Test
   public void testExportImportSharedConfiguration() {

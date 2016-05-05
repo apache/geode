@@ -44,10 +44,9 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 /**
  * Unit tests for the DeployCommands class
@@ -56,17 +55,12 @@ import org.junit.runners.Parameterized;
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-@RunWith(Parameterized.class)
 public class DeployCommandsDUnitTest extends CliCommandTestBase {
 
   File newDeployableJarFile = new File("DeployCommandsDUnit1.jar");
 
   transient private ClassBuilder classBuilder = new ClassBuilder();
   transient private CommandProcessor commandProcessor;
-
-  public DeployCommandsDUnitTest(boolean useHttpOnConnect){
-    super(useHttpOnConnect);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
