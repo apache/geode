@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
 import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
@@ -41,12 +42,14 @@ import com.gemstone.gemfire.internal.util.StopWatch;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Extracted from LocatorLauncherLocalIntegrationTest.
  * 
  * @since 8.0
  */
+@Category(DistributedTest.class)
 public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
 
   protected static final int TIMEOUT_MILLISECONDS = 5 * 60 * 1000; // 5 minutes

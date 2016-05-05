@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -45,6 +46,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Unit tests for the DeployCommands class
@@ -52,6 +54,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * @since 7.0
  */
 @SuppressWarnings("serial")
+@Category(DistributedTest.class)
 public class DeployCommandsDUnitTest extends CliCommandTestBase {
 
   private final Pattern pattern = Pattern.compile("^" + JarDeployer.JAR_PREFIX + "DeployCommandsDUnit.*#\\d++$");
