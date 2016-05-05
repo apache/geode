@@ -29,7 +29,7 @@ public class EmptyRegionFunctionException extends FunctionException {
   private static final long serialVersionUID = 1L;
 
   /**
-   * Construct an instance of EmtpyRegionFunctionException
+   * Construct an instance of EmptyRegionFunctionException
    * 
    * @param cause
    *                a Throwable cause of this exception
@@ -39,7 +39,7 @@ public class EmptyRegionFunctionException extends FunctionException {
   }
 
   /**
-   * Construct an instance of EmtpyRegionFunctionException
+   * Construct an instance of EmptyRegionFunctionException
    * 
    * @param msg
    *                Exception message
@@ -49,7 +49,7 @@ public class EmptyRegionFunctionException extends FunctionException {
   }
 
   /**
-   * Construct an instance of EmtpyRegionFunctionException
+   * Construct an instance of EmptyRegionFunctionException
    * 
    * @param msg
    *                the error message

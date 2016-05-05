@@ -863,9 +863,19 @@ public class InternalDistributedMember
     DataSerializer.writeString(this.hostName, out);
     
     int flags = 0;
+<<<<<<< Updated upstream
     if (netMbr.isNetworkPartitionDetectionEnabled()) flags |= NPD_ENABLED_BIT;
     if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_BIT;
     if (this.isPartial) flags |= PARTIAL_ID_BIT;
+||||||| merged common ancestors
+    if (netMbr.splitBrainEnabled()) flags |= SB_ENABLED_MASK;
+    if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_MASK;
+    if (this.isPartial) flags |= PARTIAL_ID_MASK;
+=======
+    if (netMbr.isNetworkPartitionDetectionEnabled()) flags |= SB_ENABLED_MASK;
+    if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_MASK;
+    if (this.isPartial) flags |= PARTIAL_ID_MASK;
+>>>>>>> Stashed changes
     // always write product version but enable reading from older versions
     // that do not have it
     flags |= VERSION_BIT;
@@ -955,9 +965,19 @@ public class InternalDistributedMember
     DataSerializer.writeString(this.hostName, out);
 
     int flags = 0;
+<<<<<<< Updated upstream
     if (netMbr.isNetworkPartitionDetectionEnabled()) flags |= NPD_ENABLED_BIT;
     if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_BIT;
     if (this.isPartial) flags |= PARTIAL_ID_BIT;
+||||||| merged common ancestors
+    if (netMbr.splitBrainEnabled()) flags |= SB_ENABLED_MASK;
+    if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_MASK;
+    if (this.isPartial) flags |= PARTIAL_ID_MASK;
+=======
+    if (netMbr.isNetworkPartitionDetectionEnabled()) flags |= SB_ENABLED_MASK;
+    if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_MASK;
+    if (this.isPartial) flags |= PARTIAL_ID_MASK;
+>>>>>>> Stashed changes
     // always write product version but enable reading from older versions
     // that do not have it
     flags |= VERSION_BIT;
@@ -997,9 +1017,19 @@ public class InternalDistributedMember
     DataSerializer.writeString(this.hostName, out);
 
     int flags = 0;
+<<<<<<< Updated upstream
     if (netMbr.isNetworkPartitionDetectionEnabled()) flags |= NPD_ENABLED_BIT;
     if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_BIT;
     if (this.isPartial) flags |= PARTIAL_ID_BIT;
+||||||| merged common ancestors
+    if (netMbr.splitBrainEnabled()) flags |= SB_ENABLED_MASK;
+    if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_MASK;
+    if (this.isPartial) flags |= PARTIAL_ID_MASK;
+=======
+    if (netMbr.isNetworkPartitionDetectionEnabled()) flags |= SB_ENABLED_MASK;
+    if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_MASK;
+    if (this.isPartial) flags |= PARTIAL_ID_MASK;
+>>>>>>> Stashed changes
     out.writeByte((byte)(flags & 0xff));
     
     out.writeInt(dcPort);
@@ -1170,9 +1200,19 @@ public class InternalDistributedMember
      out.writeInt(getPort());
 
      int flags = 0;
+<<<<<<< Updated upstream
      if (netMbr.isNetworkPartitionDetectionEnabled()) flags |= NPD_ENABLED_BIT;
      if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_BIT;
      flags |= PARTIAL_ID_BIT;
+||||||| merged common ancestors
+     if (netMbr.splitBrainEnabled()) flags |= SB_ENABLED_MASK;
+     if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_MASK;
+     flags |= PARTIAL_ID_MASK;
+=======
+     if (netMbr.isNetworkPartitionDetectionEnabled()) flags |= SB_ENABLED_MASK;
+     if (netMbr.preferredForCoordinator()) flags |= COORD_ENABLED_MASK;
+     flags |= PARTIAL_ID_MASK;
+>>>>>>> Stashed changes
      out.writeByte((byte)(flags & 0xff));
      
 //     out.writeInt(dcPort);

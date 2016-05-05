@@ -1505,11 +1505,22 @@ public class LocatorDUnitTest extends DistributedTestCase {
             host0 + "[" + port3 + "]";
         dsProps.setProperty("locators", newLocators);
 
+<<<<<<< Updated upstream
         final InternalDistributedMember currentCoordinator = GMSJoinLeaveTestHelper.getCurrentCoordinator();
         DistributedMember vm3ID = vm3.invoke(() -> GMSJoinLeaveTestHelper.getInternalDistributedSystem().getDM().getDistributionManagerId());
         assertTrue("View is " + system.getDM().getMembershipManager().getView() +
                 " and vm3's ID is " + vm3ID,
                 vm3.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
+||||||| merged common ancestors
+        assertTrue(vm3.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
+        //Given the start up order of servers, this server is the elder server
+        assertTrue(vm3.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
+=======
+        DistributedMember vm3ID = vm3.invoke(() -> GMSJoinLeaveTestHelper.getInternalDistributedSystem().getDM().getDistributionManagerId());
+        assertTrue("View is " + system.getDM().getMembershipManager().getView() +
+                " and vm3's ID is " + vm3ID,
+                vm3.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
+>>>>>>> Stashed changes
 
         startLocatorAsync(vm1, new Object[] { port2, dsProps });
         startLocatorAsync(vm2, new Object[] { port3, dsProps });
@@ -1517,11 +1528,16 @@ public class LocatorDUnitTest extends DistributedTestCase {
         waitCriterion = new WaitCriterion() {
           public boolean done() {
             try {
+<<<<<<< Updated upstream
               InternalDistributedMember c = GMSJoinLeaveTestHelper.getCurrentCoordinator();
               if (c.equals(currentCoordinator)) {
                 //now locator should be new coordinator
                 return false;
               }
+||||||| merged common ancestors
+=======
+              System.out.println("waiting for hosted locators to have 2 entries: " + system.getDM().getAllHostedLocators());
+>>>>>>> Stashed changes
               return system.getDM().getAllHostedLocators().size() == 2;
             } catch (Exception e) {
               e.printStackTrace();
@@ -1534,6 +1550,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
             return null;
           }
         };
+<<<<<<< Updated upstream
         Wait.waitForCriterion(waitCriterion, 30 * 1000, 1000, true);
         waitUntilLocatorBecomesCoordinator(vm1);
         waitUntilLocatorBecomesCoordinator(vm2);
@@ -1545,6 +1562,23 @@ public class LocatorDUnitTest extends DistributedTestCase {
         assertEquals(netviewId, (int) vm3.invoke("checking ViewID", () -> GMSJoinLeaveTestHelper.getViewId()));
         assertEquals(netviewId, (int) vm4.invoke("checking ViewID", () -> GMSJoinLeaveTestHelper.getViewId()));
         assertFalse(vm4.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.isViewCreator()));
+||||||| merged common ancestors
+        Wait.waitForCriterion(waitCriterion, 15 * 1000, 200, true);
+
+        int netviewId = vm1.invoke(() -> GMSJoinLeaveTestHelper.getViewId());
+        assertEquals(netviewId, (int) vm2.invoke(() -> GMSJoinLeaveTestHelper.getViewId()));
+        assertEquals(netviewId, (int) vm3.invoke(() -> GMSJoinLeaveTestHelper.getViewId()));
+        assertEquals(netviewId, (int) vm4.invoke(() -> GMSJoinLeaveTestHelper.getViewId()));
+        assertFalse(vm4.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
+=======
+        Wait.waitForCriterion(waitCriterion, 30 * 1000, 1000, true);
+
+        int netviewId = vm1.invoke(() -> GMSJoinLeaveTestHelper.getViewId());
+        assertEquals(netviewId, (int) vm2.invoke(() -> GMSJoinLeaveTestHelper.getViewId()));
+        assertEquals(netviewId, (int) vm3.invoke(() -> GMSJoinLeaveTestHelper.getViewId()));
+        assertEquals(netviewId, (int) vm4.invoke(() -> GMSJoinLeaveTestHelper.getViewId()));
+        assertFalse(vm4.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator()));
+>>>>>>> Stashed changes
         //Given the start up order of servers, this server is the elder server
         assertFalse(vm3.invoke("Checking ViewCreator", () -> GMSJoinLeaveTestHelper.isViewCreator()));
         if (vm1.invoke(() -> GMSJoinLeaveTestHelper.isViewCreator())) {
