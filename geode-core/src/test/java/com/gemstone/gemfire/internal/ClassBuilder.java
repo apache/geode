@@ -40,7 +40,7 @@ import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 
 /**
- * Test framework utility class to programatically create classes, JARs and ClassLoaders that include the classes.
+ * Test framework utility class to programmatically create classes, JARs and ClassLoaders that include the classes.
  * 
  * @since 7.0
  */

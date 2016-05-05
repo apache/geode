@@ -16,8 +16,8 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -25,6 +25,12 @@ import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.net.BindException;
 import java.net.InetAddress;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -46,12 +52,6 @@ import com.gemstone.gemfire.internal.process.ProcessType;
 import com.gemstone.gemfire.internal.process.ProcessUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 /**
  * Integration tests for ServerLauncher as a local API in the local JVM.
  *
@@ -63,7 +63,7 @@ import org.junit.experimental.categories.Category;
  * @since 8.0
  */
 @Category(IntegrationTest.class)
-public class ServerLauncherLocalJUnitTest extends AbstractServerLauncherJUnitTestCase {
+public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIntegrationTestCase {
   
   @Before
   public final void setUpServerLauncherLocalTest() throws Exception {

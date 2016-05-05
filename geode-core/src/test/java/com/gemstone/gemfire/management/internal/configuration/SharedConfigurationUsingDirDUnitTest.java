@@ -16,22 +16,12 @@
  */
 package com.gemstone.gemfire.management.internal.configuration;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import com.gemstone.gemfire.util.test.TestUtil;
-import com.jayway.awaitility.Awaitility;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
+import static com.gemstone.gemfire.internal.AvailablePortHelper.*;
+import static com.gemstone.gemfire.test.dunit.Host.*;
+import static com.jayway.awaitility.Awaitility.*;
+import static java.util.stream.Collectors.*;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,17 +33,27 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.stream.Collectors.joining;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 
 @Category(DistributedTest.class)
 public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
 
-  @After
-  public void teardown() throws Exception {
+  @Override
+  public final void preTearDownCacheTestCase() throws Exception {
     for (int i = 0; i < 2; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       vm.invoke("Removing shared configuration", () -> {
         InternalLocator locator = InternalLocator.getLocator();
         if (locator == null) {
@@ -62,7 +62,7 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
 
         SharedConfiguration sharedConfig = locator.getSharedConfiguration();
         if (sharedConfig != null) {
-          sharedConfig.destroySharedConfiguration();
+          sharedConfig.destroySharedConfiguration_forTestsOnly();
         }
       });
     }
@@ -70,44 +70,44 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void basicClusterConfigDirWithOneLocator() throws Exception {
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = getRandomAvailableTCPPorts(1);
     final int locatorCount = ports.length;
 
     for (int i = 0; i < locatorCount; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       copyClusterXml(vm, "cluster-region.xml");
       startLocator(vm, i, ports);
       waitForSharedConfiguration(vm);
     }
 
     for (int i = 2; i < 4; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region presence", () -> {
-        Awaitility.waitAtMost(15, TimeUnit.SECONDS).until(() -> getRootRegion("newReplicatedRegion") != null);
+        waitAtMost(15, TimeUnit.SECONDS).until(() -> getRootRegion("newReplicatedRegion") != null);
       });
     }
   }
 
   @Test
   public void basicClusterConfigDirWithTwoLocators() throws Exception {
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int[] ports = getRandomAvailableTCPPorts(2);
     final int locatorCount = ports.length;
 
     for (int i = 0; i < locatorCount; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       copyClusterXml(vm, "cluster-region.xml");
       startLocator(vm, i, ports);
       waitForSharedConfiguration(vm);
     }
 
     for (int i = 2; i < 4; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region presence", () -> {
-        Awaitility.waitAtMost(15, TimeUnit.SECONDS).until(() -> getRootRegion("newReplicatedRegion") != null);
+        waitAtMost(15, TimeUnit.SECONDS).until(() -> getRootRegion("newReplicatedRegion") != null);
       });
     }
   }
@@ -115,18 +115,18 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
   @Category(FlakyTest.class) // GEODE-1165: random ports, BindException, time sensitive, awaitility
   @Test
   public void updateClusterConfigDirWithTwoLocatorsNoRollingServerRestart() throws Exception {
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int[] ports = getRandomAvailableTCPPorts(2);
     final int locatorCount = ports.length;
 
     for (int i = 0; i < locatorCount; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       copyClusterXml(vm, "cluster-empty.xml");
       startLocator(vm, i, ports);
       waitForSharedConfiguration(vm);
     }
 
     for (int i = 2; i < 4; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region absence", () -> {
@@ -139,46 +139,46 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
     // Unless we start them asynchronously, the older one will want to wait for a new diskstore
     // to become available and will time out.
     for (int i = locatorCount; i > 0; i--) {
-      VM vm = Host.getHost(0).getVM(i - 1);
+      VM vm = getHost(0).getVM(i - 1);
       stopLocator(vm);
     }
 
     for (int i = 0; i < locatorCount; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       copyClusterXml(vm, "cluster-region.xml");
       startLocator(vm, i, ports);
       waitForSharedConfiguration(vm);
     }
 
     for (int i = 2; i < 4; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       vm.invoke(() -> disconnectFromDS());
     }
 
     for (int i = 2; i < 4; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region presence", () -> {
-        Awaitility.waitAtMost(15, TimeUnit.SECONDS).until(() -> getRootRegion("newReplicatedRegion") != null);
+        waitAtMost(15, TimeUnit.SECONDS).until(() -> getRootRegion("newReplicatedRegion") != null);
       });
     }
   }
 
   @Test
   public void updateClusterConfigDirWithTwoLocatorsAndRollingServerRestart() throws Exception {
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int[] ports = getRandomAvailableTCPPorts(2);
     final int locatorCount = ports.length;
 
     for (int i = 0; i < locatorCount; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       copyClusterXml(vm, "cluster-empty.xml");
       startLocator(vm, i, ports);
       waitForSharedConfiguration(vm);
     }
 
     for (int i = 2; i < 4; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region absence", () -> {
@@ -191,41 +191,41 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
     // Unless we start them asynchronously, the older one will want to wait for a new diskstore
     // to become available and will time out.
     for (int i = locatorCount; i > 0; i--) {
-      VM vm = Host.getHost(0).getVM(i - 1);
+      VM vm = getHost(0).getVM(i - 1);
       stopLocator(vm);
     }
 
     for (int i = 0; i < locatorCount; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       copyClusterXml(vm, "cluster-region.xml");
       startLocator(vm, i, ports);
       waitForSharedConfiguration(vm);
     }
 
     for (int i = 2; i < 4; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region presence", () -> {
-        Awaitility.waitAtMost(15, TimeUnit.SECONDS).until(() -> getRootRegion("newReplicatedRegion") != null);
+        waitAtMost(15, TimeUnit.SECONDS).until(() -> getRootRegion("newReplicatedRegion") != null);
       });
     }
   }
 
   @Test
   public void updateClusterConfigDirWithTwoLocatorsRollingRestartAndRollingServerRestart() throws Exception {
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int[] ports = getRandomAvailableTCPPorts(2);
     final int locatorCount = ports.length;
 
     for (int i = 0; i < locatorCount; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       copyClusterXml(vm, "cluster-empty.xml");
       startLocator(vm, i, ports);
       waitForSharedConfiguration(vm);
     }
 
     for (int i = 2; i < 4; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region absence", () -> {
@@ -236,7 +236,7 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
 
     // Roll the locators
     for (int i = locatorCount - 1; i >= 0; i--) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       stopLocator(vm);
       copyClusterXml(vm, "cluster-region.xml");
       startLocator(vm, i, ports);
@@ -245,11 +245,11 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
 
     // Roll the servers
     for (int i = 2; i < 4; i++) {
-      VM vm = Host.getHost(0).getVM(i);
+      VM vm = getHost(0).getVM(i);
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region presence", () -> {
-        Awaitility.waitAtMost(15, TimeUnit.SECONDS).until(() -> getRootRegion("newReplicatedRegion") != null);
+        waitAtMost(15, TimeUnit.SECONDS).until(() -> getRootRegion("newReplicatedRegion") != null);
       });
     }
   }
@@ -269,14 +269,14 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
       final String locatorName = "locator" + i;
       final File logFile = new File("locator-" + i + ".log");
       final Properties props = new Properties();
-      props.setProperty(DistributionConfig.NAME_NAME, locatorName);
-      props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
-      props.setProperty(DistributionConfig.LOAD_CLUSTER_CONFIG_FROM_DIR_NAME, "true");
+      props.setProperty(NAME_NAME, locatorName);
+      props.setProperty(MCAST_PORT_NAME, "0");
+      props.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+      props.setProperty(LOAD_CLUSTER_CONFIG_FROM_DIR_NAME, "true");
 
       if (locatorPorts.length > 1) {
         int otherLocatorPort = locatorPorts[(i + 1) % locatorPorts.length];
-        props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + otherLocatorPort + "]");
+        props.setProperty(LOCATORS_NAME, "localhost[" + otherLocatorPort + "]");
       }
 
       Locator.startLocatorAndDS(locatorPorts[i], logFile, props);
@@ -286,7 +286,7 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
   private void waitForSharedConfiguration(final VM vm) {
     vm.invoke("Waiting for shared configuration", () -> {
       final InternalLocator locator = InternalLocator.getLocator();
-      Awaitility.waitAtMost(15, TimeUnit.SECONDS).until(() -> {
+      waitAtMost(15, TimeUnit.SECONDS).until(() -> {
         return locator.isSharedConfigurationRunning();
       });
     });
@@ -306,12 +306,12 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
       disconnectFromDS();
 
       final Properties props = new Properties();
-      props.setProperty(DistributionConfig.NAME_NAME, "member" + i);
-      props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      props.setProperty(DistributionConfig.LOCATORS_NAME, getLocatorStr(locatorPorts));
-      props.setProperty(DistributionConfig.LOG_FILE_NAME, "server-" + i + ".log");
-      props.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
-      props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+      props.setProperty(NAME_NAME, "member" + i);
+      props.setProperty(MCAST_PORT_NAME, "0");
+      props.setProperty(LOCATORS_NAME, getLocatorStr(locatorPorts));
+      props.setProperty(LOG_FILE_NAME, "server-" + i + ".log");
+      props.setProperty(USE_CLUSTER_CONFIGURATION_NAME, "true");
+      props.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
 
       getSystem(props);
       getCache();

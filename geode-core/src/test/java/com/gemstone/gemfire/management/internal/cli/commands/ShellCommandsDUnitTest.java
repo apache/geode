@@ -46,7 +46,7 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
   private static final long serialVersionUID = 1L;
 
   @Override
-  public final void postSetUp() throws Exception {
+  public final void postSetUpCliCommandTestBase() throws Exception {
     getDefaultShell();
   }
 

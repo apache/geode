@@ -16,7 +16,9 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.Host.*;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
 import static com.gemstone.gemfire.test.dunit.Wait.*;
 
@@ -32,7 +34,6 @@ import com.gemstone.gemfire.cache.LoaderHelper;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.DistributedRegionMXBean;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.ManagerMXBean;
@@ -43,7 +44,6 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultData;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
@@ -56,7 +56,6 @@ import org.junit.experimental.categories.Category;
 /**
  * The GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest class is test suite of test cases testing the Gfsh
  * 'get' data command when a cache miss occurs on data in a Region with a CacheLoader defined.
- * <p>
  *
  * @see com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase
  * @see com.gemstone.gemfire.management.internal.cli.commands.DataCommands
@@ -71,26 +70,8 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
   private static final String GEMFIRE_LOG_LEVEL = System.getProperty("logLevel", "config");
   private static final String USERS_REGION_NAME = "Users";
 
-  protected static String getRegionPath(final String regionName) {
-    return (regionName.startsWith(Region.SEPARATOR) ? regionName : String.format("%1$s%2$s", Region.SEPARATOR,
-        regionName));
-  }
-
-  protected static String toString(final Result result) {
-    assert result != null : "The Result object from the command execution was null!";
-
-    StringBuilder buffer = new StringBuilder(System.getProperty("line.separator"));
-
-    while (result.hasNextLine()) {
-      buffer.append(result.nextLine());
-      buffer.append(System.getProperty("line.separator"));
-    }
-
-    return buffer.toString();
-  }
-
   @Override
-  public final void postSetUp() throws Exception {
+  public final void postSetUpCliCommandTestBase() throws Exception {
     Properties managerDistributedSystemProperties = createDistributedSystemProperties(GEMFIRE_MANAGER_NAME);
     HeadlessGfsh gfsh = setUpJmxManagerOnVm0ThenConnect(managerDistributedSystemProperties);
 
@@ -98,127 +79,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
     assertTrue(gfsh.isConnectedAndReady());
 
     setupGemFire();
-    verifyGemFireSetup(createPeer(Host.getHost(0).getVM(0), managerDistributedSystemProperties));
-  }
-
-  private void setupGemFire() throws Exception {
-    initializePeer(createPeer(Host.getHost(0).getVM(1), createDistributedSystemProperties(GEMFIRE_SERVER_NAME)));
-  }
-
-  protected Properties createDistributedSystemProperties(final String gemfireName) {
-    Properties distributedSystemProperties = new Properties();
-
-    distributedSystemProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME, GEMFIRE_LOG_LEVEL);
-    distributedSystemProperties.setProperty(DistributionConfig.NAME_NAME, gemfireName);
-
-    return distributedSystemProperties;
-  }
-
-  protected Peer createPeer(final VM vm, final Properties distributedSystemProperties) {
-    return new Peer(vm, distributedSystemProperties);
-  }
-
-  protected void initializePeer(final Peer peer) throws Exception {
-    peer.run(new SerializableRunnable(
-        String.format("Initializes the '%1$s' with the '%2$s' Region having a CacheLoader.", GEMFIRE_SERVER_NAME,
-            USERS_REGION_NAME)) {
-      @Override
-      public void run() {
-        // create the GemFire Distributed System with custom distribution configuration properties and settings
-        getSystem(peer.getConfiguration());
-
-        Cache cache = getCache();
-        RegionFactory<String, User> regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
-
-        regionFactory.setCacheLoader(new UserDataStoreCacheLoader());
-        regionFactory.setInitialCapacity(51);
-        regionFactory.setKeyConstraint(String.class);
-        regionFactory.setLoadFactor(0.75f);
-        regionFactory.setStatisticsEnabled(false);
-        regionFactory.setValueConstraint(User.class);
-
-        Region<String, User> users = regionFactory.create(USERS_REGION_NAME);
-
-        assertNotNull(users);
-        assertEquals("Users", users.getName());
-        assertEquals("/Users", users.getFullPath());
-        assertTrue(users.isEmpty());
-        assertNull(users.put("jonbloom", new User("jonbloom")));
-        assertFalse(users.isEmpty());
-        assertEquals(1, users.size());
-        assertEquals(new User("jonbloom"), users.get("jonbloom"));
-      }
-    });
-  }
-
-  private void verifyGemFireSetup(final Peer manager) throws Exception {
-    manager.run(new SerializableRunnable("Verifies the GemFire Cluster was properly configured and initialized!") {
-      @Override
-      public void run() {
-        final ManagementService managementService = ManagementService.getExistingManagementService(getCache());
-
-        WaitCriterion waitOnManagerCriterion = new WaitCriterion() {
-          @Override
-          public boolean done() {
-            ManagerMXBean managerBean = managementService.getManagerMXBean();
-            DistributedRegionMXBean usersRegionBean = managementService.getDistributedRegionMXBean(
-                getRegionPath(USERS_REGION_NAME));
-
-            return !(managerBean == null || usersRegionBean == null);
-          }
-
-          @Override
-          public String description() {
-            return String.format("Probing for the GemFire Manager '%1$s' and '%2$s' Region MXBeans...",
-                manager.getName(), USERS_REGION_NAME);
-          }
-        };
-
-        waitForCriterion(waitOnManagerCriterion, 30000, 2000, true);
-      }
-    });
-  }
-
-  protected void doHousekeeping() {
-    runCommand(CliStrings.LIST_MEMBER);
-
-    runCommand(new CommandStringBuilder(CliStrings.DESCRIBE_MEMBER).addOption(CliStrings.DESCRIBE_MEMBER__IDENTIFIER,
-        GEMFIRE_SERVER_NAME).toString());
-
-    runCommand(CliStrings.LIST_REGION);
-
-    runCommand(new CommandStringBuilder(CliStrings.DESCRIBE_REGION).addOption(CliStrings.DESCRIBE_REGION__NAME,
-        USERS_REGION_NAME).toString());
-  }
-
-  protected void log(final Result result) {
-    log("Result", toString(result));
-  }
-
-  protected void log(final String tag, final String message) {
-    //System.out.printf("%1$s (%2$s)%n", tag, message);
-    getLogWriter().info(String.format("%1$s (%2$s)%n", tag, message));
-  }
-
-  protected CommandResult runCommand(final String command) {
-    CommandResult result = executeCommand(command);
-
-    assertNotNull(result);
-    assertEquals(Result.Status.OK, result.getStatus());
-
-    log(result);
-
-    return result;
-  }
-
-  protected void assertResult(final boolean expectedResult, final CommandResult commandResult) {
-    if (ResultData.TYPE_COMPOSITE.equals(commandResult.getType())) {
-      boolean actualResult = (Boolean) ((CompositeResultData) commandResult.getResultData()).retrieveSectionByIndex(
-          0).retrieveObject("Result");
-      assertEquals(expectedResult, actualResult);
-    } else {
-      fail(String.format("Expected composite result data; but was '%1$s'!%n", commandResult.getType()));
-    }
+    verifyGemFireSetup(createPeer(getHost(0).getVM(0), managerDistributedSystemProperties));
   }
 
   @Test
@@ -261,7 +122,139 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
     assertResult(false, runCommand(command.toString()));
   }
 
-  protected static final class Peer implements Serializable {
+  private static String getRegionPath(final String regionName) {
+    return (regionName.startsWith(Region.SEPARATOR) ? regionName : String.format("%1$s%2$s", Region.SEPARATOR, regionName));
+  }
+
+  private static String toString(final Result result) {
+    assert result != null : "The Result object from the command execution was null!";
+
+    StringBuilder buffer = new StringBuilder(System.getProperty("line.separator"));
+
+    while (result.hasNextLine()) {
+      buffer.append(result.nextLine());
+      buffer.append(System.getProperty("line.separator"));
+    }
+
+    return buffer.toString();
+  }
+
+  private void setupGemFire() throws Exception {
+    initializePeer(createPeer(getHost(0).getVM(1), createDistributedSystemProperties(GEMFIRE_SERVER_NAME)));
+  }
+
+  private Properties createDistributedSystemProperties(final String gemfireName) {
+    Properties distributedSystemProperties = new Properties();
+
+    distributedSystemProperties.setProperty(LOG_LEVEL_NAME, GEMFIRE_LOG_LEVEL);
+    distributedSystemProperties.setProperty(NAME_NAME, gemfireName);
+
+    return distributedSystemProperties;
+  }
+
+  private Peer createPeer(final VM vm, final Properties distributedSystemProperties) {
+    return new Peer(vm, distributedSystemProperties);
+  }
+
+  private void initializePeer(final Peer peer) throws Exception {
+    peer.run(new SerializableRunnable(String.format("Initializes the '%1$s' with the '%2$s' Region having a CacheLoader.", GEMFIRE_SERVER_NAME, USERS_REGION_NAME)) {
+      @Override
+      public void run() {
+        // create the GemFire Distributed System with custom distribution configuration properties and settings
+        getSystem(peer.getConfiguration());
+
+        Cache cache = getCache();
+        RegionFactory<String, User> regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+
+        regionFactory.setCacheLoader(new UserDataStoreCacheLoader());
+        regionFactory.setInitialCapacity(51);
+        regionFactory.setKeyConstraint(String.class);
+        regionFactory.setLoadFactor(0.75f);
+        regionFactory.setStatisticsEnabled(false);
+        regionFactory.setValueConstraint(User.class);
+
+        Region<String, User> users = regionFactory.create(USERS_REGION_NAME);
+
+        assertNotNull(users);
+        assertEquals("Users", users.getName());
+        assertEquals("/Users", users.getFullPath());
+        assertTrue(users.isEmpty());
+        assertNull(users.put("jonbloom", new User("jonbloom")));
+        assertFalse(users.isEmpty());
+        assertEquals(1, users.size());
+        assertEquals(new User("jonbloom"), users.get("jonbloom"));
+      }
+    });
+  }
+
+  private void verifyGemFireSetup(final Peer manager) throws Exception {
+    manager.run(new SerializableRunnable("Verifies the GemFire Cluster was properly configured and initialized!") {
+      @Override
+      public void run() {
+        final ManagementService managementService = ManagementService.getExistingManagementService(getCache());
+
+        WaitCriterion waitOnManagerCriterion = new WaitCriterion() {
+          @Override
+          public boolean done() {
+            ManagerMXBean managerBean = managementService.getManagerMXBean();
+            DistributedRegionMXBean usersRegionBean = managementService.getDistributedRegionMXBean(getRegionPath(USERS_REGION_NAME));
+
+            return !(managerBean == null || usersRegionBean == null);
+          }
+
+          @Override
+          public String description() {
+            return String.format("Probing for the GemFire Manager '%1$s' and '%2$s' Region MXBeans...", manager.getName(), USERS_REGION_NAME);
+          }
+        };
+
+        waitForCriterion(waitOnManagerCriterion, 30000, 2000, true);
+      }
+    });
+  }
+
+  private void doHousekeeping() {
+    runCommand(CliStrings.LIST_MEMBER);
+
+    runCommand(new CommandStringBuilder(CliStrings.DESCRIBE_MEMBER).addOption(CliStrings.DESCRIBE_MEMBER__IDENTIFIER,
+        GEMFIRE_SERVER_NAME).toString());
+
+    runCommand(CliStrings.LIST_REGION);
+
+    runCommand(new CommandStringBuilder(CliStrings.DESCRIBE_REGION).addOption(CliStrings.DESCRIBE_REGION__NAME,
+        USERS_REGION_NAME).toString());
+  }
+
+  private void log(final Result result) {
+    log("Result", toString(result));
+  }
+
+  private void log(final String tag, final String message) {
+    //System.out.printf("%1$s (%2$s)%n", tag, message);
+    getLogWriter().info(String.format("%1$s (%2$s)%n", tag, message));
+  }
+
+  private CommandResult runCommand(final String command) {
+    CommandResult result = executeCommand(command);
+
+    assertNotNull(result);
+    assertEquals(Result.Status.OK, result.getStatus());
+
+    log(result);
+
+    return result;
+  }
+
+  private void assertResult(final boolean expectedResult, final CommandResult commandResult) {
+    if (ResultData.TYPE_COMPOSITE.equals(commandResult.getType())) {
+      boolean actualResult = (Boolean) ((CompositeResultData) commandResult.getResultData()).retrieveSectionByIndex(0).retrieveObject("Result");
+      assertEquals(expectedResult, actualResult);
+    } else {
+      fail(String.format("Expected composite result data; but was '%1$s'!%n", commandResult.getType()));
+    }
+  }
+
+  private static final class Peer implements Serializable {
 
     private final Properties distributedSystemProperties;
     private final VM vm;
@@ -277,7 +270,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
     }
 
     public String getName() {
-      return getConfiguration().getProperty(DistributionConfig.NAME_NAME);
+      return getConfiguration().getProperty(NAME_NAME);
     }
 
     public VM getVm() {
@@ -305,7 +298,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
     }
   }
 
-  protected static class User implements Serializable {
+  private static class User implements Serializable {
 
     private final String username;
 
@@ -346,7 +339,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
     }
   }
 
-  protected static class UserDataStoreCacheLoader implements CacheLoader<String, User>, Serializable {
+  private static class UserDataStoreCacheLoader implements CacheLoader<String, User>, Serializable {
 
     private static final Map<String, User> userDataStore = new HashMap<String, User>(5);
 

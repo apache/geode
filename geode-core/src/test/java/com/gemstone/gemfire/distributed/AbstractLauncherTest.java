@@ -23,15 +23,15 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 /**
- * The AbstractLauncherJUnitTest class is a test suite of unit tests testing the contract and functionality
+ * The AbstractLauncherTest class is a test suite of unit tests testing the contract and functionality
  * of the AbstractLauncher class.
  * <p/>
  * @see com.gemstone.gemfire.distributed.AbstractLauncher
@@ -40,7 +40,7 @@ import org.junit.experimental.categories.Category;
  * @since 7.0
  */
 @Category(UnitTest.class)
-public class AbstractLauncherJUnitTest {
+public class AbstractLauncherTest {
 
   protected AbstractLauncher<?> createAbstractLauncher(final String memberName, final String memberId) {
     return new FakeServiceLauncher(memberName, memberId);

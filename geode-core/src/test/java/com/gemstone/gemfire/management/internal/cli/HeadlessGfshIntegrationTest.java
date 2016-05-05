@@ -16,48 +16,53 @@
  */
 package com.gemstone.gemfire.management.internal.cli;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
+import static com.gemstone.gemfire.internal.AvailablePort.*;
+import static org.junit.Assert.*;
 
-import javax.management.ObjectName;
 import java.io.IOException;
 import java.util.Properties;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
+
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * TODO : Add more tests for error-catch, different type of results etc
- *
  */
 @Category(IntegrationTest.class)
-public class HeadlessGfshJUnitTest {
+public class HeadlessGfshIntegrationTest {
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public TestName testName = new TestName();
 
   @SuppressWarnings({"deprecation"})
   @Test
   public void testHeadlessGfshTest() throws ClassNotFoundException, IOException, InterruptedException {
-    GemFireCacheImpl cache = null;
-    DistributedSystem ds = null;
-    Properties pr = new Properties();
-    pr.put("name", "testHeadlessGfshTest");
-    pr.put(DistributionConfig.JMX_MANAGER_NAME, "true");
-    pr.put(DistributionConfig.JMX_MANAGER_START_NAME, "true");
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    pr.put(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(port));
-    pr.put(DistributionConfig.HTTP_SERVICE_PORT_NAME, "0");
-    pr.put(DistributionConfig.MCAST_PORT_NAME, "0");
+    int port = getRandomAvailablePort(SOCKET);
 
-    ds = DistributedSystem.connect(pr);
-    cache = (GemFireCacheImpl) CacheFactory.create(ds);
+    Properties properties = new Properties();
+    properties.put(NAME_NAME, this.testName.getMethodName());
+    properties.put(JMX_MANAGER_NAME, "true");
+    properties.put(JMX_MANAGER_START_NAME, "true");
+    properties.put(JMX_MANAGER_PORT_NAME, String.valueOf(port));
+    properties.put(HTTP_SERVICE_PORT_NAME, "0");
+    properties.put(MCAST_PORT_NAME, "0");
 
-    HeadlessGfsh gfsh = new HeadlessGfsh("Test", 25);
+    DistributedSystem ds = DistributedSystem.connect(properties);
+    GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.create(ds);
+
+    HeadlessGfsh gfsh = new HeadlessGfsh("Test", 25, this.temporaryFolder.newFolder("gfsh_files").getCanonicalPath());
     for (int i = 0; i < 5; i++) {
       gfsh.executeCommand("connect --jmx-manager=localhost[" + port + "]");
       Object result = gfsh.getResult();

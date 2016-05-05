@@ -200,7 +200,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   /**
    * Default connection is Pulse which uses configured userName and password
-   * @return
    */
   public JMXConnector getJMXConnection() {
     return getJMXConnection(true);
@@ -209,8 +208,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * Get connection for given userName and password. This is used for DataBrowser
    * queries which has to be fired using credentials provided at pulse login page
-   *
-   * @return
    */
   public JMXConnector getJMXConnection(final boolean registerURL) {
     JMXConnector connection = null;

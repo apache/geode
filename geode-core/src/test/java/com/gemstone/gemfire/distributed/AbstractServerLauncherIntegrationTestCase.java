@@ -35,10 +35,11 @@ import com.gemstone.gemfire.internal.cache.AbstractCacheServer;
 /**
  * @since 8.0
  */
-public abstract class AbstractServerLauncherJUnitTestCase extends AbstractLauncherJUnitTestCase {
+public abstract class AbstractServerLauncherIntegrationTestCase extends AbstractLauncherIntegrationTestCase {
   
   protected volatile int serverPort;
   protected volatile ServerLauncher launcher;
+  protected volatile String workingDirectory;
 
   @Rule
   public ErrorCollector errorCollector= new ErrorCollector();
@@ -52,6 +53,7 @@ public abstract class AbstractServerLauncherJUnitTestCase extends AbstractLaunch
     final int port = AvailablePortHelper.getRandomAvailableTCPPort();
     System.setProperty(AbstractCacheServer.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, String.valueOf(port));
     this.serverPort = port;
+    this.workingDirectory = this.temporaryFolder.getRoot().getCanonicalPath();
   }
 
   @After

@@ -16,8 +16,8 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,8 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -57,33 +55,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * @since 8.0
  */
 @Category(IntegrationTest.class)
-public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnitTestCase {
-  
-  protected volatile Process process;
-  protected volatile ProcessStreamReader processOutReader;
-  protected volatile ProcessStreamReader processErrReader;
-  
-  @Before
-  public final void setUpLocatorLauncherRemoteTest() throws Exception {
-  }
-
-  @After
-  public final void tearDownLocatorLauncherRemoteTest() throws Exception {
-    if (this.process != null) {
-      this.process.destroy();
-      this.process = null;
-    }
-    if (this.processOutReader != null && this.processOutReader.isRunning()) {
-      this.processOutReader.stop();
-    }
-    if (this.processErrReader != null && this.processErrReader.isRunning()) {
-      this.processErrReader.stop();
-    }
-  }
-
-  protected Status getExpectedStopStatusForNotRunning() {
-    return Status.NOT_RESPONDING;
-  }
+public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLauncherRemoteIntegrationTestCase {
   
   @Test
   public void testIsAttachAPIFound() throws Exception {
@@ -953,14 +925,8 @@ public class LocatorLauncherRemoteJUnitTest extends AbstractLocatorLauncherJUnit
     }
   }
 
-  public static List<String> getJvmArguments() {
-    final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-Dgemfire.log-level=config");
-    return jvmArguments;
-  }
-  
   /**
-   * Used only by {@link LocatorLauncherRemoteJUnitTest#testRunningLocatorOutlivesForkingProcess}
+   * Used only by {@link LocatorLauncherRemoteIntegrationTest#testRunningLocatorOutlivesForkingProcess}
    */
   public static class LocatorLauncherForkingProcess {
 

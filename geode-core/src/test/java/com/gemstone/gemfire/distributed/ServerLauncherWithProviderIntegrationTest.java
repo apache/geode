@@ -32,11 +32,10 @@ import com.gemstone.gemfire.internal.process.ProcessType;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * Extracted from ServerLauncherLocalJUnitTest.
- * 
+ * Extracted from ServerLauncherLocalIntegrationTest.
  */
 @Category(IntegrationTest.class)
-public class ServerLauncherWithProviderJUnitTest extends AbstractServerLauncherJUnitTestCase {
+public class ServerLauncherWithProviderIntegrationTest extends AbstractServerLauncherIntegrationTestCase {
 
   @Before
   public final void setUpServerLauncherWithSpringTest() throws Exception {

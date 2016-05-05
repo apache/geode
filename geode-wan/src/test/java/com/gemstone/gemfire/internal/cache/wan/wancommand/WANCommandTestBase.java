@@ -79,7 +79,7 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
   static VM vm7;
 
   @Override
-  public final void postSetUp() throws Exception {
+  public final void postSetUpCliCommandTestBase() throws Exception {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);

@@ -16,12 +16,18 @@
  */
 package com.gemstone.gemfire.distributed;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.Host.*;
+import static com.gemstone.gemfire.internal.AvailablePortHelper.*;
+
 import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+
+import org.junit.Test;
 
 import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
 import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
@@ -30,20 +36,18 @@ import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.util.StopWatch;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 
 /**
- * Extracted from LocatorLauncherLocalJUnitTest.
+ * Extracted from LocatorLauncherLocalIntegrationTest.
  * 
  * @since 8.0
  */
-public class HostedLocatorsDUnitTest extends DistributedTestCase {
+public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
 
   protected static final int TIMEOUT_MILLISECONDS = 5 * 60 * 1000; // 5 minutes
 
@@ -59,23 +63,20 @@ public class HostedLocatorsDUnitTest extends DistributedTestCase {
   public final void preTearDown() throws Exception {
     disconnectAllFromDS();
   }
-  
-  public HostedLocatorsDUnitTest(String name) {
-    super(name);
-  }
 
+  @Test
   public void testGetAllHostedLocators() throws Exception {
     final InternalDistributedSystem system = getSystem();
     final String dunitLocator = system.getConfig().getLocators();
     assertNotNull(dunitLocator);
     assertFalse(dunitLocator.isEmpty());
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(4);
+    final int[] ports = getRandomAvailableTCPPorts(4);
     
     final String uniqueName = getUniqueName();
     for (int i = 0 ; i < 4; i++) {
       final int whichvm = i;
-      Host.getHost(0).getVM(whichvm).invoke(new SerializableCallable() {
+      getHost(0).getVM(whichvm).invoke(new SerializableCallable() {
         @Override
         public Object call() throws Exception {
           try {
@@ -131,7 +132,7 @@ public class HostedLocatorsDUnitTest extends DistributedTestCase {
 
     // validate fix for #46324
     for (int whichvm = 0 ; whichvm < 4; whichvm++) {
-      Host.getHost(0).getVM(whichvm).invoke(new SerializableRunnable() {
+      getHost(0).getVM(whichvm).invoke(new SerializableRunnable() {
         @Override
         public void run() {
           final DistributionManager dm = (DistributionManager)InternalDistributedSystem.getAnyInstance().getDistributionManager();
@@ -148,7 +149,7 @@ public class HostedLocatorsDUnitTest extends DistributedTestCase {
     
     // validation with locators
     for (int whichvm = 0 ; whichvm < 4; whichvm++) {
-      Host.getHost(0).getVM(whichvm).invoke(new SerializableRunnable() {
+      getHost(0).getVM(whichvm).invoke(new SerializableRunnable() {
         @Override
         public void run() {
           final DistributionManager dm = (DistributionManager)InternalDistributedSystem.getAnyInstance().getDistributionManager();

@@ -43,6 +43,11 @@ import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 
+import org.junit.runners.Parameterized;
+
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+
 /**
  * Base class for all the CLI/gfsh command dunit tests.
  */
@@ -60,10 +65,26 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
   protected String username = "super-user";
   protected String password = "1234567";
 
-  protected int httpPort;
-  protected int jmxPort;
+  private transient int httpPort;
+  private transient int jmxPort;
+  private transient String jmxHost;
+  protected transient String gfshDir;
 
-  protected String jmxHost;
+  @Rule
+  public transient TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Override
+  public final void postSetUp() throws Exception {
+    setUpCliCommandTestBase();
+    postSetUpCliCommandTestBase();
+  }
+
+  private void setUpCliCommandTestBase() throws Exception {
+    this.gfshDir = this.temporaryFolder.newFolder("gfsh_files").getCanonicalPath();
+  }
+
+  protected void postSetUpCliCommandTestBase() throws Exception {
+  }
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
@@ -145,7 +166,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
   /**
    * Destroy all of the components created for the default setup.
    */
-    protected final void destroyDefaultSetup() {
+  protected final void destroyDefaultSetup() {
     if (this.shell != null) {
       executeCommand(shell, "exit");
       this.shell.terminate();
@@ -267,7 +288,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     try {
       Gfsh.SUPPORT_MUTLIPLESHELL = true;
       String shellId = getClass().getSimpleName() + "_" + getName();
-      HeadlessGfsh shell = new HeadlessGfsh(shellId, 30);
+      HeadlessGfsh shell = new HeadlessGfsh(shellId, 30, this.gfshDir);
       //Added to avoid trimming of the columns
       info("Started testable shell: " + shell);
       return shell;

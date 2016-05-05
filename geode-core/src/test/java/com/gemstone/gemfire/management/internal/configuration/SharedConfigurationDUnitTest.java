@@ -16,10 +16,15 @@
  */
 package com.gemstone.gemfire.management.internal.configuration;
 
+import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
+import static com.gemstone.gemfire.internal.AvailablePortHelper.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.Host.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,117 +32,104 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.management.internal.configuration.domain.Configuration;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
-import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity.XmlEntityBuilder;
 import com.gemstone.gemfire.management.internal.configuration.handlers.ConfigurationRequestHandler;
 import com.gemstone.gemfire.management.internal.configuration.messages.ConfigurationRequest;
 import com.gemstone.gemfire.management.internal.configuration.messages.ConfigurationResponse;
-import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/***
+/**
  * Tests the starting up of shared configuration, installation of {@link ConfigurationRequestHandler}
- * 
- *
  */
-public class SharedConfigurationDUnitTest extends CacheTestCase {
-  private static final long serialVersionUID = 1L;
+@Category(DistributedTest.class)
+public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
+
   private static final String REGION1 = "region1";
   private static final int TIMEOUT = 10000;
   private static final int INTERVAL = 500;
   private static final String DISKSTORENAME = "diskStore1";
 
-//  private static final VM locator1Vm = Host.getHost(0).getVM(1);
-//  private static final VM locator2Vm = Host.getHost(0).getVM(2);
-//  private static final VM dataMemberVm = Host.getHost(0).getVM(3);
-
-  public static final SerializableRunnable locatorCleanup = new SerializableRunnable() {
-    @Override
-    public void run() {
-      InternalLocator locator = InternalLocator.getLocator();
-      if (locator != null) {
-        SharedConfiguration sharedConfig = locator.getSharedConfiguration();
-        if (sharedConfig != null) {
-          sharedConfig.destroySharedConfiguration();
-        }
-        locator.stop();
-      }
-      disconnectAllFromDS();
-    }
-  };
-  
-  
-  public SharedConfigurationDUnitTest(String name) {
-    super(name);
-  }
-  
-  public void testGetHostedLocatorsWithSharedConfiguration() {
+  @Override
+  public final void postSetUp() throws Exception {
     disconnectAllFromDS();
-    final VM locator1Vm = Host.getHost(0).getVM(1);
-    final VM locator2Vm = Host.getHost(0).getVM(2);
+  }
+
+  @Override
+  public final void postTearDownCacheTestCase() throws Exception {
+    for (int i=0; i<4; i++) {
+      getHost(0).getVM(i).invoke(SharedConfigurationTestUtils.cleanupLocator);
+    }
+  }
+
+  @Test
+  public void testGetHostedLocatorsWithSharedConfiguration() throws Exception {
+    final VM locator1Vm = getHost(0).getVM(1);
+    final VM locator2Vm = getHost(0).getVM(2);
   
-    final String testName = "testGetHostedLocatorsWithSharedConfiguration";
-//    final VM locator3Vm = Host.getHost(0).getVM(3);
+    final String testName = getName();
+
+    final int[] ports = getRandomAvailableTCPPorts(3);
     
-    final int []ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    
-    //final int locator1Port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final int locator1Port = ports[0];
     final String locator1Name = "locator1" + locator1Port;
+
     locator1Vm.invoke(new SerializableCallable() {
       @Override
       public Object call() {
         final File locatorLogFile = new File(testName + "-locator-" + locator1Port + ".log");
+
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(DistributionConfig.NAME_NAME, locator1Name);
-        locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-        locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+        locatorProps.setProperty(NAME_NAME, locator1Name);
+        locatorProps.setProperty(MCAST_PORT_NAME, "0");
+        locatorProps.setProperty(LOG_LEVEL_NAME, "fine");
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+
         try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile, null,
-              locatorProps);
+          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile, null, locatorProps);
 
           WaitCriterion wc = new WaitCriterion() {
             @Override
             public boolean done() {
               return locator.isSharedConfigurationRunning();
             }
-
             @Override
             public String description() {
               return "Waiting for shared configuration to be started";
             }
           };
-          Wait.waitForCriterion(wc, TIMEOUT, INTERVAL, true);
-        } catch (IOException ioex) {
-          fail("Unable to create a locator with a shared configuration");
+          waitForCriterion(wc, TIMEOUT, INTERVAL, true);
+
+        } catch (IOException e) {
+          fail("Unable to create a locator with a shared configuration", e);
         }
+
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
         InternalDistributedMember me = cache.getMyId();
         DM dm = cache.getDistributionManager();
+
         Map<InternalDistributedMember, Collection<String>> hostedLocators = dm.getAllHostedLocators();
         assertFalse(hostedLocators.isEmpty());
+
         Map<InternalDistributedMember, Collection<String>> hostedLocatorsWithSharedConfiguration = dm.getAllHostedLocatorsWithSharedConfiguration();
         assertFalse(hostedLocatorsWithSharedConfiguration.isEmpty());
         
@@ -147,7 +139,6 @@ public class SharedConfigurationDUnitTest extends CacheTestCase {
       }
     });
     
-    //final int locator2Port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final int locator2Port = ports[1];
     final String locator2Name = "locator2" + locator2Port;
 
@@ -155,20 +146,23 @@ public class SharedConfigurationDUnitTest extends CacheTestCase {
       @Override
       public Object call() throws IOException {
         final File locatorLogFile = new File(testName + "-locator-" + locator2Port + ".log");
+
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(DistributionConfig.NAME_NAME, locator2Name);
-        locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-        locatorProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locator1Port);
-        locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-        final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator2Port, locatorLogFile, null,
-            locatorProps);
+        locatorProps.setProperty(NAME_NAME, locator2Name);
+        locatorProps.setProperty(MCAST_PORT_NAME, "0");
+        locatorProps.setProperty(LOG_LEVEL_NAME, "fine");
+        locatorProps.setProperty(LOCATORS_NAME, "localhost:" + locator1Port);
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+
+        final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator2Port, locatorLogFile, null, locatorProps);
 
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
         InternalDistributedMember me = cache.getMyId();
         DM dm = cache.getDistributionManager();
+
         Map<InternalDistributedMember, Collection<String>> hostedLocators = dm.getAllHostedLocators();
         assertFalse(hostedLocators.isEmpty());
+
         Map<InternalDistributedMember, Collection<String>> hostedLocatorsWithSharedConfiguration = dm.getAllHostedLocatorsWithSharedConfiguration();
         assertFalse(hostedLocatorsWithSharedConfiguration.isEmpty());
         assertNotNull(hostedLocators.get(me));
@@ -193,7 +187,7 @@ public class SharedConfigurationDUnitTest extends CacheTestCase {
       public Object call() {
         InternalLocator locator = (InternalLocator) Locator.getLocator();
         SharedConfiguration sharedConfig = locator.getSharedConfiguration();
-        sharedConfig.destroySharedConfiguration();
+        sharedConfig.destroySharedConfiguration_forTestsOnly();
         locator.stop();
         return null;
       }
@@ -216,60 +210,52 @@ public class SharedConfigurationDUnitTest extends CacheTestCase {
         return null;
       }
     });
-    
-//    locator2Vm.invoke(new SerializableCallable() {
-//      public Object call() {
-//        InternalLocator locator = (InternalLocator) Locator.getLocator();
-//        SharedConfiguration sharedConfig = locator.getSharedConfiguration();
-//        if (sharedConfig != null) {
-//          sharedConfig.destroySharedConfiguration();
-//        }
-//        locator.stop();
-//        return null;
-//      }
-//    });
   }
-  
-  public void testSharedConfigurationService() {
-    disconnectAllFromDS();
+
+  @Test
+  public void testSharedConfigurationService() throws Exception {
     // Start the Locator and wait for shared configuration to be available
     final String testGroup = "G1";
     final String clusterLogLevel = "error";
     final String groupLogLevel = "fine";
-    final String testName = "testSharedConfigurationService";
+
+    final String testName = getName();
     
-    final VM locator1Vm = Host.getHost(0).getVM(1);
-    final VM locator2Vm = Host.getHost(0).getVM(3);
-    final VM dataMemberVm = Host.getHost(0).getVM(2);
-    final int [] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    final VM locator1Vm = getHost(0).getVM(1);
+    final VM locator2Vm = getHost(0).getVM(3);
+    final VM dataMemberVm = getHost(0).getVM(2);
+
+    final int [] ports = getRandomAvailableTCPPorts(3);
     final int locator1Port = ports[0];
     
     locator1Vm.invoke(new SerializableCallable() {
       @Override
       public Object call() {
         final File locatorLogFile = new File(testName + "-locator-" + locator1Port + ".log");
+
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(DistributionConfig.NAME_NAME, "Locator1");
-        locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
-        locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+        locatorProps.setProperty(NAME_NAME, "Locator1");
+        locatorProps.setProperty(MCAST_PORT_NAME, "0");
+        locatorProps.setProperty(LOG_LEVEL_NAME, "info");
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+
         try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile, null,
-              locatorProps);
+          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile, null, locatorProps);
+
           WaitCriterion wc = new WaitCriterion() {
             @Override
             public boolean done() {
               return locator.isSharedConfigurationRunning();
             }
-
             @Override
             public String description() {
               return "Waiting for shared configuration to be started";
             }
           };
-          Wait.waitForCriterion(wc, TIMEOUT, INTERVAL, true);
-        } catch (IOException ioex) {
-          fail("Unable to create a locator with a shared configuration");
+          waitForCriterion(wc, TIMEOUT, INTERVAL, true);
+
+        } catch (IOException e) {
+          fail("Unable to create a locator with a shared configuration", e);
         }
 
         return null;
@@ -280,12 +266,14 @@ public class SharedConfigurationDUnitTest extends CacheTestCase {
       @Override
       public Object call() {
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locator1Port);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, testGroup);
+        localProps.setProperty(MCAST_PORT_NAME, "0");
+        localProps.setProperty(LOCATORS_NAME, "localhost:" + locator1Port);
+        localProps.setProperty(GROUPS_NAME, testGroup);
+
         getSystem(localProps);
         Cache cache = getCache();
         assertNotNull(cache);
+
         DiskStoreFactory dsFactory = cache.createDiskStoreFactory();
         File dsDir = new File("dsDir");
         if (!dsDir.exists()) {
@@ -305,15 +293,15 @@ public class SharedConfigurationDUnitTest extends CacheTestCase {
         assertTrue(scw.addXmlEntity(xmlEntity, new String[] {testGroup}));
         //Modify property and cache attributes
         Properties clusterProperties = new Properties();
-        clusterProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME, clusterLogLevel);
+        clusterProperties.setProperty(LOG_LEVEL_NAME, clusterLogLevel);
         XmlEntity cacheEntity = XmlEntity.builder().withType(CacheXml.CACHE).build();
         Map<String, String> cacheAttributes = new HashMap<String, String>();
         cacheAttributes.put(CacheXml.COPY_ON_READ, "true");
         
-        //assertTrue(scw.modifyProperties(clusterProperties, null));
+        //assertTrue(scw.modifyProperties(clusterProperties, null)); // TODO: why is this commented out?
         assertTrue(scw.modifyPropertiesAndCacheAttributes(clusterProperties, cacheEntity, null));
 
-        clusterProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME, groupLogLevel);
+        clusterProperties.setProperty(LOG_LEVEL_NAME, groupLogLevel);
         assertTrue(scw.modifyPropertiesAndCacheAttributes(clusterProperties, cacheEntity, new String[]{testGroup}));
 
         //Add a jar
@@ -335,32 +323,32 @@ public class SharedConfigurationDUnitTest extends CacheTestCase {
     locator2Vm.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-
         final File locatorLogFile = new File(testName + "-locator-" + locator2Port + ".log");
+
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(DistributionConfig.NAME_NAME, "Locator2");
-        locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
-        locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
-        locatorProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locator1Port);
+        locatorProps.setProperty(NAME_NAME, "Locator2");
+        locatorProps.setProperty(MCAST_PORT_NAME, "0");
+        locatorProps.setProperty(LOG_LEVEL_NAME, "info");
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+        locatorProps.setProperty(LOCATORS_NAME, "localhost:" + locator1Port);
+
         try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator2Port, locatorLogFile, null,
-              locatorProps);
+          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator2Port, locatorLogFile, null, locatorProps);
 
           WaitCriterion wc = new WaitCriterion() {
             @Override
             public boolean done() {
               return locator.isSharedConfigurationRunning();
             }
-
             @Override
             public String description() {
               return "Waiting for shared configuration to be started";
             }
           };
-          Wait.waitForCriterion(wc, TIMEOUT, INTERVAL, true);
-        } catch (IOException ioex) {
-          fail("Unable to create a locator with a shared configuration");
+          waitForCriterion(wc, TIMEOUT, INTERVAL, true);
+
+        } catch (IOException e) {
+          fail("Unable to create a locator with a shared configuration", e);
         }
         
         InternalLocator locator = (InternalLocator) Locator.getLocator();
@@ -370,14 +358,14 @@ public class SharedConfigurationDUnitTest extends CacheTestCase {
         assertNotNull(clusterConfig);
         assertNotNull(clusterConfig.getJarNames());
         assertTrue(clusterConfig.getJarNames().contains("foo.jar"));
-        assertTrue(clusterConfig.getGemfireProperties().getProperty(DistributionConfig.LOG_LEVEL_NAME).equals(clusterLogLevel));
+        assertTrue(clusterConfig.getGemfireProperties().getProperty(LOG_LEVEL_NAME).equals(clusterLogLevel));
         assertNotNull(clusterConfig.getCacheXmlContent());
         
         Configuration testGroupConfiguration = entireConfiguration.get(testGroup);
         assertNotNull(testGroupConfiguration);
         assertNotNull(testGroupConfiguration.getJarNames());
         assertTrue(testGroupConfiguration.getJarNames().contains("bar.jar"));
-        assertTrue(testGroupConfiguration.getGemfireProperties().getProperty(DistributionConfig.LOG_LEVEL_NAME).equals(groupLogLevel));
+        assertTrue(testGroupConfiguration.getGemfireProperties().getProperty(LOG_LEVEL_NAME).equals(groupLogLevel));
         assertNotNull(testGroupConfiguration.getCacheXmlContent());
         assertTrue(testGroupConfiguration.getCacheXmlContent().contains(REGION1));
         
@@ -394,7 +382,7 @@ public class SharedConfigurationDUnitTest extends CacheTestCase {
     
     dataMemberVm.invoke(new SerializableCallable() {
       @Override
-      public Object call() throws UnknownHostException, IOException, ClassNotFoundException {
+      public Object call() throws IOException, ClassNotFoundException {
         SharedConfigurationWriter scw = new SharedConfigurationWriter();
         scw.deleteXmlEntity(new XmlEntity(CacheXml.REGION, "name", REGION1), new String[]{testGroup});
         scw.deleteJars(new String []{"foo.jar"}, null);
@@ -412,13 +400,13 @@ public class SharedConfigurationDUnitTest extends CacheTestCase {
         assertNull(configResponse.getJarNames());
         assertNull(configResponse.getJars());
         assertTrue(clusterConfiguration.getJarNames().isEmpty());
-        assertTrue(clusterConfiguration.getGemfireProperties().getProperty(DistributionConfig.LOG_LEVEL_NAME).equals(clusterLogLevel));
+        assertTrue(clusterConfiguration.getGemfireProperties().getProperty(LOG_LEVEL_NAME).equals(clusterLogLevel));
         
         Configuration testGroupConfiguration = requestedConfiguration.get(testGroup);
         assertNotNull(testGroupConfiguration);
         assertFalse(testGroupConfiguration.getCacheXmlContent().contains(REGION1));
         assertTrue(testGroupConfiguration.getJarNames().isEmpty());
-        assertTrue(testGroupConfiguration.getGemfireProperties().getProperty(DistributionConfig.LOG_LEVEL_NAME).equals(groupLogLevel));
+        assertTrue(testGroupConfiguration.getGemfireProperties().getProperty(LOG_LEVEL_NAME).equals(groupLogLevel));
         
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         Map<InternalDistributedMember, Collection<String>> locatorsWithSharedConfiguration = cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration();
@@ -432,11 +420,4 @@ public class SharedConfigurationDUnitTest extends CacheTestCase {
       }
     });
   }    
-  
-  @Override
-  public final void postTearDownCacheTestCase() throws Exception {
-    for (int i=0; i<4; i++) {
-      Host.getHost(0).getVM(i).invoke(SharedConfigurationDUnitTest.locatorCleanup);
-    }
-  }
 }

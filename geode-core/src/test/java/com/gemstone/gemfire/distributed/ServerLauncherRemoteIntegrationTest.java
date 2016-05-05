@@ -74,33 +74,7 @@ import com.gemstone.gemfire.test.process.ProcessWrapper;
  * @since 8.0
  */
 @Category(IntegrationTest.class)
-public class ServerLauncherRemoteJUnitTest extends AbstractServerLauncherJUnitTestCase {
-  
-  protected volatile Process process;
-  protected volatile ProcessStreamReader processOutReader;
-  protected volatile ProcessStreamReader processErrReader;
-  
-  @Before
-  public final void setUpServerLauncherRemoteTest() throws Exception {
-  }
-
-  @After
-  public final void tearDownServerLauncherRemoteTest() throws Exception {    
-    if (this.process != null) {
-      this.process.destroy();
-      this.process = null;
-    }
-    if (this.processOutReader != null && this.processOutReader.isRunning()) {
-      this.processOutReader.stop();
-    }
-    if (this.processErrReader != null && this.processErrReader.isRunning()) {
-      this.processErrReader.stop();
-    }
-  }
-
-  protected Status getExpectedStopStatusForNotRunning() {
-    return Status.NOT_RESPONDING;
-  }
+public class ServerLauncherRemoteIntegrationTest extends AbstractServerLauncherRemoteIntegrationTestCase {
   
   @Test
   public void testIsAttachAPIFound() throws Exception {
@@ -1334,32 +1308,8 @@ public class ServerLauncherRemoteJUnitTest extends AbstractServerLauncherJUnitTe
     }
   }
 
-  protected void waitForServerToStart() throws Exception {
-    assertEventuallyTrue("waiting for local Server to start: " + launcher.status(), new Callable<Boolean>() {
-      @Override
-      public Boolean call() throws Exception {
-        try {
-          assertNotNull(process);
-          try {
-            final int value = process.exitValue();
-            fail("Process has died with exit value " + value + " while waiting for it to start.");
-          } catch (IllegalThreadStateException e) {
-            // expected
-          }
-          final ServerState serverState = launcher.status();
-          assertNotNull(serverState);
-          logger.info("serverState: "+serverState);
-          return Status.ONLINE.equals(serverState.getStatus());
-        }
-        catch (RuntimeException e) {
-          logger.error(e, e);
-          return false;
-        }
-      }
-    }, TIMEOUT_MILLISECONDS, INTERVAL_MILLISECONDS);
-  }
-  
-  protected static List<String> getJvmArguments() {
+  @Override
+  protected List<String> getJvmArguments() {
     final List<String> jvmArguments = new ArrayList<String>();
     jvmArguments.add("-Dgemfire.log-level=config");
     jvmArguments.add("-Dgemfire.mcast-port=0");
@@ -1367,7 +1317,7 @@ public class ServerLauncherRemoteJUnitTest extends AbstractServerLauncherJUnitTe
   }
   
   /**
-   * Used only by {@link ServerLauncherRemoteJUnitTest#testRunningServerOutlivesForkingProcess}
+   * Used only by {@link ServerLauncherRemoteIntegrationTest#testRunningServerOutlivesForkingProcess}
    */
   public static class ServerLauncherForkingProcess {
 
@@ -1381,7 +1331,7 @@ public class ServerLauncherRemoteJUnitTest extends AbstractServerLauncherJUnitTe
 
       try {
         // launch ServerLauncher
-        final List<String> jvmArguments = getJvmArguments();
+        final List<String> jvmArguments = null;//getJvmArguments();
         assertTrue(jvmArguments.size() == 2);
         final List<String> command = new ArrayList<String>();
         command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());

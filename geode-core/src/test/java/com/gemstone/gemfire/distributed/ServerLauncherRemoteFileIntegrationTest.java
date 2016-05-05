@@ -28,7 +28,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
-import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
+import com.gemstone.gemfire.distributed.ServerLauncher.Builder;
 import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
 import com.gemstone.gemfire.internal.process.ProcessStreamReader;
 import com.gemstone.gemfire.internal.process.ProcessType;
@@ -37,22 +37,22 @@ import com.gemstone.gemfire.lang.AttachAPINotFoundException;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * Subclass of LocatorLauncherRemoteDUnitTest which forces the code to not find 
- * the Attach API which is in the JDK tools.jar.  As a result LocatorLauncher
+ * Subclass of ServerLauncherRemoteDUnitTest which forces the code to not find 
+ * the Attach API which is in the JDK tools.jar.  As a result ServerLauncher
  * ends up using the FileProcessController implementation.
  * 
  * @since 8.0
  */
 @Category(IntegrationTest.class)
-public class LocatorLauncherRemoteFileJUnitTest extends LocatorLauncherRemoteJUnitTest {
+public class ServerLauncherRemoteFileIntegrationTest extends ServerLauncherRemoteIntegrationTest {
   
   @Before
-  public final void setUpLocatorLauncherRemoteFileTest() throws Exception {
+  public void setUpServerLauncherRemoteFileTest() throws Exception {
     System.setProperty(ProcessControllerFactory.PROPERTY_DISABLE_ATTACH_API, "true");
   }
   
   @After
-  public final void tearDownLocatorLauncherRemoteFileTest() throws Exception {   
+  public void tearDownServerLauncherRemoteFileTest() throws Exception {   
   }
   
   @Override
@@ -80,29 +80,29 @@ public class LocatorLauncherRemoteFileJUnitTest extends LocatorLauncherRemoteJUn
     }
     command.add("-cp");
     command.add(System.getProperty("java.class.path"));
-    command.add(LocatorLauncher.class.getName());
-    command.add(LocatorLauncher.Command.START.getName());
+    command.add(ServerLauncher.class.getName());
+    command.add(ServerLauncher.Command.START.getName());
     command.add(getUniqueName());
-    command.add("--port=" + this.locatorPort);
+    command.add("--disable-default-server");
     command.add("--redirect-output");
 
     this.process = new ProcessBuilder(command).directory(this.temporaryFolder.getRoot()).start();
     this.processOutReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getInputStream()).build().start();
     this.processErrReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getErrorStream()).build().start();
 
-    // wait for locator to start
+    // wait for server to start
     int pid = 0;
-    LocatorLauncher pidLauncher = null; 
-    final LocatorLauncher dirLauncher = new LocatorLauncher.Builder()
+    ServerLauncher pidLauncher = null; 
+    this.launcher = new ServerLauncher.Builder()
         .setWorkingDirectory(this.temporaryFolder.getRoot().getCanonicalPath())
         .build();
     try {
-      waitForLocatorToStart(dirLauncher);
+      waitForServerToStart();
 
       // validate the pid file and its contents
-      final File pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.LOCATOR.getPidFileName());
-      assertTrue(pidFile.exists());
-      pid = readPid(pidFile);
+      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
+      assertTrue(this.pidFile.exists());
+      pid = readPid(this.pidFile);
       assertTrue(pid > 0);
       assertTrue(ProcessUtils.isProcessAlive(pid));
 
@@ -130,13 +130,15 @@ public class LocatorLauncherRemoteFileJUnitTest extends LocatorLauncherRemoteJUn
       this.errorCollector.addError(e);
     }
 
-    // stop the locator
+    // stop the server
     try {
-      assertEquals(Status.STOPPED, dirLauncher.stop().getStatus());
+      assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
       waitForPidToStop(pid, true);
       waitForFileToDelete(this.pidFile);
     } catch (Throwable e) {
       this.errorCollector.addError(e);
+    } finally {
+      new File(ProcessType.SERVER.getStatusRequestFileName()).delete(); // TODO: delete
     }
   }
   
@@ -155,30 +157,29 @@ public class LocatorLauncherRemoteFileJUnitTest extends LocatorLauncherRemoteJUn
     }
     command.add("-cp");
     command.add(System.getProperty("java.class.path"));
-    command.add(LocatorLauncher.class.getName());
-    command.add(LocatorLauncher.Command.START.getName());
+    command.add(ServerLauncher.class.getName());
+    command.add(ServerLauncher.Command.START.getName());
     command.add(getUniqueName());
-    command.add("--port=" + this.locatorPort);
+    command.add("--disable-default-server");
     command.add("--redirect-output");
 
     this.process = new ProcessBuilder(command).directory(this.temporaryFolder.getRoot()).start();
     this.processOutReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getInputStream()).inputListener(createLoggingListener("sysout", getUniqueName() + "#sysout")).build().start();
     this.processErrReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getErrorStream()).inputListener(createLoggingListener("syserr", getUniqueName() + "#syserr")).build().start();
 
-    // wait for locator to start
+    // wait for server to start
     int pid = 0;
-    File pidFile = null;
-    LocatorLauncher pidLauncher = null; 
-    final LocatorLauncher dirLauncher = new LocatorLauncher.Builder()
+    ServerLauncher pidLauncher = null; 
+    this.launcher = new ServerLauncher.Builder()
         .setWorkingDirectory(this.temporaryFolder.getRoot().getCanonicalPath())
         .build();
     try {
-      waitForLocatorToStart(dirLauncher);
+      waitForServerToStart();
 
       // validate the pid file and its contents
-      pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.LOCATOR.getPidFileName());
-      assertTrue(pidFile.exists());
-      pid = readPid(pidFile);
+      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
+      assertTrue(this.pidFile.exists());
+      pid = readPid(this.pidFile);
       assertTrue(pid > 0);
       assertTrue(ProcessUtils.isProcessAlive(pid));
 
@@ -207,12 +208,15 @@ public class LocatorLauncherRemoteFileJUnitTest extends LocatorLauncherRemoteJUn
     }
 
     try {
-      // stop the locator
-      assertEquals(Status.STOPPED, dirLauncher.stop().getStatus());
+      // stop the server
+      assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
       waitForPidToStop(pid);
-      waitForFileToDelete(pidFile);
+      waitForFileToDelete(this.pidFile);
+      
     } catch (Throwable e) {
       this.errorCollector.addError(e);
+    } finally {
+      new File(ProcessType.SERVER.getStopRequestFileName()).delete(); // TODO: delete
     }
   }
 }

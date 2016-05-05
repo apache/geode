@@ -83,50 +83,38 @@ import com.gemstone.gemfire.management.internal.configuration.messages.SharedCon
 import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils;
 import com.gemstone.gemfire.management.internal.configuration.utils.ZipUtils;
 
-/*********
- * 
- *
- */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({ "deprecation", "unchecked" })
 public class SharedConfiguration {
 
   private static final Logger logger = LogService.getLogger();
   
-  static class JarFileFilter implements FilenameFilter {
-    @Override
-    public boolean accept(File dir, String name) {
-      return name.endsWith(".jar");
-    }
-  }
-  /****
+  /**
    * Name of the directory where the shared configuration artifacts are stored
    */
   public static final String CLUSTER_CONFIG_ARTIFACTS_DIR_NAME = "cluster_config";
-  public static final String CLUSTER_CONFIG_DISK_STORE_NAME = "cluster_config";
-  public static String CONFIG_DIR_PATH;//FilenameUtils.concat(System.getProperty("user.dir"), CONFIG_ARTIFACTS_DIR_NAME);
+  private static final String CLUSTER_CONFIG_DISK_STORE_NAME = "cluster_config";
   public static final String CLUSTER_CONFIG_DISK_DIR_PREFIX = "ConfigDiskDir_";
 
   public static final String CLUSTER_CONFIG = "cluster";
 
-
-  /***
+  /**
    * Name of the lock service used for shared configuration
    */
-  public static final String SHARED_CONFIG_LOCK_SERVICE_NAME = "__CLUSTER_CONFIG_LS";
+  private static final String SHARED_CONFIG_LOCK_SERVICE_NAME = "__CLUSTER_CONFIG_LS";
 
-  /***
+  /**
    * Name of the lock for locking the shared configuration
    */
   public static final String SHARED_CONFIG_LOCK_NAME = "__CLUSTER_CONFIG_LOCK";
 
-  /***
+  /**
    * Name of the region which is used to store the configuration information
    */
-  public static final String CONFIG_REGION_NAME = "_ConfigurationRegion";
+  private static final String CONFIG_REGION_NAME = "_ConfigurationRegion";
 
-
-  public String CONFIG_DISK_DIR_NAME;
-  public String CONFIG_DISK_DIR_PATH;;
+  private final String configDirPath;
+  private final String configDiskDirName;
+  private final String configDiskDirPath;;
 
   private final Set<PersistentMemberPattern> newerSharedConfigurationLocatorInfo = new HashSet<PersistentMemberPattern>();
   private final AtomicReference<SharedConfigurationStatus> status = new AtomicReference<SharedConfigurationStatus>();
@@ -136,12 +124,9 @@ public class SharedConfiguration {
   private  GemFireCacheImpl cache;
   private final DistributedLockService sharedConfigLockingService;
 
-
-  /****
+  /**
    * Gets or creates (if not created) shared configuration lock service 
-   * @return DistributedLockService 
    */
-
   public static DistributedLockService getSharedConfigLockService(DistributedSystem ds) {
     DistributedLockService sharedConfigDls = DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
     try {
@@ -154,19 +139,9 @@ public class SharedConfiguration {
     return sharedConfigDls;
   }
 
-  /**
-   * Returns an array containing the names of the subdirectories in a given directory
-   * @param path Path of the directory whose subdirectories are listed
-   * @return String[] names of first level subdirectories, null if no subdirectories are found or if the path is incorrect
-   */
-  private static String[] getSubdirectories(String path) {
-    File directory = new File(path);
-    return directory.list(DirectoryFileFilter.INSTANCE);
-  }
-
   public SharedConfiguration(Cache cache) throws IOException {
     this.cache = (GemFireCacheImpl)cache;
-    CONFIG_DISK_DIR_NAME = CLUSTER_CONFIG_DISK_DIR_PREFIX + cache.getDistributedSystem().getName();
+    this.configDiskDirName = CLUSTER_CONFIG_DISK_DIR_PREFIX + cache.getDistributedSystem().getName();
     String clusterConfigDir = cache.getDistributedSystem().getProperties().getProperty(DistributionConfig.CLUSTER_CONFIGURATION_DIR);
     if (StringUtils.isBlank(clusterConfigDir)) {
       clusterConfigDir = System.getProperty("user.dir");
@@ -177,17 +152,14 @@ public class SharedConfiguration {
       }
       clusterConfigDir = diskDir.getCanonicalPath();
     }
-    CONFIG_DISK_DIR_PATH = FilenameUtils.concat(clusterConfigDir, CONFIG_DISK_DIR_NAME);
-    CONFIG_DIR_PATH = FilenameUtils.concat(clusterConfigDir, CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
+    this.configDiskDirPath = FilenameUtils.concat(clusterConfigDir, this.configDiskDirName);
+    configDirPath = FilenameUtils.concat(clusterConfigDir, CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
     sharedConfigLockingService = getSharedConfigLockService(cache.getDistributedSystem());
     status.set(SharedConfigurationStatus.NOT_STARTED);
   }
 
-  /*****
+  /**
    * Add jar information into the shared configuration and save the jars in the file system
-   * @param jarNames
-   * @param jarBytes
-   * @param groups
    * @return true on success
    */
   public boolean addJars(String []jarNames, byte[][]jarBytes, String[]groups)  {
@@ -198,7 +170,7 @@ public class SharedConfiguration {
       }
       Region<String, Configuration> configRegion = getConfigurationRegion();
       for (String group : groups) {
-        Configuration configuration = (Configuration) configRegion.get(group);
+        Configuration configuration = configRegion.get(group);
 
         if (configuration == null) {
           configuration = new Configuration(group);
@@ -206,7 +178,7 @@ public class SharedConfiguration {
         }
         configuration.addJarNames(jarNames);
         configRegion.put(group, configuration);
-        String groupDir = FilenameUtils.concat(CONFIG_DIR_PATH, group);
+        String groupDir = FilenameUtils.concat(configDirPath, group);
         writeJarFiles(groupDir, jarNames, jarBytes);
       }
     } catch (Exception e) {
@@ -216,12 +188,8 @@ public class SharedConfiguration {
     return success;
   }
 
-
-  /***
+  /**
    * Adds/replaces the xml entity in the shared configuration
-   * @param xmlEntity
-   * @param groups
-   * @throws Exception
    */
   public void addXmlEntity(XmlEntity xmlEntity, String[] groups) throws Exception {
     Region<String, Configuration> configRegion = getConfigurationRegion();
@@ -248,30 +216,6 @@ public class SharedConfiguration {
     }
   }
 
-  /**
-   * Create a {@link Document} using
-   * {@link XmlUtils#createDocumentFromXml(String)} and if the version attribute
-   * is not equal to the current version then update the XML to the current
-   * schema and return the document.
-   * 
-   * @param xmlContent
-   *          XML content to load and upgrade.
-   * @return {@link Document} from xmlContent.
-   * @throws IOException 
-   * @throws ParserConfigurationException 
-   * @throws SAXException 
-   * @throws XPathExpressionException 
-   * @since 8.1
-   */
-  // UnitTest SharedConfigurationJUnitTest.testCreateAndUpgradeDocumentFromXml
-  static Document createAndUpgradeDocumentFromXml(final String xmlContent) throws SAXException, ParserConfigurationException, IOException, XPathExpressionException {
-    Document doc = XmlUtils.createDocumentFromXml(xmlContent);
-    if (!CacheXml.VERSION_LATEST.equals(XmlUtils.getAttribute(doc.getDocumentElement(), CacheXml.VERSION, CacheXml.GEODE_NAMESPACE))) {
-      doc = XmlUtils.upgradeSchema(doc, CacheXml.GEODE_NAMESPACE, CacheXml.LATEST_SCHEMA_LOCATION, CacheXml.VERSION_LATEST);
-    }
-    return doc;
-  }
-
   public void clearSharedConfiguration() throws Exception {
     Region<String, Configuration> configRegion = getConfigurationRegion();
     if (configRegion != null) {
@@ -279,11 +223,9 @@ public class SharedConfiguration {
     }
   }
 
-
-  /*****
+  /**
    * Creates the shared configuration service
    * @param loadSharedConfigFromDir when set to true, loads the configuration from the share_config directory
-   * @throws Exception 
    */
   public void initSharedConfiguration(boolean loadSharedConfigFromDir) throws Exception {
     status.set(SharedConfigurationStatus.STARTED);
@@ -349,23 +291,11 @@ public class SharedConfiguration {
     status.set(SharedConfigurationStatus.RUNNING);
   }
 
-
-  public boolean lockSharedConfiguration() {
-    return sharedConfigLockingService.lock(SHARED_CONFIG_LOCK_NAME, -1, -1);
-  }
-
-  public void unlockSharedConfiguration() {
-    sharedConfigLockingService.unlock(SHARED_CONFIG_LOCK_NAME);
-  }
-
-  /****
+  /**
    * Creates a ConfigurationResponse based on the configRequest, configuration response contains the requested shared configuration
    * This method locks the SharedConfiguration
-   * @param configRequest
-   * @return ConfigurationResponse
-   * @throws Exception 
    */
-  public ConfigurationResponse createConfigurationReponse(ConfigurationRequest configRequest) throws Exception {
+  public ConfigurationResponse createConfigurationReponse(final ConfigurationRequest configRequest) throws Exception {
 
     ConfigurationResponse configResponse = new ConfigurationResponse();
 
@@ -401,7 +331,7 @@ public class SharedConfiguration {
     return configResponse;
   }
 
-  /***
+  /**
    * Create a response containing the status of the Shared configuration and information about other locators containing newer
    * shared configuration data (if at all)
    * @return {@link SharedConfigurationStatusResponse} containing the {@link SharedConfigurationStatus}
@@ -413,13 +343,10 @@ public class SharedConfiguration {
     return response;
   }
 
-  /*****
+  /**
    * Deletes the xml entity from the shared configuration.
-   * @param xmlEntity 
-   * @param groups
-   * @throws Exception
    */
-  public void deleteXmlEntity (XmlEntity xmlEntity, String[] groups) throws Exception {
+  public void deleteXmlEntity(final XmlEntity xmlEntity, String[] groups) throws Exception {
     Region<String, Configuration> configRegion = getConfigurationRegion();
     //No group is specified, so delete in every single group if it exists.
     if (groups == null) {
@@ -441,7 +368,7 @@ public class SharedConfiguration {
     }
   }
 
-  public void modifyCacheAttributes(XmlEntity xmlEntity, String [] groups) throws Exception {
+  public void modifyCacheAttributes(final XmlEntity xmlEntity, String [] groups) throws Exception {
     Region<String, Configuration> configRegion = getConfigurationRegion();
     //No group is specified, so modify the cache attributes for a in every single group if it exists.
     if (groups == null) {
@@ -474,27 +401,26 @@ public class SharedConfiguration {
     }
   }
 
-  /***
-   * Only to be used for clean up in DUnits. 
+  /**
+   * For tests only. TODO: clean this up and remove from production code
+   * <p/>
+   * Throws {@code AssertionError} wrapping any exception thrown by operation.
    */
-  public void destroySharedConfiguration() {
-    Region<String, Configuration> configRegion;
+  public void destroySharedConfiguration_forTestsOnly() {
     try {
-      configRegion = getConfigurationRegion();
+      Region<String, Configuration> configRegion = getConfigurationRegion();
       if (configRegion != null) {
         configRegion.destroyRegion();
       }
       DiskStore configDiskStore = this.cache.findDiskStore(CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
       if (configDiskStore != null) {
         configDiskStore.destroy();
-        File file = new File(CONFIG_DISK_DIR_PATH);
+        File file = new File(configDiskDirPath);
         FileUtils.deleteDirectory(file);
       }
-      FileUtils.deleteDirectory(new File(CONFIG_DIR_PATH));
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (Exception e1) {
-      e1.printStackTrace();
+      FileUtils.deleteDirectory(new File(configDirPath));
+    } catch (Exception exception) {
+      throw new AssertionError(exception);
     }
   }
 
@@ -521,7 +447,7 @@ public class SharedConfiguration {
         if (configuration != null) {
           Set<String> jarNameSet = configuration.getJarNames();
           for (String jarName : jarNameSet) {
-            String groupDirPath = FilenameUtils.concat(CONFIG_DIR_PATH, group);
+            String groupDirPath = FilenameUtils.concat(configDirPath, group);
             if (!jarsAdded.contains(jarName)) {
               String jarFilePath = FilenameUtils.concat(groupDirPath, jarName);
               jarNames[ctr]=jarName;
@@ -531,18 +457,163 @@ public class SharedConfiguration {
           }
         }
       }
+
       jars[0] = jarNames;
       jars[1] = jarBytes;
     }
     return jars;
   }
 
+  public Configuration getConfiguration(String groupName) throws Exception {
+    Configuration configuration = getConfigurationRegion().get(groupName);
+    return configuration;
+  }
 
-  /***
-   * Gets the Jar from existing locators in the system
-   * @throws Exception 
+  public Map<String, Configuration> getEntireConfiguration() throws Exception {
+    Set<String> keys = getConfigurationRegion().keySet();
+    return getConfigurationRegion().getAll(keys);
+  }
+
+  /**
+   * Returns the path of Shared configuration directory
+   * @return {@link String}  path of the shared configuration directory
    */
-  public void getAllJarsFromOtherLocators() throws Exception {
+  public String getSharedConfigurationDirPath() {
+    return configDirPath;
+  }
+
+  /**
+   * Gets the current status of the SharedConfiguration
+   * If the status is started , it determines if the shared configuration is waiting for new configuration on
+   * other locators
+   * @return {@link SharedConfigurationStatus}
+   */
+  public SharedConfigurationStatus getStatus() {
+    SharedConfigurationStatus scStatus = this.status.get();
+    if (scStatus == SharedConfigurationStatus.STARTED) {
+      PersistentMemberManager pmm = cache.getPersistentMemberManager();
+      Map<String, Set<PersistentMemberID>> waitingRegions = pmm.getWaitingRegions();
+      if (!waitingRegions.isEmpty()) {
+        this.status.compareAndSet(SharedConfigurationStatus.STARTED, SharedConfigurationStatus.WAITING);
+        Set<PersistentMemberID> persMemIds =  waitingRegions.get(Region.SEPARATOR_CHAR + CONFIG_REGION_NAME);
+        for (PersistentMemberID persMemId : persMemIds) {
+          newerSharedConfigurationLocatorInfo.add(new PersistentMemberPattern(persMemId));
+        }
+      }
+    }
+    return this.status.get();
+  }
+
+  /**
+   * Loads the
+   * @throws Exception
+   */
+  public void loadSharedConfigurationFromDisk() throws Exception {
+    Map<String, Configuration> sharedConfigurationMap = readSharedConfigurationFromDisk();
+    getConfigurationRegion().clear();
+    getConfigurationRegion().putAll(sharedConfigurationMap);
+  }
+
+  public void modifyProperties(final Properties properties, String[] groups) throws Exception {
+    if (groups == null) {
+      groups = new String[] {SharedConfiguration.CLUSTER_CONFIG};
+    }
+    Region<String, Configuration> configRegion = getConfigurationRegion();
+    for (String group : groups) {
+      Configuration configuration = configRegion.get(group);
+      if (configuration == null) {
+        configuration = new Configuration(group);
+      }
+      configuration.getGemfireProperties().putAll(properties);
+      configRegion.put(group, configuration);
+      writeConfig(configuration);
+    }
+  }
+
+  /**
+   * Removes the jar files from the shared configuration.
+   * @param jarNames Names of the jar files.
+   * @param groups Names of the groups which had the jar file deployed.
+   * @return true on success.
+   */
+  public boolean removeJars(final String[] jarNames, String[] groups){
+    boolean success = true;
+    try {
+      Region<String, Configuration> configRegion = getConfigurationRegion();
+      if (groups == null) {
+        Set<String> groupSet = configRegion.keySet();
+        groups = groupSet.toArray(new String[groupSet.size()]);
+      }
+      for (String group : groups) {
+        Configuration configuration = (Configuration) configRegion.get(group);
+        if (configuration != null) {
+          String dirPath = FilenameUtils.concat(getSharedConfigurationDirPath(), configuration.getConfigName());
+          removeJarFiles(dirPath, jarNames);
+        }
+      }
+      for (String group : groups) {
+        Configuration configuration = (Configuration) configRegion.get(group);
+        if (configuration != null) {
+          if (!configuration.getJarNames().isEmpty()) {
+            configuration.removeJarNames(jarNames);
+            configRegion.put(group, configuration);
+          }
+        }
+      }
+    } catch (Exception e) {
+      logger.info("Exception occurred while deleting the jar files", e);
+      success = false;
+    }
+    return success;
+  }
+
+  public void renameExistingSharedConfigDirectory() {
+    File configDirFile = new File(configDirPath);
+    if (configDirFile.exists()) {
+      String configDirFileName2 = CLUSTER_CONFIG_ARTIFACTS_DIR_NAME + new SimpleDateFormat("yyyyMMddhhmm").format(new Date()) + "." + System.nanoTime();
+      File configDirFile2 = new File(FilenameUtils.concat(configDirFileName2, configDirFileName2));
+      try {
+        FileUtils.moveDirectoryToDirectory(configDirFile, configDirFile2, true);
+      } catch (IOException e) {
+        logger.info(e);
+      }
+    }
+  }
+
+  /**
+   * Writes the contents of the {@link Configuration} to the file system
+   */
+  public void writeConfig(final Configuration configuration) throws Exception {
+    File configDir = new File(getSharedConfigurationDirPath());
+    if (!configDir.exists()) {
+      if (!configDir.mkdirs()) {
+        throw new IOException("Cannot create directory : " + getSharedConfigurationDirPath());
+      }
+    }
+    String dirPath = FilenameUtils.concat(getSharedConfigurationDirPath(), configuration.getConfigName());
+    File file = new File(dirPath);
+    if (!file.exists()) {
+      if (!file.mkdir()) {
+        throw new IOException("Cannot create directory : " + dirPath);
+      }
+    }
+
+    writeProperties(dirPath, configuration);
+    writeCacheXml(dirPath, configuration);
+  }
+
+  private boolean lockSharedConfiguration() {
+    return sharedConfigLockingService.lock(SHARED_CONFIG_LOCK_NAME, -1, -1);
+  }
+
+  private void unlockSharedConfiguration() {
+    sharedConfigLockingService.unlock(SHARED_CONFIG_LOCK_NAME);
+  }
+
+  /**
+   * Gets the Jar from existing locators in the system
+   */
+  private void getAllJarsFromOtherLocators() throws Exception {
     logger.info("Getting Jar files from other locators");
     DM dm = cache.getDistributionManager();
     DistributedMember me = cache.getMyId();
@@ -555,7 +626,6 @@ public class SharedConfiguration {
       logger.info("No other locators present");
       return;
     }
-    @SuppressWarnings("unchecked")
     ResultCollector<?, List<Object>> rc = (ResultCollector<?, List<Object>>) CliUtil.executeFunction(getAllJarsFunction, null , locators);
 
     List<Object> results = rc.getResult();
@@ -584,7 +654,7 @@ public class SharedConfiguration {
       for (String group : groups) {
         Configuration config = entireConfiguration.get(group);
         Set<String> groupJarNames = config.getJarNames();
-        String groupDirPath = FilenameUtils.concat(CONFIG_DIR_PATH, group);
+        String groupDirPath = FilenameUtils.concat(configDirPath, group);
 
         for (String groupJarName : groupJarNames) {
           Integer index = jarIndex.get(groupJarName);
@@ -609,29 +679,22 @@ public class SharedConfiguration {
     }
   }
 
-  public Configuration getConfiguration(String groupName) throws Exception {
-    Configuration configuration = (Configuration)getConfigurationRegion().get(groupName);
-    return configuration;
-  }
-
-  /*****
+  /**
    * Gets the region containing the shared configuration data.
    * The region is created , if it does not exist already.
    * Note : this could block if this locator contains stale persistent configuration data.
-   * @return  {@link Region} ConfigurationRegion
-   * @throws Exception 
+   * @return {@link Region} ConfigurationRegion
    */
   private Region<String, Configuration> getConfigurationRegion() throws Exception {
-    @SuppressWarnings("unchecked")
     Region<String, Configuration> configRegion = cache.getRegion(CONFIG_REGION_NAME);
 
     try {
       if (configRegion == null) {
-        File diskDir = new File(CONFIG_DISK_DIR_PATH);
+        File diskDir = new File(configDiskDirPath);
 
         if (!diskDir.exists()) {
           if (!diskDir.mkdirs()) {
-            throw new IOException("Cannot create directory at " + CONFIG_DISK_DIR_PATH);
+            throw new IOException("Cannot create directory at " + configDiskDirPath);
           }
         }
 
@@ -653,83 +716,24 @@ public class SharedConfiguration {
 
         configRegion = cache.createVMRegion(CONFIG_REGION_NAME, regionAttrsFactory.create(), internalArgs);
       }
+
     } catch (CancelException e) {
       if (configRegion == null) {
         this.status.set(SharedConfigurationStatus.STOPPED);
       }
       throw e; // CONFIG: don't rethrow as Exception, keep it a subclass of CancelException
+
     } catch (Exception e) {
       if (configRegion == null) {
         this.status.set(SharedConfigurationStatus.STOPPED);
       }
       throw new Exception("Error occurred while initializing cluster configuration", e);
     }
+
     return configRegion;
   }
 
-  public Map<String, Configuration> getEntireConfiguration() throws Exception {
-    Set<String> keys = getConfigurationRegion().keySet();
-    return getConfigurationRegion().getAll(keys);
-  }
-
-
-  /****
-   * Returns the path of Shared configuration directory
-   * @return {@link String}  path of the shared configuration directory
-   */
-  public String getSharedConfigurationDirPath() {
-    return CONFIG_DIR_PATH;
-  }
-
-
-  /*****
-   * Gets the current status of the SharedConfiguration
-   * If the status is started , it determines if the shared configuration is waiting for new configuration on 
-   * other locators
-   * @return {@link SharedConfigurationStatus}
-   */
-  public SharedConfigurationStatus getStatus() {
-    SharedConfigurationStatus scStatus = this.status.get();
-    if (scStatus == SharedConfigurationStatus.STARTED) {
-      PersistentMemberManager pmm = cache.getPersistentMemberManager();
-      Map<String, Set<PersistentMemberID>> waitingRegions = pmm.getWaitingRegions();
-      if (!waitingRegions.isEmpty()) {
-        this.status.compareAndSet(SharedConfigurationStatus.STARTED, SharedConfigurationStatus.WAITING);
-        Set<PersistentMemberID> persMemIds =  waitingRegions.get(Region.SEPARATOR_CHAR + CONFIG_REGION_NAME);
-        for (PersistentMemberID persMemId : persMemIds) {
-          newerSharedConfigurationLocatorInfo.add(new PersistentMemberPattern(persMemId));
-        }
-      }
-    }
-    return this.status.get();
-  }
-  /****
-   * Loads the 
-   * @throws Exception 
-   */
-  public void loadSharedConfigurationFromDisk() throws Exception {
-    Map<String, Configuration> sharedConfigurationMap = readSharedConfigurationFromDisk();
-    getConfigurationRegion().clear();
-    getConfigurationRegion().putAll(sharedConfigurationMap);
-  }
-
-  public void modifyProperties(Properties properties, String[] groups) throws Exception {
-    if (groups == null) {
-      groups = new String[] {SharedConfiguration.CLUSTER_CONFIG};
-    }
-    Region<String, Configuration> configRegion = getConfigurationRegion();
-    for (String group : groups) {
-      Configuration configuration = (Configuration) configRegion.get(group);
-      if (configuration == null) {
-        configuration = new Configuration(group);
-      } 
-      configuration.getGemfireProperties().putAll(properties);
-      configRegion.put(group, configuration);
-      writeConfig(configuration);
-    }
-  }
-
-  /*****
+  /**
    * Reads the configuration information from the shared configuration directory and returns a {@link Configuration} object
    * @param configName
    * @param configDirectory
@@ -739,7 +743,7 @@ public class SharedConfiguration {
    * @throws ParserConfigurationException 
    * @throws SAXException 
    */
-  private Configuration readConfiguration(String configName, String configDirectory) throws SAXException, ParserConfigurationException, TransformerFactoryConfigurationError, TransformerException {
+  private Configuration readConfiguration(final String configName, final String configDirectory) throws SAXException, ParserConfigurationException, TransformerFactoryConfigurationError, TransformerException {
     Configuration configuration = new Configuration(configName);
     String cacheXmlFullPath = FilenameUtils.concat(configDirectory, configuration.getCacheXmlFileName());
     String propertiesFullPath = FilenameUtils.concat(configDirectory, configuration.getPropertiesFileName());
@@ -760,14 +764,13 @@ public class SharedConfiguration {
     return configuration;
   }
 
-  /*****
+  /**
    * Reads the properties from the properties file.
    * @param propertiesFilePath
    * @return {@link Properties}
    * @throws IOException
    */
-  public Properties readProperties(String propertiesFilePath) throws IOException{
-
+  private Properties readProperties(final String propertiesFilePath) throws IOException {
     Properties properties = new Properties();
     File propsFile = new File(propertiesFilePath);
     FileInputStream fis = null;
@@ -784,9 +787,8 @@ public class SharedConfiguration {
     return properties;
   }
 
-
-  /****
-   * Reads the "shared_config" directory and loads all the cache.xml , gemfire.properties and deployd jars information
+  /**
+   * Reads the "shared_config" directory and loads all the cache.xml, gemfire.properties and deployed jars information
    * @return {@link Map} 
    * @throws TransformerException 
    * @throws TransformerFactoryConfigurationError 
@@ -794,12 +796,12 @@ public class SharedConfiguration {
    * @throws SAXException 
    */
   private Map<String, Configuration> readSharedConfigurationFromDisk() throws SAXException, ParserConfigurationException, TransformerFactoryConfigurationError, TransformerException {
-    String []subdirectoryNames = getSubdirectories(CONFIG_DIR_PATH);
+    String[] subdirectoryNames = getSubdirectories(configDirPath);
     Map<String, Configuration> sharedConfiguration = new HashMap<String, Configuration>();
 
     if (subdirectoryNames != null) {
       for (String subdirectoryName : subdirectoryNames) {
-        String fullpath = FilenameUtils.concat(CONFIG_DIR_PATH, subdirectoryName);
+        String fullpath = FilenameUtils.concat(configDirPath, subdirectoryName);
         Configuration configuration = readConfiguration(subdirectoryName, fullpath);
         sharedConfiguration.put(subdirectoryName, configuration);
       }
@@ -807,16 +809,13 @@ public class SharedConfiguration {
     return sharedConfiguration;
   }
 
-
-
-  /****
+  /**
    * Removes the jar files from the given directory     
    * @param dirPath Path of the configuration directory
    * @param jarNames Names of the jar files
    * @throws IOException
    */
-
-  public void removeJarFiles (String dirPath, String[] jarNames) throws IOException {
+  private void removeJarFiles(final String dirPath, final String[] jarNames) throws IOException {
     if (jarNames != null) {
       for (int i=0; i<jarNames.length; i++) {
         File jarFile = new File(FilenameUtils.concat(dirPath, jarNames[i]));
@@ -838,96 +837,21 @@ public class SharedConfiguration {
     }
   }
 
-  /****
-   * Removes the jar files from the shared configuration. 
-   * @param jarNames Names of the jar files.
-   * @param groups Names of the groups which had the jar file deployed.
-   * @return true on success.
-   */
-  public boolean removeJars(String []jarNames, String[] groups){
-    boolean success = true;
-    try {
-      Region<String, Configuration> configRegion = getConfigurationRegion();
-      if (groups == null) {
-        Set<String> groupSet = configRegion.keySet();
-        groups = groupSet.toArray(new String[groupSet.size()]);
-      }
-      for (String group : groups) {
-        Configuration configuration = (Configuration) configRegion.get(group);
-        if (configuration != null) {
-          String dirPath = FilenameUtils.concat(getSharedConfigurationDirPath(), configuration.getConfigName());
-          removeJarFiles(dirPath, jarNames);
-        }
-      }
-      for (String group : groups) {
-        Configuration configuration = (Configuration) configRegion.get(group);
-        if (configuration != null) {
-          if (!configuration.getJarNames().isEmpty()) {
-            configuration.removeJarNames(jarNames);
-            configRegion.put(group, configuration);
-          }
-        } 
-      }
-    } catch (Exception e) {
-      logger.info("Exception occurred while deleting the jar files", e);
-      success = false;
-    }
-    return success;
-  }
-
-  public void renameExistingSharedConfigDirectory() {
-    File configDirFile = new File(CONFIG_DIR_PATH);
-    if (configDirFile.exists()) {
-      String configDirFileName2 = CLUSTER_CONFIG_ARTIFACTS_DIR_NAME + new SimpleDateFormat("yyyyMMddhhmm").format(new Date()) + "." + System.nanoTime(); 
-      File configDirFile2 = new File(FilenameUtils.concat(configDirFileName2, configDirFileName2));
-      try {
-        FileUtils.moveDirectoryToDirectory(configDirFile, configDirFile2, true);
-      } catch (IOException e) {
-        logger.info(e);
-      }
-    } 
-  }
-  /***
+  /**
    * Writes the cache.xml to the file , based on Configuration
-   * @param dirPath Path of the directory in which the configuration is written
-   * @param configuration 
-   * @throws IOException 
    */
-  private void writeCacheXml(String dirPath, Configuration configuration) throws IOException {
+  private void writeCacheXml(final String dirPath, final Configuration configuration) throws IOException {
     String fullPath = FilenameUtils.concat(dirPath,configuration.getCacheXmlFileName());
     FileUtils.writeStringToFile(new File(fullPath), configuration.getCacheXmlContent(), "UTF-8") ;
   }
-  /***
-   * Writes the contents of the {@link Configuration} to the file system
-   * @param configuration
-   * @throws Exception
-   */
-  public void writeConfig(Configuration configuration) throws Exception {
-    File configDir = new File(getSharedConfigurationDirPath());
-    if (!configDir.exists()) {
-      if (!configDir.mkdirs()) {
-        throw new IOException("Cannot create directory : " + getSharedConfigurationDirPath());
-      }
-    }
-    String dirPath = FilenameUtils.concat(getSharedConfigurationDirPath(), configuration.getConfigName());
-    File file = new File(dirPath);
-    if (!file.exists()) {
-      if (!file.mkdir()) {
-        throw new IOException("Cannot create directory : " + dirPath);
-      }
-    }
 
-    writeProperties(dirPath, configuration);
-    writeCacheXml(dirPath, configuration);
-  }
-
-  /*****
+  /**
    * Writes the 
    * @param dirPath target directory , where the jar files are to be written
    * @param jarNames Array containing the name of the jar files.
    * @param jarBytes Array of byte arrays for the jar files.
    */
-  private void writeJarFiles(String dirPath , String[] jarNames, byte[][] jarBytes) {
+  private void writeJarFiles(final String dirPath, final String[] jarNames, final byte[][] jarBytes) {
     for (int i=0; i<jarNames.length; i++) {
       String filePath = FilenameUtils.concat(dirPath, jarNames[i]);
       File jarFile = new File(filePath);
@@ -939,17 +863,49 @@ public class SharedConfiguration {
     }
   }
 
-  /****
+  /**
    * Writes the properties to the file based on the {@link Configuration}
-   * @param dirPath
-   * @param configuration
-   * @throws IOException
    */
-  private void writeProperties(String dirPath, Configuration configuration) throws IOException {
+  private void writeProperties(final String dirPath, final Configuration configuration) throws IOException {
     String fullPath = FilenameUtils.concat(dirPath,configuration.getPropertiesFileName());
     BufferedWriter bw = new BufferedWriter(new FileWriter(fullPath));
     configuration.getGemfireProperties().store(bw, "");
     bw.close();
   }
 
+  /**
+   * Create a {@link Document} using
+   * {@link XmlUtils#createDocumentFromXml(String)} and if the version attribute
+   * is not equal to the current version then update the XML to the current
+   * schema and return the document.
+   *
+   * @param xmlContent XML content to load and upgrade.
+   * @return {@link Document} from xmlContent.
+   * @since 8.1
+   */
+  // UnitTest SharedConfigurationJUnitTest.testCreateAndUpgradeDocumentFromXml
+  static Document createAndUpgradeDocumentFromXml(final String xmlContent) throws SAXException, ParserConfigurationException, IOException, XPathExpressionException {
+    Document doc = XmlUtils.createDocumentFromXml(xmlContent);
+    if (!CacheXml.VERSION_LATEST.equals(XmlUtils.getAttribute(doc.getDocumentElement(), CacheXml.VERSION, CacheXml.GEODE_NAMESPACE))) {
+      doc = XmlUtils.upgradeSchema(doc, CacheXml.GEODE_NAMESPACE, CacheXml.LATEST_SCHEMA_LOCATION, CacheXml.VERSION_LATEST);
+    }
+    return doc;
+  }
+
+  /**
+   * Returns an array containing the names of the subdirectories in a given directory
+   * @param path Path of the directory whose subdirectories are listed
+   * @return String[] names of first level subdirectories, null if no subdirectories are found or if the path is incorrect
+   */
+  private static String[] getSubdirectories(String path) {
+    File directory = new File(path);
+    return directory.list(DirectoryFileFilter.INSTANCE);
+  }
+
+  private static class JarFileFilter implements FilenameFilter {
+    @Override
+    public boolean accept(File dir, String name) {
+      return name.endsWith(".jar");
+    }
+  }
 }

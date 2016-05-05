@@ -38,7 +38,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * Unit tests for LocatorLauncher.LocatorState
  */
 @Category(UnitTest.class)
-public class LocatorStateJUnitTest {
+public class LocatorStateTest {
 
   @Test
   public void fromJsonWithEmptyStringThrowsIllegalArgumentException() throws Exception {

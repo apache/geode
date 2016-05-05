@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
+import org.junit.runner.Description;
+
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
@@ -24,12 +26,10 @@ import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.junit.rules.DescribedExternalResource;
-import org.junit.runner.Description;
 
 /**
  * Class which eases the creation of MBeans for security testing. When combined with {@link JMXConnectionConfiguration}
  * it allows for the creation of per-test connections with different user/password combinations.
- *
  */
 public class GfshShellConnectionRule extends DescribedExternalResource {
 
@@ -38,9 +38,9 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   private boolean useHttp = false;
   private HeadlessGfsh gfsh;
   private boolean authenticated;
+
   /**
    * Rule constructor
-   *
    */
   public GfshShellConnectionRule(int jmxPort, int httpPort, boolean useHttp) {
     this.jmxPort = jmxPort;
@@ -55,7 +55,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
     CliUtil.isGfshVM = true;
     String shellId = getClass().getSimpleName() + "_" + description.getMethodName();
-    gfsh = new HeadlessGfsh(shellId, 30);
+    gfsh = new HeadlessGfsh(shellId, 30, "gfsh_files"); // TODO: move to TemporaryFolder
 
     final CommandStringBuilder connectCommand = new CommandStringBuilder(CliStrings.CONNECT);
     connectCommand.addOption(CliStrings.CONNECT__USERNAME, config.user());

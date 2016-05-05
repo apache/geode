@@ -23,16 +23,12 @@ import jline.console.ConsoleReader;
 import org.springframework.shell.core.ExitShellRequest;
 import org.springframework.shell.event.ShellStatus.Status;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -60,14 +56,14 @@ public class HeadlessGfsh implements ResultHandler {
   private long timeout = 20;
   public String outputString = null;
 
-  public HeadlessGfsh(String name, int timeout) throws ClassNotFoundException, IOException {
-    this(name, timeout, null);
+  public HeadlessGfsh(String name, int timeout, String parentDir) throws ClassNotFoundException, IOException {
+    this(name, timeout, null, parentDir);
   }
 
-  public HeadlessGfsh(String name, int timeout, Properties envProps) throws ClassNotFoundException, IOException {
+  public HeadlessGfsh(String name, int timeout, Properties envProps, String parentDir) throws ClassNotFoundException, IOException {
     this.timeout = timeout;
     System.setProperty("jline.terminal", GfshUnsupportedTerminal.class.getName());
-    this.shell = new HeadlessGfshShell(name, this);
+    this.shell = new HeadlessGfshShell(name, this, parentDir);
     this.shell.setEnvProperty(Gfsh.ENV_APP_RESULT_VIEWER, "non-basic");
 
     if (envProps != null) {
@@ -175,8 +171,8 @@ public class HeadlessGfsh implements ResultHandler {
     private boolean hasError = false;
     boolean stopCalledThroughAPI = false;
 
-    protected HeadlessGfshShell(String testName, ResultHandler handler) throws ClassNotFoundException, IOException {
-      super(false, new String[]{}, new HeadlessGfshConfig(testName));
+    protected HeadlessGfshShell(String testName, ResultHandler handler, String parentDir) throws ClassNotFoundException, IOException {
+      super(false, new String[]{}, new HeadlessGfshConfig(testName, parentDir));
       this.handler = handler;
     }
 
@@ -297,7 +293,6 @@ public class HeadlessGfsh implements ResultHandler {
     }
   }
 
-
   /**
    * HeadlessGfshConfig for tests. Taken from TestableGfsh
    */
@@ -312,7 +307,7 @@ public class HeadlessGfsh implements ResultHandler {
     private String name;
     private String generatedHistoryFileName = null;
 
-    public HeadlessGfshConfig(String name) {
+    public HeadlessGfshConfig(String name, String parentDir) {
       this.name = name;
 
       if (isDUnitTest(this.name)) {
@@ -321,8 +316,8 @@ public class HeadlessGfsh implements ResultHandler {
         fileNamePrefix = "non-hydra-client";
       }
 
-      parentDir = new File("gfsh_files");
-      parentDir.mkdirs();
+      this.parentDir = new File(parentDir);
+      this.parentDir.mkdirs();
     }
 
     private static boolean isDUnitTest(String name) {

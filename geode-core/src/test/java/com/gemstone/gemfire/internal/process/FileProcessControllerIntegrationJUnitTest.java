@@ -40,7 +40,6 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import com.gemstone.gemfire.distributed.LocatorLauncher;
-import com.gemstone.gemfire.distributed.LocatorStateJUnitTest;
 import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
 import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
 import com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState;
@@ -51,15 +50,15 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  */
 @Category(IntegrationTest.class)
 public class FileProcessControllerIntegrationJUnitTest {
-  
+
+  private ProcessType processType;
+  private ExecutorService executor;
+
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
   
   @Rule
   public TestName testName = new TestName();
-  
-  private ProcessType processType;
-  private ExecutorService executor;
   
   @Before
   public void setUp() throws Exception {
@@ -114,8 +113,8 @@ public class FileProcessControllerIntegrationJUnitTest {
     // when: status is called in one thread and json is written to the file
     AtomicReference<String> status = new AtomicReference<String>();
     AtomicReference<Exception> exception = new AtomicReference<Exception>();
-    ExecutorService executor = Executors.newSingleThreadExecutor();
-    executor.execute(new Runnable() {
+    this.executor = Executors.newSingleThreadExecutor();
+    this.executor.execute(new Runnable() {
       @Override
       public void run() {
         try {

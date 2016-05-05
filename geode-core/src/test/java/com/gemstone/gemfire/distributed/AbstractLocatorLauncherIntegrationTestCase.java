@@ -27,17 +27,20 @@ import org.junit.rules.TemporaryFolder;
 import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
 import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
 import com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState;
+import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.DistributionLocator;
 
 /**
  * @since 8.0
  */
-public abstract class AbstractLocatorLauncherJUnitTestCase extends AbstractLauncherJUnitTestCase {
+public abstract class AbstractLocatorLauncherIntegrationTestCase extends AbstractLauncherIntegrationTestCase {
 
   protected volatile int locatorPort;
   protected volatile LocatorLauncher launcher;
-  
+  protected volatile String workingDirectory;
+  protected volatile String clusterConfigDirectory;
+
   @Rule
   public ErrorCollector errorCollector = new ErrorCollector();
 
@@ -45,21 +48,30 @@ public abstract class AbstractLocatorLauncherJUnitTestCase extends AbstractLaunc
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
-  public final void setUpLocatorLauncherTest() throws Exception {
+  public final void setUpAbstractLocatorLauncherIntegrationTestCase() throws Exception {
     final int port = AvailablePortHelper.getRandomAvailableTCPPort();
     System.setProperty(DistributionLocator.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, String.valueOf(port));
     this.locatorPort = port;
+    this.workingDirectory = this.temporaryFolder.getRoot().getCanonicalPath();
+    this.clusterConfigDirectory = this.temporaryFolder.newFolder(SharedConfiguration.CLUSTER_CONFIG_DISK_DIR_PREFIX + getUniqueName()).getCanonicalPath();
   }
   
   @After
-  public final void tearDownLocatorLauncherTest() throws Exception {    
+  public final void tearDownAbstractLocatorLauncherIntegrationTestCase() throws Exception {
     this.locatorPort = 0;
     if (this.launcher != null) {
       this.launcher.stop();
       this.launcher = null;
     }
   }
-  
+
+  /**
+   * Override if needed
+   */
+  protected Status getExpectedStopStatusForNotRunning() {
+    return Status.NOT_RESPONDING;
+  }
+
   protected void waitForLocatorToStart(final LocatorLauncher launcher, int timeout, int interval, boolean throwOnTimeout) throws Exception {
     assertEventuallyTrue("waiting for process to start: " + launcher.status(), new Callable<Boolean>() {
       @Override

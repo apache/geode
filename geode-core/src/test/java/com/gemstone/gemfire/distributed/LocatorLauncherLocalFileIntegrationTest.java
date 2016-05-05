@@ -27,22 +27,22 @@ import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * Subclass of ServerLauncherLocalDUnitTest which forces the code to not find 
- * the Attach API which is in the JDK tools.jar.  As a result ServerLauncher
+ * Subclass of LocatorLauncherLocalDUnitTest which forces the code to not find 
+ * the Attach API which is in the JDK tools.jar. As a result LocatorLauncher
  * ends up using the FileProcessController implementation.
  *
  * @since 8.0
  */
 @Category(IntegrationTest.class)
-public class ServerLauncherLocalFileJUnitTest extends ServerLauncherLocalJUnitTest {
+public class LocatorLauncherLocalFileIntegrationTest extends LocatorLauncherLocalIntegrationTest {
 
   @Before
-  public final void setUpServerLauncherLocalFileTest() throws Exception {
+  public final void setUpLocatorLauncherLocalFileIntegrationTest() throws Exception {
     System.setProperty(ProcessControllerFactory.PROPERTY_DISABLE_ATTACH_API, "true");
   }
   
   @After
-  public final void tearDownServerLauncherLocalFileTest() throws Exception {   
+  public final void tearDownLocatorLauncherLocalFileIntegrationTest() throws Exception {
   }
   
   @Override

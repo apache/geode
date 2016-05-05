@@ -22,7 +22,6 @@ import java.lang.management.ManagementFactory;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
-
 import javax.management.MBeanServer;
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
@@ -47,14 +46,14 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * @since 8.0
  */
 @Category(IntegrationTest.class)
-public class LauncherMemberMXBeanJUnitTest extends AbstractLauncherJUnitTestCase {
+public class LauncherMemberMXBeanIntegrationTest extends AbstractLauncherIntegrationTestCase {
 
   @Before
-  public final void setUpLauncherMemberMXBeanTest() throws Exception {
+  public final void setUpLauncherMemberMXBeanIntegrationTest() throws Exception {
   }
 
   @After
-  public final void tearDownLauncherMemberMXBeanTest() throws Exception {
+  public final void tearDownLauncherMemberMXBeanIntegrationTest() throws Exception {
     InternalDistributedSystem ids = InternalDistributedSystem.getConnectedInstance();
     if (ids != null) {
       ids.disconnect();

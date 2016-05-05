@@ -303,10 +303,6 @@ public abstract class OperationContext extends WildcardPermission{
     return Resource.NULL;
   }
 
-  /**
-   *
-   * @return
-   */
   public String getRegionName(){
     return "NULL";
   }

@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import org.junit.Test;
+
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -43,27 +45,24 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * Unit tests for the DeployCommands class
  *
  * @since 7.0
  */
-@Category(DistributedTest.class)
 @SuppressWarnings("serial")
 public class DeployCommandsDUnitTest extends CliCommandTestBase {
 
-  File newDeployableJarFile = new File("DeployCommandsDUnit1.jar");
-
-  transient private ClassBuilder classBuilder = new ClassBuilder();
-  transient private CommandProcessor commandProcessor;
+  private final Pattern pattern = Pattern.compile("^" + JarDeployer.JAR_PREFIX + "DeployCommandsDUnit.*#\\d++$");
+  private File newDeployableJarFile;
+  private transient ClassBuilder classBuilder;
+  private transient CommandProcessor commandProcessor;
 
   @Override
-  public final void postSetUp() throws Exception {
+  public final void postSetUpCliCommandTestBase() throws Exception {
+    this.newDeployableJarFile = new File(this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + "DeployCommandsDUnit1.jar");
+    this.classBuilder = new ClassBuilder();
     this.commandProcessor = new CommandProcessor();
     assertFalse(this.commandProcessor.isStopped());
 
@@ -93,7 +92,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
-  public void testDeploy() throws IOException {
+  public void testDeploy() throws Exception {
     final Properties props = new Properties();
     final Host host = Host.getHost(0);
     final VM vm = host.getVM(0);
@@ -179,7 +178,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
-  public void testUndeploy() throws IOException {
+  public void testUndeploy() throws Exception {
     final Properties props = new Properties();
     final Host host = Host.getHost(0);
     final VM vm = host.getVM(0);
@@ -256,7 +255,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
-  public void testListDeployed() throws IOException {
+  public void testListDeployed() throws Exception {
     final Properties props = new Properties();
     final Host host = Host.getHost(0);
     final VM vm = host.getVM(0);
@@ -325,24 +324,27 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
    * Does an end-to-end test using the complete CLI framework while ensuring that the shared configuration is updated.
    */
   @Test
-  public void testEndToEnd() throws IOException {
-    final String groupName = "testDeployEndToEndGroup";
+  public void testEndToEnd() throws Exception {
+    final String groupName = getName();
 
     // Start the Locator and wait for shared configuration to be available
     final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final String locatorLogPath = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + "locator-" + locatorPort + ".log";
+
     Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
       @Override
       public void run() {
 
-        final File locatorLogFile = new File("locator-" + locatorPort + ".log");
+        final File locatorLogFile = new File(locatorLogPath);
+
         final Properties locatorProps = new Properties();
         locatorProps.setProperty(DistributionConfig.NAME_NAME, "Locator");
         locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
         locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
         locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+
         try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null,
-              locatorProps);
+          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null, locatorProps);
 
           WaitCriterion wc = new WaitCriterion() {
             @Override
@@ -356,8 +358,9 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
             }
           };
           Wait.waitForCriterion(wc, 5000, 500, true);
-        } catch (IOException ioex) {
-          fail("Unable to create a locator with a shared configuration");
+
+        } catch (IOException e) {
+          fail("Unable to create a locator with a shared configuration", e);
         }
       }
     });
@@ -373,7 +376,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     this.classBuilder.writeJarFromName("DeployCommandsDUnitA", this.newDeployableJarFile);
 
     // Deploy the JAR
-    CommandResult cmdResult = executeCommand("deploy --jar=DeployCommandsDUnit1.jar");
+    CommandResult cmdResult = executeCommand("deploy --jar=" + this.newDeployableJarFile.getCanonicalPath());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     String stringResult = commandResultToString(cmdResult);
@@ -393,7 +396,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
         "Manager.*DeployCommandsDUnit1.jar.*" + JarDeployer.JAR_PREFIX + "DeployCommandsDUnit1.jar#1"));
 
     // Deploy the JAR to a group
-    cmdResult = executeCommand("deploy --jar=DeployCommandsDUnit1.jar --group=" + groupName);
+    cmdResult = executeCommand("deploy --jar=" + this.newDeployableJarFile.getCanonicalPath() + " --group=" + groupName);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     stringResult = commandResultToString(cmdResult);
@@ -454,12 +457,11 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(commandResultToString(cmdResult).contains(CliStrings.LIST_DEPLOYED__NO_JARS_FOUND_MESSAGE));
   }
 
-  final Pattern pattern = Pattern.compile("^" + JarDeployer.JAR_PREFIX + "DeployCommandsDUnit.*#\\d++$");
-
-  void deleteSavedJarFiles() {
+  private void deleteSavedJarFiles() {
     this.newDeployableJarFile.delete();
 
     File dirFile = new File(".");
+
     // Find all deployed JAR files
     File[] oldJarFiles = dirFile.listFiles(new FilenameFilter() {
       @Override

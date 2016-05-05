@@ -53,7 +53,7 @@ public class UserCommandsDUnitTest extends CliCommandTestBase {
   boolean deleteJarDirectory = false;
 
   @Override
-  public final void postSetUp() throws Exception {
+  public final void postSetUpCliCommandTestBase() throws Exception {
     createUserCommandJarFile();
   }
 
