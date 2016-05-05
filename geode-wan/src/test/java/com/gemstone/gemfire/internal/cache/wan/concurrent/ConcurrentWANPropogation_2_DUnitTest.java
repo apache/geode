@@ -50,9 +50,9 @@ public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
 
     //keep the maxQueueMemory low enough to trigger eviction
     vm4.invoke(() -> WANTestBase.createConcurrentSender( "ln", 2,
-        false, 50, 5, false, false, null, true, 5, OrderPolicy.KEY ));
+        false, 10, 5, false, false, null, true, 5, OrderPolicy.KEY ));
     vm5.invoke(() -> WANTestBase.createConcurrentSender( "ln", 2,
-        false, 50, 5, false, false, null, true, 5, OrderPolicy.KEY ));
+        false, 10, 5, false, false, null, true, 5, OrderPolicy.KEY ));
 
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", null, isOffHeap() ));
@@ -60,6 +60,8 @@ public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
         getTestMethodName() + "_RR", null, isOffHeap() ));
 
     startSenderInVMs("ln", vm4, vm5);
+    vm2.invoke(() -> addListenerToSleepAfterCreateEvent(1000, getTestMethodName() + "_RR"));
+    vm3.invoke(() -> addListenerToSleepAfterCreateEvent(1000, getTestMethodName() + "_RR"));
 
     vm4.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", "ln", isOffHeap() ));
@@ -71,12 +73,12 @@ public class ConcurrentWANPropogation_2_DUnitTest extends WANTestBase {
         getTestMethodName() + "_RR", "ln", isOffHeap() ));
 
     vm4.invoke(() -> WANTestBase.doHeavyPuts(
-        getTestMethodName() + "_RR", 150 ));
+        getTestMethodName() + "_RR", 15 ));
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_RR", 150, 240000));
+        getTestMethodName() + "_RR", 15, 240000));
     vm3.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_RR", 150, 240000 ));
+        getTestMethodName() + "_RR", 15, 240000 ));
   }
 
   public void Bug46921_testSerialReplicatedWanWithPersistence() {

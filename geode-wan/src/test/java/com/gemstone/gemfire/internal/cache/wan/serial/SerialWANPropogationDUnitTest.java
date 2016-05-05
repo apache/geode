@@ -785,7 +785,7 @@ public class SerialWANPropogationDUnitTest extends WANTestBase {
 
     // create one RR (RR_1) on remote site
     vm2.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR_1", null, isOffHeap()));
-    vm2.invoke(() -> WANTestBase.addListenerToSleepAfterCreateEvent(2000));
+    vm2.invoke(() -> WANTestBase.addListenerToSleepAfterCreateEvent(2000, getTestMethodName() + "_RR_1"));
     // start the senders on local site
     startSenderInVMs("ln", vm4, vm5);
 
@@ -976,8 +976,8 @@ public class SerialWANPropogationDUnitTest extends WANTestBase {
 
     vm3.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR_1", null, isOffHeap()));
 
-    vm2.invoke(() -> addListenerToSleepAfterCreateEvent(2000));
-    vm3.invoke(() -> addListenerToSleepAfterCreateEvent(2000));
+    vm2.invoke(() -> addListenerToSleepAfterCreateEvent(2000, getTestMethodName() + "_RR_1"));
+    vm3.invoke(() -> addListenerToSleepAfterCreateEvent(2000, getTestMethodName() + "_RR_1"));
 
     // create one RR (RR_1) on local site
     vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR_1", "ln", isOffHeap()));

@@ -854,8 +854,8 @@ public class WANTestBase extends DistributedTestCase{
     }
   }
 
-  public static void addListenerToSleepAfterCreateEvent(int milliSeconds) {
-    cache.getRegion(getTestMethodName() + "_RR_1").getAttributesMutator()
+  public static void addListenerToSleepAfterCreateEvent(int milliSeconds, final String regionName) {
+    cache.getRegion(regionName).getAttributesMutator()
       .addCacheListener(new CacheListenerAdapter<Object, Object>() {
         @Override
         public void afterCreate(final EntryEvent<Object, Object> event) {

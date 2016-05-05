@@ -38,9 +38,9 @@ public class SerialWANPropogationsFeatureDUnitTest extends WANTestBase{
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
     vm4.invoke(() -> WANTestBase.createSender( "ln", 2,
-        false, 100, 10, false, false, null, true ));
+        false, 10, 10, false, false, null, true ));
     vm5.invoke(() -> WANTestBase.createSender( "ln", 2,
-        false, 100, 10, false, false, null, true ));
+        false, 10, 10, false, false, null, true ));
 
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", null, isOffHeap()  ));
@@ -48,6 +48,8 @@ public class SerialWANPropogationsFeatureDUnitTest extends WANTestBase{
         getTestMethodName() + "_RR", null, isOffHeap()  ));
 
     startSenderInVMs("ln", vm4, vm5);
+    vm2.invoke(() -> addListenerToSleepAfterCreateEvent(1000, getTestMethodName() + "_RR"));
+    vm3.invoke(() -> addListenerToSleepAfterCreateEvent(1000, getTestMethodName() + "_RR"));
 
     vm4.invoke(() -> WANTestBase.createReplicatedRegion(
         getTestMethodName() + "_RR", "ln", isOffHeap()  ));
@@ -59,12 +61,12 @@ public class SerialWANPropogationsFeatureDUnitTest extends WANTestBase{
         getTestMethodName() + "_RR", "ln", isOffHeap()  ));
 
     vm4.invoke(() -> WANTestBase.doHeavyPuts(
-        getTestMethodName() + "_RR", 120 ));
+        getTestMethodName() + "_RR", 15 ));
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_RR", 120, 240000 ));
+        getTestMethodName() + "_RR", 15, 240000 ));
     vm3.invoke(() -> WANTestBase.validateRegionSize(
-        getTestMethodName() + "_RR", 120, 240000 ));
+        getTestMethodName() + "_RR", 15, 240000 ));
   }
 
   public void testSerialReplicatedWanWithPersistence() {
