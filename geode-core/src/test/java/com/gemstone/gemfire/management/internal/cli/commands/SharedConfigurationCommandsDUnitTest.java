@@ -16,201 +16,210 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
+import static com.gemstone.gemfire.internal.AvailablePortHelper.*;
+import static com.gemstone.gemfire.management.internal.cli.CliUtil.*;
+import static com.gemstone.gemfire.management.internal.cli.i18n.CliStrings.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.Host.*;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.NetworkUtils.*;
 import static com.gemstone.gemfire.test.dunit.Wait.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.ClassBuilder;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.cli.Result.Status;
-import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationDUnitTest;
+import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationTestUtils;
 import com.gemstone.gemfire.management.internal.configuration.domain.Configuration;
-import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-/***
+/**
  * DUnit test to test export and import of shared configuration.
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("unchecked")
 public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
 
-  private static final long serialVersionUID = 1L;
   private static final int TIMEOUT = 10000;
   private static final int INTERVAL = 500;
 
-  File newDeployableJarFile = new File("DeployCommandsDUnit1.jar");
-  private transient ClassBuilder classBuilder = new ClassBuilder();
+  private final String region1Name = "r1";
+  private final String region2Name = "r2";
+  private final String logLevel = "info";
 
-  @Test
-  public void testExportImportSharedConfiguration() {
+  private String groupName;
+
+  private String deployedJarName;
+  private File newDeployableJarFile;
+  private ClassBuilder classBuilder;
+
+  private String sharedConfigZipFileName;
+  private String startArchiveFileName;
+  private int[] ports;
+
+  private int locator1Port;
+  private String locator1Name;
+  private String locator1LogFilePath;
+
+  private int locator2Port;
+  private String locator2Name;
+  private String locator2LogFilePath;
+
+  private int locator1HttpPort;
+  private int locator1JmxPort;
+  private String locator1JmxHost;
+
+  @Override
+  protected final void postSetUpCliCommandTestBase() throws Exception {
     disconnectAllFromDS();
 
-    final String region1Name = "r1";
-    final String region2Name = "r2";
-    final String groupName = "testRegionSharedConfigGroup";
-    final String sharedConfigZipFileName = "sharedConfig.zip";
-    final String deployedJarName = "DeployCommandsDUnit1.jar";
-    final String logLevel = "info";
-    final String startArchiveFileName = "stats.gfs";
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    this.groupName = getName();
+    this.deployedJarName = "DeployCommandsDUnit1.jar";
+    this.newDeployableJarFile = new File(this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + deployedJarName);
+    this.classBuilder = new ClassBuilder();
 
-    // TODO Sourabh - the code below is similar to CliCommandTestBase.setUpJmxManagerOnVm0ThenConnect(..); we may want to consider
-    // refactoring this and combine the duplicate code blocks using either the Template Method and/or Strategy design
-    // patterns.  We can talk about this.
+    this.sharedConfigZipFileName = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + "sharedConfig.zip";
+    this.startArchiveFileName = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + "stats.gfs";
+    this.ports = getRandomAvailableTCPPorts(4);
+
+    this.locator1Port = this.ports[0];
+    this.locator1Name = "locator1-" + this.locator1Port;
+    this.locator1LogFilePath = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + "locator-" + this.locator1Port + ".log";
+
+    this.locator2Port = this.ports[1];
+    this.locator2Name = "Locator2-" + this.locator2Port;
+    this.locator2LogFilePath = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + "locator-" + this.locator2Port + ".log";
+
+    this.locator1HttpPort = ports[2];
+    this.locator1JmxPort = ports[3];
+    this.locator1JmxHost = getIPLiteral();
+  }
+
+  @Override
+  public final void postTearDownCacheTestCase() throws Exception {
+    for (int i = 0; i < 4; i++) {
+      getHost(0).getVM(i).invoke(SharedConfigurationTestUtils.cleanupLocator);
+    }
+  }
+
+  @Test
+  public void testExportImportSharedConfiguration() throws IOException {
     // Start the Locator and wait for shared configuration to be available
-    final int locator1Port = ports[0];
-    final String locator1Name = "locator1-" + locator1Port;
-    VM locatorAndMgr = Host.getHost(0).getVM(3);
-    Object[] result = (Object[]) locatorAndMgr.invoke(new SerializableCallable() {
+    VM locatorAndMgr = getHost(0).getVM(3);
+    Set<DistributedMember> normalMembers1 = (Set<DistributedMember>) locatorAndMgr.invoke(new SerializableCallable() {
       @Override
       public Object call() {
-        int httpPort;
-        int jmxPort;
-        String jmxHost;
-
-        try {
-          jmxHost = InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException ignore) {
-          jmxHost = "localhost";
-        }
-
-        final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-
-        jmxPort = ports[0];
-        httpPort = ports[1];
-
-        final File locatorLogFile = new File("locator-" + locator1Port + ".log");
+        final File locatorLogFile = new File(locator1LogFilePath);
 
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(DistributionConfig.NAME_NAME, locator1Name);
-        locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "config");
-        locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
-        locatorProps.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-        locatorProps.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
-        locatorProps.setProperty(DistributionConfig.JMX_MANAGER_BIND_ADDRESS_NAME, String.valueOf(jmxHost));
-        locatorProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
-        locatorProps.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
+        locatorProps.setProperty(NAME_NAME, locator1Name);
+        locatorProps.setProperty(MCAST_PORT_NAME, "0");
+        locatorProps.setProperty(LOG_LEVEL_NAME, "config");
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+        locatorProps.setProperty(JMX_MANAGER_NAME, "true");
+        locatorProps.setProperty(JMX_MANAGER_START_NAME, "true");
+        locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS_NAME, String.valueOf(locator1JmxHost));
+        locatorProps.setProperty(JMX_MANAGER_PORT_NAME, String.valueOf(locator1JmxPort));
+        locatorProps.setProperty(HTTP_SERVICE_PORT_NAME, String.valueOf(locator1HttpPort));
 
         try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile,
-              null, locatorProps);
+          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile, null, locatorProps);
+
           WaitCriterion wc = new WaitCriterion() {
             @Override
             public boolean done() {
               return locator.isSharedConfigurationRunning();
             }
-
             @Override
             public String description() {
               return "Waiting for shared configuration to be started";
             }
           };
           waitForCriterion(wc, TIMEOUT, INTERVAL, true);
-        } catch (IOException ioex) {
-          fail("Unable to create a locator with a shared configuration");
+
+        } catch (IOException e) {
+          fail("Unable to create a locator with a shared configuration", e);
         }
 
-        final Object[] result = new Object[4];
-        result[0] = jmxHost;
-        result[1] = jmxPort;
-        result[2] = httpPort;
-        result[3] = CliUtil.getAllNormalMembers(CacheFactory.getAnyInstance());
-
-        return result;
+        return getAllNormalMembers(CacheFactory.getAnyInstance());
       }
     });
 
     HeadlessGfsh gfsh = getDefaultShell();
-    String jmxHost = (String) result[0];
-    int jmxPort = (Integer) result[1];
-    int httpPort = (Integer) result[2];
-    Set<DistributedMember> normalMembers1 = (Set<DistributedMember>) result[3];
+    shellConnect(locator1JmxHost, locator1JmxPort, locator1HttpPort, gfsh);
 
-    shellConnect(jmxHost, jmxPort, httpPort, gfsh);
     // Create a cache in VM 1
-    VM dataMember = Host.getHost(0).getVM(1);
+    VM dataMember = getHost(0).getVM(1);
     normalMembers1 = (Set<DistributedMember>) dataMember.invoke(new SerializableCallable() {
       @Override
       public Object call() {
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locator1Port);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
-        localProps.setProperty(DistributionConfig.NAME_NAME, "DataMember");
+        localProps.setProperty(MCAST_PORT_NAME, "0");
+        localProps.setProperty(LOCATORS_NAME, "localhost:" + locator1Port);
+        localProps.setProperty(GROUPS_NAME, groupName);
+        localProps.setProperty(NAME_NAME, "DataMember");
         getSystem(localProps);
         Cache cache = getCache();
         assertNotNull(cache);
-        return CliUtil.getAllNormalMembers(cache);
+        return getAllNormalMembers(cache);
       }
     });
+
     // Create a JAR file
-    try {
-      this.classBuilder.writeJarFromName("DeployCommandsDUnitA", this.newDeployableJarFile);
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+    this.classBuilder.writeJarFromName("DeployCommandsDUnitA", this.newDeployableJarFile);
 
     // Deploy the JAR
-    CommandResult cmdResult = executeCommand("deploy --jar=" + deployedJarName);
+    CommandResult cmdResult = executeCommand("deploy --jar=" + this.newDeployableJarFile.getCanonicalPath());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
+
     //Create the region1 on the group
-    CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_REGION);
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGION, region1Name);
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "REPLICATE");
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__STATISTICSENABLED, "true");
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__GROUP, groupName);
+    CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CREATE_REGION);
+    commandStringBuilder.addOption(CREATE_REGION__REGION, region1Name);
+    commandStringBuilder.addOption(CREATE_REGION__REGIONSHORTCUT, "REPLICATE");
+    commandStringBuilder.addOption(CREATE_REGION__STATISTICSENABLED, "true");
+    commandStringBuilder.addOption(CREATE_REGION__GROUP, groupName);
 
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
-    commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_REGION);
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGION, region2Name);
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION");
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__STATISTICSENABLED, "true");
+    commandStringBuilder = new CommandStringBuilder(CREATE_REGION);
+    commandStringBuilder.addOption(CREATE_REGION__REGION, region2Name);
+    commandStringBuilder.addOption(CREATE_REGION__REGIONSHORTCUT, "PARTITION");
+    commandStringBuilder.addOption(CREATE_REGION__STATISTICSENABLED, "true");
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
-    //Alter runtime configuration 
-    commandStringBuilder = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
-    commandStringBuilder.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__LEVEL, logLevel);
-    commandStringBuilder.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT, "50");
-    commandStringBuilder.addOption(CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT, "32");
-    commandStringBuilder.addOption(CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT, "49");
-    commandStringBuilder.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE, "120");
-    commandStringBuilder.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE, startArchiveFileName);
-    commandStringBuilder.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLING__ENABLED, "true");
-    commandStringBuilder.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, "10");
+    //Alter runtime configuration
+    commandStringBuilder = new CommandStringBuilder(ALTER_RUNTIME_CONFIG);
+    commandStringBuilder.addOption(ALTER_RUNTIME_CONFIG__LOG__LEVEL, logLevel);
+    commandStringBuilder.addOption(ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT, "50");
+    commandStringBuilder.addOption(ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT, "32");
+    commandStringBuilder.addOption(ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT, "49");
+    commandStringBuilder.addOption(ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE, "120");
+    commandStringBuilder.addOption(ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE, this.startArchiveFileName);
+    commandStringBuilder.addOption(ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLING__ENABLED, "true");
+    commandStringBuilder.addOption(ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, "10");
     cmdResult = executeCommand(commandStringBuilder.getCommandString());
     String resultString = commandResultToString(cmdResult);
 
@@ -218,15 +227,15 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
     getLogWriter().info(resultString);
     assertEquals(true, cmdResult.getStatus().equals(Status.OK));
 
-    commandStringBuilder = new CommandStringBuilder(CliStrings.STATUS_SHARED_CONFIG);
+    commandStringBuilder = new CommandStringBuilder(STATUS_SHARED_CONFIG);
     cmdResult = executeCommand(commandStringBuilder.getCommandString());
     resultString = commandResultToString(cmdResult);
     getLogWriter().info("#SB Result\n");
     getLogWriter().info(resultString);
     assertEquals(Status.OK, cmdResult.getStatus());
 
-    commandStringBuilder = new CommandStringBuilder(CliStrings.EXPORT_SHARED_CONFIG);
-    commandStringBuilder.addOption(CliStrings.EXPORT_SHARED_CONFIG__FILE, sharedConfigZipFileName);
+    commandStringBuilder = new CommandStringBuilder(EXPORT_SHARED_CONFIG);
+    commandStringBuilder.addOption(EXPORT_SHARED_CONFIG__FILE, this.sharedConfigZipFileName);
     cmdResult = executeCommand(commandStringBuilder.getCommandString());
     resultString = commandResultToString(cmdResult);
     getLogWriter().info("#SB Result\n");
@@ -234,8 +243,8 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(Status.OK, cmdResult.getStatus());
 
     //Import into a running system should fail
-    commandStringBuilder = new CommandStringBuilder(CliStrings.IMPORT_SHARED_CONFIG);
-    commandStringBuilder.addOption(CliStrings.IMPORT_SHARED_CONFIG__ZIP, sharedConfigZipFileName);
+    commandStringBuilder = new CommandStringBuilder(IMPORT_SHARED_CONFIG);
+    commandStringBuilder.addOption(IMPORT_SHARED_CONFIG__ZIP, this.sharedConfigZipFileName);
     cmdResult = executeCommand(commandStringBuilder.getCommandString());
     assertEquals(Status.ERROR, cmdResult.getStatus());
 
@@ -263,39 +272,34 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    //Now execute import shared configuration 
+    //Now execute import shared configuration
     //Now import the shared configuration and it should succeed.
-    commandStringBuilder = new CommandStringBuilder(CliStrings.IMPORT_SHARED_CONFIG);
-    commandStringBuilder.addOption(CliStrings.IMPORT_SHARED_CONFIG__ZIP, sharedConfigZipFileName);
+    commandStringBuilder = new CommandStringBuilder(IMPORT_SHARED_CONFIG);
+    commandStringBuilder.addOption(IMPORT_SHARED_CONFIG__ZIP, this.sharedConfigZipFileName);
     cmdResult = executeCommand(commandStringBuilder.getCommandString());
     assertEquals(Status.OK, cmdResult.getStatus());
 
     //Start a new locator , test if it has all the imported shared configuration artifacts
-    VM newLocator = Host.getHost(0).getVM(2);
-    final int locator2Port = ports[1];
-    final String locator2Name = "Locator2-" + locator2Port;
-
+    VM newLocator = getHost(0).getVM(2);
     newLocator.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        final File locatorLogFile = new File("locator-" + locator2Port + ".log");
+        final File locatorLogFile = new File(locator2LogFilePath);
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(DistributionConfig.NAME_NAME, locator2Name);
-        locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-        locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
-        locatorProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locator1Port);
+        locatorProps.setProperty(NAME_NAME, locator2Name);
+        locatorProps.setProperty(MCAST_PORT_NAME, "0");
+        locatorProps.setProperty(LOG_LEVEL_NAME, "fine");
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+        locatorProps.setProperty(LOCATORS_NAME, "localhost:" + locator1Port);
 
         try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator2Port, locatorLogFile,
-              null, locatorProps);
+          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator2Port, locatorLogFile, null, locatorProps);
 
           WaitCriterion wc = new WaitCriterion() {
             @Override
             public boolean done() {
               return locator.isSharedConfigurationRunning();
             }
-
             @Override
             public String description() {
               return "Waiting for shared configuration to be started";
@@ -313,29 +317,15 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
           assertNotNull(clusterConfig);
           assertTrue(clusterConfig.getCacheXmlContent().contains(region2Name));
           assertTrue(clusterConfig.getJarNames().contains(deployedJarName));
-          assertTrue(
-              clusterConfig.getGemfireProperties().getProperty(DistributionConfig.LOG_LEVEL_NAME).equals(logLevel));
-          assertTrue(
-              clusterConfig.getGemfireProperties().getProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME).equals(
-                  startArchiveFileName));
-        } catch (IOException ioex) {
-          fail("Unable to create a locator with a shared configuration");
+          assertTrue(clusterConfig.getGemfireProperties().getProperty(LOG_LEVEL_NAME).equals(logLevel));
+          assertTrue(clusterConfig.getGemfireProperties().getProperty(STATISTIC_ARCHIVE_FILE_NAME).equals(startArchiveFileName));
+
+        } catch (IOException e) {
+          fail("Unable to create a locator with a shared configuration", e);
         } catch (Exception e) {
           fail("Error occurred in cluster configuration service", e);
         }
       }
     });
-
-    //Clean up
-    File sharedConfigZipFile = new File(sharedConfigZipFileName);
-    FileUtils.deleteQuietly(sharedConfigZipFile);
-    FileUtils.deleteQuietly(newDeployableJarFile);
-  }
-
-  @Override
-  public final void postTearDownCacheTestCase() throws Exception {
-    for (int i = 0; i < 4; i++) {
-      Host.getHost(0).getVM(i).invoke(SharedConfigurationDUnitTest.locatorCleanup);
-    }
   }
 }
