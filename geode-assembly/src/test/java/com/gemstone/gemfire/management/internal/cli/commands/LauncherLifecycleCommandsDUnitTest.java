@@ -714,7 +714,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
 
     // TODO figure out what output to assert and validate on now that 'stop locator' uses Gfsh's logger
     // and standard err/out...
-    //assertEquals(CliStrings.format(CliStrings.STOP_LOCATOR__SHUTDOWN_MEMBER_MESSAGE, pathname),
+    //assertIndexDetailsEquals(CliStrings.format(CliStrings.STOP_LOCATOR__SHUTDOWN_MEMBER_MESSAGE, pathname),
     //  StringUtils.trim(toString(result)));
 
     WaitCriterion waitCriteria = new WaitCriterion() {
@@ -792,7 +792,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
 
     // TODO figure out what output to assert and validate on now that 'stop locator' uses Gfsh's logger
     // and standard err/out...
-    //assertEquals(CliStrings.format(CliStrings.STOP_LOCATOR__SHUTDOWN_MEMBER_MESSAGE, memberId),
+    //assertIndexDetailsEquals(CliStrings.format(CliStrings.STOP_LOCATOR__SHUTDOWN_MEMBER_MESSAGE, memberId),
     //  StringUtils.trim(toString(result)));
 
     WaitCriterion waitCriteria = new WaitCriterion() {

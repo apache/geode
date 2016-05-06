@@ -309,7 +309,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
           Cache cache = getCache();
           ResourceManager manager = cache.getResourceManager();
           RebalanceResults results = doRebalance(false, manager);
-//          assertEquals(113, results.getTotalBucketCreatesCompleted());
+//          assertIndexDetailsEquals(113, results.getTotalBucketCreatesCompleted());
         }
       });
 
@@ -407,14 +407,14 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         //We actually *will* transfer buckets, because that improves
         //the balance
         assertEquals(3, results.getTotalBucketTransfersCompleted());
-//        assertEquals(0, results.getTotalBucketTransferBytes());
+//        assertIndexDetailsEquals(0, results.getTotalBucketTransferBytes());
         Set<PartitionRebalanceInfo> detailSet = results.getPartitionRebalanceDetails();
         assertEquals(1, detailSet.size());
         PartitionRebalanceInfo details = detailSet.iterator().next();
         assertEquals(0, details.getBucketCreatesCompleted());
         assertEquals(0, details.getPrimaryTransfersCompleted());
         assertEquals(3, details.getBucketTransfersCompleted());
-//        assertEquals(0, details.getBucketTransferBytes());
+//        assertIndexDetailsEquals(0, details.getBucketTransferBytes());
         if(!simulate) {
           verifyStats(manager, results);
         }
@@ -544,7 +544,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
           }
           assertEquals(2, info.getPrimaryCount());
         }
-//        assertEquals(0, details.getBucketTransferBytes());
+//        assertIndexDetailsEquals(0, details.getBucketTransferBytes());
         if(!simulate) {
           verifyStats(manager, results);
         }
@@ -743,7 +743,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
             assertEquals(2, info.getPrimaryCount());
           }
         }
-        //        assertEquals(0, details.getBucketTransferBytes());
+        //        assertIndexDetailsEquals(0, details.getBucketTransferBytes());
         verifyStats(manager, results);
       }
     });
@@ -1695,7 +1695,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         ResourceManager manager = cache.getResourceManager();
         RebalanceResults results = doRebalance(simulate, manager, INCLUDED, EXCLUDED);
         Set<PartitionRebalanceInfo> detailSet = results.getPartitionRebalanceDetails();
-//        assertEquals(3, detailSet.size());
+//        assertIndexDetailsEquals(3, detailSet.size());
         Set<String> names = new HashSet<String>();
         for(PartitionRebalanceInfo details: detailSet) {
           assertEquals(0, details.getBucketCreatesCompleted());
@@ -1825,7 +1825,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         assertEquals(0, results.getTotalBucketCreatesCompleted());
         //We don't know how many primaries will move, it depends on
         //if the move bucket code moves the primary or a redundant bucket
-        //assertEquals(0, results.getTotalPrimaryTransfersCompleted());
+        //assertIndexDetailsEquals(0, results.getTotalPrimaryTransfersCompleted());
         assertEquals(8, results.getTotalBucketTransfersCompleted());
         assertTrue(0 < results.getTotalBucketTransferBytes());
         Set<PartitionRebalanceInfo> detailSet = results.getPartitionRebalanceDetails();
@@ -1970,7 +1970,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         assertEquals(0, results.getTotalBucketCreatesCompleted());
         //We don't know how many primaries will move, it depends on
         //if the move bucket code moves the primary or a redundant bucket
-        //assertEquals(0, results.getTotalPrimaryTransfersCompleted());
+        //assertIndexDetailsEquals(0, results.getTotalPrimaryTransfersCompleted());
         assertEquals(8, results.getTotalBucketTransfersCompleted());
         assertTrue(0 < results.getTotalBucketTransferBytes());
         Set<PartitionRebalanceInfo> detailSet = results.getPartitionRebalanceDetails();
@@ -2017,7 +2017,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
           assertEquals(4, memberDetails.getPrimaryCount());
           afterSize += memberDetails.getSize();
         }
-        //assertEquals(totalSize.longValue(), afterSize);
+        //assertIndexDetailsEquals(totalSize.longValue(), afterSize);
       }
     };
 
@@ -2038,7 +2038,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         assertEquals(0, results.getTotalBucketCreatesCompleted());
         //We don't know how many primaries will move, it depends on
         //if the move bucket code moves the primary or a redundant bucket
-        //assertEquals(0, results.getTotalPrimaryTransfersCompleted());
+        //assertIndexDetailsEquals(0, results.getTotalPrimaryTransfersCompleted());
         assertEquals(6, results.getTotalBucketTransfersCompleted());
         assertTrue(0 < results.getTotalBucketTransferBytes());
         Set<PartitionRebalanceInfo> detailSet = results.getPartitionRebalanceDetails();
@@ -2059,7 +2059,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         assertEquals(4, afterDetails.size());
         for(PartitionMemberInfo memberDetails: afterDetails) {
           assertEquals(6, memberDetails.getBucketCount());
-//          assertEquals(3, memberDetails.getPrimaryCount());
+//          assertIndexDetailsEquals(3, memberDetails.getPrimaryCount());
           afterSize += memberDetails.getSize();
         }
         assertEquals(totalSize, afterSize);
@@ -2083,10 +2083,10 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
           long afterSize = 0;
           for(PartitionMemberInfo memberDetails: details.getPartitionMemberInfo()) {
             assertEquals(6, memberDetails.getBucketCount());
-            //            assertEquals(3, memberDetails.getPrimaryCount());
+            //            assertIndexDetailsEquals(3, memberDetails.getPrimaryCount());
             afterSize += memberDetails.getSize();
           }
-          //assertEquals(totalSize.longValue(), afterSize);
+          //assertIndexDetailsEquals(totalSize.longValue(), afterSize);
         }
       };
 
@@ -2154,7 +2154,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
         assertEquals(0, results.getTotalBucketCreatesCompleted());
         //We don't know how many primaries will move, it depends on
         //if the move bucket code moves the primary or a redundant bucket
-        //assertEquals(0, results.getTotalPrimaryTransfersCompleted());
+        //assertIndexDetailsEquals(0, results.getTotalPrimaryTransfersCompleted());
         assertEquals(8, results.getTotalBucketTransfersCompleted());
         assertTrue(0 < results.getTotalBucketTransferBytes());
         Set<PartitionRebalanceInfo> detailSet = results.getPartitionRebalanceDetails();

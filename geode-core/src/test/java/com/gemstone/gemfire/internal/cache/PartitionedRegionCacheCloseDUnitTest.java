@@ -237,7 +237,7 @@ public class PartitionedRegionCacheCloseDUnitTest extends
 //            VersionedArrayList nodeList = (VersionedArrayList)itr.next();
 //            logger.info("Size of nodeList for b2n entries for region = "
 //                + regionName + " = " + nodeList.size());
-//            assertEquals("Node list: " + nodeList, 1, nodeList.size());
+//            assertIndexDetailsEquals("Node list: " + nodeList, 1, nodeList.size());
 //          }
         }
       }

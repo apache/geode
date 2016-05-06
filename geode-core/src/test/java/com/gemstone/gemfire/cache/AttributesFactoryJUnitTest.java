@@ -16,12 +16,13 @@
  */
 package com.gemstone.gemfire.cache;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.util.Arrays;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
@@ -31,18 +32,12 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Tests the functionality of the {@link AttributesFactory} class.
  *
- *
  * @since 3.0
  */
 @Category(UnitTest.class)
-public class AttributesFactoryJUnitTest extends TestCase {
+public class AttributesFactoryJUnitTest {
 
-  public AttributesFactoryJUnitTest(String name) {
-    super(name);
-  }
-
-  ///////////////////////  Test Methods ///////////////////////
-
+  @Test
   public void testCopyConstructor() {
     AttributesFactory f1 = new AttributesFactory();
     f1.setLockGrantor(true);
@@ -60,6 +55,7 @@ public class AttributesFactoryJUnitTest extends TestCase {
    * Tests the {@link AttributesFactory#create} throws
    * the appropriate exception with poorly-configured factory.
    */
+  @Test
   public void testInvalidConfigurations() {
     AttributesFactory factory;
 
@@ -233,6 +229,7 @@ public class AttributesFactoryJUnitTest extends TestCase {
    * default} attributes factory has the advertised default
    * configuration.
    */
+  @Test
   public void testDefaultConfiguration() {
     AttributesFactory factory = new AttributesFactory();
     RegionAttributes attrs = factory.create();
@@ -275,6 +272,8 @@ public class AttributesFactoryJUnitTest extends TestCase {
     assertEquals(1, diskSizes.length);
     assertEquals(DiskStoreFactory.DEFAULT_DISK_DIR_SIZE, diskSizes[0]);
   }
+
+  @Test
   public void testDiskSynchronous() {
     {
       AttributesFactory factory = new AttributesFactory();
@@ -316,10 +315,12 @@ public class AttributesFactoryJUnitTest extends TestCase {
       assertEquals(false, attrs.isDiskSynchronous());
     }
   }
+
   /**
    * Tests the cacheListener functionality
    * @since 5.0
    */
+  @Test
   public void testCacheListeners() {
     RegionAttributes ra;
     CacheListener cl1 = new MyCacheListener();
@@ -386,9 +387,11 @@ public class AttributesFactoryJUnitTest extends TestCase {
     ra = factory.create();
     assertEquals(Arrays.asList(new CacheListener[]{cl2}), Arrays.asList(ra.getCacheListeners()));
   }
+
   /**
    * @since 5.7
    */
+  @Test
   public void testConnectionPool() {
     CacheLoader cl = new CacheLoader() {
         public Object load(LoaderHelper helper) throws CacheLoaderException {
@@ -413,7 +416,7 @@ public class AttributesFactoryJUnitTest extends TestCase {
    * Trivial cache listener impl
    * @since 5.0
    */
-  public static class MyCacheListener extends CacheListenerAdapter {
+  private static class MyCacheListener extends CacheListenerAdapter {
     // empty impl
   }
 }

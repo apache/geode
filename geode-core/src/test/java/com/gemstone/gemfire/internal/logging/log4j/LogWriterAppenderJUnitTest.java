@@ -40,7 +40,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Tests the LogWriterAppender.
- * 
  */
 @Category(UnitTest.class)
 public class LogWriterAppenderJUnitTest {

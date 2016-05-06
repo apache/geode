@@ -321,21 +321,21 @@ public class PdxDeserializationDUnitTest extends CacheTestCase {
 //    //Test puts and get in a transaction
 //    txManager.begin();
 //    region.put("C", new TestSerializable());
-//    assertEquals(TestSerializable.class, region.get("C").getClass());
+//    assertIndexDetailsEquals(TestSerializable.class, region.get("C").getClass());
 //    txManager.commit();
 //    
 //    txManager.begin();
-//    assertEquals(TestSerializable.class, region.get("C").getClass());
+//    assertIndexDetailsEquals(TestSerializable.class, region.get("C").getClass());
 //    txManager.commit();
 //    
 //    
 //    //Test cache load in a transaction
 //    txManager.begin();
-//    assertEquals(TestSerializable.class, region.get("D").getClass());
+//    assertIndexDetailsEquals(TestSerializable.class, region.get("D").getClass());
 //    txManager.commit();
 //    
 //    txManager.begin();
-//    assertEquals(TestSerializable.class, region.get("D").getClass());
+//    assertIndexDetailsEquals(TestSerializable.class, region.get("D").getClass());
 //    txManager.commit();
   }
   
@@ -343,8 +343,8 @@ public class PdxDeserializationDUnitTest extends CacheTestCase {
     assertEquals(TestSerializable.class, region.get("A").getClass());
     assertEquals(TestSerializable.class, region.get("B").getClass());
     //TODO Transactions don't work
-//    assertEquals(TestSerializable.class, region.get("C").getClass());
-//    assertEquals(TestSerializable.class, region.get("D").getClass());
+//    assertIndexDetailsEquals(TestSerializable.class, region.get("C").getClass());
+//    assertIndexDetailsEquals(TestSerializable.class, region.get("D").getClass());
   }
 
   

@@ -72,11 +72,11 @@ public class AbstractCommandsSupportJUnitTest {
     mockContext = null;
   }
 
-  protected AbstractCommandsSupport createAbstractCommandsSupport(final Cache cache) {
+  private AbstractCommandsSupport createAbstractCommandsSupport(final Cache cache) {
     return new TestCommands(cache);
   }
 
-  protected DistributedMember createMockMember(final String memberId, final String memberName) {
+  private DistributedMember createMockMember(final String memberId, final String memberName) {
     final DistributedMember mockMember = mockContext.mock(DistributedMember.class, "DistributedMember " + memberId);
 
     mockContext.checking(new Expectations() {{
@@ -385,7 +385,7 @@ public class AbstractCommandsSupportJUnitTest {
     assertEquals(writer.toString(), AbstractCommandsSupport.toString(t, true));
   }
 
-  protected static class TestCommands extends AbstractCommandsSupport {
+  private static class TestCommands extends AbstractCommandsSupport {
 
     private final Cache cache;
 

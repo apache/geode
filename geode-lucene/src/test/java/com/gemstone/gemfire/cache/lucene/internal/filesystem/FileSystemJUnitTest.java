@@ -16,16 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.cache.lucene.internal.filesystem;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -51,6 +46,7 @@ public class FileSystemJUnitTest {
 
   private static final int SMALL_CHUNK = 523;
   private static final int LARGE_CHUNK = 1024 * 1024 * 5 + 33;
+
   private FileSystem system;
   private Random rand = new Random();
   private ConcurrentHashMap<String, File> fileRegion;
@@ -67,7 +63,7 @@ public class FileSystemJUnitTest {
    * A test of reading and writing to a file.
    */
   @Test
-  public void testReadWriteBytes() throws IOException {
+  public void testReadWriteBytes() throws Exception {
     long start = System.currentTimeMillis();
     
     File file1= system.createFile("testFile1");
@@ -143,7 +139,7 @@ public class FileSystemJUnitTest {
    * but they should not hurt each other.
    */
   @Test
-  public void testCloneReader() throws IOException {
+  public void testCloneReader() throws Exception {
     File file1= system.createFile("testFile1");
     
     byte[] data = writeRandomBytes(file1);
@@ -180,7 +176,7 @@ public class FileSystemJUnitTest {
    * A test that skip can jump to the correct position in the stream
    */
   @Test
-  public void testSeek() throws IOException {
+  public void testSeek() throws Exception {
     File file= system.createFile("testFile1");
 
     ByteArrayOutputStream expected = new ByteArrayOutputStream();
@@ -238,10 +234,9 @@ public class FileSystemJUnitTest {
 
   /**
    * Test basic file operations - rename, delete, listFiles.
-   * @throws IOException
    */
   @Test
-  public void testFileOperations() throws IOException {
+  public void testFileOperations() throws Exception {
     String name1 = "testFile1";
     File file1= system.createFile(name1);
     byte[] file1Data = writeRandomBytes(file1);
@@ -292,19 +287,17 @@ public class FileSystemJUnitTest {
   
   /**
    * Test what happens if you have an unclosed stream and you create a new file.
-   * @throws IOException
    */
   @Test
-  public void testUnclosedStreamSmallFile() throws IOException {
+  public void testUnclosedStreamSmallFile() throws Exception {
     doUnclosedStream(SMALL_CHUNK);
   }
   
   /**
    * Test what happens if you have an unclosed stream and you create a new file.
-   * @throws IOException
    */
   @Test
-  public void testUnclosedStreamLargeFile() throws IOException {
+  public void testUnclosedStreamLargeFile() throws Exception {
     doUnclosedStream(LARGE_CHUNK);
   }
   
@@ -346,7 +339,7 @@ public class FileSystemJUnitTest {
    * the partial rename.
    */
   @Test
-  public void testPartialRename() throws IOException {
+  public void testPartialRename() throws Exception {
 
     final CountOperations countOperations = new CountOperations();
     //Create a couple of mock regions where we count the operations
@@ -387,7 +380,7 @@ public class FileSystemJUnitTest {
     try {
       system.renameFile(name2, name3);
       fail("should have seen an error");
-    } catch(CacheClosedException e) {
+    } catch(CacheClosedException expectedException) {
       
     }
     
@@ -413,7 +406,7 @@ public class FileSystemJUnitTest {
    * the partial rename.
    */
   @Test
-  public void testPartialDelete() throws IOException {
+  public void testPartialDelete() throws Exception {
 
     final CountOperations countOperations = new CountOperations();
     //Create a couple of mock regions where we count the operations
@@ -456,8 +449,7 @@ public class FileSystemJUnitTest {
     try {
       system.deleteFile(name2);
       fail("should have seen an error");
-    } catch(CacheClosedException e) {
-      
+    } catch(CacheClosedException expectedException) {
     }
     
     system = new FileSystem(fileRegion, chunkRegion);
@@ -466,22 +458,13 @@ public class FileSystemJUnitTest {
       //File was deleted, but shouldn't have any dangling chunks at this point
       assertEquals(Collections.EMPTY_SET, fileRegion.keySet());
       //TODO - need to purge chunks of deleted files somehow.
-//      assertEquals(Collections.EMPTY_SET, chunkRegion.keySet());
+//      assertIndexDetailsEquals(Collections.EMPTY_SET, chunkRegion.keySet());
     } else {
       file2 = system.getFile(name2);
       assertContents(expected.toByteArray(), file2);
     }
-    
   }
 
-  private File getOrCreateFile(String name) throws IOException {
-    try {
-      return system.getFile(name);
-    } catch(FileNotFoundException e) {
-      return system.createFile(name);
-    }
-  }
-  
   private void assertContents(byte[] data, File file) throws IOException {
     assertEquals(data.length, file.getLength());
     
@@ -512,11 +495,11 @@ public class FileSystemJUnitTest {
     outputStream.close();
   }
   
-  public byte[] getRandomBytes() {
+  private byte[] getRandomBytes() {
     return getRandomBytes(rand.nextInt(LARGE_CHUNK) + SMALL_CHUNK);
   }
-  
-  public byte[] getRandomBytes(int length) {
+
+  private byte[] getRandomBytes(int length) {
     byte[] data = new byte[length];
     rand.nextBytes(data);
     

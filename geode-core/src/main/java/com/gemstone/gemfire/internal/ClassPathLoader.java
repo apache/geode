@@ -87,8 +87,11 @@ public final class ClassPathLoader {
   // class is found in a directory instead of a JAR file (as when testing),
   // then it will be relative to the location of the root of the package and
   // class.
-  public static final File EXT_LIB_DIR = new File((new File(ClassPathLoader.class.getProtectionDomain().getCodeSource()
-      .getLocation().getPath())).getParent(), "ext");
+  public static final String EXT_LIB_DIR_PARENT_PROPERTY = "gemfire.ClassPathLoader.EXT_LIB_DIR";
+  public static final String EXT_LIB_DIR_PARENT_DEFAULT = ClassPathLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+  static final File defineEXT_LIB_DIR() {
+    return new File((new File(System.getProperty(EXT_LIB_DIR_PARENT_PROPERTY, EXT_LIB_DIR_PARENT_DEFAULT))).getParent(), "ext");
+  }
 
   // This token is placed into the list of class loaders to determine where
   // to insert the TCCL when in forName(...), getResource(...), etc.
@@ -205,6 +208,7 @@ public final class ClassPathLoader {
     
     // Add user JAR files from the EXT_LIB_DIR directory using a single ClassLoader
     try {
+      File EXT_LIB_DIR = defineEXT_LIB_DIR();
       if (EXT_LIB_DIR.exists()) {
         if (!EXT_LIB_DIR.isDirectory() || !EXT_LIB_DIR.canRead()) {
           logger.warn("Cannot read from directory when attempting to load JAR files: {}", EXT_LIB_DIR.getAbsolutePath());

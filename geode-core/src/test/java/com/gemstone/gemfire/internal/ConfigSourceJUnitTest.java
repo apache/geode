@@ -18,13 +18,14 @@ package com.gemstone.gemfire.internal;
 
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
 @Category(UnitTest.class)
 public class ConfigSourceJUnitTest {
+
   @Test
   public void testDescriptions() {
     ConfigSource cs = ConfigSource.api();

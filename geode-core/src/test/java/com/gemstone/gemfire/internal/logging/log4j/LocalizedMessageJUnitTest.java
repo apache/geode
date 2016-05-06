@@ -16,10 +16,7 @@
  */
 package com.gemstone.gemfire.internal.logging.log4j;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -30,7 +27,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Tests for LocalizedMessage which bridges our StringId LocalizedStrings for 
  * Log4J2 usage.
- * 
  */
 @Category(UnitTest.class)
 public class LocalizedMessageJUnitTest {

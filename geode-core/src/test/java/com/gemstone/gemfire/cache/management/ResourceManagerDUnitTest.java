@@ -474,7 +474,7 @@ public class ResourceManagerDUnitTest extends CacheTestCase {
                     primaryCount++;
                   }
                 }
-                //assertEquals(memberSizes[membersIdx] * (1024* 1024), 
+                //assertIndexDetailsEquals(memberSizes[membersIdx] * (1024* 1024),
                 //             totalBucketBytes);
                 assertEquals(memberPrimaryCounts[membersIdx], primaryCount);
                 

@@ -27,16 +27,16 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * See bug 52093.
  * Make sure that the contents of arrays are
  * used to test equality on regions ops.
  */
-@Category(UnitTest.class)
-public class ArrayEqualsJUnitTest {
+@Category(IntegrationTest.class)
+public class RegionOperationsEqualityShouldUseArrayEqualsIntegrationTest {
+
   private GemFireCacheImpl createCache() {
     Properties props = new Properties();
     props.setProperty("locators", "");
@@ -44,6 +44,7 @@ public class ArrayEqualsJUnitTest {
     GemFireCacheImpl result = (GemFireCacheImpl) new CacheFactory(props).create();
     return result;
   }
+
   private void closeCache(GemFireCacheImpl gfc) {
     gfc.close();
   }

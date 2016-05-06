@@ -206,8 +206,8 @@ public class MultiRegionIndexUsageJUnitTest {
       }
 
       // while(itr.hasNext()){
-      // assertEquals("villageName1", itr.next().toString());
-      // assertEquals("cityName2", itr.next().toString());
+      // assertIndexDetailsEquals("villageName1", itr.next().toString());
+      // assertIndexDetailsEquals("cityName2", itr.next().toString());
       // }
 
       CacheUtils.log("5555555555555555555555555555");
@@ -269,8 +269,8 @@ public class MultiRegionIndexUsageJUnitTest {
         }
       }
 
-      // assertEquals("villageName1", itr.next().toString());
-      // assertEquals("cityName3", itr.next().toString());
+      // assertIndexDetailsEquals("villageName1", itr.next().toString());
+      // assertIndexDetailsEquals("cityName3", itr.next().toString());
 
       areResultsMatching(rs, new String[] { sqlStr });
 
@@ -404,8 +404,8 @@ public class MultiRegionIndexUsageJUnitTest {
         }
       }
 
-      // assertEquals("districtName3", itr.next().toString());
-      // assertEquals("stateName2", itr.next().toString());
+      // assertIndexDetailsEquals("districtName3", itr.next().toString());
+      // assertIndexDetailsEquals("stateName2", itr.next().toString());
 
       areResultsMatching(rs, new String[] { sqlStr });
 
@@ -461,8 +461,8 @@ public class MultiRegionIndexUsageJUnitTest {
         }
       }
 
-      // assertEquals("cityName1", itr.next().toString());
-      // assertEquals("cityName2", itr.next().toString());
+      // assertIndexDetailsEquals("cityName1", itr.next().toString());
+      // assertIndexDetailsEquals("cityName2", itr.next().toString());
 
       areResultsMatching(rs, new String[] { sqlStr });
       CacheUtils.log("------------- testCutDown1 end------------- ");
@@ -516,8 +516,8 @@ public class MultiRegionIndexUsageJUnitTest {
         }
       }
 
-      // assertEquals("stateName2", itr.next().toString());
-      // assertEquals("cityName1", itr.next().toString());
+      // assertIndexDetailsEquals("stateName2", itr.next().toString());
+      // assertIndexDetailsEquals("cityName1", itr.next().toString());
 
       areResultsMatching(rs, new String[] { sqlStr });
       CacheUtils.log("------------- testSelectAsFromClause end------------- ");
@@ -571,9 +571,9 @@ public class MultiRegionIndexUsageJUnitTest {
         }
       }
 
-      // assertEquals("cityName3", itr.next().toString());
-      // assertEquals("cityName1", itr.next().toString());
-      // assertEquals("stateName1", itr.next().toString());
+      // assertIndexDetailsEquals("cityName3", itr.next().toString());
+      // assertIndexDetailsEquals("cityName1", itr.next().toString());
+      // assertIndexDetailsEquals("stateName1", itr.next().toString());
 
       areResultsMatching(rs, new String[] { sqlStr });
       CacheUtils.log("------------- testSelectAsWhereClause end------------- ");
@@ -665,8 +665,8 @@ public class MultiRegionIndexUsageJUnitTest {
         }
       }
 
-      // assertEquals("cityName", itr.next().toString());
-      // assertEquals("stateName", itr.next().toString());
+      // assertIndexDetailsEquals("cityName", itr.next().toString());
+      // assertIndexDetailsEquals("stateName", itr.next().toString());
 
       areResultsMatching(rs, new String[] { sqlStr });
       CacheUtils.log("------------- testFunctionUse2 end------------- ");
@@ -741,7 +741,7 @@ public class MultiRegionIndexUsageJUnitTest {
       QueryObserverHolder.setInstance(observer);
       rs[0][1] = (SelectResults) q.execute();
 
-      // assertEquals("districtName3", itr.next().toString());
+      // assertIndexDetailsEquals("districtName3", itr.next().toString());
 
       areResultsMatching(rs, new String[] { sqlStr });
       CacheUtils.log("------------- testFunctionUse4 end------------- ");

@@ -16,26 +16,22 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
-
-/**
- * 
- */
 @Category(UnitTest.class)
-public class EnumListenerEventJUnitTest extends TestCase
-{
+public class EnumListenerEventJUnitTest {
+
   /**
    * tests whether EnumListenerEvent.getEnumListenerEvent(int cCode) returns the
    * right result
-   * 
    */
-  public void testGetEnumListEvent()
-  {
+  @Test
+  public void testGetEnumListEvent() {
     checkAndAssert(0,  null);
     checkAndAssert(1,  EnumListenerEvent.AFTER_CREATE);
     checkAndAssert(2,  EnumListenerEvent.AFTER_UPDATE);
@@ -63,9 +59,9 @@ public class EnumListenerEventJUnitTest extends TestCase
   // check that the code and object both match
   private void checkAndAssert(int code, EnumListenerEvent event) {
     EnumListenerEvent localEvent = EnumListenerEvent.getEnumListenerEvent(code); 
-    Assert.assertTrue( localEvent == event);
+    assertTrue( localEvent == event);
     if (localEvent != null) {
-      Assert.assertTrue( localEvent.getEventCode() == code);
+      assertTrue( localEvent.getEventCode() == code);
     }
   }
 }

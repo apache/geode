@@ -21,8 +21,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 
-/**
- */
 @Category(UnitTest.class)
 public class Tomcat7SessionsJUnitTest extends TestSessionsBase {
 

@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.NanoTimer.TimeService;
-import com.gemstone.gemfire.internal.util.StopWatch;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -33,21 +32,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class NanoTimerJUnitTest {
   
-  /**
-   * Simple deterministic clock. Any time you want
-   * your clock to tick call incTime.
-   */
-  private class TestTimeService implements TimeService {
-    private long now;
-    public void incTime() {
-      this.now++;
-    }
-    @Override
-    public long getTime() {
-      return this.now;
-    }
-  }
-
   @Test
   public void testMillisToNanos() {
     assertEquals(0, NanoTimer.millisToNanos(0));
@@ -129,5 +113,20 @@ public class NanoTimerJUnitTest {
     assertTrue(timer.getLastResetTime() >= nanosFour);
     assertTrue(timer.getTimeSinceReset() < timer.getTimeSinceConstruction());
     assertTrue(timer.getTimeSinceReset() <= ts.getTime() - timer.getLastResetTime());
+  }
+
+  /**
+   * Simple deterministic clock. Any time you want
+   * your clock to tick call incTime.
+   */
+  private class TestTimeService implements TimeService {
+    private long now;
+    public void incTime() {
+      this.now++;
+    }
+    @Override
+    public long getTime() {
+      return this.now;
+    }
   }
 }

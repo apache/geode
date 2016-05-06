@@ -16,29 +16,56 @@
  */
 package com.gemstone.gemfire.internal;
 
-import java.sql.Timestamp;
-import java.util.concurrent.TimeUnit;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.CanonicalInstantiator;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalInstantiator;
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.UUID;
+import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
-import junit.framework.*;
-
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
+
+import com.gemstone.gemfire.CanonicalInstantiator;
+import com.gemstone.gemfire.DataSerializable;
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.Instantiator;
+import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Tests the functionality of the {@link DataSerializable} class.
@@ -46,22 +73,19 @@ import org.junit.experimental.categories.Category;
  * @since 3.0
  */
 @Category(UnitTest.class)
-public class DataSerializableJUnitTest extends TestCase
-  implements Serializable {
+public class DataSerializableJUnitTest implements Serializable {
 
   /** A <code>ByteArrayOutputStream</code> that data is serialized to */
   private transient ByteArrayOutputStream baos;
 
-  public DataSerializableJUnitTest(String name) {
-    super(name);
-  }
-
-  ////////  Helper methods
+  @Rule
+  public transient TestName testName = new TestName();
 
   /**
    * Creates a new <code>ByteArrayOutputStream</code> for this test to
    * work with.
    */
+  @Before
   public void setUp() {
     this.baos = new ByteArrayOutputStream();
   }
@@ -73,14 +97,14 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Returns a <code>DataOutput</code> to write to
    */
-  protected DataOutputStream getDataOutput() {
+  private DataOutputStream getDataOutput() {
     return new DataOutputStream(this.baos);
   }
 
   /**
    * Returns a <code>DataInput</code> to read from
    */
-  protected DataInput getDataInput() {
+  private DataInput getDataInput() {
     // changed this to use ByteBufferInputStream to give us better
     // test coverage of this class.
     ByteBuffer bb = ByteBuffer.wrap(this.baos.toByteArray());
@@ -88,7 +112,7 @@ public class DataSerializableJUnitTest extends TestCase
     return bbis;
   }
 
-  protected DataInputStream getDataInputStream() {
+  private DataInputStream getDataInputStream() {
     ByteBuffer bb = ByteBuffer.wrap(this.baos.toByteArray());
     ByteBufferInputStream bbis = new ByteBufferInputStream(bb);
     return new DataInputStream(bbis);
@@ -97,27 +121,17 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Returns a random number generator
    */
-  protected Random getRandom() {
-    long seed =
-      Long.getLong("SEED", System.currentTimeMillis()).longValue();
-    System.out.println("SEED for " + this.getName() + ": " + seed);
+  private Random getRandom() {
+    long seed = Long.getLong("SEED", System.currentTimeMillis()).longValue();
+    System.out.println("SEED for " + this.testName.getMethodName() + ": " + seed);
     return new Random(seed);
   }
-
-  protected static void fail(String s, Throwable t) {
-    StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter(sw, true);
-    pw.println(s);
-    t.printStackTrace(pw);
-    fail(sw.toString());
-  }
-
-  ////////  Test methods
 
   /**
    * Tests data serializing a {@link Class}
    */
-  public void testClass() throws IOException, ClassNotFoundException {
+  @Test
+  public void testClass() throws Exception {
     Class c = this.getClass();
 
     DataOutputStream out = getDataOutput();
@@ -131,11 +145,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a {@link Class} using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testClassObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testClassObject() throws Exception {
     Class c = this.getClass();
 
     DataOutputStream out = getDataOutput();
@@ -147,9 +160,8 @@ public class DataSerializableJUnitTest extends TestCase
     assertEquals(c, c2);
   }
 
-  public void testBigInteger()
-  throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testBigInteger() throws Exception {
     BigInteger o = new BigInteger("12345678901234567890");
 
     DataOutputStream out = getDataOutput();
@@ -160,9 +172,9 @@ public class DataSerializableJUnitTest extends TestCase
     BigInteger o2 = (BigInteger) DataSerializer.readObject(in);
     assertEquals(o, o2);
   }
-  public void testBigDecimal()
-  throws IOException, ClassNotFoundException {
 
+  @Test
+  public void testBigDecimal() throws Exception {
     BigDecimal o = new BigDecimal("1234567890.1234567890");
 
     DataOutputStream out = getDataOutput();
@@ -173,9 +185,9 @@ public class DataSerializableJUnitTest extends TestCase
     BigDecimal o2 = (BigDecimal) DataSerializer.readObject(in);
     assertEquals(o, o2);
   }
-  public void testUUID()
-  throws IOException, ClassNotFoundException {
 
+  @Test
+  public void testUUID() throws Exception {
     UUID o = UUID.randomUUID();
 
     DataOutputStream out = getDataOutput();
@@ -186,9 +198,9 @@ public class DataSerializableJUnitTest extends TestCase
     UUID o2 = (UUID) DataSerializer.readObject(in);
     assertEquals(o, o2);
   }
-  public void testTimestamp()
-  throws IOException, ClassNotFoundException {
 
+  @Test
+  public void testTimestamp() throws Exception {
     Timestamp o = new Timestamp(new Date().getTime() + 79);
 
     DataOutputStream out = getDataOutput();
@@ -203,7 +215,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a {@link Date}
    */
-  public void testDate() throws IOException {
+  @Test
+  public void testDate() throws Exception {
     Date date = new Date();
 
     DataOutputStream out = getDataOutput();
@@ -217,11 +230,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a {@link Date} using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testDateObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testDateObject() throws Exception {
     Date date = new Date();
 
     DataOutputStream out = getDataOutput();
@@ -236,7 +248,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a {@link File}
    */
-  public void testFile() throws IOException {
+  @Test
+  public void testFile() throws Exception {
     File file = new File(System.getProperty("user.dir"));
 
     DataOutputStream out = getDataOutput();
@@ -250,11 +263,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a {@link File} using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testFileObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testFileObject() throws Exception {
     File file = new File(System.getProperty("user.dir"));
 
     DataOutputStream out = getDataOutput();
@@ -269,7 +281,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a {@link InetAddress}
    */
-  public void testInetAddress() throws IOException {
+  @Test
+  public void testInetAddress() throws Exception {
     InetAddress address = InetAddress.getLocalHost();
 
     DataOutputStream out = getDataOutput();
@@ -277,18 +290,17 @@ public class DataSerializableJUnitTest extends TestCase
     out.flush();
 
     DataInput in = getDataInput();
-    InetAddress address2 = 
+    InetAddress address2 =
       DataSerializer.readInetAddress(in);
     assertEquals(address, address2);
   }
 
   /**
    * Tests data serializing a {@link InetAddress} using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testInetAddressObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testInetAddressObject() throws Exception {
     InetAddress address = InetAddress.getLocalHost();
 
     DataOutputStream out = getDataOutput();
@@ -303,11 +315,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing <code>null</code> using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testNullObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testNullObject() throws Exception {
     Object value = null;
 
     DataOutputStream out = getDataOutput();
@@ -320,8 +331,9 @@ public class DataSerializableJUnitTest extends TestCase
   }
 
   /**
-   * Tests data serializing a non-<code>null</code> {@link String} 
+   * Tests data serializing a non-<code>null</code> {@link String}
    */
+  @Test
   public void testString() throws Exception {
     String value = "Hello";
 
@@ -337,6 +349,7 @@ public class DataSerializableJUnitTest extends TestCase
     assertEquals(value, value2);
   }
 
+  @Test
   public void testUtfString() throws Exception {
     String value = "Hello" + Character.MIN_VALUE + Character.MAX_VALUE;
 
@@ -352,7 +365,7 @@ public class DataSerializableJUnitTest extends TestCase
     assertEquals(value, value2);
   }
 
-  
+  @Test
   public void testBigString() throws Exception {
     StringBuffer sb = new StringBuffer(100000);
     for (int i=0; i < 100000; i++) {
@@ -371,10 +384,11 @@ public class DataSerializableJUnitTest extends TestCase
     value2 = (String)DataSerializer.readObject(in);
     assertEquals(value, value2);
   }
-  
+
   /**
-   * * Tests data serializing a non-<code>null</code> {@link String} longer than 64k.
+   * Tests data serializing a non-<code>null</code> {@link String} longer than 64k.
    */
+  @Test
   public void testBigUtfString() throws Exception {
     StringBuffer sb = new StringBuffer(100000);
     for (int i=0; i < 100000; i++) {
@@ -399,9 +413,10 @@ public class DataSerializableJUnitTest extends TestCase
   }
 
   /**
-   * Tests data serializing a non-ascii {@link String} 
-   */   
-  public void testNonAsciiString() throws IOException {
+   * Tests data serializing a non-ascii {@link String}
+   */
+  @Test
+  public void testNonAsciiString() throws Exception {
     basicTestString("Hello1" + '\u0000');
     setUp();
     basicTestString("Hello2" + '\u0080');
@@ -421,16 +436,19 @@ public class DataSerializableJUnitTest extends TestCase
   }
 
   /**
-   * Tests data serializing a <code>null</code> {@link String} 
+   * Tests data serializing a <code>null</code> {@link String}
    */
-//   public void testNullString() throws IOException {
-//     basicTestString(null);
-//   }
+  @Ignore("for unknown reason")
+  @Test
+   public void testNullString() throws Exception {
+     basicTestString(null);
+   }
 
   /**
    * Tests data serializing a {@link Boolean}
    */
-  public void testBoolean() throws IOException {
+  @Test
+  public void testBoolean() throws Exception {
     Boolean value = new Boolean(getRandom().nextInt() % 2 == 0);
 
     DataOutputStream out = getDataOutput();
@@ -444,10 +462,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a {@link Boolean} using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testBooleanObject()
-    throws IOException, ClassNotFoundException {
+  @Test
+  public void testBooleanObject() throws Exception {
 
     Boolean value = new Boolean(getRandom().nextInt() % 2 == 0);
 
@@ -460,6 +478,7 @@ public class DataSerializableJUnitTest extends TestCase
     assertEquals(value, value2);
   }
 
+  @Test
   public void testWriteObjectAsByteArray() throws Exception {
     // make sure recursive calls to WriteObjectAsByteArray work to test bug 38194
     Object v = new WOABA();
@@ -479,7 +498,7 @@ public class DataSerializableJUnitTest extends TestCase
     }
   }
 
-  static class WOABA implements DataSerializable {
+  private static class WOABA implements DataSerializable {
     private byte[] deserialized;
     private WOABA2 f = new WOABA2();
     public WOABA() {
@@ -503,7 +522,8 @@ public class DataSerializableJUnitTest extends TestCase
       this.deserialized = DataSerializer.readByteArray(in);
     }
   }
-  static class WOABA2 implements DataSerializable {
+
+  private  static class WOABA2 implements DataSerializable {
     private byte[] deserialized;
     private String f = "foobar";
     public WOABA2() {
@@ -517,11 +537,12 @@ public class DataSerializableJUnitTest extends TestCase
       this.deserialized = DataSerializer.readByteArray(in);
     }
   }
-  
+
   /**
    * Tests data serializing a {@link Character}
    */
-  public void testCharacter() throws IOException {
+  @Test
+  public void testCharacter() throws Exception {
     char c = (char) ('A' + getRandom().nextInt('Z' - 'A'));
     Character value = new Character(c);
 
@@ -536,11 +557,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a {@link Character} using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testCharacterObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testCharacterObject() throws Exception {
     char c = (char) ('A' + getRandom().nextInt('Z' - 'A'));
     Character value = new Character(c);
 
@@ -556,7 +576,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a {@link Byte}
    */
-  public void testByte() throws IOException {
+  @Test
+  public void testByte() throws Exception {
     Byte value = new Byte((byte) getRandom().nextInt());
 
     DataOutputStream out = getDataOutput();
@@ -570,11 +591,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a {@link Byte} using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testByteObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testByteObject() throws Exception {
     Byte value = new Byte((byte) getRandom().nextInt());
 
     DataOutputStream out = getDataOutput();
@@ -589,6 +609,7 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a {@link Short}
    */
+  @Test
   public void testShort() throws IOException {
     Short value = new Short((short) getRandom().nextInt());
 
@@ -603,8 +624,9 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a {@link Short} using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
+  @Test
   public void testShortObject()
     throws IOException, ClassNotFoundException {
 
@@ -622,7 +644,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a {@link Integer}
    */
-  public void testInteger() throws IOException {
+  @Test
+  public void testInteger() throws Exception {
     Integer value = new Integer(getRandom().nextInt());
 
     DataOutputStream out = getDataOutput();
@@ -636,11 +659,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a {@link Integer} using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testIntegerObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testIntegerObject() throws Exception {
     Integer value = new Integer(getRandom().nextInt());
 
     DataOutputStream out = getDataOutput();
@@ -655,7 +677,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a {@link Long}
    */
-  public void testLong() throws IOException {
+  @Test
+  public void testLong() throws Exception {
     Long value = new Long(getRandom().nextLong());
 
     DataOutputStream out = getDataOutput();
@@ -669,11 +692,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a {@link Long} using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testLongObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testLongObject() throws Exception {
     Long value = new Long(getRandom().nextLong());
 
     DataOutputStream out = getDataOutput();
@@ -688,7 +710,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a {@link Float}
    */
-  public void testFloat() throws IOException {
+  @Test
+  public void testFloat() throws Exception {
     Float value = new Float(getRandom().nextFloat());
 
     DataOutputStream out = getDataOutput();
@@ -702,11 +725,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a {@link Float} using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testFloatObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testFloatObject() throws Exception {
     Float value = new Float(getRandom().nextFloat());
 
     DataOutputStream out = getDataOutput();
@@ -721,7 +743,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a {@link Double}
    */
-  public void testDouble() throws IOException {
+  @Test
+  public void testDouble() throws Exception {
     Double value = new Double(getRandom().nextDouble());
 
     DataOutputStream out = getDataOutput();
@@ -735,11 +758,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a {@link Double} using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testDoubleObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testDoubleObject() throws Exception {
     Double value = new Double(getRandom().nextDouble());
 
     DataOutputStream out = getDataOutput();
@@ -754,9 +776,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a <code>byte</code> array
    */
-  public void testByteArray()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testByteArray() throws Exception {
     byte[] array = new byte[] { (byte) 4, (byte) 5, (byte) 6 };
 
     DataOutputStream out = getDataOutput();
@@ -778,11 +799,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a <code>byte</code> array using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testByteArrayObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testByteArrayObject() throws Exception {
     byte[] array = new byte[] { (byte) 4, (byte) 5, (byte) 6 };
 
     DataOutputStream out = getDataOutput();
@@ -801,9 +821,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a <code>short</code> array
    */
-  public void testShortArray()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testShortArray() throws Exception {
     short[] array = new short[] { (short) 4, (short) 5, (short) 6 };
 
     DataOutputStream out = getDataOutput();
@@ -821,11 +840,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a <code>short</code> array using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testShortArrayObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testShortArrayObject() throws Exception {
     short[] array = new short[] { (short) 4, (short) 5, (short) 6 };
 
     DataOutputStream out = getDataOutput();
@@ -844,9 +862,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a <code>String</code> array
    */
-  public void testStringArray()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testStringArray() throws Exception {
     Random random = getRandom();
 
     String[] array =
@@ -871,9 +888,8 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests data serializing a <code>String</code> array that contains
    * a <code>null</code> <code>String</code>.
    */
-  public void testStringArrayWithNull()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testStringArrayWithNull() throws Exception {
     Random random = getRandom();
 
     String[] array =
@@ -896,11 +912,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a <code>String</code> array using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testStringArrayObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testStringArrayObject() throws Exception {
     Random random = getRandom();
 
     String[] array =
@@ -924,9 +939,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a <code>int</code> array
    */
-  public void testIntArray()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testIntArray() throws Exception {
     int[] array = new int[] {  4,  5, 6 };
 
     DataOutputStream out = getDataOutput();
@@ -944,11 +958,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a <code>int</code> array using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testIntArrayObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testIntArrayObject() throws Exception {
     int[] array = new int[] { 4, 5, 6 };
 
     DataOutputStream out = getDataOutput();
@@ -967,9 +980,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a <code>long</code> array
    */
-  public void testLongArray()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testLongArray() throws Exception {
     long[] array = new long[] { 4, 5, 6 };
 
     DataOutputStream out = getDataOutput();
@@ -987,11 +999,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a <code>long</code> array using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testLongArrayObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testLongArrayObject() throws Exception {
     long[] array = new long[] { 4, 5, 6 };
 
     DataOutputStream out = getDataOutput();
@@ -1010,9 +1021,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a <code>float</code> array
    */
-  public void testFloatArray()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testFloatArray() throws Exception {
     float[] array =
       new float[] { (float) 4.0, (float) 5.0, (float) 6.0 };
 
@@ -1031,11 +1041,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a <code>float</code> array using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testFloatArrayObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testFloatArrayObject() throws Exception {
     float[] array =
       new float[] { (float) 4.0, (float) 5.0, (float) 6.0 };
 
@@ -1055,9 +1064,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a <code>double</code> array
    */
-  public void testDoubleArray()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testDoubleArray() throws Exception {
     double[] array =
       new double[] { 4.0, 5.0, 6.0 };
 
@@ -1076,11 +1084,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a <code>double</code> array using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testDoubleArrayObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testDoubleArrayObject() throws Exception {
     double[] array =
       new double[] { 4.0, 5.0, 6.0 };
 
@@ -1100,9 +1107,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing a <code>Object</code> array
    */
-  public void testObjectArray()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testObjectArray() throws Exception {
     Random random = getRandom();
     SerializableImpl[] array = new SerializableImpl[] {
       new SerializableImpl(random), new SerializableImpl(random),
@@ -1125,11 +1131,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a <code>Object</code> array using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testObjectArrayObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testObjectArrayObject() throws Exception {
     Random random = getRandom();
     SerializableImpl[] array = new SerializableImpl[] {
       new SerializableImpl(random), new SerializableImpl(random),
@@ -1154,9 +1159,8 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests serializing an object that is {@link
    * DataSerializableJUnitTest.SerializableImpl not specially cased}.
    */
-  public void testUnspecialObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testUnspecialObject() throws Exception {
     Object o = new SerializableImpl(getRandom());
 
     DataOutputStream out = getDataOutput();
@@ -1170,11 +1174,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests serializing an object that implements {@link
-   * DataSerializable} 
+   * DataSerializable}
    */
-  public void testDataSerializable()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testDataSerializable() throws Exception {
     DataSerializable ds = new DataSerializableImpl(getRandom());
 
     DataOutputStream out = getDataOutput();
@@ -1189,11 +1192,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests serializing an object that implements {@link
-   * DataSerializable} 
+   * DataSerializable}
    */
-  public void testVersionedDataSerializable()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testVersionedDataSerializable() throws Exception {
     VersionedDataSerializableImpl ds = new VersionedDataSerializableImpl(getRandom());
 
     VersionedDataOutputStream v = new VersionedDataOutputStream(this.baos, Version.GFE_70);
@@ -1213,9 +1215,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests writing a {@link com.gemstone.gemfire.DataSerializable.Replaceable} object
    */
-  public void testReplaceable()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testReplaceable() throws Exception {
     Object o = new ReplaceableImpl();
 
     DataOutputStream out = getDataOutput();
@@ -1230,8 +1231,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing an {@link ArrayList}
    */
-  public void testArrayList()
-    throws IOException, ClassNotFoundException {
+  @Test
+  public void testArrayList() throws Exception {
     tryArrayList(-1);
     tryArrayList(50);
     tryArrayList(0x100);
@@ -1261,9 +1262,8 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests data serializing an {@link ArrayList} using {@link
    * DataSerializer#writeObject}.
    */
-  public void testArrayListObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testArrayListObject() throws Exception {
     Random random = getRandom();
     ArrayList list = new ArrayList();
     int size = random.nextInt(50);
@@ -1284,9 +1284,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing an {@link HashSet}
    */
-  public void testHashSet()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testHashSet() throws Exception {
     Random random = getRandom();
     HashSet set = new HashSet();
     int size = random.nextInt(50);
@@ -1307,9 +1306,8 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests data serializing an {@link HashSet} using {@link
    * DataSerializer#writeObject}.
    */
-  public void testHashSetObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testHashSetObject() throws Exception {
     Random random = getRandom();
     HashSet set = new HashSet();
     int size = random.nextInt(50);
@@ -1330,9 +1328,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing an {@link TreeSet}
    */
-  public void testTreeSet()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testTreeSet() throws Exception {
     Random random = getRandom();
     TreeSet set = new TreeSet();
     int size = random.nextInt(50);
@@ -1356,9 +1353,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing an {@link TreeSet}
    */
-  public void testTreeSetWithComparator()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testTreeSetWithComparator() throws Exception {
     Random random = getRandom();
     int size = random.nextInt(50);
     TreeSet set = new TreeSet(new MyComparator(size));
@@ -1384,9 +1380,8 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests data serializing an {@link TreeSet} using {@link
    * DataSerializer#writeObject}.
    */
-  public void testTreeSetObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testTreeSetObject() throws Exception {
     Random random = getRandom();
     TreeSet set = new TreeSet();
     int size = random.nextInt(50);
@@ -1407,9 +1402,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing an {@link HashMap}
    */
-  public void testHashMap()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testHashMap() throws Exception {
     Random random = getRandom();
     HashMap map = new HashMap();
     int size = random.nextInt(50);
@@ -1432,9 +1426,8 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests data serializing an {@link HashMap} using {@link
    * DataSerializer#writeObject}.
    */
-  public void testHashMapObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testHashMapObject() throws Exception {
     Random random = getRandom();
     HashMap map = new HashMap();
     int size = random.nextInt(50);
@@ -1457,9 +1450,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing an {@link TreeMap}
    */
-  public void testTreeMap()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testTreeMap() throws Exception {
     Random random = getRandom();
     TreeMap map = new TreeMap();
     int size = random.nextInt(50);
@@ -1485,9 +1477,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing an {@link TreeMap}
    */
-  public void testTreeMapWithComparator()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testTreeMapWithComparator() throws Exception {
     Random random = getRandom();
     int size = random.nextInt(50);
     TreeMap map = new TreeMap(new MyComparator(size));
@@ -1527,14 +1518,13 @@ public class DataSerializableJUnitTest extends TestCase
       return false;
     }
   }
-  
+
   /**
    * Tests data serializing an {@link TreeMap} using {@link
    * DataSerializer#writeObject}.
    */
-  public void testTreeMapObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testTreeMapObject() throws Exception {
     Random random = getRandom();
     TreeMap map = new TreeMap();
     int size = random.nextInt(50);
@@ -1557,9 +1547,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing an {@link LinkedHashSet}
    */
-  public void testLinkedHashSet()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testLinkedHashSet() throws Exception {
     Random random = getRandom();
     LinkedHashSet set = new LinkedHashSet();
     int size = random.nextInt(50);
@@ -1580,9 +1569,8 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests data serializing an {@link LinkedHashSet} using {@link
    * DataSerializer#writeObject}.
    */
-  public void testLinkedHashSetObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testLinkedHashSetObject() throws Exception {
     Random random = getRandom();
     LinkedHashSet set = new LinkedHashSet();
     int size = random.nextInt(50);
@@ -1603,9 +1591,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing an {@link Hashtable}
    */
-  public void testHashtable()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testHashtable() throws Exception {
     Random random = getRandom();
     Hashtable map = new Hashtable();
     int size = random.nextInt(50);
@@ -1628,9 +1615,8 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests data serializing an {@link Hashtable} using {@link
    * DataSerializer#writeObject}.
    */
-  public void testHashtableObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testHashtableObject() throws Exception {
     Random random = getRandom();
     Hashtable map = new Hashtable();
     int size = random.nextInt(50);
@@ -1653,9 +1639,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing an {@link IdentityHashMap}
    */
-  public void testIdentityHashMap()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testIdentityHashMap() throws Exception {
     Random random = getRandom();
     IdentityHashMap map = new IdentityHashMap();
     int size = random.nextInt(50);
@@ -1678,9 +1663,8 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests data serializing an {@link IdentityHashMap} using {@link
    * DataSerializer#writeObject}.
    */
-  public void testIdentityHashMapObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testIdentityHashMapObject() throws Exception {
     Random random = getRandom();
     IdentityHashMap map = new IdentityHashMap();
     int size = random.nextInt(50);
@@ -1703,9 +1687,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing an {@link Vector}
    */
-  public void testVector()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testVector() throws Exception {
     Random random = getRandom();
     Vector list = new Vector();
     int size = random.nextInt(50);
@@ -1726,9 +1709,8 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests data serializing an {@link Vector} using {@link
    * DataSerializer#writeObject}.
    */
-  public void testVectorObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testVectorObject() throws Exception {
     Random random = getRandom();
     Vector list = new Vector();
     int size = random.nextInt(50);
@@ -1749,9 +1731,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests data serializing an {@link Stack}
    */
-  public void testStack()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testStack() throws Exception {
     Random random = getRandom();
     Stack list = new Stack();
     int size = random.nextInt(50);
@@ -1772,9 +1753,8 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests data serializing an {@link Stack} using {@link
    * DataSerializer#writeObject}.
    */
-  public void testStackObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testStackObject() throws Exception {
     Random random = getRandom();
     Stack list = new Stack();
     int size = random.nextInt(50);
@@ -1796,9 +1776,8 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests data serializing {@link TimeUnit}s using {@link
    * DataSerializer#writeObject}.
    */
-  public void testTimeUnitObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testTimeUnitObject() throws Exception {
     DataOutputStream out = getDataOutput();
     for (TimeUnit v: TimeUnit.values()) {
       DataSerializer.writeObject(v, out, false /* no java serialization allowed */);
@@ -1811,9 +1790,8 @@ public class DataSerializableJUnitTest extends TestCase
     }
   }
 
-  public void testProperties()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testProperties() throws Exception {
     DataOutputStream out = getDataOutput();
     DataSerializer.writeProperties(new Properties(), out);
     DataSerializer.writeProperties(null, out);
@@ -1842,6 +1820,7 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests that registering a <code>Serializer</code> with id 0 throws
    * an exception.
    */
+  @Test
   public void testSerializerZero() {
     try {
       DataSerializer.register(DS0.class);
@@ -1851,7 +1830,8 @@ public class DataSerializableJUnitTest extends TestCase
       // pass...
     }
   }
-  static class DS0 extends DataSerializerImpl {
+
+  private static class DS0 extends DataSerializerImpl {
     public int getId() {
       return 0;
     }
@@ -1864,6 +1844,7 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests that registering two <code>Serializer</code>s with the same
    * id throws an exception.
    */
+  @Test
   public void testRegisterTwoSerializers() {
     byte id = (byte) 42;
     DataSerializer.register(DS42.class);
@@ -1891,6 +1872,7 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests that an <code>IOException</code> is thrown when the
    * serializer for an object cannot be found.
    */
+  @Test
   public void testNoDeSerializer() throws Exception {
     Random random = new Random();
 
@@ -1913,13 +1895,14 @@ public class DataSerializableJUnitTest extends TestCase
     } finally {
       InternalDataSerializer.GetMarker.WAIT_MS = savVal;
     }
-     
+
   }
 
   /**
    * Tests that a late-registering <code>DataSerializable</code>
    * indeed causes a waiting readObject() method to be notified.
    */
+  @Test
   public void testLateDeSerializer() throws Exception {
     Random random = new Random();
 
@@ -1972,6 +1955,7 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests that a late-registering <code>Instantiator</code>
    * indeed causes a waiting readObject() method to be notified.
    */
+  @Test
   public void testLateInstantiator() throws Exception {
     Random random = new Random();
 
@@ -2028,6 +2012,7 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Tests that a custom serializer is consulted
    */
+  @Test
   public void testCustomSerializer() throws Exception {
     Random random = new Random();
 
@@ -2051,6 +2036,7 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests that the appropriate exceptions are thrown by {@link
    * Instantiator#register} when given bad input.
    */
+  @Test
   public void testInstantiatorExceptions() {
 
     try {
@@ -2072,21 +2058,6 @@ public class DataSerializableJUnitTest extends TestCase
     } catch (NullPointerException ex) {
       // pass...
     }
-
-    // With 1.5's strong typing this code no longer compiles (which is good!)
-//     try {
-//       Instantiator inst = new
-//         Instantiator(SerializableImpl.class, (byte) 42) {
-//           public DataSerializable newInstance() {
-//             return null;
-//           }
-//         };
-//       Instantiator.register(inst);
-//       fail("Should have thrown an IllegalArgumentException");
-
-//     } catch (IllegalArgumentException ex) {
-//       // pass...
-//     }
 
     Instantiator.register(new
                           Instantiator(DataSerializableImpl.class, (byte) 42) {
@@ -2131,6 +2102,7 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests that an <code>Instantiator</code> is invoked at the
    * appropriate times.
    */
+  @Test
   public void testInstantiator() throws Exception {
     final boolean[] wasInvoked = new boolean[] { false };
     Instantiator.register(new
@@ -2158,6 +2130,7 @@ public class DataSerializableJUnitTest extends TestCase
     }
   }
 
+  @Test
   public void testInstantiator2() throws Exception {
     final boolean[] wasInvoked = new boolean[] { false };
     Instantiator.register(new
@@ -2185,6 +2158,7 @@ public class DataSerializableJUnitTest extends TestCase
     }
   }
 
+  @Test
   public void testInstantiator4() throws Exception {
     final boolean[] wasInvoked = new boolean[] { false };
     Instantiator.register(new
@@ -2212,7 +2186,7 @@ public class DataSerializableJUnitTest extends TestCase
     }
   }
 
-  static class Class_testInstantiator extends DataSerializerImpl {
+  private static class Class_testInstantiator extends DataSerializerImpl {
     public static Class supClass;
 
     public int getId() {
@@ -2230,11 +2204,12 @@ public class DataSerializableJUnitTest extends TestCase
       return false;
     }
   }
-  
+
   /**
    * Tests that an <code>CanonicalInstantiator</code> is invoked at the
    * appropriate times.
    */
+  @Test
   public void testCanonicalInstantiator() throws Exception {
     final boolean[] wasInvoked = new boolean[] { false };
     Instantiator.register(new
@@ -2262,11 +2237,13 @@ public class DataSerializableJUnitTest extends TestCase
       InternalInstantiator.unregister(CanonicalDataSerializableImpl.class, (byte) 45);
     }
   }
+
   /**
    * Tests that only one serializer is invoked when a serializer
    * specifies its supported classes.
    * Alos tests UDDS1.
    */
+  @Test
   public void testSupportedClasses() throws Exception {
     DataSerializer ds1 = DataSerializer.register(Class_testSupportedClasses1.class);
     int id = ds1.getId();
@@ -2293,6 +2270,7 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Make sure a user defined ds with an id of 2 bytes works.
    */
+  @Test
   public void testUDDS2() throws Exception {
     DataSerializer ds2 = DataSerializer.register(Class_testSupportedClasses3.class);
     int id2 = ds2.getId();
@@ -2315,6 +2293,7 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * Make sure a user defined ds with an id of42 bytes works.
    */
+  @Test
   public void testUDDS4() throws Exception {
     DataSerializer ds2 = DataSerializer.register(Class_testSupportedClasses4.class);
     int id2 = ds2.getId();
@@ -2334,7 +2313,7 @@ public class DataSerializableJUnitTest extends TestCase
     }
   }
 
-  static class Class_testSupportedClasses1 extends DataSerializerImpl {
+  private static class Class_testSupportedClasses1 extends DataSerializerImpl {
     public int getId() {
       return 29;
     }
@@ -2343,7 +2322,7 @@ public class DataSerializableJUnitTest extends TestCase
     }
     public boolean toData(Object o, DataOutput out)
       throws IOException {
-      
+
       if (o instanceof NonDataSerializable) {
         fail("toData() should not be invoked with a " +
              "NonDataSerializable");
@@ -2351,8 +2330,8 @@ public class DataSerializableJUnitTest extends TestCase
       return false;
     }
   }
-  
-  static class Class_testSupportedClasses2
+
+  private static class Class_testSupportedClasses2
     extends NonDataSerializable.NonDSSerializer {
     public static boolean wasInvoked = false;
     public static boolean toDataInvoked = false;
@@ -2376,7 +2355,7 @@ public class DataSerializableJUnitTest extends TestCase
     }
   }
 
-  static class Class_testSupportedClasses3
+  private static class Class_testSupportedClasses3
     extends NonDataSerializable.NonDSSerializer {
     public static boolean wasInvoked = false;
     public static boolean toDataInvoked = false;
@@ -2399,23 +2378,31 @@ public class DataSerializableJUnitTest extends TestCase
       return super.fromData(in);
     }
   }
-  static class Class_testSupportedClasses4
-    extends NonDataSerializable.NonDSSerializer {
+
+  private static class Class_testSupportedClasses4 extends NonDataSerializable.NonDSSerializer {
+
     public static boolean wasInvoked = false;
     public static boolean toDataInvoked = false;
     public static boolean fromDataInvoked = false;
+
     public int getId() {
       return 1000000;
     }
+
+    @Override
     public Class[] getSupportedClasses() {
       wasInvoked = true;
       return super.getSupportedClasses();
     }
+
+    @Override
     public boolean toData(Object o, DataOutput out)
       throws IOException {
       toDataInvoked = true;
       return super.toData(o, out);
     }
+
+    @Override
     public Object fromData(DataInput in)
       throws IOException, ClassNotFoundException {
       fromDataInvoked = true;
@@ -2429,9 +2416,10 @@ public class DataSerializableJUnitTest extends TestCase
    *
    * This test is disabled due a bug in JaCoCo 0.6.2 agent while
    * handling stackoverflow exceptions during tests.
-   *
    */
-  public void disabled_testCyclicalObjectGraph() throws IOException {
+  @Ignore("disabled due a bug in JaCoCo 0.6.2 agent while handling stackoverflow exceptions")
+  @Test
+  public void testCyclicalObjectGraph() throws Exception {
     Link link1 = new Link(1);
     Link link2 = new Link(2);
     link1.next = link2;
@@ -2458,13 +2446,14 @@ public class DataSerializableJUnitTest extends TestCase
     } finally {
       SystemFailureTestHook.setExpectedFailureClass(null);
     }
-    
+
   }
 
   /**
    * Tests that data serializing the same object through two different
    * reference paths does not preserve referential integrity.
    */
+  @Test
   public void testReferentialIntegrity() throws Exception {
     Link top = new Link(1);
     Link left = new Link(2);
@@ -2499,20 +2488,23 @@ public class DataSerializableJUnitTest extends TestCase
    * Tests that <code>RegistrationListener</code>s are invoked at the
    * proper times.
    */
+  @Test
   public void testRegistrationListeners() {
     final DataSerializer[] array = new DataSerializer[2];
 
     TestRegistrationListener l1 = new TestRegistrationListener() {
+        @Override
         public void newDataSerializer2(DataSerializer ds) {
           array[0] = ds;
         }
       };
     TestRegistrationListener l2 = new TestRegistrationListener() {
+        @Override
         public void newDataSerializer2(DataSerializer ds) {
           array[1] = ds;
         }
       };
-    
+
     InternalDataSerializer.addRegistrationListener(l1);
     InternalDataSerializer.addRegistrationListener(l2);
 
@@ -2535,22 +2527,25 @@ public class DataSerializableJUnitTest extends TestCase
     Class c = DataSerializableImpl.class;
     id = (byte) 100;
     final Instantiator inst0 = new Instantiator(c, id) {
+        @Override
         public DataSerializable newInstance() {
           return new DataSerializableImpl();
         }
       };
 
     TestRegistrationListener l3 = new TestRegistrationListener() {
+        @Override
         public void newInstantiator2(Instantiator inst) {
           assertEquals(inst0, inst);
         }
       };
     TestRegistrationListener l4 = new TestRegistrationListener() {
+        @Override
         public void newInstantiator2(Instantiator inst) {
           assertEquals(inst0, inst);
         }
       };
-    
+
     InternalDataSerializer.addRegistrationListener(l3);
     InternalDataSerializer.addRegistrationListener(l4);
 
@@ -2566,15 +2561,20 @@ public class DataSerializableJUnitTest extends TestCase
     }
   }
 
-  static class DS42 extends DataSerializerImpl {
+  private static class DS42 extends DataSerializerImpl {
+
+    @Override
     public int getId() {
       return 42;
     }
+
+    @Override
     public Class[] getSupportedClasses() {
       return new Class[]{DS42.class};
     }
   }
 
+  @Test
   public void testIllegalSupportedClasses() {
     tryToSupport(String.class);
     tryToSupport(java.net.InetAddress.class);
@@ -2615,6 +2615,7 @@ public class DataSerializableJUnitTest extends TestCase
     tryToSupport(String[].class);
     tryToSupport(Object[].class);
   }
+
   private void tryToSupport(final Class c) {
     illegalClass = c;
     try {
@@ -2630,8 +2631,8 @@ public class DataSerializableJUnitTest extends TestCase
   }
 
   protected static Class illegalClass = null;
-  
-  public static class IllegalDS extends DataSerializerImpl {
+
+  private static class IllegalDS extends DataSerializerImpl {
     public IllegalDS() {
     }
     public int getId() {
@@ -2641,6 +2642,7 @@ public class DataSerializableJUnitTest extends TestCase
       return new Class[]{illegalClass};
     }
   }
+
   /**
    * Data serializes and then data de-serializes the given object and
    * asserts that the class of object the pre- and post- data
@@ -2664,9 +2666,8 @@ public class DataSerializableJUnitTest extends TestCase
    *
    * @since 4.0
    */
-  public void testSubclasses()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testSubclasses() throws Exception {
     checkClass(new Date());
     checkClass(new Date(){ });
 
@@ -2715,7 +2716,8 @@ public class DataSerializableJUnitTest extends TestCase
    * {@link StatArchiveWriter#readCompactValue}. Also added test for
    * ByteBufferInputStream#readUnsigned* methods (bug #41197).
    */
-  public void testStatArchiveCompactValueSerialization() throws IOException {
+  @Test
+  public void testStatArchiveCompactValueSerialization() throws Exception {
     // test all combos of valueToTest and + and -offsets
     long[] valuesToTest = new long[] { 0, Byte.MAX_VALUE, Byte.MIN_VALUE,
         Short.MAX_VALUE, Short.MIN_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE,
@@ -2778,15 +2780,13 @@ public class DataSerializableJUnitTest extends TestCase
     }
   }
 
-  ///////////////////////  Inner Classes  ///////////////////////
-
   /**
    * A <code>DataSerializer</code> that provides default
    * implementations of its methods.
    */
-  static abstract class DataSerializerImpl extends DataSerializer {
-    public DataSerializerImpl() {
+  private static abstract class DataSerializerImpl extends DataSerializer {
 
+    public DataSerializerImpl() {
     }
 
     public boolean toData(Object o, DataOutput out)
@@ -2806,7 +2806,8 @@ public class DataSerializableJUnitTest extends TestCase
    * A class that implements {@link Serializable} and has fields of
    * each type.
    */
-  public static class SerializableImpl implements Serializable {
+  private static class SerializableImpl implements Serializable {
+
     protected byte byteField;
     protected short shortField;
     protected int intField;
@@ -2829,8 +2830,6 @@ public class DataSerializableJUnitTest extends TestCase
 
     protected int unsignedByteField;
     protected int unsignedShortField;
-
-    //////////////////////  Constructors  //////////////////////
 
     /**
      * Creates a new <code>SerializableImpl</code> whose contents
@@ -2857,7 +2856,7 @@ public class DataSerializableJUnitTest extends TestCase
 
       this.unsignedByteField = random.nextInt(256);
       this.unsignedShortField = random.nextInt(65536);
-      
+
       int length = random.nextInt(100);
       StringBuffer sb = new StringBuffer();
       for (int i = 0; i < length; i++) {
@@ -2877,12 +2876,11 @@ public class DataSerializableJUnitTest extends TestCase
 
     }
 
-    //////////////////////  Instance Methods  //////////////////////
-
     /**
      * Two <code>SerializableImpl</code>s are equal if their
      * contents are equal.
      */
+    @Override
     public boolean equals(Object o) {
       if (!(o instanceof SerializableImpl)) {
         return false;
@@ -2908,13 +2906,14 @@ public class DataSerializableJUnitTest extends TestCase
         this.booleanFieldPrim == other.booleanFieldPrim &&
         this.unsignedByteField == other.unsignedByteField &&
         this.unsignedShortField == other.unsignedShortField &&
-        (this.stringField == null || 
+        (this.stringField == null ||
          this.stringField.equals(other.stringField)) &&
         (this.objectField == null ||
          this.objectField.equals(other.objectField)) &&
         true;
     }
 
+    @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
       sb.append(this.getClass().getName());
@@ -2952,14 +2951,15 @@ public class DataSerializableJUnitTest extends TestCase
       sb.append(this.objectField);
 
       return sb.toString();
-    } 
+    }
   }
 
   /**
    * A class that implements {@link DataSerializable}
+   *
+   * Also used by DataTypeJUnitTest
    */
-  public static class DataSerializableImpl extends SerializableImpl
-    implements DataSerializable {
+  public static class DataSerializableImpl extends SerializableImpl implements DataSerializable {
 
     /**
      * Creates a new <code>DataSerializableImpl</code> whose contents
@@ -2977,6 +2977,7 @@ public class DataSerializableJUnitTest extends TestCase
       super();
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       DataSerializer.writeByte(new Byte(this.byteField), out);
       DataSerializer.writeShort(new Short(this.shortField), out);
@@ -3003,6 +3004,7 @@ public class DataSerializableJUnitTest extends TestCase
       DataSerializer.writeObject(this.objectField, out);
     }
 
+    @Override
     public void fromData(DataInput in)
       throws IOException, ClassNotFoundException {
 
@@ -3032,44 +3034,52 @@ public class DataSerializableJUnitTest extends TestCase
     }
 
   }
-  
-  public static class VersionedDataSerializableImpl extends DataSerializableImpl implements VersionedDataSerializable {
-    public Version[] getSerializationVersions() { return new Version[] { Version.GFE_71 }; }
+
+  private static class VersionedDataSerializableImpl extends DataSerializableImpl implements VersionedDataSerializable {
+
+    @Override
+    public Version[] getSerializationVersions() {
+      return new Version[] { Version.GFE_71 };
+    }
 
     transient boolean preMethodInvoked;
 
-    public VersionedDataSerializableImpl() { }
-    
+    public VersionedDataSerializableImpl() {
+    }
+
     public VersionedDataSerializableImpl(Random random) {
       super(random);
     }
-    
+
     public void toDataPre_GFE_7_1_0_0(DataOutput out) throws IOException {
       this.preMethodInvoked = true;
       toData(out);
     }
-    
+
     public void fromDataPre_GFE_7_1_0_0(DataInput in) throws IOException, ClassNotFoundException {
       this.preMethodInvoked = true;
       fromData(in);
     }
-    
+
     public boolean preMethodInvoked() {
       return this.preMethodInvoked;
     }
   }
 
-  public static class CanonicalDataSerializableImpl extends SerializableImpl
-    implements DataSerializable {
+  private static class CanonicalDataSerializableImpl extends SerializableImpl implements DataSerializable {
+
     private static final byte SINGLETON_BYTE = 23;
     private static final CanonicalDataSerializableImpl singleton = new CanonicalDataSerializableImpl(new Random());
+
     public static CanonicalDataSerializableImpl create() {
         return singleton;
     }
+
     public static CanonicalDataSerializableImpl create(byte b) {
       assertEquals(SINGLETON_BYTE, b);
       return singleton;
     }
+
     /**
      * Creates a new <code>CanonicalDataSerializableImpl</code> whose contents
      * is randomly generated.
@@ -3078,10 +3088,12 @@ public class DataSerializableJUnitTest extends TestCase
       super(random);
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       out.writeByte(SINGLETON_BYTE);
     }
 
+    @Override
     public void fromData(DataInput in)
       throws IOException, ClassNotFoundException {
     }
@@ -3090,11 +3102,11 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * A class that replaces itself with an <code>Integer</code> when
-   * written. 
+   * written.
    */
-  static class ReplaceableImpl
-    implements DataSerializable.Replaceable {
+  private static class ReplaceableImpl implements DataSerializable.Replaceable {
 
+    @Override
     public Object replace() throws IOException {
       return new Integer(42);
     }
@@ -3106,7 +3118,8 @@ public class DataSerializableJUnitTest extends TestCase
    *
    * @since 3.5
    */
-  public static class NonDataSerializable {
+  private static class NonDataSerializable {
+
     protected int intValue;
     protected double doubleValue;
     protected String stringValue;
@@ -3124,7 +3137,6 @@ public class DataSerializableJUnitTest extends TestCase
     }
 
     protected NonDataSerializable() {
-
     }
 
     public boolean equals(Object o) {
@@ -3146,27 +3158,28 @@ public class DataSerializableJUnitTest extends TestCase
         ;
     }
 
-
     /**
      * A <code>Serializer</code> that data serializes instances of
-     * <code>NonDataSerializable</code>. 
+     * <code>NonDataSerializable</code>.
      */
-    public static class NonDSSerializer
-      extends DataSerializer {
+    public static class NonDSSerializer extends DataSerializer {
 
       private static final byte CLASS_ID = (byte) 100;
 
       public NonDSSerializer() {
-
       }
 
+      @Override
       public int getId() {
         return CLASS_ID;
       }
+
+      @Override
       public Class[] getSupportedClasses() {
         return new Class[] {NonDataSerializable.class};
       }
 
+      @Override
       public boolean toData(Object o, DataOutput out)
         throws IOException {
 
@@ -3188,6 +3201,7 @@ public class DataSerializableJUnitTest extends TestCase
         }
       }
 
+      @Override
       public Object fromData(DataInput in)
         throws IOException, ClassNotFoundException {
 
@@ -3209,7 +3223,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * A much more simple class to be data serialized
    */
-  public static class IntWrapper {
+  private static class IntWrapper {
+
     public int intValue;
 
     public static final byte CLASS_ID = (byte) 42;
@@ -3222,6 +3237,7 @@ public class DataSerializableJUnitTest extends TestCase
       this.intValue = intValue;
     }
 
+    @Override
     public boolean equals(Object o) {
       if (o instanceof IntWrapper) {
         IntWrapper other = (IntWrapper) o;
@@ -3236,29 +3252,33 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * A <code>DataSerializable</code> int wrapper
    */
-  public static class DSIntWrapper extends IntWrapper
-    implements DataSerializable {
+  private static class DSIntWrapper extends IntWrapper implements DataSerializable {
 
     public DSIntWrapper(Random random) {
       super(random);
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       out.writeInt(this.intValue);
     }
 
+    @Override
     public void fromData(DataInput in)
       throws IOException, ClassNotFoundException {
 
       this.intValue = in.readInt();
     }
   }
-  
-  public static class SerializableIntWrapper implements Serializable {
+
+  private static class SerializableIntWrapper implements Serializable {
+
     private int data;
+
     public SerializableIntWrapper(int intValue) {
       this.data = intValue;
     }
+
     @Override
     public int hashCode() {
       final int prime = 31;
@@ -3266,6 +3286,7 @@ public class DataSerializableJUnitTest extends TestCase
       result = prime * result + data;
       return result;
     }
+
     @Override
     public boolean equals(Object obj) {
       if (this == obj)
@@ -3284,7 +3305,8 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * A node in an object chain
    */
-  static class Link implements DataSerializable, Serializable {
+  private static class Link implements DataSerializable, Serializable {
+
     private int id;
     Link next;
     Link next2;
@@ -3294,15 +3316,16 @@ public class DataSerializableJUnitTest extends TestCase
     }
 
     public Link() {
-
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       out.writeInt(this.id);
       DataSerializer.writeObject(this.next, out);
       DataSerializer.writeObject(this.next2, out);
     }
 
+    @Override
     public void fromData(DataInput in)
       throws IOException, ClassNotFoundException {
       this.id = in.readInt();
@@ -3314,16 +3337,13 @@ public class DataSerializableJUnitTest extends TestCase
   /**
    * A <code>RegistrationListener</code> used for testing
    */
-  static class TestRegistrationListener
-    implements InternalDataSerializer.RegistrationListener {
+  private static class TestRegistrationListener implements InternalDataSerializer.RegistrationListener {
 
     /** Was this listener invoked? */
     private boolean invoked = false;
 
     /** An error thrown in a callback */
     private Throwable callbackError = null;
-
-    //////////////////////  Instance Methods  //////////////////////
 
     /**
      * Returns wether or not one of this listener methods was invoked.
@@ -3335,7 +3355,7 @@ public class DataSerializableJUnitTest extends TestCase
       this.invoked = false;
       return value;
     }
-  
+
     private void checkForError() {
       if (this.callbackError != null) {
         AssertionError error =
@@ -3345,12 +3365,13 @@ public class DataSerializableJUnitTest extends TestCase
       }
     }
 
+    @Override
     public final void newDataSerializer(DataSerializer ds) {
       this.invoked = true;
       try {
         newDataSerializer2(ds);
 
-      } 
+      }
       catch (VirtualMachineError e) {
         SystemFailure.initiateFailure(e);
         throw e;
@@ -3365,12 +3386,13 @@ public class DataSerializableJUnitTest extends TestCase
       throw new UnsupportedOperationException(s);
     }
 
+    @Override
     public final void newInstantiator(Instantiator instantiator) {
       this.invoked = true;
       try {
         newInstantiator2(instantiator);
 
-      } 
+      }
       catch (VirtualMachineError e) {
         SystemFailure.initiateFailure(e);
         throw e;
@@ -3391,11 +3413,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a <code>byte[][]</code> using {@link
-   * DataSerializer#writeObject}. 
+   * DataSerializer#writeObject}.
    */
-  public void testByteArrayArrayObject()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testByteArrayArrayObject() throws Exception {
     byte[] ar0 = new byte[] { (byte) 1, (byte) 2, (byte) 3 };
     byte[] ar1 = new byte[] { (byte) 4, (byte) 5, (byte) 6 };
     byte[] ar2 = new byte[] { (byte) 7, (byte) 8, (byte) 9 };
@@ -3422,11 +3443,10 @@ public class DataSerializableJUnitTest extends TestCase
 
   /**
    * Tests data serializing a <code>byte[][]</code> using {@link
-   * DataSerializer#writeObjectArray}. 
+   * DataSerializer#writeObjectArray}.
    */
-  public void testByteArrayArray()
-    throws IOException, ClassNotFoundException {
-
+  @Test
+  public void testByteArrayArray() throws Exception {
     byte[] ar0 = new byte[] { (byte) 1, (byte) 2, (byte) 3 };
     byte[] ar1 = new byte[] { (byte) 4, (byte) 5, (byte) 6 };
     byte[] ar2 = new byte[] { (byte) 7, (byte) 8, (byte) 9 };
@@ -3452,8 +3472,8 @@ public class DataSerializableJUnitTest extends TestCase
   }
 
   // see bug 41721
-  public void testArrayMinShortLength()
-    throws IOException, ClassNotFoundException {
+  @Test
+  public void testArrayMinShortLength() throws Exception {
     DataOutputStream out = getDataOutput();
     DataSerializer.writeByteArray(new byte[0x8000], out);
     out.flush();
@@ -3462,8 +3482,9 @@ public class DataSerializableJUnitTest extends TestCase
     byte[] array = DataSerializer.readByteArray(in);
     assertEquals(0x8000, array.length);
   }
-  public void testArrayMaxShortLength()
-    throws IOException, ClassNotFoundException {
+
+  @Test
+  public void testArrayMaxShortLength() throws Exception {
     DataOutputStream out = getDataOutput();
     DataSerializer.writeByteArray(new byte[0xFFFF], out);
     out.flush();
@@ -3478,6 +3499,7 @@ public class DataSerializableJUnitTest extends TestCase
    * is > 0xFFFF, but who's utf-8 encoded length is < 0xFFFF
    * See bug 40932.
    */
+  @Test
   public void testStringEncodingLengthCrossesBoundry() throws Exception {
     StringBuffer sb = new StringBuffer(0xFFFF);
     for (int i=0; i < 0xFFFF; i++) {
@@ -3501,16 +3523,18 @@ public class DataSerializableJUnitTest extends TestCase
     assertEquals(value, value2);
   }
 
-  enum DAY_OF_WEEK implements PdxSerializerObject {
+  private enum DAY_OF_WEEK implements PdxSerializerObject {
     MON, TUE, WED, THU, FRI, SAT, SUN
   }
-  enum MONTH implements PdxSerializerObject {
+
+  private enum MONTH implements PdxSerializerObject {
     JAN, FEB, MAR
   }
-  
+
   /**
    * Tests Dataserializing an Enum
    */
+  @Test
   public void testEnum() throws Exception {
     DAY_OF_WEEK e = DAY_OF_WEEK.SUN;
     MONTH m = MONTH.FEB;
@@ -3543,6 +3567,7 @@ public class DataSerializableJUnitTest extends TestCase
     assertEquals(m, m2);
   }
 
+  @Test
   public void testObjectEnum() throws Exception {
     final String propName = "DataSerializer.DEBUG";
     System.setProperty(propName, "true");
@@ -3553,7 +3578,7 @@ public class DataSerializableJUnitTest extends TestCase
       DataSerializer.writeObject(e, out);
       DataSerializer.writeObject(m, out);
       out.flush();
-  
+
       DataInput in = getDataInput();
       DAY_OF_WEEK e2 = (DAY_OF_WEEK)DataSerializer.readObject(in);
       MONTH m2 = (MONTH)DataSerializer.readObject(in);
@@ -3565,14 +3590,15 @@ public class DataSerializableJUnitTest extends TestCase
       System.getProperties().remove(propName);
     }
   }
-  
+
   /**
    * Usually the DataInput instance passed to DataSerializer.readObject is an instance of InputStream.
    * Make sure that an object that uses standard java serialization can be written and read from a
    * DataInput that is not an instance of InputStream.
    * See bug 47249.
    */
-  public void testOddDataInput() throws IOException, ClassNotFoundException {
+  @Test
+  public void testOddDataInput() throws Exception {
     SerializableIntWrapper o = new SerializableIntWrapper(-1);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataSerializer.writeObject(o, new DataOutputStream(baos));
@@ -3581,7 +3607,8 @@ public class DataSerializableJUnitTest extends TestCase
     assertEquals (o, o2);
   }
   
-  public static class OddDataInput implements DataInput {
+  private static class OddDataInput implements DataInput {
+
     private ByteBufferInputStream bbis;
 
     public OddDataInput(ByteBuffer bb) {
@@ -3664,7 +3691,6 @@ public class DataSerializableJUnitTest extends TestCase
     }
   }
 
-
-  class Foo {
+  private class Foo {
   }
 }

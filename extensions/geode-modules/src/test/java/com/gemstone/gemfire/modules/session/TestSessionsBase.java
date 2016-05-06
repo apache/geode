@@ -38,10 +38,8 @@ import java.io.PrintWriter;
 
 import static junit.framework.Assert.*;
 
-/**
- *
- */
 public abstract class TestSessionsBase {
+
   private static EmbeddedTomcat server;
 
   private static Region<String, HttpSession> region;
@@ -68,7 +66,7 @@ public abstract class TestSessionsBase {
     servlet = server.addServlet("/test/*", "default", CommandServlet.class.getName());
     server.startContainer();
 
-    /**
+    /*
      * Can only retrieve the region once the container has started up
      * (and the cache has started too).
      */
@@ -212,7 +210,7 @@ public abstract class TestSessionsBase {
 //        req.removeParameter("value");
 //        response = wc.getResponse(req);
 //
-//        assertEquals(value, response.getText());
+//        assertIndexDetailsEquals(value, response.getText());
 //    }
 
   /**

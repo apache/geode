@@ -201,7 +201,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
           } catch (Exception e) {
             fail("Failed executing " + queryString, e);
         }
-          assertEquals(100, results.size());
+          assertIndexDetailsEquals(100, results.size());
           assertTrue(results instanceof ResultsCollectionWrapper);
           IdComparator comparator = new IdComparator();
           Object[] resultsArray = results.toArray();
@@ -659,7 +659,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
             Assert.fail("Failed executing " + queryString, e);
           }
           LogWriterUtils.getLogWriter().fine("size: " + results.size());
-          //assertEquals(numberOfEntries, results.size());
+          //assertIndexDetailsEquals(numberOfEntries, results.size());
           assertTrue(!results.getCollectionType().allowsDuplicates() && results.getCollectionType().getElementType().isStructType());
         }
       });

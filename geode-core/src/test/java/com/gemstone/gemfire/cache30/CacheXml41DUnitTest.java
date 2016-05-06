@@ -523,12 +523,12 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
   //  Region r = getRootRegion().getSubregion(name);
   //  
   //  HeapLRUCapacityController hlcc = (HeapLRUCapacityController) r.getAttributes().getCapacityController();
-  //  assertEquals(hlcc.getEvictionAction(), LRUAlgorithm.OVERFLOW_TO_DISK);
+  //  assertIndexDetailsEquals(hlcc.getEvictionAction(), LRUAlgorithm.OVERFLOW_TO_DISK);
   //  
   //  Properties p = hlcc.getProperties();
-  //  assertEquals(42, Integer.parseInt(p.getProperty(HeapLRUCapacityController.HEAP_PERCENTAGE)));
-  //  assertEquals(32, Long.parseLong(p.getProperty(HeapLRUCapacityController.EVICTOR_INTERVAL)));
-  //  assertEquals(LRUAlgorithm.OVERFLOW_TO_DISK, p.getProperty(HeapLRUCapacityController.EVICTION_ACTION));
+  //  assertIndexDetailsEquals(42, Integer.parseInt(p.getProperty(HeapLRUCapacityController.HEAP_PERCENTAGE)));
+  //  assertIndexDetailsEquals(32, Long.parseLong(p.getProperty(HeapLRUCapacityController.EVICTOR_INTERVAL)));
+  //  assertIndexDetailsEquals(LRUAlgorithm.OVERFLOW_TO_DISK, p.getProperty(HeapLRUCapacityController.EVICTION_ACTION));
   //}
   /**
    * Test Publisher region attribute
@@ -542,7 +542,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
 //    attrs.setPublisher(true);
 //    cache.createRegion("root", attrs);
 //    testXml(cache);
-//    assertEquals(true, cache.getRegion("root").getAttributes().getPublisher());
+//    assertIndexDetailsEquals(true, cache.getRegion("root").getAttributes().getPublisher());
   }
 
   /**

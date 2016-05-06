@@ -537,7 +537,7 @@ public class DurableClientReconnectDUnitTest extends DistributedTestCase
     // Verify that it is durable and its properties are correct
     assertTrue(proxy.isDurable());
     assertEquals("DurableClientReconnectDUnitTest_client", proxy.getDurableId());
-//    assertEquals(60, proxy.getDurableTimeout());
+//    assertIndexDetailsEquals(60, proxy.getDurableTimeout());
     }catch (Exception e){
       Assert.fail("test failed due to" , e);
     }    

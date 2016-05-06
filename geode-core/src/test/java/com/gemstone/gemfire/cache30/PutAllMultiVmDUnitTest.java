@@ -174,7 +174,7 @@ public class PutAllMultiVmDUnitTest extends DistributedTestCase{
         
         vm0.invoke(new CacheSerializableRunnable("testSimplePutAll2"){
             public void run2() throws CacheException {
-                //assertEquals(0, region.size());
+                //assertIndexDetailsEquals(0, region.size());
                 createMirroredRegion();
                 cacheTxnMgr = cache.getCacheTransactionManager();
                 int cntr = 0;
@@ -276,7 +276,7 @@ public class PutAllMultiVmDUnitTest extends DistributedTestCase{
         
         vm0.invoke(new CacheSerializableRunnable("testPutAllExceptions2"){
             public void run2() throws CacheException {
-                //assertEquals(0, region.size());
+                //assertIndexDetailsEquals(0, region.size());
                 createMirroredRegion();
                 
                 for(int i=1; i<6; i++) {

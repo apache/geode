@@ -16,17 +16,17 @@
  */
 package com.gemstone.gemfire.internal.cache.versions;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializer;
@@ -39,8 +39,9 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class RegionVersionVectorJUnitTest extends TestCase {
+public class RegionVersionVectorJUnitTest {
 
+  @Test
   public void testExceptionsWithContains() {
     DiskStoreID ownerId = new DiskStoreID(0, 0);
     DiskStoreID id1 = new DiskStoreID(0, 1);
@@ -53,6 +54,7 @@ public class RegionVersionVectorJUnitTest extends TestCase {
   }
   
   @SuppressWarnings({ "unchecked", "rawtypes" })
+  @Test
   public void testRegionVersionVectors() throws Exception {
     // this is just a quick set of unit tests for basic RVV functionality
     
@@ -266,10 +268,10 @@ public class RegionVersionVectorJUnitTest extends TestCase {
     assertTrue(rv1.contains(server2, bitSetRollPoint));
     assertTrue(rv1.contains(server2, bitSetRollPoint+1));
     assertFalse(rv1.contains(server2, bitSetRollPoint+2));
-  
   }
-  
-  public void testRVVSerialization() throws IOException, ClassNotFoundException {
+
+  @Test
+  public void testRVVSerialization() throws Exception {
     DiskStoreID ownerId = new DiskStoreID(0, 0);
     DiskStoreID id1 = new DiskStoreID(0, 1);
     DiskStoreID id2 = new DiskStoreID(1, 0);
@@ -300,6 +302,7 @@ public class RegionVersionVectorJUnitTest extends TestCase {
   /**
    * Test that we can copy the member to version map correctly.
    */
+  @Test
   public void testCopyMemberToVersion() {
     DiskStoreID id0 = new DiskStoreID(0, 0);
     DiskStoreID id1 = new DiskStoreID(0, 1);
@@ -331,7 +334,8 @@ public class RegionVersionVectorJUnitTest extends TestCase {
     assertTrue(rvv1.dominates(rvv0));
     assertFalse(rvv0.dominates(rvv1));
   }
-  
+
+  @Test
   public void testSpecialException() {
     DiskStoreID id0 = new DiskStoreID(0, 0);
     DiskStoreID id1 = new DiskStoreID(0, 1);
@@ -357,7 +361,8 @@ public class RegionVersionVectorJUnitTest extends TestCase {
     assertTrue(rvv1.dominates(rvv0));
     assertTrue(rvv0.dominates(rvv1));
   }
-  
+
+  @Test
   public void test48066_1() {
     DiskStoreID id0 = new DiskStoreID(0, 0);
     DiskRegionVersionVector rvv0 = new DiskRegionVersionVector(id0);
@@ -384,7 +389,8 @@ public class RegionVersionVectorJUnitTest extends TestCase {
     System.out.println("after record 7, rvv2="+rvv2.fullToString());
     assertEquals(7, rvv2.getCurrentVersion());
   }
-  
+
+  @Test
   public void test48066_2() {
     DiskStoreID id0 = new DiskStoreID(0, 0);
     DiskRegionVersionVector rvv0 = new DiskRegionVersionVector(id0);
@@ -415,8 +421,8 @@ public class RegionVersionVectorJUnitTest extends TestCase {
   /**
    * Test for bug 47023. Make sure recordGCVersion works
    * correctly and doesn't generate exceptions for the local member.
-   * 
    */
+  @Test
   public void testRecordGCVersion() {
     DiskStoreID id0 = new DiskStoreID(0, 0);
     DiskStoreID id1 = new DiskStoreID(0, 1);
@@ -432,7 +438,6 @@ public class RegionVersionVectorJUnitTest extends TestCase {
     rvv0.recordVersion(id1, 1);
     rvv0.recordVersion(id1, 3);
     rvv0.recordVersion(id1, 5);
-    
 
     //Assert that the exceptions are present
     {
@@ -470,9 +475,9 @@ public class RegionVersionVectorJUnitTest extends TestCase {
     
     //exceptions greater than the GC version should still be there.
     assertFalse(holder1.contains(4));
-    
   }
 
+  @Test
   public void testRemoveOldVersions() {
     DiskStoreID id0 = new DiskStoreID(0, 0);
     DiskStoreID id1 = new DiskStoreID(0, 1);
@@ -511,7 +516,8 @@ public class RegionVersionVectorJUnitTest extends TestCase {
     assertEquals("expected exceptions to be erased for " + rvv.fullToString(),
         rvv.getExceptionCount(id2), 0);
   }
-  
+
+  @Test
   public void testRegionVersionInTags() {
     VMVersionTag tag = new VMVersionTag();
     long version = 0x8080000000L;
@@ -519,10 +525,7 @@ public class RegionVersionVectorJUnitTest extends TestCase {
     assertEquals("failed test for bug #48576", version, tag.getRegionVersion());
   }
 
-
-  
-  private void doExceptionsWithContains(DiskStoreID id,
-      DiskRegionVersionVector rvv) {
+  private void doExceptionsWithContains(DiskStoreID id, DiskRegionVersionVector rvv) {
     rvv.recordVersion(id, 10);
     
     //Make sure we have exceptions from 0-10

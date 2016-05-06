@@ -16,11 +16,13 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
-import static junitparams.JUnitParamsRunner.$;
+import static junitparams.JUnitParamsRunner.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.net.URL;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.apache.logging.log4j.Level;
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,22 +35,18 @@ import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.logging.log4j.AppenderContext;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
-
 /**
  * Unit tests for LogService
- * 
  */
 @Category(UnitTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class LogServiceJUnitTest {
-  
-  @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-  
+
   private URL defaultConfigUrl;
   private URL cliConfigUrl;
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   
   @Before
   public void setUp() {

@@ -265,8 +265,8 @@ public class PartitionedRegionStatsJUnitTest
      * int minRedundantCopies = stats.get("minRedundantCopies").intValue();
      * int avgRedundantCopies = stats.get("avgRedundantCopies").intValue();
      * 
-     * assertEquals(minRedundantCopies, 2); assertEquals(maxRedundantCopies,
-     * 2); assertEquals(avgRedundantCopies, 2);
+     * assertIndexDetailsEquals(minRedundantCopies, 2); assertIndexDetailsEquals(maxRedundantCopies,
+     * 2); assertIndexDetailsEquals(avgRedundantCopies, 2);
      */
   }
   
@@ -486,8 +486,8 @@ public class PartitionedRegionStatsJUnitTest
     assertEquals(numEntries , stats.getInt("dataStoreEntryCount"));
     assertEquals((numEntries - entriesInMem) * entryOverflowSize, diskStats.getNumOverflowBytesOnDisk());
     //Disabled for GEODE-93. numEntriesInVM and numOVerflowOnDisk are incorrect
-//    assertEquals(entriesInMem , diskStats.getNumEntriesInVM());
-//    assertEquals((numEntries - entriesInMem) , diskStats.getNumOverflowOnDisk());
+//    assertIndexDetailsEquals(entriesInMem , diskStats.getNumEntriesInVM());
+//    assertIndexDetailsEquals((numEntries - entriesInMem) , diskStats.getNumOverflowOnDisk());
       assertEquals(stats.getLong("dataStoreBytesInUse"), getMemBytes(pr));
       assertEquals(diskStats.getNumOverflowBytesOnDisk(), getDiskBytes(pr));
     }

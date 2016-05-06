@@ -64,16 +64,16 @@ public class SimpleHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     operationInvoker = null;
   }
 
-  protected CommandRequest createCommandRequest(final String command) {
+  private CommandRequest createCommandRequest(final String command) {
     return new TestCommandRequest(command);
   }
 
-  protected String getExpectedHttpRequestUrl(final CommandRequest command) {
+  private String getExpectedHttpRequestUrl(final CommandRequest command) {
     return SimpleHttpOperationInvoker.REST_API_URL.concat(SimpleHttpOperationInvoker.REST_API_MANAGEMENT_COMMANDS_URI)
       .concat("?").concat(SimpleHttpOperationInvoker.CMD_QUERY_PARAMETER).concat("=").concat(command.getInput());
   }
 
-  protected SimpleHttpOperationInvoker getOperationInvoker() {
+  private SimpleHttpOperationInvoker getOperationInvoker() {
     return operationInvoker;
   }
 
@@ -179,7 +179,7 @@ public class SimpleHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     }
   }
 
-  protected static final class TestCommandRequest extends CommandRequest {
+  private static final class TestCommandRequest extends CommandRequest {
 
     private final String command;
 

@@ -16,26 +16,24 @@
  */
 package com.gemstone.gemfire.management.internal.cli.parser.preprocessor;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import junit.framework.TestCase;
-
 import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.PreprocessorUtils;
-import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.TrimmedInput;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Includes tests for all utility methods in {@link PreprocessorUtils}
- * 
- * 
  */
 @Category(UnitTest.class)
-public class PreprocessorUtilsJUnitTest extends TestCase {
+public class PreprocessorUtilsJUnitTest {
 
   /**
    * Test for {@link PreprocessorUtils#simpleTrim(String)}
    */
+  @Test
   public void testSimpleTrim() {
     String input = " 1 2 3 ";
     TrimmedInput simpleTrim = PreprocessorUtils.simpleTrim(input);
@@ -51,6 +49,7 @@ public class PreprocessorUtilsJUnitTest extends TestCase {
   /**
    * Test for {@link PreprocessorUtils#trim(String)}
    */
+  @Test
   public void testTrim() {
     String input = " command argument1 argument2 ";
     TrimmedInput trim = PreprocessorUtils.trim(input);
@@ -86,6 +85,7 @@ public class PreprocessorUtilsJUnitTest extends TestCase {
   /**
    * Test for {@link PreprocessorUtils#removeWhiteSpaces(String)}
    */
+  @Test
   public void testRemoveWhiteSpaces() {
     String input = "1 2 3   ";
     String output = PreprocessorUtils.removeWhiteSpaces(input);
@@ -95,6 +95,7 @@ public class PreprocessorUtilsJUnitTest extends TestCase {
   /**
    * Test for {@link PreprocessorUtils#isSyntaxValid(String)}
    */
+  @Test
   public void testIsSyntaxValid() {
     assertTrue(PreprocessorUtils.isSyntaxValid("{}"));
     assertFalse(PreprocessorUtils.isSyntaxValid("{{]}"));
@@ -106,6 +107,7 @@ public class PreprocessorUtilsJUnitTest extends TestCase {
   /**
    * Test for {@link PreprocessorUtils#containsOnlyWhiteSpaces(String)}
    */
+  @Test
   public void testContainsOnlyWhiteSpaces() {
     assertTrue(PreprocessorUtils
         .containsOnlyWhiteSpaces("                                                  "));
@@ -116,6 +118,7 @@ public class PreprocessorUtilsJUnitTest extends TestCase {
   /**
    * Test for {@link PreprocessorUtils#isWhitespace(char)}
    */
+  @Test
   public void testIsWhitespace() {
     assertTrue(PreprocessorUtils.isWhitespace(' '));
     assertTrue(PreprocessorUtils.isWhitespace('\t'));

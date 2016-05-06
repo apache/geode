@@ -17,23 +17,30 @@
 package com.gemstone.gemfire.internal.cache;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.Mockito;
 
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import static org.mockito.Mockito.*;
-
 @Category(UnitTest.class)
 public class EntryEventImplTest {
 
-  String expectedRegionName = "ExpectedFullRegionPathName";
-  String key = "key1";
-  String value = "value1";
-  KeyInfo keyInfo = new KeyInfo(key, value, null);
+  private String expectedRegionName;
+  private String key;
+  private String value;
+  private KeyInfo keyInfo;
+
+  @Before
+  public void setUp() throws Exception {
+    expectedRegionName = "ExpectedFullRegionPathName";
+    key = "key1";
+    value = "value1";
+    keyInfo = new KeyInfo(key, value, null);
+  }
 
   @Test
   public void verifyToStringOutputHasRegionName() {
@@ -50,7 +57,7 @@ public class EntryEventImplTest {
     assertTrue("String " + expectedRegionName + " was not in toString text: " + toStringValue, toStringValue.indexOf(expectedRegionName) > 0);
 
     // verify that toString called getFullPath method of region object
-    verify(region, Mockito.times(1)).getFullPath();
+    verify(region, times(1)).getFullPath();
   }
 
   private EntryEventImpl createEntryEvent(LocalRegion l) {

@@ -93,7 +93,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     Thread waiting = new Thread(new Runnable() {
       public void run() {
         try {
-          assertEquals(0, process.waitFor());
+          assertIndexDetailsEquals(0, process.waitFor());
         }
         catch (InterruptedException ignore) {
           logger.error("Interrupted while waiting for process!", ignore);
@@ -114,8 +114,8 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
 
     LocatorLauncher locatorLauncher = new Builder().setWorkingDirectory(this.temporaryFolder.getRoot().getCanonicalPath()).build();
 
-    assertEquals(Status.ONLINE, locatorLauncher.status().getStatus());
-    assertEquals(Status.STOPPED, locatorLauncher.stop().getStatus());
+    assertIndexDetailsEquals(Status.ONLINE, locatorLauncher.status().getStatus());
+    assertIndexDetailsEquals(Status.STOPPED, locatorLauncher.stop().getStatus());
   }
   */
 
@@ -556,7 +556,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
       // check the status
       final LocatorState locatorState = dirLauncher.status();
       assertNotNull(locatorState);
-      assertEquals(Status.NOT_RESPONDING, locatorState.getStatus());
+      assertIndexDetailsEquals(Status.NOT_RESPONDING, locatorState.getStatus());
       
       final String logFileName = getUniqueName()+".log";
       assertFalse("Log file should not exist: " + logFileName, new File(this.temporaryFolder.getRoot(), logFileName).exists());

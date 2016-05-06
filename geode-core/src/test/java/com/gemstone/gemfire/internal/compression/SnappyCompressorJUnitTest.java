@@ -16,11 +16,11 @@
  */
 package com.gemstone.gemfire.internal.compression;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import junit.framework.TestCase;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -28,19 +28,19 @@ import org.xerial.snappy.SnappyLoader;
 
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.compression.SnappyCompressor;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Tests the Snappy {@link Compressor}.
  */
-@Category(UnitTest.class)
-public class SnappyCompressorJUnitTest extends TestCase {
+@Category(IntegrationTest.class)
+public class SnappyCompressorJUnitTest {
+
   /**
-   * Tests {@link Compressor#compress(byte[])} and {@link Compressor#decompress(byte[])} using
-   * the Snappy compressor.
+   * Tests {@link Compressor#compress(byte[])} and {@link Compressor#decompress(byte[])} using the Snappy compressor.
    */
   @Test
-  public void testCompressByteArray() {
+  public void testCompressByteArray() throws Exception {
     String compressMe = "Hello, how are you?";
     byte[] compressMeData = SnappyCompressor.getDefaultInstance().compress(compressMe.getBytes());
     String uncompressedMe = new String(SnappyCompressor.getDefaultInstance().decompress(compressMeData));
@@ -50,24 +50,24 @@ public class SnappyCompressorJUnitTest extends TestCase {
   
   /**
    * Tests {@link SnappyCompressor#SnappyCompressor()} constructor.
-   * @throws SecurityException 
-   * @throws NoSuchMethodException 
-   * @throws InvocationTargetException 
-   * @throws IllegalArgumentException 
-   * @throws IllegalAccessException 
    */
   @Test
-  public void testConstructor() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+  public void testConstructor() throws Exception {
     SnappyCompressor.getDefaultInstance();
+
     // repeat findNativeLibrary and make sure it's pointing at a file in tmpdir
     Method findNativeLibraryMethod = SnappyLoader.class.getDeclaredMethod("findNativeLibrary", new Class[0]);
     findNativeLibraryMethod.setAccessible(true);
     File nativeLibrary = (File) findNativeLibraryMethod.invoke(null);
+
     System.out.println(nativeLibrary);
+
     assertNotNull(nativeLibrary);
     assertTrue(nativeLibrary + " does not exist", nativeLibrary.exists());
+
     File tmpDir = new File(System.getProperty("java.io.tmpdir"));
     assertTrue(tmpDir.exists());
+
     File parent = nativeLibrary.getParentFile();
     assertNotNull(parent);
     assertEquals(tmpDir, parent);

@@ -16,14 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.cache.lucene.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -43,11 +39,10 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepositoryImpl;
-import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogenousLuceneSerializer;
+import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.cache.BucketRegion;
@@ -60,7 +55,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class PartitionedRepositoryManagerJUnitTest {
 
-  
   private PartitionedRegion userRegion;
   private PartitionedRegion fileRegion;
   private PartitionedRegion chunkRegion;
@@ -84,7 +78,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     chunkRegion = Mockito.mock(PartitionedRegion.class);
     chunkDataStore = Mockito.mock(PartitionedRegionDataStore.class);
     Mockito.when(chunkRegion.getDataStore()).thenReturn(chunkDataStore);
-    serializer = new HeterogenousLuceneSerializer(new String[] {"a", "b"} );  
+    serializer = new HeterogeneousLuceneSerializer(new String[] {"a", "b"} );
   }
   
   @Test
@@ -163,7 +157,6 @@ public class PartitionedRepositoryManagerJUnitTest {
   
   @Test
   public void getByRegion() throws BucketNotFoundException {
-
     PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer());
     
     setUpMockBucket(0);

@@ -432,7 +432,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
       final int pid = readPid(this.pidFile);
       assertTrue(pid > 0);
       assertTrue(ProcessUtils.isProcessAlive(pid));
-      assertEquals(getPid(), pid);
+      assertIndexDetailsEquals(getPid(), pid);
       
       // validate log file was created
       final String logFileName = getUniqueName()+".log";
@@ -446,7 +446,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
     }
 
     try {
-      assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
+      assertIndexDetailsEquals(Status.STOPPED, this.launcher.stop().getStatus());
       waitForFileToDelete(this.pidFile);
     } catch (Throwable e) {
       logger.error(e);

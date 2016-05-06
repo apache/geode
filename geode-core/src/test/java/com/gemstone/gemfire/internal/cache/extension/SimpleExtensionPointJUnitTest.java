@@ -30,7 +30,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SimpleExtensionPoint}.
- * 
  *
  * @since 8.1
  */
@@ -99,7 +98,6 @@ public class SimpleExtensionPointJUnitTest {
     } catch (NoSuchElementException e) {
       // ignore
     }
-
   }
 
   /**
@@ -183,7 +181,7 @@ public class SimpleExtensionPointJUnitTest {
     public void method1();
   }
 
-  private class MockImpl implements MockInterface, Extensible<MockInterface> {
+  private static class MockImpl implements MockInterface, Extensible<MockInterface> {
 
     private SimpleExtensionPoint<MockInterface> extensionPoint = new SimpleExtensionPoint<SimpleExtensionPointJUnitTest.MockInterface>(this, this);
 
@@ -198,7 +196,7 @@ public class SimpleExtensionPointJUnitTest {
 
   }
 
-  private class MockExtension implements Extension<MockInterface> {
+  private static class MockExtension implements Extension<MockInterface> {
 
     @Override
     public XmlGenerator<MockInterface> getXmlGenerator() {
@@ -209,6 +207,5 @@ public class SimpleExtensionPointJUnitTest {
     public void onCreate(Extensible<MockInterface> source, Extensible<MockInterface> target) {
       throw new UnsupportedOperationException();
     }
-
   }
 }

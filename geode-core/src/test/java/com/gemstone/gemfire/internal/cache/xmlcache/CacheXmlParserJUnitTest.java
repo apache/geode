@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
 import static org.junit.Assert.*;
@@ -34,7 +33,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Test cases for {@link CacheXmlParser}.
- * 
  *
  * @since 8.1
  */
@@ -105,8 +103,10 @@ public class CacheXmlParserJUnitTest {
    * @since 8.1
    */
   private static class TestCacheXmlParser extends CacheXmlParser {
+
     static Field delegatesField;
     static Method getDelegateMethod;
+
     static {
       try {
         delegatesField = CacheXmlParser.class.getDeclaredField("delegates");

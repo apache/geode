@@ -788,7 +788,7 @@ public class HARQAddOperationJUnitTest
     regionqueue.remove();
 
     for (int i = 0; i < numOfThreads; i++) {
-      // assertEquals(numOfPuts,
+      // assertIndexDetailsEquals(numOfPuts,
       // regionqueue.getLastDispatchedSequenceId(new EventID(
       // new byte[] { (byte)i }, i, 1)));
       assertEquals(0, regionqueue.getCurrentCounterSet(

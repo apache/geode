@@ -314,7 +314,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
           return null;
         }
       };
-      // assertEquals( "key-1",r.getEntry("key-1").getValue());
+      // assertIndexDetailsEquals( "key-1",r.getEntry("key-1").getValue());
       // wait until we
       // have a dead
       // server
@@ -327,7 +327,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
         }
       };
       Wait.waitForCriterion(ev, 60 * 1000, 200, true);
-      // assertEquals( "key-2",r.getEntry("key-2").getValue());
+      // assertIndexDetailsEquals( "key-2",r.getEntry("key-2").getValue());
       
       // wait until we
       // have a dead
@@ -341,7 +341,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
         }
       };
       Wait.waitForCriterion(ev, 60 * 1000, 200, true);
-      // assertEquals( "key-3",r.getEntry("key-3").getValue());
+      // assertIndexDetailsEquals( "key-3",r.getEntry("key-3").getValue());
     }
     catch (Exception ex) {
       Assert.fail("failed while verifyEntries()", ex);
@@ -414,7 +414,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
         }
       };
       Wait.waitForCriterion(ev, 60 * 1000, 200, true);
-      // assertEquals( "key-2",r.getEntry("key-2").getValue());
+      // assertIndexDetailsEquals( "key-2",r.getEntry("key-2").getValue());
 
 
       // wait until
@@ -431,8 +431,8 @@ public class HAGIIDUnitTest extends DistributedTestCase
       Wait.waitForCriterion(ev, 60 * 1000, 200, true);
       
       /*
-       * assertEquals( "value-1",r.getEntry("key-1").getValue()); assertEquals(
-       * "value-2",r.getEntry("key-2").getValue()); assertEquals(
+       * assertIndexDetailsEquals( "value-1",r.getEntry("key-1").getValue()); assertIndexDetailsEquals(
+       * "value-2",r.getEntry("key-2").getValue()); assertIndexDetailsEquals(
        * "value-3",r.getEntry("key-3").getValue());
        */
 

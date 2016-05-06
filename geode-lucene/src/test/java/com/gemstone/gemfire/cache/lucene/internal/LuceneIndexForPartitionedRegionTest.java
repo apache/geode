@@ -16,30 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.cache.lucene.internal;
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.extension.ExtensionPoint;
 import com.gemstone.gemfire.test.fake.Fakes;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 
 @Category(UnitTest.class)
 public class LuceneIndexForPartitionedRegionTest {
@@ -53,7 +50,7 @@ public class LuceneIndexForPartitionedRegionTest {
     String regionPath = "regionName";
     Cache cache = null;
     LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-    Assert.assertEquals(name, index.getName());
+    assertEquals(name, index.getName());
   }
 
   @Test
@@ -62,7 +59,7 @@ public class LuceneIndexForPartitionedRegionTest {
     String regionPath = "regionName";
     Cache cache = null;
     LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-    Assert.assertEquals(regionPath, index.getRegionPath());
+    assertEquals(regionPath, index.getRegionPath());
   }
 
   @Test
@@ -75,7 +72,7 @@ public class LuceneIndexForPartitionedRegionTest {
     String fileRegionName = index.createFileRegionName();
     when(cache.getRegion(fileRegionName)).thenReturn(region);
 
-    Assert.assertTrue(index.fileRegionExists(fileRegionName));
+    assertTrue(index.fileRegionExists(fileRegionName));
   }
 
   @Test
@@ -87,7 +84,7 @@ public class LuceneIndexForPartitionedRegionTest {
     String fileRegionName = index.createFileRegionName();
     when(cache.getRegion(fileRegionName)).thenReturn(null);
 
-    Assert.assertFalse(index.fileRegionExists(fileRegionName));
+    assertFalse(index.fileRegionExists(fileRegionName));
   }
 
   @Test
@@ -100,7 +97,7 @@ public class LuceneIndexForPartitionedRegionTest {
     String chunkRegionName = index.createChunkRegionName();
     when(cache.getRegion(chunkRegionName)).thenReturn(region);
 
-    Assert.assertTrue(index.chunkRegionExists(chunkRegionName));
+    assertTrue(index.chunkRegionExists(chunkRegionName));
   }
 
   @Test
@@ -112,7 +109,7 @@ public class LuceneIndexForPartitionedRegionTest {
     String chunkRegionName = index.createChunkRegionName();
     when(cache.getRegion(chunkRegionName)).thenReturn(null);
 
-    Assert.assertFalse(index.chunkRegionExists(chunkRegionName));
+    assertFalse(index.chunkRegionExists(chunkRegionName));
   }
 
   @Test

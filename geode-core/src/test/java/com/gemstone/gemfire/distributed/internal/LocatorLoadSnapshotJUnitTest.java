@@ -22,23 +22,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.server.ServerLoad;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Tests the functionality of the LocatorLoadSnapshot, which
  * is the data structure that is used in the locator to compare
  * the load between multiple servers.
- * 
  */
 @Category(UnitTest.class)
 public class LocatorLoadSnapshotJUnitTest {
@@ -61,7 +56,6 @@ public class LocatorLoadSnapshotJUnitTest {
    * and then we test that after several requests, the
    * load balancer starts sending connections to the second
    * server.
-   * 
    */
   @Test
   public void testTwoServers() {
@@ -174,7 +168,7 @@ public class LocatorLoadSnapshotJUnitTest {
    * servers with interecting groups correctly.
    */
   @Test
-  public void testInterectingGroups() {
+  public void testIntersectingGroups() {
     LocatorLoadSnapshot sn = new LocatorLoadSnapshot();
     ServerLocation l1 = new ServerLocation("localhost", 1);
     ServerLocation l2 = new ServerLocation("localhost", 2);
@@ -258,88 +252,6 @@ public class LocatorLoadSnapshotJUnitTest {
     assertEquals(Arrays.asList(new ServerLocation[] {} ), sn.getServersForQueue(null, excludeAll, 3));
   }
   
-  /**
-   * A basic test of concurrent functionality. Starts a number of
-   * threads making requests and expects the load to be balanced between
-   * three servers.
-   * @throws InterruptedException
-   */
-  @Category(FlakyTest.class) // GEODE-613: lots of threads, async action, IntegrationTest-not-UnitTest, thread joins, time sensitive
-  @Test
-  public void testConcurrentBalancing() throws InterruptedException {
-    int NUM_THREADS = 50;
-    final int NUM_REQUESTS = 10000;
-    int ALLOWED_THRESHOLD = 50; //We should never be off by more than
-    //the number of concurrent threads.
-    
-    final LocatorLoadSnapshot sn = new LocatorLoadSnapshot();
-    final ServerLocation l1 = new ServerLocation("localhost", 1);
-    final ServerLocation l2 = new ServerLocation("localhost", 2);
-    final ServerLocation l3 = new ServerLocation("localhost", 3);
-    
-    int initialLoad1 = (int) (Math.random() * (NUM_REQUESTS / 2));
-    int initialLoad2 = (int) (Math.random() * (NUM_REQUESTS / 2));
-    int initialLoad3 = (int) (Math.random() * (NUM_REQUESTS / 2));
-    
-    sn.addServer(l1, new String[0], new ServerLoad(initialLoad1, 1, 0, 1));
-    sn.addServer(l2, new String[0], new ServerLoad(initialLoad2, 1, 0, 1));
-    sn.addServer(l3, new String[0], new ServerLoad(initialLoad3, 1, 0, 1));
-    
-    final Map loadCounts = new HashMap();
-    loadCounts.put(l1, new AtomicInteger(initialLoad1));
-    loadCounts.put(l2, new AtomicInteger(initialLoad2));
-    loadCounts.put(l3, new AtomicInteger(initialLoad3));
-    
-    Thread[] threads = new Thread[NUM_THREADS];
-//    final Object lock = new Object();
-    for(int i =0; i < NUM_THREADS; i++) {
-      threads[i] = new Thread("Thread-" + i) {
-        public void run() {
-          for(int ii = 0; ii < NUM_REQUESTS; ii++) {
-            ServerLocation location;
-//            synchronized(lock) {
-              location = sn.getServerForConnection(null, Collections.EMPTY_SET);
-//            }
-            AtomicInteger count = (AtomicInteger) loadCounts.get(location);
-            count.incrementAndGet();
-          }
-        }
-      };
-    }
-    
-    for(int i =0; i < NUM_THREADS; i++) {
-      threads[i].start();
-    }
-    
-    for(int i =0; i < NUM_THREADS; i++) {
-      Thread t = threads[i];
-      long ms = 30 * 1000;
-      t.join(30 * 1000);
-      if (t.isAlive()) {
-        for(int j =0; j < NUM_THREADS; j++) {
-          threads[j].interrupt();
-        }
-        fail("Thread did not terminate after " + ms + " ms: " + t);
-      }
-    }
-    
-    double expectedPerServer = ( initialLoad1 + initialLoad2 + initialLoad3 + 
-              NUM_REQUESTS * NUM_THREADS) / (double) loadCounts.size();
-//    for(Iterator itr = loadCounts.entrySet().iterator(); itr.hasNext(); ) {
-//      Map.Entry entry = (Entry) itr.next();
-//      ServerLocation location = (ServerLocation) entry.getKey();
-//      AI count= (AI) entry.getValue();
-//    }
-    
-    for(Iterator itr = loadCounts.entrySet().iterator(); itr.hasNext(); ) {
-      Map.Entry entry = (Entry) itr.next();
-      ServerLocation location = (ServerLocation) entry.getKey();
-      AtomicInteger count= (AtomicInteger) entry.getValue();
-      int difference = (int) Math.abs(count.get() - expectedPerServer);
-      assertTrue("Count " + count + " for server " + location + " is not within " + ALLOWED_THRESHOLD + " of " + expectedPerServer, difference < ALLOWED_THRESHOLD);
-    }
-  }
-  
   @Test
   public void testAreBalanced() {
     final LocatorLoadSnapshot sn = new LocatorLoadSnapshot();
@@ -366,20 +278,6 @@ public class LocatorLoadSnapshotJUnitTest {
     assertFalse(sn.hasBalancedConnections(null));
     assertTrue(sn.hasBalancedConnections("a"));
     assertFalse(sn.hasBalancedConnections("b"));
-  }
-  
-  public void _test2() { // delete this method?
-    final LocatorLoadSnapshot sn = new LocatorLoadSnapshot();
-    sn.addServer(new ServerLocation("hs20h.gemstone.com",28543), new String[0], new ServerLoad(0.0f, 0.00125f, 0.0f, 1.0f));
-    sn.addServer(new ServerLocation("hs20l.gemstone.com",22385), new String[0], new ServerLoad(0.0f, 0.00125f, 0.0f, 1.0f));
-    sn.addServer(new ServerLocation("hs20n.gemstone.com",23482), new String[0], new ServerLoad(0.0f, 0.00125f, 0.0f, 1.0f));
-    sn.addServer(new ServerLocation("hs20m.gemstone.com",23429), new String[0], new ServerLoad(0.0f, 0.00125f, 0.0f, 1.0f));
-    sn.addServer(new ServerLocation("hs20e.gemstone.com",20154), new String[0],new ServerLoad(0.0f, 0.00125f, 0.0f, 1.0f));
-    sn.addServer(new ServerLocation("hs20j.gemstone.com",24273), new String[0],new ServerLoad(0.0f, 0.00125f, 0.0f, 1.0f));
-    sn.addServer(new ServerLocation("hs20g.gemstone.com",27125), new String[0],new ServerLoad(0.0f, 0.00125f, 0.0f, 1.0f));
-    sn.addServer(new ServerLocation("hs20i.gemstone.com",25201), new String[0],new ServerLoad(0.0f, 0.00125f, 0.0f, 1.0f));
-    sn.addServer(new ServerLocation("hs20k.gemstone.com",23711), new String[0],new ServerLoad(0.0f, 0.00125f, 0.0f, 1.0f));
-    sn.addServer(new ServerLocation("hs20f.gemstone.com",21025), new String[0],new ServerLoad(0.0f, 0.00125f, 0.0f, 1.0f));
   }
 
 }

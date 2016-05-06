@@ -116,7 +116,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase{
     secondarySenderUpdates = (HashMap)vm5.invoke(() -> WANTestBase.checkQueue());
     
     checkPrimarySenderUpdatesOnVM5(primarySenderUpdates);
-//    assertEquals(primarySenderUpdates, secondarySenderUpdates);
+//    assertIndexDetailsEquals(primarySenderUpdates, secondarySenderUpdates);
     
     vm4.invoke(() -> WANTestBase.resumeSender( "ln"));
     Wait.pause(5000);

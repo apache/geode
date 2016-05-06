@@ -280,7 +280,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends
 //        p.put(key1, val1);
 //        assertFalse(p.localCacheContainsKey(key1));
 //        assertFalse(p.localCacheContainsKey(key2));
-//        assertEquals(val1, p.get(key1));
+//        assertIndexDetailsEquals(val1, p.get(key1));
 //        assertTrue(p.localCacheContainsKey(key1));
 //        assertFalse(p.localCacheContainsKey(key2));
 //
@@ -290,12 +290,12 @@ public class PartitionedRegionTestUtilsDUnitTest extends
 //        assertFalse(lset.contains(key2));
 //        
 //        // test localCacheGet
-//        assertEquals(val1, p.localCacheGet(key1));
+//        assertIndexDetailsEquals(val1, p.localCacheGet(key1));
 //        assertNull(p.localCacheGet(key2));
 //        p.put(key2, val2);
 //        assertNull(p.localCacheGet(key2));
-//        assertEquals(val2, p.get(key2));
-//        assertEquals(val2, p.localCacheGet(key2));
+//        assertIndexDetailsEquals(val2, p.get(key2));
+//        assertIndexDetailsEquals(val2, p.localCacheGet(key2));
 //      }
 //    });
 
@@ -424,7 +424,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends
       val = new Integer(i);
       p.put(key, val);
       // Integer gottenVal = (Integer) p.get(key);
-      // assertEquals("Value for key: " + key + " val " + gottenVal + " wasn't expected " + val, val, gottenVal);
+      // assertIndexDetailsEquals("Value for key: " + key + " val " + gottenVal + " wasn't expected " + val, val, gottenVal);
     }
     
     // Assert that the proper number of keys are placed in each bucket 
@@ -433,7 +433,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends
       assertEquals(s.size(), 1);
       key = (TestPRKey) s.iterator().next();
       assertEquals(i, key.hashCode());
-      // assertEquals(new Integer(i), p.get(key)); 
+      // assertIndexDetailsEquals(new Integer(i), p.get(key));
     }
   }
   

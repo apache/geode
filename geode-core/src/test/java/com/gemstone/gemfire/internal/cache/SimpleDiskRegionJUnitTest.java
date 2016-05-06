@@ -230,7 +230,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase
 //     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps);
 //     DiskRegion dr = ((LocalRegion)region).getDiskRegion();
 //     put100Int();
-//     assertEquals(new Integer(1), region.get(new Integer(1)));
+//     assertIndexDetailsEquals(new Integer(1), region.get(new Integer(1)));
 //     Oplog oplog = dr.getChild();
 //     int id = oplog.getOplogId();
 //     StatisticsFactory factory = dr.getOwner().getCache().getDistributedSystem();
@@ -239,7 +239,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase
 //     dr.setChild(newOplog);
 //     region.clear();
 //     newOplog = dr.getChild();
-//     assertEquals(null, region.get(new Integer(1)));
+//     assertIndexDetailsEquals(null, region.get(new Integer(1)));
 //     try {
 //       dr.addToOplogSet(id, new File(oplog.getOplogFile()
 //           .getPath()), dr.getNextDir());
@@ -254,7 +254,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase
 //     oplog.close();
 //     dr.setIsRecovering(true);
 //     dr.basicInitializeOwner();
-//     assertEquals(new Integer(1), region.get(new Integer(1)));
+//     assertIndexDetailsEquals(new Integer(1), region.get(new Integer(1)));
 //     closeDown();
 //   }
 

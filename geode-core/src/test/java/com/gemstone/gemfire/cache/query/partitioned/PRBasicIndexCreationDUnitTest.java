@@ -18,7 +18,6 @@ package com.gemstone.gemfire.cache.query.partitioned;
 
 import static com.gemstone.gemfire.cache.query.Utils.*;
 
-
 import java.util.Collection;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -39,18 +38,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
-/**
- * 
- */
-public class PRBasicIndexCreationDUnitTest extends
-    PartitionedRegionDUnitTestCase
-
-{
-  /**
-   * constructor
-   * 
-   * @param name
-   */
+public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCase {
 
   public PRBasicIndexCreationDUnitTest(String name) {
     super(name);
@@ -400,6 +388,7 @@ public class PRBasicIndexCreationDUnitTest extends
         cnt, cntDest));
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name,
         "PrIndexOnStatus", "status",null, ""));
+
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForIndexCreationCheck(name));
     vm1.invoke(PRQHelp.getCacheSerializableRunnableForIndexCreationCheck(name));
     vm3.invoke(PRQHelp.getCacheSerializableRunnableForIndexCreationCheck(name));

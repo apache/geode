@@ -448,7 +448,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     assertTrue(firedBridge[JOINED]);
     assertEquals(clientMember, memberBridge[JOINED]);
     //as of 6.1 the id can change when a bridge is created or a connection pool is created
-    //assertEquals(clientMemberId, memberIdBridge[JOINED]);
+    //assertIndexDetailsEquals(clientMemberId, memberIdBridge[JOINED]);
     assertTrue(isClientBridge[JOINED]);
     assertFalse(firedBridge[LEFT]);
     assertNull(memberBridge[LEFT]);

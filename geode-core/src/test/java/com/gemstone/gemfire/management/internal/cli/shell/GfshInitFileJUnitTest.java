@@ -45,16 +45,14 @@ import com.gemstone.gemfire.management.internal.cli.LogWrapper;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * <P>
  * Unit tests for supplying an init file to Gfsh.
  * </P>
- * <P>
  * Makes use of reflection to reset private static variables on some classes to
  * replace loggers that would otherwise clutter the console.
- * </P>
  */
 @Category(UnitTest.class)
 public class GfshInitFileJUnitTest {
+
   private static final String INIT_FILE_NAME = GfshConfig.DEFAULT_INIT_FILE_NAME;
   private static final boolean APPEND = true;
   private static final int BANNER_LINES = 1;
@@ -66,15 +64,16 @@ public class GfshInitFileJUnitTest {
   private static java.util.logging.Logger julLogger;
   private static Handler[] saveHandlers;
 
-  @ClassRule
-  public static TemporaryFolder temporaryFolder_Config = new TemporaryFolder();
-  @Rule
-  public TemporaryFolder temporaryFolder_CurrentDirectory = new TemporaryFolder();
-
   private ByteArrayOutputStream sysout = new ByteArrayOutputStream();
   private String gfshHistoryFileName;
   private LogWrapper gfshFileLogger;
   private JUnitLoggerHandler junitLoggerHandler;
+
+  @ClassRule
+  public static TemporaryFolder temporaryFolder_Config = new TemporaryFolder();
+
+  @Rule
+  public TemporaryFolder temporaryFolder_CurrentDirectory = new TemporaryFolder();
 
   /*
    * Turn off console logging from JUL and Log4j2 for the duration of this
@@ -443,13 +442,12 @@ public class GfshInitFileJUnitTest {
   }
 
   /**
-   * <P>
    * Log handler for testing. Capture logged messages for later inspection.
-   * </P>
-   * 
+   *
    * @see java.util.logging.Handler#publish(java.util.logging.LogRecord)
    */
-  private class JUnitLoggerHandler extends Handler {
+  private static class JUnitLoggerHandler extends Handler {
+
     private List<LogRecord> log;
 
     public JUnitLoggerHandler() {

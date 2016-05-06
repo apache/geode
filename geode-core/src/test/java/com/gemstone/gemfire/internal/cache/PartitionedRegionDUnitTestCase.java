@@ -235,7 +235,7 @@ public class PartitionedRegionDUnitTestCase extends CacheTestCase
           rootRegion.size());
 //        Region allPR = rootRegion.getSubregion(PartitionedRegionHelper.PARTITIONED_REGION_CONFIG_NAME);
 //        assertNotNull(allPR);
-//        assertEquals("allPR size is not correct", innerEndIndexForRegion,
+//        assertIndexDetailsEquals("allPR size is not correct", innerEndIndexForRegion,
 //      allPR.size());
         assertEquals("prIdToPR size is not correct", innerEndIndexForRegion,
             PartitionedRegion.prIdToPR.size());

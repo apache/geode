@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.cache.lucene.internal;
 
 import static org.junit.Assert.*;
@@ -26,13 +25,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
-import org.mockito.internal.stubbing.defaultanswers.ForwardsInvocations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -76,7 +73,6 @@ public class LuceneQueryResultsImplJUnitTest {
   
   @Test
   public void testMaxStore() {
-
     hits.set(5, new EntryScore("key_5", 502));
     
     LuceneQueryResultsImpl<String, String> results = new LuceneQueryResultsImpl<String, String>(hits, null, 5);

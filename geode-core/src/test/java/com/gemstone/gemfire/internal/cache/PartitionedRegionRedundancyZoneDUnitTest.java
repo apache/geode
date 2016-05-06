@@ -85,9 +85,9 @@ public class PartitionedRegionRedundancyZoneDUnitTest extends CacheTestCase {
     //member to bring it's primary count up to two.
     assertTrue(counts, vm0Count >= 2 && vm1Count >=2);
     
-//    assertEquals(counts, 3, vm0Count);
-//    assertEquals(counts, 3, vm1Count);
-//    assertEquals(counts, 6, vm2Count);
+//    assertIndexDetailsEquals(counts, 3, vm0Count);
+//    assertIndexDetailsEquals(counts, 3, vm1Count);
+//    assertIndexDetailsEquals(counts, 6, vm2Count);
   }
   
   protected void checkBucketCount(VM vm0, final int numLocalBuckets) {

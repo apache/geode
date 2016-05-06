@@ -16,21 +16,20 @@
  */
 package com.gemstone.gemfire.internal;
 
+import static org.junit.Assert.*;
+
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
-/**
- *
- */
 @Category(UnitTest.class)
-public class LineWrapUnitJUnitTest extends TestCase {
-  
+public class LineWrapUnitJUnitTest {
+
+  @Test
   public void test() {
     String test = new String("aaa aaaaa  aaa aaaa");
     

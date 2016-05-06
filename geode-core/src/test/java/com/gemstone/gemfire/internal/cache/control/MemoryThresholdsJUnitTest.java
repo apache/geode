@@ -16,20 +16,17 @@
  */
 package com.gemstone.gemfire.internal.cache.control;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
 
 import com.gemstone.gemfire.internal.cache.control.MemoryThresholds.MemoryState;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class MemoryThresholdsJUnitTest {
+
   @Test
   public void testDefaults() {
     MemoryThresholds thresholds = new MemoryThresholds(1000);

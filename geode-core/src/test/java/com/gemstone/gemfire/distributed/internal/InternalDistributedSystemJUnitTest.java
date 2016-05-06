@@ -132,7 +132,7 @@ public class InternalDistributedSystemJUnitTest
     assertEquals(DistributionConfig.DEFAULT_LOG_FILE, config.getLogFile());
 
     //default log level gets overrided by the gemfire.properties created for unit tests.
-//    assertEquals(DistributionConfig.DEFAULT_LOG_LEVEL, config.getLogLevel());
+//    assertIndexDetailsEquals(DistributionConfig.DEFAULT_LOG_LEVEL, config.getLogLevel());
 
     assertEquals(DistributionConfig.DEFAULT_STATISTIC_SAMPLING_ENABLED,
                  config.getStatisticSamplingEnabled());
@@ -145,7 +145,7 @@ public class InternalDistributedSystemJUnitTest
 
     // ack-wait-threadshold is overridden on VM's command line using a
     // system property.  This is not a valid test.  Hrm.
-//     assertEquals(DistributionConfig.DEFAULT_ACK_WAIT_THRESHOLD, config.getAckWaitThreshold());
+//     assertIndexDetailsEquals(DistributionConfig.DEFAULT_ACK_WAIT_THRESHOLD, config.getAckWaitThreshold());
 
     assertEquals(DistributionConfig.DEFAULT_ACK_SEVERE_ALERT_THRESHOLD, config.getAckSevereAlertThreshold());
     
@@ -683,7 +683,7 @@ public class InternalDistributedSystemJUnitTest
     Locator locator = (Locator) locators.iterator().next();
     Assert.assertTrue(locator.isPeerLocator());
 //    Assert.assertFalse(locator.isServerLocator()); server location is forced on while licensing is disabled in GemFire
-//    Assert.assertEquals("127.0.0.1", locator.getBindAddress().getHostAddress());  removed this check for ipv6 testing
+//    Assert.assertIndexDetailsEquals("127.0.0.1", locator.getBindAddress().getHostAddress());  removed this check for ipv6 testing
     Assert.assertEquals(unusedPort, locator.getPort());
     deleteStateFile(unusedPort);
   }

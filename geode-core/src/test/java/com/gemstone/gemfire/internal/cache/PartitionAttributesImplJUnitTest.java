@@ -16,11 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Properties;
 
@@ -38,7 +34,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Unit test suite for PartitionAttributesImpl.
- * 
  */
 @Category(UnitTest.class)
 public class PartitionAttributesImplJUnitTest {
@@ -153,8 +148,8 @@ public class PartitionAttributesImplJUnitTest {
     destination.merge(instance);
     
     assertEquals(this.colocatedRegionFullPath, destination.getColocatedWith());
-    //assertEquals(this.globalProps, destination.getGlobalProperties());
-    //assertEquals(this.localProps, destination.getLocalProperties());
+    //assertIndexDetailsEquals(this.globalProps, destination.getGlobalProperties());
+    //assertIndexDetailsEquals(this.localProps, destination.getLocalProperties());
     assertEquals(this.partitionResolver, destination.getPartitionResolver());
     assertEquals(this.recoveryDelay, destination.getRecoveryDelay());
     assertEquals(this.redundancy, destination.getRedundancy());

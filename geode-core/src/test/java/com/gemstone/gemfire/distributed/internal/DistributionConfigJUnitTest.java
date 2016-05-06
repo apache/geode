@@ -29,39 +29,47 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.UnmodifiableException;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-
 @Category(UnitTest.class)
 public class DistributionConfigJUnitTest {
-  static Map<String, ConfigAttribute> attributes;
-  static Map<String, Method> setters;
-  static Map<String, Method> getters;
-  static Map<String, Method> isModifiables;
-  static Map<String, Method> checkers;
-  static String[] attNames;
-  DistributionConfigImpl config;
 
-  @BeforeClass
-  public static void beforeClass() {
+  private Map<Class<?>, Class<?>> classMap;
+
+  private Map<String, ConfigAttribute> attributes;
+  private Map<String, Method> setters;
+  private Map<String, Method> getters;
+  private Map<String, Method> checkers;
+  private String[] attNames;
+
+  private DistributionConfigImpl config;
+
+  @Before
+  public void before() {
+    classMap = new HashMap<Class<?>, Class<?>>();
+    classMap.put(boolean.class, Boolean.class);
+    classMap.put(byte.class, Byte.class);
+    classMap.put(short.class, Short.class);
+    classMap.put(char.class, Character.class);
+    classMap.put(int.class, Integer.class);
+    classMap.put(long.class, Long.class);
+    classMap.put(float.class, Float.class);
+    classMap.put(double.class, Double.class);
+
     attributes = DistributionConfig.attributes;
     setters = DistributionConfig.setters;
     getters = DistributionConfig.getters;
     attNames = DistributionConfig.dcValidAttributeNames;
     checkers = AbstractDistributionConfig.checkers;
-  }
 
-  @Before
-  public void before() {
     config = new DistributionConfigImpl(new Properties());
   }
 
@@ -99,6 +107,7 @@ public class DistributionConfigJUnitTest {
     System.out.println("filelList: " + fileList);
     System.out.println();
     System.out.println("otherList: " + otherList);
+
     assertEquals(boolList.size(), 30);
     assertEquals(intList.size(), 33);
     assertEquals(stringList.size(), 70);
@@ -245,6 +254,7 @@ public class DistributionConfigJUnitTest {
         modifiables.add(attName);
       }
     }
+
     assertEquals(modifiables.size(), 10);
     assertEquals(modifiables.get(0), "archive-disk-space-limit");
     assertEquals(modifiables.get(1), "archive-file-size-limit");
@@ -256,7 +266,6 @@ public class DistributionConfigJUnitTest {
     assertEquals(modifiables.get(7), "statistic-archive-file");
     assertEquals(modifiables.get(8), "statistic-sample-rate");
     assertEquals(modifiables.get(9), "statistic-sampling-enabled");
-
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -342,18 +351,5 @@ public class DistributionConfigJUnitTest {
 
     DistributionConfig config = new DistributionConfigImpl(props);
     assertEquals(config.getSecurityProps().size(), 4);
-  }
-
-  public final static Map<Class<?>, Class<?>> classMap = new HashMap<Class<?>, Class<?>>();
-
-  static {
-    classMap.put(boolean.class, Boolean.class);
-    classMap.put(byte.class, Byte.class);
-    classMap.put(short.class, Short.class);
-    classMap.put(char.class, Character.class);
-    classMap.put(int.class, Integer.class);
-    classMap.put(long.class, Long.class);
-    classMap.put(float.class, Float.class);
-    classMap.put(double.class, Double.class);
   }
 }

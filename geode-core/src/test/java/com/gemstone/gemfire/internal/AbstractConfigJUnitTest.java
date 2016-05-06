@@ -18,97 +18,74 @@ package com.gemstone.gemfire.internal;
 
 import static org.junit.Assert.*;
 
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.Properties;
-import junit.framework.TestCase;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class AbstractConfigJUnitTest extends TestCase  {
+public class AbstractConfigJUnitTest {
 
 	@Test
-	public void testDisplayPropertyValue(){
-		AbstractConfigTestClass actc=new AbstractConfigTestClass();
-        Method method=null;
-        try{
-            method=actc.getClass().getSuperclass().getDeclaredMethod("okToDisplayPropertyValue",String.class);
-            method.setAccessible(true);
-            assertFalse((Boolean) method.invoke(actc, "password"));
-            assertFalse((Boolean)method.invoke(actc,"cluster-ssl-truststore-password"));
-            assertTrue((Boolean) method.invoke(actc, "cluster-ssl-enabled"));
-            assertFalse((Boolean)method.invoke(actc,"gateway-ssl-truststore-password"));
-            assertFalse((Boolean)method.invoke(actc,"server-ssl-keystore-password"));
-            assertTrue((Boolean) method.invoke(actc, "ssl-enabled"));
-            assertTrue((Boolean)method.invoke(actc,"conserve-sockets"));
-            assertFalse((Boolean)method.invoke(actc,"javax.net.ssl.keyStorePassword"));
-            assertFalse((Boolean)method.invoke(actc,"javax.net.ssl.keyStoreType"));
-            assertFalse((Boolean)method.invoke(actc,"sysprop-value"));
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch(Exception e){
-            e.printStackTrace();
-        }
-    }
-
-}
-
-class AbstractConfigTestClass extends AbstractConfig{
-
-
-	@Override
-	protected Map getAttDescMap() {
-		return null;
+	public void testDisplayPropertyValue() throws Exception {
+		AbstractConfigTestClass actc = new AbstractConfigTestClass();
+		Method method = actc.getClass().getSuperclass().getDeclaredMethod("okToDisplayPropertyValue", String.class);
+		method.setAccessible(true);
+		assertFalse((Boolean) method.invoke(actc, "password"));
+		assertFalse((Boolean) method.invoke(actc, "cluster-ssl-truststore-password"));
+		assertTrue((Boolean) method.invoke(actc, "cluster-ssl-enabled"));
+		assertFalse((Boolean) method.invoke(actc, "gateway-ssl-truststore-password"));
+		assertFalse((Boolean) method.invoke(actc, "server-ssl-keystore-password"));
+		assertTrue((Boolean) method.invoke(actc, "ssl-enabled"));
+		assertTrue((Boolean) method.invoke(actc, "conserve-sockets"));
+		assertFalse((Boolean) method.invoke(actc, "javax.net.ssl.keyStorePassword"));
+		assertFalse((Boolean) method.invoke(actc, "javax.net.ssl.keyStoreType"));
+		assertFalse((Boolean) method.invoke(actc, "sysprop-value"));
 	}
 
-	@Override
-	protected Map<String, ConfigSource> getAttSourceMap() {
-		return null;
-	}
+	private static class AbstractConfigTestClass extends AbstractConfig {
 
-	@Override
-	public Object getAttributeObject(String attName) {
-		return null;
-	}
+		@Override
+		protected Map getAttDescMap() {
+			return null;
+		}
 
-	@Override
-	public void setAttributeObject(String attName, Object attValue, ConfigSource source) {
+		@Override
+		protected Map<String, ConfigSource> getAttSourceMap() {
+			return null;
+		}
 
-	}
+		@Override
+		public Object getAttributeObject(String attName) {
+			return null;
+		}
 
-	@Override
-	public boolean isAttributeModifiable(String attName) {
-		return false;
-	}
+		@Override
+		public void setAttributeObject(String attName, Object attValue, ConfigSource source) {
 
-	@Override
-	public Class getAttributeType(String attName) {
-		return null;
-	}
+		}
 
-	@Override
-	public String[] getAttributeNames() {
-		return new String[0];
-	}
+		@Override
+		public boolean isAttributeModifiable(String attName) {
+			return false;
+		}
 
-	@Override
-	public String[] getSpecificAttributeNames() {
-		return new String[0];
+		@Override
+		public Class getAttributeType(String attName) {
+			return null;
+		}
+
+		@Override
+		public String[] getAttributeNames() {
+			return new String[0];
+		}
+
+		@Override
+		public String[] getSpecificAttributeNames() {
+			return new String[0];
+		}
 	}
 }
-

@@ -48,7 +48,7 @@ public class CacheStatisticsDUnitTest extends CacheTestCase {
    * Asserts that two <code>long</code>s are equal concerning a
    * delta.
    */
-//   public static void assertEquals(long expected, long actual,
+//   public static void assertIndexDetailsEquals(long expected, long actual,
 //                                   long delta) {
 //     long difference = Math.abs(expected - actual);
 //     assertTrue("Expected: " + expected
@@ -472,7 +472,7 @@ public class CacheStatisticsDUnitTest extends CacheTestCase {
           // lastAccessed var contains stat from an Entry, which may be
           // up to 100 ms off from stat in Region because Entry has
           // less precision
-          //assertEquals(lastAccessed, stats.getLastAccessedTime(), 100);
+          //assertIndexDetailsEquals(lastAccessed, stats.getLastAccessedTime(), 100);
           assertEquals(0, stats.getHitCount());
           assertEquals(0, stats.getMissCount());
         }

@@ -3069,7 +3069,7 @@ public class TXJUnitTest {
       assertNotNull(event.getRegion().getCache());
       assertNotNull(event.getRegion().getCache().getCacheTransactionManager());
       assertEquals(this.getTXId(), event.getTransactionId());
-      // assertEquals(event.getTransactionId(), event.getRegion().getCache().getCacheTransactionManager().getTransactionId(), );
+      // assertIndexDetailsEquals(event.getTransactionId(), event.getRegion().getCache().getCacheTransactionManager().getTransactionId(), );
       if (!isPR()) assertEquals("IsDistributed Assertion!",  this.isDistributed(), event.isDistributed());
       assertEquals(this.getKey(), event.getKey());
       assertSame(this.getCallBackArg(), event.getCallbackArgument());
@@ -3753,28 +3753,28 @@ public class TXJUnitTest {
         assertTrue(!txIt.hasNext());
       }
       reg1.invalidate("key1");
-//      assertEquals(0, nonTxKeys.size());
+//      assertIndexDetailsEquals(0, nonTxKeys.size());
       assertEquals(1, txKeys.size());
-//      assertEquals(0, nonTxValues.size());
+//      assertIndexDetailsEquals(0, nonTxValues.size());
       assertEquals(0, txValues.size());
       assertTrue(txKeys.contains("key1"));
       assertTrue(!txValues.contains("value1"));
       reg1.create("key2", "value2");
       reg1.create("key3", "value3");
-//      assertEquals(0, nonTxKeys.size());
+//      assertIndexDetailsEquals(0, nonTxKeys.size());
       assertEquals(3, txKeys.size());
-//      assertEquals(0, nonTxValues.size());
+//      assertIndexDetailsEquals(0, nonTxValues.size());
       assertEquals(2, txValues.size());
       reg1.put("key1", "value1");
-//      assertEquals(0, nonTxKeys.size());
+//      assertIndexDetailsEquals(0, nonTxKeys.size());
       assertEquals(3, txKeys.size());
-//      assertEquals(0, nonTxValues.size());
+//      assertIndexDetailsEquals(0, nonTxValues.size());
       assertEquals(3, txValues.size());
       reg1.localInvalidate("key2");
-//      assertEquals(0, nonTxValues.size());
+//      assertIndexDetailsEquals(0, nonTxValues.size());
       assertEquals(2, txValues.size());
       reg1.invalidate("key1");
-//      assertEquals(0, nonTxValues.size());
+//      assertIndexDetailsEquals(0, nonTxValues.size());
       assertEquals(1, txValues.size());
       reg1.destroy("key2");
       reg1.destroy("key3");
@@ -3813,7 +3813,7 @@ public class TXJUnitTest {
       this.txMgr.begin();
       reg1.create("key1", "value1");
       Collection txValues = reg1.values();
-//      assertEquals(0, nonTxValues.size());
+//      assertIndexDetailsEquals(0, nonTxValues.size());
       assertEquals(1, txValues.size());
       assertTrue(txValues.contains("value1"));
       {
@@ -3880,7 +3880,7 @@ public class TXJUnitTest {
       assertEquals(1, txValues.size());
       assertTrue(txValues.iterator().hasNext());
       assertEquals("txValue1", txValues.iterator().next());
-//      assertEquals(0, nonTxValues.size());
+//      assertIndexDetailsEquals(0, nonTxValues.size());
       // non-TX collections can now be used in a transactional context
       try {
         nonTxValues.iterator().hasNext();
@@ -4132,7 +4132,7 @@ public class TXJUnitTest {
     assertEquals("LV 2", reg1.getEntry("key1").getValue());
     this.txMgr.rollback();
     assertTrue(!reg1.containsKey("key1"));
-    // assertEquals("LV 2", reg1.getEntry("key1").getValue());
+    // assertIndexDetailsEquals("LV 2", reg1.getEntry("key1").getValue());
     // reg1.localDestroy("key1");
     // TX load: commit check
     this.txMgr.begin();
@@ -5623,7 +5623,7 @@ public class TXJUnitTest {
         lruRegion.create("key" + i, null);
       }
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_NULL);
-      // assertEquals(lruSize, lruRegion.entrySet(false).size());
+      // assertIndexDetailsEquals(lruSize, lruRegion.entrySet(false).size());
       this.txMgr.begin();
       for(int i=0; i<numToPut; ++i) {
         lruRegion.get("key"+i, new Integer(i));
@@ -5688,8 +5688,8 @@ public class TXJUnitTest {
       // LocalRegion lrReg = (LocalRegion) lruRegion;
       // LRUClockNode lruE = null;
       // assertNotNull(lruE = (LRUClockNode) lrReg.basicGetEntry("key"+(numToPut-1)));
-      // assertEquals(2, lruE.getRefCount());
-      // assertEquals(lruSize, lruRegion.entrySet(false).size());
+      // assertIndexDetailsEquals(2, lruE.getRefCount());
+      // assertIndexDetailsEquals(lruSize, lruRegion.entrySet(false).size());
 
       // Force the Non-Tx "put" to remove each attempt since region is full
       // and all the committed entries are currently part of a TX
@@ -6384,7 +6384,7 @@ public class TXJUnitTest {
     }
     waitForUpdates(aIindex0, 4);
 //     waitForKeys(aIindex0, 3);
-//     assertEquals(3, aIindex0.getStatistics().getNumberOfKeys()); // Shouldn't this be 1, again?
+//     assertIndexDetailsEquals(3, aIindex0.getStatistics().getNumberOfKeys()); // Shouldn't this be 1, again?
     assertEquals(2, aIindex0.getStatistics().getNumberOfValues());
     assertEquals(4, aIindex0.getStatistics().getNumUpdates());
 
@@ -6413,7 +6413,7 @@ public class TXJUnitTest {
     assertEquals(2, aIindex1.getStatistics().getNumberOfKeys()); 
     assertEquals(2, aIindex1.getStatistics().getNumberOfValues());
     assertEquals(2, aIindex1.getStatistics().getNumUpdates());
-//     assertEquals(3, aIindex0.getStatistics().getNumberOfKeys()); 
+//     assertIndexDetailsEquals(3, aIindex0.getStatistics().getNumberOfKeys());
     assertEquals(2, aIindex0.getStatistics().getNumberOfValues());
     assertEquals(4, aIindex0.getStatistics().getNumUpdates());
 
@@ -6456,7 +6456,7 @@ public class TXJUnitTest {
     waitForUpdates(aIindex1, 2);
      waitForKeys(aIindex0, 2);
 //     waitForKeys(aIindex1, 2);
-//     assertEquals(2, aIindex1.getStatistics().getNumberOfKeys()); 
+//     assertIndexDetailsEquals(2, aIindex1.getStatistics().getNumberOfKeys());
     assertEquals(2, aIindex1.getStatistics().getNumberOfValues());
     assertEquals(2, aIindex1.getStatistics().getNumUpdates());
     assertEquals(2, aIindex0.getStatistics().getNumberOfKeys()); 
@@ -6501,7 +6501,7 @@ public class TXJUnitTest {
     assertEquals(3, aIindex1.getStatistics().getNumberOfKeys()); 
     assertEquals(3, aIindex1.getStatistics().getNumberOfValues()); // Shouldn't this be 4?
     assertEquals(5, aIindex1.getStatistics().getNumUpdates()); 
-    //assertEquals(4, aIindex0.getStatistics().getNumberOfKeys()); 
+    //assertIndexDetailsEquals(4, aIindex0.getStatistics().getNumberOfKeys());
     assertEquals(3, aIindex0.getStatistics().getNumberOfValues()); // Shouldn't this be 4?
     assertEquals(7, aIindex0.getStatistics().getNumUpdates());
 

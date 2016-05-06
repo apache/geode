@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.offheap;
 
 import static org.junit.Assert.*;
@@ -22,21 +21,18 @@ import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.lang.ClassNotFoundException;
 import java.nio.ByteBuffer;
 
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.*;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
-import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.internal.DSCODE;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
@@ -55,11 +51,8 @@ public class MemoryBlockNodeJUnitTest {
   };
   private StoredObject storedObject = null;
 
-  static {
-    ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
-  }
-  
-  @Rule public final ProvideSystemProperty myPropertyHasMyValue = new ProvideSystemProperty("gemfire.OFF_HEAP_DO_EXPENSIVE_VALIDATION", "true");
+  @Rule
+  public final ProvideSystemProperty myPropertyHasMyValue = new ProvideSystemProperty("gemfire.OFF_HEAP_DO_EXPENSIVE_VALIDATION", "true");
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -69,14 +62,6 @@ public class MemoryBlockNodeJUnitTest {
   
   @Rule
   public JUnitSoftAssertions softly = new JUnitSoftAssertions();
-
-  @BeforeClass
-  public static void setUpBeforeClass() {
-  }
-
-  @AfterClass
-  public static void tearDownAfterClass() {
-  }
 
   @Before
   public void setUp() {
@@ -89,16 +74,17 @@ public class MemoryBlockNodeJUnitTest {
   public void tearDown() {
     MemoryAllocatorImpl.freeOffHeapMemory();
   }
-  
-  protected Object getValue() {
+
+  private Object getValue() {
     return Long.valueOf(Long.MAX_VALUE);
   }
 
-  protected StoredObject createValueAsUnserializedStoredObject(Object value) {
+  private StoredObject createValueAsUnserializedStoredObject(Object value) {
     StoredObject createdObject = createValueAsUnserializedStoredObject(value, false);
     return createdObject;
   }
-  protected StoredObject createValueAsUnserializedStoredObject(Object value, boolean isCompressed) {
+
+  private StoredObject createValueAsUnserializedStoredObject(Object value, boolean isCompressed) {
     byte[] valueInByteArray;
     if (value instanceof Long) {
       valueInByteArray = convertValueToByteArray(value);
@@ -122,12 +108,12 @@ public class MemoryBlockNodeJUnitTest {
   }
 
 
-  protected StoredObject createValueAsSerializedStoredObject(Object value) {
+  private StoredObject createValueAsSerializedStoredObject(Object value) {
     StoredObject createdObject = createValueAsSerializedStoredObject(value, false);
     return createdObject;
   }
-  
-  protected StoredObject createValueAsSerializedStoredObject(Object value, boolean isCompressed) {
+
+  private StoredObject createValueAsSerializedStoredObject(Object value, boolean isCompressed) {
     byte[] valueInSerializedByteArray = EntryEventImpl.serialize(value);
 
     boolean isSerialized = true;

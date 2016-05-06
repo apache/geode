@@ -454,7 +454,7 @@ public class CQListGIIDUnitTest extends DistributedTestCase {
       assertTrue("executeWithInitialResults() state mismatch", cq1.getState()
           .isRunning());
       // if (expectedResultsSize >= 0) {
-      // assertEquals("unexpected results size", expectedResultsSize, cqResults
+      // assertIndexDetailsEquals("unexpected results size", expectedResultsSize, cqResults
       // .size());
       // }
     }

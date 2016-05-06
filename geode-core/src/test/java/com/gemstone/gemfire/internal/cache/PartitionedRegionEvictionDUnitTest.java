@@ -1109,7 +1109,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
 //          factory.setEvictionAttributes(okHeapLRUea);
 //          final Region pr = createRootRegion(name, factory.create());
 //          assertNotNull(pr);
-//          assertEquals(okHeapLRUea, pr.getAttributes().getEvictionAttributes());
+//          assertIndexDetailsEquals(okHeapLRUea, pr.getAttributes().getEvictionAttributes());
 //          pr.localDestroyRegion();
 //        }
 
@@ -1123,7 +1123,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
 //          factory.setEvictionAttributes(okHeapLRUea);
 //          final Region pr = createRootRegion(name, factory.create());
 //          assertNotNull(pr);
-//          assertEquals(okHeapLRUea, pr.getAttributes().getEvictionAttributes());
+//          assertIndexDetailsEquals(okHeapLRUea, pr.getAttributes().getEvictionAttributes());
 //          pr.localDestroyRegion();
 //        }
 

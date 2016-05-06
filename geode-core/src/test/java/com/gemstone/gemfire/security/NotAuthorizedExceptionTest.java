@@ -71,10 +71,10 @@ public class NotAuthorizedExceptionTest {
     this.nonSerializablePrincipal = mock(Principal.class);
     this.serializablePrincipal = new SerializablePrincipal(this.principalName);
 
-    assertPreConditions();
+    assertPreconditions();
   }
 
-  private void assertPreConditions() {
+  private void assertPreconditions() {
     catchException(this).clone(this.nonSerializableNamingException);
     assertThat((Throwable)caughtException()).isNotNull();
     assertThat((Throwable)caughtException().getCause()).isInstanceOf(NotSerializableException.class);

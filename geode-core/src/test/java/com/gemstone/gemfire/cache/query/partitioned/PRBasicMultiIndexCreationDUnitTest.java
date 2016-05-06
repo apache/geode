@@ -34,25 +34,18 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
-
-public class PRBasicMultiIndexCreationDUnitTest extends
-    PartitionedRegionDUnitTestCase
-
-{
-  /**
-   * constructor
-   * 
-   * @param name
-   */
+public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTestCase {
 
   public PRBasicMultiIndexCreationDUnitTest(String name) {
     super(name);
   }
+
   public void setCacheInVMs(VM... vms) {
     for (VM vm : vms) {
       vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
     }
   }
+
   PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();
 
   final String name = "PartionedPortfolios";

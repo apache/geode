@@ -16,18 +16,17 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
-/**
- *
- */
 @Category(UnitTest.class)
-public class AtomicLongWithTerminalStateJUnitTest extends TestCase {
-  
+public class AtomicLongWithTerminalStateJUnitTest {
+
+  @Test
   public void test() {
     AtomicLongWithTerminalState al = new AtomicLongWithTerminalState();
     assertEquals(23, al.compareAddAndGet(-1, 23));

@@ -18,10 +18,7 @@ package com.gemstone.gemfire.cache.query.partitioned;
 
 import static org.junit.Assert.*;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,6 +28,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+
+import util.TestException;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.LogWriter;
@@ -84,8 +83,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.util.test.TestUtil;
-
-import util.TestException;
 
 /**
  * This is a helper class for the various Partitioned Query DUnit Test Cases
@@ -1040,6 +1037,9 @@ public class PRQueryDUnitHelper implements Serializable
                 if(srr.size() > l*l) {
                   fail("The resultset size exceeds limit size. Limit size="+ l*l+", result size ="+ srr.asList().size());
                 }
+                //assertIndexDetailsEquals("The resultset size is not same as limit size.", l*l, srr.asList().size());
+
+//                getCache().getLogger().info("Finished executing PR query: " + qStr);
               }
             }
             StructSetOrResultsSet ssORrs = new  StructSetOrResultsSet();
@@ -1232,6 +1232,41 @@ public class PRQueryDUnitHelper implements Serializable
           Iterator it = indexes.iterator();
           while(it.hasNext()) {
             PartitionedIndex ind = (PartitionedIndex)it.next();
+            /*List bucketIndex = ind.getBucketIndexes();
+            int k = 0;
+            logger.info("Total number of bucket index : "+bucketIndex.size());
+            while ( k < bucketIndex.size() ){
+              Index bukInd = (Index)bucketIndex.get(k);
+              logger.info("Buket Index "+bukInd+"  usage : "+bukInd.getStatistics().getTotalUses());
+              // if number of quries on pr change in getCacheSerializableRunnableForPRQueryAndCompareResults
+              // literal 6  should change.
+              //Asif :  With the optmization of Range Queries a where clause
+              // containing something like ID > 4 AND ID < 9 will be evaluated 
+              //using a single index lookup, so accordingly modifying the 
+              //assert value from 7 to 6
+              // Anil : With aquiringReadLock during Index.getSizeEstimate(), the
+              // Index usage in case of "ID = 0 OR ID = 1" is increased by 3.
+              int indexUsageWithSizeEstimation = 3;
+              int expectedUse = 6;
+              long indexUse = bukInd.getStatistics().getTotalUses();
+              // Anil : With chnages to use single index for PR query evaluation, once the index
+              // is identified the same index is used on other PR buckets, the sieEstimation is
+              // done only once, which adds additional index use for only one bucket index.
+              if (!(indexUse == expectedUse || indexUse == (expectedUse + indexUsageWithSizeEstimation))){
+                fail ("Index usage is not as expected, expected it to be either " + 
+                    expectedUse + " or " + (expectedUse + indexUsageWithSizeEstimation) + 
+                    " it is: " + indexUse);
+                //assertIndexDetailsEquals(6 + indexUsageWithSizeEstimation, bukInd.getStatistics().getTotalUses());
+              }
+              k++;
+            }*/
+            //Shobhit: Now we dont need to check stats per bucket index,
+            //stats are accumulated in single pr index stats.
+            
+            // Anil : With aquiringReadLock during Index.getSizeEstimate(), the
+            // Index usage in case of "ID = 0 OR ID = 1" is increased by 3.
+            int indexUsageWithSizeEstimation = 3;
+            
             logger.info("index uses for "+ind.getNumberOfIndexedBuckets()+" index "+ind.getName()+": "+ind.getStatistics().getTotalUses());
             assertEquals(6, ind.getStatistics().getTotalUses());
           }
@@ -1614,6 +1649,13 @@ public class PRQueryDUnitHelper implements Serializable
                   + " and remote buckets indexed : "
                   + ((PartitionedIndex)parIndex).getNumRemoteBucketsIndexed());
           }
+          /*
+           * assertIndexDetailsEquals("Max num of buckets in the partiotion regions and
+           * the " + "buckets indexed should be equal",
+           * ((PartitionedRegion)region).getTotalNumberOfBuckets(),
+           * (((PartionedIndex)parIndex).getNumberOfIndexedBucket()+((PartionedIndex)parIndex).getNumRemtoeBucketsIndexed()));
+           * should put all the assetion in a seperate function.
+           */
         }
         catch (Exception ex) {
           Assert.fail("Creating Index in this vm failed : ", ex);

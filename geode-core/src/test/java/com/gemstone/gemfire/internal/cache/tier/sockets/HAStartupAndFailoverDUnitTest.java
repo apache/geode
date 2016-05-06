@@ -382,7 +382,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
   }
 
 //  public static void processException() {
-//    assertEquals(conn.getServer().getPort(), PORT1.intValue());
+//    assertIndexDetailsEquals(conn.getServer().getPort(), PORT1.intValue());
 //    try {
 //      pool.processException(new Exception("dummy"), conn);
 //      //Thread.sleep(10000); // why sleep?
@@ -516,7 +516,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
     {
     try {
       Cache c = CacheFactory.getAnyInstance();
-      // assertEquals("More than one BridgeServer", 1,
+      // assertIndexDetailsEquals("More than one BridgeServer", 1,
       // c.getCacheServers().size());
       WaitCriterion wc = new WaitCriterion() {
         String excuse;

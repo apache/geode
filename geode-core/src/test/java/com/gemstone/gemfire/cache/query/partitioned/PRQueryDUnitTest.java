@@ -714,7 +714,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
           assertTrue(false);
         } catch (QueryException expected) {
         }
-//        assertEquals(1, results.size());
+//        assertIndexDetailsEquals(1, results.size());
 //        getLogWriter().info("Select results are: " + results);
         return Boolean.TRUE;
       }

@@ -43,7 +43,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
-import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogenousLuceneSerializer;
+import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.Type2;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
@@ -56,7 +56,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 public class IndexRepositoryImplJUnitTest {
 
   private IndexRepositoryImpl repo;
-  private HeterogenousLuceneSerializer mapper;
+  private HeterogeneousLuceneSerializer mapper;
   private StandardAnalyzer analyzer = new StandardAnalyzer();
   private IndexWriter writer;
   private Region region;
@@ -69,7 +69,7 @@ public class IndexRepositoryImplJUnitTest {
     IndexWriterConfig config = new IndexWriterConfig(analyzer);
     writer = new IndexWriter(dir, config);
     String[] indexedFields= new String[] {"s", "i", "l", "d", "f", "s2", "missing"};
-    mapper = new HeterogenousLuceneSerializer(indexedFields);
+    mapper = new HeterogeneousLuceneSerializer(indexedFields);
     region = Mockito.mock(Region.class);
     Mockito.when(region.isDestroyed()).thenReturn(false);
     repo = new IndexRepositoryImpl(region, writer, mapper);

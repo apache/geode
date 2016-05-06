@@ -33,6 +33,7 @@ public class SystemFailureJUnitTest {
 
   private static final int LONG_WAIT = 30000;
   private int oldWaitTime;
+
   @Before
   public void setWaitTime() {
     oldWaitTime = SystemFailure.SHUTDOWN_WAIT;

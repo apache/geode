@@ -28,21 +28,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.admin.DistributedSystemConfig;
 import com.gemstone.gemfire.cache.client.internal.ServerBlackList.BlackListListenerAdapter;
 import com.gemstone.gemfire.cache.client.internal.ServerBlackList.FailureTracker;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.util.StopWatch;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-/**
- *
- */
 @Category(UnitTest.class)
 public class ServerBlackListJUnitTest {
   
   private ScheduledExecutorService background;
-  protected ServerBlackList blackList;
+  private ServerBlackList blackList;
 
   @Before
   public void setUp()  throws Exception {
@@ -67,12 +63,8 @@ public class ServerBlackListJUnitTest {
     assertEquals(Collections.singleton(location1),  blackList.getBadServers());
     
     boolean done = false;
-    try {
-      for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 10000; done = (blackList.getBadServers().size() == 0)) {
-        Thread.sleep(200);
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
+    for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 10000; done = (blackList.getBadServers().size() == 0)) {
+      Thread.sleep(200);
     }
     assertTrue("blackList still has bad servers", done);
     
@@ -81,15 +73,16 @@ public class ServerBlackListJUnitTest {
 
   @Test
   public void testListener()  throws Exception {
-    
     final AtomicInteger adds = new AtomicInteger();
     final AtomicInteger removes = new AtomicInteger();
     blackList.addListener(new BlackListListenerAdapter() {
 
+      @Override
       public void serverAdded(ServerLocation location) {
         adds.incrementAndGet();
       }
 
+      @Override
       public void serverRemoved(ServerLocation location) {
         removes.incrementAndGet();
       }
@@ -107,12 +100,8 @@ public class ServerBlackListJUnitTest {
     assertEquals(0, removes.get());
     
     boolean done = false;
-    try {
-      for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 10000; done = (removes.get() != 0)) {
-        Thread.sleep(200);
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
+    for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 10000; done = (removes.get() != 0)) {
+      Thread.sleep(200);
     }
     assertTrue("removes still empty", done);
     

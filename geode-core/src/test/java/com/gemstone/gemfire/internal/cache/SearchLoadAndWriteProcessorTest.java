@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.Test;

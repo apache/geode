@@ -16,10 +16,10 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 import static com.googlecode.catchexception.CatchException.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +27,7 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -38,23 +35,11 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class FreeListManagerTest {
-  static {
-    ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
-  }
 
   private final int DEFAULT_SLAB_SIZE = 1024*1024*5;
   private final MemoryAllocatorImpl ma = mock(MemoryAllocatorImpl.class);
   private final OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
   private TestableFreeListManager freeListManager;
-  
-
-  @BeforeClass
-  public static void setUpBeforeClass() throws Exception {
-  }
-
-  @AfterClass
-  public static void tearDownAfterClass() throws Exception {
-  }
 
   @Before
   public void setUp() throws Exception {
@@ -829,9 +814,11 @@ public class FreeListManagerTest {
    */
   private static class TestableFragment extends Fragment {
     private boolean allocateCalled = false;
+
     public TestableFragment(long addr, int size) {
       super(addr, size);
     }
+
     @Override
     public boolean allocate(int oldOffset, int newOffset) {
       if (!allocateCalled) {
@@ -841,9 +828,15 @@ public class FreeListManagerTest {
       return super.allocate(oldOffset, newOffset);
     }
   }
+
   private static class TestableFreeListManager extends FreeListManager {
     private boolean firstTime = true;
-    
+    private boolean firstDefragmentation = true;
+
+    public TestableFreeListManager(MemoryAllocatorImpl ma, Slab[] slabs) {
+      super(ma, slabs);
+    }
+
     @Override
     protected Fragment createFragment(long addr, int size) {
       return new TestableFragment(addr, size);
@@ -861,7 +854,6 @@ public class FreeListManagerTest {
       return super.createFreeListForEmptySlot(freeLists, idx);
     }
 
-    public boolean firstDefragmentation = true;
     @Override
     protected void afterDefragmentationCountFetched() {
       if (this.firstDefragmentation) {
@@ -869,10 +861,6 @@ public class FreeListManagerTest {
         // Force defragmentation into thinking a concurrent defragmentation happened.
         this.defragmentationCount.incrementAndGet();
       }
-    }
-    
-    public TestableFreeListManager(MemoryAllocatorImpl ma, Slab[] slabs) {
-      super(ma, slabs);
     }
     
   }

@@ -39,11 +39,9 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.PoolStatHelper;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 import com.gemstone.gemfire.internal.AvailablePort;
-//import com.gemstone.org.jgroups.stack.GossipClient;
-//import com.gemstone.org.jgroups.stack.IpAddress;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class TcpServerJUnitTest {
   
   protected/*GemStoneAddition*/ InetAddress localhost;

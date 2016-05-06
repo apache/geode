@@ -16,26 +16,25 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.mockito.Mockito;
-
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.*;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-/**
- *
- */
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
 @Category(UnitTest.class)
 public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
 
+  @Override
   protected void setInternalRegionArguments(InternalRegionArguments ira) {
     // PR specific
     PartitionedRegion pr = mock(PartitionedRegion.class);
@@ -49,13 +48,14 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
       .setPartitionedRegionBucketRedundancy(1)
       .setBucketAdvisor(ba);
   }
-  
+
+  @Override
   protected DistributedRegion createAndDefineRegion(boolean isConcurrencyChecksEnabled,
       RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache) {
     BucketRegion br = new BucketRegion("testRegion", ra, null, cache, ira);
 
     // since br is a real bucket region object, we need to tell mockito to monitor it
-    br = Mockito.spy(br);
+    br = spy(br);
 
 //    doNothing().when(dm).addMembershipListener(any());
     doNothing().when(br).distributeUpdateOperation(any(), anyLong());
@@ -69,6 +69,7 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
     return br;
   }
 
+  @Override
   protected void verifyDistributeUpdate(DistributedRegion region, EntryEventImpl event, int cnt) {
     assertTrue(region instanceof BucketRegion);
     BucketRegion br = (BucketRegion)region;
@@ -80,7 +81,8 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
       verify(br, never()).distributeUpdateOperation(eq(event), eq(12345L));
     }
   }
-  
+
+  @Override
   protected void verifyDistributeDestroy(DistributedRegion region, EntryEventImpl event, int cnt) {
     assertTrue(region instanceof BucketRegion);
     BucketRegion br = (BucketRegion)region;
@@ -92,7 +94,8 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
       verify(br, never()).distributeDestroyOperation(eq(event));
     }
   }
-  
+
+  @Override
   protected void verifyDistributeInvalidate(DistributedRegion region, EntryEventImpl event, int cnt) {
     assertTrue(region instanceof BucketRegion);
     BucketRegion br = (BucketRegion)region;
@@ -104,7 +107,8 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
       verify(br, never()).distributeInvalidateOperation(eq(event));
     }
   }
-    
+
+  @Override
   protected void verifyDistributeUpdateEntryVersion(DistributedRegion region, EntryEventImpl event, int cnt) {
     assertTrue(region instanceof BucketRegion);
     BucketRegion br = (BucketRegion)region;

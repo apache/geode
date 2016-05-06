@@ -19,6 +19,7 @@ package com.gemstone.gemfire.internal.cache.wan.serial;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -29,12 +30,19 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class ConcurrentSerialGatewaySenderEventProcessorJUnitTest {
 
+  private ConcurrentSerialGatewaySenderEventProcessor processor;
+  private RegionQueue queue;
+
+  @Before
+  public void setUp() throws Exception {
+    AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
+    processor = new ConcurrentSerialGatewaySenderEventProcessor(sender);
+    queue = mock(RegionQueue.class);
+    when(queue.size()).thenReturn(3);
+  }
+
   @Test
   public void eventQueueSizeReturnsSizeOfQueues() {
-    AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
-    ConcurrentSerialGatewaySenderEventProcessor processor = new ConcurrentSerialGatewaySenderEventProcessor(sender);
-    RegionQueue queue = mock(RegionQueue.class);
-    when(queue.size()).thenReturn(3);
     processor.getQueues().add(queue);
     assertEquals(3,processor.eventQueueSize());
   }

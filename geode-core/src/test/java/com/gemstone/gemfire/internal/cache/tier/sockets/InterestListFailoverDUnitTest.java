@@ -269,7 +269,7 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
       final String key1 = "key-1";
       assertNotNull(r);
       // Verify that 'key-1' was updated
-      // assertEquals("vm2-key-1", r.getEntry("key-1").getValue());
+      // assertIndexDetailsEquals("vm2-key-1", r.getEntry("key-1").getValue());
       WaitCriterion wc = new WaitCriterion() {
         String excuse;
         public boolean done() {

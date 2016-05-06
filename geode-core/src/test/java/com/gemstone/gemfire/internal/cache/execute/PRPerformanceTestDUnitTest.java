@@ -199,7 +199,7 @@ public class PRPerformanceTestDUnitTest extends
                 assertNotNull(pr);
                 //pr.put(key, Integer.toString(i));
                 pr.put(key, valueArray);
-                //assertEquals(valueArray, pr.get(key));
+                //assertIndexDetailsEquals(valueArray, pr.get(key));
   
               }
               entries--;

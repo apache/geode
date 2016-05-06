@@ -24,11 +24,8 @@ import java.util.Iterator;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
 import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
-
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
@@ -37,6 +34,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * The LoginHandlerInterceptorJUnitTest class is a test suite of test cases to test the contract
@@ -65,11 +64,11 @@ public class LoginHandlerInterceptorJUnitTest {
     mockContext = null;
   }
 
-  protected String createEnvironmentVariable(final String name) {
+  private String createEnvironmentVariable(final String name) {
     return (LoginHandlerInterceptor.ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + name);
   }
 
-  protected <T> Enumeration<T> enumeration(final Iterator<T> iterator) {
+  private <T> Enumeration<T> enumeration(final Iterator<T> iterator) {
     return new Enumeration<T>() {
       public boolean hasMoreElements() {
         return iterator.hasNext();
@@ -128,7 +127,7 @@ public class LoginHandlerInterceptorJUnitTest {
     TestFramework.runOnce(new HandlerInterceptorThreadSafetyMultiThreadedTestCase());
   }
 
-  protected final class HandlerInterceptorThreadSafetyMultiThreadedTestCase extends MultithreadedTestCase {
+  private final class HandlerInterceptorThreadSafetyMultiThreadedTestCase extends MultithreadedTestCase {
 
     private LoginHandlerInterceptor handlerInterceptor;
 

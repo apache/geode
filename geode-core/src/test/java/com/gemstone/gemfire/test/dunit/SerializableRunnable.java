@@ -40,7 +40,7 @@ import java.io.Serializable;
  *   vm1.invoke(new SerializableRunnable("Get value") {
  *       public void run() {
  *         ...// get the region //...
- *         assertEquals(value, region.get(name));
+ *         assertIndexDetailsEquals(value, region.get(name));
  *       }
  *     });
  *  }

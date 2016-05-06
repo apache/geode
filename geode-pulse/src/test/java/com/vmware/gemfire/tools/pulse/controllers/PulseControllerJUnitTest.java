@@ -18,6 +18,7 @@ package com.vmware.gemfire.tools.pulse.controllers;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -30,6 +31,11 @@ import java.io.File;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
+import javax.servlet.ServletContextListener;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vmware.gemfire.tools.pulse.internal.PulseAppListener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
@@ -59,26 +65,16 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-/**
- */
-@Category(UnitTest.class)
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
+@Category(IntegrationTest.class)
 @PrepareForTest(Repository.class)
 @RunWith(PowerMockRunner.class)
 @PowerMockRunnerDelegate(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration("classpath*:mvc-dispatcher-servlet.xml")
-@PowerMockIgnore("*.UnitTest")
+@PowerMockIgnore("*.IntegrationTest")
 public class PulseControllerJUnitTest {
-
-  @Autowired
-  private WebApplicationContext wac;
-
-  private MockMvc mockMvc;
-
-  private Cluster cluster;
-
-  @Rule
-  public TemporaryFolder tempFolder = new TemporaryFolder();
 
   private static final String PRINCIPAL_USER = "test-user";
 
@@ -98,6 +94,16 @@ public class PulseControllerJUnitTest {
   static {
     principal = () -> PRINCIPAL_USER;
   }
+
+  @Rule
+  public TemporaryFolder tempFolder = new TemporaryFolder();
+
+  @Autowired
+  private WebApplicationContext wac;
+
+  private MockMvc mockMvc;
+
+  private Cluster cluster;
 
   private final ObjectMapper mapper = new ObjectMapper();
 

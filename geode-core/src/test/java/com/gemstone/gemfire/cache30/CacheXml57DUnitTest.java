@@ -234,7 +234,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
     assertEquals(12351, cp.getStatisticInterval());
     assertEquals("mygroup", cp.getServerGroup());
       // commented this out until queues are implemented
-    //    assertEquals(true, cp.getQueueEnabled());
+    //    assertIndexDetailsEquals(true, cp.getQueueEnabled());
     assertEquals(12345, cp.getSubscriptionRedundancy());
     assertEquals(12345, cp.getSubscriptionMessageTrackingTimeout());
     assertEquals(333, cp.getSubscriptionAckInterval());

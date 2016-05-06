@@ -372,7 +372,7 @@ public class JSONPdxClientServerDUnitTest extends CacheTestCase {
     byte[] o1 = jsonParse(jd.getJsonByteArray());
     byte[] o2 = jsonParse(jsonByteArray);
     
-   // junit.framework.Assert.assertEquals("Pdx byte aray are not equal after fetching from cache " + jd.getFileName(), o1, o2); 
+   // junit.framework.Assert.assertIndexDetailsEquals("Pdx byte aray are not equal after fetching from cache " + jd.getFileName(), o1, o2);
    compareByteArray(o1, o2);
     
     PdxInstance pdx2 = JSONFormatter.fromJSON(jsonByteArray);

@@ -16,12 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,19 +51,19 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class PartitionedRegionQueryEvaluatorTest {
 
-  InternalDistributedMember localNode;
-  InternalDistributedMember remoteNodeA;
-  InternalDistributedMember remoteNodeB;
-  GemFireCacheImpl cache;
-  InternalDistributedSystem system;
-  PartitionedRegion pr;
-  DefaultQuery query;
+  private InternalDistributedMember localNode;
+  private InternalDistributedMember remoteNodeA;
+  private InternalDistributedMember remoteNodeB;
+  private GemFireCacheImpl cache;
+  private InternalDistributedSystem system;
+  private PartitionedRegion pr;
+  private DefaultQuery query;
   //Needed to help mock out certain scenarios
-  ExtendedPartitionedRegionDataStore dataStore;
+  private ExtendedPartitionedRegionDataStore dataStore;
   //This is the set of nodes that remain after a failure
-  ArrayList allNodes = new ArrayList();
+  private ArrayList allNodes = new ArrayList();
   //convenience list for empty set
-  Set<InternalDistributedMember> noFailingMembers = new HashSet<>();
+  private Set<InternalDistributedMember> noFailingMembers = new HashSet<>();
     
   @Before
   public void setup() throws Exception {
@@ -196,7 +193,7 @@ public class PartitionedRegionQueryEvaluatorTest {
     
   }
   
-  private  Map<InternalDistributedMember, List<Integer>> createFakeBucketMap() {
+  private Map<InternalDistributedMember, List<Integer>> createFakeBucketMap() {
     Map<InternalDistributedMember, List<Integer>> bucketToNodeMap = new HashMap<>();
     bucketToNodeMap.put(localNode, createBucketList(1, 2, 3));
     bucketToNodeMap.put(remoteNodeA, createBucketList(4, 5, 6));
@@ -205,7 +202,7 @@ public class PartitionedRegionQueryEvaluatorTest {
   }
   
   //fake bucket map to use after we fake a node failure
-  private  Map<InternalDistributedMember, List<Integer>> createFakeBucketMapFailedNodesToLocalMember() {
+  private Map<InternalDistributedMember, List<Integer>> createFakeBucketMapFailedNodesToLocalMember() {
     Map<InternalDistributedMember, List<Integer>> bucketToNodeMap = new HashMap<>();
     bucketToNodeMap.put(localNode, createBucketList(1, 2, 3, 7, 8, 9));
     bucketToNodeMap.put(remoteNodeA, createBucketList(4, 5, 6));
@@ -227,8 +224,16 @@ public class PartitionedRegionQueryEvaluatorTest {
     }
     return results;
   }
-  
-  class ExtendedPartitionedRegionDataStore extends PartitionedRegionDataStore {
+
+  private Queue<PartitionedQueryScenario> createScenariosQueue(PartitionedQueryScenario... scenarios) {
+    Queue<PartitionedQueryScenario> queue = new LinkedList<>();
+    for (PartitionedQueryScenario scenario: scenarios) {
+      queue.add(scenario);
+    }
+    return queue;
+  }
+
+  private static class ExtendedPartitionedRegionDataStore extends PartitionedRegionDataStore {
     //Must be the same referenced queue as that used by the ExtendedPartitionedRegionQueryEvaluator
     //That way they will be synched to the same scenario;
     Queue<PartitionedQueryScenario> scenarios;
@@ -243,8 +248,10 @@ public class PartitionedRegionQueryEvaluatorTest {
     }
   }
 
-  class ExtendedPartitionedRegionQueryEvaluator extends PartitionedRegionQueryEvaluator {
+  private static class ExtendedPartitionedRegionQueryEvaluator extends PartitionedRegionQueryEvaluator {
+
     Queue<PartitionedQueryScenario> scenarios;
+
     //pass through so we can fake out the executeQuery locally
     PRQueryProcessor extendedPRQueryProcessor;
     
@@ -260,8 +267,8 @@ public class PartitionedRegionQueryEvaluatorTest {
     }
 
     // (package access for unit test purposes)
-    Map<InternalDistributedMember, List<Integer>> buildNodeToBucketMap() throws QueryException
-    {
+    @Override
+    Map<InternalDistributedMember, List<Integer>> buildNodeToBucketMap() throws QueryException {
       return currentScenario().bucketMap;
     }
 
@@ -291,8 +298,8 @@ public class PartitionedRegionQueryEvaluatorTest {
     protected Set<InternalDistributedMember> getBucketOwners(Integer bid) {
       return currentScenario().getBucketOwners(bid);
     }
-    
-    class ExtendedPRQueryProcessor extends PRQueryProcessor {
+
+    private class ExtendedPRQueryProcessor extends PRQueryProcessor {
 
       public ExtendedPRQueryProcessor(PartitionedRegion pr, DefaultQuery query, Object[] parameters, List buckets) {
         super(pr, query, parameters, buckets);
@@ -309,7 +316,7 @@ public class PartitionedRegionQueryEvaluatorTest {
       }
     }
 
-    class FakeNumFailStreamingQueryPartitionResponse extends StreamingQueryPartitionResponse {
+    private class FakeNumFailStreamingQueryPartitionResponse extends StreamingQueryPartitionResponse {
       private PartitionedRegionQueryEvaluator processor;
       Queue<PartitionedQueryScenario> scenarios;
       
@@ -336,13 +343,13 @@ public class PartitionedRegionQueryEvaluatorTest {
     }
   }
   
-  interface ProcessDataFaker {
+  private interface ProcessDataFaker {
     void processData(PartitionedRegionQueryEvaluator processor);
     void executeQueryLocally(Collection resultsCollector);
   }
   
   //holds information on how the PRQE is to behave and what responses are "returned"
-  private class PartitionedQueryScenario {
+  private static class PartitionedQueryScenario {
     private InternalDistributedMember localNode;
     private ArrayList allNodes;
     private Set<InternalDistributedMember> failingNodes;
@@ -378,12 +385,4 @@ public class PartitionedRegionQueryEvaluatorTest {
     }
   }
   
-  private Queue<PartitionedQueryScenario> createScenariosQueue(PartitionedQueryScenario... scenarios) {
-    Queue<PartitionedQueryScenario> queue = new LinkedList<>();
-    for (PartitionedQueryScenario scenario: scenarios) {
-      queue.add(scenario);
-    }
-    return queue;
-    
-  }
 }

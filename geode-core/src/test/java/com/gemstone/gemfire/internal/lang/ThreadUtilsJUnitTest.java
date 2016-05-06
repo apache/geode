@@ -16,24 +16,21 @@
  */
 package com.gemstone.gemfire.internal.lang;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
-import static org.assertj.core.api.Assertions.*;
 
 import java.lang.Thread.State;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.gemstone.gemfire.test.junit.Retry;
-import com.gemstone.gemfire.test.junit.rules.RetryRule;
 import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
-
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -56,7 +53,7 @@ public class ThreadUtilsJUnitTest {
   protected Mockery mockContext;
 
   @Before
-  public void setup() {
+  public void setUp() {
     mockContext = new Mockery() {{
       setImposteriser(ClassImposteriser.INSTANCE);
       setThreadingPolicy(new Synchroniser());
@@ -67,9 +64,6 @@ public class ThreadUtilsJUnitTest {
   public void tearDown() {
     mockContext.assertIsSatisfied();
   }
-
-  @Rule
-  public RetryRule retryRule = new RetryRule();
 
   @Test
   public void testGetThreadNameWithNull() {
@@ -172,8 +166,8 @@ public class ThreadUtilsJUnitTest {
     assertTrue(sleepDuration > 0);
   }
 
+  @Ignore("This is really just testing Thread.sleep(long)")
   @Test
-  @Retry(3)
   public void testSleepWithInterrupt() throws Throwable {
     TestFramework.runOnce(new SleepInterruptedMultithreadedTestCase(10 * 1000));
   }

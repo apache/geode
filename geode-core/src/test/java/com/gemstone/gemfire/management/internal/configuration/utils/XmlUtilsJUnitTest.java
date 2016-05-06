@@ -45,7 +45,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link XmlUtils}. See Also {@link XmlUtilsAddNewNodeJUnitTest}
  * for tests related to {@link XmlUtils#addNewNode(Document, XmlEntity)}
- * 
  *
  * @since 8.1
  */
@@ -54,13 +53,10 @@ public class XmlUtilsJUnitTest {
 
   /**
    * Test method for {@link XmlUtils#buildSchemaLocationMap(String)}.
-   * @throws IOException 
-   * @throws ParserConfigurationException 
-   * @throws SAXException 
    */
   @Test
-  public void testBuildSchemaLocationMapAttribute() throws SAXException, ParserConfigurationException, IOException {
-    final Document doc = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass().getResourceAsStream(
+  public void testBuildSchemaLocationMapAttribute() throws Exception {
+    final Document doc = XmlUtils.createDocumentFromReader(new InputStreamReader(getClass().getResourceAsStream(
         "XmlUtilsJUnitTest.testBuildSchemaLocationMapAttribute.xml")));
     final String schemaLocationAttribute = XmlUtils.getAttribute(doc.getDocumentElement(), W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION,
         W3C_XML_SCHEMA_INSTANCE_NS_URI);
@@ -86,21 +82,18 @@ public class XmlUtilsJUnitTest {
 
   /**
    * Test method for {@link XmlUtils#buildSchemaLocationMap(Map, String)}.
-   * @throws IOException 
-   * @throws ParserConfigurationException 
-   * @throws SAXException 
    */
   @Test
-  public void testBuildSchemaLocationMapMapOfStringListOfStringAttribute() throws SAXException, ParserConfigurationException, IOException {
+  public void testBuildSchemaLocationMapMapOfStringListOfStringAttribute() throws Exception {
     Map<String, List<String>> schemaLocationMap = new HashMap<>();
 
-    final Document doc1 = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass().getResourceAsStream(
+    final Document doc1 = XmlUtils.createDocumentFromReader(new InputStreamReader(getClass().getResourceAsStream(
         "XmlUtilsJUnitTest.testBuildSchemaLocationMapAttribute.xml")));
     final String schemaLocationAttribute1 = XmlUtils.getAttribute(doc1.getDocumentElement(), W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION,
         W3C_XML_SCHEMA_INSTANCE_NS_URI);
     schemaLocationMap = XmlUtils.buildSchemaLocationMap(schemaLocationMap, schemaLocationAttribute1);
 
-    final Document doc2 = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass().getResourceAsStream(
+    final Document doc2 = XmlUtils.createDocumentFromReader(new InputStreamReader(getClass().getResourceAsStream(
         "XmlUtilsJUnitTest.testBuildSchemaLocationMapMapOfStringListOfStringAttribute.xml")));
     final String schemaLocationAttribute2 = XmlUtils.getAttribute(doc2.getDocumentElement(), W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION,
         W3C_XML_SCHEMA_INSTANCE_NS_URI);
@@ -133,13 +126,10 @@ public class XmlUtilsJUnitTest {
   /**
    * Test method for {@link XmlUtils#buildSchemaLocationMap(Map, String)}.
    * Asserts map is empty if schemaLocation attribute is <code>null</code>.
-   * @throws IOException 
-   * @throws ParserConfigurationException 
-   * @throws SAXException 
    */
   @Test
-  public void testBuildSchemaLocationMapNullAttribute() throws SAXException, ParserConfigurationException, IOException {
-    final Document doc = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass().getResourceAsStream(
+  public void testBuildSchemaLocationMapNullAttribute() throws Exception {
+    final Document doc = XmlUtils.createDocumentFromReader(new InputStreamReader(getClass().getResourceAsStream(
         "XmlUtilsJUnitTest.testBuildSchemaLocationMapNullAttribute.xml")));
     final String schemaLocationAttribute = XmlUtils.getAttribute(doc.getDocumentElement(), W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION,
         W3C_XML_SCHEMA_INSTANCE_NS_URI);
@@ -151,13 +141,10 @@ public class XmlUtilsJUnitTest {
   /**
    * Test method for {@link XmlUtils#buildSchemaLocationMap(Map, String)}.
    * Asserts map is empty if schemaLocation attribute is empty.
-   * @throws IOException 
-   * @throws ParserConfigurationException 
-   * @throws SAXException 
    */
   @Test
-  public void testBuildSchemaLocationMapEmptyAttribute() throws SAXException, ParserConfigurationException, IOException {
-    final Document doc = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass().getResourceAsStream(
+  public void testBuildSchemaLocationMapEmptyAttribute() throws Exception {
+    final Document doc = XmlUtils.createDocumentFromReader(new InputStreamReader(getClass().getResourceAsStream(
         "XmlUtilsJUnitTest.testBuildSchemaLocationMapEmptyAttribute.xml")));
     final String schemaLocationAttribute = XmlUtils.getAttribute(doc.getDocumentElement(), W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION,
         W3C_XML_SCHEMA_INSTANCE_NS_URI);
@@ -169,14 +156,10 @@ public class XmlUtilsJUnitTest {
   /**
    * Test method for
    * {@link XmlUtils#querySingleElement(Node, String, XPathContext)}.
-   * @throws XPathExpressionException 
-   * @throws IOException 
-   * @throws ParserConfigurationException 
-   * @throws SAXException 
    */
   @Test
-  public void testQuerySingleElement() throws XPathExpressionException, SAXException, ParserConfigurationException, IOException {
-    final Document doc = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass().getResourceAsStream(
+  public void testQuerySingleElement() throws Exception {
+    final Document doc = XmlUtils.createDocumentFromReader(new InputStreamReader(getClass().getResourceAsStream(
         "XmlUtilsJUnitTest.testQuerySingleElement.xml")));
     final Element root = doc.getDocumentElement();
     final String cacheNamespace = "http://geode.apache.org/schema/cache";
@@ -209,19 +192,16 @@ public class XmlUtilsJUnitTest {
     try {
       XmlUtils.querySingleElement(root, q4, cacheXPathContext);
       fail("Expected XPathExpressionException");
-    } catch (XPathExpressionException e) {
+    } catch (XPathExpressionException expected) {
       // ignore
     }
-
   }
 
   /**
    * Test method for {@link XmlUtils#changeNamespace(Node, String, String)}.
-   * @throws XPathExpressionException 
-   * @throws ParserConfigurationException 
    */
   @Test
-  public void testChangeNamespace() throws XPathExpressionException, ParserConfigurationException {
+  public void testChangeNamespace() throws Exception {
     Document doc = XmlUtils.getDocumentBuilder().newDocument();
     Element root = doc.createElement("root");
     root = (Element) doc.appendChild(root);

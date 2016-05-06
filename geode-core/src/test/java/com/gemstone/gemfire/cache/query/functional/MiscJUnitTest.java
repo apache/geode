@@ -320,7 +320,7 @@ public class MiscJUnitTest {
       j = 0;
       while ( itr.hasNext()) {
        Struct struct = (Struct)itr.next();
-       assertEquals(j++, ((Integer)struct.get("getID")).intValue());
+       assertIndexDetailsEquals(j++, ((Integer)struct.get("getID")).intValue());
       }*/      
     }
     catch (Exception e) {      
@@ -614,22 +614,22 @@ public class MiscJUnitTest {
     String qStr = "Select distinct * from /portfolios pf where pf.getID() > Integer.MIN_VALUE"; 
     Query q = qs.newQuery(qStr);
     SelectResults result = (SelectResults) q.execute();
-    assertEquals(result.size(),4);  
+    assertIndexDetailsEquals(result.size(),4);
     
     qStr = "Select distinct * from /portfolios pf where pf.getID() > Integer.MAX_VALUE"; 
     q = qs.newQuery(qStr);
     result = (SelectResults) q.execute();
-    assertEquals(result.size(),0);
+    assertIndexDetailsEquals(result.size(),0);
     
     qStr = "Select distinct * from /portfolios pf where pf.getID() > \"Long\".MAX_VALUE"; 
     q = qs.newQuery(qStr);
     result = (SelectResults) q.execute();
-    assertEquals(result.size(),0);
+    assertIndexDetailsEquals(result.size(),0);
     
     qStr = "Select distinct * from /portfolios pf where pf.getID() > \"Long\".MIN_VALUE"; 
     q = qs.newQuery(qStr);
     result = (SelectResults) q.execute();
-    assertEquals(result.size(),4);
+    assertIndexDetailsEquals(result.size(),4);
     
     qStr = "Select distinct * from /portfolios pf where pf.getID() > integer.MIN_VALUE"; 
     q = qs.newQuery(qStr);
@@ -643,22 +643,22 @@ public class MiscJUnitTest {
     qStr = "Select distinct * from /portfolios pf where pf.intFunction(Integer.MIN_VALUE) = Integer.MIN_VALUE"; 
     q = qs.newQuery(qStr);
     result = (SelectResults) q.execute();
-    assertEquals(result.size(),4);
+    assertIndexDetailsEquals(result.size(),4);
     
     qStr = "Select distinct * from /portfolios pf where pf.intFunction(Integer.MAX_VALUE) = Integer.MAX_VALUE"; 
     q = qs.newQuery(qStr);
     result = (SelectResults) q.execute();
-    assertEquals(result.size(),4);
+    assertIndexDetailsEquals(result.size(),4);
     
     qStr = "Select distinct * from /portfolios pf where pf.longFunction( \"Long\".MAX_VALUE) = \"Long\".MAX_VALUE"; 
     q = qs.newQuery(qStr);
     result = (SelectResults) q.execute();
-    assertEquals(result.size(),4);
+    assertIndexDetailsEquals(result.size(),4);
     
     qStr = "Select distinct * from /portfolios pf where pf.longFunction(\"Long\".MIN_VALUE) = \"Long\".MIN_VALUE"; 
     q = qs.newQuery(qStr);
     result = (SelectResults) q.execute();
-    assertEquals(result.size(),4);
+    assertIndexDetailsEquals(result.size(),4);
       
     qStr = "Select distinct * from /portfolios pf where pf.Integer.MAX_VALUE = Integer.MAX_VALUE"; 
     q = qs.newQuery(qStr);
@@ -672,8 +672,8 @@ public class MiscJUnitTest {
     qStr = "Select distinct Integer.MAX_VALUE from /portfolios pf where Integer.MAX_VALUE = Integer.MAX_VALUE"; 
     q = qs.newQuery(qStr);
     result = (SelectResults) q.execute();
-    assertEquals(result.size(),1);
-    assertEquals(result.iterator().next(),Integer.valueOf(Integer.MAX_VALUE));
+    assertIndexDetailsEquals(result.size(),1);
+    assertIndexDetailsEquals(result.iterator().next(),Integer.valueOf(Integer.MAX_VALUE));
     
     
   }
@@ -687,27 +687,27 @@ public class MiscJUnitTest {
     String qStr = "Select distinct * from /tempdata td where td.Integer.MAX_VALUE > Integer.MAX_VALUE"; 
     Query q = qs.newQuery(qStr);
     SelectResults result = (SelectResults) q.execute();
-    assertEquals(result.size(),0);  
+    assertIndexDetailsEquals(result.size(),0);
     
     qStr = "Select distinct * from /tempdata td where td.Integer.MAX_VALUE = 2 "; 
     q = qs.newQuery(qStr);
     result = (SelectResults) q.execute();
-    assertEquals(result.size(),1);
+    assertIndexDetailsEquals(result.size(),1);
        
     qStr = "Select distinct * from /tempdata td where Integer.MAX_VALUE = 2 "; 
     q = qs.newQuery(qStr);
     result = (SelectResults) q.execute();
-    assertEquals(result.size(),0);
+    assertIndexDetailsEquals(result.size(),0);
     
     qStr = "Select distinct * from /tempdata td where Integer.MAX_VALUE.intValue = Integer.MAX_VALUE "; 
     q = qs.newQuery(qStr);
     result = (SelectResults) q.execute();
-    assertEquals(result.size(),0);
+    assertIndexDetailsEquals(result.size(),0);
     
     qStr = "Select distinct * from /tempdata td where Integer.test = 'test'"; 
     q = qs.newQuery(qStr);
     result = (SelectResults) q.execute();
-    assertEquals(result.size(),1);
+    assertIndexDetailsEquals(result.size(),1);
   }  
   
   

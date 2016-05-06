@@ -123,7 +123,7 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
   private final SerializableCallable verifyNoTxState = new SerializableCallable() {
     public Object call() throws Exception {
       //TXManagerImpl mgr = getGemfireCache().getTxManager();
-      //assertEquals(0, mgr.hostedTransactionsInProgressForTest());
+      //assertIndexDetailsEquals(0, mgr.hostedTransactionsInProgressForTest());
       final TXManagerImpl mgr = getGemfireCache().getTxManager();
       Wait.waitForCriterion(new WaitCriterion() {
         @Override
@@ -356,14 +356,14 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
       Region.Entry eR = refRegion.getEntry(custId);
       assertNotNull(eC);
       assertNotNull(eR);
-//      assertEquals(1,custRegion.size());
-  //    assertEquals(1,orderRegion.size());
-    //  assertEquals(1,refRegion.size());
+//      assertIndexDetailsEquals(1,custRegion.size());
+  //    assertIndexDetailsEquals(1,orderRegion.size());
+    //  assertIndexDetailsEquals(1,refRegion.size());
       
     } else {
-      //assertEquals(0,custRegion.size());
-      //assertEquals(0,orderRegion.size());
-      //assertEquals(0,refRegion.size());
+      //assertIndexDetailsEquals(0,custRegion.size());
+      //assertIndexDetailsEquals(0,orderRegion.size());
+      //assertIndexDetailsEquals(0,refRegion.size());
       try {
         Region.Entry eC =  custRegion.getEntry(custId);
         assertNull("should have had an EntryNotFoundException:"+eC,eC);
@@ -415,13 +415,13 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
       assertEquals(expectedCust, custRegion.getEntry(custId).getValue());
       /*
       assertNotNull(orderRegion.getEntry(orderId));
-      assertEquals(expectedOrder, orderRegion.getEntry(orderId).getValue());
+      assertIndexDetailsEquals(expectedOrder, orderRegion.getEntry(orderId).getValue());
       
       assertNotNull(orderRegion.getEntry(orderId2));
-      assertEquals(expectedOrder2, orderRegion.getEntry(orderId2).getValue());
+      assertIndexDetailsEquals(expectedOrder2, orderRegion.getEntry(orderId2).getValue());
       
       assertNotNull(orderRegion.getEntry(orderId3));
-      assertEquals(expectedOrder3, orderRegion.getEntry(orderId3).getValue());
+      assertIndexDetailsEquals(expectedOrder3, orderRegion.getEntry(orderId3).getValue());
       */
       assertNotNull(refRegion.getEntry(custId));
       assertEquals(expectedRef, refRegion.getEntry(custId).getValue());
@@ -2236,7 +2236,7 @@ public class RemoteTransactionDUnitTest extends CacheTestCase {
         assertEquals(6, rr.entrySet().size());
         assertNotNull(rr.get(custId));
         TXStateProxy tx = mgr.internalSuspend();
-        //assertEquals(getCustIdSet(5), rr.entrySet());
+        //assertIndexDetailsEquals(getCustIdSet(5), rr.entrySet());
         assertEquals(5, rr.entrySet().size());
         assertNull(rr.get(custId));
         mgr.resume(tx);

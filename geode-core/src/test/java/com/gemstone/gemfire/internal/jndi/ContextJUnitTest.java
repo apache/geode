@@ -16,8 +16,9 @@
  */
 package com.gemstone.gemfire.internal.jndi;
 
-import java.util.Hashtable;
+import static org.junit.Assert.*;
 
+import java.util.Hashtable;
 import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.ContextNotEmptyException;
@@ -28,337 +29,290 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.NoPermissionException;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
-//import com.gemstone.gemfire.internal.jndi.InitialContextFactoryImpl;
-
 /**
  * Tests all basic methods of ContextImpl.
- * 
  */
 @Category(UnitTest.class)
-public class ContextJUnitTest extends TestCase {
+public class ContextJUnitTest {
   
-  private Context initialCtx;
-  
-  private Context gfCtx;
-  
-  private Context envCtx;
-  
-  private Context datasourceCtx;
-  
-  public ContextJUnitTest(String name) {
-    super(name);
-  }
-  
-  protected void setUp() throws Exception {
-    // InitialContextFactoryImpl impl = new InitialContextFactoryImpl();
-    //	impl.setAsInitial();
+  private Context initialContext;
+  private Context gemfireContext;
+  private Context envContext;
+  private Context dataSourceContext;
+
+  @Before
+  public void setUp() throws Exception {
     Hashtable table = new Hashtable();
-    table
-    .put(
-        Context.INITIAL_CONTEXT_FACTORY,
-    "com.gemstone.gemfire.internal.jndi.InitialContextFactoryImpl");
-    //	table.put(Context.URL_PKG_PREFIXES,
-    // "com.gemstone.gemfire.internal.jndi");
-    initialCtx = new InitialContext(table);
-    initialCtx.bind("java:gf/env/datasource/oracle", "a");
-    gfCtx = (Context) initialCtx.lookup("java:gf");
-    envCtx = (Context) gfCtx.lookup("env");
-    datasourceCtx = (Context) envCtx.lookup("datasource");
+    table.put(Context.INITIAL_CONTEXT_FACTORY, "com.gemstone.gemfire.internal.jndi.InitialContextFactoryImpl");
+    initialContext = new InitialContext(table);
+    initialContext.bind("java:gf/env/datasource/oracle", "a");
+    gemfireContext = (Context) initialContext.lookup("java:gf");
+    envContext = (Context) gemfireContext.lookup("env");
+    dataSourceContext = (Context) envContext.lookup("datasource");
   }
-  
-  protected void tearDown() throws Exception {
-    
-    clearContext(initialCtx);
-    datasourceCtx = null;
-    envCtx = null;
-    gfCtx = null;
-    initialCtx = null;
-    //InitialContextFactoryImpl.revertSetAsInitial();
+
+  @After
+  public void tearDown() throws Exception {
+    clearContext(initialContext);
+    dataSourceContext = null;
+    envContext = null;
+    gemfireContext = null;
+    initialContext = null;
   }
   
   /**
    * Removes all entries from the specified context, including subcontexts.
    * 
-   * @param context context ot clear
+   * @param context context to clear
    */
-  private void clearContext(Context context)
-  throws NamingException {
-    
-    for (NamingEnumeration e = context.listBindings(""); e
-    .hasMoreElements();) {
+  private void clearContext(Context context) throws NamingException {
+    for (NamingEnumeration e = context.listBindings(""); e.hasMoreElements();) {
       Binding binding = (Binding) e.nextElement();
       if (binding.getObject() instanceof Context) {
         clearContext((Context) binding.getObject());
       }
       context.unbind(binding.getName());
     }
-    
   }
   
-  /*
+  /**
    * Tests inability to create duplicate subcontexts.
-   * 
-   * @throws NamingException
    */
-  public void testSubcontextCreationOfDuplicates()
-  throws NamingException {
-    
+  @Test
+  public void testSubcontextCreationOfDuplicates() throws NamingException {
     // Try to create duplicate subcontext
     try {
-      initialCtx.createSubcontext("java:gf");
+      initialContext.createSubcontext("java:gf");
       fail();
     }
-    catch (NameAlreadyBoundException ex) {
+    catch (NameAlreadyBoundException expected) {
     }
     // Try to create duplicate subcontext using multi-component name
     try {
-      gfCtx.createSubcontext("env/datasource");
+      gemfireContext.createSubcontext("env/datasource");
       fail();
     }
-    catch (NameAlreadyBoundException ex) {
+    catch (NameAlreadyBoundException expected) {
     }
   }
   
-  /*
+  /**
    * Tests inability to destroy non empty subcontexts.
-   * 
-   * @throws NamingException
    */
-  public void testSubcontextNonEmptyDestruction()
-  throws NamingException {
-    
+  @Test
+  public void testSubcontextNonEmptyDestruction() throws Exception {
     // Bind some object in ejb subcontext
-    datasourceCtx.bind("Test", "Object");
+    dataSourceContext.bind("Test", "Object");
     // Attempt to destroy any subcontext
     try {
-      initialCtx.destroySubcontext("java:gf");
+      initialContext.destroySubcontext("java:gf");
       fail();
     }
-    catch (ContextNotEmptyException ex) {
+    catch (ContextNotEmptyException expected) {
     }
     try {
-      initialCtx
+      initialContext
       .destroySubcontext("java:gf/env/datasource");
       fail();
     }
-    catch (ContextNotEmptyException ex) {
+    catch (ContextNotEmptyException expected) {
     }
     try {
-      envCtx.destroySubcontext("datasource");
+      envContext.destroySubcontext("datasource");
       fail();
     }
-    catch (ContextNotEmptyException ex) {
+    catch (ContextNotEmptyException expected) {
     }
   }
   
-  /*
+  /**
    * Tests ability to destroy empty subcontexts.
-   * 
-   * @throws NamingException
    */
-  public void testSubcontextDestruction()
-  throws NamingException {
-    
+  @Test
+  public void testSubcontextDestruction() throws Exception {
     // Create three new subcontexts
-    datasourceCtx.createSubcontext("sub1");
-    datasourceCtx.createSubcontext("sub2");
-    envCtx.createSubcontext("sub3");
+    dataSourceContext.createSubcontext("sub1");
+    dataSourceContext.createSubcontext("sub2");
+    envContext.createSubcontext("sub3");
     // Destroy
-    initialCtx
-    .destroySubcontext("java:gf/env/datasource/sub1");
-    datasourceCtx.destroySubcontext("sub2");
-    envCtx.destroySubcontext("sub3");
+    initialContext.destroySubcontext("java:gf/env/datasource/sub1");
+    dataSourceContext.destroySubcontext("sub2");
+    envContext.destroySubcontext("sub3");
     // Perform lookup
     try {
-      datasourceCtx.lookup("sub1");
+      dataSourceContext.lookup("sub1");
       fail();
     }
-    catch (NameNotFoundException ex) {
+    catch (NameNotFoundException expected) {
     }
     try {
-      envCtx.lookup("datasource/sub2");
+      envContext.lookup("datasource/sub2");
       fail();
     }
-    catch (NameNotFoundException ex) {
+    catch (NameNotFoundException expected) {
     }
     try {
-      initialCtx.lookup("java:gf/sub3");
+      initialContext.lookup("java:gf/sub3");
       fail();
     }
-    catch (NameNotFoundException ex) {
+    catch (NameNotFoundException expected) {
     }
   }
   
-  /*
-   * Tests inability to invoke methods on destroyed subcontexts. @throws
-   * NamingException
+  /**
+   * Tests inability to invoke methods on destroyed subcontexts.
    */
-  public void testSubcontextInvokingMethodsOnDestroyedContext()
-  throws NamingException {
-    
+  @Test
+  public void testSubcontextInvokingMethodsOnDestroyedContext() throws Exception {
     //Create subcontext and destroy it.
-    Context sub = datasourceCtx.createSubcontext("sub4");
-    initialCtx
-    .destroySubcontext("java:gf/env/datasource/sub4");
+    Context sub = dataSourceContext.createSubcontext("sub4");
+    initialContext.destroySubcontext("java:gf/env/datasource/sub4");
     
     try {
       sub.bind("name", "object");
       fail();
     }
-    catch (NoPermissionException ex) {
+    catch (NoPermissionException expected) {
     }
     try {
       sub.unbind("name");
       fail();
     }
-    catch (NoPermissionException ex) {
+    catch (NoPermissionException expected) {
     }
     try {
       sub.createSubcontext("sub5");
       fail();
     }
-    catch (NoPermissionException ex) {
+    catch (NoPermissionException expected) {
     }
     try {
       sub.destroySubcontext("sub6");
       fail();
     }
-    catch (NoPermissionException ex) {
+    catch (NoPermissionException expected) {
     }
     try {
       sub.list("");
       fail();
     }
-    catch (NoPermissionException ex) {
+    catch (NoPermissionException expected) {
     }
     try {
       sub.lookup("name");
       fail();
     }
-    catch (NoPermissionException ex) {
+    catch (NoPermissionException expected) {
     }
     try {
       sub.composeName("name", "prefix");
       fail();
     }
-    catch (NoPermissionException ex) {
+    catch (NoPermissionException expected) {
     }
     try {
       NameParserImpl parser = new NameParserImpl();
       sub.composeName(parser.parse("a"), parser.parse("b"));
       fail();
     }
-    catch (NoPermissionException ex) {
+    catch (NoPermissionException expected) {
     }
   }
   
-  /*
-   * Tests ability to bind name to object. @throws NamingException
+  /**
+   * Tests ability to bind name to object.
    */
-  public void testBindLookup() throws NamingException {
-    
+  @Test
+  public void testBindLookup() throws Exception {
     Object obj1 = new String("Object1");
     Object obj2 = new String("Object2");
     Object obj3 = new String("Object3");
-    datasourceCtx.bind("sub21", null);
-    datasourceCtx.bind("sub22", obj1);
-    initialCtx.bind("java:gf/env/sub23", null);
-    initialCtx.bind("java:gf/env/sub24", obj2);
+    dataSourceContext.bind("sub21", null);
+    dataSourceContext.bind("sub22", obj1);
+    initialContext.bind("java:gf/env/sub23", null);
+    initialContext.bind("java:gf/env/sub24", obj2);
     // Bind to subcontexts that do not exist
-    initialCtx.bind("java:gf/env/datasource/sub25/sub26",
-        obj3);
+    initialContext.bind("java:gf/env/datasource/sub25/sub26", obj3);
     
     // Try to lookup
-    assertNull(datasourceCtx.lookup("sub21"));
-    assertSame(datasourceCtx.lookup("sub22"), obj1);
-    assertNull(gfCtx.lookup("env/sub23"));
-    assertSame(initialCtx.lookup("java:gf/env/sub24"), obj2);
-    assertSame(datasourceCtx.lookup("sub25/sub26"), obj3);
+    assertNull(dataSourceContext.lookup("sub21"));
+    assertSame(dataSourceContext.lookup("sub22"), obj1);
+    assertNull(gemfireContext.lookup("env/sub23"));
+    assertSame(initialContext.lookup("java:gf/env/sub24"), obj2);
+    assertSame(dataSourceContext.lookup("sub25/sub26"), obj3);
   }
   
-  /*
-   * Tests ability to unbind names. @throws NamingException
+  /**
+   * Tests ability to unbind names.
    */
-  public void testUnbind() throws NamingException {
-    
-    envCtx.bind("sub31", null);
-    gfCtx.bind("env/ejb/sub32", new String("UnbindObject"));
+  @Test
+  public void testUnbind() throws Exception {
+    envContext.bind("sub31", null);
+    gemfireContext.bind("env/ejb/sub32", new String("UnbindObject"));
     // Unbind
-    initialCtx.unbind("java:gf/env/sub31");
-    datasourceCtx.unbind("sub32");
+    initialContext.unbind("java:gf/env/sub31");
+    dataSourceContext.unbind("sub32");
     try {
-      envCtx.lookup("sub31");
+      envContext.lookup("sub31");
       fail();
     }
-    catch (NameNotFoundException ex) {
+    catch (NameNotFoundException expected) {
     }
     try {
-      initialCtx.lookup("java:gf/env/sub32");
+      initialContext.lookup("java:gf/env/sub32");
       fail();
     }
-    catch (NameNotFoundException ex) {
+    catch (NameNotFoundException expected) {
     }
     // Unbind non-existing name
-    try {
-      datasourceCtx.unbind("doesNotExist");
-    }
-    catch (Exception ex) {
-      fail();
-    }
+    dataSourceContext.unbind("doesNotExist");
     // Unbind non-existing name, when subcontext does not exists
     try {
-      gfCtx.unbind("env/x/y");
+      gemfireContext.unbind("env/x/y");
       fail();
     }
-    catch (NameNotFoundException ex) {
+    catch (NameNotFoundException expected) {
     }
   }
   
-  /*
+  /**
    * Tests ability to list bindings for a context - specified by name through
    * object reference.
-   * 
-   * @throws NamingException
    */
-  public void testListBindings() throws NamingException {
-    
-    gfCtx.bind("env/datasource/sub41", "ListBindings1");
-    envCtx.bind("sub42", "ListBindings2");
-    datasourceCtx.bind("sub43", null);
+  @Test
+  public void testListBindings() throws Exception {
+    gemfireContext.bind("env/datasource/sub41", "ListBindings1");
+    envContext.bind("sub42", "ListBindings2");
+    dataSourceContext.bind("sub43", null);
     
     // Verify bindings for context specified by reference
-    verifyListBindings(envCtx, "", "ListBindings1",
-    "ListBindings2");
+    verifyListBindings(envContext, "", "ListBindings1", "ListBindings2");
     // Verify bindings for context specified by name
-    verifyListBindings(initialCtx, "java:gf/env",
-        "ListBindings1", "ListBindings2");
+    verifyListBindings(initialContext, "java:gf/env", "ListBindings1", "ListBindings2");
   }
   
-  private void verifyListBindings(Context c, String name,
-      Object obj1, Object obj2) throws NamingException {
-    
+  private void verifyListBindings(Context c, String name, Object obj1, Object obj2) throws NamingException {
     boolean datasourceFoundFlg = false;
     boolean o2FoundFlg = false;
     boolean datasourceO1FoundFlg = false;
     boolean datasourceNullFoundFlg = false;
     
     // List bindings for the specified context
-    for (NamingEnumeration en = c.listBindings(name); en
-    .hasMore();) {
+    for (NamingEnumeration en = c.listBindings(name); en.hasMore();) {
       Binding b = (Binding) en.next();
       if (b.getName().equals("datasource")) {
-        assertEquals(b.getObject(), datasourceCtx);
+        assertEquals(b.getObject(), dataSourceContext);
         datasourceFoundFlg = true;
         
         Context nextCon = (Context) b.getObject();
-        for (NamingEnumeration en1 = nextCon
-            .listBindings(""); en1.hasMore();) {
+        for (NamingEnumeration en1 = nextCon.listBindings(""); en1.hasMore();) {
           Binding b1 = (Binding) en1.next();
           if (b1.getName().equals("sub41")) {
             assertEquals(b1.getObject(), obj1);
@@ -376,12 +330,12 @@ public class ContextJUnitTest extends TestCase {
         o2FoundFlg = true;
       }
     }
-    if (!(datasourceFoundFlg && o2FoundFlg
-        && datasourceO1FoundFlg && datasourceNullFoundFlg)) {
+    if (!(datasourceFoundFlg && o2FoundFlg && datasourceO1FoundFlg && datasourceNullFoundFlg)) {
       fail();
     }
   }
-  
+
+  @Test
   public void testCompositeName() throws Exception {
     ContextImpl c = new ContextImpl();
     Object o = new Object();
@@ -389,9 +343,9 @@ public class ContextJUnitTest extends TestCase {
     c.rebind("/a/b/c/", o);
     assertEquals(c.lookup("a/b/c"), o);
     assertEquals(c.lookup("///a/b/c///"), o);
-    
   }
-  
+
+  @Test
   public void testLookup() throws Exception {
     ContextImpl ctx = new ContextImpl();
     Object obj = new Object();
@@ -400,14 +354,13 @@ public class ContextJUnitTest extends TestCase {
     
     ctx.bind("a", obj);
     assertEquals(obj, ctx.lookup("a"));
-    
   }
   
-  /*
+  /**
    * Tests "getCompositeName" method
    */
+  @Test
   public void testGetCompositeName() throws Exception {
-    
     ContextImpl ctx = new ContextImpl();
     ctx.rebind("a/b/c/d", new Object());
     
@@ -418,15 +371,13 @@ public class ContextJUnitTest extends TestCase {
     
     subCtx = (ContextImpl) ctx.lookup("a/b/c");
     assertEquals("a/b/c", subCtx.getCompoundStringName());
-    
   }
   
-  /*
-   * Tests substitution of '.' with '/' when parsing string names. @throws
-   * NamingException
+  /**
+   * Tests substitution of '.' with '/' when parsing string names.
    */
-  public void testTwoSeparatorNames()
-  throws NamingException {
+  @Test
+  public void testTwoSeparatorNames() throws Exception {
     ContextImpl ctx = new ContextImpl();
     Object obj = new Object();
     

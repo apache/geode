@@ -42,7 +42,6 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.partition.PartitionMemberInfo;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.BucketOperator.Completion;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.CompositeDirector;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel;
@@ -52,12 +51,9 @@ import com.gemstone.gemfire.internal.cache.partitioned.rebalance.SimulatedBucket
 import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-/**
- *
- */
-@SuppressWarnings("synthetic-access")
 @Category(UnitTest.class)
 public class PartitionedRegionLoadModelJUnitTest {
+
   private static final int MAX_MOVES = 5000;
   private static final boolean DEBUG = true;
   
@@ -72,7 +68,6 @@ public class PartitionedRegionLoadModelJUnitTest {
    * This test checks basic redundancy satisfaction. It creates two
    * buckets with low redundancy and 1 bucket with full redundancy and excepts
    * copies of the low redundancy buckets to be made. 
-   * @throws Exception
    */
   @Test
   public void testRedundancySatisfaction() throws Exception {
@@ -106,7 +101,6 @@ public class PartitionedRegionLoadModelJUnitTest {
    * This test creates buckets with low redundancy, but only 1 of the buckets
    * is small enough to be copied. The other bucket should be rejected because
    * it is too big..
-   * @throws Exception
    */
   @Test
   public void testRedundancySatisfactionWithSizeLimit() throws Exception {
@@ -152,7 +146,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   
   /**
    * This test makes sure we ignore the size limit if requested
-   * @throws Exception
    */
   @Test
   public void testRedundancySatisfactionDoNotEnforceLocalMaxMemory() throws Exception {
@@ -188,7 +181,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * Tests to make sure that redundancy satisfaction prefers to
    * make redundant copies on members with remote IP addresses.
-   * @throws Exception
    */
   @Test
   public void testRedundancySatisfactionPreferRemoteIp() throws Exception {
@@ -256,7 +248,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * Tests to make sure that redundancy satisfaction balances
    * between nodes to ensure an even load.
-   * @throws Exception
    */
   @Test
   public void testRedundancySatisfactionBalanced() throws Exception {
@@ -286,7 +277,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * Tests to make sure that redundancy satisfaction balances
    * between nodes to ensure an even load.
-   * @throws Exception
    */
   @Test
   public void testColocatedRegions() throws Exception {
@@ -367,7 +357,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * Test that we enforce local max memory on a per region basis
    * IE if one of the regions has a low lmm, it will prevent a bucket move
-   * @throws Exception
    */
   @Test
   public void testColocationEnforceLocalMaxMemory() throws Exception {
@@ -404,7 +393,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * Test that each region indivually honors it's enforce local max
    * memory flag.
-   * @throws Exception
    */
   @Test
   public void testColocationIgnoreEnforceLocalMaxMemory() throws Exception {
@@ -444,8 +432,7 @@ public class PartitionedRegionLoadModelJUnitTest {
    * Test which illustrates the problem with our greedy algorithm. It doesn't
    * necessarily end up with a balanced result.
    * 
-   *  TODO rebalance - change this test of fix the algorithm?
-   * @throws Exception
+   * TODO rebalance - change this test or fix the algorithm?
    */
   @Ignore
   @Test
@@ -471,13 +458,13 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * Tests to make sure that redundancy satisfaction balances
    * between nodes to ensure an even load.
-   * @throws Exception
    */
   @Test
   public void testRedundancySatisfactionWithFailures() throws Exception {
     InternalDistributedMember member1 = new InternalDistributedMember(InetAddress.getByName("127.0.0.1"), 1);
     final InternalDistributedMember member2 = new InternalDistributedMember(InetAddress.getByName("127.0.0.1"), 2);
     InternalDistributedMember member3 = new InternalDistributedMember(InetAddress.getByName("127.0.0.1"), 3);
+
     MyBucketOperator op = new MyBucketOperator() {
       @Override
       public void createRedundantBucket(
@@ -489,7 +476,6 @@ public class PartitionedRegionLoadModelJUnitTest {
           super.createRedundantBucket(targetMember, i, colocatedRegionBytes, completion);
         }
       }
-      
     };
     
     PartitionedRegionLoadModel model = new PartitionedRegionLoadModel(op ,1, 4, getAddressComparor(false), Collections.<InternalDistributedMember>emptySet(), null);
@@ -516,7 +502,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * Test that redundancy satisfation can handle asynchronous failures
    * and complete the job correctly. 
-   * @throws Exception
    */
   @Test
   public void testRedundancySatisfactionWithAsyncFailures() throws Exception {
@@ -568,7 +553,6 @@ public class PartitionedRegionLoadModelJUnitTest {
    * Very basic test of moving primaries. Creates two nodes and four buckets, with a copy
    * of each bucket on both nodes. All of the primaries are on one node. It expects half the
    * primaries to move to the other node.
-   * @throws Exception
    */
   @Test
   public void testMovePrimaries() throws Exception {
@@ -596,7 +580,6 @@ public class PartitionedRegionLoadModelJUnitTest {
    * Test that we can move primaries if failures occur during the move.
    * In this case member2 is bad, so primaries should move
    * to member3 instead.
-   * @throws Exception
    */
   @Test
   public void testMovePrimariesWithFailures() throws Exception {
@@ -636,7 +619,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   
   /**
    * Test of moving primaries when nodes are weighted relative to each other
-   * @throws Exception
    */
   @Test
   public void testMovePrimariesWithWeights() throws Exception {
@@ -676,9 +658,6 @@ public class PartitionedRegionLoadModelJUnitTest {
    * Member1   P  P P  P P  P  X  X  X
    * Member2   R  R R R R  R  P  P  R
    * Member3   X  X  X X X  X  R  R  P
-   * 
-   * 
-   * @throws Exception
    */
   @Test
   public void testPrimaryShuffle() throws Exception {
@@ -710,7 +689,6 @@ public class PartitionedRegionLoadModelJUnitTest {
 
   /**
    * Test a case where we seem to get into an infinite loop while balancing primaries.
-   * @throws Exception
    */
   @Test
   public void testBug39953() throws Exception {
@@ -740,7 +718,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   
   /**
    * Very basic test of moving buckets. Creates two nodes and four buckets, with buckets only on one node. Half of the buckets should move to the other node. 
-   * @throws Exception
    */
   @Test
   public void testMoveBuckets() throws Exception {
@@ -768,15 +745,14 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * Test that moving buckets will work if there are failures while moving buckets
    * member2 refuses the buckets, so the buckets should move to member3
-   * @throws Exception
    */
   @Test
   public void testMoveBucketsWithFailures() throws Exception {
     InternalDistributedMember member1 = new InternalDistributedMember(InetAddress.getByName("127.0.0.1"), 1);
     final InternalDistributedMember member2 = new InternalDistributedMember(InetAddress.getByName("127.0.0.1"), 2);
     InternalDistributedMember member3 = new InternalDistributedMember(InetAddress.getByName("127.0.0.1"), 3);
+
     MyBucketOperator op = new MyBucketOperator() {
-      
       @Override
       public boolean moveBucket(InternalDistributedMember source,
           InternalDistributedMember target, int id,
@@ -787,6 +763,7 @@ public class PartitionedRegionLoadModelJUnitTest {
         return super.moveBucket(source, target, id, colocatedRegionBytes);
       }
     };
+
     PartitionedRegionLoadModel model = new PartitionedRegionLoadModel(op ,0, 4, getAddressComparor(false), Collections.<InternalDistributedMember>emptySet(), null);
     //Create some imbalanced nodes
     PartitionMemberInfoImpl details1 = buildDetails(member1, 500, 500, new long[] {1,1,1,1}, new long[] {1,1,1,1});
@@ -810,7 +787,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * Test to make sure that we honor the weight
    * of a node while moving buckets. 
-   * @throws Exception
    */
   @Test
   public void testMoveBucketsWithWeights() throws Exception {
@@ -841,7 +817,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * Test to make sure we honor the size of buckets when
    * choosing which buckets to move.
-   * @throws Exception
    */
   @Test
   public void testMoveBucketsWithSizes() throws Exception {
@@ -872,7 +847,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * Test to move buckets with redundancy.
    * Makes sure that buckets and primaries are balanced
-   * @throws Exception
    */
   @Test
   public void testMoveBucketsWithRedundancy() throws Exception {
@@ -914,7 +888,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * Test to move buckets with some large buckets (to make sure there are no issues with buffer overflow);
    * Makes sure that buckets and primaries are balanced
-   * @throws Exception
    */
   @Test
   public void testMoveLargeBucketsWithRedundancy() throws Exception {
@@ -958,7 +931,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * Test to make sure that moving buckets
    * honors size restrictions for VMs.
-   * @throws Exception
    */
   @Test
   public void testMoveBucketsWithSizeLimits() throws Exception {
@@ -995,7 +967,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * Test to make sure that moving buckets
    * honors size critical members
-   * @throws Exception
    */
   @Test
   public void testMoveBucketsWithCriticalMember() throws Exception {
@@ -1025,7 +996,8 @@ public class PartitionedRegionLoadModelJUnitTest {
     assertEquals(expectedMoves, new HashSet<Move>(bucketOperator.bucketMoves));
   }
 
-  /** Test to make sure two runs with the same information
+  /**
+   * Test to make sure two runs with the same information
    * perform the same moves. 
    */
   @Test
@@ -1069,9 +1041,9 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * This is more of a simulation than a test
    */
-  @Ignore
+  @Ignore("not a real test")
   @Test
-  public void z_testRandom() throws Exception {
+  public void testRandom() throws Exception {
     long seed = System.nanoTime();
     System.out.println("random seed=" + seed);
     try  {
@@ -1130,7 +1102,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * This test makes sure that we rebalance correctly
    * with multiple levels of colocation. See bug #40943
-   * @throws Exception
    */
   @Test
   public void testManyColocatedRegions() throws Exception {
@@ -1163,7 +1134,6 @@ public class PartitionedRegionLoadModelJUnitTest {
   
   /**
    * Test to make sure than redundancy satisfaction ignores offline members
-   * @throws Exception
    */
   @Test
   public void testRedundancySatisficationWithOfflineMembers() throws Exception {
@@ -1173,9 +1143,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     
     PartitionMemberInfoImpl details1 = buildDetails(member1, 200, 200, new long[] {30,0,28,30,23}, new long[] {1,0,1,1,1});
     PartitionMemberInfoImpl details2 = buildDetails(member2, 200, 200, new long[] {0,23,0,0,0}, new long[] {0,1,0,0,0});
-    
-    
-    
+
     //Two buckets have an offline members
     Set<PersistentMemberID> o = Collections.singleton(new PersistentMemberID());
     Set<PersistentMemberID> x = Collections.emptySet();
@@ -1200,8 +1168,6 @@ public class PartitionedRegionLoadModelJUnitTest {
     
     PartitionMemberInfoImpl details1 = buildDetails(member1, 480, 480, new long[] {1,1,1,1,1,1}, new long[] {1,1,1,1,1,1});
     PartitionMemberInfoImpl details2 = buildDetails(member2, 480, 480, new long[] {0,0,0,0,0,0}, new long[] {0,0,0,0,0,0});
-    
-    
     
     //Each bucket has an offline member
     Set<PersistentMemberID> o = Collections.singleton(new PersistentMemberID());
@@ -1282,20 +1248,24 @@ public class PartitionedRegionLoadModelJUnitTest {
   
   private static AddressComparor getAddressComparor(final boolean enforceUniqueZones) {
     return new AddressComparor() {
+
+      @Override
       public boolean areSameZone(InternalDistributedMember member1,
           InternalDistributedMember member2) {
         return member1.getInetAddress().equals(member2.getInetAddress());
       }
 
+      @Override
       public boolean enforceUniqueZones() {
         return enforceUniqueZones;
       }
     };
   }
  
-  public static class Create {
-    public final InternalDistributedMember targetMember;
-    public final int bucketId;
+  private static class Create {
+
+    private final InternalDistributedMember targetMember;
+    private final int bucketId;
     
     public Create(InternalDistributedMember targetMember, int bucketId) {
       this.targetMember = targetMember;
@@ -1336,15 +1306,17 @@ public class PartitionedRegionLoadModelJUnitTest {
         return false;
       return true;
     }
-    
+
+    @Override
     public String toString() {
       return "Create[member=" + targetMember+",bucketId=" + bucketId +"]";
     }
   }
   
-  public static class Remove {
-    public final InternalDistributedMember targetMember;
-    public final int bucketId;
+  private static class Remove {
+
+    private final InternalDistributedMember targetMember;
+    private final int bucketId;
     
     public Remove(InternalDistributedMember targetMember, int bucketId) {
       this.targetMember = targetMember;
@@ -1385,21 +1357,24 @@ public class PartitionedRegionLoadModelJUnitTest {
         return false;
       return true;
     }
-    
+
+    @Override
     public String toString() {
       return "Remove[member=" + targetMember+",bucketId=" + bucketId +"]";
     }
   }
   
-  public static class Move {
-    public final InternalDistributedMember sourceMember;
-    public final InternalDistributedMember targetMember;
+  private static class Move {
+
+    private final InternalDistributedMember sourceMember;
+    private final InternalDistributedMember targetMember;
 
     public Move(InternalDistributedMember sourceMember,
         InternalDistributedMember targetMember) {
       this.sourceMember = sourceMember;
       this.targetMember = targetMember;
     }
+
     @Override
     public int hashCode() {
       final int prime = 31;
@@ -1410,6 +1385,7 @@ public class PartitionedRegionLoadModelJUnitTest {
           + ((this.targetMember == null) ? 0 : this.targetMember.hashCode());
       return result;
     }
+
     @Override
     public boolean equals(Object obj) {
       if (this == obj)
@@ -1431,19 +1407,20 @@ public class PartitionedRegionLoadModelJUnitTest {
         return false;
       return true;
     }
-    
+
+    @Override
     public String toString() {
       return "Move[source=" + sourceMember+",target=" + targetMember + "]";
     }
   }
   
-  public static class MyBucketOperator extends SimulatedBucketOperator {
-    public List<Create> creates = new ArrayList<Create>();
-    public List<Remove> removes = new ArrayList<Remove>();
-    public List<Move> primaryMoves = new ArrayList<Move>();
-    public List<Move> bucketMoves = new ArrayList<Move>();
+  private static class MyBucketOperator extends SimulatedBucketOperator {
+
+    private List<Create> creates = new ArrayList<Create>();
+    private List<Remove> removes = new ArrayList<Remove>();
+    private List<Move> primaryMoves = new ArrayList<Move>();
+    private List<Move> bucketMoves = new ArrayList<Move>();
     private MoveType lastMove = null;
-    
 
     @Override
     public void createRedundantBucket(
@@ -1489,18 +1466,18 @@ public class PartitionedRegionLoadModelJUnitTest {
       lastMove = MoveType.REMOVE;
       return true;
     }
-    
-    
   }
   
-  public static class BucketOperatorWithFailures extends MyBucketOperator {
-    List<Completion> pendingSuccesses = new ArrayList<Completion>();
-    List<Completion> pendingFailures = new ArrayList<Completion>();
-    Set<InternalDistributedMember> badMembers = new HashSet<InternalDistributedMember> ();
+  private static class BucketOperatorWithFailures extends MyBucketOperator {
+
+    private List<Completion> pendingSuccesses = new ArrayList<Completion>();
+    private List<Completion> pendingFailures = new ArrayList<Completion>();
+    private Set<InternalDistributedMember> badMembers = new HashSet<InternalDistributedMember> ();
 
     public void addBadMember(InternalDistributedMember member) {
       this.badMembers.add(member);
     }
+
     @Override
     public void createRedundantBucket(InternalDistributedMember targetMember,
         int i, Map<String, Long> colocatedRegionBytes, Completion completion) {
@@ -1508,6 +1485,7 @@ public class PartitionedRegionLoadModelJUnitTest {
         pendingFailures.add(completion);
       } else {
         super.createRedundantBucket(targetMember, i, colocatedRegionBytes, new Completion() {
+
           @Override
           public void onSuccess() {
           }
@@ -1518,11 +1496,11 @@ public class PartitionedRegionLoadModelJUnitTest {
         });
         
         pendingSuccesses.add(completion);
-;      }
+      }
     }
   }
   
-  private static enum MoveType {
+  private enum MoveType {
     CREATE,
     MOVE_PRIMARY,
     MOVE_BUCKET,
@@ -1541,15 +1519,18 @@ public class PartitionedRegionLoadModelJUnitTest {
       this.offlineMembers = offlineMembers;
     }
 
+    @Override
     public Set<PersistentMemberID> getOfflineMembers(int bucketId) {
       return this.offlineMembers;
     }
 
+    @Override
     public void fromData(DataInput in) throws IOException,
         ClassNotFoundException {
       offlineMembers = DataSerializer.readObject(in);
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       DataSerializer.writeObject(offlineMembers, out);
       

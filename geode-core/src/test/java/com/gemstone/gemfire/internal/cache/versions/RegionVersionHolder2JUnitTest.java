@@ -18,8 +18,6 @@ package com.gemstone.gemfire.internal.cache.versions;
 
 import static org.junit.Assert.*;
 
-import java.util.Iterator;
-
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -42,7 +40,6 @@ public class RegionVersionHolder2JUnitTest {
     RegionVersionHolder h = createHolder(useBitSet);
     assertEquals(0, h.getExceptionCount());
   }
-
 
   @Test
   public void testRecordZeroDoesNothingWithBitSet() {
@@ -161,7 +158,7 @@ public class RegionVersionHolder2JUnitTest {
     assertTrue(h.isSpecialException(e, h));
     h.recordVersion(2l);
     // BUG: the exception is not removed
-//    assertEquals("unexpected RVV exception : " + h, 0, h.getExceptionCount());
+//    assertIndexDetailsEquals("unexpected RVV exception : " + h, 0, h.getExceptionCount());
   }
   
   private void createSpecialException(RegionVersionHolder h) {

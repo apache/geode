@@ -25,7 +25,6 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- *
  * @since 8.1
  */
 @Category(UnitTest.class)

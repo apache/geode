@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal;
 
+import static org.junit.Assert.*;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -23,24 +25,20 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
-/**
- *
- */
-@SuppressWarnings("synthetic-access")
 @Category(UnitTest.class)
-public class OneTaskOnlyDecoratorJUnitTest extends TestCase {
+public class OneTaskOnlyDecoratorJUnitTest {
   
   /**
    * Test to make sure we only execute the task once
    * no matter how many times we schedule it. 
    */
-  public void testExecuteOnlyOnce() throws InterruptedException {
+  @Test
+  public void testExecuteOnlyOnce() throws Exception {
     ScheduledExecutorService ex = Executors.newScheduledThreadPool(1);
    
     MyConflationListener listener = new MyConflationListener();
@@ -80,7 +78,8 @@ public class OneTaskOnlyDecoratorJUnitTest extends TestCase {
    * Test to make sure we reschedule the task for execution 
    * if it has already in progress.
    */
-  public void testReschedule() throws InterruptedException {
+  @Test
+  public void testReschedule() throws Exception {
     ScheduledExecutorService ex = Executors.newScheduledThreadPool(1);
     OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex);
     
@@ -121,7 +120,8 @@ public class OneTaskOnlyDecoratorJUnitTest extends TestCase {
    * Test to make sure we reschedule the task for execution 
    * if the new requested execution is earlier than the previous one
    */
-  public void testRescheduleForEarlierTime() throws InterruptedException {
+  @Test
+  public void testRescheduleForEarlierTime() throws Exception {
     ScheduledExecutorService ex = Executors.newScheduledThreadPool(1);
     MyConflationListener listener = new MyConflationListener();
     OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, listener);
@@ -149,10 +149,10 @@ public class OneTaskOnlyDecoratorJUnitTest extends TestCase {
     assertTrue(elapsed < TimeUnit.SECONDS.toNanos(120));
   }
 
-
   private static class MyConflationListener extends OneTaskOnlyExecutor.ConflatedTaskListenerAdapter {
     private int dropCount;
 
+    @Override
     public void taskDropped() {
       dropCount++;
     }

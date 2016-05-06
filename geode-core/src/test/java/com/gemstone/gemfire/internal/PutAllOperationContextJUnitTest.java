@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.operations.PutAllOperationContext;
@@ -32,11 +35,10 @@ import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
 import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
 @Category(UnitTest.class)
-public class PutAllOperationContextJUnitTest extends TestCase {
-  
+public class PutAllOperationContextJUnitTest {
+
+  @Test
   public void testIllegalMapMods() {
     LinkedHashMap<String, String> m = new LinkedHashMap<>();
     m.put("1", "1");
@@ -91,6 +93,7 @@ public class PutAllOperationContextJUnitTest extends TestCase {
   /**
    * Make sure that we do not expose the internal Token.INVALID to customers
    */
+  @Test
   public void testInvalidToken() {
     LinkedHashMap<String, Object> m = new LinkedHashMap<>();
     m.put("INVALID_TOKEN", Token.INVALID);
@@ -111,9 +114,11 @@ public class PutAllOperationContextJUnitTest extends TestCase {
     assertEquals(null, me.getValue());
     assertEquals(Token.INVALID, m.get("INVALID_TOKEN"));
   }
+
   /**
    * Make sure that we do not expose the internal CachedDeserializable to customers
    */
+  @Test
   public void testCachedDeserializable() {
     LinkedHashMap<String, Object> m = new LinkedHashMap<>();
     Object v = Integer.valueOf(99);
@@ -143,6 +148,7 @@ public class PutAllOperationContextJUnitTest extends TestCase {
     assertEquals(hm.hashCode(), opMap.hashCode());
   }
 
+  @Test
   public void testLegalMapMods() {
     LinkedHashMap<String, String> m = new LinkedHashMap<>();
     m.put("1", "1");

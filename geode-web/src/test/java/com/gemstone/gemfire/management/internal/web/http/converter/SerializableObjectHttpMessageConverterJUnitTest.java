@@ -24,9 +24,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Calendar;
 
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
@@ -38,6 +35,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
+
+import com.gemstone.gemfire.internal.util.IOUtils;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * The SerializableObjectHttpMessageConverterJUnitTest class is a test suite of test cases testing the contract

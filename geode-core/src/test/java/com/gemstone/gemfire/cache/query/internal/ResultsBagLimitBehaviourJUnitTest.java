@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -26,8 +28,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.query.Struct;
@@ -36,19 +37,15 @@ import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.cache.query.types.StructType;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-// TODO:Asif: Test for null behaviour in various functions
-
 /**
  * Test ResultsBag Limit behaviour
- * 
+ *
+ * TODO: Test for null behaviour in various functions
  */
 @Category(UnitTest.class)
-public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
+public class ResultsBagLimitBehaviourJUnitTest {
 
-  public ResultsBagLimitBehaviourJUnitTest(String testName) {
-    super(testName);
-  }
-
+  @Test
   public void testAsListAndAsSetMethod() {
     ResultsBag bag = getBagObject(String.class);
     bag.add(wrap("one", bag.getCollectionType().getElementType()));
@@ -63,6 +60,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     assertEquals(2, set.size());
   }
 
+  @Test
   public void testOccurence() {
     ResultsBag bag = getBagObject(String.class);
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
@@ -87,6 +85,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     assertEquals(6, total);
   }
 
+  @Test
   public void testIteratorType() {
     ResultsBag bag = getBagObject(String.class);
     bag.add(wrap("one", bag.getCollectionType().getElementType()));
@@ -114,6 +113,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     }
   }
 
+  @Test
   public void testContains() {
     ResultsBag bag = getBagObject(Integer.class);
     bag.add(wrap(new Integer(1), bag.getCollectionType().getElementType()));
@@ -144,6 +144,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     assertTrue(temp.contains(wrap(null, bag.getCollectionType().getElementType())) == bag.contains(wrap(null, bag.getCollectionType().getElementType())));
   }
 
+  @Test
   public void testAddExceptionIfLimitApplied() {
     ResultsBag bag = getBagObject(String.class);
     bag.add(wrap("one", bag.getCollectionType().getElementType()));
@@ -161,6 +162,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
 
   // Internal method AddAndGetOccurence used for iter evaluating
   // only up till the limit
+  @Test
   public void testAddAndGetOccurence() {
     ResultsBag bag = getBagObject(String.class);
     bag = getBagObject(String.class);
@@ -176,6 +178,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     assertEquals(3, bag.addAndGetOccurence(elementType instanceof StructType ? ((Struct)wrap(null, elementType)).getFieldValues() : wrap(null, elementType)));
   }
 
+  @Test
   public void testSizeWithLimitApplied() {
     ResultsBag bag = getBagObject(String.class);
     bag.add(wrap("two", bag.getCollectionType().getElementType()));
@@ -194,6 +197,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     assertEquals(2, bag.size());
   }
 
+  @Test
   public void testRemove() {
     // Test when actual size in resultset is less than the limit
     ResultsBag bag = getBagObject(String.class);
@@ -280,6 +284,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
 
   }
 
+  @Test
   public void testAddAllExceptionIfLimitApplied() {
     ResultsBag bag = getBagObject(Object.class);
     bag.applyLimit(6);
@@ -292,6 +297,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     }
   }
 
+  @Test
   public void testToDataFromData() throws Exception {
     // Test with limit specified & limit less than internal size
     ResultsBag toBag = getBagObject(String.class);
@@ -329,6 +335,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     assertFalse(toBag.asList().retainAll(fromBag.asList()));
   }
 
+  @Test
   public void testLimitResultsBagIterator_1() {
     ResultsBag bag = getBagObject(Integer.class);
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
@@ -380,6 +387,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     }
   }
 
+  @Test
   public void testLimitResultsBagIterator_2() {
     ResultsBag bag = getBagObject(Object.class);
     for (int i = 0; i < 20; ++i) {
@@ -420,6 +428,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     assertEquals(i, 3);
   }
 
+  @Test
   public void testValidExceptionThrown() {
     ResultsBag bag = getBagObject(Integer.class);
     bag.add(wrap(new Integer(1), bag.getCollectionType().getElementType()));
@@ -466,6 +475,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     }
   }
 
+  @Test
   public void testRemoveAll() {
     ResultsBag bag = getBagObject(Integer.class);
     // Add Integer & null Objects
@@ -502,6 +512,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     assertFalse(itr.hasNext());
   }
 
+  @Test
   public void testRetainAll() {
     ResultsBag bag = getBagObject(Integer.class);
     // Add Integer & null Objects
@@ -540,6 +551,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     assertFalse(itr.hasNext());
   }
 
+  @Test
   public void testContainAll() {
     ResultsBag bag = getBagObject(Integer.class);
     // Add Integer & null Objects
@@ -557,7 +569,7 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     // asList.add(wrap(new
     // Integer(13),bag.getCollectionType().getElementType()));
     assertEquals(4, bag.size());
-    // assertEquals(5,asList.size());
+    // assertIndexDetailsEquals(5,asList.size());
     // Remove all the elements from the list which match the
     // first element pf the list
     int occurence = bag.occurrences(asList.get(0));
@@ -572,12 +584,12 @@ public class ResultsBagLimitBehaviourJUnitTest extends TestCase {
     assertFalse(bag.containsAll(asList));
   }
 
-  public ResultsBag getBagObject(Class clazz) {
+  private ResultsBag getBagObject(Class clazz) {
     ObjectType type = new ObjectTypeImpl(clazz);
     return new ResultsBag(type, null);
   }
 
-  public Object wrap(Object obj, ObjectType elementType) {
+  private Object wrap(Object obj, ObjectType elementType) {
     return obj;
   }
 

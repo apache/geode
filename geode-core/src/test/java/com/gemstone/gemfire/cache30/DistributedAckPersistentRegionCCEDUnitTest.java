@@ -172,10 +172,10 @@ public class DistributedAckPersistentRegionCCEDUnitTest extends DistributedAckRe
 //
 //    VersionTag tag0 = getVersionTag(vm0, key);
 //    VersionTag tag1 = getVersionTag(vm1, key);
-//    assertEquals(3, tag0.getRegionVersion());
-//    assertEquals(3, tag0.getEntryVersion());
-//    assertEquals(3, tag1.getRegionVersion());
-//    assertEquals(3, tag1.getEntryVersion());
+//    assertIndexDetailsEquals(3, tag0.getRegionVersion());
+//    assertIndexDetailsEquals(3, tag0.getEntryVersion());
+//    assertIndexDetailsEquals(3, tag1.getRegionVersion());
+//    assertIndexDetailsEquals(3, tag1.getEntryVersion());
 //
 //    // shutdown and recover
 //    vm0.invoke(disconnect);
@@ -185,10 +185,10 @@ public class DistributedAckPersistentRegionCCEDUnitTest extends DistributedAckRe
 //
 //    tag0 = getVersionTag(vm0, key);
 //    tag1 = getVersionTag(vm1, key);
-//    assertEquals(3, tag0.getRegionVersion());
-//    assertEquals(3, tag0.getEntryVersion());
-//    assertEquals(3, tag1.getRegionVersion());
-//    assertEquals(3, tag1.getEntryVersion());
+//    assertIndexDetailsEquals(3, tag0.getRegionVersion());
+//    assertIndexDetailsEquals(3, tag0.getEntryVersion());
+//    assertIndexDetailsEquals(3, tag1.getRegionVersion());
+//    assertIndexDetailsEquals(3, tag1.getEntryVersion());
 //
 //    vm0.invoke(new SerializableRunnable("put with version 1, value vm1") {
 //      public void run() {
@@ -202,20 +202,20 @@ public class DistributedAckPersistentRegionCCEDUnitTest extends DistributedAckRe
 //          DistributedRegion.LOCALCLEAR_TESTHOOK = false;
 //        }
 //        CCRegion.put(key, "vm0");
-//        Assert.assertEquals("vm0", CCRegion.get(key));
+//        Assert.assertIndexDetailsEquals("vm0", CCRegion.get(key));
 //      }
 //    });
 //    vm1.invoke(new SerializableRunnable("verify that value has not been updated") {
 //      public void run() {
-//        Assert.assertEquals("dummy", CCRegion.get(key));
+//        Assert.assertIndexDetailsEquals("dummy", CCRegion.get(key));
 //      }
 //    });
 //
 //    tag0 = getVersionTag(vm0, key);
 //    tag1 = getVersionTag(vm1, key);
-//    assertEquals(4, tag0.getRegionVersion());
-//    assertEquals(1, tag0.getEntryVersion());
-//    assertEquals(3, tag1.getRegionVersion());
-//    assertEquals(3, tag1.getEntryVersion());
+//    assertIndexDetailsEquals(4, tag0.getRegionVersion());
+//    assertIndexDetailsEquals(1, tag0.getEntryVersion());
+//    assertIndexDetailsEquals(3, tag1.getRegionVersion());
+//    assertIndexDetailsEquals(3, tag1.getEntryVersion());
 //  }
 }

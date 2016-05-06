@@ -18,8 +18,10 @@ package com.gemstone.gemfire.management.internal.cli;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.util.Versionable;
 import com.gemstone.gemfire.management.internal.cli.domain.AbstractImpl;
@@ -29,20 +31,18 @@ import com.gemstone.gemfire.management.internal.cli.domain.Interface1;
 import com.gemstone.gemfire.management.internal.cli.domain.Interface2;
 import com.gemstone.gemfire.management.internal.cli.util.ClasspathScanLoadHelper;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
 public class ClasspathScanLoadHelperJUnitTest {
   
-  private static final String PACKAGE_NAME = "com.gemstone.gemfire.management.internal.cli.domain";
-  private static final String WRONG_PACKAGE_NAME = "com.gemstone.gemfire.management.internal.cli.domain1";
-  private static final Class<?> INTERFACE1 = Interface1.class;
-  private static final Class<?> NO_IMPL_INTERFACE = Versionable.class;
-  private static final Class<?> INTERFACE2 = Interface2.class;
-  private static final Class<?> IMPL1 = Impl1.class;
-  private static final Class<?> IMPL2 = Impl12.class;
-  private static final Class<?> ABSTRACT_IMPL = AbstractImpl.class;
+  private final String PACKAGE_NAME = "com.gemstone.gemfire.management.internal.cli.domain";
+  private final String WRONG_PACKAGE_NAME = "com.gemstone.gemfire.management.internal.cli.domain1";
+  private final Class<?> INTERFACE1 = Interface1.class;
+  private final Class<?> NO_IMPL_INTERFACE = Versionable.class;
+  private final Class<?> INTERFACE2 = Interface2.class;
+  private final Class<?> IMPL1 = Impl1.class;
+  private final Class<?> IMPL2 = Impl12.class;
+  private final Class<?> ABSTRACT_IMPL = AbstractImpl.class;
   
   @Test
   public void testLoadAndGet() throws Exception {

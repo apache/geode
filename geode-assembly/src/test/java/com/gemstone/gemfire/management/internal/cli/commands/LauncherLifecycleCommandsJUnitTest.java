@@ -16,6 +16,21 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Stack;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.ServerLauncher;
@@ -26,28 +41,6 @@ import com.gemstone.gemfire.internal.lang.SystemUtils;
 import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Stack;
-import java.util.jar.Attributes;
-import java.util.jar.Attributes.Name;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
-
-import static org.junit.Assert.*;
 
 /**
  * The LauncherLifecycleCommandsJUnitTest class is a test suite of test cases testing the contract and functionality of
@@ -62,9 +55,6 @@ import static org.junit.Assert.*;
 @Category(UnitTest.class)
 public class LauncherLifecycleCommandsJUnitTest {
 
-  private static final String GFSH_DEPENDENCIES_JAR_PATHNAME = IOUtils.appendToPath(System.getenv("GEMFIRE"), "lib",
-      "gfsh-dependencies.jar");
-
   private LauncherLifecycleCommands launcherCommands;
 
   @Before
@@ -75,18 +65,6 @@ public class LauncherLifecycleCommandsJUnitTest {
   @After
   public void tearDown() {
     launcherCommands = null;
-  }
-
-  protected LauncherLifecycleCommands getLauncherLifecycleCommands() {
-    return launcherCommands;
-  }
-
-  protected void writePid(final File pidFile, final int pid) throws IOException {
-    final FileWriter fileWriter = new FileWriter(pidFile, false);
-    fileWriter.write(String.valueOf(pid));
-    fileWriter.write("\n");
-    fileWriter.flush();
-    IOUtils.close(fileWriter);
   }
 
   @Test
@@ -260,28 +238,6 @@ public class LauncherLifecycleCommandsJUnitTest {
   }
 
   @Test
-  public void testReadPidWithNonExistingFile() {
-    assertEquals(LauncherLifecycleCommands.INVALID_PID,
-        getLauncherLifecycleCommands().readPid(new File("/path/to/non_existing/pid.file")));
-  }
-
-  @Test
-  public void testReadPid() throws IOException {
-    final int expectedPid = 12345;
-
-    File pidFile = new File(getClass().getSimpleName().concat("_testReadPid.pid"));
-
-    assertTrue(pidFile.createNewFile());
-
-    pidFile.deleteOnExit();
-    writePid(pidFile, expectedPid);
-
-    final int actualPid = getLauncherLifecycleCommands().readPid(pidFile);
-
-    assertEquals(expectedPid, actualPid);
-  }
-
-  @Test
   @SuppressWarnings("deprecation")
   public void testGetClasspath() {
     assertEquals(System.getProperty("java.class.path"), getLauncherLifecycleCommands().getClasspath(null));
@@ -292,23 +248,6 @@ public class LauncherLifecycleCommandsJUnitTest {
   public void testGetClasspathWithUserDefinedClasspath() {
     assertEquals(System.getProperty("java.class.path") + File.pathSeparator + "/path/to/user/classes",
         getLauncherLifecycleCommands().getClasspath("/path/to/user/classes"));
-  }
-
-  @Test
-  public void testGemFireCoreClasspath() throws IOException {
-    File coreDependenciesJar = new File(LauncherLifecycleCommands.CORE_DEPENDENCIES_JAR_PATHNAME);
-
-    assertNotNull(coreDependenciesJar);
-    assertTrue(coreDependenciesJar + " is not a file", coreDependenciesJar.isFile());
-
-    Collection<String> expectedJarDependencies = Arrays.asList("antlr", "commons-io", "commons-lang", "commons-logging",
-        "geode", "jackson-annotations", "jackson-core", "jackson-databind", "jansi", "jline", "snappy-java",
-        "spring-core", "spring-shell", "jetty-server", "jetty-servlet", "jetty-webapp", "jetty-util", "jetty-http",
-        "servlet-api", "jetty-io", "jetty-security", "jetty-xml"
-
-    );
-
-    assertJarFileManifestClassPath(coreDependenciesJar, expectedJarDependencies);
   }
 
   @Test
@@ -340,17 +279,6 @@ public class LauncherLifecycleCommandsJUnitTest {
     String actualClasspath = launcherCommands.getServerClasspath(false, userClasspath);
 
     assertEquals(expectedClasspath, actualClasspath);
-  }
-
-  private String toPath(Object... pathElements) {
-    String path = "";
-
-    for (Object pathElement : pathElements) {
-      path += (path.isEmpty() ? StringUtils.EMPTY_STRING : File.pathSeparator);
-      path += pathElement;
-    }
-
-    return path;
   }
 
   @Test
@@ -404,64 +332,6 @@ public class LauncherLifecycleCommandsJUnitTest {
         userClasspathOne, userClasspathTwo);
 
     assertEquals(expectedClasspath, actualClasspath);
-  }
-
-  private void assertJarFileManifestClassPath(final File dependenciesJar,
-      final Collection<String> expectedJarDependencies) throws IOException {
-    JarFile dependenciesJarFile = new JarFile(dependenciesJar);
-    Manifest manifest = dependenciesJarFile.getManifest();
-
-    assertNotNull(manifest);
-
-    Attributes attributes = manifest.getMainAttributes();
-
-    assertNotNull(attributes);
-    assertTrue(attributes.containsKey(Name.CLASS_PATH));
-
-    String[] actualJarDependencies = attributes.getValue(Name.CLASS_PATH).split(" ");
-
-    assertNotNull(actualJarDependencies);
-    assertTrue(String.format("Expected the actual number of JAR dependencies to be (%1$d); but was (%2$d)!",
-        expectedJarDependencies.size(), actualJarDependencies.length),
-        actualJarDependencies.length >= expectedJarDependencies.size());
-    //assertTrue(Arrays.asList(actualJarDependencies).containsAll(expectedJarDependencies));
-
-    List<String> actualJarDependenciesList = new ArrayList<>(Arrays.asList(actualJarDependencies));
-    List<String> missingExpectedJarDependenciesList = new ArrayList<>(expectedJarDependencies.size());
-
-    for (String expectedJarDependency : expectedJarDependencies) {
-      boolean containsExpectedJar = false;
-
-      for (int index = 0, size = actualJarDependenciesList.size(); index < size; index++) {
-        if (actualJarDependenciesList.get(index).toLowerCase().contains(expectedJarDependency.toLowerCase())) {
-          actualJarDependenciesList.remove(index);
-          containsExpectedJar = true;
-          break;
-        }
-      }
-
-      if (!containsExpectedJar) {
-        missingExpectedJarDependenciesList.add(expectedJarDependency);
-      }
-    }
-
-    assertTrue(String.format(
-        "GemFire dependencies JAR file (%1$s) does not contain the expected dependencies (%2$s) in the Manifest Class-Path attribute (%3$s)!",
-        dependenciesJar, missingExpectedJarDependenciesList, attributes.getValue(Name.CLASS_PATH)),
-        missingExpectedJarDependenciesList.isEmpty());
-  }
-
-  private String toClasspath(final String... jarFilePathnames) {
-    String classpath = StringUtils.EMPTY_STRING;
-
-    if (jarFilePathnames != null) {
-      for (final String jarFilePathname : jarFilePathnames) {
-        classpath += (classpath.isEmpty() ? StringUtils.EMPTY_STRING : File.pathSeparator);
-        classpath += jarFilePathname;
-      }
-    }
-
-    return classpath;
   }
 
   @Test
@@ -577,6 +447,40 @@ public class LauncherLifecycleCommandsJUnitTest {
 
     assertTrue(String.format("Expected ([]); but was (%1$s)", expectedCommandLineElements),
         expectedCommandLineElements.isEmpty());
+  }
+
+  @Test
+  public void testReadPidWithNonExistingFile() {
+    assertEquals(LauncherLifecycleCommands.INVALID_PID,
+            getLauncherLifecycleCommands().readPid(new File("/path/to/non_existing/pid.file")));
+  }
+
+  private LauncherLifecycleCommands getLauncherLifecycleCommands() {
+    return launcherCommands;
+  }
+
+  private String toClasspath(final String... jarFilePathnames) {
+    String classpath = StringUtils.EMPTY_STRING;
+
+    if (jarFilePathnames != null) {
+      for (final String jarFilePathname : jarFilePathnames) {
+        classpath += (classpath.isEmpty() ? StringUtils.EMPTY_STRING : File.pathSeparator);
+        classpath += jarFilePathname;
+      }
+    }
+
+    return classpath;
+  }
+
+  private String toPath(Object... pathElements) {
+    String path = "";
+
+    for (Object pathElement : pathElements) {
+      path += (path.isEmpty() ? StringUtils.EMPTY_STRING : File.pathSeparator);
+      path += pathElement;
+    }
+
+    return path;
   }
 
 }

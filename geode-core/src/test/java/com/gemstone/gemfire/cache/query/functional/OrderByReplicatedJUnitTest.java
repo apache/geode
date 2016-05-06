@@ -491,7 +491,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
           if (!(indexUsed).equals("PKIDIndexPf1")) {
             fail("<PKIDIndexPf1> was expected but found " + indexUsed);
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();
@@ -624,7 +624,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
           if (!(indexUsed).equals("PKIDIndexPf1")) {
             fail("<PKIDIndexPf1> was expected but found " + indexUsed);
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();

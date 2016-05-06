@@ -36,10 +36,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class BundledJarsJUnitTest {
 
   private static final String VERSION_PATTERN = "[0-9-_.v]{3,}.*\\.jar$";

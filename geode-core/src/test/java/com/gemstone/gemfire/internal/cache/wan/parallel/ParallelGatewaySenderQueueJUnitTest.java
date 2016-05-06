@@ -17,8 +17,8 @@
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -29,8 +29,6 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
@@ -38,8 +36,6 @@ import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQueue.MetaRegionFactory;
 import com.gemstone.gemfire.internal.cache.wan.parallel.ParallelGatewaySenderQueue.ParallelGatewaySenderQueueMetaRegion;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import static org.mockito.Mockito.*;
-
 
 @Category(UnitTest.class)
 public class ParallelGatewaySenderQueueJUnitTest {
@@ -62,7 +58,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
   }
 
   @Test
-  public void testLocalSize() throws TimeoutException, RegionExistsException, ClassNotFoundException, IOException {
+  public void testLocalSize() throws Exception {
     ParallelGatewaySenderQueueMetaRegion mockMetaRegion = mock(ParallelGatewaySenderQueueMetaRegion.class);
     PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
     when(mockMetaRegion.getDataStore()).thenReturn(dataStore);

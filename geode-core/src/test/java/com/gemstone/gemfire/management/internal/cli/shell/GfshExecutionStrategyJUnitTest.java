@@ -16,6 +16,19 @@
  */
 package com.gemstone.gemfire.management.internal.cli.shell;
 
+import static com.gemstone.gemfire.cache.operations.OperationContext.*;
+import static org.junit.Assert.*;
+
+import java.util.List;
+
+import org.junit.After;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.event.ParseResult;
+
 import com.gemstone.gemfire.management.cli.CliMetaData;
 import com.gemstone.gemfire.management.cli.ConverterHint;
 import com.gemstone.gemfire.management.cli.Result;
@@ -25,27 +38,13 @@ import com.gemstone.gemfire.management.internal.cli.annotation.CliArgument;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-import org.springframework.shell.event.ParseResult;
-
-import java.util.List;
-
-import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * GfshExecutionStrategyTest - Includes tests to for GfshExecutionStrategyTest
- * 
  */
 @Category(UnitTest.class)
 public class GfshExecutionStrategyJUnitTest {
+
   private static final String COMMAND1_NAME = "command1";
   private static final String COMMAND1_NAME_ALIAS = "command1_alias";
   private static final String COMMAND2_NAME = "command2";
@@ -58,15 +57,16 @@ public class GfshExecutionStrategyJUnitTest {
     CommandManager.clearInstance();
   }
   
-  //tests execute method by executing dummy method command1
+  /**
+   * tests execute method by executing dummy method command1
+   */
   @Test
   public void testGfshExecutionStartegyExecute() throws Exception {
     CommandManager commandManager = CommandManager.getInstance();
     assertNotNull("CommandManager should not be null.", commandManager);      
     commandManager.add(Commands.class.newInstance());
     GfshParser parser = new GfshParser(commandManager);
-    String[] command1Names = ((CliCommand) Commands.class.getMethod(
-        COMMAND1_NAME).getAnnotation(CliCommand.class)).value();
+    String[] command1Names = ((CliCommand) Commands.class.getMethod(COMMAND1_NAME).getAnnotation(CliCommand.class)).value();
     String input =command1Names[0];
     ParseResult parseResult = null;   
     parseResult = parser.parse(input);  
@@ -78,16 +78,17 @@ public class GfshExecutionStrategyJUnitTest {
     assertTrue(str.trim().equals(COMMAND1_SUCESS));      
   }
   
-  //tests isReadyForCommnads method by executing dummy method command1.
-  //TODO: this method is hard coded in source which may change in future. So this 
-  //test should also be accordingly changed
+  /**
+   * tests isReadyForCommnads method by executing dummy method command1.
+   * TODO: this method is hard coded in source which may change in future. So this
+   * test should also be accordingly changed
+   */
   @Test
   public void testGfshExecutionStartegyIsReadyForCommands() throws Exception {
     CommandManager commandManager = CommandManager.getInstance();
     assertNotNull("CommandManager should not be null.", commandManager);
     commandManager.add(Commands.class.newInstance());      
-    String[] command1Names = ((CliCommand) Commands.class.getMethod(
-        COMMAND1_NAME).getAnnotation(CliCommand.class)).value();       
+    String[] command1Names = ((CliCommand) Commands.class.getMethod(COMMAND1_NAME).getAnnotation(CliCommand.class)).value();
     String[] args = new String[] {command1Names[0]  };
     Gfsh gfsh = Gfsh.getInstance(false, args, new GfshConfig());      
     GfshExecutionStrategy gfshExecutionStrategy = new GfshExecutionStrategy(gfsh);
@@ -95,7 +96,9 @@ public class GfshExecutionStrategyJUnitTest {
     assertTrue(ready);      
   }
 
-  //represents class for dummy methods
+  /**
+   * represents class for dummy methods
+   */
   public static class Commands implements CommandMarker {
 
     @CliCommand(value = { COMMAND1_NAME, COMMAND1_NAME_ALIAS }, help = COMMAND1_HELP)

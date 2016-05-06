@@ -17,29 +17,26 @@
 package com.gemstone.gemfire.internal.size;
 
 import static org.junit.Assert.*;
-
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import static org.mockito.Mockito.*;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import io.codearte.catchexception.shade.mockito.Mockito;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ReflectionObjectSizerJUnitTest {
 
   @Test
   public void skipsSizingDistributedSystem() {
-
-    Object referenceObject = Mockito.mock(InternalDistributedSystem.class);
+    Object referenceObject = mock(InternalDistributedSystem.class);
     checkSizeDoesNotChange(referenceObject);
   }
 
   @Test
   public void skipsSizingClassLoader() {
-
     checkSizeDoesNotChange(Thread.currentThread().getContextClassLoader());
   }
 
@@ -59,7 +56,7 @@ public class ReflectionObjectSizerJUnitTest {
     assertNotEquals(sizeWithoutReference, sizer.sizeof(stringReference));
   }
 
-  public class TestObject {
+  private static class TestObject {
 
     public TestObject(final Object reference) {
       this.reference = reference;

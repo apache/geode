@@ -23,8 +23,6 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.util.List;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,7 +30,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-@Category(UnitTest.class)
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
+@Category(IntegrationTest.class)
 public class GfshHistoryJUnitTest {
 
   private File gfshHistoryFile;
@@ -81,8 +81,7 @@ public class GfshHistoryJUnitTest {
     gfsh.executeScriptLine("connect --password=foo --password = foo --password= goo --password =goo --password-param=blah --other-password-param=    gah");
 
     List<String> lines = Files.readAllLines(gfshHistoryFile.toPath());
-    assertEquals("// [failed] connect --password=***** --password = ***** --password= ***** --password =***** --password-param=***** --other-password-param= *****",
-        lines.get(1));
+    assertEquals("// [failed] connect --password=***** --password = ***** --password= ***** --password =***** --password-param=***** --other-password-param= *****", lines.get(1));
   }
 
   @Test

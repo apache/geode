@@ -2168,7 +2168,7 @@ public void testOneServer() throws CacheException, InterruptedException {
     int client2Size = getRegionSize(client2, regionName);
     int server1Size = getRegionSize(server1, regionName);
     LogWriterUtils.getLogWriter().info("region sizes: "+client1Size+","+client2Size+","+server1Size);
-//    assertEquals(server1Size, client1Size);
+//    assertIndexDetailsEquals(server1Size, client1Size);
 
     // restart server2
     createBridgeServer(server2, regionName, serverPort2, true, 0, "ds1");

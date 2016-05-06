@@ -22,13 +22,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.internal.process.LocalProcessLauncher;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Multi-process tests for ProcessLauncher.

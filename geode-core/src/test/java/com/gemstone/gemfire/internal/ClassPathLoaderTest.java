@@ -16,98 +16,53 @@
  */
 package com.gemstone.gemfire.internal;
 
+import static org.junit.Assert.*;
+
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import junit.framework.TestCase;
-
 import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.ClassGen;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * Test the {@link ClassPathLoader}.
+ * Unit tests for {@link ClassPathLoader}.
  * 
  * @since 6.5.1.4
  */
 @Category(UnitTest.class)
-public class ClassPathLoaderJUnitTest extends TestCase {
+public class ClassPathLoaderTest {
 
-  private static final int TEMP_FILE_BYTES_COUNT = 256;
   private static final int GENERATED_CLASS_BYTES_COUNT = 362;
 
-  private static final String ORIGINAL_EXCLUDE_TCCL_VALUE;
-  
-  private boolean deleteExtDir = false;
-  private boolean deleteLibDir = false;
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
-  static {
-    ORIGINAL_EXCLUDE_TCCL_VALUE = System.getProperty(ClassPathLoader.EXCLUDE_TCCL_PROPERTY, Boolean
-        .toString(ClassPathLoader.EXCLUDE_TCCL_DEFAULT_VALUE));
-
-    exploreClassLoaders(); // optional output for developer's convenience
-  }
-
-  private volatile File tempFile;
-  private volatile File tempFile2;
-
-  public ClassPathLoaderJUnitTest(String name) {
-    super(name);
-  }
-
-  @Override
+  @Before
   public void setUp() throws Exception {
     System.setProperty(ClassPathLoader.EXCLUDE_TCCL_PROPERTY, "false");
-
-    File workingDir = new File(System.getProperty("user.dir")).getAbsoluteFile();
-    this.tempFile = File.createTempFile("ClassPathLoaderJUnitTest.", null, workingDir);
-    FileOutputStream fos = new FileOutputStream(this.tempFile);
-    fos.write(new byte[TEMP_FILE_BYTES_COUNT]);
-    fos.close();
-
-    this.tempFile2 = File.createTempFile("ClassPathLoaderJUnitTest.", null, workingDir);
-    fos = new FileOutputStream(this.tempFile2);
-    fos.write(new byte[TEMP_FILE_BYTES_COUNT]);
-    fos.close();
-  }
-
-  @Override
-  public void tearDown() throws Exception {
-    System.setProperty(ClassPathLoader.EXCLUDE_TCCL_PROPERTY, ORIGINAL_EXCLUDE_TCCL_VALUE);
-    
-    // these deletions fail on windows
-//    if (this.deleteLibDir) {
-//      FileUtil.delete(ClassPathLoader.EXT_LIB_DIR.getParentFile());
-//    } else {
-//      if (this.deleteExtDir) {
-//        FileUtil.delete(ClassPathLoader.EXT_LIB_DIR);
-//      } else {
-//        FileUtil.delete(new File(ClassPathLoader.EXT_LIB_DIR, "ClassPathLoaderJUnit1.jar"));
-//        FileUtil.delete(new File(ClassPathLoader.EXT_LIB_DIR, "cplju"));
-//      }
-//    }
-    
-    assertTrue(this.tempFile.delete());
   }
 
   /**
    * Verifies that {@link ClassPathLoader#getLatest()} is always initialized and returns a <tt>ClassPathLoader</tt>
    * instance.
    */
+  @Test
   public void testLatestExists() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testLatestExists");
+    System.out.println("\nStarting ClassPathLoaderTest#testLatestExists");
 
     assertNotNull(ClassPathLoader.getLatest());
   }
@@ -115,8 +70,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
   /**
    * Verifies that {@link ClassPathLoader#getLatest()} throws <tt>ClassNotFoundException</tt> when class does not exist.
    */
+  @Test
   public void testForNameThrowsClassNotFoundException() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testForNameThrowsClassNotFoundException");
+    System.out.println("\nStarting ClassPathLoaderTest#testForNameThrowsClassNotFoundException");
 
     try {
       String classToLoad = "com.nowhere.DoesNotExist";
@@ -131,8 +87,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
    * Verifies that {@link ClassPathLoader#getLatest()} finds and loads class via
    * <tt>Class.forName(String, boolean, ClassLoader)</tt> when class does exist.
    */
+  @Test
   public void testForName() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testForName");
+    System.out.println("\nStarting ClassPathLoaderTest#testForName");
 
     String classToLoad = "com.gemstone.gemfire.internal.classpathloaderjunittest.DoesExist";
     Class<?> clazz = ClassPathLoader.getLatest().forName(classToLoad);
@@ -142,8 +99,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
   /**
    * Verifies that {@link ClassPathLoader#getLatest()} can actually <tt>getResource</tt> when it exists.
    */
+  @Test
   public void testGetResource() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testGetResource");
+    System.out.println("\nStarting ClassPathLoaderTest#testGetResource");
 
     String resourceToGet = "com/gemstone/gemfire/internal/classpathloaderjunittest/DoesExist.class";
     URL url = ClassPathLoader.getLatest().getResource(resourceToGet);
@@ -170,8 +128,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
   /**
    * Verifies that {@link ClassPathLoader#getLatest()} can actually <tt>getResources</tt> when it exists.
    */
+  @Test
   public void testGetResources() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testGetResources");
+    System.out.println("\nStarting ClassPathLoaderTest#testGetResources");
 
     String resourceToGet = "com/gemstone/gemfire/internal/classpathloaderjunittest/DoesExist.class";
     Enumeration<URL> urls = ClassPathLoader.getLatest().getResources(resourceToGet);
@@ -200,8 +159,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
   /**
    * Verifies that {@link ClassPathLoader#getLatest()} can actually <tt>getResourceAsStream</tt> when it exists.
    */
+  @Test
   public void testGetResourceAsStream() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testGetResourceAsStream");
+    System.out.println("\nStarting ClassPathLoaderTest#testGetResourceAsStream");
 
     String resourceToGet = "com/gemstone/gemfire/internal/classpathloaderjunittest/DoesExist.class";
     InputStream is = ClassPathLoader.getLatest().getResourceAsStream(resourceToGet);
@@ -226,8 +186,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
    * Verifies that the {@link GeneratingClassLoader} works and always generates the named class. This is a control which
    * ensures that tests depending on <tt>GeneratingClassLoader</tt> are valid.
    */
+  @Test
   public void testGeneratingClassLoader() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testGeneratingClassLoader");
+    System.out.println("\nStarting ClassPathLoaderTest#testGeneratingClassLoader");
 
     ClassLoader gcl = new GeneratingClassLoader();
     String classToLoad = "com.nowhere.TestGeneratingClassLoader";
@@ -257,8 +218,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
   /**
    * Verifies that custom loader is used to load class.
    */
+  @Test
   public void testForNameWithCustomLoader() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testForNameWithCustomLoader");
+    System.out.println("\nStarting ClassPathLoaderTest#testForNameWithCustomLoader");
 
     ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
     dcl = dcl.addOrReplace(new GeneratingClassLoader());
@@ -277,8 +239,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
    * expected with named object arrays, while {@link ClassLoader#loadClass(String)} throws ClassNotFoundException for
    * named object arrays.
    */
+  @Test
   public void testForNameWithObjectArray() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testForNameWithObjectArray");
+    System.out.println("\nStarting ClassPathLoaderTest#testForNameWithObjectArray");
 
     ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
 
@@ -292,8 +255,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
    * Verifies that TCCL finds the class when {@link Class#forName(String, boolean, ClassLoader)} uses
    * {@link ClassPathLoader}.
    */
+  @Test
   public void testForNameWithTCCL() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testForNameWithTCCL");
+    System.out.println("\nStarting ClassPathLoaderTest#testForNameWithTCCL");
 
     final ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
     final String classToLoad = "com.nowhere.TestForNameWithTCCL";
@@ -331,8 +295,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
    * Verifies that the {@link NullClassLoader} works and never finds the named class. This is a control which ensures
    * that tests depending on <tt>NullClassLoader</tt> are valid.
    */
+  @Test
   public void testNullClassLoader() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testNullClassLoader");
+    System.out.println("\nStarting ClassPathLoaderTest#testNullClassLoader");
 
     ClassLoader cl = new NullClassLoader();
     String classToLoad = "java.lang.String";
@@ -357,8 +322,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
    * Verifies that the {@link SimpleClassLoader} works and finds classes that the parent can find. This is a control
    * which ensures that tests depending on <tt>SimpleClassLoader</tt> are valid.
    */
+  @Test
   public void testSimpleClassLoader() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testSimpleClassLoader");
+    System.out.println("\nStarting ClassPathLoaderTest#testSimpleClassLoader");
 
     ClassLoader cl = new SimpleClassLoader(getClass().getClassLoader());
     String classToLoad = "java.lang.String";
@@ -379,8 +345,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
    * Verifies that the {@link BrokenClassLoader} is broken and always throws errors. This is a control which ensures
    * that tests depending on <tt>BrokenClassLoader</tt> are valid.
    */
+  @Test
   public void testBrokenClassLoader() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testBrokenClassLoader");
+    System.out.println("\nStarting ClassPathLoaderTest#testBrokenClassLoader");
 
     ClassLoader cl = new BrokenClassLoader();
 
@@ -415,8 +382,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
    * <tt>BrokenClassLoader</tt> are valid, but it also verifies that TCCL is included by default by
    * <tt>ClassPathLoader</tt>.
    */
+  @Test
   public void testBrokenTCCLThrowsErrors() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testBrokenTCCLThrowsErrors");
+    System.out.println("\nStarting ClassPathLoaderTest#testBrokenTCCLThrowsErrors");
 
     ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
     dcl.addOrReplace(new NullClassLoader());
@@ -459,8 +427,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
    * Verifies that the class classloader or system classloader will find the class or resource. Parent is a
    * {@link NullClassLoader} while the TCCL is an excluded {@link BrokenClassLoader}.
    */
+  @Test
   public void testEverythingWithDefaultLoader() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testEverythingWithDefaultLoader");
+    System.out.println("\nStarting ClassPathLoaderTest#testEverythingWithDefaultLoader");
 
     // create DCL such that parent cannot find anything
     ClassPathLoader dcl = ClassPathLoader.createWithDefaults(true);
@@ -489,8 +458,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
    * Verifies that the 3rd custom loader will find the class. Parent cannot find it and TCCL is broken. This verifies
    * that all custom loaders are checked and that the custom loaders are all checked before TCCL.
    */
+  @Test
   public void testForNameWithMultipleCustomLoaders() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testForNameWithMultipleCustomLoaders");
+    System.out.println("\nStarting ClassPathLoaderTest#testForNameWithMultipleCustomLoaders");
 
     // create DCL such that the 3rd loader should find the class
     // first custom loader becomes parent which won't find anything
@@ -521,107 +491,11 @@ public class ClassPathLoaderJUnitTest extends TestCase {
   }
 
   /**
-   * Verifies that the 3rd custom loader will get the resource. Parent cannot find it and TCCL is broken. This verifies
-   * that all custom loaders are checked and that the custom loaders are all checked before TCCL.
-   */
-  public void testGetResourceWithMultipleCustomLoaders() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testGetResourceWithMultipleCustomLoaders");
-
-    // create DCL such that the 3rd loader should find the resource
-    // first custom loader becomes parent which won't find anything
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
-    dcl = dcl.addOrReplace(new GeneratingClassLoader());
-    dcl = dcl.addOrReplace(new SimpleClassLoader(getClass().getClassLoader()));
-    dcl = dcl.addOrReplace(new NullClassLoader());
-
-    String resourceToGet = "com/nowhere/testGetResourceWithMultipleCustomLoaders.rsc";
-
-    ClassLoader cl = Thread.currentThread().getContextClassLoader();
-    try {
-      // set TCCL to throw errors which makes sure we find before checking TCCL
-      Thread.currentThread().setContextClassLoader(new BrokenClassLoader());
-
-      URL url = dcl.getResource(resourceToGet);
-      assertNotNull(url);
-    } finally {
-      Thread.currentThread().setContextClassLoader(cl);
-    }
-  }
-
-  /**
-   * Verifies that the 3rd custom loader will get the resources. Parent cannot find it and TCCL is broken. This verifies
-   * that all custom loaders are checked and that the custom loaders are all checked before TCCL.
-   */
-  public void testGetResourcesWithMultipleCustomLoaders() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testGetResourceWithMultipleCustomLoaders");
-
-    // create DCL such that the 3rd loader should find the resource
-    // first custom loader becomes parent which won't find anything
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
-    dcl = dcl.addOrReplace(new GeneratingClassLoader());
-    dcl = dcl.addOrReplace(new GeneratingClassLoader2());
-    dcl = dcl.addOrReplace(new SimpleClassLoader(getClass().getClassLoader()));
-    dcl = dcl.addOrReplace(new NullClassLoader());
-
-    String resourceToGet = "com/nowhere/testGetResourceWithMultipleCustomLoaders.rsc";
-
-    ClassLoader cl = Thread.currentThread().getContextClassLoader();
-    try {
-      // set TCCL to throw errors which makes sure we find before checking TCCL
-      Thread.currentThread().setContextClassLoader(new BrokenClassLoader());
-
-      Enumeration<URL> urls = dcl.getResources(resourceToGet);
-      assertNotNull(urls);
-      assertTrue(urls.hasMoreElements());
-      
-      URL url = urls.nextElement();
-      assertNotNull(url);
-      
-      // Should find two with unique URLs
-      assertTrue("Did not find all resources.", urls.hasMoreElements());
-      URL url2 = urls.nextElement();
-      assertNotNull(url2);
-      assertTrue("Resource URLs should be unique.", !url.equals(url2));
-      
-    } finally {
-      Thread.currentThread().setContextClassLoader(cl);
-    }
-  }
-
-  /**
-   * Verifies that the 3rd custom loader will get the resource. Parent cannot find it and TCCL is broken. This verifies
-   * that all custom loaders are checked and that the custom loaders are all checked before TCCL.
-   */
-  public void testGetResourceAsStreamWithMultipleCustomLoaders() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testGetResourceAsStreamWithMultipleCustomLoaders");
-
-    // create DCL such that the 3rd loader should find the resource
-    // first custom loader becomes parent which won't find anything
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
-    dcl = dcl.addOrReplace(new GeneratingClassLoader());
-    dcl = dcl.addOrReplace(new SimpleClassLoader(getClass().getClassLoader()));
-    dcl = dcl.addOrReplace(new NullClassLoader());
-
-    String resourceToGet = "com/nowhere/testGetResourceAsStreamWithMultipleCustomLoaders.rsc";
-
-    ClassLoader cl = Thread.currentThread().getContextClassLoader();
-    try {
-      // set TCCL to throw errors which makes sure we find before checking TCCL
-      Thread.currentThread().setContextClassLoader(new BrokenClassLoader());
-
-      InputStream is = dcl.getResourceAsStream(resourceToGet);
-      assertNotNull(is);
-      is.close();
-    } finally {
-      Thread.currentThread().setContextClassLoader(cl);
-    }
-  }
-
-  /**
    * Verifies that setting <tt>excludeThreadContextClassLoader</tt> to true will indeed exclude the TCCL.
    */
+  @Test
   public void testExcludeTCCL() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testExcludeTCCL");
+    System.out.println("\nStarting ClassPathLoaderTest#testExcludeTCCL");
 
     ClassPathLoader dcl = ClassPathLoader.createWithDefaults(true);
 
@@ -648,206 +522,13 @@ public class ClassPathLoaderJUnitTest extends TestCase {
 
   }
 
-  /**
-   * Verifies that <tt>getResource</tt> works with custom loader from {@link ClassPathLoader}.
-   */
-  public void testGetResourceWithCustomLoader() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testGetResourceWithCustomLoader");
-
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
-    dcl = dcl.addOrReplace(new GeneratingClassLoader());
-
-    String resourceToGet = "com/nowhere/testGetResourceWithCustomLoader.rsc";
-    URL url = dcl.getResource(resourceToGet);
-    assertNotNull(url);
-
-    InputStream is = url != null ? url.openStream() : null;
-    assertNotNull(is);
-
-    int totalBytesRead = 0;
-    byte[] input = new byte[128];
-
-    BufferedInputStream bis = new BufferedInputStream(is);
-    for (int bytesRead = bis.read(input); bytesRead > -1;) {
-      totalBytesRead += bytesRead;
-      bytesRead = bis.read(input);
-    }
-    bis.close();
-
-    assertEquals(TEMP_FILE_BYTES_COUNT, totalBytesRead);
-  }
-
-  /**
-   * Verifies that <tt>getResources</tt> works with custom loader from {@link ClassPathLoader}.
-   */
-  public void testGetResourcesWithCustomLoader() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testGetResourceWithCustomLoader");
-
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
-    dcl = dcl.addOrReplace(new GeneratingClassLoader());
-
-    String resourceToGet = "com/nowhere/testGetResourceWithCustomLoader.rsc";
-    Enumeration<URL> urls = dcl.getResources(resourceToGet);
-    assertNotNull(urls);
-    assertTrue(urls.hasMoreElements());
-
-    URL url = urls.nextElement();
-    InputStream is = url != null ? url.openStream() : null;
-    assertNotNull(is);
-
-    int totalBytesRead = 0;
-    byte[] input = new byte[128];
-
-    BufferedInputStream bis = new BufferedInputStream(is);
-    for (int bytesRead = bis.read(input); bytesRead > -1;) {
-      totalBytesRead += bytesRead;
-      bytesRead = bis.read(input);
-    }
-    bis.close();
-
-    assertEquals(TEMP_FILE_BYTES_COUNT, totalBytesRead);
-  }
-
-  /**
-   * Verifies that <tt>getResourceAsStream</tt> works with custom loader from {@link ClassPathLoader}.
-   */
-  public void testGetResourceAsStreamWithCustomLoader() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testGetResourceAsStreamWithCustomLoader");
-
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
-    dcl = dcl.addOrReplace(new GeneratingClassLoader());
-
-    String resourceToGet = "com/nowhere/testGetResourceAsStreamWithCustomLoader.rsc";
-    InputStream is = dcl.getResourceAsStream(resourceToGet);
-    assertNotNull(is);
-
-    int totalBytesRead = 0;
-    byte[] input = new byte[128];
-
-    BufferedInputStream bis = new BufferedInputStream(is);
-    for (int bytesRead = bis.read(input); bytesRead > -1;) {
-      totalBytesRead += bytesRead;
-      bytesRead = bis.read(input);
-    }
-    bis.close();
-
-    assertEquals(TEMP_FILE_BYTES_COUNT, totalBytesRead);
-  }
-
-  /**
-   * Verifies that <tt>getResource</tt> works with TCCL from {@link ClassPathLoader}.
-   */
-  public void testGetResourceWithTCCL() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testGetResourceWithTCCL");
-
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
-
-    String resourceToGet = "com/nowhere/testGetResourceWithTCCL.rsc";
-    assertNull(dcl.getResource(resourceToGet));
-
-    ClassLoader cl = Thread.currentThread().getContextClassLoader();
-    try {
-      Thread.currentThread().setContextClassLoader(new GeneratingClassLoader());
-      URL url = dcl.getResource(resourceToGet);
-      assertNotNull(url);
-
-      InputStream is = url.openStream();
-      assertNotNull(is);
-
-      int totalBytesRead = 0;
-      byte[] input = new byte[128];
-
-      BufferedInputStream bis = new BufferedInputStream(is);
-      for (int bytesRead = bis.read(input); bytesRead > -1;) {
-        totalBytesRead += bytesRead;
-        bytesRead = bis.read(input);
-      }
-      bis.close();
-
-      assertEquals(TEMP_FILE_BYTES_COUNT, totalBytesRead);
-    } finally {
-      Thread.currentThread().setContextClassLoader(cl);
-    }
-  }
-
-  /**
-   * Verifies that <tt>getResources</tt> works with TCCL from {@link ClassPathLoader}.
-   */
-  public void testGetResourcesWithTCCL() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testGetResourceWithTCCL");
-
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
-
-    String resourceToGet = "com/nowhere/testGetResourceWithTCCL.rsc";
-    Enumeration<URL> urls = dcl.getResources(resourceToGet);
-    assertNotNull(urls);
-    assertFalse(urls.hasMoreElements());
-
-    ClassLoader cl = Thread.currentThread().getContextClassLoader();
-    try {
-      Thread.currentThread().setContextClassLoader(new GeneratingClassLoader());
-      urls = dcl.getResources(resourceToGet);
-      assertNotNull(urls);
-
-      URL url = urls.nextElement();
-      InputStream is = url.openStream();
-      assertNotNull(is);
-
-      int totalBytesRead = 0;
-      byte[] input = new byte[128];
-
-      BufferedInputStream bis = new BufferedInputStream(is);
-      for (int bytesRead = bis.read(input); bytesRead > -1;) {
-        totalBytesRead += bytesRead;
-        bytesRead = bis.read(input);
-      }
-      bis.close();
-
-      assertEquals(TEMP_FILE_BYTES_COUNT, totalBytesRead);
-    } finally {
-      Thread.currentThread().setContextClassLoader(cl);
-    }
-  }
-
-  /**
-   * Verifies that <tt>getResourceAsStream</tt> works with TCCL from {@link ClassPathLoader}.
-   */
-  public void testGetResourceAsStreamWithTCCL() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testGetResourceAsStreamWithTCCL");
-
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
-
-    String resourceToGet = "com/nowhere/testGetResourceAsStreamWithTCCL.rsc";
-    assertNull(dcl.getResourceAsStream(resourceToGet));
-
-    ClassLoader cl = Thread.currentThread().getContextClassLoader();
-    try {
-      // ensure that TCCL is only CL that can find this resource
-      Thread.currentThread().setContextClassLoader(new GeneratingClassLoader());
-      InputStream is = dcl.getResourceAsStream(resourceToGet);
-      assertNotNull(is);
-
-      int totalBytesRead = 0;
-      byte[] input = new byte[128];
-
-      BufferedInputStream bis = new BufferedInputStream(is);
-      for (int bytesRead = bis.read(input); bytesRead > -1;) {
-        totalBytesRead += bytesRead;
-        bytesRead = bis.read(input);
-      }
-      bis.close();
-
-      assertEquals(TEMP_FILE_BYTES_COUNT, totalBytesRead);
-    } finally {
-      Thread.currentThread().setContextClassLoader(cl);
-    }
-  }
 
   /**
    * Verifies that <tt>getResource</tt> will skip TCCL if <tt>excludeThreadContextClassLoader</tt> has been set to true.
    */
+  @Test
   public void testGetResourceExcludeTCCL() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testGetResourceExcludeTCCL");
+    System.out.println("\nStarting ClassPathLoaderTest#testGetResourceExcludeTCCL");
 
     ClassPathLoader dcl = ClassPathLoader.createWithDefaults(true);
 
@@ -868,8 +549,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
    * Verifies that <tt>getResourceAsStream</tt> will skip TCCL if <tt>excludeThreadContextClassLoader</tt> has been set
    * to true.
    */
+  @Test
   public void testGetResourceAsStreamExcludeTCCL() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testGetResourceAsStreamExcludeTCCL");
+    System.out.println("\nStarting ClassPathLoaderTest#testGetResourceAsStreamExcludeTCCL");
 
     ClassPathLoader dcl = ClassPathLoader.createWithDefaults(true);
 
@@ -886,8 +568,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
     }
   }
 
+  @Test
   public void testAddFindsLatestClassLoader() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testAddFindsLatestClassLoader");
+    System.out.println("\nStarting ClassPathLoaderTest#testAddFindsLatestClassLoader");
 
     ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
     dcl = dcl.addOrReplace(new GeneratingClassLoader());
@@ -909,8 +592,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
   /**
    * Verifies removing a ClassLoader.
    */
+  @Test
   public void testRemoveClassLoader() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testRemoveClassLoader");
+    System.out.println("\nStarting ClassPathLoaderTest#testRemoveClassLoader");
 
     GeneratingClassLoader genClassLoader = new GeneratingClassLoader();
     ClassPathLoader cpl = ClassPathLoader.createWithDefaults(false);
@@ -933,8 +617,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
   /**
    * Verifies that a ClassLoader will be replaced when added more than once.
    */
+  @Test
   public void testClassLoaderReplace() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testClassLoaderReplace");
+    System.out.println("\nStarting ClassPathLoaderTest#testClassLoaderReplace");
 
     String class1ToLoad = "ClassA";
     String class2ToLoad = "ClassB";
@@ -974,50 +659,9 @@ public class ClassPathLoaderJUnitTest extends TestCase {
     }
   }
 
-  /**
-   * Verifies that JAR files found in the extlib directory will be correctly
-   * added to the {@link ClassPathLoader}.
-   */
-  public void testJarsInExtLib() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testJarsInExtLib");
-
-    this.deleteLibDir = ClassPathLoader.EXT_LIB_DIR.getParentFile().mkdirs();
-    this.deleteExtDir = ClassPathLoader.EXT_LIB_DIR.mkdirs();
-    
-    File subdir = new File(ClassPathLoader.EXT_LIB_DIR, "cplju");
-    subdir.mkdir();
-    
-    final ClassBuilder classBuilder = new ClassBuilder();
-    
-    writeJarBytesToFile(new File(ClassPathLoader.EXT_LIB_DIR, "ClassPathLoaderJUnit1.jar"),
-        classBuilder.createJarFromClassContent("com/cpljunit1/ClassPathLoaderJUnit1", "package com.cpljunit1; public class ClassPathLoaderJUnit1 {}"));
-    writeJarBytesToFile(new File(subdir, "ClassPathLoaderJUnit2.jar"),
-        classBuilder.createJarFromClassContent("com/cpljunit2/ClassPathLoaderJUnit2", "package com.cpljunit2; public class ClassPathLoaderJUnit2 {}"));
-    
-    ClassPathLoader classPathLoader = ClassPathLoader.createWithDefaults(false);
-    try {
-      classPathLoader.forName("com.cpljunit1.ClassPathLoaderJUnit1");
-    } catch (ClassNotFoundException cnfex) {
-      fail("JAR file not correctly added to Classpath");
-    }
-    
-    try {
-      classPathLoader.forName("com.cpljunit2.ClassPathLoaderJUnit2");
-    } catch (ClassNotFoundException cnfex) {
-      fail("JAR file not correctly added to Classpath");
-    }
-    
-    assertNotNull(classPathLoader.getResource("com/cpljunit2/ClassPathLoaderJUnit2.class"));
-    
-    Enumeration<URL> urls = classPathLoader.getResources("com/cpljunit1");
-    if  (!urls.hasMoreElements()) {
-      fail("Resources should return one element");
-    }
-  }
-  
   @Test
   public void testAsClassLoaderLoadClassWithMultipleCustomLoaders() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderJUnitTest#testAsClassLoaderLoadClassWithMultipleCustomLoaders");
+    System.out.println("\nStarting ClassPathLoaderTest#testAsClassLoaderLoadClassWithMultipleCustomLoaders");
 
     // create DCL such that the 3rd loader should find the class
     // first custom loader becomes parent which won't find anything
@@ -1055,18 +699,12 @@ public class ClassPathLoaderJUnitTest extends TestCase {
     }
   }
 
-  private void writeJarBytesToFile(File jarFile, byte[] jarBytes) throws IOException {
-    final OutputStream outStream = new FileOutputStream(jarFile);
-    outStream.write(jarBytes);
-    outStream.close();
-  }
-  
   private static void exploreClassLoaders() {
     System.out.println("Thread.currentThread().getContextClassLoader()...");
     exploreClassLoader(Thread.currentThread().getContextClassLoader(), 1);
 
     System.out.println("class.getClassLoader()...");
-    exploreClassLoader(ClassPathLoaderJUnitTest.class.getClassLoader(), 1);
+    exploreClassLoader(ClassPathLoaderTest.class.getClassLoader(), 1);
 
     System.out.println("ClassLoader.getSystemClassLoader()...");
     exploreClassLoader(ClassLoader.getSystemClassLoader(), 1);
@@ -1111,16 +749,63 @@ public class ClassPathLoaderJUnitTest extends TestCase {
       exploreClassLoaderSuperClass(prefix, superClazz);
     }
   }
-  
+
+  /**
+   * Custom class loader which will never find any class or resource.
+   */
+  static class NullClassLoader extends ClassLoader {
+    public NullClassLoader() {
+      super(null); // no parent!!
+    }
+
+    @Override
+    public Class<?> loadClass(String name) throws ClassNotFoundException {
+      throw new ClassNotFoundException(name);
+    }
+
+    @Override
+    public URL getResource(String name) {
+      return null;
+    }
+  }
+
+  /**
+   * Custom class loader which will find anything the parent can find.
+   */
+  static class SimpleClassLoader extends ClassLoader {
+    public SimpleClassLoader(ClassLoader parent) {
+      super(parent);
+    }
+  }
+
+  /**
+   * Custom class loader which is broken and always throws errors.
+   */
+  static class BrokenClassLoader extends ClassLoader {
+    public BrokenClassLoader() {
+      super(null); // no parent!!
+    }
+
+    @Override
+    public Class<?> loadClass(String name) throws ClassNotFoundException {
+      throw new BrokenError();
+    }
+
+    @Override
+    public URL getResource(String name) {
+      throw new BrokenError();
+    }
+  }
+
   /**
    * Custom class loader which uses BCEL to always dynamically generate a class for any class name it tries to load.
    */
-  private class GeneratingClassLoader extends ClassLoader {
+  static class GeneratingClassLoader extends ClassLoader {
 
     /**
      * Currently unused but potentially useful for some future test. This causes this loader to only generate a class
      * that the parent could not find.
-     * 
+     *
      * @param parent
      *          the parent class loader to check with first
      */
@@ -1170,49 +855,12 @@ public class ClassPathLoaderJUnitTest extends TestCase {
     }
 
     protected File getTempFile() {
-      return ClassPathLoaderJUnitTest.this.tempFile;
-    }
-  }
-
-  /**
-   * Custom class loader which uses BCEL to always dynamically generate a class for any class name it tries to load.
-   */
-  private class GeneratingClassLoader2 extends GeneratingClassLoader {
-    @Override
-    protected File getTempFile() {
-      return ClassPathLoaderJUnitTest.this.tempFile2;
-    }
-  }
-  
-  /**
-   * Custom class loader which will never find any class or resource.
-   */
-  private class NullClassLoader extends ClassLoader {
-    public NullClassLoader() {
-      super(null); // no parent!!
-    }
-
-    @Override
-    public Class<?> loadClass(String name) throws ClassNotFoundException {
-      throw new ClassNotFoundException(name);
-    }
-
-    @Override
-    public URL getResource(String name) {
       return null;
     }
   }
 
-  /**
-   * Custom class loader which will find anything the parent can find.
-   */
-  private class SimpleClassLoader extends ClassLoader {
-    public SimpleClassLoader(ClassLoader parent) {
-      super(parent);
-    }
-  }
+  static class OneClassClassLoader extends ClassLoader {
 
-  private class OneClassClassLoader extends ClassLoader {
     private final GeneratingClassLoader genClassLoader = new GeneratingClassLoader();
     private String className;
 
@@ -1223,11 +871,11 @@ public class ClassPathLoaderJUnitTest extends TestCase {
     
     @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
-      if (!name.equals(className))
+      if (!name.equals(className)) {
         throw new ClassNotFoundException();
-
-      else
+      } else {
         return this.genClassLoader.findClass(name);
+      }
     }
     
     @Override
@@ -1236,26 +884,7 @@ public class ClassPathLoaderJUnitTest extends TestCase {
     }
   }
   
-  /**
-   * Custom class loader which is broken and always throws errors.
-   */
-  private class BrokenClassLoader extends ClassLoader {
-    public BrokenClassLoader() {
-      super(null); // no parent!!
-    }
-
-    @Override
-    public Class<?> loadClass(String name) throws ClassNotFoundException {
-      throw new BrokenError();
-    }
-
-    @Override
-    public URL getResource(String name) {
-      throw new BrokenError();
-    }
-  }
-
   @SuppressWarnings("serial")
-  private class BrokenError extends Error {
+  static class BrokenError extends Error {
   }
 }

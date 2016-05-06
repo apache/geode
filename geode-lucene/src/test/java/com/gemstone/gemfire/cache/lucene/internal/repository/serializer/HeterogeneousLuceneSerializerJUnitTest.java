@@ -16,19 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.cache.lucene.internal.repository.serializer;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.Mockito;
 
-import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogenousLuceneSerializer;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
@@ -36,16 +32,16 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * Unit test of the ObjectToDocumentMapper. 
  */
 @Category(UnitTest.class)
-public class HeterogenousLuceneSerializerJUnitTest {
+public class HeterogeneousLuceneSerializerJUnitTest {
 
   /**
    * Test that the mapper can handle a mix of different
    * object types.
    */
   @Test
-  public void testHetrogenousObjects() {
+  public void testHeterogeneousObjects() {
     String[] fields = new String[] {"s", "i", "l", "d", "f", "s2", "missing"};
-    HeterogenousLuceneSerializer mapper = new HeterogenousLuceneSerializer(fields);
+    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(fields);
     
     Type1 t1 = new Type1("a", 1, 2L, 3.0, 4.0f);
     
@@ -72,12 +68,12 @@ public class HeterogenousLuceneSerializerJUnitTest {
     assertEquals(3.0, doc2.getField("d").numericValue());
     assertEquals(4.0f, doc2.getField("f").numericValue());
     
-    PdxInstance i = Mockito.mock(PdxInstance.class);
+    PdxInstance i = mock(PdxInstance.class);
     
-    Mockito.when(i.hasField("s")).thenReturn(true);
-    Mockito.when(i.hasField("i")).thenReturn(true);
-    Mockito.when(i.getField("s")).thenReturn("a");
-    Mockito.when(i.getField("i")).thenReturn(5);
+    when(i.hasField("s")).thenReturn(true);
+    when(i.hasField("i")).thenReturn(true);
+    when(i.getField("s")).thenReturn("a");
+    when(i.getField("i")).thenReturn(5);
     
     Document doc3 = new Document();
     mapper.toDocument(i, doc3);

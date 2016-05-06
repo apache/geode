@@ -16,11 +16,12 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
+import static org.junit.Assert.*;
+
 import java.nio.ByteBuffer;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
@@ -31,15 +32,13 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * For client to server messages, the membership id part of event-id is not need
  * to be sent with each event. Also, the threadId and sequenceId need not be
  * sent as long if their value is small. This is a junit test for testing the
- * methods written in <code>EventID</code> class for the above optmization.
+ * methods written in <code>EventID</code> class for the above optimization.
  * For distributed testing for the same , please refer
  * {@link EventIdOptimizationDUnitTest}.
- * 
- * 
  */
 @Category(UnitTest.class)
-public class EventIdOptimizationJUnitTest extends TestCase
-{
+public class EventIdOptimizationJUnitTest {
+
   /** The long id (threadId or sequenceId) having value equivalent to byte */
   private static final long ID_VALUE_BYTE = Byte.MAX_VALUE;
 
@@ -53,164 +52,144 @@ public class EventIdOptimizationJUnitTest extends TestCase
   private static final long ID_VALUE_LONG = Long.MAX_VALUE;
 
   /**
-   * Constructor
-   * 
-   * @param arg0 -
-   *          name
-   */
-  public EventIdOptimizationJUnitTest(String arg0) {
-    super(arg0);
-  }
-
-  /**
-   * Tests the eventId optmization APIs
+   * Tests the eventId optimization APIs
    * <code>EventID#getOptimizedByteArrayForEventID</code> and
    * <code>EventID#readEventIdPartsFromOptmizedByteArray</code> for byte-byte
    * combination for threadId and sequenceId values.
-   * 
    */
-  public void testOptmizationForByteByte()
-  {
+  @Test
+  public void testOptimizationForByteByte() {
     int expectedLength = 2 + 1 + 1;
-    writeReadAndVerifyOpmitizedByteArray(ID_VALUE_BYTE, ID_VALUE_BYTE,
+    writeReadAndVerifyOptimizedByteArray(ID_VALUE_BYTE, ID_VALUE_BYTE,
         expectedLength);
   }
 
   /**
-   * Tests the eventId optmization APIs
+   * Tests the eventId optimization APIs
    * <code>EventID#getOptimizedByteArrayForEventID</code> and
    * <code>EventID#readEventIdPartsFromOptmizedByteArray</code> for
    * short-short combination for threadId and sequenceId values.
-   * 
    */
-  public void testOptmizationForShortShort()
-  {
+  @Test
+  public void testOptimizationForShortShort() {
     int expectedLength = 2 + 2 + 2;
-    writeReadAndVerifyOpmitizedByteArray(ID_VALUE_SHORT, ID_VALUE_SHORT,
+    writeReadAndVerifyOptimizedByteArray(ID_VALUE_SHORT, ID_VALUE_SHORT,
         expectedLength);
   }
 
   /**
-   * Tests the eventId optmization APIs
+   * Tests the eventId optimization APIs
    * <code>EventID#getOptimizedByteArrayForEventID</code> and
    * <code>EventID#readEventIdPartsFromOptmizedByteArray</code> for int-int
    * combination for threadId and sequenceId values.
-   * 
    */
-  public void testOptmizationForIntInt()
-  {
+  @Test
+  public void testOptimizationForIntInt() {
     int expectedLength = 2 + 4 + 4;
-    writeReadAndVerifyOpmitizedByteArray(ID_VALUE_INT, ID_VALUE_INT,
+    writeReadAndVerifyOptimizedByteArray(ID_VALUE_INT, ID_VALUE_INT,
         expectedLength);
   }
 
   /**
-   * Tests the eventId optmization APIs
+   * Tests the eventId optimization APIs
    * <code>EventID#getOptimizedByteArrayForEventID</code> and
    * <code>EventID#readEventIdPartsFromOptmizedByteArray</code> for long-long
    * combination for threadId and sequenceId values.
-   * 
    */
-  public void testOptmizationForLongLong()
-  {
+  @Test
+  public void testOptimizationForLongLong() {
     int expectedLength = 2 + 8 + 8;
-    writeReadAndVerifyOpmitizedByteArray(ID_VALUE_LONG, ID_VALUE_LONG,
+    writeReadAndVerifyOptimizedByteArray(ID_VALUE_LONG, ID_VALUE_LONG,
         expectedLength);
   }
 
   /**
-   * Tests the eventId optmization APIs
+   * Tests the eventId optimization APIs
    * <code>EventID#getOptimizedByteArrayForEventID</code> and
    * <code>EventID#readEventIdPartsFromOptmizedByteArray</code> for byte-short
    * combinations for threadId and sequenceId values.
-   * 
    */
-  public void testOptmizationForByteShort()
-  {
+  @Test
+  public void testOptimizationForByteShort() {
     int expectedLength = 2 + 1 + 2;
-    writeReadAndVerifyOpmitizedByteArray(ID_VALUE_BYTE, ID_VALUE_SHORT,
+    writeReadAndVerifyOptimizedByteArray(ID_VALUE_BYTE, ID_VALUE_SHORT,
         expectedLength);
-    writeReadAndVerifyOpmitizedByteArray(ID_VALUE_SHORT, ID_VALUE_BYTE,
+    writeReadAndVerifyOptimizedByteArray(ID_VALUE_SHORT, ID_VALUE_BYTE,
         expectedLength);
   }
 
   /**
-   * Tests the eventId optmization APIs
+   * Tests the eventId optimization APIs
    * <code>EventID#getOptimizedByteArrayForEventID</code> and
    * <code>EventID#readEventIdPartsFromOptmizedByteArray</code> for byte-int
    * combinations for threadId and sequenceId values.
-   * 
    */
-  public void testOptmizationForByteInt()
-  {
+  @Test
+  public void testOptimizationForByteInt() {
     int expectedLength = 2 + 1 + 4;
-    writeReadAndVerifyOpmitizedByteArray(ID_VALUE_BYTE, ID_VALUE_INT,
+    writeReadAndVerifyOptimizedByteArray(ID_VALUE_BYTE, ID_VALUE_INT,
         expectedLength);
-    writeReadAndVerifyOpmitizedByteArray(ID_VALUE_INT, ID_VALUE_BYTE,
+    writeReadAndVerifyOptimizedByteArray(ID_VALUE_INT, ID_VALUE_BYTE,
         expectedLength);
   }
 
   /**
-   * Tests the eventId optmization APIs
+   * Tests the eventId optimization APIs
    * <code>EventID#getOptimizedByteArrayForEventID</code> and
    * <code>EventID#readEventIdPartsFromOptmizedByteArray</code> for byte-long
    * combinations for threadId and sequenceId values.
-   * 
    */
-  public void testOptmizationForByteLong()
-  {
+  @Test
+  public void testOptimizationForByteLong() {
     int expectedLength = 2 + 1 + 8;
-    writeReadAndVerifyOpmitizedByteArray(ID_VALUE_BYTE, ID_VALUE_LONG,
+    writeReadAndVerifyOptimizedByteArray(ID_VALUE_BYTE, ID_VALUE_LONG,
         expectedLength);
-    writeReadAndVerifyOpmitizedByteArray(ID_VALUE_LONG, ID_VALUE_BYTE,
+    writeReadAndVerifyOptimizedByteArray(ID_VALUE_LONG, ID_VALUE_BYTE,
         expectedLength);
   }
 
   /**
-   * Tests the eventId optmization APIs
+   * Tests the eventId optimization APIs
    * <code>EventID#getOptimizedByteArrayForEventID</code> and
    * <code>EventID#readEventIdPartsFromOptmizedByteArray</code> for short-int
    * combinations for threadId and sequenceId values.
-   * 
    */
-  public void testOptmizationForShortInt()
-  {
+  @Test
+  public void testOptimizationForShortInt() {
     int expectedLength = 2 + 2 + 4;
-    writeReadAndVerifyOpmitizedByteArray(ID_VALUE_SHORT, ID_VALUE_INT,
+    writeReadAndVerifyOptimizedByteArray(ID_VALUE_SHORT, ID_VALUE_INT,
         expectedLength);
-    writeReadAndVerifyOpmitizedByteArray(ID_VALUE_INT, ID_VALUE_SHORT,
+    writeReadAndVerifyOptimizedByteArray(ID_VALUE_INT, ID_VALUE_SHORT,
         expectedLength);
   }
 
   /**
-   * Tests the eventId optmization APIs
+   * Tests the eventId optimization APIs
    * <code>EventID#getOptimizedByteArrayForEventID</code> and
    * <code>EventID#readEventIdPartsFromOptmizedByteArray</code> for short-long
    * combinations for threadId and sequenceId values.
-   * 
    */
-  public void testOptmizationForShortLong()
-  {
+  @Test
+  public void testOptimizationForShortLong() {
     int expectedLength = 2 + 2 + 8;
-    writeReadAndVerifyOpmitizedByteArray(ID_VALUE_SHORT, ID_VALUE_LONG,
+    writeReadAndVerifyOptimizedByteArray(ID_VALUE_SHORT, ID_VALUE_LONG,
         expectedLength);
-    writeReadAndVerifyOpmitizedByteArray(ID_VALUE_LONG, ID_VALUE_SHORT,
+    writeReadAndVerifyOptimizedByteArray(ID_VALUE_LONG, ID_VALUE_SHORT,
         expectedLength);
   }
 
   /**
-   * Tests the eventId optmization APIs
+   * Tests the eventId optimization APIs
    * <code>EventID#getOptimizedByteArrayForEventID</code> and
    * <code>EventID#readEventIdPartsFromOptmizedByteArray</code> for int-long
    * combinations for threadId and sequenceId values.
-   * 
    */
-  public void testOptmizationForIntLong()
-  {
+  @Test
+  public void testOptimizationForIntLong() {
     int expectedLength = 2 + 4 + 8;
-    writeReadAndVerifyOpmitizedByteArray(ID_VALUE_INT, ID_VALUE_LONG,
+    writeReadAndVerifyOptimizedByteArray(ID_VALUE_INT, ID_VALUE_LONG,
         expectedLength);
-    writeReadAndVerifyOpmitizedByteArray(ID_VALUE_LONG, ID_VALUE_INT,
+    writeReadAndVerifyOptimizedByteArray(ID_VALUE_LONG, ID_VALUE_INT,
         expectedLength);
   }
 
@@ -229,9 +208,7 @@ public class EventIdOptimizationJUnitTest extends TestCase
    * @param expectedArrayLength
    *          expected length of the optimized byte-array
    */
-  private void writeReadAndVerifyOpmitizedByteArray(long threadId,
-      long sequenceId, int expectedArrayLength)
-  {
+  private void writeReadAndVerifyOptimizedByteArray(long threadId, long sequenceId, int expectedArrayLength) {
     byte[] array = EventID
         .getOptimizedByteArrayForEventID(threadId, sequenceId);
     assertEquals("optimized byte-array length not as expected",

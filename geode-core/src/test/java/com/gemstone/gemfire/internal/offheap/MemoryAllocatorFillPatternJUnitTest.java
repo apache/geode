@@ -16,8 +16,8 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import static org.junit.Assert.*;
 import static com.googlecode.catchexception.CatchException.*;
+import static org.junit.Assert.*;
 
 import org.junit.After;
 import org.junit.Before;
@@ -25,8 +25,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
-import junit.framework.TestCase;
 
 /**
  * Tests fill pattern validation for the {@link MemoryAllocatorImpl}.

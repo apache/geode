@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.offheap;
 
 import static org.junit.Assert.*;
@@ -42,18 +41,7 @@ public class TinyMemoryBlockJUnitTest {
   private MemoryAllocatorImpl ma;
   private OutOfOffHeapMemoryListener ooohml;
   private OffHeapMemoryStats stats;
-
-  private Slab[] slabs = {
-      new SlabImpl((int)OffHeapStorage.MIN_SLAB_SIZE),
-      new SlabImpl((int)OffHeapStorage.MIN_SLAB_SIZE),
-      new SlabImpl((int)OffHeapStorage.MIN_SLAB_SIZE)
-  };
-
-  private static class TestableFreeListManager extends FreeListManager {
-    TestableFreeListManager(MemoryAllocatorImpl ma, final Slab[] slabs) {
-      super (ma, slabs);
-    }
-  }
+  private Slab[] slabs;
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
@@ -61,16 +49,13 @@ public class TinyMemoryBlockJUnitTest {
   @Rule
   public JUnitSoftAssertions softly = new JUnitSoftAssertions();
 
-  @BeforeClass
-  public static void setUpBeforeClass() throws Exception {
-  }
-
-  @AfterClass
-  public static void tearDownAfterClass() throws Exception {
-  }
-
   @Before
   public void setUp() throws Exception {
+    slabs = new Slab[] {
+            new SlabImpl((int)OffHeapStorage.MIN_SLAB_SIZE),
+            new SlabImpl((int)OffHeapStorage.MIN_SLAB_SIZE),
+            new SlabImpl((int)OffHeapStorage.MIN_SLAB_SIZE)
+    };
     ooohml = mock(OutOfOffHeapMemoryListener.class);
     stats = mock(OffHeapMemoryStats.class);
     ma = (MemoryAllocatorImpl) MemoryAllocatorImpl.createForUnitTest(ooohml, stats, slabs);
@@ -239,6 +224,12 @@ public class TinyMemoryBlockJUnitTest {
   public void hashCodeReturnsHashOfUnderlyingMemory() {
     MemoryBlock mb = new TestableFreeListManager.TinyMemoryBlock(slabs[0].getMemoryAddress(), 0);
     softly.assertThat(mb.hashCode()).isEqualTo(new OffHeapStoredObject(slabs[0].getMemoryAddress(), slabs[0].getSize()).hashCode());
+  }
+
+  private static class TestableFreeListManager extends FreeListManager {
+    TestableFreeListManager(MemoryAllocatorImpl ma, final Slab[] slabs) {
+      super (ma, slabs);
+    }
   }
 
 }

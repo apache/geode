@@ -478,12 +478,12 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
     if (server.equals("server1")) {
       r1.invalidate(k1);
       assertNull(r1.getEntry(k1).getValue());
-      //assertEquals(r1.getEntry(k2).getValue(), server1_k2);
+      //assertIndexDetailsEquals(r1.getEntry(k2).getValue(), server1_k2);
     }
     else if (server.equals("server2")) {
       r1.invalidate(k1);
       assertNull(r1.getEntry(k1).getValue());
-      //assertEquals(r1.getEntry(k2).getValue(), server2_k3);
+      //assertIndexDetailsEquals(r1.getEntry(k2).getValue(), server2_k3);
     }
   }
 
@@ -495,12 +495,12 @@ public class CacheServerTransactionsDUnitTest extends DistributedTestCase
     if (server.equals("server1")) {
       r1.destroy(k1);
       assertNull(r1.getEntry(k1));
-      //assertEquals(r1.getEntry(k2).getValue(), server1_k2);
+      //assertIndexDetailsEquals(r1.getEntry(k2).getValue(), server1_k2);
     }
     else if (server.equals("server2")) {
       r1.destroy(k1);
       assertNull(r1.getEntry(k1));
-      //assertEquals(r1.getEntry(k2).getValue(), server2_k3);
+      //assertIndexDetailsEquals(r1.getEntry(k2).getValue(), server2_k3);
     }
   }
 

@@ -16,7 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.region.entry;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import static org.junit.Assert.*;
+
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
@@ -24,7 +25,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -77,9 +78,7 @@ public class RegionEntryFactoryBuilderJUnitTest {
       "VersionedStatsDiskLRURegionEntryHeapFactory,true,true,true,true,false",
       "VersionedStatsDiskLRURegionEntryOffHeapFactory,true,true,true,true,true"
   })
-  public void testRegionEntryFactoryUnitTest(String factoryName, boolean enableStats, boolean enableLRU, boolean enableDisk,
-      boolean enableVersioning, boolean enableOffHeap) {
-    assertEquals(factoryName,
-        regionEntryFactoryBuilder.getRegionEntryFactoryOrNull(enableStats, enableLRU, enableDisk, enableVersioning, enableOffHeap).getClass().getSimpleName());
+  public void testRegionEntryFactoryUnitTest(String factoryName, boolean enableStats, boolean enableLRU, boolean enableDisk,boolean enableVersioning, boolean enableOffHeap) {
+    assertEquals(factoryName, regionEntryFactoryBuilder.getRegionEntryFactoryOrNull(enableStats, enableLRU, enableDisk, enableVersioning, enableOffHeap).getClass().getSimpleName());
   }
 }

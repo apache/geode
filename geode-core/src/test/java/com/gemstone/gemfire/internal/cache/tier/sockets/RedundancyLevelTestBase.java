@@ -156,7 +156,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
   public static void verifyDispatcherIsAlive()
   {
     try {
-//      assertEquals("More than one BridgeServer", 1, cache.getCacheServers()
+//      assertIndexDetailsEquals("More than one BridgeServer", 1, cache.getCacheServers()
 //          .size());
       WaitCriterion wc = new WaitCriterion() {
         String excuse;
@@ -215,7 +215,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
   public static void verifyDispatcherIsNotAlive()
   {
     try {
-      // assertEquals("More than one BridgeServer", 1,
+      // assertIndexDetailsEquals("More than one BridgeServer", 1,
       // cache.getCacheServers().size());
       WaitCriterion wc = new WaitCriterion() {
         String excuse;

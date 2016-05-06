@@ -672,7 +672,7 @@ public class TXLockServiceDUnitTest extends DistributedTestCase {
 //    if (this.lockGrantor == null) {
 //      this.lockGrantor = id;
 //    } else {
-//      assertEquals("assertGrantorIsConsistent failed", lockGrantor, id);
+//      assertIndexDetailsEquals("assertGrantorIsConsistent failed", lockGrantor, id);
 //    }
 //  }
   

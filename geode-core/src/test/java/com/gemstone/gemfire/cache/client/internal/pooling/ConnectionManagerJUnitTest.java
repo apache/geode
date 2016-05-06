@@ -448,8 +448,8 @@ public class ConnectionManagerJUnitTest {
     
 //     //wait to make sure checked out connections aren't timed out
 //     Thread.sleep(idleTimeout + 100);
-//     Assert.assertEquals(5,factory.creates);
-//     Assert.assertEquals(0,factory.destroys);
+//     Assert.assertIndexDetailsEquals(5,factory.creates);
+//     Assert.assertIndexDetailsEquals(0,factory.destroys);
     
 //     manager.returnConnection(conn1);
 //     manager.returnConnection(conn2);
@@ -468,8 +468,8 @@ public class ConnectionManagerJUnitTest {
 //     long elapsed = System.currentTimeMillis() - start;
 //     Assert.assertTrue(elapsed > idleTimeout);
     
-//     Assert.assertEquals(5,factory.creates);
-//     Assert.assertEquals(3,factory.destroys);
+//     Assert.assertIndexDetailsEquals(5,factory.creates);
+//     Assert.assertIndexDetailsEquals(3,factory.destroys);
   }
   
   @Test

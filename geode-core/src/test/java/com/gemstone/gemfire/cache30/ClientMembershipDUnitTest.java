@@ -1539,7 +1539,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       totalClientCounts += clientCounts[i];
     }
     // this assertion fails because the count is 4
-    //assertEquals(1, totalClientCounts);
+    //assertIndexDetailsEquals(1, totalClientCounts);
   }
 
   protected static int testGetNotifiedClients_port;

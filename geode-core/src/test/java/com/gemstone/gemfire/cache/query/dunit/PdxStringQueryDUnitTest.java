@@ -1759,7 +1759,7 @@ public class PdxStringQueryDUnitTest extends CacheTestCase{
           if (p1 instanceof Struct) { 
             Object[] values1 = ((Struct)p1).getFieldValues(); 
             Object[] values2 = ((Struct)p2).getFieldValues(); 
-            //test.assertEquals(values1.length, values2.length); 
+            //test.assertIndexDetailsEquals(values1.length, values2.length);
             if(values1.length != values2.length) { 
               ok = false; 
               break outer; 

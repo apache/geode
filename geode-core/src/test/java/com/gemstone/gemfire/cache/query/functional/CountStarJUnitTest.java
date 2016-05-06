@@ -216,7 +216,7 @@ public class CountStarJUnitTest {
         //Also verify with size of result2 to count
         assertEquals("COUNT(*) query result is wrong for query: " + queryStr , result2.size(), count);
         
-        //assertEquals("Query: "+ queryStr, countStarQueries.get(queryStr).intValue(), count);
+        //assertIndexDetailsEquals("Query: "+ queryStr, countStarQueries.get(queryStr).intValue(), count);
       }
     } catch (Exception e){
       e.printStackTrace();
@@ -271,7 +271,7 @@ public class CountStarJUnitTest {
         //Also verify with size of result2 to count
         assertEquals("COUNT(*) query result is wrong for query: " + queryStr , result2.size(), count);
         
-        //assertEquals("Query: "+ queryStr, countStarQueries.get(queryStr).intValue(), count);
+        //assertIndexDetailsEquals("Query: "+ queryStr, countStarQueries.get(queryStr).intValue(), count);
       }
     } catch (Exception e){
       e.printStackTrace();
@@ -325,7 +325,7 @@ public class CountStarJUnitTest {
         //Also verify with size of result2 to count
         assertEquals("COUNT(*) query result is wrong for query: " + queryStr , result2.size(), count);
         
-        //assertEquals("Query: "+ queryStr, countStarQueries.get(queryStr).intValue(), count);
+        //assertIndexDetailsEquals("Query: "+ queryStr, countStarQueries.get(queryStr).intValue(), count);
       }
     } catch (Exception e){
       e.printStackTrace();
@@ -360,7 +360,7 @@ public class CountStarJUnitTest {
     //Verify Index Creation
     //assertNotNull(queryService.getIndex(region, "sampleIndex-1"));
     //assertNotNull(queryService.getIndex(region, "sampleIndex-2"));
-    //assertEquals(3, queryService.getIndexes().size());
+    //assertIndexDetailsEquals(3, queryService.getIndexes().size());
 
     //Run queries
     Query query1 = null;
@@ -380,7 +380,7 @@ public class CountStarJUnitTest {
         //Also verify with size of result2 to count
         assertEquals("COUNT(*) query result is wrong for query: " + queryStr , result2.size(), count);
         
-        //assertEquals("Query: "+ queryStr, countStarQueries.get(queryStr).intValue(), count);
+        //assertIndexDetailsEquals("Query: "+ queryStr, countStarQueries.get(queryStr).intValue(), count);
       }
     } catch (Exception e){
       e.printStackTrace();
@@ -423,7 +423,7 @@ public class CountStarJUnitTest {
         //Also verify with size of result2 to count
         assertEquals("COUNT(*) query result is wrong for query: " + queryStr , result2.size(), count);
         
-        //assertEquals("Query: "+ queryStr, countStarQueries.get(queryStr).intValue(), count);
+        //assertIndexDetailsEquals("Query: "+ queryStr, countStarQueries.get(queryStr).intValue(), count);
       }
     } catch (Exception e){
       e.printStackTrace();
@@ -465,7 +465,7 @@ public class CountStarJUnitTest {
         //Also verify with size of result2 to count
         assertEquals("COUNT(*) query result is wrong for query with indexes: " + queryStr , result2.size(), count);
         
-        //assertEquals("Query: "+ queryStr, countStarQueries.get(queryStr).intValue(), count);
+        //assertIndexDetailsEquals("Query: "+ queryStr, countStarQueries.get(queryStr).intValue(), count);
       }
     } catch (Exception e){
       e.printStackTrace();
@@ -582,7 +582,7 @@ public class CountStarJUnitTest {
         //Also verify with size of result2 to count
         assertEquals("COUNT(*) query result is wrong for query: " + queryStr , result2.size(), count);
         
-        //assertEquals("Query: "+ queryStr, countStarDistinctQueries.get(queryStr).intValue(), count);
+        //assertIndexDetailsEquals("Query: "+ queryStr, countStarDistinctQueries.get(queryStr).intValue(), count);
       }
     } catch (Exception e){
       e.printStackTrace();
@@ -619,7 +619,7 @@ public class CountStarJUnitTest {
         //Also verify with size of result2 to count
         assertEquals("COUNT(*) query result is wrong for query: " + queryStr , result2.size(), count);
         
-        //assertEquals("Query: "+ queryStr, countStarDistinctQueries.get(queryStr).intValue(), count);
+        //assertIndexDetailsEquals("Query: "+ queryStr, countStarDistinctQueries.get(queryStr).intValue(), count);
       }
     } catch (Exception e){
       e.printStackTrace();

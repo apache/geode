@@ -623,7 +623,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     };
     Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
     
-    // assertEquals(region1.getEntry(k1).getValue(), k1);
+    // assertIndexDetailsEquals(region1.getEntry(k1).getValue(), k1);
     wc = new WaitCriterion() {
       String excuse;
       public boolean done() {
@@ -648,8 +648,8 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     };
     Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
     
-    // assertEquals(region1.getEntry(k2).getValue(), k2);
-    // assertEquals(region2.getEntry(k1).getValue(), k1);
+    // assertIndexDetailsEquals(region1.getEntry(k2).getValue(), k2);
+    // assertIndexDetailsEquals(region2.getEntry(k1).getValue(), k1);
     wc = new WaitCriterion() {
       String excuse;
       public boolean done() {
@@ -662,7 +662,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     };
     Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
     
-    // assertEquals(region2.getEntry(k2).getValue(), k2);
+    // assertIndexDetailsEquals(region2.getEntry(k2).getValue(), k2);
   }
 
   /**
@@ -1103,7 +1103,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
       assertNull(cache.getRegion(Region.SEPARATOR + regionName));
        verifyCacheClientProxyOnServer();
 
-      //assertEquals(1, bs.getAcceptor().getCacheClientNotifier().getClientProxies().size());
+      //assertIndexDetailsEquals(1, bs.getAcceptor().getCacheClientNotifier().getClientProxies().size());
     }
     catch (Exception ex) {
       ex.printStackTrace();
@@ -1215,7 +1215,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
       };
       Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
       
-      // assertEquals(k1, r1.getEntry(k1).getValue());
+      // assertIndexDetailsEquals(k1, r1.getEntry(k1).getValue());
       wc = new WaitCriterion() {
         String excuse;
         public boolean done() {
@@ -1228,7 +1228,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
       };
       Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
       
-      // assertEquals(k2, r1.getEntry(k2).getValue());
+      // assertIndexDetailsEquals(k2, r1.getEntry(k2).getValue());
       wc = new WaitCriterion() {
         String excuse;
         public boolean done() {
@@ -1241,7 +1241,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
       };
       Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
       
-      // assertEquals(server_k1, r2.getEntry(k1).getValue());
+      // assertIndexDetailsEquals(server_k1, r2.getEntry(k1).getValue());
       wc = new WaitCriterion() {
         String excuse;
         public boolean done() {
@@ -1254,7 +1254,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
       };
       Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
       
-      // assertEquals(server_k2, r2.getEntry(k2).getValue());
+      // assertIndexDetailsEquals(server_k2, r2.getEntry(k2).getValue());
     }
     catch (Exception ex) {
       Assert.fail("failed while verifyUpdates()", ex);
@@ -1358,7 +1358,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
       };
       Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
       
-      // assertEquals(server_k1, r2.getEntry(k1).getValue());
+      // assertIndexDetailsEquals(server_k1, r2.getEntry(k1).getValue());
       wc = new WaitCriterion() {
         String excuse;
         public boolean done() {
@@ -1371,7 +1371,7 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
       };
       Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
       
-      // assertEquals(server_k2, r2.getEntry(k2).getValue());
+      // assertIndexDetailsEquals(server_k2, r2.getEntry(k2).getValue());
     }
     catch (Exception ex) {
       Assert.fail("failed while verifyUpdatesOnRegion2()", ex);

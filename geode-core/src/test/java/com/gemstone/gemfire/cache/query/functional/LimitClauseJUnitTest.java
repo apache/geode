@@ -1289,14 +1289,14 @@ public class LimitClauseJUnitTest {
       assertTrue(idIndex instanceof CompactRangeIndex);
       SelectResults resultsWithIndex = (SelectResults) query.execute();
 
-      assertEquals(resultsNoIndex.size(), resultsWithIndex.size());
-      assertEquals(limit, resultsWithIndex.size());
+      assertIndexDetailsEquals(resultsNoIndex.size(), resultsWithIndex.size());
+      assertIndexDetailsEquals(limit, resultsWithIndex.size());
       
       int expectedId = 6;
       Iterator iterator = resultsNoIndex.iterator();
       while (iterator.hasNext()) {
         Portfolio p = (Portfolio) iterator.next();
-        assertEquals(expectedId++, p.ID);
+        assertIndexDetailsEquals(expectedId++, p.ID);
       }
       
       //check order by results
@@ -1304,7 +1304,7 @@ public class LimitClauseJUnitTest {
       iterator = resultsWithIndex.iterator();
       while (iterator.hasNext()) {
         Portfolio p = (Portfolio) iterator.next();
-        assertEquals(expectedId++, p.ID);
+        assertIndexDetailsEquals(expectedId++, p.ID);
       }      
   }
  */ 

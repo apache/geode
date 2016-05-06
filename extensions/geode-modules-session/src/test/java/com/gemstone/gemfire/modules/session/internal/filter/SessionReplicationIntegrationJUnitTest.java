@@ -466,7 +466,7 @@ public class SessionReplicationIntegrationJUnitTest {
 //        request.setURI("/test/request2");
 //        response.parse(tester.getResponses(request.generate()));
 //
-//        assertEquals("null", response.getContent());
+//        assertIndexDetailsEquals("null", response.getContent());
 //
 //        Region r = getRegion();
 //        assertNull("Region should not contain session", r.get(id));

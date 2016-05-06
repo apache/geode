@@ -41,7 +41,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 import com.gemstone.gemfire.internal.util.StopWatch;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.rules.ExpectedTimeoutRule;
 
 /**
@@ -49,7 +49,7 @@ import com.gemstone.gemfire.test.junit.rules.ExpectedTimeoutRule;
  * 
  * @since 8.2
  */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class PidFileJUnitTest {
 
   @Rule

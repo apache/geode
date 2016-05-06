@@ -399,7 +399,7 @@ public class PRCustomPartitioningDUnitTest extends
               PartitionResolver rr = pr.getPartitionResolver();
               Object o = rr.getRoutingObject(eo);
               Integer i = new Integer(o.hashCode()% totalNumBuckets);
-              //assertEquals(bucketId, bucketId);
+              //assertIndexDetailsEquals(bucketId, bucketId);
               assertEquals(bucketId, i);
             }  //getLogWriter().severe("Key " + key + " found in bucket " + b);
           }

@@ -40,6 +40,22 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class LocatorStateTest {
 
+  private String classpath = "test_classpath";
+  private String gemFireVersion = "test_gemfireversion";
+  private String host = "test_host";
+  private String javaVersion = "test_javaversion";
+  private String jvmArguments = "test_jvmarguments";
+  private String serviceLocation = "test_location";
+  private String logFile = "test_logfile";
+  private String memberName = "test_membername";
+  private Integer pid = 6396;
+  private String port = "test_port";
+  private String statusDescription = Status.NOT_RESPONDING.getDescription();
+  private String statusMessage = "test_statusmessage";
+  private Long timestampTime = 1450728233024L;
+  private Long uptime = 1629L;
+  private String workingDirectory = "test_workingdirectory";
+
   @Test
   public void fromJsonWithEmptyStringThrowsIllegalArgumentException() throws Exception {
     // given: empty string
@@ -122,66 +138,64 @@ public class LocatorStateTest {
     return LocatorState.fromJson(value);
   }
 
-  private String classpath = "test_classpath";
-  private String gemFireVersion = "test_gemfireversion";
-  private String host = "test_host";
-  private String javaVersion = "test_javaversion";
-  private String jvmArguments = "test_jvmarguments";
-  private String serviceLocation = "test_location";
-  private String logFile = "test_logfile";
-  private String memberName = "test_membername";
-  private Integer pid = 6396;
-  private String port = "test_port";
-  private String statusDescription = Status.NOT_RESPONDING.getDescription();
-  private String statusMessage = "test_statusmessage";
-  private Long timestampTime = 1450728233024L;
-  private Long uptime = 1629L;
-  private String workingDirectory = "test_workingdirectory";
-  
   private String getClasspath() {
     return this.classpath;
   }
+
   private String getGemFireVersion() {
     return this.gemFireVersion;
   }
+
   private String getHost() {
     return this.host;
   }
+
   private String getJavaVersion() {
     return this.javaVersion;
   }
+
   private List<String> getJvmArguments() {
     List<String> list = new ArrayList<String>();
     list.add(this.jvmArguments);
     return list;
   }
+
   private String getServiceLocation() {
     return this.serviceLocation;
   }
+
   private String getLogFile() {
     return this.logFile;
   }
+
   private String getMemberName() {
     return this.memberName;
   }
+
   private Integer getPid() {
     return this.pid;
   }
+
   private String getPort() {
     return this.port;
   }
+
   private String getStatusDescription() {
     return this.statusDescription;
   }
+
   private String getStatusMessage() {
     return this.statusMessage;
   }
+
   private Long getTimestampTime() {
     return this.timestampTime;
   }
+
   private Long getUptime() {
     return this.uptime;
   }
+
   private String getWorkingDirectory() {
     return this.workingDirectory;
   }

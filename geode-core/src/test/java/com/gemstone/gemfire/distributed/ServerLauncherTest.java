@@ -739,6 +739,7 @@ public class ServerLauncherTest {
     assertFalse(serverLauncher.isDisableDefaultServer());
     assertFalse(serverLauncher.isDefaultServerEnabled(mockCache));
   }
+
   @Test
   public void testIsDefaultServerEnabledWhenNoCacheServersExistAndDefaultServerDisabled() {
     final Cache mockCache = mockContext.mock(Cache.class, "Cache");
@@ -821,12 +822,6 @@ public class ServerLauncherTest {
     serverLauncher.startCacheServer(mockCache);
   }
   
-  public static void main(final String... args) {
-    System.err.printf("Thread (%1$s) is daemon (%2$s)%n", Thread.currentThread().getName(),
-      Thread.currentThread().isDaemon());
-    new Builder(args).setCommand(Command.START).build().run();
-  }
-
   private final class ServerWaitMultiThreadedTestCase extends MultithreadedTestCase {
 
     private final AtomicBoolean connectionStateHolder = new AtomicBoolean(true);
@@ -840,7 +835,8 @@ public class ServerLauncherTest {
       final Cache mockCache = mockContext.mock(Cache.class, "Cache");
 
       final DistributedSystem mockDistributedSystem = new DistributedSystemAdapter() {
-        @Override public boolean isConnected() {
+        @Override
+        public boolean isConnected() {
           return connectionStateHolder.get();
         }
       };

@@ -119,7 +119,7 @@ public class DeltaFaultInDUnitTest extends CacheTestCase {
         
         long entriesEvicted = ((AbstractLRURegionMap)((PartitionedRegion)region).entries)._getLruList().stats()
         .getEvictions();
-//        assertEquals(1, entriesEvicted);
+//        assertIndexDetailsEquals(1, entriesEvicted);
         
         TestDelta result = region.get(new Integer(0));
         assertEquals("initial_plus_some_more_data", result.info);

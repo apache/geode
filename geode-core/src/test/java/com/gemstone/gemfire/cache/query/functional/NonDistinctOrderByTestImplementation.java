@@ -164,7 +164,7 @@ public abstract class NonDistinctOrderByTestImplementation {
           if (!(itr.next().toString()).equals("IDIndexPf1")) {
             fail("<IDIndexPf1> was expected but found " + itr.next().toString());
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();
@@ -255,7 +255,7 @@ public abstract class NonDistinctOrderByTestImplementation {
           limit = Integer.parseInt(queries[i].substring(indexLimit + 5).trim());
         }
         assertTrue(!limitQuery || rcw.size() <= limit);
-        // assertEquals("Set",rcw.getCollectionType().getSimpleClassName());
+        // assertIndexDetailsEquals("Set",rcw.getCollectionType().getSimpleClassName());
         if (!rcw.getCollectionType().isOrdered()) {
           fail("The collection type="+rcw.getCollectionType().getSimpleClassName()+"  is not ordered");
         }
@@ -269,7 +269,7 @@ public abstract class NonDistinctOrderByTestImplementation {
           if (!(itr.next().toString()).equals("IDIndexPf1")) {
             fail("<IDIndexPf1> was expected but found " + itr.next().toString());
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();
@@ -368,7 +368,7 @@ public abstract class NonDistinctOrderByTestImplementation {
           if (!(itr.next().toString()).equals("IDIndexPf1")) {
             fail("<IDIndexPf1> was expected but found " + itr.next().toString());
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();
@@ -468,7 +468,7 @@ public abstract class NonDistinctOrderByTestImplementation {
           if (!(itr.next().toString()).equals("IDIndexPf1")) {
             fail("<IDIndexPf1> was expected but found " + itr.next().toString());
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();
@@ -571,7 +571,7 @@ public abstract class NonDistinctOrderByTestImplementation {
           if (!(indexUsed).equals("IDIndexPf1")) {
             fail("<IDIndexPf1> was expected but found " + indexUsed);
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();
@@ -674,7 +674,7 @@ public abstract class NonDistinctOrderByTestImplementation {
           if (!(indexUsed).equals("IDIndexPf1")) {
             fail("<IDIndexPf1> was expected but found " + indexUsed);
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();
@@ -775,7 +775,7 @@ public abstract class NonDistinctOrderByTestImplementation {
           if (!(indexUsed).equals("PKIDIndexPf1")) {
             fail("<PKIDIndexPf1> was expected but found " + indexUsed);
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();

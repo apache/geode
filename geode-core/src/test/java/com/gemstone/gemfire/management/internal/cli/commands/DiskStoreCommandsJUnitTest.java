@@ -83,14 +83,14 @@ public class DiskStoreCommandsJUnitTest {
     mockContext = null;
   }
 
-  protected DiskStoreCommands createDiskStoreCommands(final Cache cache,
+  private DiskStoreCommands createDiskStoreCommands(final Cache cache,
                                                       final DistributedMember distributedMember,
                                                       final Execution functionExecutor)
   {
     return new TestDiskStoreCommands(cache, distributedMember, functionExecutor);
   }
 
-  protected DiskStoreDetails createDiskStoreDetails(final String memberId, final String diskStoreName) {
+  private DiskStoreDetails createDiskStoreDetails(final String memberId, final String diskStoreName) {
     return new DiskStoreDetails(diskStoreName, memberId);
   }
 
@@ -364,7 +364,7 @@ public class DiskStoreCommandsJUnitTest {
     assertEquals(expectedDiskStores, actualDiskStores);
   }
 
-  protected static class TestDiskStoreCommands extends DiskStoreCommands {
+  private static class TestDiskStoreCommands extends DiskStoreCommands {
 
     private final Cache cache;
     private final DistributedMember distributedMember;

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
 import static org.junit.Assert.*;
@@ -31,7 +30,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit test for {@link RegionCreation}.
  * 
- *
  * @since 8.1
  */
 @Category(UnitTest.class)
@@ -42,7 +40,6 @@ public class RegionCreationJUnitTest {
    * 
    * Assert that method returns a {@link SimpleExtensionPoint} instance and
    * assume that {@link SimpleExtensionPointJUnitTest} has covered the rest.
-   * 
    */
   @Test
   public void testGetExtensionPoint() {

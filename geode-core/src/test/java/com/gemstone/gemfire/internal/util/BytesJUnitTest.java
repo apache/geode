@@ -16,18 +16,27 @@
  */
 package com.gemstone.gemfire.internal.util;
 
+import static org.junit.Assert.*;
+
 import java.nio.ByteBuffer;
 
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
 @Category(UnitTest.class)
-public class BytesJUnitTest extends TestCase {
-  private ByteBuffer buf = ByteBuffer.allocate(8);
-  
+public class BytesJUnitTest {
+
+  private ByteBuffer buf;
+
+  @Before
+  public void setUp() throws Exception {
+    buf = ByteBuffer.allocate(8);
+  }
+
+  @Test
   public void testShort() {
     short[] val = { 666, -1, Short.MIN_VALUE, 0, 12, Short.MAX_VALUE };
     for (int i = 0; i < val.length; i++) {
@@ -37,7 +46,8 @@ public class BytesJUnitTest extends TestCase {
       buf.rewind();
     }
   }
-  
+
+  @Test
   public void testChar() {
     char[] val = { 'a', 'b', 'c' };
     for (int i = 0; i < val.length; i++) {
@@ -47,7 +57,8 @@ public class BytesJUnitTest extends TestCase {
       buf.rewind();
     }
   }
-  
+
+  @Test
   public void testUnsignedShort() {
     int[] val = { 0, 1, Short.MAX_VALUE + 1, 2 * Short.MAX_VALUE };
     for (int i = 0; i < val.length; i++) {
@@ -57,7 +68,8 @@ public class BytesJUnitTest extends TestCase {
       buf.rewind();
     }
   }
-  
+
+  @Test
   public void testInt() {
     int[] val = { 666, -1, Integer.MIN_VALUE, 0, 1, Integer.MAX_VALUE };
     for (int i = 0; i < val.length; i++) {
@@ -71,7 +83,8 @@ public class BytesJUnitTest extends TestCase {
       assertEquals(val[i], Bytes.toInt(bytes[0], bytes[1], bytes[2], bytes[3]));
     }
   }
-  
+
+  @Test
   public void testLong() {
     long[] val = { 666, -1, Long.MIN_VALUE, 0, 1, Long.MAX_VALUE };
     for (int i = 0; i < val.length; i++) {
@@ -82,8 +95,8 @@ public class BytesJUnitTest extends TestCase {
       buf.rewind();
     }
   }
-  
-  
+
+  @Test
   public void testVarint() {
     ByteBuffer buf = ByteBuffer.allocate(5);
     checkVarint(0, buf);

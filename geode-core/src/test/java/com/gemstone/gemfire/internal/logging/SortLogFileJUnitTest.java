@@ -16,12 +16,11 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -29,6 +28,7 @@ import java.io.StringWriter;
 import java.util.Date;
 import java.util.Random;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.LogWriter;
@@ -36,7 +36,6 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Tests the functionality of the {@link SortLogFile} program.
- *
  *
  * @since 3.0
  */
@@ -48,8 +47,8 @@ public class SortLogFileJUnitTest {
    * order.  Then it sorts the log file and asserts that the entries
    * are sorted order.
    */
-  @org.junit.Test
-  public void testRandomLog() throws IOException {
+  @Test
+  public void testRandomLog() throws Exception {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintWriter pw = new PrintWriter(new OutputStreamWriter(baos), true);
     LogWriter logger = new RandomLogWriter(pw);
@@ -105,6 +104,7 @@ public class SortLogFileJUnitTest {
      * Ignores <code>date</code> and returns the timestamp for a
      * random date.
      */
+    @Override
     protected String formatDate(Date date) {
       long time = date.getTime() + (random.nextInt(100000) * 1000);
       date = new Date(time);

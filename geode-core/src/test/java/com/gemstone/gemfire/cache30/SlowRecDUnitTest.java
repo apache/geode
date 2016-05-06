@@ -194,7 +194,7 @@ public class SlowRecDUnitTest extends CacheTestCase {
               };
               Wait.waitForCriterion(ev, 50 * 1000, 200, true);
 //              assertNotNull(re);
-//              assertEquals(null, value);
+//              assertIndexDetailsEquals(null, value);
             }
           } else {
             {
@@ -1451,7 +1451,7 @@ public class SlowRecDUnitTest extends CacheTestCase {
               continue;
             }
             assertEquals(new Integer(expectedArgs[i]), arg);
-            //assertEquals(CALLBACK_UPDATE_INTEGER, type);
+            //assertIndexDetailsEquals(CALLBACK_UPDATE_INTEGER, type);
             i++;
           }
         }

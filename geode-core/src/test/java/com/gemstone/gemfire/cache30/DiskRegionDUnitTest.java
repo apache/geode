@@ -1481,7 +1481,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
 //         for (int i = 0; i < NB1_NUM_ENTRIES; i++) {
 //           rgn.put(new Integer(i), values[i]);
 //         }
-//         assertEquals(NB1_NUM_ENTRIES, rgn.keys().size());
+//         assertIndexDetailsEquals(NB1_NUM_ENTRIES, rgn.keys().size());
 //         //close and create to ensure that all data will go to htree 
 //         //TODO: Mitul : remove this later to fine tune test to also take oplogs recovery into account
 //         rgn.close();

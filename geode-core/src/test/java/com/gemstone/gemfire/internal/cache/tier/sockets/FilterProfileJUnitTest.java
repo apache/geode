@@ -16,10 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 
@@ -36,8 +34,8 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class FilterProfileJUnitTest {
 
-  LocalRegion mockRegion;
-  FilterProfile fprofile;
+  private LocalRegion mockRegion;
+  private FilterProfile fprofile;
   
   @Before
   public void setUp() {
@@ -48,7 +46,6 @@ public class FilterProfileJUnitTest {
     fprofile = new FilterProfile(mockRegion);
   }
 
-  
   @Test
   public void testUnregisterKey() {
     unregisterKey(false);
@@ -102,8 +99,7 @@ public class FilterProfileJUnitTest {
     assertTrue(isClientInterested);
     fprofile.unregisterClientInterest(clientId, "Object1234", InterestType.KEY);
     fprofile.unregisterClientInterest(clientId, "Object4567", InterestType.KEY);
-    assertFalse("still has this interest: " + fprofile.getKeysOfInterestFor(clientId),
-        fprofile.hasKeysOfInterestFor(clientId, inv));
+    assertFalse("still has this interest: " + fprofile.getKeysOfInterestFor(clientId), fprofile.hasKeysOfInterestFor(clientId, inv));
   }
 
   @Test
@@ -134,7 +130,6 @@ public class FilterProfileJUnitTest {
     assertFalse(fprofile.hasKeysOfInterestFor(clientId, inv));
   }
 
-  
   @Test
   public void testUnregisterRegex() {
     unregisterRegex(false);
@@ -194,7 +189,6 @@ public class FilterProfileJUnitTest {
     assertFalse(fprofile.hasRegexInterestFor(clientId, inv));
   }
 
-
   @Test
   public void testUnregisterAllKeys() {
     unregisterAllKeys(false);
@@ -237,7 +231,7 @@ public class FilterProfileJUnitTest {
     unregisterFilterClass(inv, true);
   }
 
-  public void unregisterFilterClass(boolean inv, boolean twoClients) {
+  private void unregisterFilterClass(boolean inv, boolean twoClients) {
     String clientId = "client";
     fprofile.registerClientInterest(clientId, "com.gemstone.gemfire.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS, inv);
     if (twoClients) {
@@ -264,7 +258,7 @@ public class FilterProfileJUnitTest {
     unregisterAllFilterClass(inv, true);
   }
 
-  public void unregisterAllFilterClass(boolean inv, boolean twoClients) {
+  private void unregisterAllFilterClass(boolean inv, boolean twoClients) {
     String clientId = "client";
     fprofile.registerClientInterest(clientId, "com.gemstone.gemfire.internal.cache.tier.sockets.TestFilter", InterestType.FILTER_CLASS, inv);
     if (twoClients) {

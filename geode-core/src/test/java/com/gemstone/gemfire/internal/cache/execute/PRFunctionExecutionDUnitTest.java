@@ -1615,10 +1615,10 @@ public class PRFunctionExecutionDUnitTest extends
         ResultCollector rc2 = dataSet.withFilter(testKeysSet).withArgs(testKeysSet)
             .execute(function);
         List l2 = ((List)rc2.getResult());
-        //assertEquals(pr.getTotalNumberOfBuckets(), l2.size());
+        //assertIndexDetailsEquals(pr.getTotalNumberOfBuckets(), l2.size());
         assertEquals(3, l2.size());
         
-        // assertEquals(pr.getTotalNumberOfBuckets(), l.size());
+        // assertIndexDetailsEquals(pr.getTotalNumberOfBuckets(), l.size());
         HashSet foundVals = new HashSet();
         for (Iterator i = l2.iterator(); i.hasNext();) {
           ArrayList subL = (ArrayList)i.next();
@@ -1908,7 +1908,7 @@ public class PRFunctionExecutionDUnitTest extends
         ResultCollector rc1 = dataSet.withFilter(testKeys).withArgs(Boolean.TRUE)
             .execute(function.getId());
         List l = ((List)rc1.getResult());
-        //assertEquals(pr.getTotalNumberOfBuckets(), l.size());
+        //assertIndexDetailsEquals(pr.getTotalNumberOfBuckets(), l.size());
         assertEquals(1, l.size());
         for (Iterator i = l.iterator(); i.hasNext();) {
           assertEquals(Boolean.TRUE, i.next());
@@ -2256,8 +2256,8 @@ public class PRFunctionExecutionDUnitTest extends
         return Boolean.TRUE;
 //        for (int i=0; i<4; i++) {
 //          List l = ((List)rc1.getResult());
-//          assertEquals(4, l.size());
-//          assertEquals(Boolean.TRUE, l.iterator().next());
+//          assertIndexDetailsEquals(4, l.size());
+//          assertIndexDetailsEquals(Boolean.TRUE, l.iterator().next());
 //        }
 //
 //        return Boolean.TRUE;
@@ -2735,7 +2735,7 @@ public class PRFunctionExecutionDUnitTest extends
             try {
               partitionedregion.put(orderId, order);
               //assertTrue(partitionedregion.containsKey(orderId));
-              //assertEquals(order,partitionedregion.get(orderId));
+              //assertIndexDetailsEquals(order,partitionedregion.get(orderId));
               
             }
             catch (Exception e) {

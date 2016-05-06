@@ -1064,8 +1064,8 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest
         .values().iterator();
     while (buckRegionIterator.hasNext()) {
       Region bucket = (Region)buckRegionIterator.next();
-//      assertEquals(Scope.LOCAL, bucket.getAttributes().getScope());
-//      assertEquals(DataPolicy.NORMAL, bucket.getAttributes().getDataPolicy());
+//      assertIndexDetailsEquals(Scope.LOCAL, bucket.getAttributes().getScope());
+//      assertIndexDetailsEquals(DataPolicy.NORMAL, bucket.getAttributes().getDataPolicy());
       assertEquals(BucketRegion.class, bucket.getClass());
     }
 
@@ -1079,8 +1079,8 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest
      * putSomeValues(pr1); java.util.Iterator buckRegionIterator1 =
      * pr1.getDataStore().localBucket2RegionMap .values().iterator(); while
      * (buckRegionIterator1.hasNext()) { Region bucket =
-     * (Region)buckRegionIterator1.next(); assertEquals(Scope.DISTRIBUTED_ACK,
-     * bucket.getAttributes().getScope()); assertEquals(MirrorType.KEYS_VALUES,
+     * (Region)buckRegionIterator1.next(); assertIndexDetailsEquals(Scope.DISTRIBUTED_ACK,
+     * bucket.getAttributes().getScope()); assertIndexDetailsEquals(MirrorType.KEYS_VALUES,
      * bucket.getAttributes() .getMirrorType()); }
      * 
      * pr1.destroyRegion();
@@ -1093,8 +1093,8 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest
      * pr2.getDataStore().localBucket2RegionMap .values().iterator(); while
      * (buckRegionIterator2.hasNext()) { Region bucket =
      * (Region)buckRegionIterator2.next();
-     * assertEquals(Scope.DISTRIBUTED_NO_ACK,
-     * bucket.getAttributes().getScope()); assertEquals(MirrorType.KEYS_VALUES,
+     * assertIndexDetailsEquals(Scope.DISTRIBUTED_NO_ACK,
+     * bucket.getAttributes().getScope()); assertIndexDetailsEquals(MirrorType.KEYS_VALUES,
      * bucket.getAttributes() .getMirrorType()); } pr2.destroyRegion();
      */
   }

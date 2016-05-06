@@ -31,15 +31,13 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.VMCachedDeserializable;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-/**
- */
 @Category(UnitTest.class)
 public class OffHeapHelperJUnitTest extends AbstractStoredObjectTestBase {
 
-  private StoredObject storedObject                 = null;
-  private Object                  deserializedRegionEntryValue = null;
-  private byte[]                  serializedRegionEntryValue   = null;
-  private MemoryAllocator         ma;
+  private StoredObject storedObject = null;
+  private Object deserializedRegionEntryValue = null;
+  private byte[] serializedRegionEntryValue   = null;
+  private MemoryAllocator ma;
 
   @Before
   public void setUp() {
@@ -47,7 +45,6 @@ public class OffHeapHelperJUnitTest extends AbstractStoredObjectTestBase {
     OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
 
     ma = MemoryAllocatorImpl.create(ooohml, stats, 3, OffHeapStorage.MIN_SLAB_SIZE * 3, OffHeapStorage.MIN_SLAB_SIZE);
-
   }
 
   /**
@@ -79,7 +76,7 @@ public class OffHeapHelperJUnitTest extends AbstractStoredObjectTestBase {
   }
 
   @Override
-  public byte[] getValueAsByteArray() {
+  protected byte[] getValueAsByteArray() {
     return convertValueToByteArray(getValue());
   }
 
@@ -88,12 +85,12 @@ public class OffHeapHelperJUnitTest extends AbstractStoredObjectTestBase {
   }
 
   @Override
-  public Object convertByteArrayToObject(byte[] valueInByteArray) {
+  protected Object convertByteArrayToObject(byte[] valueInByteArray) {
     return ByteBuffer.wrap(valueInByteArray).getLong();
   }
 
   @Override
-  public Object convertSerializedByteArrayToObject(byte[] valueInSerializedByteArray) {
+  protected Object convertSerializedByteArrayToObject(byte[] valueInSerializedByteArray) {
     return EntryEventImpl.deserialize(valueInSerializedByteArray);
   }
 

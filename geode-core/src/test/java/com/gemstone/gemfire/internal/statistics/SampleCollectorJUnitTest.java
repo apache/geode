@@ -16,18 +16,12 @@
  */
 package com.gemstone.gemfire.internal.statistics;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.util.List;
 
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,47 +38,31 @@ import com.gemstone.gemfire.internal.statistics.TestSampleHandler.SampledInfo;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * Unit tests for the SampleCollector class.
+ * Unit tests for the SampleCollector class. No disk IO.
  *   
  * @since 7.0
  */
 @Category(UnitTest.class)
 public class SampleCollectorJUnitTest {
 
-  private static final String dir = "SampleCollectorJUnitTest";
-
-  private Mockery mockContext;
-  private TestStatisticsManager manager; 
+  private TestStatisticsManager manager;
   private SampleCollector sampleCollector;
   
   @Before
   public void setUp() throws Exception {
-    new File(dir).mkdir();
-    this.mockContext = new Mockery() {{
-      setImposteriser(ClassImposteriser.INSTANCE);
-    }};
     final long startTime = System.currentTimeMillis();
-    this.manager = new TestStatisticsManager(1, "SampleCollectorJUnitTest", startTime);
-    
-    final StatArchiveHandlerConfig mockStatArchiveHandlerConfig = this.mockContext.mock(StatArchiveHandlerConfig.class, "SampleCollectorJUnitTest$StatArchiveHandlerConfig");
-    this.mockContext.checking(new Expectations() {{
-      allowing(mockStatArchiveHandlerConfig).getArchiveFileName();
-      will(returnValue(new File("")));
-      allowing(mockStatArchiveHandlerConfig).getArchiveFileSizeLimit();
-      will(returnValue(0));
-      allowing(mockStatArchiveHandlerConfig).getArchiveDiskSpaceLimit();
-      will(returnValue(0));
-      allowing(mockStatArchiveHandlerConfig).getSystemId();
-      will(returnValue(1));
-      allowing(mockStatArchiveHandlerConfig).getSystemStartTime();
-      will(returnValue(startTime));
-      allowing(mockStatArchiveHandlerConfig).getSystemDirectoryPath();
-      will(returnValue(""));
-      allowing(mockStatArchiveHandlerConfig).getProductDescription();
-      will(returnValue("SampleCollectorJUnitTest"));
-    }});
+    this.manager = new TestStatisticsManager(1, getClass().getSimpleName(), startTime);
 
-    StatisticsSampler sampler = new TestStatisticsSampler(manager);
+    final StatArchiveHandlerConfig mockStatArchiveHandlerConfig = mock(StatArchiveHandlerConfig.class, getClass().getSimpleName() + "$" + StatArchiveHandlerConfig.class.getSimpleName());
+    when(mockStatArchiveHandlerConfig.getArchiveFileName()).thenReturn(new File(""));
+    when(mockStatArchiveHandlerConfig.getArchiveFileSizeLimit()).thenReturn(0L);
+    when(mockStatArchiveHandlerConfig.getArchiveDiskSpaceLimit()).thenReturn(0L);
+    when(mockStatArchiveHandlerConfig.getSystemId()).thenReturn(0L);
+    when(mockStatArchiveHandlerConfig.getSystemStartTime()).thenReturn(startTime);
+    when(mockStatArchiveHandlerConfig.getSystemDirectoryPath()).thenReturn("");
+    when(mockStatArchiveHandlerConfig.getProductDescription()).thenReturn(getClass().getSimpleName());
+
+    final StatisticsSampler sampler = new TestStatisticsSampler(manager);
     this.sampleCollector = new SampleCollector(sampler);
     this.sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime());
   }
@@ -95,8 +73,6 @@ public class SampleCollectorJUnitTest {
       this.sampleCollector.close();
       this.sampleCollector = null;
     }
-    this.mockContext.assertIsSatisfied();
-    this.mockContext = null;
     this.manager = null;
   }
   

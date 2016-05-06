@@ -135,7 +135,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
         public void run2() throws CacheException {
           Region r = getRootRegion();
           assertEquals(null, r.getEntry("createKey"));
-          //assertEquals("putValue", r.getEntry("createKey").getValue());
+          //assertIndexDetailsEquals("putValue", r.getEntry("createKey").getValue());
           {
             int evIdx = 0;
             TestCacheListener cl = (TestCacheListener)r.getAttributes().getCacheListener();

@@ -436,7 +436,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
           // if ((flags & OpFlags.CHECK_NOTAUTHZ) > 0) {
           // Object value = region.get(key);
           // assertNotNull(value);
-          // assertEquals(vals[index], value);
+          // assertIndexDetailsEquals(vals[index], value);
           // }
           // else {
           // region.put(key, vals[index]);

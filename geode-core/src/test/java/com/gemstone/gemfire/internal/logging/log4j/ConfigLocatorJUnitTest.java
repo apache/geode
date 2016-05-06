@@ -32,14 +32,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * UnitTest for ConfigLocator which is used to find the Log4J 2 configuration file.
  * 
  * @since 8.2
  */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class ConfigLocatorJUnitTest {
 
   private static Set<String> suffixesNotFoundTested = new HashSet<String>();

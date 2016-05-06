@@ -160,7 +160,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
           if (!(indexUsed).equals("PKIDIndexPf1")) {
             fail("<PKIDIndexPf1> was expected but found " + indexUsed);
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();
@@ -259,7 +259,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
           if (!(indexUsed).equals("PKIDIndexPf1")) {
             fail("<PKIDIndexPf1> was expected but found " + indexUsed);
           }
-          // assertEquals("statusIndexPf1",itr.next().toString());
+          // assertIndexDetailsEquals("statusIndexPf1",itr.next().toString());
         }
 
         int indxs = observer.indexesUsed.size();

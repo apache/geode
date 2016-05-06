@@ -1019,7 +1019,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
           // Since ResultSet is not maintained for this release.
           // Instead of resultSize its been validated with total number of events.
           fail("test for event counts instead of results size");
-//        assertEquals("Result Size mismatch", resultSize, listener.getTotalEventCount());
+//        assertIndexDetailsEquals("Result Size mismatch", resultSize, listener.getTotalEventCount());
         }
         
         // Check for create count.
@@ -1387,7 +1387,7 @@ public class CqQueryUsingPoolDUnitTest extends CacheTestCase {
         assertNotNull(region);
         
 //        Set keys = region.entrySet();
-//        assertEquals("Mismatch, number of keys in local region is not equal to the interest list size", 
+//        assertIndexDetailsEquals("Mismatch, number of keys in local region is not equal to the interest list size",
 //            size, keys.size());
         // TODO does this WaitCriterion actually help?
         WaitCriterion wc = new WaitCriterion() {

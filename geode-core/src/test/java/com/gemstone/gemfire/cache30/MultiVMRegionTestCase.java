@@ -1729,8 +1729,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 //            public Object load2(LoaderHelper helper)
 //              throws CacheLoaderException {
 //
-//              assertEquals(key, helper.getKey());
-//              assertEquals(name, helper.getRegion().getName());
+//              assertIndexDetailsEquals(key, helper.getKey());
+//              assertIndexDetailsEquals(name, helper.getRegion().getName());
 //              return value;
 //            }
 //          };
@@ -2844,15 +2844,15 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 //           // longer optimize updates based on size.
 //           Region.Entry entry1 = region.getEntry(key1);
 //           assertNotNull(entry1);
-//           assertEquals(value1, entry1.getValue());
+//           assertIndexDetailsEquals(value1, entry1.getValue());
 
 //           Region.Entry entry2 = region.getEntry(key2);
 //           assertNotNull(entry2);
-//           assertEquals(value2, entry2.getValue());
+//           assertIndexDetailsEquals(value2, entry2.getValue());
 
 //           Region.Entry entry3 = region.getEntry(key3);
 //           assertNotNull(entry3);
-//           assertEquals(value3, entry3.getValue());
+//           assertIndexDetailsEquals(value3, entry3.getValue());
 //         }
 //       });
 //   }
@@ -4395,7 +4395,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 //               if (getRegionAttributes().getScope().isDistributedAck()) {
 //                 // do a nonblocking netSearch
 //                 region.localInvalidate(key);
-//                 assertEquals(value, region.get(key));
+//                 assertIndexDetailsEquals(value, region.get(key));
 //               }
               break;
             case 3: // INVALIDATE
@@ -4720,7 +4720,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 //               if (getRegionAttributes().getScope().isDistributedAck()) {
 //                 // do a nonblocking netSearch
 //                 region.localInvalidate(key);
-//                 assertEquals(value, region.get(key));
+//                 assertIndexDetailsEquals(value, region.get(key));
 //               }
               break;
             case 3: // INVALIDATE
@@ -5037,7 +5037,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 //               if (getRegionAttributes().getScope().isDistributedAck()) {
 //                 // do a nonblocking netSearch
 //                 region.localInvalidate(key);
-//                 assertEquals(value, region.get(key));
+//                 assertIndexDetailsEquals(value, region.get(key));
 //               }
               break;
             case 3: // INVALIDATE
@@ -5333,7 +5333,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 //               if (getRegionAttributes().getScope().isDistributedAck()) {
 //                 // do a nonblocking netSearch
 //                 region.localInvalidate(key);
-//                 assertEquals(value, region.get(key));
+//                 assertIndexDetailsEquals(value, region.get(key));
 //               }
               break;
             case 3: // INVALIDATE
@@ -6716,7 +6716,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
           ev = (EntryEvent)it.next();
           assertSame(rgn1, ev.getRegion());
-          //assertEquals(tl.expectedTxId, ev.getTransactionId());
+          //assertIndexDetailsEquals(tl.expectedTxId, ev.getTransactionId());
           assertEquals("key", ev.getKey());
           assertEquals("value1", ev.getNewValue());
           assertEquals(null, ev.getOldValue());
@@ -6732,7 +6732,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
           ev = (EntryEvent)it.next();
           assertSame(rgn3, ev.getRegion());
-          //assertEquals(tl.expectedTxId, ev.getTransactionId());
+          //assertIndexDetailsEquals(tl.expectedTxId, ev.getTransactionId());
           assertEquals("key", ev.getKey());
           assertEquals("value3", ev.getNewValue());
           assertEquals(null, ev.getOldValue());
@@ -6791,7 +6791,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
           ev = (EntryEvent)it.next();
           assertSame(rgn2, ev.getRegion());
-          //assertEquals(tl.expectedTxId, ev.getTransactionId());
+          //assertIndexDetailsEquals(tl.expectedTxId, ev.getTransactionId());
           assertEquals("key", ev.getKey());
           assertEquals("value2", ev.getNewValue());
           assertEquals(null, ev.getOldValue());
@@ -6807,7 +6807,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
           ev = (EntryEvent)it.next();
           assertSame(rgn3, ev.getRegion());
-          //assertEquals(tl.expectedTxId, ev.getTransactionId());
+          //assertIndexDetailsEquals(tl.expectedTxId, ev.getTransactionId());
           assertEquals("key", ev.getKey());
           assertEquals("value3", ev.getNewValue());
           assertEquals(null, ev.getOldValue());
@@ -6847,7 +6847,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             }
             assertEquals(1, events.size());
             EntryEvent ev = (EntryEvent)events.iterator().next();
-            //assertEquals(tl.expectedTxId, ev.getTransactionId());
+            //assertIndexDetailsEquals(tl.expectedTxId, ev.getTransactionId());
             assertTrue(ev.getRegion() == rgn);
             assertEquals("key", ev.getKey());
             assertEquals("value1", ev.getNewValue());
@@ -6887,7 +6887,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             }
             assertEquals(1, events.size());
             EntryEvent ev = (EntryEvent)events.iterator().next();
-            //assertEquals(tl.expectedTxId, ev.getTransactionId());
+            //assertIndexDetailsEquals(tl.expectedTxId, ev.getTransactionId());
             assertTrue(ev.getRegion() == rgn);
             assertEquals("key", ev.getKey());
             assertEquals("value2", ev.getNewValue());
@@ -6927,7 +6927,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             }
             assertEquals(1, events.size());
             EntryEvent ev = (EntryEvent)events.iterator().next();
-            //assertEquals(tl.expectedTxId, ev.getTransactionId());
+            //assertIndexDetailsEquals(tl.expectedTxId, ev.getTransactionId());
             assertTrue(ev.getRegion() == rgn);
             assertEquals("key", ev.getKey());
             assertEquals("value3", ev.getNewValue());
@@ -7379,7 +7379,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           Collection events = tl.lastEvent.getCreateEvents();
           assertEquals(1, events.size());
           EntryEvent ev = (EntryEvent)events.iterator().next();
-          //assertEquals(tl.expectedTxId, ev.getTransactionId());
+          //assertIndexDetailsEquals(tl.expectedTxId, ev.getTransactionId());
           assertTrue(ev.getRegion() == rgn);
           assertEquals("key", ev.getKey());
           assertEquals("value", ev.getNewValue());
@@ -7530,7 +7530,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               }
               assertEquals(1, events.size());
               EntryEvent ev = (EntryEvent)events.iterator().next();
-              // assertEquals(tl.expectedTxId, ev.getTransactionId());
+              // assertIndexDetailsEquals(tl.expectedTxId, ev.getTransactionId());
               assertTrue(ev.getRegion() == rgn1);
               assertEquals("key", ev.getKey());
               assertEquals("value2", ev.getNewValue());
@@ -7608,7 +7608,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               }
               assertEquals(1, events.size());
               EntryEvent ev = (EntryEvent)events.iterator().next();
-              // assertEquals(tl.expectedTxId, ev.getTransactionId());
+              // assertIndexDetailsEquals(tl.expectedTxId, ev.getTransactionId());
               assertTrue(ev.getRegion() == rgn1);
               assertEquals("key", ev.getKey());
               assertNull(ev.getNewValue());
@@ -7753,7 +7753,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               Collection events = tl.lastEvent.getDestroyEvents();
               assertEquals(1, events.size());
               EntryEvent ev = (EntryEvent)events.iterator().next();
-              // assertEquals(tl.expectedTxId, ev.getTransactionId());
+              // assertIndexDetailsEquals(tl.expectedTxId, ev.getTransactionId());
               assertTrue(ev.getRegion() == rgn1);
               assertNull(ev.getKey());
               assertNull(ev.getNewValue());
@@ -7817,7 +7817,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               }
               assertEquals(1, events.size());
               EntryEvent ev = (EntryEvent)events.iterator().next();
-              // assertEquals(tl.expectedTxId, ev.getTransactionId());
+              // assertIndexDetailsEquals(tl.expectedTxId, ev.getTransactionId());
               assertTrue(ev.getRegion() == rgn1);
               assertEquals("key", ev.getKey());
               assertEquals("value1", ev.getNewValue());
@@ -8404,13 +8404,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       // that they originate that maybe should have been elided.  For this reason we can't
       // guarantee their consistency and don't check for it here.
 //      if (r1Contents.containsKey(key)) {
-//        assertEquals("region contents are not consistent", r1Contents.get(key), r2Contents.get(key));
+//        assertIndexDetailsEquals("region contents are not consistent", r1Contents.get(key), r2Contents.get(key));
 //      }
       assertEquals("region contents are not consistent for " + key, r2Contents.get(key), r3Contents.get(key));
       for (int subi=1; subi<3; subi++) {
         String subkey = key + "-" + subi;
         if (r2Contents.containsKey(subkey)) {
-//          assertEquals("region contents are not consistent for " + subkey, r1Contents.get(subkey), r2Contents.get(subkey));
+//          assertIndexDetailsEquals("region contents are not consistent for " + subkey, r1Contents.get(subkey), r2Contents.get(subkey));
           assertEquals("region contents are not consistent for " + subkey, r2Contents.get(subkey), r3Contents.get(subkey));
         } else {
           // can't assert this because a clear() op will cause non-replicated to start rejecting
@@ -8628,8 +8628,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 //            fail("sleep was interrupted");
 //          }
 //          count = CCRegion.getTombstoneCount();
-//          assertEquals("expected zero tombstones", 0, count);
-//          assertEquals(numEntries, CCRegion.size());
+//          assertIndexDetailsEquals("expected zero tombstones", 0, count);
+//          assertIndexDetailsEquals(numEntries, CCRegion.size());
         }
       });
 
@@ -8921,7 +8921,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       assertEquals("region contents are not consistent", r1Contents.get(key), r2Contents.get(key));
       assertEquals("region contents are not consistent", r2Contents.get(key), r3Contents.get(key));
 //      if (r0Contents.containsKey(key)) {
-//        assertEquals("region contents are not consistent", r1Contents.get(key), r0Contents.get(key));
+//        assertIndexDetailsEquals("region contents are not consistent", r1Contents.get(key), r0Contents.get(key));
 //      }
       for (int subi=1; subi<3; subi++) {
         String subkey = key + "-" + subi;

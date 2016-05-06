@@ -78,7 +78,7 @@ public class RegionStatsJUnitTest extends MBeanStatsTestCase{
     assertEquals(1, getNumBucketsWithoutRedundancy());
     assertEquals(2, getActualRedundancy());
     //assertTrue(getAvgBucketSize() > 0);
-    //assertEquals(3, getConfiguredRedundancy());
+    //assertIndexDetailsEquals(3, getConfiguredRedundancy());
     assertEquals(1, getDataStoreEntryCount());
     assertEquals(10, getPrimaryBucketCount());
   }

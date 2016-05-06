@@ -551,7 +551,7 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest e
       // resultListForMember.add(resultIterator.next());
       //
       // for (Object result : resultListForMember) {
-      // assertEquals(Boolean.TRUE, result);
+      // assertIndexDetailsEquals(Boolean.TRUE, result);
       // }
       // }
       for (Object result : resultList) {

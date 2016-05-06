@@ -26,10 +26,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class GfshConfigInitFileJUnitTest {
+
   private static final String INIT_FILE_NAME = GfshConfig.DEFAULT_INIT_FILE_NAME;
   private static final String INIT_FILE_PROPERTY = GfshConfig.INIT_FILE_PROPERTY;
 
@@ -65,8 +66,7 @@ public class GfshConfigInitFileJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    String userDir = temporaryFolder_CurrentDirectory.getRoot()
-        .getAbsolutePath();
+    String userDir = temporaryFolder_CurrentDirectory.getRoot().getAbsolutePath();
     String userHome = temporaryFolder_HomeDirectory.getRoot().getAbsolutePath();
 
     System.setProperty("user.dir", userDir);
@@ -82,8 +82,7 @@ public class GfshConfigInitFileJUnitTest {
   public void constructorArgumentUsed() throws Exception {
     temporaryFolder_HomeDirectory.newFile(INIT_FILE_NAME);
     temporaryFolder_CurrentDirectory.newFile(INIT_FILE_NAME);
-    System.setProperty(INIT_FILE_PROPERTY, temporaryFolder_AnotherDirectory
-        .newFile(INIT_FILE_NAME).getAbsolutePath());
+    System.setProperty(INIT_FILE_PROPERTY, temporaryFolder_AnotherDirectory.newFile(INIT_FILE_NAME).getAbsolutePath());
 
     String argument = temporaryFolder_AnotherDirectory.newFile("junit")
         .getAbsolutePath();
@@ -107,8 +106,7 @@ public class GfshConfigInitFileJUnitTest {
   public void systemPropertySelectedFirst() throws Exception {
     temporaryFolder_HomeDirectory.newFile(INIT_FILE_NAME);
     temporaryFolder_CurrentDirectory.newFile(INIT_FILE_NAME);
-    String fileName = temporaryFolder_AnotherDirectory.newFile(INIT_FILE_NAME)
-        .getAbsolutePath();
+    String fileName = temporaryFolder_AnotherDirectory.newFile(INIT_FILE_NAME).getAbsolutePath();
     System.setProperty(INIT_FILE_PROPERTY, fileName);
 
     /*
@@ -129,8 +127,7 @@ public class GfshConfigInitFileJUnitTest {
   @Test
   public void currentDirectorySelectedSecond() throws Exception {
     temporaryFolder_HomeDirectory.newFile(INIT_FILE_NAME);
-    String fileName = temporaryFolder_CurrentDirectory.newFile(INIT_FILE_NAME)
-        .getAbsolutePath();
+    String fileName = temporaryFolder_CurrentDirectory.newFile(INIT_FILE_NAME).getAbsolutePath();
 
     /*
      * String historyFileName, String defaultPrompt, int historySize, String
@@ -149,8 +146,7 @@ public class GfshConfigInitFileJUnitTest {
   // Home directory file selected if only one present
   @Test
   public void homeDirectorySelectedThird() throws Exception {
-    String fileName = temporaryFolder_HomeDirectory.newFile(INIT_FILE_NAME)
-        .getAbsolutePath();
+    String fileName = temporaryFolder_HomeDirectory.newFile(INIT_FILE_NAME).getAbsolutePath();
 
     /*
      * String historyFileName, String defaultPrompt, int historySize, String

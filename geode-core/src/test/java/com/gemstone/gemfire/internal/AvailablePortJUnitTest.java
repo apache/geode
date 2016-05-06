@@ -17,11 +17,6 @@
 package com.gemstone.gemfire.internal;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
-
-import com.gemstone.gemfire.admin.internal.InetAddressUtil;
-import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -32,9 +27,13 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.admin.internal.InetAddressUtil;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
 /**
+ * multicast availability is tested in JGroupsMessengerJUnitTest
  */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class AvailablePortJUnitTest {
   
   private ServerSocket socket;
@@ -69,5 +68,4 @@ public class AvailablePortJUnitTest {
     assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET));
   }
   
-  // multicast availability is tested in JGroupsMessengerJUnitTest
 }

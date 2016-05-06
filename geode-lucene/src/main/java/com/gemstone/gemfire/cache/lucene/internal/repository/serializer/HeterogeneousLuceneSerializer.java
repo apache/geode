@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.cache.lucene.internal.repository.serializer;
 
 import java.util.Map;
@@ -31,9 +30,9 @@ import com.gemstone.gemfire.pdx.PdxInstance;
  * of a given object using reflection or from a PDX instance and
  * writes them to a lucene document.
  */
-public class HeterogenousLuceneSerializer implements LuceneSerializer {
+public class HeterogeneousLuceneSerializer implements LuceneSerializer {
   /**
-   * The set of indexed fiels for this mapper
+   * The set of indexed fields for this mapper
    */
   private String[] indexedFields;
   
@@ -49,7 +48,7 @@ public class HeterogenousLuceneSerializer implements LuceneSerializer {
    */
   private Map<Class<?>, LuceneSerializer> mappers = new CopyOnWriteWeakHashMap<Class<?>, LuceneSerializer>();
   
-  public HeterogenousLuceneSerializer(String[] indexedFields) {
+  public HeterogeneousLuceneSerializer(String[] indexedFields) {
     this.indexedFields = indexedFields;
     pdxMapper = new PdxLuceneSerializer(indexedFields);
   }

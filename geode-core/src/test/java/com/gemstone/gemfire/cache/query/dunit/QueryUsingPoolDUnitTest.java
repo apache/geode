@@ -567,7 +567,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
         Assert.fail("Failed executing " + queryString, e);
       }
       LogWriterUtils.getLogWriter().fine("size: " + results.size());
-      //assertEquals(numberOfEntries, results.size());
+      //assertIndexDetailsEquals(numberOfEntries, results.size());
       assertTrue(!results.getCollectionType().allowsDuplicates() && results.getCollectionType().getElementType().isStructType());
     });
 

@@ -27,6 +27,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.jmock.lib.legacy.ClassImposteriser;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
@@ -36,14 +44,6 @@ import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.internal.cache.InternalCache;
 import com.gemstone.gemfire.management.internal.cli.domain.DiskStoreDetails;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * The ListDiskStoreFunctionJUnitTest test suite class tests the contract and functionality of the
@@ -76,14 +76,14 @@ public class ListDiskStoresFunctionJUnitTest {
     mockContext = null;
   }
 
-  protected DiskStoreDetails createDiskStoreDetails(final UUID id,
+  private DiskStoreDetails createDiskStoreDetails(final UUID id,
                                                     final String name,
                                                     final String memberName,
                                                     final String memberId) {
     return new DiskStoreDetails(id, name, memberId, memberName);
   }
 
-  protected ListDiskStoresFunction createListDiskStoresFunction(final Cache cache) {
+  private ListDiskStoresFunction createListDiskStoresFunction(final Cache cache) {
     return new TestListDiskStoresFunction(cache);
   }
 
@@ -284,7 +284,7 @@ public class ListDiskStoresFunctionJUnitTest {
     }
   }
 
-  protected static class TestListDiskStoresFunction extends ListDiskStoresFunction {
+  private static class TestListDiskStoresFunction extends ListDiskStoresFunction {
 
     private final Cache cache;
 
@@ -293,12 +293,13 @@ public class ListDiskStoresFunctionJUnitTest {
       this.cache = cache;
     }
 
-    @Override protected Cache getCache() {
+    @Override
+    protected Cache getCache() {
       return cache;
     }
   }
 
-  protected static class TestResultSender implements ResultSender {
+  private static class TestResultSender implements ResultSender {
 
     private final List<Object> results = new LinkedList<Object>();
 
@@ -311,14 +312,17 @@ public class ListDiskStoresFunctionJUnitTest {
       return Collections.unmodifiableList(results);
     }
 
+    @Override
     public void lastResult(final Object lastResult) {
       results.add(lastResult);
     }
 
+    @Override
     public void sendResult(final Object oneResult) {
       results.add(oneResult);
     }
 
+    @Override
     public void sendException(final Throwable t) {
       this.t = t;
     }

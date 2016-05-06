@@ -16,9 +16,9 @@
  */
 package com.gemstone.gemfire.internal.logging.log4j;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
 import org.apache.logging.log4j.Level;

@@ -222,8 +222,8 @@ public class ClientHealthMonitorJUnitTest
 //     }
 //     connection1.putObject("region1", "key-1", "value-2", new EventID(new byte[] {1},1,3), null);
 //     this.system.getLogWriter().info("did put 2");
-//     assertEquals(1, s.getInt("currentClients"));
-//     assertEquals(1, s.getInt("currentClientConnections"));
+//     assertIndexDetailsEquals(1, s.getInt("currentClients"));
+//     assertIndexDetailsEquals(1, s.getInt("currentClientConnections"));
 
 //     // now lets see what happens when we close our connection
 //     // note we use a nasty close which just closes the socket instead
@@ -238,8 +238,8 @@ public class ClientHealthMonitorJUnitTest
 //                                       + s.getInt("currentClients")
 //                                       + " currentClientConnections="
 //                                       + s.getInt("currentClientConnections"));
-//       assertEquals(0, s.getInt("currentClients"));
-//       assertEquals(0, s.getInt("currentClientConnections"));
+//       assertIndexDetailsEquals(0, s.getInt("currentClients"));
+//       assertIndexDetailsEquals(0, s.getInt("currentClientConnections"));
 //     }
   }
  public void addExceptions() throws Exception {

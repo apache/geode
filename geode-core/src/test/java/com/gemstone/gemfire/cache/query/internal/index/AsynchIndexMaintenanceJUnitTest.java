@@ -103,7 +103,7 @@ public class AsynchIndexMaintenanceJUnitTest {
       region.put(""+(i+1), new Portfolio(i+1));
       idSet.add((i+1) + "");
     }    
-    //assertEquals(0, getIndexSize(ri));
+    //assertIndexDetailsEquals(0, getIndexSize(ri));
     region.put("50", new Portfolio(50));
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
@@ -129,7 +129,7 @@ public class AsynchIndexMaintenanceJUnitTest {
       idSet.add((i+1) + "");
     }    
 
-    //assertEquals(0, getIndexSize(ri));
+    //assertIndexDetailsEquals(0, getIndexSize(ri));
 
     WaitCriterion evSize = new WaitCriterion() {
       public boolean done() {
@@ -160,7 +160,7 @@ public class AsynchIndexMaintenanceJUnitTest {
       region.put(""+(i+1), new Portfolio(i+1));
       idSet.add((i+1) + "");
     }    
-    //assertEquals(0, getIndexSize(ri));
+    //assertIndexDetailsEquals(0, getIndexSize(ri));
     Wait.waitForCriterion(evSize, 17 * 1000, 200, true);
   }
   
@@ -200,7 +200,7 @@ public class AsynchIndexMaintenanceJUnitTest {
       idSet.add((i+1) + "");
     }    
     Thread.sleep(10000);
-    //assertEquals(0, this.getIndexSize(ri));    
+    //assertIndexDetailsEquals(0, this.getIndexSize(ri));
         
   }
   

@@ -16,11 +16,11 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -34,16 +34,13 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.partitioned.FetchEntriesMessage.FetchEntriesReplyMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.FetchEntriesMessage.FetchEntriesResponse;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.test.fake.Fakes;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
 @Category(UnitTest.class)
-public class FetchEntriesMessageJUnitTest extends TestCase {
-  protected static final Logger logger = LogService.getLogger();
-  GemFireCacheImpl cache;
+public class FetchEntriesMessageJUnitTest {
+
+  private GemFireCacheImpl cache;
   
   private VersionTag createVersionTag(boolean validVersionTag) throws ClassNotFoundException, IOException {
     VersionTag tag = VersionTag.create(cache.getMyId());
@@ -72,7 +69,7 @@ public class FetchEntriesMessageJUnitTest extends TestCase {
   }
   
   @Test
-  public void testProcessChunk() throws IOException, ClassNotFoundException {
+  public void testProcessChunk() throws Exception {
     cache = Fakes.cache();
     PartitionedRegion pr = mock(PartitionedRegion.class);
     InternalDistributedSystem system = cache.getDistributedSystem();

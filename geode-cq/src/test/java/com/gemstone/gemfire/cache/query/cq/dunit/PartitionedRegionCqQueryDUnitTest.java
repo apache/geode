@@ -169,7 +169,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     //cc1 = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCqCountFromRegionProfile());
     cc2 = server2.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCqCountFromRegionProfile());
     
-    //assertEquals("Should have one", 0, cc1);
+    //assertIndexDetailsEquals("Should have one", 0, cc1);
     assertEquals("Should have one", 0, cc2);
     
     cqHelper.closeServer(server2);

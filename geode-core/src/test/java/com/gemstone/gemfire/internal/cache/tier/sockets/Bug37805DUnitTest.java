@@ -112,7 +112,7 @@ public class Bug37805DUnitTest extends DistributedTestCase{
       }
     }
     //assertNull(rootRegions);
-    //assertEquals(0,((Collection)CacheServerTestUtil.getCache().rootRegions()).size());
+    //assertIndexDetailsEquals(0,((Collection)CacheServerTestUtil.getCache().rootRegions()).size());
   }
   
   private Pool getClientPool(String host, int server1Port,

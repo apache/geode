@@ -45,7 +45,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Category(UnitTest.class)
 public class ConvertUtilsJUnitTest {
 
-  protected MultipartFile createMultipartFile(final String filename, final byte[] content) {
+  private MultipartFile createMultipartFile(final String filename, final byte[] content) {
     return new MultipartFileAdapter() {
       @Override public byte[] getBytes() throws IOException {
         return content;
@@ -65,7 +65,7 @@ public class ConvertUtilsJUnitTest {
     };
   }
 
-  protected Resource createResource(final String filename, final byte[] content) {
+  private Resource createResource(final String filename, final byte[] content) {
     return new ByteArrayResource(content, String.format("Content of file (%1$s).", filename)) {
       @Override public String getFilename() {
         return filename;

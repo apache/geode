@@ -119,15 +119,15 @@ public abstract class CacheLoaderTestCase
 //        public Object load2(LoaderHelper helper)
 //          throws CacheLoaderException {
 //
-//          assertEquals(key, helper.getKey());
-//          assertEquals(name, helper.getRegion().getName());
+//          assertIndexDetailsEquals(key, helper.getKey());
+//          assertIndexDetailsEquals(name, helper.getRegion().getName());
 //
 //          try {
 //            RegionAttributes attrs =
 //              helper.getRegion().getAttributes();
 //            if (attrs.getScope().isDistributed()) {
 //              Object result = helper.netSearch(false);
-//              assertEquals(value, result);
+//              assertIndexDetailsEquals(value, result);
 //              return result;
 //            }
 //
@@ -158,8 +158,8 @@ public abstract class CacheLoaderTestCase
 ////            public Object load2(LoaderHelper helper)
 ////              throws CacheLoaderException {
 ////
-////              assertEquals(key, helper.getKey());
-////              assertEquals(name, helper.getRegion().getName());
+////              assertIndexDetailsEquals(key, helper.getKey());
+////              assertIndexDetailsEquals(name, helper.getRegion().getName());
 ////              return value;
 ////            }
 ////          };
@@ -174,9 +174,9 @@ public abstract class CacheLoaderTestCase
 //    });
 //
 //
-//    assertEquals(value, region.get(key));
+//    assertIndexDetailsEquals(value, region.get(key));
 //    assertTrue(loader.wasInvoked());
-//    assertEquals(value, region.getEntry(key).getValue());
+//    assertIndexDetailsEquals(value, region.getEntry(key).getValue());
 //  }
 
   /**

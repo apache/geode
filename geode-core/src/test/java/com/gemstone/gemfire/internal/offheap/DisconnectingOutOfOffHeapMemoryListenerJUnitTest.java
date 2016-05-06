@@ -32,14 +32,15 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class DisconnectingOutOfOffHeapMemoryListenerJUnitTest {
-  @Rule
-  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-  
+
   private final InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
   private final OutOfOffHeapMemoryException ex = new OutOfOffHeapMemoryException();
   private final LogWriter lw = mock(LogWriter.class);
   private final DM dm = mock(DM.class);
 
+  @Rule
+  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  
   @Before
   public void setUp() throws Exception {
     when(ids.getLogWriter()).thenReturn(lw);
@@ -81,6 +82,7 @@ public class DisconnectingOutOfOffHeapMemoryListenerJUnitTest {
     listener.outOfOffHeapMemory(ex);
     verify(dm).setRootCause(ex);
   }
+
   @Test
   public void setRootCauseNotCalledWhenGetRootCauseReturnsNonNull() {
     DisconnectingOutOfOffHeapMemoryListener listener = new DisconnectingOutOfOffHeapMemoryListener(ids);

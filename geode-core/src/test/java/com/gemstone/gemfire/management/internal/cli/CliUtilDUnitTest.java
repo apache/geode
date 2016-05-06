@@ -388,7 +388,7 @@ public class CliUtilDUnitTest extends CacheTestCase {
     /* "FIXME - Abhishek" This is failing because last param is not considered in method
     set = CliUtil.getRegionAssociatedMembers(region1, cache, false);
     assertNotNull(set);
-    assertEquals(1, set.size());*/
+    assertIndexDetailsEquals(1, set.size());*/
     
     set = CliUtil.getRegionAssociatedMembers(region_group1, cache, true);
     assertNotNull(set);

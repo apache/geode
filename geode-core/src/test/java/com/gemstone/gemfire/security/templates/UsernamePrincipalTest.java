@@ -24,12 +24,13 @@ import org.apache.commons.lang.SerializationUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link UsernamePrincipal}
  */
-@Category(UnitTest.class)
+@Category({ UnitTest.class, SecurityTest.class })
 public class UsernamePrincipalTest {
 
   @Test

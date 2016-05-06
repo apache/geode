@@ -19,8 +19,7 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
-import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,20 +30,16 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import junit.framework.TestCase;
+import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-/**
- * 
- */
 @Category(UnitTest.class)
-public class ResultsCollectionWrapperLimitJUnitTest extends TestCase {
+public class ResultsCollectionWrapperLimitJUnitTest {
 
-  public ResultsCollectionWrapperLimitJUnitTest(String testName) {
-    super(testName);
-  }
-
+  @Test
   public void testConstructorBehaviour() {
     // Create a Collection of unordered data elements
     HashSet unordered = new HashSet();
@@ -97,6 +92,7 @@ public class ResultsCollectionWrapperLimitJUnitTest extends TestCase {
     }
   }
 
+  @Test
   public void testContains() {
     // Create a Collection of unordered data elements
     HashSet unordered = new HashSet();
@@ -120,6 +116,7 @@ public class ResultsCollectionWrapperLimitJUnitTest extends TestCase {
     assertTrue(wrapper.contains(new Integer(1)));
   }
 
+  @Test
   public void testContainsAll() {
     List ordered = new ArrayList();
     for (int i = 1; i < 11; ++i) {
@@ -135,6 +132,7 @@ public class ResultsCollectionWrapperLimitJUnitTest extends TestCase {
     assertTrue(wrapper.containsAll(newList));
   }
 
+  @Test
   public void testEmpty() {
     List ordered = new ArrayList();
     for (int i = 1; i < 11; ++i) {
@@ -145,6 +143,7 @@ public class ResultsCollectionWrapperLimitJUnitTest extends TestCase {
     assertEquals(0, wrapper.size());
   }
 
+  @Test
   public void testRemove() {
     List ordered = new ArrayList();
     for (int i = 1; i < 11; ++i) {
@@ -163,6 +162,7 @@ public class ResultsCollectionWrapperLimitJUnitTest extends TestCase {
     assertTrue(wrapper.containsAll(newList));
   }
 
+  @Test
   public void testRemoveAll() {
     List ordered = new ArrayList();
     for (int i = 1; i < 11; ++i) {
@@ -196,6 +196,7 @@ public class ResultsCollectionWrapperLimitJUnitTest extends TestCase {
     assertFalse(itr.hasNext());
   }
 
+  @Test
   public void testRetainAll() {
     List ordered = new ArrayList();
     for (int i = 1; i < 11; ++i) {
@@ -223,6 +224,7 @@ public class ResultsCollectionWrapperLimitJUnitTest extends TestCase {
     assertFalse(itr.hasNext());
   }
 
+  @Test
   public void testToArray() {
     List ordered = new ArrayList();
     for (int i = 1; i < 11; ++i) {
@@ -239,6 +241,7 @@ public class ResultsCollectionWrapperLimitJUnitTest extends TestCase {
     assertFalse(itr.hasNext());
   }
 
+  @Test
   public void testToArrayParameterized() {
     List ordered = new ArrayList();
     for (int i = 1; i < 11; ++i) {
@@ -256,6 +259,7 @@ public class ResultsCollectionWrapperLimitJUnitTest extends TestCase {
     assertFalse(itr.hasNext());
   }
 
+  @Test
   public void testAsList() {
     List ordered = new ArrayList();
     for (int i = 1; i < 11; ++i) {
@@ -286,6 +290,7 @@ public class ResultsCollectionWrapperLimitJUnitTest extends TestCase {
     assertTrue(newList.containsAll(toList));
   }
 
+  @Test
   public void testAsSet() {
     Collection ordered = new TreeSet();
     for (int i = 1; i < 11; ++i) {
@@ -315,6 +320,7 @@ public class ResultsCollectionWrapperLimitJUnitTest extends TestCase {
     assertTrue(newSet.containsAll(toSet));
   }
 
+  @Test
   public void testOccurences() {
     Collection ordered = new TreeSet();
     for (int i = 1; i < 11; ++i) {
@@ -338,6 +344,7 @@ public class ResultsCollectionWrapperLimitJUnitTest extends TestCase {
     }
   }
 
+  @Test
   public void testLimitIterator() {
     Collection ordered = new TreeSet();
     for (int i = 1; i < 11; ++i) {

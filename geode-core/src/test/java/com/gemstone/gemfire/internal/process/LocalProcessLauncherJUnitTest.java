@@ -24,26 +24,36 @@ import java.io.FileReader;
 import java.io.FileWriter;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
 import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.process.LocalProcessLauncher;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Unit tests for ProcessLauncher.
  * 
  * @since 7.0
  */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class LocalProcessLauncherJUnitTest {
 
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public TestName testName = new TestName();
+
+  private File pidFile;
+
   @Before
-  public void createDirectory() throws Exception {
-    new File(getClass().getSimpleName()).mkdir();
+  public void setUp() throws Exception {
+    this.pidFile = new File(this.temporaryFolder.getRoot(), testName.getMethodName() + ".pid");
   }
-  
+
   @Test
   public void testPidAccuracy() throws PidUnavailableException {
     int pid = ProcessUtils.identifyPid();
@@ -58,8 +68,6 @@ public class LocalProcessLauncherJUnitTest {
   
   @Test
   public void testPidFileIsCreated() throws Exception {
-    final File pidFile = new File(getClass().getSimpleName() 
-        + File.separator + "testPidFileIsCreated.pid");
     assertFalse(pidFile.exists());
     new LocalProcessLauncher(pidFile, false);
     assertTrue(pidFile.exists());
@@ -67,8 +75,6 @@ public class LocalProcessLauncherJUnitTest {
   
   @Test
   public void testPidFileContainsPid() throws Exception {
-    final File pidFile = new File(getClass().getSimpleName() 
-        + File.separator + "testPidFileContainsPid.pid");
     final LocalProcessLauncher launcher = new LocalProcessLauncher(pidFile, false);
     assertNotNull(launcher);
     assertTrue(pidFile.exists());
@@ -85,8 +91,6 @@ public class LocalProcessLauncherJUnitTest {
   
   @Test
   public void testPidFileIsCleanedUp() throws Exception {
-    final File pidFile = new File(getClass().getSimpleName() 
-        + File.separator + "testPidFileIsCleanedUp.pid");
     final LocalProcessLauncher launcher = new LocalProcessLauncher(pidFile, false);
     assertTrue(pidFile.exists());
     launcher.close(); // TODO: launch an external JVM and then close it nicely
@@ -95,8 +99,6 @@ public class LocalProcessLauncherJUnitTest {
   
   @Test
   public void testExistingPidFileThrows() throws Exception {
-    final File pidFile = new File(getClass().getSimpleName() 
-        + File.separator + "testExistingPidFileThrows.pid");
     assertTrue(pidFile.createNewFile());
     assertTrue(pidFile.exists());
     
@@ -115,8 +117,6 @@ public class LocalProcessLauncherJUnitTest {
 
   @Test
   public void testStalePidFileIsReplaced() throws Exception {
-    final File pidFile = new File(getClass().getSimpleName() 
-        + File.separator + "testStalePidFileIsReplaced.pid");
     assertTrue(pidFile.createNewFile());
     assertTrue(pidFile.exists());
     
@@ -143,9 +143,7 @@ public class LocalProcessLauncherJUnitTest {
   public void testForceReplacesExistingPidFile() throws Exception {
     assertTrue("testForceReplacesExistingPidFile is broken if PID == Integer.MAX_VALUE", 
         ProcessUtils.identifyPid() != Integer.MAX_VALUE);
-    
-    final File pidFile = new File(getClass().getSimpleName() 
-        + File.separator + "testForceReplacesExistingPidFile.pid");
+
     assertTrue(pidFile.createNewFile());
     assertTrue(pidFile.exists());
     

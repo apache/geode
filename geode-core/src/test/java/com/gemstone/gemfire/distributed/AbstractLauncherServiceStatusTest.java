@@ -22,17 +22,15 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.distributed.AbstractLauncherServiceStatusTest.TestLauncher.TestState;
 import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.process.PidUnavailableException;
 import com.gemstone.gemfire.internal.process.ProcessUtils;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonArray;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
@@ -47,34 +45,58 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class AbstractLauncherServiceStatusTest {
 
-  private static final String SERVICE_NAME = "Test";
-  private static final InetAddress HOST = getLocalHost();
-  private static final int PORT = 12345;
-  private static final String NAME = AbstractLauncherServiceStatusTest.class.getSimpleName();
-  private static final int PID = identifyPid();
-  private static final long UPTIME = 123456789;
-  private static final String WORKING_DIRECTORY = identifyWorkingDirectory();
-  private static final List<String> JVM_ARGUMENTS = ManagementFactory.getRuntimeMXBean().getInputArguments();
-  private static final String CLASSPATH = ManagementFactory.getRuntimeMXBean().getClassPath();
-  private static final String GEMFIRE_VERSION = GemFireVersion.getGemFireVersion();
-  private static final String JAVA_VERSION = System.getProperty("java.version");
+  private static String serviceName;
+  private static InetAddress host;
+  private static int port;
+  private static String name;
+  private static int pid;
+  private static long uptime;
+  private static String workingDirectory;
+  private static List<String> jvmArguments;
+  private static String classpath;
+  private static String gemfireVersion;
+  private static String javaVersion;
 
   private TestLauncher launcher;
 
   @Before
-  public void setUp() {
-    this.launcher = new TestLauncher(HOST, PORT, NAME);
+  public void setUp() throws Exception {
+    serviceName = "Test";
+    port = 12345;
+    host = InetAddress.getLocalHost();
+    pid = ProcessUtils.identifyPid();
+    uptime = 123456789;
+    name = AbstractLauncherServiceStatusTest.class.getSimpleName();
+    workingDirectory = new File(System.getProperty("user.dir")).getAbsolutePath();
+    jvmArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();
+    classpath = ManagementFactory.getRuntimeMXBean().getClassPath();
+    gemfireVersion = GemFireVersion.getGemFireVersion();
+    javaVersion = System.getProperty("java.version");
+
+    this.launcher = new TestLauncher(host, port, name);
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    serviceName = null;
+    host = null;
+    name = null;
+    workingDirectory = null;
+    jvmArguments = null;
+    classpath = null;
+    gemfireVersion = null;
+    javaVersion = null;
   }
 
   @Test
   public void testMarshallingTestStatusToAndFromJson() {
-    final TestState status = this.launcher.status();
+    final TestLauncher.TestState status = this.launcher.status();
     final String json = status.toJson();
     validateJson(status, json);
-    validateStatus(status, TestState.fromJson(json));
+    validateStatus(status, TestLauncher.TestState.fromJson(json));
   }
 
-  private void validateStatus(final TestState expected, final TestState actual) {
+  private void validateStatus(final TestLauncher.TestState expected, final TestLauncher.TestState actual) {
     assertEquals(expected.getClasspath(), actual.getClasspath());
     assertEquals(expected.getGemFireVersion(), actual.getGemFireVersion());
     assertEquals(expected.getJavaVersion(), actual.getJavaVersion());
@@ -89,39 +111,12 @@ public class AbstractLauncherServiceStatusTest {
     assertEquals(expected.getMemberName(), actual.getMemberName());
   }
 
-  private void validateJson(final TestState expected, final String json) {
-    final TestState actual = TestState.fromJson(json);
+  private void validateJson(final TestLauncher.TestState expected, final String json) {
+    final TestLauncher.TestState actual = TestLauncher.TestState.fromJson(json);
     validateStatus(expected, actual);
   }
 
-  private static int identifyPid() {
-    try {
-      return ProcessUtils.identifyPid();
-    }
-    catch (PidUnavailableException e) {
-      return 0;
-    }
-  }
-
-  private static String identifyWorkingDirectory() {
-    try {
-      return new File(System.getProperty("user.dir")).getCanonicalPath();
-    }
-    catch (IOException e) {
-      return new File(System.getProperty("user.dir")).getAbsolutePath();
-    }
-  }
-
-  private static InetAddress getLocalHost() {
-    try {
-      return InetAddress.getLocalHost();
-    }
-    catch (UnknownHostException e) {
-      return null;
-    }
-  }
-  
-  static class TestLauncher extends AbstractLauncher<String> {
+  private static class TestLauncher extends AbstractLauncher<String> {
 
     private final InetAddress bindAddress;
     private final int port;
@@ -142,17 +137,17 @@ public class AbstractLauncherServiceStatusTest {
         null,
         System.currentTimeMillis(),
         getId(),
-        PID,
-        UPTIME,
-        WORKING_DIRECTORY,
-        JVM_ARGUMENTS,
-        CLASSPATH,
-        GEMFIRE_VERSION,
-        JAVA_VERSION,
+              pid,
+              uptime,
+              workingDirectory,
+              jvmArguments,
+              classpath,
+              gemfireVersion,
+              javaVersion,
         getLogFileName(),
         getBindAddressAsString(),
         getPortAsString(),
-        NAME);
+              name);
     }
 
     @Override
@@ -185,7 +180,7 @@ public class AbstractLauncherServiceStatusTest {
 
     @Override
     public String getServiceName() {
-      return SERVICE_NAME;
+      return serviceName;
     }
 
     InetAddress getBindAddress() {
@@ -204,7 +199,7 @@ public class AbstractLauncherServiceStatusTest {
       return String.valueOf(getPort());
     }
 
-    public static class TestState extends ServiceState<String> {
+    private static class TestState extends ServiceState<String> {
 
       protected static TestState fromJson(final String json) {
         try {
@@ -256,7 +251,7 @@ public class AbstractLauncherServiceStatusTest {
 
       @Override
       protected String getServiceName() {
-        return SERVICE_NAME;
+        return serviceName;
       }
     }
   }

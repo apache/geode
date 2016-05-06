@@ -76,11 +76,11 @@ public class IndexCommandsJUnitTest {
     mockContext = null;
   }
 
-  protected IndexCommands createIndexCommands(final Cache cache, final Execution functionExecutor) {
+  private IndexCommands createIndexCommands(final Cache cache, final Execution functionExecutor) {
     return new TestIndexCommands(cache, functionExecutor);
   }
 
-  protected IndexDetails createIndexDetails(final String memberId, final String regionPath, final String indexName) {
+  private IndexDetails createIndexDetails(final String memberId, final String regionPath, final String indexName) {
     return new IndexDetails(memberId, regionPath, indexName);
   }
 
@@ -174,7 +174,7 @@ public class IndexCommandsJUnitTest {
     assertEquals(expectedIndexDetails, actualIndexDetails);
   }
 
-  protected static class TestIndexCommands extends IndexCommands {
+  private static class TestIndexCommands extends IndexCommands {
 
     private final Cache cache;
     private final Execution functionExecutor;

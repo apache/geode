@@ -201,7 +201,7 @@ public class QueryFromClauseCanonicalizationJUnitTest
 ////    context.setBindArguments(new Object[]{"bindkey"});
 //    sbuff = new StringBuffer();
 //    cop.generateCanonicalizedExpression(sbuff, context);
-//    assertEquals(sbuff.toString(),"iter1.positions.get('bindkey')");
+//    assertIndexDetailsEquals(sbuff.toString(),"iter1.positions.get('bindkey')");
 //    
     
 //    cp = new CompiledPath(new CompiledID("pf"), "getPositions()");
@@ -211,7 +211,7 @@ public class QueryFromClauseCanonicalizationJUnitTest
 //    cop = new CompiledOperation(cp, "get", args);
 //    sbuff = new StringBuffer();
 //    cop.generateCanonicalizedExpression(sbuff, context);
-//    assertEquals(sbuff.toString(),"iter1.positions().get('bindkey')");
+//    assertIndexDetailsEquals(sbuff.toString(),"iter1.positions().get('bindkey')");
 //    
 //    
 //    cp = new CompiledPath(new CompiledID("pf"), "getPositions");
@@ -221,7 +221,7 @@ public class QueryFromClauseCanonicalizationJUnitTest
 //    cop = new CompiledOperation(cp, "get", args);
 //    sbuff = new StringBuffer();
 //    cop.generateCanonicalizedExpression(sbuff, context);
-//    assertEquals(sbuff.toString(),"iter1.positions.get('bindkey')");
+//    assertIndexDetailsEquals(sbuff.toString(),"iter1.positions.get('bindkey')");
     
     cp = new CompiledPath(new CompiledID("pf"), "getPositions");
     CompiledPath cp1 = new CompiledPath(new CompiledID("pf"),"pkid");

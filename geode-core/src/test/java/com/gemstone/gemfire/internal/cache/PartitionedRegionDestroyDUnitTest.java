@@ -239,7 +239,7 @@ public class PartitionedRegionDestroyDUnitTest extends
         while (itr.hasNext()) {
           Region rg = (Region)itr.next();
           LogWriterUtils.getLogWriter().info("Root Region SubRegionName = " + rg.getName());
-//          assertEquals("REGION NAME FOUND:"+rg.getName(),-1, rg.getName().indexOf(
+//          assertIndexDetailsEquals("REGION NAME FOUND:"+rg.getName(),-1, rg.getName().indexOf(
 //              PartitionedRegionHelper.BUCKET_2_NODE_TABLE_PREFIX));
           assertEquals("regionFound that should be gone!:"+rg.getName(),-1, rg.getName().indexOf(
               PartitionedRegionHelper.BUCKET_REGION_PREFIX));

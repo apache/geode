@@ -278,7 +278,7 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
           EMPTY_ENV).process();
       assertEquals(true, result.getStatus().equals(Status.OK));
       getLogWriter().info("#SB" + getResultAsString(result));
-      //assertEquals(true, result.getStatus().equals(Status.OK));
+      //assertIndexDetailsEquals(true, result.getStatus().equals(Status.OK));
     }
   }
 

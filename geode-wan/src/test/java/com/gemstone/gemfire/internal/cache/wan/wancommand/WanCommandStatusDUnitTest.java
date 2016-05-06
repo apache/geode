@@ -197,7 +197,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
 //      TabularResultData tableResultData =
 //        (TabularResultData) cmdResult.getResultData();
 //      List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-//      assertEquals(1, result_Status.size());
+//      assertIndexDetailsEquals(1, result_Status.size());
 //      assertFalse(result_Status.contains(CliStrings.GATEWAY_NOT_RUNNING));
       String strCmdResult = commandResultToString(cmdResult);
       getLogWriter().info("testGatewaySenderStatus_OnMember : " + strCmdResult + ">>>>> ");
@@ -434,7 +434,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       //TabularResultData tableResultData = (TabularResultData) cmdResult.getResultData();
       //List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-      //assertEquals(1, result_Status.size());
+      //assertIndexDetailsEquals(1, result_Status.size());
       //assertFalse(strCmdResult.contains(CliStrings.GATEWAY_NOT_RUNNING));
       TabularResultData tableResultData =
           ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
@@ -463,7 +463,7 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
 //      TabularResultData tableResultData =
 //        (TabularResultData) cmdResult.getResultData();
 //      List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-//      assertEquals(1, result_Status.size());
+//      assertIndexDetailsEquals(1, result_Status.size());
 //      assertFalse(result_Status.contains(CliStrings.GATEWAY_RUNNING));
       
       TabularResultData tableResultData =

@@ -19,34 +19,26 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
+import static org.junit.Assert.*;
+
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Random;
-import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
-/**
- *
- */
 @Category(UnitTest.class)
-public class SelectResultsComparatorJUnitTest extends TestCase implements OQLLexerTokenTypes {
-  
-  public SelectResultsComparatorJUnitTest(String testName) {
-    super(testName);
-  }
-  
+public class SelectResultsComparatorJUnitTest implements OQLLexerTokenTypes {
+
+  @Test
   public void testComparatorForSortedSet() throws Exception {
-//    CompiledValue[] operands = new CompiledValue[3];
-//    
-//    CompiledJunction cj = new CompiledJunction(operands, LITERAL_and);
     int sameSizeVar = 0;
     boolean sameSizeVarSetFlag = false;
     SortedSet testSet = 
@@ -85,6 +77,4 @@ public class SelectResultsComparatorJUnitTest extends TestCase implements OQLLex
         fail("This is not expected behaviour");
     }
   }
-  
-    
 }

@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -26,8 +28,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 
-import junit.framework.TestCase;
-
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializer;
@@ -42,36 +45,21 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * @since 3.0
  */
 @Category(UnitTest.class)
-public class QueryObjectSerializationJUnitTest extends TestCase implements Serializable {
+public class QueryObjectSerializationJUnitTest implements Serializable {
   
   /** A <code>ByteArrayOutputStream</code> that data is serialized to */
   private transient ByteArrayOutputStream baos;
-
-  public QueryObjectSerializationJUnitTest(String name) {
-    super(name);
-  }
-
-  ////////  Helper Class
-  public static class SimpleObjectType implements ObjectType {
-   public SimpleObjectType() {}
-   public boolean isCollectionType() { return false; }
-   public boolean isMapType() { return false; }
-   public boolean isStructType() { return false; }
-   public String getSimpleClassName() { return "java.lang.Object"; }
-   public Class resolveClass() { return Object.class; }
-   public void toData(DataOutput out) {}
-   public void fromData(DataInput in) {}
-   public boolean equals(Object o) { return o instanceof SimpleObjectType; }
-  }
 
   /**
    * Creates a new <code>ByteArrayOutputStream</code> for this test to
    * work with.
    */
+  @Before
   public void setUp() {
     this.baos = new ByteArrayOutputStream();
   }
 
+  @After
   public void tearDown() {
     this.baos = null;
   }
@@ -79,14 +67,14 @@ public class QueryObjectSerializationJUnitTest extends TestCase implements Seria
   /**
    * Returns a <code>DataOutput</code> to write to
    */
-  protected DataOutputStream getDataOutput() {
+  private DataOutputStream getDataOutput() {
     return new DataOutputStream(this.baos);
   }
 
   /**
    * Returns a <code>DataInput</code> to read from
    */
-  protected DataInputStream getDataInput() {
+  private DataInputStream getDataInput() {
     ByteArrayInputStream bais = new ByteArrayInputStream(this.baos.toByteArray());
     return new DataInputStream(bais);
   }
@@ -96,7 +84,6 @@ public class QueryObjectSerializationJUnitTest extends TestCase implements Seria
    * asserts that the two objects satisfy o1.equals(o2)
    */
   private void checkRoundTrip(Object o1) throws IOException, ClassNotFoundException {
-
     DataOutputStream out = getDataOutput();
     DataSerializer.writeObject(o1, out);
     out.flush();
@@ -108,6 +95,7 @@ public class QueryObjectSerializationJUnitTest extends TestCase implements Seria
   /**
    * Tests the serialization of many, but not all of the possible ResultSets
    */
+  @Test
   public void testSerializationOfQueryResults() throws IOException, ClassNotFoundException {
     Collection data = new java.util.ArrayList();
     data.add(null);
@@ -146,5 +134,17 @@ public class QueryObjectSerializationJUnitTest extends TestCase implements Seria
     //SortedStructSet
     //SortedStructSet sssWithoutData = new SortedStructSet();
     //checkRoundTrip(sssWithoutData); 
+  }
+
+  private static class SimpleObjectType implements ObjectType {
+    public SimpleObjectType() {}
+    public boolean isCollectionType() { return false; }
+    public boolean isMapType() { return false; }
+    public boolean isStructType() { return false; }
+    public String getSimpleClassName() { return "java.lang.Object"; }
+    public Class resolveClass() { return Object.class; }
+    public void toData(DataOutput out) {}
+    public void fromData(DataInput in) {}
+    public boolean equals(Object o) { return o instanceof SimpleObjectType; }
   }
 }

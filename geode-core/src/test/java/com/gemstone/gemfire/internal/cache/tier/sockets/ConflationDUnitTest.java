@@ -553,7 +553,7 @@ public class ConflationDUnitTest extends DistributedTestCase
       }
     };
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);
-    // assertEquals("creates", 2, counterCreate);
+    // assertIndexDetailsEquals("creates", 2, counterCreate);
     
     ev = new WaitCriterion() {
       public boolean done() {
@@ -566,7 +566,7 @@ public class ConflationDUnitTest extends DistributedTestCase
     };
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);
     
-    // assertEquals("destroys", 2, counterDestroy);
+    // assertIndexDetailsEquals("destroys", 2, counterDestroy);
     // assertTrue("updates", 20000 >= counterUpdate);
     ev = new WaitCriterion() {
       public boolean done() {

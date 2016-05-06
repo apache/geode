@@ -20,32 +20,29 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusResponse;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * The ServerLocatorJUnitTest class is a test suite of test cases testing the contract and functionality of the
  * ServerLocator class.
+ * </p>
+ * TODO: write more unit tests for this class...
  * </p>
  * @see com.gemstone.gemfire.distributed.internal.ServerLocator
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since 7.0
  */
-// TODO Dan, write more unit tests for this class...
 @Category(UnitTest.class)
 public class ServerLocatorJUnitTest {
-
-  protected ServerLocator createServerLocator() throws IOException {
-    return new TestServerLocator();
-  }
 
   @Test
   public void testProcessRequestProcessesLocatorStatusRequest() throws IOException {
@@ -56,7 +53,11 @@ public class ServerLocatorJUnitTest {
     assertTrue(response instanceof LocatorStatusResponse);
   }
 
-  protected static class TestServerLocator extends ServerLocator {
+  private ServerLocator createServerLocator() throws IOException {
+    return new TestServerLocator();
+  }
+
+  private static class TestServerLocator extends ServerLocator {
     TestServerLocator() throws IOException {
       super();
     }

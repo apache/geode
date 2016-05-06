@@ -16,24 +16,23 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.util.List;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.CopyHelper;
 import com.gemstone.gemfire.internal.util.BlobHelper;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-/**
- *
- */
 @Category(UnitTest.class)
-public class ObjectPartListJUnitTest extends TestCase {
-  
-  public void testValueAsObject() throws IOException {
+public class ObjectPartListJUnitTest {
+
+  @Test
+  public void testValueAsObject() throws Exception {
     VersionedObjectList list = new VersionedObjectList(100, false, false);
     byte[] normalBytes = "value1".getBytes();
     list.addObjectPart("key", normalBytes , false, null);
@@ -69,8 +68,9 @@ public class ObjectPartListJUnitTest extends TestCase {
     assertEquals(new TestException("hello"), values.get(3));
     assertNull(values.get(4));
   }
-  
-  public void testValueAsObjectByteArray() throws IOException, ClassNotFoundException {
+
+  @Test
+  public void testValueAsObjectByteArray() throws Exception {
     ObjectPartList list = new VersionedObjectList(100, false, false, true);
     byte[] normalBytes = "value1".getBytes();
     list.addObjectPart("key", normalBytes , false, null);
@@ -108,10 +108,8 @@ public class ObjectPartListJUnitTest extends TestCase {
 
     public TestException(String message) {
       super(message);
-      // TODO Auto-generated constructor stub
     }
-    
-    
+
     @Override
     public boolean equals(Object o) {
       if(!(o instanceof TestException)) {
@@ -122,8 +120,5 @@ public class ObjectPartListJUnitTest extends TestCase {
       }
       return true;
     }
-    
-    
   }
-
 }

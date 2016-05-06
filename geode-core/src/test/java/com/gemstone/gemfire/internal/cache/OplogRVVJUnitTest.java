@@ -23,12 +23,15 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
@@ -38,27 +41,31 @@ import com.gemstone.gemfire.internal.cache.DiskStoreImpl.OplogEntryIdSet;
 import com.gemstone.gemfire.internal.cache.persistence.DiskRecoveryStore;
 import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
 import com.gemstone.gemfire.internal.cache.versions.DiskRegionVersionVector;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-@Category(UnitTest.class)
-public class OplogRVVJUnitTest extends TestCase {
+@Category(IntegrationTest.class)
+public class OplogRVVJUnitTest {
+
   private File testDirectory;
   private Mockery context = new Mockery() {{
     setImposteriser(ClassImposteriser.INSTANCE);
   }};
-  
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Before
   public void setUp() throws Exception {
-    testDirectory = new File("_DiskStoreImplJUnitTest");
-    FileUtil.delete(testDirectory);
-    FileUtil.mkdirs(testDirectory);
+    testDirectory = temporaryFolder.newFolder("_" + getClass().getSimpleName());
     DiskStoreImpl.SET_IGNORE_PREALLOCATE = true;
   }
-  
+
+  @After
   public void tearDown() throws Exception {
-    super.tearDown();
     DiskStoreImpl.SET_IGNORE_PREALLOCATE = false;
   }
-  
+
+  @Test
   public void testRecoverRVV() throws UnknownHostException {
     final DiskInitFile df = context.mock(DiskInitFile.class);
     final LogWriterI18n logger = context.mock(LogWriterI18n.class);
@@ -148,7 +155,6 @@ public class OplogRVVJUnitTest extends TestCase {
     
     Oplog oplog = new Oplog(1, oplogSet, dirHolder);
     oplog.close();
-    
     
     context.checking(new Expectations() {{
       one(drs).recordRecoveredGCVersion(m1, 1);

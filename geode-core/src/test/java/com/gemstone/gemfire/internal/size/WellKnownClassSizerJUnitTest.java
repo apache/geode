@@ -16,20 +16,19 @@
  */
 package com.gemstone.gemfire.internal.size;
 
+import static com.gemstone.gemfire.internal.size.SizeTestUtil.*;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-import static com.gemstone.gemfire.internal.size.SizeTestUtil.*;
-
-/**
- *
- */
 @Category(UnitTest.class)
-public class WellKnownClassSizerJUnitTest extends TestCase {
-  
+public class WellKnownClassSizerJUnitTest {
+
+  @Test
   public void testByteArrays() {
     byte[] test1 = new byte[5];
     byte[] test2 = new byte[8];
@@ -41,7 +40,8 @@ public class WellKnownClassSizerJUnitTest extends TestCase {
     
     assertEquals(0, WellKnownClassSizer.sizeof(new Object()));
   }
-  
+
+  @Test
   public void testStrings() {
     String test1 = "123";
     String test2 = "012345678";

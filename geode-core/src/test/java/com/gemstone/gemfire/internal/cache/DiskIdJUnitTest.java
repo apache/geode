@@ -16,29 +16,24 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
 /**
- * 
- * Test verifies the setting and getting of disk id values are correctly 
- * 
- *
+ * Test verifies the setting and getting of disk id values are correctly
  */
 @Category(UnitTest.class)
-public class DiskIdJUnitTest extends TestCase
-{
+public class DiskIdJUnitTest {
 
   /**
    * Test the getOplogId returns what has been set
-   * 
-   * @throws Exception
    */
-  public void testGetSetOplogId() throws Exception
-  {
+  @Test
+  public void testGetSetOplogId() throws Exception {
     DiskId did = getDiskId();
     did.setOplogId(-1);
     assertEquals(-1, did.getOplogId());
@@ -52,12 +47,9 @@ public class DiskIdJUnitTest extends TestCase
 
   /**
    * Test the getUserbits returns what has been set
-   * 
-   * @throws Exception
    */
- 
-  public void testGetSetUserBits() throws Exception
-  {
+  @Test
+  public void testGetSetUserBits() throws Exception {
     DiskId did = getDiskId();
     byte userBits = 0;
     userBits = EntryBits.setSerialized(userBits, true);
@@ -119,9 +111,8 @@ public class DiskIdJUnitTest extends TestCase
   /**
    * Test the whether setting of one set of values does not affect another set of values
    */
- 
-  public void testAllOperationsValidatingResult1()
-  {
+  @Test
+  public void testAllOperationsValidatingResult1() {
     DiskId did = getDiskId();
     for (int i = -16777215; i < 16777215; i++) {
       boolean boolValuePerIteration = false;
@@ -168,15 +159,14 @@ public class DiskIdJUnitTest extends TestCase
         break;
       }
     }
-
   }
   
   /**
    * Tests that an instance of 'PersistenceIntOplogOffsetDiskId' is created when
    * max-oplog-size (in bytes) passed is smaller than Integer.MAX_VALUE
    */
-  public void testPersistIntDiskIdInstance()
-  {
+  @Test
+  public void testPersistIntDiskIdInstance() {
     int maxOplogSizeinMB = 2;
 
     DiskId diskId = DiskId.createDiskId(maxOplogSizeinMB, true /*is persistence type*/, true);
@@ -189,8 +179,8 @@ public class DiskIdJUnitTest extends TestCase
    * Tests that an instance of 'LongOplogOffsetDiskId' is created when
    * max-oplog-size (in bytes) passed is greater than Integer.MAX_VALUE
    */
-  public void testPersistLongDiskIdInstance()
-  {
+  @Test
+  public void testPersistLongDiskIdInstance() {
     long maxOplogSizeInBytes = (long)Integer.MAX_VALUE + 1;
     int maxOplogSizeinMB = (int)(maxOplogSizeInBytes / (1024 * 1024));
 
@@ -204,8 +194,8 @@ public class DiskIdJUnitTest extends TestCase
    * Tests that an instance of 'PersistenceIntOplogOffsetDiskId' is created when
    * max-oplog-size (in bytes) passed is smaller than Integer.MAX_VALUE
    */
-  public void testOverflowIntDiskIdInstance()
-  {
+  @Test
+  public void testOverflowIntDiskIdInstance() {
     int maxOplogSizeinMB = 2;
 
     DiskId diskId = DiskId.createDiskId(maxOplogSizeinMB, false /*is overflow type*/, true);
@@ -218,8 +208,8 @@ public class DiskIdJUnitTest extends TestCase
    * Tests that an instance of 'LongOplogOffsetDiskId' is created when
    * max-oplog-size (in bytes) passed is greater than Integer.MAX_VALUE
    */
-  public void testOverflowLongDiskIdInstance()
-  {
+  @Test
+  public void testOverflowLongDiskIdInstance() {
     long maxOplogSizeInBytes = (long)Integer.MAX_VALUE + 1;
     int maxOplogSizeinMB = (int)(maxOplogSizeInBytes / (1024 * 1024));
 
@@ -229,8 +219,7 @@ public class DiskIdJUnitTest extends TestCase
         DiskId.isInstanceofOverflowOnlyWithLongOffset(diskId));
   }
 
-  private DiskId getDiskId()
-  {
+  private DiskId getDiskId() {
     return DiskId.createDiskId(1024, true /* is persistence type*/, true);
   }
 

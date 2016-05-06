@@ -304,7 +304,7 @@ public class CacheXml58DUnitTest extends CacheXml57DUnitTest
     assertEquals(regionAttrs.getEntryTimeToLive().getTimeout(), expiration.getTimeout());    
 //  TODO mthomas 01/20/09 Move test back to using LRUHeap when config issues have settled
 //    if (getGemFireVersion().equals(CacheXml.GEMFIRE_6_0)) {
-//      assertEquals(ea.getAlgorithm(),EvictionAlgorithm.LRU_HEAP);
+//      assertIndexDetailsEquals(ea.getAlgorithm(),EvictionAlgorithm.LRU_HEAP);
 //    } else {
     assertEquals(ea.getAlgorithm(),EvictionAlgorithm.LRU_MEMORY);
 //    }

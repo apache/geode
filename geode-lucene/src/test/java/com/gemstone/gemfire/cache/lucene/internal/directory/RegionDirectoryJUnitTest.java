@@ -16,19 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.cache.lucene.internal.directory;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.carrotsearch.randomizedtesting.rules.SystemPropertiesRestoreRule;
 import org.apache.lucene.store.BaseDirectoryTestCase;
 import org.apache.lucene.store.Directory;
 import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 
-import com.carrotsearch.randomizedtesting.rules.SystemPropertiesRestoreRule;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
@@ -42,9 +41,11 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  */
 @Category(UnitTest.class)
 public class RegionDirectoryJUnitTest extends BaseDirectoryTestCase {
+
   @Rule
   public SystemPropertiesRestoreRule restoreProps = new SystemPropertiesRestoreRule();
-  
+
+  @Override
   protected Directory getDirectory(Path path) throws IOException {
     
     //This is super lame, but log4j automatically sets the system property, and the lucene

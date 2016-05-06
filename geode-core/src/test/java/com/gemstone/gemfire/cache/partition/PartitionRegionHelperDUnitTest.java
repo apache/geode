@@ -115,7 +115,7 @@ public class PartitionRegionHelperDUnitTest extends CacheTestCase {
           //when we get to the last bucket, which should be primary on that node, we
           //don't even put a copy of the bucket on that node
           // See bug #40470
-//          assertEquals(4, member.getPrimaryCount());
+//          assertIndexDetailsEquals(4, member.getPrimaryCount());
         }
       }
     };

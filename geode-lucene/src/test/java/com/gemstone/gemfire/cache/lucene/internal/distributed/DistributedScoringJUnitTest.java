@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
 import java.io.IOException;
@@ -41,24 +40,17 @@ import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepositoryImpl;
-import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogenousLuceneSerializer;
+import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class DistributedScoringJUnitTest {
-  class TestType {
-    String txt;
 
-    public TestType(String txt) {
-      this.txt = txt;
-    }
-  }
+  private String[] indexedFields = new String[] { "txt" };
+  private HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(indexedFields);
 
-  String[] indexedFields = new String[] { "txt" };
-  HeterogenousLuceneSerializer mapper = new HeterogenousLuceneSerializer(indexedFields);
-
-  final StandardAnalyzer analyzer = new StandardAnalyzer();
-  Region<String, String> region;
+  private final StandardAnalyzer analyzer = new StandardAnalyzer();
+  private Region<String, String> region;
 
   @Before
   public void createMocks() {
@@ -66,7 +58,7 @@ public class DistributedScoringJUnitTest {
     Mockito.when(region.isDestroyed()).thenReturn(false);
   }
 
-  /*
+  /**
    * The goal of this test is to verify fair scoring if entries are uniformly distributed. It compares ordered results
    * from a single IndexRepository (IR) with merged-ordered results from multiple repositories (ir1, ir2, ir3). The
    * records inserted in IR are same as the combined records in irX. This simulates merging of results from buckets of a
@@ -151,5 +143,14 @@ public class DistributedScoringJUnitTest {
     IndexWriter writer = new IndexWriter(dir, config);
 
     return new IndexRepositoryImpl(region, writer, mapper);
+  }
+
+  private static class TestType {
+
+    String txt;
+
+    public TestType(String txt) {
+      this.txt = txt;
+    }
   }
 }

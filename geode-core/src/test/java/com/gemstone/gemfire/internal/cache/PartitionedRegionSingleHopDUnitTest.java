@@ -771,7 +771,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
       }
     };
     Wait.waitForCriterion(wc, 60000, 1000, true);
-//    assertEquals(4/*numBuckets*/, prMetaData.getBucketServerLocationsMap_TEST_ONLY().size());    
+//    assertIndexDetailsEquals(4/*numBuckets*/, prMetaData.getBucketServerLocationsMap_TEST_ONLY().size());
   }
 
   public void testMetadataFetchOnlyThroughputAll() {

@@ -307,7 +307,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
               "Members Array for region " + region + " : " + StringUtils.objectToString(membersName, true, 10));
           if (bean.getMemberCount() < 1) fail(
               "Even after waiting mbean reports number of member hosting region " + DATA_REGION_NAME_VM1_PATH + " is less than one");
-          //assertEquals(1, membersName.length); //exists in one members vm1
+          //assertIndexDetailsEquals(1, membersName.length); //exists in one members vm1
         }
       }
     };

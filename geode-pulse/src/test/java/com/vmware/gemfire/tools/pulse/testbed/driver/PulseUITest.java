@@ -261,7 +261,7 @@ public class PulseUITest {
       List<Region> locatorRegionscount = testBed.getRootDs().getRegions(locator);
       int locatorRegions = Integer.parseInt(driver.findElement(
           By.id("memberRegionsCount")).getText());
-      Assert.assertEquals(locatorRegionscount.size(), locatorRegions);
+      Assert.assertIndexDetailsEquals(locatorRegionscount.size(), locatorRegions);
       prevSelectedMember = peername;
     }*/
   }

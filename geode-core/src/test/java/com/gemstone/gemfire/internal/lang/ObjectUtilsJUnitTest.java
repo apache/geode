@@ -163,7 +163,7 @@ public class ObjectUtilsJUnitTest {
       " is the loneliest number!"));
   }
 
-  public static final class ValueHolder<T> {
+  private static final class ValueHolder<T> {
 
     private final T value;
 

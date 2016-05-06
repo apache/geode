@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
 import static javax.xml.XMLConstants.*;
 import static org.junit.Assert.*;
 
 import java.util.concurrent.atomic.AtomicReference;
-
 import javax.xml.XMLConstants;
 
 import org.junit.Test;
@@ -37,15 +35,13 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit Tests for {@link XmlGeneratorUtils}.
  * 
- *
  * @since 8.1
  */
 @Category(UnitTest.class)
 public class XmlGeneratorUtilsJUnitTest {
 
   /**
-   * Test method for
-   * {@link XmlGeneratorUtils#addAttribute(AttributesImpl, String, Object)}.
+   * Test method for {@link XmlGeneratorUtils#addAttribute(AttributesImpl, String, Object)}.
    */
   @Test
   public void testAddAttributeAttributesImplStringObject() {
@@ -64,9 +60,7 @@ public class XmlGeneratorUtilsJUnitTest {
   }
 
   /**
-   * Test method for
-   * {@link XmlGeneratorUtils#addAttribute(AttributesImpl, String, String, Object)}
-   * .
+   * Test method for {@link XmlGeneratorUtils#addAttribute(AttributesImpl, String, String, Object)}.
    */
   @Test
   public void testAddAttributeAttributesImplStringStringObject() {
@@ -85,11 +79,7 @@ public class XmlGeneratorUtilsJUnitTest {
   }
 
   /**
-   * Test method for
-   * {@link XmlGeneratorUtils#startElement(ContentHandler, String, String, AttributesImpl)}
-   * .
-   * 
-   * @throws SAXException
+   * Test method for {@link XmlGeneratorUtils#startElement(ContentHandler, String, String, AttributesImpl)}.
    */
   @Test
   public void testStartElementContentHandlerStringStringAttributesImpl() throws SAXException {
@@ -116,10 +106,7 @@ public class XmlGeneratorUtilsJUnitTest {
   }
 
   /**
-   * Test method for
-   * {@link XmlGeneratorUtils#endElement(ContentHandler, String, String)}.
-   * 
-   * @throws SAXException
+   * Test method for {@link XmlGeneratorUtils#endElement(ContentHandler, String, String)}.
    */
   @Test
   public void testEndElementContentHandlerStringString() throws SAXException {
@@ -143,11 +130,7 @@ public class XmlGeneratorUtilsJUnitTest {
   }
 
   /**
-   * Test method for
-   * {@link XmlGeneratorUtils#emptyElement(ContentHandler, String, String, AttributesImpl)}
-   * .
-   * 
-   * @throws SAXException
+   * Test method for {@link XmlGeneratorUtils#emptyElement(ContentHandler, String, String, AttributesImpl)}.
    */
   @Test
   public void testEmptyElement() throws SAXException {
@@ -189,7 +172,7 @@ public class XmlGeneratorUtilsJUnitTest {
     assertEquals(NULL_NS_URI, uriRef.get());
   }
 
-  private class MockContentHandler implements ContentHandler {
+  private static class MockContentHandler implements ContentHandler {
     @Override
     public void startPrefixMapping(String prefix, String uri) throws SAXException {
       throw new UnsupportedOperationException();

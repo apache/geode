@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.cache.ha.ThreadIdentifier.WanType;
@@ -24,8 +27,9 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import junit.framework.TestCase;
 
 @Category(UnitTest.class)
-public class ThreadIdentifierJUnitTest extends TestCase {
+public class ThreadIdentifierJUnitTest {
 
+  @Test
   public void testPutAllId() {
     int id = 42;
     int bucketNumber = 113;
@@ -35,7 +39,8 @@ public class ThreadIdentifierJUnitTest extends TestCase {
     assertTrue(ThreadIdentifier.isPutAllFakeThreadID(putAll));
     assertEquals(42, ThreadIdentifier.getRealThreadID(putAll));
   }
-  
+
+  @Test
   public void testWanId() {
     int id = 42;
     
@@ -69,7 +74,8 @@ public class ThreadIdentifierJUnitTest extends TestCase {
       assertTrue(WanType.PARALLEL.matches(real_tid_with_wan));
     }
   }
-  
+
+  @Test
   public void testWanAndPutAllId() {
     int id = 42;
     int bucketNumber = 113;

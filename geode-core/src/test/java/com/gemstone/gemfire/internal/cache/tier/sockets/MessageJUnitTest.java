@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.net.Socket;
@@ -33,11 +32,11 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class MessageJUnitTest {
 
-  Message message;
-  Socket mockSocket;
-  MessageStats mockStats;
-  ByteBuffer msgBuffer;
-  ServerConnection mockServerConnection;
+  private Message message;
+  private Socket mockSocket;
+  private MessageStats mockStats;
+  private ByteBuffer msgBuffer;
+  private ServerConnection mockServerConnection;
   
   @Before
   public void setUp() throws Exception {
@@ -81,11 +80,10 @@ public class MessageJUnitTest {
     message.setParts(parts);
     try {
       message.send();
+      fail("expected an exception but none was thrown");
     } catch (MessageTooLargeException e) {
       assertTrue(e.getMessage().contains("exceeds maximum integer value"));
-      return;
     }
-    fail("expected an exception but none was thrown");
   }
   
   @Test
@@ -98,14 +96,12 @@ public class MessageJUnitTest {
     message.setParts(parts);
     try {
       message.send();
+      fail("expected an exception but none was thrown");
     } catch (MessageTooLargeException e) {
       assertFalse(e.getMessage().contains("exceeds maximum integer value"));
-      return;
     }
-    fail("expected an exception but none was thrown");
   }
-  
-  
+
   // TODO many more tests are needed
 
 }

@@ -16,24 +16,25 @@
  */
 package com.gemstone.gemfire.internal.size;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
-
 @Category(UnitTest.class)
-public class ObjectTraverserJUnitTest extends TestCase {
-  
-  public void testBasic() throws IllegalArgumentException, IllegalAccessException {
-    
+public class ObjectTraverserJUnitTest {
+
+  @Test
+  public void testBasic() throws Exception {
     Set testData = new HashSet();
     Object one = new Object();
     testData.add(one);
@@ -46,35 +47,34 @@ public class ObjectTraverserJUnitTest extends TestCase {
     TestVisitor visitor = new TestVisitor();
     ObjectTraverser.breadthFirstSearch(testData, visitor, false);
     
-    Assert.assertNotNull(visitor.visited.remove(testData));
-    Assert.assertNotNull(visitor.visited.remove(one));
-    Assert.assertNotNull(visitor.visited.remove(two));
-    Assert.assertNotNull(visitor.visited.remove(three));
+    assertNotNull(visitor.visited.remove(testData));
+    assertNotNull(visitor.visited.remove(one));
+    assertNotNull(visitor.visited.remove(two));
+    assertNotNull(visitor.visited.remove(three));
   }
-  
-  public void testStatics() throws IllegalArgumentException, IllegalAccessException {
-   
+
+  @Test
+  public void testStatics() throws Exception {
     final Object staticObject = new Object();
     TestObject1.test2 = staticObject;
     TestObject1 test1 = new TestObject1();
     
     TestVisitor visitor = new TestVisitor();
     ObjectTraverser.breadthFirstSearch(test1, visitor, false);
-    Assert.assertNull(visitor.visited.get(staticObject));
+    assertNull(visitor.visited.get(staticObject));
     
     visitor = new TestVisitor();
     ObjectTraverser.breadthFirstSearch(test1, visitor, true);
-    Assert.assertNotNull(visitor.visited.get(staticObject));
+    assertNotNull(visitor.visited.get(staticObject));
   }
-  
-  public void testStop() throws IllegalArgumentException, IllegalAccessException {
+
+  @Test
+  public void testStop() throws Exception {
     Set set1 = new HashSet();
     final Set set2 = new HashSet();
     Object object3 = new Object();
     set1.add(set2);
     set2.add(object3);
-    
-    
     
     TestVisitor visitor = new TestVisitor();
     visitor = new TestVisitor() {
@@ -86,14 +86,15 @@ public class ObjectTraverserJUnitTest extends TestCase {
     
     ObjectTraverser.breadthFirstSearch(set1, visitor, true);
     
-    Assert.assertNotNull(visitor.visited.get(set1));
-    Assert.assertNotNull(visitor.visited.get(set2));
-    Assert.assertNull(visitor.visited.get(object3));
+    assertNotNull(visitor.visited.get(set1));
+    assertNotNull(visitor.visited.get(set2));
+    assertNull(visitor.visited.get(object3));
   }
   
   /** This test is commented out because it needs to be verified manually */
-  public void z_testHistogram() throws IllegalArgumentException, IllegalAccessException {
-    
+  @Ignore("commented out because it needs to be verified manually")
+  @Test
+  public void testHistogram() throws Exception {
     Set set1 = new HashSet();
     final Set set2 = new HashSet();
     Object object3 = new Object();
@@ -110,7 +111,7 @@ public class ObjectTraverserJUnitTest extends TestCase {
     public Map visited = new IdentityHashMap();
 
     public boolean visit(Object parent, Object object) {
-      Assert.assertNull(visited.put(object, VALUE));
+      assertNull(visited.put(object, VALUE));
       return true;
     }
   }

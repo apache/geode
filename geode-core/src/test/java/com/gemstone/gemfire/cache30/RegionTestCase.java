@@ -421,7 +421,7 @@ public abstract class RegionTestCase extends CacheTestCase {
     Region subregion = region.createSubregion(name, attrs);
     assertTrue(attrs != subregion.getAttributes());
     /* @todo compare each individual attribute for equality?
-    assertEquals(attrs, subregion.getAttributes());
+    assertIndexDetailsEquals(attrs, subregion.getAttributes());
      */
     
     Set subregions = region.subregions(false);
@@ -1607,7 +1607,7 @@ public abstract class RegionTestCase extends CacheTestCase {
       // assert that if this is a disk region, the disk dirs are empty
       // to make sure we start with a clean slate
       getCache().getLogger().info("list="+Arrays.toString(diskDir.list()));
-//       assertEquals("list="+Arrays.toString(diskDir.list()),
+//       assertIndexDetailsEquals("list="+Arrays.toString(diskDir.list()),
 //                    0, diskDir.list().length);
     }
     

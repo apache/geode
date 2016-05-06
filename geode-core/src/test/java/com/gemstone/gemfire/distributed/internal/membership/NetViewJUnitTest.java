@@ -1,35 +1,3 @@
-package com.gemstone.gemfire.distributed.internal.membership;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.Timer;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -46,9 +14,29 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.gemstone.gemfire.distributed.internal.membership;
+
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
 @Category(UnitTest.class)
 public class NetViewJUnitTest {
-  List<InternalDistributedMember> members;
+
+  private List<InternalDistributedMember> members;
   
   @Before
   public void initMembers() throws Exception {
@@ -205,7 +193,6 @@ public class NetViewJUnitTest {
   
   /**
    * Test that failed weight calculations are correctly performed.  See bug #47342
-   * @throws Exception
    */
   @Test
   public void testFailedWeight() throws Exception {

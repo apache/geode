@@ -288,7 +288,7 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
             
             //test containsValue
             boolean flag = region.containsValue(new String("first"));
-            //assertEquals(true, flag);
+            //assertIndexDetailsEquals(true, flag);
             
             //test remove
             region.put(""+i[2], "second");

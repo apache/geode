@@ -146,7 +146,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
         }
 ////      Check for initial results time.
 //        if (initialResultsTime != CqQueryDUnitTest.noTest && cqVsdStats.getCqInitialResultsTime() <= 0) {
-//          assertEquals("Initial results time mismatch", initialResultsTime, cqVsdStats.getCqInitialResultsTime());
+//          assertIndexDetailsEquals("Initial results time mismatch", initialResultsTime, cqVsdStats.getCqInitialResultsTime());
 //        }
       }
     });

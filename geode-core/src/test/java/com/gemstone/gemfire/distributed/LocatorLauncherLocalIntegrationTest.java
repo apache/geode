@@ -289,7 +289,7 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
       final int pid = readPid(this.pidFile);
       assertTrue(pid > 0);
       assertTrue(ProcessUtils.isProcessAlive(pid));
-      assertEquals(getPid(), pid);
+      assertIndexDetailsEquals(getPid(), pid);
       
       // validate log file was created
       final String logFileName = getUniqueName()+".log";
@@ -303,7 +303,7 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
     }
 
     try {
-      assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
+      assertIndexDetailsEquals(Status.STOPPED, this.launcher.stop().getStatus());
       waitForFileToDelete(this.pidFile);
     } catch (Throwable e) {
       logger.error(e);
@@ -433,7 +433,7 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
       expected = e;
       assertNotNull(expected.getMessage());
       assertTrue(expected.getMessage(), expected.getMessage().contains("A PID file already exists and a Locator may be running in"));
-      assertEquals(RuntimeException.class, expected.getClass());
+      assertIndexDetailsEquals(RuntimeException.class, expected.getClass());
     } catch (Throwable e) {
       logger.error(e);
       if (failure == null) {

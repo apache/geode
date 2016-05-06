@@ -16,6 +16,18 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.auth;
 
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
+import java.security.Principal;
+import java.util.Properties;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
@@ -24,45 +36,34 @@ import com.gemstone.gemfire.security.AuthInitialize;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import java.security.Principal;
-import java.util.Properties;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.junit.Assert.*;
-
-@Category(UnitTest.class)
+@Category({ UnitTest.class, SecurityTest.class })
 public class GMSAuthenticatorJUnitTest {
 
-  static String prefix = "com.gemstone.gemfire.distributed.internal.membership.gms.auth.GMSAuthenticatorJUnitTest$";
+  private String prefix;
+  private Properties props;
+  private Services services;
+  private GMSAuthenticator authenticator;
+  private DistributedMember member;
 
-  Properties originalSystemProps = null;
-  Properties props = null;
-  Services services = null;
-  GMSAuthenticator authenticator = null;
-  DistributedMember member = null;
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Before
   public void setUp() throws Exception {
-    originalSystemProps = System.getProperties();
+    prefix = getClass().getName() + "$";
     props = new Properties();
     authenticator = new GMSAuthenticator();
+
     services = mock(Services.class);
     InternalLogWriter securityLog = mock(InternalLogWriter.class);
-    when(services.getSecurityLogWriter()).thenReturn(securityLog);
-    authenticator.init(services);
-    member = mock(DistributedMember.class);
-  }
+    when(services.getSecurityLogWriter()).thenReturn(mock(InternalLogWriter.class));
 
-  @After
-  public void tearDown() throws Exception {
-    System.setProperties(originalSystemProps);
+    authenticator.init(services);
+
+    member = mock(DistributedMember.class);
   }
 
   @Test
@@ -126,12 +127,12 @@ public class GMSAuthenticatorJUnitTest {
     verifyNegativeGetCredential(props, "expected get credential error");
   }
 
-  void verifyNegativeGetCredential(Properties props, String expectedError) throws Exception {
+  private void verifyNegativeGetCredential(Properties props, String expectedError) throws Exception {
     try {
       authenticator.getCredentials(member, props);
       fail("should catch: " + expectedError);
-    } catch (GemFireSecurityException e) {
-      assertTrue(e.getMessage().startsWith(expectedError));
+    } catch (GemFireSecurityException expected) {
+      assertTrue(expected.getMessage().startsWith(expectedError));
     }
   }
 
@@ -149,8 +150,8 @@ public class GMSAuthenticatorJUnitTest {
 
   @Test
   public void testAuthenticatorWithNoAuth() throws Exception {
-      String result = authenticator.authenticate(member, props, props, member);
-      assertNull(result);
+    String result = authenticator.authenticate(member, props, props, member);
+    assertNull(result);
   }
 
   @Test
@@ -195,27 +196,29 @@ public class GMSAuthenticatorJUnitTest {
     assertTrue(result, result.startsWith(expectedError));
   }
 
-  // ----------------------------------------
-  //           Test AuthInitialize
-  // ----------------------------------------
-
-  public static class TestAuthInit1 implements AuthInitialize {
+  private static class TestAuthInit1 implements AuthInitialize {
     public static AuthInitialize create() {
       return null;
     }
+    @Override
     public void init(LogWriter systemLogger, LogWriter securityLogger) throws AuthenticationFailedException {
     }
-    public Properties getCredentials(Properties props, DistributedMember server, boolean isPeer)
-        throws AuthenticationFailedException {
+    @Override
+    public Properties getCredentials(Properties props, DistributedMember server, boolean isPeer) throws AuthenticationFailedException {
       throw new AuthenticationFailedException("expected get credential error");
     }
+    @Override
     public void close() {
     }
   }
 
-  public static class TestAuthInit2 extends TestAuthInit1 {
-    static TestAuthInit2 instance = null;
-    static int createCount = 0;
+  private static class TestAuthInit2 extends TestAuthInit1 {
+
+    private static TestAuthInit2 instance = null;
+    private static int createCount = 0;
+
+    boolean closed = false;
+
     public static void setAuthInitialize(TestAuthInit2 auth) {
       instance = auth;
     }
@@ -223,11 +226,11 @@ public class GMSAuthenticatorJUnitTest {
       createCount ++;
       return instance;
     }
-    public Properties getCredentials(Properties props, DistributedMember server, boolean isPeer)
-        throws AuthenticationFailedException {
+    @Override
+    public Properties getCredentials(Properties props, DistributedMember server, boolean isPeer) throws AuthenticationFailedException {
       return props;
     }
-    boolean closed = false;
+    @Override
     public void close() {
       closed = true;
     }
@@ -239,59 +242,66 @@ public class GMSAuthenticatorJUnitTest {
     }
   }
 
-  public static class TestAuthInit3 extends TestAuthInit1 {
+  // used by reflection by test
+  private static class TestAuthInit3 extends TestAuthInit1 {
     public static AuthInitialize create() {
       return new TestAuthInit3();
     }
+    @Override
     public void init(LogWriter systemLogger, LogWriter securityLogger) throws AuthenticationFailedException {
       throw new AuthenticationFailedException("expected init error");
     }
   }
 
-  public static class TestAuthInit4 extends TestAuthInit1 {
+  private static class TestAuthInit4 extends TestAuthInit1 {
     public static AuthInitialize create() {
       return new TestAuthInit4();
     }
   }
 
-  // ----------------------------------------
-  //          Test Authenticator
-  // ----------------------------------------
-
-  public static class TestAuthenticator1 implements Authenticator {
+  private static class TestAuthenticator1 implements Authenticator {
     public static Authenticator create() {
       return null;
     }
+    @Override
     public void init(Properties securityProps, LogWriter systemLogger, LogWriter securityLogger) throws AuthenticationFailedException {
     }
+    @Override
     public Principal authenticate(Properties props, DistributedMember member) throws AuthenticationFailedException {
       return null;
     }
+    @Override
     public void close() {
     }
   }
 
-  public static class TestAuthenticator2 extends TestAuthenticator1 {
+  private static class TestAuthenticator2 extends TestAuthenticator1 {
     public static Authenticator create() {
       return new TestAuthenticator2();
     }
+    @Override
     public void init(Properties securityProps, LogWriter systemLogger, LogWriter securityLogger) throws AuthenticationFailedException {
       throw new AuthenticationFailedException("expected init error");
     }
   }
 
-  public static class TestAuthenticator3 extends TestAuthenticator1 {
+  private static class TestAuthenticator3 extends TestAuthenticator1 {
     public static Authenticator create() {
       return new TestAuthenticator3();
     }
+    @Override
     public Principal authenticate(Properties props, DistributedMember member) throws AuthenticationFailedException {
       throw new AuthenticationFailedException("expected authenticate error");
     }
   }
 
-  public static class TestAuthenticator4 extends TestAuthenticator1 {
-    static Authenticator instance = null;
-    static int createCount = 0;
+  private static class TestAuthenticator4 extends TestAuthenticator1 {
+
+    private static Authenticator instance = null;
+    private static int createCount = 0;
+
+    private boolean closed = false;
+
     public static void setAuthenticator(Authenticator auth) {
       instance = auth;
     }
@@ -299,10 +309,11 @@ public class GMSAuthenticatorJUnitTest {
       createCount ++;
       return instance;
     }
+    @Override
     public Principal authenticate(Properties props, DistributedMember member) throws AuthenticationFailedException {
       return null;
     }
-    boolean closed = false;
+    @Override
     public void close() {
       closed = true;
     }

@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
+import static org.junit.Assert.*;
+
 import java.io.DataInput;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializer;
@@ -33,21 +36,15 @@ import com.gemstone.gemfire.internal.ByteArrayData;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
 /**
  * Tests {@link StartupMessageData}.
  * 
  * @since 7.0
  */
 @Category(UnitTest.class)
-public class StartupMessageDataJUnitTest extends TestCase {
+public class StartupMessageDataJUnitTest {
 
-  public StartupMessageDataJUnitTest(String name) {
-    super(name);
-  }
-  
-
+  @Test
   public void testWriteHostedLocatorsWithEmpty() throws Exception {
     Collection<String> hostedLocators = new ArrayList<String>();
     StartupMessageData data = new StartupMessageData();
@@ -55,6 +52,7 @@ public class StartupMessageDataJUnitTest extends TestCase {
     assertTrue(data.getOptionalFields().isEmpty());
   }
 
+  @Test
   public void testWriteHostedLocatorsWithNull() throws Exception {
     Collection<String> hostedLocators = null;
     StartupMessageData data = new StartupMessageData();
@@ -62,6 +60,7 @@ public class StartupMessageDataJUnitTest extends TestCase {
     assertTrue(data.getOptionalFields().isEmpty());
   }
 
+  @Test
   public void testWriteHostedLocatorsWithOne() throws Exception {
     String locatorString = createOneLocatorString();
     
@@ -74,6 +73,7 @@ public class StartupMessageDataJUnitTest extends TestCase {
     assertEquals(locatorString, data.getOptionalFields().get(StartupMessageData.HOSTED_LOCATORS));
   }
 
+  @Test
   public void testWriteHostedLocatorsWithThree() throws Exception {
     String[] locatorStrings = createManyLocatorStrings(3);
     List<String> hostedLocators = new ArrayList<String>();
@@ -94,7 +94,8 @@ public class StartupMessageDataJUnitTest extends TestCase {
       assertEquals(locatorStrings[i], st.nextToken());
     }
   }
-  
+
+  @Test
   public void testReadHostedLocatorsWithThree() throws Exception {
     // set up the data
     String[] locatorStrings = createManyLocatorStrings(3);
@@ -116,7 +117,8 @@ public class StartupMessageDataJUnitTest extends TestCase {
       i++;
     }
   }
-  
+
+  @Test
   public void testToDataWithEmptyHostedLocators() throws Exception {
     Collection<String> hostedLocators = new ArrayList<String>();
     StartupMessageData data = new StartupMessageData();
@@ -134,6 +136,7 @@ public class StartupMessageDataJUnitTest extends TestCase {
     assertNull(props);
   }
 
+  @Test
   public void testToDataWithNullHostedLocators() throws Exception {
     Collection<String> hostedLocators = null;
     StartupMessageData data = new StartupMessageData();
@@ -150,7 +153,8 @@ public class StartupMessageDataJUnitTest extends TestCase {
     Properties props = (Properties) DataSerializer.readObject(in);
     assertNull(props);
   }
-  
+
+  @Test
   public void testToDataWithOneHostedLocator() throws Exception {
     String locatorString = createOneLocatorString();
     
@@ -176,6 +180,7 @@ public class StartupMessageDataJUnitTest extends TestCase {
     assertEquals(locatorString, hostedLocatorsString);
   }
 
+  @Test
   public void testToDataWithThreeHostedLocators() throws Exception {
     String[] locatorStrings = createManyLocatorStrings(3);
     List<String> hostedLocators = new ArrayList<String>();
@@ -215,6 +220,7 @@ public class StartupMessageDataJUnitTest extends TestCase {
     }
   }
 
+  @Test
   public void testNullHostedLocator() throws Exception {
     String locatorString = null;
     DataInput in = getDataInputWithOneHostedLocator(locatorString);
@@ -223,7 +229,8 @@ public class StartupMessageDataJUnitTest extends TestCase {
     Collection<String> readHostedLocators = dataToRead.readHostedLocators();
     assertNull(readHostedLocators);
   }
-  
+
+  @Test
   public void testEmptyHostedLocator() throws Exception {
     String locatorString = "";
     DataInput in = getDataInputWithOneHostedLocator(locatorString);
@@ -232,7 +239,8 @@ public class StartupMessageDataJUnitTest extends TestCase {
     Collection<String> readHostedLocators = dataToRead.readHostedLocators();
     assertNull(readHostedLocators);
   }
-  
+
+  @Test
   public void testOneHostedLocator() throws Exception {
     String locatorString = createOneLocatorString();
     DataInput in = getDataInputWithOneHostedLocator(locatorString);

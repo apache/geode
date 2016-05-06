@@ -1050,18 +1050,18 @@ public class IndexMaintenanceJUnitTest
 //    --ID;
 //    Index i1 = qs.createIndex("Index1", IndexType.FUNCTIONAL, "objs.maap[*]",
 //        "/testRgn objs");
-//    assertEquals(i1.getCanonicalizedIndexedExpression(), "index_iter1.maap[*]");
+//    assertIndexDetailsEquals(i1.getCanonicalizedIndexedExpression(), "index_iter1.maap[*]");
 //    assertTrue(i1 instanceof CompactMapRangeIndex);
 //    CompactMapRangeIndex mri = (CompactMapRangeIndex)i1;
 //    // Test index maintenance
 //    // addition of new Portfolio object
 //    Map<Object, CompactRangeIndex> indxMap = mri.getRangeIndexHolderForTesting();
-//    assertEquals(indxMap.size(), ID);
+//    assertIndexDetailsEquals(indxMap.size(), ID);
 //    for (int j = 1; j <= ID; ++j) {
 //      assertTrue(indxMap.containsKey("key" + j));
 //      CompactRangeIndex rng = indxMap.get("key" + j);
 //      Iterator itr = rng.valueToEntriesMap.values().iterator();
-//      assertEquals(rng.valueToEntriesMap.size(), 1);
+//      assertIndexDetailsEquals(rng.valueToEntriesMap.size(), 1);
 //      assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
 //      Set<Integer> expectedElements = new HashSet<Integer>();
 //      for (int k = j; k <= ID; ++k) {
@@ -1075,7 +1075,7 @@ public class IndexMaintenanceJUnitTest
 //      else if (mapValue instanceof ConcurrentHashSet) {            
 //       size = ((ConcurrentHashSet)mapValue).size();
 //      }
-//      assertEquals(expectedElements.size(), size);
+//      assertIndexDetailsEquals(expectedElements.size(), size);
 //        for (Integer elem : expectedElements) {
 //          RegionEntry re = testRgn.basicGetEntry(elem);
 //          if (mapValue instanceof RegionEntry) {
@@ -1093,18 +1093,18 @@ public class IndexMaintenanceJUnitTest
 //    im.rerunIndexCreationQuery();
 //    ID =5;
 //    i1 =im.getIndex("Index1");
-//    assertEquals(i1.getCanonicalizedIndexedExpression(), "index_iter1.maap[*]");
+//    assertIndexDetailsEquals(i1.getCanonicalizedIndexedExpression(), "index_iter1.maap[*]");
 //    assertTrue(i1 instanceof CompactMapRangeIndex);
 //    mri = (CompactMapRangeIndex)i1;
 //    // Test index maintenance
 //    // addition of new Portfolio object
 //    indxMap = mri.getRangeIndexHolderForTesting();
-//    assertEquals(indxMap.size(), ID);
+//    assertIndexDetailsEquals(indxMap.size(), ID);
 //    for (int j = 1; j <= ID; ++j) {
 //      assertTrue(indxMap.containsKey("key" + j));
 //      CompactRangeIndex rng = indxMap.get("key" + j);
 //      Iterator itr = rng.valueToEntriesMap.values().iterator();
-//      assertEquals(rng.valueToEntriesMap.size(), 1);
+//      assertIndexDetailsEquals(rng.valueToEntriesMap.size(), 1);
 //      assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
 //      Set<Integer> expectedElements = new HashSet<Integer>();
 //      for (int k = j; k <= ID; ++k) {
@@ -1118,7 +1118,7 @@ public class IndexMaintenanceJUnitTest
 //      else if (mapValue instanceof ConcurrentHashSet) {            
 //       size = ((ConcurrentHashSet)mapValue).size();
 //      }
-//      assertEquals(expectedElements.size(), size);
+//      assertIndexDetailsEquals(expectedElements.size(), size);
 //        for (Integer elem : expectedElements) {
 //          RegionEntry re = testRgn.basicGetEntry(elem);
 //          if (mapValue instanceof RegionEntry) {

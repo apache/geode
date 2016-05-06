@@ -1095,7 +1095,7 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
       }
     };
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);
-    // assertEquals(0, hrq.getAvalaibleIds().size());
+    // assertIndexDetailsEquals(0, hrq.getAvalaibleIds().size());
   }
 
   public void testForDuplicateEvents()

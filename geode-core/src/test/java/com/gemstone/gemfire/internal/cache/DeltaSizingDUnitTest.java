@@ -155,7 +155,7 @@ public class DeltaSizingDUnitTest extends CacheTestCase {
 //              throws CacheWriterException {
 //            assertTrue(event.getOldValue() instanceof MyClass);
 //            assertTrue(event.getNewValue() instanceof MyClass);
-//            assertEquals(event.getOldValue(), event.getNewValue());
+//            assertIndexDetailsEquals(event.getOldValue(), event.getNewValue());
 //          }
 //          
 //        });

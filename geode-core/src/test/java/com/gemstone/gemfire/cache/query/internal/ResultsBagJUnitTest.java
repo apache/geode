@@ -16,30 +16,30 @@
  */
 package com.gemstone.gemfire.cache.query.internal;
 
-import java.util.*;
-import java.io.*;
+import static org.junit.Assert.*;
 
+import java.io.DataInputStream;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import junit.framework.*;
-
+import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Test ResultsBag, including null elements
  */
 @Category(UnitTest.class)
-public class ResultsBagJUnitTest extends TestCase {
+public class ResultsBagJUnitTest {
 
-  public ResultsBagJUnitTest(String testName) {
-    super(testName);
-  }
-  
+  @Test
   public void testDuplicates() {
     ResultsBag bag = new ResultsBag();
     bag.add("one");
@@ -56,9 +56,9 @@ public class ResultsBagJUnitTest extends TestCase {
     assertEquals(0, bag.occurrences("one"));
     assertTrue(!bag.remove("one"));
     assertEquals(0, bag.occurrences("one"));
-    
   }
-  
+
+  @Test
   public void testIteration() {
     ResultsBag bag = new ResultsBag();
     bag.add(new Integer(1));
@@ -84,9 +84,9 @@ public class ResultsBagJUnitTest extends TestCase {
     assertEquals(1, numOnes);
     assertEquals(2, numTwos);
   }
-  
-  public void testSerializingSetViewWithNulls()
-  throws ClassNotFoundException, IOException {
+
+  @Test
+  public void testSerializingSetViewWithNulls() throws Exception {
     ResultsBag bag = new ResultsBag();
     bag.add(new Integer(4));
     bag.add(new Integer(2));
@@ -117,7 +117,8 @@ public class ResultsBagJUnitTest extends TestCase {
     assertTrue(setCopy.contains(new Integer(4)));
     assertTrue(setCopy.contains(null));
   }
-    
+
+  @Test
   public void testNulls() {
     ResultsBag bag = new ResultsBag();
     assertTrue(bag.isEmpty());
@@ -172,7 +173,8 @@ public class ResultsBagJUnitTest extends TestCase {
     assertTrue(!bag.remove(null));
     assertEquals(0, bag.occurrences(null));
   }
-  
+
+  @Test
   public void testIterationNullRemoval() {
     ResultsBag bag = new ResultsBag();
     bag.add(null);
@@ -192,7 +194,8 @@ public class ResultsBagJUnitTest extends TestCase {
     assertEquals(3, bag.size());
     assertEquals(0, bag.occurrences(null));
   }
-  
+
+  @Test
   public void testIterationRemoval() {
     ResultsBag bag = new ResultsBag();
     
@@ -205,8 +208,6 @@ public class ResultsBagJUnitTest extends TestCase {
     
     assertEquals(6, bag.size());
     
-//    Integer one = new Integer(1);
-//    Integer two = new Integer(2);
     Iterator itr = bag.iterator();
     for (int i = 0 ; i < 3; i++) {
       itr.next();
@@ -221,7 +222,8 @@ public class ResultsBagJUnitTest extends TestCase {
     assertTrue(bag.isEmpty());
     assertEquals(0, bag.size());
   }
-  
+
+  @Test
   public void testNoSuchElementException() {
     ResultsBag bag = new ResultsBag();
     
@@ -242,7 +244,7 @@ public class ResultsBagJUnitTest extends TestCase {
       itr.next();
       fail("should have thrown a NoSuchElementException");
     }
-    catch (NoSuchElementException e) {
+    catch (NoSuchElementException expected) {
       // pass
     }
     
@@ -257,7 +259,7 @@ public class ResultsBagJUnitTest extends TestCase {
       itr.next();
       fail("should have thrown a NoSuchElementException");
     }
-    catch (NoSuchElementException e) {
+    catch (NoSuchElementException expected) {
       // pass
     }
     
@@ -284,7 +286,7 @@ public class ResultsBagJUnitTest extends TestCase {
       itr.next();
       fail("should have thrown a NoSuchElementException");
     }
-    catch (NoSuchElementException e) {
+    catch (NoSuchElementException expected) {
       // pass
     }
     
@@ -299,7 +301,7 @@ public class ResultsBagJUnitTest extends TestCase {
       itr.next();
       fail("should have thrown a NoSuchElementException");
     }
-    catch (NoSuchElementException e) {
+    catch (NoSuchElementException expected) {
       // pass
     }
   }

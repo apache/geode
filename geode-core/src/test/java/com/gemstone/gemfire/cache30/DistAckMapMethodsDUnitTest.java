@@ -583,7 +583,7 @@ public class DistAckMapMethodsDUnitTest extends DistributedTestCase{
             
             //test args for containsKey method
             boolean val2 = region.containsValue(new String("second"));
-            //assertEquals(true, val2);
+            //assertIndexDetailsEquals(true, val2);
             
             //test args for remove method
             try{

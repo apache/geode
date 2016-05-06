@@ -16,23 +16,21 @@
  */
 package com.gemstone.gemfire.distributed.internal.deadlock;
 
+import static org.junit.Assert.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
-/**
- *
- */
 @Category(UnitTest.class)
-public class DependencyGraphJUnitTest extends TestCase {
-  
+public class DependencyGraphJUnitTest {
+
+  @Test
   public void testFindCycle() {
-    
     DependencyGraph graph = new DependencyGraph();
     graph.addEdge(new Dependency("A", "B"));
     graph.addEdge(new Dependency("A", "F"));
@@ -47,9 +45,9 @@ public class DependencyGraphJUnitTest extends TestCase {
     expected.add(new Dependency("E", "A"));
     assertEquals(expected, new HashSet(graph.findCycle()));
   }
-  
+
+  @Test
   public void testSubGraph() {
-    
     DependencyGraph graph = new DependencyGraph();
     graph.addEdge(new Dependency("A", "B"));
     graph.addEdge(new Dependency("B", "C"));
@@ -68,7 +66,8 @@ public class DependencyGraphJUnitTest extends TestCase {
     DependencyGraph sub2 = graph.getSubGraph("E");
     assertEquals(null, sub2.findCycle());
   }
-  
+
+  @Test
   public void testTwoPaths() {
     DependencyGraph graph = new DependencyGraph();
     graph.addEdge(new Dependency("A", "B"));
@@ -78,7 +77,8 @@ public class DependencyGraphJUnitTest extends TestCase {
     
     assertEquals(null, graph.findCycle());
   }
-  
+
+  @Test
   public void testEmptySet() {
     DependencyGraph graph = new DependencyGraph();
     assertEquals(null, graph.findCycle());

@@ -194,7 +194,7 @@ public class RegionMembershipListenerDUnitTest extends CacheTestCase {
     // test new methods added for #43098
     if (expectedId != null) {
       Cache cache = (Cache)this.r.getRegionService();
-      //assertEquals(l, new ArrayList(cache.getMembers()));
+      //assertIndexDetailsEquals(l, new ArrayList(cache.getMembers()));
       assertEquals(l, new ArrayList(cache.getMembers(this.r)));
       assertEquals(l, new ArrayList(cache.getMembers(this.sr)));
     }
@@ -219,7 +219,7 @@ public class RegionMembershipListenerDUnitTest extends CacheTestCase {
       assertEquals(this.r, e.getRegion());
       // the test now uses a hook to get the member's DistributionAdvisor profile in the callback argument
       assertTrue(e.getCallbackArgument() instanceof Profile);
-//      assertEquals(null, e.getCallbackArgument());
+//      assertIndexDetailsEquals(null, e.getCallbackArgument());
     }
     assertTrue(this.mySRListener.lastOpWasCreate());
     {
@@ -231,7 +231,7 @@ public class RegionMembershipListenerDUnitTest extends CacheTestCase {
       assertEquals(this.sr, e.getRegion());
       // the test now uses a hook to get the member's DistributionAdvisor profile in the callback argument
       assertTrue(e.getCallbackArgument() instanceof Profile);
-//      assertEquals(null, e.getCallbackArgument());
+//      assertIndexDetailsEquals(null, e.getCallbackArgument());
     }
   }
   /**

@@ -16,33 +16,28 @@
  */
 package com.gemstone.gemfire.cache;
 
-import java.io.*;
+import static org.junit.Assert.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import junit.framework.TestCase;
-
-/** Tests classes of Bug36619 to make sure they are Serializable */
+/**
+ * Tests MembershipAttributes and SubscriptionAttributes to  make sure they are Serializable
+ */
 @Category(UnitTest.class)
-public class Bug36619JUnitTest extends TestCase {
+public class MembershipAttributesAreSerializableTest {
   
-  public Bug36619JUnitTest(String name) {
-    super(name);
-  }
-
-  protected void setUp() throws Exception {
-    super.setUp();
-  }
-
-  protected void tearDown() throws Exception {
-    super.tearDown();
-  }
-
   /**
    * Assert that MembershipAttributes are serializable.
    */
+  @Test
   public void testMembershipAttributesAreSerializable() throws Exception {
     String[] roles = {"a", "b", "c"};
     MembershipAttributes outMA = new MembershipAttributes(roles);
@@ -57,9 +52,11 @@ public class Bug36619JUnitTest extends TestCase {
     MembershipAttributes inMA = (MembershipAttributes) ois.readObject();
     assertEquals(outMA, inMA);
   }
+
   /**
    * Assert that SubscriptionAttributes are serializable.
    */
+  @Test
   public void testSubscriptionAttributesAreSerializable() throws Exception {
     SubscriptionAttributes outSA = new SubscriptionAttributes();
     ByteArrayOutputStream baos = new ByteArrayOutputStream(1000);

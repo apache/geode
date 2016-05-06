@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache.lucene.internal;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -48,7 +47,7 @@ import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
-import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogenousLuceneSerializer;
+import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.Type1;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
@@ -64,7 +63,7 @@ public class LuceneIndexRecoveryHAJUnitTest {
   private static final String INDEX = "index";
   private static final String REGION = "indexedRegion";
   String[] indexedFields = new String[] { "txt" };
-  HeterogenousLuceneSerializer mapper = new HeterogenousLuceneSerializer(indexedFields);
+  HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(indexedFields);
   Analyzer analyzer = new StandardAnalyzer();
 
   Cache cache;
@@ -72,7 +71,7 @@ public class LuceneIndexRecoveryHAJUnitTest {
   @Before
   public void setup() {
     indexedFields = new String[] { "txt" };
-    mapper = new HeterogenousLuceneSerializer(indexedFields);
+    mapper = new HeterogeneousLuceneSerializer(indexedFields);
     analyzer = new StandardAnalyzer();
     LuceneServiceImpl.registerDataSerializables();
 

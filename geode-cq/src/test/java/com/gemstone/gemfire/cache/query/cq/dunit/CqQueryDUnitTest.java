@@ -1190,7 +1190,7 @@ public class CqQueryDUnitTest extends CacheTestCase {
           // Since ResultSet is not maintained for this release.
           // Instead of resultSize its been validated with total number of events.
           fail("test for event counts instead of results size");
-//        assertEquals("Result Size mismatch", resultSize, listener.getTotalEventCount());
+//        assertIndexDetailsEquals("Result Size mismatch", resultSize, listener.getTotalEventCount());
         }
         
         // Check for create count.
