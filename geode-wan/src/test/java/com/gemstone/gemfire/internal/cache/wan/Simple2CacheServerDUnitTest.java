@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.internal.cache.wan;
 
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.experimental.categories.Category;
 
@@ -33,6 +34,7 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import com.jayway.awaitility.Awaitility;
 
 public class Simple2CacheServerDUnitTest extends WANTestBase {
   private static final int NUM_KEYS = 10;
@@ -75,17 +77,11 @@ public class Simple2CacheServerDUnitTest extends WANTestBase {
     } else {
       vm2.invoke(() -> checkResultAndUnsetClientServerObserver());
     }
-    
-    boolean vm0_proxy = checkProxyIsPrimary(vm0);
-    boolean vm1_proxy = checkProxyIsPrimary(vm1);
-    assertTrue(vm1_proxy || vm0_proxy);
+    Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> { return checkProxyIsPrimary(vm0) || checkProxyIsPrimary(vm1); });
     
     // close the current primary cache server, then re-test
     vm1.invoke(()-> CacheClientNotifierDUnitTest.closeACacheServer(serverPort2));
-    vm0_proxy = checkProxyIsPrimary(vm0);
-    vm1_proxy = checkProxyIsPrimary(vm1);
-    assertTrue(vm1_proxy || vm0_proxy);
-    
+    Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> { return checkProxyIsPrimary(vm0) || checkProxyIsPrimary(vm1); });
     disconnectAllFromDS();
   }
 
@@ -135,19 +131,9 @@ public class Simple2CacheServerDUnitTest extends WANTestBase {
       @Override
       public Object call() throws Exception {
         final CacheClientNotifier ccn = CacheClientNotifier.getInstance();
+        Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> { return (ccn.getClientProxies().size() == 1); }); 
         
-        Wait.waitForCriterion(new WaitCriterion() {
-          public boolean done() {
-            return ccn.getClientProxies().size() == 1; 
-          }
-          public String description() {
-            return null;
-          }
-        }, 20000, 100, false);
-        assertEquals(1, ccn.getClientProxies().size());
-
         Iterator iter_prox = ccn.getClientProxies().iterator();
-        assertEquals(1, ccn.getClientProxies().size());
         CacheClientProxy proxy = (CacheClientProxy)iter_prox.next();
         return proxy.isPrimary();
       }
