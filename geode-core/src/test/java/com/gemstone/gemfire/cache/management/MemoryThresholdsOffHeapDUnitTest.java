@@ -143,14 +143,11 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final VM server1 = host.getVM(0);
     final VM server2 = host.getVM(1);
     
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int port1 = ports[0];
-    final int port2 = ports[1];
     final String regionName = "offHeapEventDelivery";
 
-    startCacheServer(server1, port1, 0f, 0f,
+    startCacheServer(server1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    startCacheServer(server2, port2, 70f, 90f,
+    startCacheServer(server2, 70f, 90f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     registerTestMemoryThresholdListener(server1);
@@ -245,10 +242,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     
     final String regionName = "offHeapDisabledThresholds";
 
-    //set port to 0 in-order for system to pickup a random port.
-    startCacheServer(server1, 0, 0f, 0f,
+    startCacheServer(server1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    startCacheServer(server2, 0, 0f, 0f,
+    startCacheServer(server2, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     registerTestMemoryThresholdListener(server1);
@@ -358,14 +354,11 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final VM server2 = host.getVM(1);
     final VM client = host.getVM(2);
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int port1 = ports[0];
-    final int port2 = ports[1];
     final String regionName = "offHeapDRRemoteClientPutReject";
 
-    startCacheServer(server1, port1, 0f, 0f,
+    final int port1 = startCacheServer(server1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    startCacheServer(server2, port2, 0f, 90f,
+    startCacheServer(server2, 0f, 90f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     startClient(client, server1, port1, regionName);
@@ -437,9 +430,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final String regionName = "offHeapDRRemotePutRejection";
 
     //set port to 0 in-order for system to pickup a random port.
-    startCacheServer(server1, 0, 0f, 0f,
+    startCacheServer(server1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    startCacheServer(server2, 0, 0f, 90f,
+    startCacheServer(server2, 0f, 90f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     registerTestMemoryThresholdListener(server1);
@@ -729,7 +722,6 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     prRemotePutRejection(false, true, false);
   }
 
-  @Category(FlakyTest.class) // GEODE-596: BindException, random ports
   public void testPR_RemotePutRejectionCacheClose() throws Exception {
     prRemotePutRejection(true, false, false);
   }
@@ -746,7 +738,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     prRemotePutRejection(true, false, true);
   }
 
-  @Category(FlakyTest.class) // GEODE-500: random ports, time sensitive, memory sensitive and GC dependent, waitForCriterions
+  @Category(FlakyTest.class) // GEODE-500: time sensitive, memory sensitive and GC dependent, waitForCriterions
   public void testPR_RemotePutRejectionWithTx() throws Exception {
     prRemotePutRejection(false, false, true);
   }
@@ -759,15 +751,14 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     servers[1] = host.getVM(2);
     servers[2] = host.getVM(3);
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
     final String regionName = "offHeapPRRemotePutRejection";
     final int redundancy = 1;
 
-    startCacheServer(servers[0], ports[0], 0f, 90f,
+    startCacheServer(servers[0], 0f, 90f,
         regionName, true/*createPR*/, false/*notifyBySubscription*/, redundancy);
-    startCacheServer(servers[1], ports[1], 0f, 90f,
+    startCacheServer(servers[1], 0f, 90f,
         regionName, true/*createPR*/, false/*notifyBySubscription*/, redundancy);
-    startCacheServer(servers[2], ports[2], 0f, 90f,
+    startCacheServer(servers[2], 0f, 90f,
         regionName, true/*createPR*/, false/*notifyBySubscription*/, redundancy);
     accessor.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -1272,15 +1263,11 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final VM server2 = host.getVM(1);
     final VM server3 = host.getVM(2);
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    final int port1 = ports[0];
-    final int port2 = ports[1];
-    final int port3 = ports[2];
     final String regionName = "testEventOrder";
 
-    startCacheServer(server1, port1, 0f, 0f,
+    startCacheServer(server1, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
-    startCacheServer(server2, port2, 0f, 0f,
+    startCacheServer(server2, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     verifyProfiles(server1, 2);
@@ -1295,7 +1282,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
     verifyProfiles(server1, 1);
 
-    startCacheServer(server3, port3, 0f, 0f,
+    startCacheServer(server3, 0f, 0f,
         regionName, false/*createPR*/, false/*notifyBySubscription*/, 0);
 
     verifyProfiles(server1, 2);
@@ -1391,8 +1378,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final Object bigKey = -1;
     final Object smallKey = -2;
 
-    final int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    startCacheServer(server, port, 0f, 90f,
+    final int port = startCacheServer(server, 0f, 90f,
         regionName, createPR, false, 0);
     startClient(client, server, port, regionName);
     doPuts(client, regionName, false/*catchServerException*/,
@@ -1604,11 +1590,11 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     });
   }
 
-  private void startCacheServer(VM server, final int port,
+  private int startCacheServer(VM server,
       final float evictionThreshold, final float criticalThreshold, final String regionName,
       final boolean createPR, final boolean notifyBySubscription, final int prRedundancy) throws Exception {
 
-    server.invoke(new SerializableCallable() {
+    return (Integer)server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         getSystem(getOffHeapProperties());
         GemFireCacheImpl cache = (GemFireCacheImpl)getCache();
@@ -1636,10 +1622,10 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
           assertTrue(region instanceof DistributedRegion);
         }
         CacheServer cacheServer = getCache().addCacheServer();
-        cacheServer.setPort(port);
+        cacheServer.setPort(0);
         cacheServer.setNotifyBySubscription(notifyBySubscription);
         cacheServer.start();
-        return null;
+        return cacheServer.getPort();
       }
     });
   }
