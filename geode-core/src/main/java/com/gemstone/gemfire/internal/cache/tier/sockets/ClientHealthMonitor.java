@@ -42,6 +42,7 @@ import com.gemstone.gemfire.internal.cache.IncomingGatewayStatus;
 import com.gemstone.gemfire.internal.cache.TXId;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.tier.Acceptor;
+import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
@@ -278,6 +279,16 @@ public class ClientHealthMonitor {
       }
     }
   }
+  
+  private final Set<TXId> scheduledToBeRemovedTx = Boolean.getBoolean("gemfire.trackScheduledToBeRemovedTx")? 
+      new ConcurrentHashSet<TXId>() : null;
+
+  /**
+   * provide a test hook to track client transactions to be removed
+   */
+  public Set<TXId> getScheduledToBeRemovedTx() {
+    return scheduledToBeRemovedTx;
+  }
 
   /**
    * expire the transaction states for the given client.  This uses the
@@ -298,13 +309,16 @@ public class ClientHealthMonitor {
       if (logger.isDebugEnabled()) {
         logger.debug("expiring {} transaction contexts for {} timeout={}", txids.size(), proxyID, timeout/1000);
       }
+
       if (timeout <= 0) {
         txMgr.removeTransactions(txids, true);
       } else {
+        if (scheduledToBeRemovedTx != null) scheduledToBeRemovedTx.addAll(txids);       
         SystemTimerTask task = new SystemTimerTask() {
           @Override
           public void run2() {
             txMgr.removeTransactions(txids, true);
+            if (scheduledToBeRemovedTx != null) scheduledToBeRemovedTx.removeAll(txids);
           }
         };
         ((GemFireCacheImpl)this._cache).getCCPTimer().schedule(task, timeout);
