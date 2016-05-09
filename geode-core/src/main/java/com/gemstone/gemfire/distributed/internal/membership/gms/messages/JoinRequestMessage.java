@@ -30,18 +30,23 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   private InternalDistributedMember memberID;
   private Object credentials;
   private int failureDetectionPort = -1;
+  private Object publicKey;
   
   public JoinRequestMessage(InternalDistributedMember coord,
-      InternalDistributedMember id, Object credentials, int fdPort) {
+                            InternalDistributedMember id, Object credentials, int fdPort) {
     super();
     setRecipient(coord);
     this.memberID = id;
     this.credentials = credentials;
+    this.publicKey = null;
     this.failureDetectionPort = fdPort;
   }
-  
   public JoinRequestMessage() {
     // no-arg constructor for serialization
+  }
+
+  public void setPublicKey(Object key) {
+    this.publicKey = key;
   }
 
   @Override
@@ -61,6 +66,10 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   public Object getCredentials() {
     return credentials;
   }
+
+  public Object getPublicKey() {
+    return publicKey;
+  }
   
   @Override
   public String toString() {
@@ -76,6 +85,7 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(memberID, out);
     DataSerializer.writeObject(credentials, out);
+    DataSerializer.writeObject(publicKey, out);
     DataSerializer.writePrimitiveInt(failureDetectionPort, out);
     // preserve the multicast setting so the receiver can tell
     // if this is a mcast join request
@@ -86,6 +96,7 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     memberID = DataSerializer.readObject(in);
     credentials = DataSerializer.readObject(in);
+    publicKey = DataSerializer.readObject(in);
     failureDetectionPort = DataSerializer.readPrimitiveInt(in);
     setMulticast(in.readBoolean());
   }

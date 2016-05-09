@@ -117,6 +117,8 @@ public class JGroupsMessenger implements Messenger {
     ClassConfigurator.addProtocol(JGROUPS_PROTOCOL_TRANSPORT, Transport.class);
   }
 
+  private GMSEncrypt encrypt;
+
   @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
   public void init(Services s) {
@@ -219,7 +221,15 @@ public class JGroupsMessenger implements Messenger {
     properties = replaceStrings(properties, "FC_MAX_BLOCK", ""+dc.getMcastFlowControl().getRechargeBlockMs());
 
     this.jgStackConfig = properties;
-    
+
+    if ( !dc.getSecurityClientDHAlgo().isEmpty() ) {
+      try {
+        this.encrypt = new GMSEncrypt(services);
+      } catch (Exception e) {
+        throw new GemFireConfigException("problem initializing encryption protocol", e);
+      }
+    }
+
   }
 
   @Override
@@ -344,6 +354,9 @@ public class JGroupsMessenger implements Messenger {
     this.myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
 
     addressesWithIoExceptionsProcessed.clear();
+    if (encrypt != null) {
+      encrypt.installView(v);
+    }
   }
   
 
@@ -555,7 +568,15 @@ public class JGroupsMessenger implements Messenger {
   public Set<InternalDistributedMember> sendUnreliably(DistributionMessage msg) {
     return send(msg, false);
   }
-    
+
+  @Override
+  public Set<InternalDistributedMember> send(DistributionMessage msg, NetView alternateView) {
+    if (this.encrypt != null) {
+      this.encrypt.installView(alternateView);
+    }
+    return send(msg, true);
+  }
+
   @Override
   public Set<InternalDistributedMember> send(DistributionMessage msg) {
     return send(msg, true);
@@ -605,7 +626,7 @@ public class JGroupsMessenger implements Messenger {
     if (useMcast) {
 
       long startSer = theStats.startMsgSerialization();
-      Message jmsg = createJGMessage(msg, local, Version.CURRENT_ORDINAL);
+      Message jmsg = createJGMessage(msg, local, null, Version.CURRENT_ORDINAL);
       theStats.endMsgSerialization(startSer);
 
       Exception problem;
@@ -647,7 +668,7 @@ public class JGroupsMessenger implements Messenger {
     } // useMcast
     else { // ! useMcast
       int len = destinations.length;
-      List<GMSMember> calculatedMembers; // explicit list of members
+      List<InternalDistributedMember> calculatedMembers; // explicit list of members
       int calculatedLen; // == calculatedMembers.len
       if (len == 1 && destinations[0] == DistributionMessage.ALL_RECIPIENTS) { // send to all
         // Grab a copy of the current membership
@@ -655,50 +676,40 @@ public class JGroupsMessenger implements Messenger {
 
         // Construct the list
         calculatedLen = v.size();
-        calculatedMembers = new LinkedList<>();
+        calculatedMembers = new LinkedList<InternalDistributedMember>();
         for (int i = 0; i < calculatedLen; i ++) {
           InternalDistributedMember m = (InternalDistributedMember)v.get(i);
-          calculatedMembers.add((GMSMember)m.getNetMember());
+          calculatedMembers.add(m);
         }
       } // send to all
       else { // send to explicit list
         calculatedLen = len;
         calculatedMembers = new LinkedList<>();
         for (int i = 0; i < calculatedLen; i ++) {
-          calculatedMembers.add((GMSMember)destinations[i].getNetMember());
+          calculatedMembers.add(destinations[i]);
         }
       } // send to explicit list
       Int2ObjectOpenHashMap<Message> messages = new Int2ObjectOpenHashMap<>();
       long startSer = theStats.startMsgSerialization();
+
+      boolean encode = (encrypt != null);
+
       boolean firstMessage = true;
-      for (GMSMember mbr : calculatedMembers) {
-        short version = mbr.getVersionOrdinal();
-        if (!messages.containsKey(version)) {
-          Message jmsg = createJGMessage(msg, local, version);
-          messages.put(version, jmsg);
-          if (firstMessage) {
-            theStats.incSentBytes(jmsg.getLength());
-            firstMessage = false;
-          }
-        }
-      }
-      theStats.endMsgSerialization(startSer);
       Collections.shuffle(calculatedMembers);
       int i=0;
-      for (GMSMember mbr: calculatedMembers) {
+      for (InternalDistributedMember mbr: calculatedMembers) {
+        short version = mbr.getNetMember().getVersionOrdinal();
         JGAddress to = new JGAddress(mbr);
-        short version = mbr.getVersionOrdinal();
-        Message jmsg = messages.get(version);
+        Message jmsg = createJGMessage(msg, local, mbr, version);
         Exception problem = null;
         try {
-          Message tmp = (i < (calculatedLen-1)) ? jmsg.copy(true) : jmsg;
           if (!reliably) {
             jmsg.setFlag(Message.Flag.NO_RELIABILITY);
           }
-          tmp.setDest(to);
-          tmp.setSrc(this.jgAddress);
+          jmsg.setDest(to);
+          jmsg.setSrc(this.jgAddress);
           logger.trace("Unicasting to {}", to);
-          myChannel.send(tmp);
+          myChannel.send(jmsg);
         }
         catch (Exception e) {
           problem = e;
@@ -754,7 +765,7 @@ public class JGroupsMessenger implements Messenger {
    * @param version the version of the recipient
    * @return the new message
    */
-  Message createJGMessage(DistributionMessage gfmsg, JGAddress src, short version) {
+  Message createJGMessage(DistributionMessage gfmsg, JGAddress src, InternalDistributedMember recipient, short version) {
     if(gfmsg instanceof DirectReplyMessage) {
       ((DirectReplyMessage) gfmsg).registerProcessor();
     }
@@ -768,7 +779,31 @@ public class JGroupsMessenger implements Messenger {
         new HeapDataOutputStream(Version.fromOrdinalOrCurrent(version));
       Version.CURRENT.writeOrdinal(out_stream, true);
       DataSerializer.writeObject(this.localAddress.getNetMember(), out_stream);
-      DataSerializer.writeObject(gfmsg, out_stream);
+      boolean encode = encrypt != null && recipient != null;
+      if (encode) {
+        // Coordinator doesn't know our publicKey for a JoinRequest
+        if (gfmsg.getDSFID() == JOIN_REQUEST || gfmsg.getDSFID() == JOIN_RESPONSE) {
+          encode = false;
+        }
+      }
+      if (encode) {
+        logger.info("encoding {}", gfmsg);
+        try {
+          out_stream.writeBoolean(true); // TODO we should have flag bits
+          HeapDataOutputStream out_stream2 =
+            new HeapDataOutputStream(Version.fromOrdinalOrCurrent(version));
+          DataSerializer.writeObject(gfmsg, out_stream2);
+          byte[] payload = out_stream2.toByteArray();
+          payload = encrypt.encryptData(payload, recipient);
+          DataSerializer.writeByteArray(payload, out_stream);
+        } catch (Exception e) {
+          throw new GemFireIOException("unable to send message", e);
+        }
+      } else {
+        logger.info("not encoding {}", gfmsg);
+        out_stream.writeBoolean(false);
+        DataSerializer.writeObject(gfmsg, out_stream);
+      }
       msg.setBuffer(out_stream.toByteArray());
       services.getStatistics().endMsgSerialization(start);
     }
@@ -834,7 +869,8 @@ public class JGroupsMessenger implements Messenger {
     try {
       long start = services.getStatistics().startMsgDeserialization();
       
-      DataInputStream dis = new DataInputStream(new ByteArrayInputStream(buf, 
+
+      DataInputStream dis = new DataInputStream(new ByteArrayInputStream(buf,
           jgmsg.getOffset(), jgmsg.getLength()));
 
       short ordinal = Version.readOrdinal(dis);
@@ -843,8 +879,26 @@ public class JGroupsMessenger implements Messenger {
         dis = new VersionedDataInputStream(dis, Version.fromOrdinalNoThrow(
             ordinal, true));
       }
-      
+
       GMSMember m = DataSerializer.readObject(dis);
+
+      sender = getMemberFromView(m, ordinal);
+
+      boolean encrypted = dis.readBoolean();
+
+      if (encrypted && encrypt != null) {
+        byte[] payload = DataSerializer.readByteArray(dis);
+        try {
+          payload = encrypt.decryptData(payload, sender);
+          dis = new DataInputStream(new ByteArrayInputStream(payload));
+          if (ordinal < Version.CURRENT_ORDINAL) {
+            dis = new VersionedDataInputStream(dis, Version.fromOrdinalNoThrow(
+              ordinal, true));
+          }
+        } catch (Exception e) {
+          throw new GemFireIOException("unable to receive message", e);
+        }
+      }
 
       result = DataSerializer.readObject(dis);
 
@@ -856,8 +910,6 @@ public class JGroupsMessenger implements Messenger {
       // request's sender ID
       if (dm.getDSFID() == JOIN_REQUEST) {
         sender = ((JoinRequestMessage)dm).getMemberID();
-      } else {
-        sender = getMemberFromView(m, ordinal);
       }
       ((DistributionMessage)result).setSender(sender);
       
@@ -879,25 +931,33 @@ public class JGroupsMessenger implements Messenger {
   /** look for certain messages that may need to be altered before being sent */
   void filterOutgoingMessage(DistributionMessage m) {
     switch (m.getDSFID()) {
-    case JOIN_RESPONSE:
-      JoinResponseMessage jrsp = (JoinResponseMessage)m;
-      
-      if (jrsp.getRejectionMessage() == null
-          &&  services.getConfig().getTransport().isMcastEnabled()) {
-        // get the multicast message digest and pass it with the join response
-        Digest digest = (Digest)this.myChannel.getProtocolStack()
-            .getTopProtocol().down(Event.GET_DIGEST_EVT);
-        HeapDataOutputStream hdos = new HeapDataOutputStream(500, Version.CURRENT);
-        try {
-          digest.writeTo(hdos);
-        } catch (Exception e) {
-          logger.fatal("Unable to serialize JGroups messaging digest", e);
+      case JOIN_REQUEST:
+        if (encrypt == null) {
+          break;
         }
-        jrsp.setMessengerData(hdos.toByteArray());
-      }
-      break;
-    default:
-      break;
+        JoinRequestMessage joinMsg = (JoinRequestMessage)m;
+        joinMsg.setPublicKey(encrypt.getPublicKeyBytes());
+        break;
+
+      case JOIN_RESPONSE:
+        JoinResponseMessage jrsp = (JoinResponseMessage)m;
+
+        if (jrsp.getRejectionMessage() == null
+          &&  services.getConfig().getTransport().isMcastEnabled()) {
+          // get the multicast message digest and pass it with the join response
+          Digest digest = (Digest)this.myChannel.getProtocolStack()
+            .getTopProtocol().down(Event.GET_DIGEST_EVT);
+          HeapDataOutputStream hdos = new HeapDataOutputStream(500, Version.CURRENT);
+          try {
+            digest.writeTo(hdos);
+          } catch (Exception e) {
+            logger.fatal("Unable to serialize JGroups messaging digest", e);
+          }
+          jrsp.setMessengerData(hdos.toByteArray());
+        }
+        break;
+      default:
+        break;
     }
   }
   

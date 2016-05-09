@@ -426,13 +426,13 @@ public class JGroupsMessengerJUnitTest {
     InternalDistributedMember sender = createAddress(8888);
     JoinRequestMessage msg = new JoinRequestMessage(messenger.localAddress, sender, null, -1);
     
-    Message jmsg = messenger.createJGMessage(msg, messenger.jgAddress, Version.CURRENT_ORDINAL);
+    Message jmsg = messenger.createJGMessage(msg, messenger.jgAddress, null, Version.CURRENT_ORDINAL);
     interceptor.up(new Event(Event.MSG, jmsg));
     
     verify(mh, times(1)).processMessage(any(JoinRequestMessage.class));
     
     LeaveRequestMessage lmsg = new LeaveRequestMessage(messenger.localAddress, sender, "testing");
-    jmsg = messenger.createJGMessage(lmsg, messenger.jgAddress, Version.CURRENT_ORDINAL);
+    jmsg = messenger.createJGMessage(lmsg, messenger.jgAddress, null, Version.CURRENT_ORDINAL);
     interceptor.up(new Event(Event.MSG, jmsg));
     
     verify(manager).processMessage(any(LeaveRequestMessage.class));
@@ -800,7 +800,7 @@ public class JGroupsMessengerJUnitTest {
       dmsg.setRecipients(recipients);
   
       // a message is ignored during manager shutdown
-      msg = messenger.createJGMessage(dmsg, new JGAddress(other), Version.CURRENT_ORDINAL);
+      msg = messenger.createJGMessage(dmsg, new JGAddress(other), null, Version.CURRENT_ORDINAL);
       when(manager.shutdownInProgress()).thenReturn(Boolean.TRUE);
       receiver.receive(msg);
       verify(manager, never()).processMessage(isA(DistributionMessage.class));
