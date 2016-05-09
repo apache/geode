@@ -38,6 +38,7 @@ import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.jayway.awaitility.core.ConditionTimeoutException;
 
@@ -89,6 +90,7 @@ public class Bug44418JUnitTest { // TODO: rename this test to non-ticket descrip
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-924: expiration, time sensitive, expects action in 1 second
   @Test
   public void testGet() throws Exception {
 
