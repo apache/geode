@@ -27,12 +27,15 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheListener;
 import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.ExpirationAttributes;
+import com.gemstone.gemfire.cache.MembershipAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.extension.ExtensionPoint;
 import com.gemstone.gemfire.test.fake.Fakes;
@@ -113,38 +116,6 @@ public class LuceneIndexForPartitionedRegionTest {
   }
 
   @Test
-  public void createChunkRegionWithPartitionShortcutCreatesRegionThroughFactory() {
-    String name = "indexName";
-    String regionPath = "regionName";
-    Cache cache = Fakes.cache();
-    RegionFactory regionFactory = mock(RegionFactory.class);
-    PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
-    when(cache.createRegionFactory(RegionShortcut.PARTITION)).thenReturn(regionFactory);
-    when(regionFactory.setPartitionAttributes(any())).thenReturn(regionFactory);
-    when(partitionAttributes.getTotalNumBuckets()).thenReturn(113);
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-
-    index.createChunkRegion(RegionShortcut.PARTITION, index.createFileRegionName(), partitionAttributes, index.createChunkRegionName());
-    verify(regionFactory).create(index.createChunkRegionName());
-  }
-
-  @Test
-  public void createFileRegionWithPartitionShortcutCreatesRegionThroughFactory() {
-    String name = "indexName";
-    String regionPath = "regionName";
-    Cache cache = Fakes.cache();
-    RegionFactory regionFactory = mock(RegionFactory.class);
-    PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
-    when(cache.createRegionFactory(RegionShortcut.PARTITION)).thenReturn(regionFactory);
-    when(regionFactory.setPartitionAttributes(any())).thenReturn(regionFactory);
-    when(partitionAttributes.getTotalNumBuckets()).thenReturn(113);
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-
-    index.createFileRegion(RegionShortcut.PARTITION, index.createFileRegionName(), partitionAttributes);
-    verify(regionFactory).create(index.createFileRegionName());
-  }
-
-  @Test
   public void createAEQWithPersistenceCallsCreateOnAEQFactory() {
     String name = "indexName";
     String regionPath = "regionName";
@@ -181,11 +152,9 @@ public class LuceneIndexForPartitionedRegionTest {
     PartitionedRegion region = mock(PartitionedRegion.class);
     RegionAttributes regionAttributes = mock(RegionAttributes.class);
     PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
-    RegionFactory regionFactory = mock(RegionFactory.class);
     DataPolicy dataPolicy = mock(DataPolicy.class);
     ExtensionPoint extensionPoint = mock(ExtensionPoint.class);
     when(cache.getRegion(regionPath)).thenReturn(region);
-    when(cache.createRegionFactory(isA(RegionShortcut.class))).thenReturn(regionFactory);
     when(region.getAttributes()).thenReturn(regionAttributes);
     when(regionAttributes.getPartitionAttributes()).thenReturn(partitionAttributes);
     when(regionAttributes.getDataPolicy()).thenReturn(dataPolicy);
@@ -193,6 +162,20 @@ public class LuceneIndexForPartitionedRegionTest {
     when(partitionAttributes.getTotalNumBuckets()).thenReturn(113);
     when(dataPolicy.withPersistence()).thenReturn(withPersistence);
     when(region.getExtensionPoint()).thenReturn(extensionPoint);
+  }
+
+  private PartitionAttributes initializeAttributes(final Cache cache) {
+    PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
+    RegionAttributes attributes = mock(RegionAttributes.class);
+    when(attributes.getCacheListeners()).thenReturn(new CacheListener[0]);
+    when(attributes.getRegionTimeToLive()).thenReturn(ExpirationAttributes.DEFAULT);
+    when(attributes.getRegionIdleTimeout()).thenReturn(ExpirationAttributes.DEFAULT);
+    when(attributes.getEntryTimeToLive()).thenReturn(ExpirationAttributes.DEFAULT);
+    when(attributes.getEntryIdleTimeout()).thenReturn(ExpirationAttributes.DEFAULT);
+    when(attributes.getMembershipAttributes()).thenReturn(new MembershipAttributes());
+    when(cache.getRegionAttributes(RegionShortcut.PARTITION.toString())).thenReturn(attributes);
+    when(partitionAttributes.getTotalNumBuckets()).thenReturn(113);
+    return partitionAttributes;
   }
 
   @Test
@@ -282,6 +265,35 @@ public class LuceneIndexForPartitionedRegionTest {
     spy.initialize();
 
     verify(spy).createFileRegion(eq(RegionShortcut.PARTITION), eq(index.createFileRegionName()), any());
+  }
+
+  @Test
+  public void createFileRegionWithPartitionShortcutCreatesRegionUsingCreateVMRegion() throws Exception {
+    String name = "indexName";
+    String regionPath = "regionName";
+    GemFireCacheImpl cache = Fakes.cache();
+    PartitionAttributes partitionAttributes = initializeAttributes(cache);
+    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion indexSpy = spy(index);
+    indexSpy.createFileRegion(RegionShortcut.PARTITION, index.createFileRegionName(), partitionAttributes);
+    String fileRegionName = index.createFileRegionName();
+    verify(indexSpy).createRegion(fileRegionName, RegionShortcut.PARTITION, regionPath, partitionAttributes);
+    verify(cache).createVMRegion(eq(fileRegionName), any(), any());
+  }
+
+  @Test
+  public void createChunkRegionWithPartitionShortcutCreatesRegionUsingCreateVMRegion() throws Exception {
+    String name = "indexName";
+    String regionPath = "regionName";
+    GemFireCacheImpl cache = Fakes.cache();
+    PartitionAttributes partitionAttributes = initializeAttributes(cache);
+    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion indexSpy = spy(index);
+    String chunkRegionName = index.createChunkRegionName();
+    String fileRegionName = index.createFileRegionName();
+    indexSpy.createChunkRegion(RegionShortcut.PARTITION, fileRegionName, partitionAttributes, chunkRegionName);
+    verify(indexSpy).createRegion(chunkRegionName, RegionShortcut.PARTITION, fileRegionName, partitionAttributes);
+    verify(cache).createVMRegion(eq(chunkRegionName), any(), any());
   }
 
   @Test

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -19,31 +19,29 @@
 
 package com.gemstone.gemfire.cache.lucene.internal;
 
-import java.util.Map;
-
-import org.apache.lucene.analysis.Analyzer;
-
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 
-/* wrapper of IndexWriter */
-public class LuceneIndexForReplicatedRegion extends LuceneIndexImpl {
+public class LuceneIntegrationTest {
 
-  public LuceneIndexForReplicatedRegion(String indexName, String regionPath, Cache cache) {
-    super(indexName, regionPath, cache);
-    throw new UnsupportedOperationException("Lucene indexes on replicated regions is not yet implemented");
+  protected Cache cache;
+
+  @Rule
+  public TestName name = new TestName();
+
+  @After
+  public void tearDown() {
+    if(this.cache != null) {
+      this.cache.close();
+    }
   }
 
-  public void initialize() {
-    throw new UnsupportedOperationException("Lucene indexes on replicated regions is not yet implemented");
+  protected void createCache() {
+    CacheFactory cf = new CacheFactory();
+    cf.set("mcast-port", "0");
+    this.cache = cf.create();
   }
-
-  public void close() {
-    throw new UnsupportedOperationException("Lucene indexes on replicated regions is not yet implemented");
-  }
-
-  @Override
-  public Map<String, Analyzer> getFieldAnalyzers() {
-    throw new UnsupportedOperationException("Lucene indexes on replicated regions is not yet implemented");
-  }
-
 }

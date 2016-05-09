@@ -19,6 +19,7 @@
 
 package com.gemstone.gemfire.cache.lucene.internal;
 
+import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.PartitionAttributes;
@@ -37,12 +38,8 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 /* wrapper of IndexWriter */
 public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
-  private final Cache cache;
-
   public LuceneIndexForPartitionedRegion(String indexName, String regionPath, Cache cache) {
-    this.indexName = indexName;
-    this.regionPath = regionPath;
-    this.cache = cache;
+    super(indexName, regionPath, cache);
   }
 
   @Override
@@ -138,13 +135,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   Region createFileRegion(final RegionShortcut regionShortCut,
                                 final String fileRegionName,
                                 final PartitionAttributes partitionAttributes) {
-    PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory<String, File>();
-    partitionAttributesFactory.setColocatedWith(regionPath);
-    configureLuceneRegionAttributesFactory(partitionAttributesFactory, partitionAttributes);
-
-    return cache.<String, File> createRegionFactory(regionShortCut)
-        .setPartitionAttributes(partitionAttributesFactory.create())
-        .create(fileRegionName);
+    return createRegion(fileRegionName, regionShortCut, this.regionPath, partitionAttributes);
   }
 
   String createFileRegionName() {
@@ -158,13 +149,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   Region<ChunkKey, byte[]> createChunkRegion(final RegionShortcut regionShortCut,
                            final String fileRegionName,
                            final PartitionAttributes partitionAttributes, final String chunkRegionName) {
-    PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory<String, File>();
-    partitionAttributesFactory.setColocatedWith(fileRegionName);
-    configureLuceneRegionAttributesFactory(partitionAttributesFactory, partitionAttributes);
-
-    return cache.<ChunkKey, byte[]> createRegionFactory(regionShortCut)
-      .setPartitionAttributes(partitionAttributesFactory.create())
-      .create(chunkRegionName);
+    return createRegion(chunkRegionName, regionShortCut, fileRegionName, partitionAttributes);
   }
 
   String createChunkRegionName() {
@@ -175,6 +160,21 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     attributesFactory.setTotalNumBuckets(dataRegionAttributes.getTotalNumBuckets());
     attributesFactory.setRedundantCopies(dataRegionAttributes.getRedundantCopies());
     return attributesFactory;
+  }
+
+  protected <K, V> Region<K, V> createRegion(final String regionName, final RegionShortcut regionShortCut,
+      final String colocatedWithRegionName, final PartitionAttributes partitionAttributes) {
+    PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory<String, File>();
+    partitionAttributesFactory.setColocatedWith(colocatedWithRegionName);
+    configureLuceneRegionAttributesFactory(partitionAttributesFactory, partitionAttributes);
+
+    // Create AttributesFactory based on input RegionShortcut
+    RegionAttributes baseAttributes = this.cache.getRegionAttributes(regionShortCut.toString());
+    AttributesFactory factory = new AttributesFactory(baseAttributes);
+    factory.setPartitionAttributes(partitionAttributesFactory.create());
+    RegionAttributes<K, V> attributes = factory.create();
+
+    return createRegion(regionName, attributes);
   }
 
   public void close() {

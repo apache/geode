@@ -22,6 +22,12 @@ package com.gemstone.gemfire.cache.lucene.internal;
 import java.util.Collections;
 import java.util.Map;
 
+import com.gemstone.gemfire.InternalGemFireError;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -49,6 +55,14 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected String regionPath;
   protected boolean hasInitialized = false;
   protected Map<String, Analyzer> fieldAnalyzers;
+
+  protected final Cache cache;
+  
+  protected LuceneIndexImpl(String indexName, String regionPath, Cache cache) {
+    this.indexName = indexName;
+    this.regionPath = regionPath;
+    this.cache = cache;
+  }
 
   @Override
   public String getName() {
@@ -107,5 +121,20 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     creation.setRegion(dataRegion);
     creation.setFieldAnalyzers(this.getFieldAnalyzers());
     dataRegion.getExtensionPoint().addExtension(creation);
+  }
+
+  protected <K, V> Region<K, V> createRegion(final String regionName, final RegionAttributes<K, V> attributes) {
+    // Create InternalRegionArguments to set isUsedForMetaRegion true to suppress xml generation (among other things)
+    InternalRegionArguments ira = new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
+        .setSnapshotInputStream(null).setImageTarget(null).setIsUsedForMetaRegion(true);
+
+    // Create the region
+    try {
+      return ((GemFireCacheImpl)this.cache).createVMRegion(regionName, attributes, ira);
+    } catch (Exception e) {
+      InternalGemFireError ige = new InternalGemFireError(LocalizedStrings.GemFireCache_UNEXPECTED_EXCEPTION.toLocalizedString());
+      ige.initCause(e);
+      throw ige;
+    }
   }
 }
