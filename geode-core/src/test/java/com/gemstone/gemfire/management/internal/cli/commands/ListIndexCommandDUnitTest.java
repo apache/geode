@@ -589,7 +589,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
     }
   }
 
-  private static class Consumer extends AbstractBean<Long> {
+  public static class Consumer extends AbstractBean<Long> {
 
     private volatile int units;
 
@@ -609,7 +609,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
     }
   }
 
-  private static class Producer extends AbstractBean<Long> {
+  public static class Producer extends AbstractBean<Long> {
 
     private volatile int units;
 
