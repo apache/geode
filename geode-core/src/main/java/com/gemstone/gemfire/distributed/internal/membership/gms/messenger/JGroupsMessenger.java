@@ -355,7 +355,7 @@ public class JGroupsMessenger implements Messenger {
 
     addressesWithIoExceptionsProcessed.clear();
     if (encrypt != null) {
-      encrypt.installView(v);
+//      encrypt.installView(v);
     }
   }
   
@@ -572,7 +572,7 @@ public class JGroupsMessenger implements Messenger {
   @Override
   public Set<InternalDistributedMember> send(DistributionMessage msg, NetView alternateView) {
     if (this.encrypt != null) {
-      this.encrypt.installView(alternateView);
+     // this.encrypt.installView(alternateView);
     }
     return send(msg, true);
   }

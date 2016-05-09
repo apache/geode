@@ -19,9 +19,7 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
 import java.math.BigInteger;
 import java.security.*;
-import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,14 +35,12 @@ import javax.crypto.spec.SecretKeySpec;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
-
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.logging.LogService;
 
-public class GMSEncrypt implements Cloneable{
-  
+public class GMSEncrypt {
   public static long encodingsPerformed;
   public static long decodingsPerformed;
 
@@ -85,16 +81,6 @@ public class GMSEncrypt implements Cloneable{
     this.view.setPublicKey(services.getJoinLeave().getMemberID(), getPublicKeyBytes());
     // TODO remove ciphers for departed members
   }
-  
-  protected void installView(NetView view, InternalDistributedMember mbr) {
-    this.view = view;
-    this.view.setPublicKey(mbr, getPublicKeyBytes());
-    // TODO remove ciphers for departed members
-  }
-
-  protected GMSEncrypt() {
-    
-  }
 
   public GMSEncrypt(Services services) throws  Exception {
     this.services = services;
@@ -112,34 +98,6 @@ public class GMSEncrypt implements Cloneable{
   protected byte[] getPublicKeyBytes() {
     return dhPublicKey.getEncoded();
   }
-
-  @Override
-  protected GMSEncrypt clone() throws CloneNotSupportedException {
-    try {
-      GMSEncrypt gmsEncrypt = new GMSEncrypt();
-      gmsEncrypt.dhSKAlgo = this.dhSKAlgo;
-
-      X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(this.dhPublicKey.getEncoded());
-      KeyFactory keyFact = KeyFactory.getInstance("DH");
-      // PublicKey pubKey = keyFact.generatePublic(x509KeySpec);
-      gmsEncrypt.dhPublicKey = keyFact.generatePublic(x509KeySpec);
-      final String format = this.dhPrivateKey.getFormat();
-      System.out.println("private key format " + format);
-      System.out.println("public ksy format " + this.dhPublicKey.getFormat());
-      PKCS8EncodedKeySpec x509KeySpecPKey = new PKCS8EncodedKeySpec(this.dhPrivateKey.getEncoded());
-      
-      keyFact = KeyFactory.getInstance("DH");
-      // PublicKey pubKey = keyFact.generatePublic(x509KeySpec);
-      gmsEncrypt.dhPrivateKey = keyFact.generatePrivate(x509KeySpecPKey);
-
-      return gmsEncrypt;
-    } catch (Exception e) {
-      throw new RuntimeException("Unable to clone", e);
-    }
-  }
-
-
-
 
   /**
    * Initialize the Diffie-Hellman keys. This method is not thread safe

@@ -66,51 +66,8 @@ public class GMSEncryptJUnitTest {
     netView.setPublicKey(mockMembers[1], gmsEncrypt1.getPublicKeyBytes());
     netView.setPublicKey(mockMembers[2], gmsEncrypt2.getPublicKeyBytes());
 
-    gmsEncrypt1.installView(netView, mockMembers[1]);
-    gmsEncrypt2.installView(netView, mockMembers[2]);
-
-    // sender encrypts a message, so use receiver's public key
-    String ch = "Hello world";
-    byte[] challenge =  ch.getBytes();
-    byte[]  encryptedChallenge =  gmsEncrypt1.encryptData(challenge, mockMembers[2]);
-
-    // receiver decrypts the message using the sender's public key
-    byte[] decryptBytes = gmsEncrypt2.decryptData(encryptedChallenge,  mockMembers[1]);
-
-    // now send a response
-    String response = "Hello yourself!";
-    byte[] responseBytes = response.getBytes();
-    byte[] encryptedResponse = gmsEncrypt2.encryptData(responseBytes, mockMembers[1]);
-
-    // receiver decodes the response
-    byte[] decryptedResponse = gmsEncrypt1.decryptData(encryptedResponse,  mockMembers[2]);
-
-    Assert.assertFalse(Arrays.equals(challenge, encryptedChallenge));
-
-    Assert.assertTrue(Arrays.equals(challenge, decryptBytes));
-
-    Assert.assertFalse(Arrays.equals(responseBytes, encryptedResponse));
-
-    Assert.assertTrue(Arrays.equals(responseBytes, decryptedResponse));
-
-  }
-  
-  @Test
-  public void testPublicKeyPrivateKeyFromSameMember() throws Exception{
-    initMocks();
-
-    GMSEncrypt gmsEncrypt1 = new GMSEncrypt(services); // this will be the sender
-    GMSEncrypt gmsEncrypt2 = new GMSEncrypt(services); // this will be the receiver
-    
-    gmsEncrypt1 = gmsEncrypt1.clone();
-    gmsEncrypt2 = gmsEncrypt2.clone();
-
-    // establish the public keys for the sender and receiver
-    netView.setPublicKey(mockMembers[1], gmsEncrypt1.getPublicKeyBytes());
-    netView.setPublicKey(mockMembers[2], gmsEncrypt2.getPublicKeyBytes());
-
-    gmsEncrypt1.installView(netView, mockMembers[1]);
-    gmsEncrypt2.installView(netView, mockMembers[2]);
+    gmsEncrypt1.installView(netView);
+    gmsEncrypt2.installView(netView);
 
     // sender encrypts a message, so use receiver's public key
     String ch = "Hello world";
