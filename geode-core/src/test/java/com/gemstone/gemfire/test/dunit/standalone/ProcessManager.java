@@ -172,7 +172,6 @@ public class ProcessManager {
       "-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug,
       "-XX:+HeapDumpOnOutOfMemoryError",
       "-Xmx512m",
-      DUnitLauncher.LOG4J==null?"":"-Dlog4j.configurationFile="+DUnitLauncher.LOG4J,
       "-Dgemfire.DEFAULT_MAX_OPLOG_SIZE=10",
       "-Dgemfire.disallowMcastDefaults=true",
       "-ea", "-XX:+PrintGC", "-XX:+PrintGCDetails","-XX:+PrintGCTimeStamps",

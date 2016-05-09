@@ -211,10 +211,6 @@ subprojects {
         if (logLevel != null) {
           systemProperty 'logLevel', logLevel
         }
-        def log4jLocation = System.getProperty('log4j.configurationFile')
-        if (log4jLocation != null) {
-          systemProperty 'log4j.configurationFile', log4jLocation
-        }
 
         def eol = System.getProperty('line.separator')
         def progress = new File(resultsDir, "$test.name-progress.txt")
