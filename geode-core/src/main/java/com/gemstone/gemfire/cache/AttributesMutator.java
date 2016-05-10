@@ -167,6 +167,7 @@ public interface AttributesMutator<K,V> {
 
   /**
    * Sets cloning on region
+   * Note: off-heap regions always behave as if cloning is enabled.
    * @param cloningEnable
    * @since 6.1
    */

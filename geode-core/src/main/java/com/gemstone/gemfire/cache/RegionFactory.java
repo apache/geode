@@ -851,6 +851,7 @@ public class RegionFactory<K,V>
   
   /**
    * Sets cloning on region
+   * Note: off-heap regions always behave as if cloning is enabled.
    * @param cloningEnable
    * @return a reference to this RegionFactory object
    * @since 6.1

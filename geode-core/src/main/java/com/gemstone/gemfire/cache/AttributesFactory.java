@@ -1223,6 +1223,7 @@ public class AttributesFactory<K,V> {
   /**
    * Sets cloning on region.
    * Default is false.
+   * Note: off-heap regions always behave as if cloning is enabled.
    * 
    * @param cloningEnable
    * @since 6.1
