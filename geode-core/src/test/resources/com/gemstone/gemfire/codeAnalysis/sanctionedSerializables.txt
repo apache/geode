@@ -202,7 +202,6 @@ com/gemstone/gemfire/cache/query/internal/parse/GemFireAST,true,7799648022743052
 com/gemstone/gemfire/cache/query/internal/utils/PDXUtils$1,false
 com/gemstone/gemfire/cache/query/internal/utils/PDXUtils$2,false
 com/gemstone/gemfire/cache/snapshot/SnapshotOptions$SnapshotFormat,false
-com/gemstone/gemfire/cache/util/BoundedLinkedHashMap,true,-3419897166186852692,_maximumNumberOfEntries:int
 com/gemstone/gemfire/cache/util/Gateway$OrderPolicy,false
 com/gemstone/gemfire/cache/wan/GatewaySender$OrderPolicy,false
 com/gemstone/gemfire/compression/CompressionException,true,4118639654597191235
