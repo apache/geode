@@ -76,6 +76,8 @@ public class DUnitLauncher {
   /** change this to use a different log level in unit tests */
   public static final String LOG_LEVEL = System.getProperty("logLevel", "info");
   
+  public static final String LOG4J = System.getProperty("log4j.configurationFile");
+  
   static int locatorPort;
 
   private static final int NUM_VMS = 4;

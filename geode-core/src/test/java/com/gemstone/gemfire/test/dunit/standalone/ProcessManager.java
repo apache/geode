@@ -28,6 +28,7 @@ import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -161,23 +162,33 @@ public class ProcessManager {
     }
 
     String jdkSuspend = vmNum == suspendVM ? "y" : "n";
-
-    return new String[] {
-      cmd, "-classpath", classPath,
-      "-D" + DUnitLauncher.RMI_PORT_PARAM + "=" + namingPort,
-      "-D" + DUnitLauncher.VM_NUM_PARAM + "=" + vmNum,
-      "-D" + DUnitLauncher.WORKSPACE_DIR_PARAM + "=" + new File(".").getAbsolutePath(),
-      "-DlogLevel=" + DUnitLauncher.LOG_LEVEL,
-      "-Djava.library.path=" + System.getProperty("java.library.path"),
-      "-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug,
-      "-XX:+HeapDumpOnOutOfMemoryError",
-      "-Xmx512m",
-      "-Dgemfire.DEFAULT_MAX_OPLOG_SIZE=10",
-      "-Dgemfire.disallowMcastDefaults=true",
-      "-ea", "-XX:+PrintGC", "-XX:+PrintGCDetails","-XX:+PrintGCTimeStamps",
-      agent,
-      ChildVM.class.getName()
-    };
+    ArrayList<String> cmds = new ArrayList<String>();
+    cmds.add(cmd);
+    cmds.add("-classpath"); 
+    cmds.add(classPath);
+    cmds.add("-D" + DUnitLauncher.RMI_PORT_PARAM + "=" + namingPort);
+    cmds.add("-D" + DUnitLauncher.VM_NUM_PARAM + "=" + vmNum);
+    cmds.add("-D" + DUnitLauncher.WORKSPACE_DIR_PARAM + "=" + new File(".").getAbsolutePath());
+    cmds.add("-DlogLevel=" + DUnitLauncher.LOG_LEVEL);
+    if (DUnitLauncher.LOG4J!=null) {
+      cmds.add("-Dlog4j.configurationFile="+DUnitLauncher.LOG4J);
+    }
+    cmds.add("-Djava.library.path=" + System.getProperty("java.library.path"));
+    cmds.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug);
+    cmds.add("-XX:+HeapDumpOnOutOfMemoryError");
+    cmds.add("-Xmx512m");
+    cmds.add("-Dgemfire.DEFAULT_MAX_OPLOG_SIZE=10");
+    cmds.add("-Dgemfire.disallowMcastDefaults=true");
+    cmds.add("-ea");
+    cmds.add("-XX:+PrintGC");
+    cmds.add("-XX:+PrintGCDetails");
+    cmds.add("-XX:+PrintGCTimeStamps");
+    cmds.add(agent);
+    cmds.add(ChildVM.class.getName());
+    String[] rst = new String[cmds.size()];
+    cmds.toArray(rst);
+    
+    return rst;
   }
   
   /**
