@@ -66,6 +66,7 @@ public class Bug44418JUnitTest { // TODO: rename this test to non-ticket descrip
   private static final int POLL_INTERVAL_MS = 1;       // How often to check for expiration
   private static final String TEST_KEY = "key";
   
+  @Category(FlakyTest.class) // GEODE-1139: time sensitive, thread sleep, expiration
   @Test
   public void testPut() throws Exception {
 
