@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * A Filesystem like interface that stores file data in gemfire regions.
+ * A Filesystem like interface that stores file data in geode regions.
  * 
  * This filesystem is safe for use with multiple threads if the threads are not
  * modifying the same files. A single file is not safe to modify by multiple
@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentMap;
  * 
  * Changes to a file may not be visible to other members of the system until the
  * FileOutputStream is closed.
+ *
  */
 public class FileSystem {
   // private final Cache cache;
@@ -41,6 +42,14 @@ public class FileSystem {
   
   static final int CHUNK_SIZE = 1024 * 1024; //1 MB
 
+  /**
+   * Create filesystem that will store data in the two provided regions. The fileRegion contains
+   * metadata about the files, and the chunkRegion contains the actual data. If data from either region is missing
+   * or inconsistent, no guarantees are made about what this class will do, so it's best if these regions are colocated
+   * and in the same disk store to ensure the data remains together.
+   * @param fileRegion the region to store metadata about the files
+   * @param chunkRegion the region to store actual file data.
+   */
   public FileSystem(ConcurrentMap<String, File> fileRegion, ConcurrentMap<ChunkKey, byte[]> chunkRegion) {
     super();
     this.fileRegion = fileRegion;
