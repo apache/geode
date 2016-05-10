@@ -129,7 +129,7 @@ public class OffHeapRegionEntryHelper {
     }
   }
   
-  public static int getSerializedLengthFromDataAsAddress(TinyStoredObject dataAsAddress) {
+  public static int getSerializedLength(TinyStoredObject dataAsAddress) {
     final long ohAddress = dataAsAddress.getAddress();
     
      if ((ohAddress & ENCODED_BIT) != 0) {     
@@ -307,7 +307,7 @@ public class OffHeapRegionEntryHelper {
     }
     if (decompress && isCompressed) {
       if (!compressedOk) {
-        throw new UnsupportedOperationException("Did not expect DataAsAddress to be compressed");
+        throw new UnsupportedOperationException("Did not expect encoded address to be compressed");
       }
     }
     return bytes;

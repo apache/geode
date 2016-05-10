@@ -790,7 +790,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
     long address = OffHeapRegionEntryHelper.encodeDataAsAddress(data, isSerialized, isCompressed);
     TinyStoredObject daa = new TinyStoredObject(address);
 
-    int actualLength = OffHeapRegionEntryHelper.getSerializedLengthFromDataAsAddress(daa);
+    int actualLength = OffHeapRegionEntryHelper.getSerializedLength(daa);
 
     assertThat(actualLength).isEqualTo(data.length);
   }
@@ -798,7 +798,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
   @Test
   public void getSerializedLengthFromDataAsAddressShouldReturnZeroForNonEncodedAddress() {
     TinyStoredObject nonEncodedAddress = new TinyStoredObject(100000L);
-    int actualLength = OffHeapRegionEntryHelper.getSerializedLengthFromDataAsAddress(nonEncodedAddress);
+    int actualLength = OffHeapRegionEntryHelper.getSerializedLength(nonEncodedAddress);
     assertThat(actualLength).isZero();
   }
 

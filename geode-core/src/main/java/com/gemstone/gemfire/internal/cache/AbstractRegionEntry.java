@@ -1281,7 +1281,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
             throw new IllegalStateException("Could not use an off heap value because it was freed");
           }
         }
-        // else it is DataAsAddress. This code just returns it as prepared.
+        // else it is has no refCount so just return it as prepared.
       } else {
         byte[] data;
         boolean isSerialized = !(val instanceof byte[]);
