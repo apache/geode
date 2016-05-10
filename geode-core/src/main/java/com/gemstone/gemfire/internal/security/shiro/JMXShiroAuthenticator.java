@@ -18,6 +18,7 @@ package com.gemstone.gemfire.internal.security.shiro;
 
 import static com.gemstone.gemfire.management.internal.security.ResourceConstants.*;
 
+import java.security.Principal;
 import java.util.Collections;
 import java.util.Properties;
 import javax.management.Notification;
@@ -50,9 +51,17 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
       throw new SecurityException(WRONGE_CREDENTIALS_MESSAGE);
     }
 
-    GeodeSecurityUtil.login(username, password);
+    org.apache.shiro.subject.Subject shiroSubject = GeodeSecurityUtil.login(username, password);
+    Principal principal;
 
-    return new Subject(true, Collections.singleton(new JMXPrincipal(username)), Collections.EMPTY_SET,
+    if(shiroSubject==null){
+      principal = new JMXPrincipal(username);
+    }
+    else{
+      principal = new ShiroPrincipal(shiroSubject);
+    }
+
+    return new Subject(true, Collections.singleton(principal), Collections.EMPTY_SET,
       Collections.EMPTY_SET);
   }
 

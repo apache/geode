@@ -17,12 +17,15 @@
 
 package com.gemstone.gemfire.internal.security;
 
+import java.security.AccessController;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.security.shiro.ShiroPrincipal;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.management.internal.security.ResourceOperationContext;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
@@ -41,9 +44,15 @@ public class GeodeSecurityUtil {
 
   private static Logger logger = LogService.getLogger();
 
-  public static void login(String username, String password){
-    if(!isShiroConfigured())
-      return;
+  /**
+   *
+   * @param username
+   * @param password
+   * @return null if security is not enabled, otherwise return a shiro subject
+   */
+  public static Subject login(String username, String password){
+    if(!isSecured())
+      return null;
 
     Subject currentUser = SecurityUtils.getSubject();
 
@@ -56,13 +65,52 @@ public class GeodeSecurityUtil {
       logger.info(e.getMessage(), e);
       throw new AuthenticationFailedException(e.getMessage(), e);
     }
+
+    return currentUser;
+  }
+
+  /**
+   * It first looks the shiro subject in AccessControlContext since JMX will use multiple threads to process operations from the same client.
+   * then it looks into Shiro's thead context.
+   *
+   * @return the shiro subject, null if security is not enabled
+   */
+  public static Subject getSubject(){
+    if(!isSecured())
+      return null;
+
+    Subject currentUser = null;
+
+    // First try get the principal out of AccessControlContext instead of Shiro's Thread context
+    // since threads can be shared between JMX clients.
+    javax.security.auth.Subject jmxSubject =
+      javax.security.auth.Subject.getSubject(AccessController.getContext());
+
+    if(jmxSubject!=null){
+      Set<ShiroPrincipal> principals = jmxSubject.getPrincipals(ShiroPrincipal.class);
+      if(principals.size()>0){
+        ShiroPrincipal principal = principals.iterator().next();
+        currentUser = principal.getSubject();
+        ThreadContext.bind(currentUser);
+        return currentUser;
+      }
+    }
+
+    // in other cases like admin rest call or pulse authorization
+    currentUser = SecurityUtils.getSubject();
+
+    if(currentUser==null || currentUser.getPrincipal()==null){
+      throw new GemFireSecurityException("Error: Anonymous User");
+    }
+
+    return currentUser;
   }
 
   public static void logout(){
-    if(!isShiroConfigured())
+    Subject currentUser = getSubject();
+    if(currentUser==null)
       return;
 
-    Subject currentUser = SecurityUtils.getSubject();
     try {
       logger.info("Logging out "+currentUser.getPrincipal());
       currentUser.logout();
@@ -76,10 +124,10 @@ public class GeodeSecurityUtil {
   }
 
   public static Callable associateWith(Callable callable){
-    if(!isShiroConfigured())
+    Subject currentUser = getSubject();
+    if(currentUser==null)
       return callable;
 
-    Subject currentUser = SecurityUtils.getSubject();
     return currentUser.associateWith(callable);
   }
 
@@ -140,11 +188,10 @@ public class GeodeSecurityUtil {
     if(context.getResource()== Resource.NULL && context.getOperationCode()== OperationCode.NULL)
       return;
 
-    if(!isShiroConfigured())
+    Subject currentUser = getSubject();
+    if(currentUser==null)
       return;
 
-
-    Subject currentUser = SecurityUtils.getSubject();
     try {
       currentUser.checkPermission(context);
     }
@@ -154,7 +201,7 @@ public class GeodeSecurityUtil {
     }
   }
 
-  private static boolean isShiroConfigured(){
+  private static boolean isSecured(){
     try{
       SecurityUtils.getSecurityManager();
     }
