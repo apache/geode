@@ -39,9 +39,9 @@ import org.junit.experimental.categories.Category;
 
 @Category(IntegrationTest.class)
 public class GfshCommandsSecurityTest {
-  private static int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-  private static int jmxPort = ports[0];
-  private static int httpPort = ports[1];
+  protected static int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+  protected static int jmxPort = ports[0];
+  protected static int httpPort = ports[1];
 
   private HeadlessGfsh gfsh = null;
 
@@ -50,11 +50,12 @@ public class GfshCommandsSecurityTest {
       jmxPort, httpPort, "cacheServer.json");
 
   @Rule
-  public GfshShellConnectionRule gfshConnection = null;
+  public GfshShellConnectionRule gfshConnection;
 
   public GfshCommandsSecurityTest(){
     gfshConnection = new GfshShellConnectionRule(jmxPort, httpPort, false);
   }
+
 
   @Before
   public void before(){

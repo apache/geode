@@ -15,25 +15,15 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.security.shiro;
+package com.gemstone.gemfire.management.internal.security;
 
-import java.security.Principal;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-import org.apache.shiro.subject.Subject;
+import org.junit.experimental.categories.Category;
 
-public class ShiroPrincipal implements Principal {
-  private Subject subject;
-
-  public ShiroPrincipal(Subject subject){
-    this.subject = subject;
-  }
-
-  @Override
-  public String getName() {
-    return subject.getPrincipal().toString();
-  }
-
-  public Subject getSubject(){
-    return subject;
+@Category(IntegrationTest.class)
+public class GfshCommandsOverHttpSecurityTest extends GfshCommandsSecurityTest {
+  public GfshCommandsOverHttpSecurityTest(){
+    gfshConnection = new GfshShellConnectionRule(jmxPort, httpPort, true);
   }
 }

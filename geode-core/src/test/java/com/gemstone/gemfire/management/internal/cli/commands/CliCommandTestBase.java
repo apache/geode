@@ -39,7 +39,6 @@ import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 
@@ -57,11 +56,8 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
   private transient HeadlessGfsh shell;
 
-  protected boolean useHttpOnConnect = false;
-  protected boolean enableAuth = false;
-  protected String jsonAuthorization = "cacheServer.json";
-  protected String username = "super-user";
-  protected String password = "1234567";
+  public static final String USE_HTTP_SYSTEM_PROPERTY = "useHTTP";
+  private boolean useHttpOnConnect = Boolean.getBoolean(USE_HTTP_SYSTEM_PROPERTY);
 
   private transient int httpPort;
   private transient int jmxPort;
@@ -107,12 +103,12 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
   @SuppressWarnings("serial")
   protected HeadlessGfsh setUpJmxManagerOnVm0ThenConnect(final Properties props) {
     setUpJMXManagerOnVM(0, props);
-    shellConnect();
+    connect(this.jmxHost, this.jmxPort, this.httpPort, getDefaultShell());
     return shell;
   }
 
   protected void setUpJMXManagerOnVM(int vm, final Properties props) {
-    Object[] result = (Object[]) Host.getHost(0).getVM(vm).invoke("setUpJmxManagerOnVm0ThenConnect", () -> {
+    Object[] result = (Object[]) Host.getHost(0).getVM(vm).invoke("setUpJmxManagerOnVm"+vm, () -> {
       final Object[] results = new Object[3];
       final Properties localProps = (props != null ? props : new Properties());
 
@@ -137,14 +133,6 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
       localProps.setProperty(DistributionConfig.JMX_MANAGER_BIND_ADDRESS_NAME, String.valueOf(jmxHost));
       localProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
       localProps.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
-
-      if (enableAuth) {
-        localProps.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME,
-          JSONAuthorization.class.getName() + ".create");
-        localProps.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
-
-        JSONAuthorization.setUpWithJsonFile(jsonAuthorization);
-      }
 
       getSystem(localProps);
       verifyManagementServiceStarted(getCache());
@@ -214,32 +202,8 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     }
   }
 
-  /**
-   * Connect a shell to the JMX server at the given host and port
-   *
-   *
-   * @param host    Host of the JMX server
-   * @param jmxPort Port of the JMX server
-   * @param shell   Shell to connect
-   */
-  protected void shellConnect(final String host, final int jmxPort, final int httpPort, HeadlessGfsh shell) {
-    assertTrue(host != null);
-    assertTrue(shell != null);
-
-    connect(host, jmxPort, httpPort, shell);
-  }
-
-  protected CommandResult shellConnect(){
-    return connect(this.jmxHost, this.jmxPort, this.httpPort, getDefaultShell());
-  }
-
-  protected CommandResult connect(final String host, final int jmxPort, final int httpPort, HeadlessGfsh shell){
+  protected void connect(final String host, final int jmxPort, final int httpPort, HeadlessGfsh shell){
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.CONNECT);
-
-    if(enableAuth) {
-      command.addOption(CliStrings.CONNECT__USERNAME, username);
-      command.addOption(CliStrings.CONNECT__PASSWORD, password);
-    }
 
     String endpoint;
     if (useHttpOnConnect) {
@@ -261,7 +225,6 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
     info("Successfully connected to managing node using " + (useHttpOnConnect ? "HTTP" : "JMX"));
     assertEquals(true, shell.isConnectedAndReady());
-    return result;
   }
 
   /**

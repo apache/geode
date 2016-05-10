@@ -27,15 +27,15 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * @since  8.1
@@ -66,15 +66,15 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
 
   @Test
   public void testMutualAuthentication() throws Exception {
-    Properties localProps = new Properties();
-    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME, "JKS");
-    localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS_NAME, "SSL");
-    localProps.setProperty(HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME, "true");
-    localProps.setProperty(HTTP_SERVICE_SSL_TRUSTSTORE_NAME, jks.getCanonicalPath());
-    localProps.setProperty(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME, "password");
+    Properties serverProps = new Properties();
+    serverProps.setProperty(HTTP_SERVICE_SSL_ENABLED_NAME, "true");
+    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
+    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
+    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME, "JKS");
+    serverProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS_NAME, "SSL");
+    serverProps.setProperty(HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME, "true");
+    serverProps.setProperty(HTTP_SERVICE_SSL_TRUSTSTORE_NAME, jks.getCanonicalPath());
+    serverProps.setProperty(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME, "password");
 
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__KEY_STORE, jks.getCanonicalPath());
@@ -84,23 +84,23 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
     clientProps.setProperty(CONNECT__TRUST_STORE_PASSWORD, "password");
 
     sslInfoHolder.set(clientProps);
-    setUpJmxManagerOnVm0ThenConnect(localProps);
+    setUpJmxManagerOnVm0ThenConnect(serverProps);
   }
 
   @Test
   public void testSimpleSSL() throws Exception {
-    Properties localProps = new Properties();
-    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME, "JKS");
+    Properties serverProps = new Properties();
+    serverProps.setProperty(HTTP_SERVICE_SSL_ENABLED_NAME, "true");
+    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
+    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
+    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME, "JKS");
 
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
     clientProps.setProperty(CONNECT__TRUST_STORE_PASSWORD, "password");
     
     sslInfoHolder.set(clientProps);
-    setUpJmxManagerOnVm0ThenConnect(localProps);
+    setUpJmxManagerOnVm0ThenConnect(serverProps);
   }
 
   @Test
@@ -250,7 +250,7 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
   }
 
   @Override
-  protected void shellConnect(final String host, final int jmxPort, final int httpPort, final HeadlessGfsh shell) {
+  protected void connect(final String host, final int jmxPort, final int httpPort, final HeadlessGfsh shell) {
     assertNotNull(host);
     assertNotNull(shell);
 

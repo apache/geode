@@ -31,9 +31,6 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -53,6 +50,9 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * DUnit test to test export and import of shared configuration.
@@ -167,7 +167,7 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
     });
 
     HeadlessGfsh gfsh = getDefaultShell();
-    shellConnect(locator1JmxHost, locator1JmxPort, locator1HttpPort, gfsh);
+    connect(locator1JmxHost, locator1JmxPort, locator1HttpPort, gfsh);
 
     // Create a cache in VM 1
     VM dataMember = getHost(0).getVM(1);

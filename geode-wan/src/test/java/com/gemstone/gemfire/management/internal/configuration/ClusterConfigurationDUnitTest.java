@@ -40,10 +40,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -79,6 +75,10 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
 public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
@@ -663,7 +663,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     int jmxPort = (Integer)result[2];
     int httpPort = (Integer)result[3];
     
-    shellConnect(jmxHost, jmxPort, httpPort, gfsh);
+    connect(jmxHost, jmxPort, httpPort, gfsh);
 
     final String dataMemberWorkingDir = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + dataMember;
 

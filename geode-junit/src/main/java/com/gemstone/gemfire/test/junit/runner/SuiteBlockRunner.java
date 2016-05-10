@@ -15,25 +15,32 @@
  * limitations under the License.
  */
 
-package com.gemstone.gemfire.internal.security.shiro;
+package com.gemstone.gemfire.test.junit.runner;
 
-import java.security.Principal;
+import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
 
-import org.apache.shiro.subject.Subject;
+/**
+ * used by SuiteRunner to override the test method name
+ */
+public class SuiteBlockRunner extends BlockJUnit4ClassRunner {
 
-public class ShiroPrincipal implements Principal {
-  private Subject subject;
+  private Class<?> suiteClass;
 
-  public ShiroPrincipal(Subject subject){
-    this.subject = subject;
+  /**
+   * Creates a BlockJUnit4ClassRunner to run {@code klass}
+   * @param klass
+   * @throws InitializationError if the test class is malformed.
+   */
+  public SuiteBlockRunner(final Class parentClass,  final Class<?> klass) throws InitializationError {
+    super(klass);
+    this.suiteClass = parentClass;
   }
 
   @Override
-  public String getName() {
-    return subject.getPrincipal().toString();
+  protected String testName(FrameworkMethod method) {
+    return method.getName()+"@"+ suiteClass.getName();
   }
 
-  public Subject getSubject(){
-    return subject;
-  }
 }

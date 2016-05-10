@@ -52,6 +52,9 @@ dependencies {
   testCompile project(':geode-junit')
   testRuntime project(':geode-common')
   testRuntime project(':geode-core')
+  testCompile files(project(':geode-core').sourceSets.test.output)
+
+  testRuntime files(war.destinationDir)
 }
 
 //Remove the gradle output directories from the eclipse classpath. These
@@ -67,6 +70,14 @@ idea.module.iml {
   whenMerged {module ->
      module.dependencies.removeAll { entry -> entry.toString().contains('geode-core/build')}
   }
+}
+
+distributedTest {
+  dependsOn ':geode-core:webJar', 'war'
+}
+
+integrationTest {
+  dependsOn ':geode-core:webJar', 'war'
 }
 
 war {
