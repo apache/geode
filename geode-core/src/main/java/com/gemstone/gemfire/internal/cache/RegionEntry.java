@@ -283,7 +283,6 @@ public interface RegionEntry {
    *
    * @see LocalRegion#getValueInVM
    */
-  @Retained
   public Object getValueInVM(RegionEntryContext context);
   /**
    * Returns the value of an entry as it resides on disk.  For
@@ -383,7 +382,6 @@ public interface RegionEntry {
    * return a temporary copy. For SQLFabric this is used during table scans in
    * queries when faulting in every value will be only an unnecessary overhead.
    */
-  @Retained
   public Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner);
 
   /**

@@ -1588,8 +1588,7 @@ public abstract class AbstractRegionMap implements RegionMap {
           synchronized (re) {
             if (!re.isRemoved() || re.isTombstone()) {
               EntryEventImpl sqlfEvent = null;
-              @Retained @Released Object oldValue = re.getValueInVM(owner);
-              try {
+              Object oldValue = re.getValueInVM(owner);
               final int oldSize = owner.calculateRegionEntryValueSize(re);
               // Create an entry event only if the calling context is
               // a receipt of a TXCommitMessage AND there are callbacks installed
@@ -1671,9 +1670,6 @@ public abstract class AbstractRegionMap implements RegionMap {
               }
               } finally {
                 if (!cbEventInPending) cbEvent.release();
-              }
-              } finally {
-                OffHeapHelper.release(oldValue);
               }
             }
           }
@@ -1959,17 +1955,13 @@ public abstract class AbstractRegionMap implements RegionMap {
                       if (!oldRe.isRemoved() && 
                           (fp != null && fp.getCqCount() > 0)) {
                         
-                        @Retained @Released Object oldValue = oldRe.getValueInVM(owner); // OFFHEAP EntryEventImpl oldValue
+                        Object oldValue = oldRe.getValueInVM(owner); // OFFHEAP EntryEventImpl oldValue
                         
                         // this will not fault in the value.
-                        try {
                         if (oldValue == Token.NOT_AVAILABLE){
                           event.setOldValue(oldRe.getValueOnDiskOrBuffer(owner));
                         } else {
                           event.setOldValue(oldValue);
-                        }
-                        } finally {
-                          OffHeapHelper.release(oldValue);
                         }
                       }
                       boolean isCreate = false;
@@ -2196,14 +2188,8 @@ public abstract class AbstractRegionMap implements RegionMap {
                     if (re.isValueNull()) {
                       event.setOldValue(re.getValueOnDiskOrBuffer(owner));
                     } else {
-                      
-                      @Retained @Released Object v = re.getValueInVM(owner);
-                      
-                      try {
-                        event.setOldValue(v); // OFFHEAP escapes to EntryEventImpl oldValue
-                      } finally {
-                        OffHeapHelper.release(v);
-                      }
+                      Object v = re.getValueInVM(owner);
+                      event.setOldValue(v); // OFFHEAP escapes to EntryEventImpl oldValue
                     }
                   }
                   final boolean oldWasTombstone = re.isTombstone();
@@ -2400,7 +2386,6 @@ public abstract class AbstractRegionMap implements RegionMap {
                     final boolean oldWasTombstone = oldRe.isTombstone();
                     final int oldSize = owner.calculateRegionEntryValueSize(oldRe);
                     Object oldValue = oldRe.getValueInVM(owner); // OFFHEAP eei
-                    try {
                     // Create an entry event only if the calling context is
                     // a receipt of a TXCommitMessage AND there are callbacks
                     // installed
@@ -2461,9 +2446,6 @@ public abstract class AbstractRegionMap implements RegionMap {
                     }
                     } finally {
                       if (!cbEventInPending) cbEvent.release();
-                    }
-                    } finally {
-                      OffHeapHelper.release(oldValue);
                     }
                   }
                 }

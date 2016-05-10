@@ -557,20 +557,18 @@ public abstract class AbstractRegionEntry implements RegionEntry,
   }
   
   
-  @Retained
   public final Object getValueInVM(RegionEntryContext context) {
     ReferenceCountHelper.createReferenceCountOwner();
-    @Retained Object v = _getValueRetain(context, true);
+    @Released Object v = _getValueRetain(context, true);
     
     if (v == null) { // should only be possible if disk entry
       v = Token.NOT_AVAILABLE;
     }
-    @Retained Object result = OffHeapHelper.copyAndReleaseIfNeeded(v);
+    Object result = OffHeapHelper.copyAndReleaseIfNeeded(v);
     ReferenceCountHelper.setReferenceCountOwner(null);
     return result;
   }
   
-  @Retained
   public  Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner) {
    return getValueInVM(owner);
   }
@@ -642,8 +640,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
         // Because the pr meta data region will not have an LRU.
         newValueToWrite = ((CachedDeserializable) newValueToWrite).getDeserializedValue(region, null);
         if (!create && newValueToWrite instanceof Versionable) {
-          @Retained @Released final Object oldValue = getValueInVM(region); // Heap value should always be deserialized at this point // OFFHEAP will not be deserialized
-          try {
+          final Object oldValue = getValueInVM(region); // Heap value should always be deserialized at this point // OFFHEAP will not be deserialized
           // BUGFIX for 35029. If oldValue is null the newValue should be put.
           if(oldValue == null) {
           	putValue = true;
@@ -653,9 +650,6 @@ public abstract class AbstractRegionEntry implements RegionEntry,
             Versionable ov = (Versionable) oldValue;
             putValue = nv.isNewerThan(ov);
           }  
-          } finally {
-            OffHeapHelper.release(oldValue);
-          }
         }
       }
 

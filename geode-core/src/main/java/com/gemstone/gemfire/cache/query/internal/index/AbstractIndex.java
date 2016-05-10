@@ -1472,23 +1472,13 @@ public abstract class AbstractIndex implements IndexProtocol
         valuesInRegion = evaluateIndexIteratorsFromRE(re, context);
         valueInIndex = verifyAndGetPdxDomainObject(value);
       } else{
-        @Released Object val = re.getValueInVM(context.getPartitionedRegion());
-        StoredObject valToFree = null;
-        if (val instanceof StoredObject) {
-          valToFree = (StoredObject)val;
-        }
-        try {
+        Object val = re.getValueInVM(context.getPartitionedRegion());
         if (val instanceof CachedDeserializable) {
           val = ((CachedDeserializable)val).getDeserializedValue(getRegion(), re);
         }
         val = verifyAndGetPdxDomainObject(val);   
         valueInIndex = verifyAndGetPdxDomainObject(value);
         valuesInRegion = evaluateIndexIteratorsFromRE(val, context);
-        } finally {
-          if (valToFree != null) {
-            valToFree.release();
-          }
-        }
       }
     } catch (Exception e) {
       // TODO: Create a new LocalizedString for this.
