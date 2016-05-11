@@ -246,7 +246,6 @@ com/gemstone/gemfire/internal/ConfigSource$Type,false
 com/gemstone/gemfire/internal/CopyOnWriteHashSet,true,8591978652141659932
 com/gemstone/gemfire/internal/DSFIDFactory$SqlfSerializationException,true,5076687296705595933
 com/gemstone/gemfire/internal/DSFIDNotFoundException,true,130596009484324655,dsfid:int,versionOrdinal:short
-com/gemstone/gemfire/internal/InsufficientDiskSpaceException,true,-6167707908956900841
 com/gemstone/gemfire/internal/InternalDataSerializer$SERIALIZATION_VERSION,false
 com/gemstone/gemfire/internal/InternalStatisticsDisabledException,true,4146181546364258311
 com/gemstone/gemfire/internal/LinuxProcFsStatistics$CPU,false

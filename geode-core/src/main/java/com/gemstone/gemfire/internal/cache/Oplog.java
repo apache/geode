@@ -77,7 +77,6 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.ByteArrayDataInput;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.InsufficientDiskSpaceException;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalStatisticsDisabledException;
 import com.gemstone.gemfire.internal.Sendable;
@@ -603,7 +602,7 @@ public final class Oplog implements CompactableOplog, Flushable {
     long availableSpace = this.dirHolder.getAvailableSpace();
     if (availableSpace < maxOplogSizeParam) {
       if (DiskStoreImpl.PREALLOCATE_OPLOGS && !DiskStoreImpl.SET_IGNORE_PREALLOCATE) {
-        throw new InsufficientDiskSpaceException(LocalizedStrings.Oplog_PreAllocate_Failure_Init.toLocalizedString(this.dirHolder,
+        throw new DiskAccessException(LocalizedStrings.Oplog_PreAllocate_Failure_Init.toLocalizedString(this.dirHolder,
             maxOplogSizeParam), new IOException("not enough space left to create and pre grow oplog files, available="
             + availableSpace + ", required=" + maxOplogSizeParam), getParent());
       }
@@ -1070,13 +1069,13 @@ public final class Oplog implements CompactableOplog, Flushable {
          * false; } } }
          */
         closeAndDeleteAfterEx(ioe, olf);
-        throw new InsufficientDiskSpaceException(LocalizedStrings.Oplog_PreAllocate_Failure.toLocalizedString(olf.f
+        throw new DiskAccessException(LocalizedStrings.Oplog_PreAllocate_Failure.toLocalizedString(olf.f
             .getAbsolutePath(), maxSize), ioe, getParent());
       }
     }
     // TODO: Perhaps the test flag is not requierd here. Will re-visit.
     else if (DiskStoreImpl.PREALLOCATE_OPLOGS && !DiskStoreImpl.SET_IGNORE_PREALLOCATE) {
-      throw new InsufficientDiskSpaceException(LocalizedStrings.Oplog_PreAllocate_Failure.toLocalizedString(
+      throw new DiskAccessException(LocalizedStrings.Oplog_PreAllocate_Failure.toLocalizedString(
           olf.f.getAbsolutePath(), maxSize), new IOException("not enough space left to pre-blow, available=" + availableSpace
           + ", required=" + maxSize), getParent());
     }
