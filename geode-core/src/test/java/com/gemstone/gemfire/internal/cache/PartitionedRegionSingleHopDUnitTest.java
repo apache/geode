@@ -29,7 +29,10 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
+import com.jayway.awaitility.Awaitility;
+import org.jgroups.blocks.locking.AwaitInfo;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 
@@ -105,7 +108,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   private static Cache cache = null;
 
   private static Locator locator = null;
-  
+
   public PartitionedRegionSingleHopDUnitTest(String name) {
     super(name);
   }
@@ -124,7 +127,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   public final void postTearDownCacheTestCase() throws Exception {
     try {
       closeCacheAndDisconnect();
-      
+
       member0 = null;
       member1 = null;
       member2 = null;
@@ -148,7 +151,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
       cacheServer.stop();
     }
   }
-  
+
  public static void startLocatorInVM(final int locatorPort) {
 
     File logFile = new File("locator-" + locatorPort + ".log");
@@ -380,44 +383,21 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
     final ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
-    
+
     region.put(new Integer(0), "create0");
     region.put(new Integer(1), "create1");
     region.put(new Integer(2), "create2");
     region.put(new Integer(3), "create3");
-    
-    
-    WaitCriterion wc = new WaitCriterion() {
-      public boolean done() {
-        if (cms.isRefreshMetadataTestOnly()) {
-          return true;
-        }
-        return false;
-      }
 
-      public String description() {
-        return "expected metadataservice to be called atleast once, but it was not called";
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 1000, true);
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> cms.isRefreshMetadataTestOnly() == true);
 
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
     region.put(new Integer(0), "create0");
     region.put(new Integer(1), "create1");
     region.put(new Integer(2), "create2");
     region.put(new Integer(3), "create3");
-    //pause(5000);
-    wc = new WaitCriterion() {
-      public boolean done() {
-        return !cms.isRefreshMetadataTestOnly();
-      }
 
-      public String description() {
-        return "expected no metadata to be refreshed";
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 1000, true);
-
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> cms.isRefreshMetadataTestOnly() == false);
   }
 
   public void test_MetadataServiceCallAccuracy_FromDestroyOp() {
@@ -434,26 +414,13 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
     final ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
-    
+
     region.destroy(new Integer(0));
     region.destroy(new Integer(1));
     region.destroy(new Integer(2));
     region.destroy(new Integer(3));
-    
-    
-    WaitCriterion wc = new WaitCriterion() {
-      public boolean done() {
-        if (cms.isRefreshMetadataTestOnly()) {
-          return true;
-        }
-        return false;
-      }
 
-      public String description() {
-        return "expected metadataservice to be called atleast once, but it was not called";
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 1000, true);
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> cms.isRefreshMetadataTestOnly() == true);
   }
 
   public void test_MetadataServiceCallAccuracy_FromGetOp() {
@@ -470,26 +437,14 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     final ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
 
-    
+
 
     region.get(new Integer(0));
     region.get(new Integer(1));
     region.get(new Integer(2));
     region.get(new Integer(3));
 
-    WaitCriterion wc = new WaitCriterion() {
-      public boolean done() {
-        if (cms.isRefreshMetadataTestOnly()) {
-          return true;
-        }
-        return false;
-      }
-
-      public String description() {
-        return "expected metadataservice to be called atleast once, but it was not called";
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 1000, true);
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> cms.isRefreshMetadataTestOnly() == true);
     printMetadata();
     Wait.pause(5000);
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
@@ -521,19 +476,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
       region.put(new Integer(i), new Integer(i + 1));
     }
 
-    WaitCriterion wc = new WaitCriterion() {
-      public boolean done() {
-        if (cms.isRefreshMetadataTestOnly()) {
-          return true;
-        }
-        return false;
-      }
-
-      public String description() {
-        return "expected metadataservice to be called atleast once, but it was not called";
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 1000, true);
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> cms.isRefreshMetadataTestOnly() == true);
 
     // kill server
     member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopServer());
@@ -580,7 +523,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     }
   }
 
-  
+
   public void test_NoMetadataServiceCall_ForGetOp() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
@@ -623,11 +566,11 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
         .invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoSinglePR());
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
-    
+
     member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
 
- 
+
     region.put(new Integer(0), "create0");
     final boolean metadataRefreshed_get1 = cms
         .isRefreshMetadataTestOnly();
@@ -690,20 +633,20 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     Integer port2 = (Integer)member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
     Integer port3 = (Integer)member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
     createClient(port0, port1, port2, port3);
-    putIntoPartitionedRegions();    
+    putIntoPartitionedRegions();
     getFromPartitionedRegions();
     Wait.pause(5000);
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
-    Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();    
+    Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
     assertEquals(4, regionMetaData.size());
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
     assertTrue(regionMetaData.containsKey(customerRegion.getFullPath()));
     assertTrue(regionMetaData.containsKey(orderRegion.getFullPath()));
     assertTrue(regionMetaData.containsKey(shipmentRegion.getFullPath()));
-    
-    ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath()); 
+
+    ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
     assertEquals(4/*numBuckets*/, prMetaData.getBucketServerLocationsMap_TEST_ONLY().size());
-    
+
     for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
       assertEquals(4, ((List)entry.getValue()).size());
     }
@@ -714,7 +657,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     verifyDeadServer(regionMetaData, customerRegion, port0, port1);
     verifyDeadServer(regionMetaData, region, port0, port1);
   }
-  
+
   public void testMetadataFetchOnlyThroughFunctions() {
     //Workaround for 52004
     IgnoredException.addIgnoredException("InternalFunctionInvocationTargetException");
@@ -726,23 +669,14 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     executeFunctions();
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
-    
-    WaitCriterion wc = new WaitCriterion() {
-      public boolean done() {
-        return (regionMetaData.size() == 1);
-      }
 
-      public String description() {
-        return "expected no metadata to be refreshed";
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 1000, true);
-    
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> regionMetaData.size() == 1);
+
     assertEquals(1, regionMetaData.size());
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
-    
-    final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath()); 
-    
+
+    final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
+
     //Fixes a race condition in GEODE-414 by retrying as 
     //region.clientMetaDataLock.tryLock() may prevent fetching the 
     //metadata through functional calls as only limited functions are executed in the test.
@@ -760,17 +694,8 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
         break;
       }
     } while (System.currentTimeMillis() - start < 60000);
-    
-    wc = new WaitCriterion() {
-      public boolean done() {
-        return (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4);
-      }
 
-      public String description() {
-        return "expected no metadata to be refreshed";
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 1000, true);
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4));
 //    assertIndexDetailsEquals(4/*numBuckets*/, prMetaData.getBucketServerLocationsMap_TEST_ONLY().size());
   }
 
@@ -782,35 +707,18 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     createClient(port0, port1, port2, port3);
     putAll();
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
-    final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();    
-    WaitCriterion wc = new WaitCriterion() {
-      public boolean done() {
-        return (regionMetaData.size() == 1);
-      }
+    final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
 
-      public String description() {
-        return "expected no metadata to be refreshed";
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 1000, true);
-    
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (regionMetaData.size() == 1));
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
-    
-    final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath()); 
-    wc = new WaitCriterion() {
-      public boolean done() {
-        return (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4);
-      }
 
-      public String description() {
-        return "expected no metadata to be refreshed";
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 1000, true);  
+    final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
+
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4));
   }
-  
-  
-  
+
+
+
   @Ignore("Bug 47950")
   public void DISABLED_testMetadataIsSameOnAllServersAndClients() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
@@ -823,15 +731,15 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
     member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
     member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
-    
-    
+
+
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.getClientPRMetadata((LocalRegion)region);
-    
-    Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();    
+
+    Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
     assertEquals(1, regionMetaData.size());
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
-    
+
     ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
     final Map<Integer, List<BucketServerLocation66>> clientMap  = prMetaData.getBucketServerLocationsMap_TEST_ONLY();
     WaitCriterion wc = new WaitCriterion() {
@@ -843,7 +751,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
         return "expected no metadata to be refreshed";
       }
     };
-    Wait.waitForCriterion(wc, 60000, 1000, true); 
+    Wait.waitForCriterion(wc, 60000, 1000, true);
     for (Entry entry : clientMap.entrySet()) {
       assertEquals(4, ((List)entry.getValue()).size());
     }
@@ -851,10 +759,10 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
     member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
     member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
-    
+
     member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopServer());
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopServer());
-    
+
     member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.startServerOnPort( port0 ));
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.startServerOnPort( port1 ));
     put();
@@ -862,15 +770,15 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
     member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
     member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
-    
+
     cms = ((GemFireCacheImpl)cache).getClientMetadataService();
-    
+
     wc = new WaitCriterion() {
       public boolean done() {
-        ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();    
-        Map<String, ClientPartitionAdvisor>  regionMetaData = cms.getClientPRMetadata_TEST_ONLY();    
+        ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
+        Map<String, ClientPartitionAdvisor>  regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
         assertEquals(1, regionMetaData.size());
-        assertTrue(regionMetaData.containsKey(region.getFullPath()));    
+        assertTrue(regionMetaData.containsKey(region.getFullPath()));
         ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
         Map<Integer, List<BucketServerLocation66>> clientMap  = prMetaData.getBucketServerLocationsMap_TEST_ONLY();
         assertEquals(4/*numBuckets*/, clientMap.size());
@@ -892,11 +800,11 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     Wait.waitForCriterion(wc, 60000, 400, true);
     cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.getClientPRMetadata((LocalRegion)region);
-    
-    regionMetaData = cms.getClientPRMetadata_TEST_ONLY();    
+
+    regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
     assertEquals(1, regionMetaData.size());
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
-    
+
     prMetaData = regionMetaData.get(region.getFullPath());
     final Map<Integer, List<BucketServerLocation66>> clientMap2  = prMetaData.getBucketServerLocationsMap_TEST_ONLY();
     wc = new WaitCriterion() {
@@ -908,19 +816,19 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
         return "expected no metadata to be refreshed";
       }
     };
-    Wait.waitForCriterion(wc, 60000, 1000, true); 
+    Wait.waitForCriterion(wc, 60000, 1000, true);
     for (Entry entry : clientMap.entrySet()) {
       assertEquals(4, ((List)entry.getValue()).size());
     }
-    
+
     member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
     member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
     member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
-    
+
     member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCacheAndDisconnect());
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCacheAndDisconnect());
-    
+
 //    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerOnPort(3,4,port0 ));
 //    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerOnPort(3,4,port1 ));
     put();
@@ -932,7 +840,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
             .getRegionAdvisor().getAllClientBucketProfilesTest();
       }
     });
-    
+
     member3.invoke(new CacheSerializableRunnable("aba") {
       @Override
       public void run2() throws CacheException {
@@ -941,31 +849,22 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
             .getRegionAdvisor().getAllClientBucketProfilesTest();
       }
     });
-    
+
 //    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
 //    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
     member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
     member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
-    
+
     cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.getClientPRMetadata((LocalRegion)region);
-    
-    regionMetaData = cms.getClientPRMetadata_TEST_ONLY();    
+
+    regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
     assertEquals(1, regionMetaData.size());
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
-    
+
     prMetaData = regionMetaData.get(region.getFullPath());
     final Map<Integer, List<BucketServerLocation66>> clientMap3  = prMetaData.getBucketServerLocationsMap_TEST_ONLY();
-    wc = new WaitCriterion() {
-      public boolean done() {
-        return (clientMap3.size() == 4);
-      }
-
-      public String description() {
-        return "expected no metadata to be refreshed";
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 1000, true); 
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (clientMap3.size() == 4));
     for (Entry entry : clientMap.entrySet()) {
       assertEquals(2, ((List)entry.getValue()).size());
     }
@@ -988,36 +887,28 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
       public String description() {
         return "verification of metadata on all members";
       }
-      
+
     }, 20000, 2000, true);
+
   }
-  
+
   public void testMetadataIsSameOnAllServersAndClientsHA() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 2, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 2, 4 ));
-    
+
     createClient(port0, port1, port0, port1);
     put();
-    
+
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.getClientPRMetadata((LocalRegion)region);
-    
-    final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();    
-    
-    WaitCriterion wc = new WaitCriterion() {
-      public boolean done() {
-        return (regionMetaData.size() == 1);
-      }
 
-      public String description() {
-        return "expected metadata is ready";
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 1000, true);
-    
+    final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
+
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (regionMetaData.size() == 1));
+
     assertEquals(1, regionMetaData.size());
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
-    
+
     member0.invoke(new CacheSerializableRunnable("aba") {
       @Override
       public void run2() throws CacheException {
@@ -1026,7 +917,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
             .getRegionAdvisor().getAllClientBucketProfilesTest();
       }
     });
-    
+
     member1.invoke(new CacheSerializableRunnable("aba") {
       @Override
       public void run2() throws CacheException {
@@ -1035,73 +926,55 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
             .getRegionAdvisor().getAllClientBucketProfilesTest();
       }
     });
-    
+
     ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
     final Map<Integer, List<BucketServerLocation66>> clientMap  = prMetaData.getBucketServerLocationsMap_TEST_ONLY();
-    wc = new WaitCriterion() {
-      public boolean done() {
-        return (clientMap.size() == 4);
-      }
-
-      public String description() {
-        return "expected no metadata to be refreshed";
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 1000, true); 
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (clientMap.size() == 4));
     for (Entry entry : clientMap.entrySet()) {
       assertEquals(2, ((List)entry.getValue()).size());
     }
     member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
-    
+
     member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopServer());
-    
+
     put();
-    
+
     cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.getClientPRMetadata((LocalRegion)region);
-    
+
     //member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
-    
+
     assertEquals(4/*numBuckets*/, clientMap.size());
     for (Entry entry : clientMap.entrySet()) {
       assertEquals(1, ((List)entry.getValue()).size());
     }
-    
-    wc = new WaitCriterion() {
-      private int bucketId;
-      private int size;
+
+    assertEquals(1, regionMetaData.size());
+    assertTrue(regionMetaData.containsKey(region.getFullPath()));
+    assertEquals(4/*numBuckets*/, clientMap.size());
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> {
+      int bucketId = -1;
+      int size = -1;
       List globalList = new ArrayList();
-      public boolean done() {
-        ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();    
-        Map<String, ClientPartitionAdvisor>  regionMetaData = cms.getClientPRMetadata_TEST_ONLY();    
-        assertEquals(1, regionMetaData.size());
-        assertTrue(regionMetaData.containsKey(region.getFullPath()));    
-        ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
-        Map<Integer, List<BucketServerLocation66>> clientMap  = prMetaData.getBucketServerLocationsMap_TEST_ONLY();
-        assertEquals(4/*numBuckets*/, clientMap.size());
-        boolean finished = true;
-        for (Entry entry : clientMap.entrySet()) {
-          List list = (List)entry.getValue();
-          if(list.size() != 1){
-            size = list.size();
-            globalList = list;
-            bucketId = (Integer)entry.getKey();
-            finished = false;
-          }
+      boolean finished = true;
+      for (Entry entry : clientMap.entrySet()) {
+        List list = (List) entry.getValue();
+        if (list.size() != 1) {
+          size = list.size();
+          globalList = list;
+          bucketId = (Integer) entry.getKey();
+          finished = false;
+          System.out.println("bucket copies are not created, the locations size for bucket id : "
+              + bucketId + " size : " + size + " the list is " + globalList);
         }
-        return finished;
       }
-      public String description() {
-        return "bucket copies are not created, the locations size for bucket id : "
-            + bucketId + " size : " + size + " the list is " + globalList;
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 400, true);
+      return finished;
+    });
   }
 
   //TODO This is failing in WAN_Dev_Dec11 branch after downmerge from trunk revision 34709
-  
+
   // This test is disabled due to intermittent failures in unit test runs
   // Please see ticket #52203
   public void disabledtestClientMetadataForPersistentPrs() throws Exception {
@@ -1109,14 +982,14 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer( 3, 4 ));
     Integer port2 = (Integer)member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer( 3, 4 ));
     Integer port3 = (Integer)member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer( 3, 4 ));
-    
+
     member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoPartitionedRegions());
-    
+
     member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
     member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
     member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
-    
+
     createClient(port0, port1, port2, port3);
     fetchAndValidateMetadata();
     member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCacheAndDisconnect());
@@ -1134,8 +1007,8 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     m0.join();
     fetchAndValidateMetadata();
   }
-  
-  
+
+
   private void fetchAndValidateMetadata() {
     ClientMetadataService service = ((GemFireCacheImpl)this.cache)
         .getClientMetadataService();
@@ -1156,14 +1029,14 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
       if (servers.size() < 4) {
         fail("Servers size is " +servers.size() + " less than expected 4.");
       }
-    }   
+    }
   }
-  
+
   public static void verifyMetadata(Map<Integer, List<BucketServerLocation66>> clientMap){
     final PartitionedRegion pr = (PartitionedRegion)region;
     ConcurrentHashMap<Integer, Set<ServerBucketProfile>> serverMap = pr.getRegionAdvisor().getAllClientBucketProfilesTest();
     assertEquals(clientMap.size(), serverMap.size());
-    assertTrue(clientMap.keySet().containsAll(serverMap.keySet()));    
+    assertTrue(clientMap.keySet().containsAll(serverMap.keySet()));
     for(Map.Entry<Integer, List<BucketServerLocation66>> entry : clientMap.entrySet()){
       int bucketId = entry.getKey();
       List<BucketServerLocation66> list = entry.getValue();
@@ -1191,7 +1064,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
       assertTrue(primaryCnt==1);
     }
   }
-  
+
   public static void waitForLocalBucketsCreation(final int numBuckets){
     final PartitionedRegion pr = (PartitionedRegion)region;
     WaitCriterion wc = new WaitCriterion() {
@@ -1211,37 +1084,21 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     };
     Wait.waitForCriterion(wc, 60000, 400, true);
   }
-  
-  public static void waitForBucketsCreation(){
-    final PartitionedRegion pr = (PartitionedRegion)region;
-    WaitCriterion wc = new WaitCriterion() {
-      public boolean done() {
-        if (pr.getDataStore().getAllLocalBuckets().size() == 2) {
-          return true;
-        }
-        return false;
-      }
-      public String description() {
-        return "bucket copies are not created";
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 400, true);
-  }
-  
+
   private void verifyDeadServer(Map<String, ClientPartitionAdvisor> regionMetaData, Region region, int port0, int port1) {
-    
+
     ServerLocation sl0 = new ServerLocation("localhost", port0);
     ServerLocation sl1 = new ServerLocation("localhost", port1);
-    
-    final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath()); 
-    
+
+    final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
+
     for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
       List servers = (List)entry.getValue();
       assertFalse( servers.contains(sl0) );
       assertFalse( servers.contains(sl1) );
     }
   }
-  
+
   public static void createClientWithoutPRSingleHopEnabled(int port0) {
     Properties props = new Properties();
     props = new Properties();
@@ -1267,7 +1124,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
 
     createRegionsInClientCache(p.getName());
   }
-  
+
   public static int createAccessorServer() {
     CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
         "PartitionedRegionSingleHopDUnitTest");
@@ -1405,13 +1262,13 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     assertNotNull(shipmentRegion);
     LogWriterUtils.getLogWriter().info(
         "Partitioned Region SHIPMENT created Successfully :"
-            + shipmentRegion.toString());    
-    
+            + shipmentRegion.toString());
+
     replicatedRegion = cache.createRegion("rr", new AttributesFactory().create());
 
     return port;
   }
-  
+
   public static int createPersistentPrsAndServer(int redundantCopies, int totalNoofBuckets) {
     CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
         "PartitionedRegionSingleHopDUnitTest");
@@ -1481,8 +1338,8 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     assertNotNull(shipmentRegion);
     LogWriterUtils.getLogWriter().info(
         "Partitioned Region SHIPMENT created Successfully :"
-            + shipmentRegion.toString());    
-    
+            + shipmentRegion.toString());
+
     replicatedRegion = cache.createRegion("rr", new AttributesFactory().create());
     CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
@@ -1565,8 +1422,8 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     assertNotNull(shipmentRegion);
     LogWriterUtils.getLogWriter().info(
         "Partitioned Region SHIPMENT created Successfully :"
-            + shipmentRegion.toString());    
-    
+            + shipmentRegion.toString());
+
     replicatedRegion = cache.createRegion("rr", new AttributesFactory().create());
     CacheServer server = cache.addCacheServer();
     server.setPort(port);
@@ -1645,12 +1502,12 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     assertNotNull(shipmentRegion);
     LogWriterUtils.getLogWriter().info(
         "Partitioned Region SHIPMENT created Successfully :"
-            + shipmentRegion.toString());    
-    
+            + shipmentRegion.toString());
+
     replicatedRegion = cache.createRegion("rr", new AttributesFactory().create());
 
   }
-  
+
   public static void startServerOnPort(int port) {
     CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
         "PartitionedRegionSingleHopDUnitTest");
@@ -1665,7 +1522,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
       Assert.fail("Failed to start server ", e);
     }
   }
-  
+
 
   public static void createPeer() {
     CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
@@ -1826,7 +1683,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
 
     createRegionsInClientCache(p.getName());
   }
-  
+
   private static void createRegionsInClientCache(String poolName) {
     AttributesFactory factory = new AttributesFactory();
     factory.setPoolName(poolName);
@@ -1876,7 +1733,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     factory.setPoolName(poolName);
     replicatedRegion = cache.createRegion("rr", factory.create());
   }
-  
+
   public static void putIntoPartitionedRegions() {
     for (int i = 0; i <= 3; i++) {
       CustId custid = new CustId(i);
@@ -1948,7 +1805,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
       return true;
     }
   }
-  
+
   public static void executeFunctions() {
     Set filter = new HashSet();
     filter.add(0);
@@ -1960,7 +1817,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     FunctionService.onRegion(region).withFilter(filter).execute(new MyFunctionAdapter()).getResult();
     FunctionService.onRegion(region).execute(new MyFunctionAdapter()).getResult();
   }
-  
+
   public static void putAll() {
     Map map = new HashMap();
     map.put(0, 0);
@@ -1971,8 +1828,8 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     region.putAll(map);
     region.putAll(map);
     region.putAll(map);
-  }  
-  
+  }
+
   public static void put() {
 
     region.put(new Integer(0), "create0");
@@ -1992,7 +1849,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     region.put(new Integer(1), "update11");
     region.put(new Integer(2), "update22");
     region.put(new Integer(3), "update33");
-*/  }  
+*/  }
 
   public static void getFromPartitionedRegions() {
     for (int i = 0; i <= 3; i++) {
@@ -2052,7 +1909,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
     region.put(new Integer(0), "update0");
     assertEquals(false, cms.isRefreshMetadataTestOnly());
-    
+
 
     region.put(new Integer(1), "update1");
     assertEquals(false, cms.isRefreshMetadataTestOnly());
@@ -2118,31 +1975,11 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     final Map<String, ClientPartitionAdvisor> regionMetaData = cms
         .getClientPRMetadata_TEST_ONLY();
-    
-    WaitCriterion wc = new WaitCriterion() {
-      public boolean done() {
-        return (regionMetaData.size() == 4);
-      }
-
-      public String description() {
-        return "expected PRAdvisor to be ready";
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 1000, true);
-    
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (regionMetaData.size() == 4));
     assertEquals(4, regionMetaData.size());
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
     final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
-    wc = new WaitCriterion() {
-      public boolean done() {
-        return (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4);
-      }
-
-      public String description() {
-        return "expected no metadata to be refreshed";
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 1000, true);
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4));
   }
 }
 
