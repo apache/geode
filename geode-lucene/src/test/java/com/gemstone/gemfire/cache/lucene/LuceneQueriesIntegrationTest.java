@@ -19,17 +19,12 @@ package com.gemstone.gemfire.cache.lucene;
 import static org.hamcrest.Matchers.isA;
 import static org.junit.Assert.*;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -39,25 +34,11 @@ import org.junit.rules.ExpectedException;
  * This class contains tests of lucene queries that can fit
  */
 @Category(IntegrationTest.class)
-public class LuceneQueriesIntegrationTest {
+public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
   private static final String INDEX_NAME = "index";
   protected static final String REGION_NAME = "index";
-  Cache cache;
-
-  @Before
-  public void createCache() {
-    cache = new CacheFactory()
-      .set("mcast-port", "0")
-      .set("locators", "")
-      .set("log-level", "warning").create();
-  }
-
-  @After
-  public void closeCache() {
-    cache.close();
-  }
 
   @Test()
   public void throwFunctionExceptionWhenGivenBadQuery() {

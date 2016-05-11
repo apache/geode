@@ -138,7 +138,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     return createRegion(fileRegionName, regionShortCut, this.regionPath, partitionAttributes);
   }
 
-  String createFileRegionName() {
+  public String createFileRegionName() {
     return LuceneServiceImpl.getUniqueIndexName(indexName, regionPath)+".files";
   }
 
@@ -152,7 +152,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     return createRegion(chunkRegionName, regionShortCut, fileRegionName, partitionAttributes);
   }
 
-  String createChunkRegionName() {
+  public String createChunkRegionName() {
     return LuceneServiceImpl.getUniqueIndexName(indexName, regionPath) + ".chunks";
   }
 

@@ -80,10 +80,8 @@ public interface LuceneService {
    * @param indexName index name
    * @param regionPath region name
    * @param analyzerPerField analyzer per field map
-   * @deprecated TODO This feature is not yet implemented
    */
-  @Deprecated
-  public void createIndex(String indexName, String regionPath,  
+  public void createIndex(String indexName, String regionPath,
       Map<String, Analyzer> analyzerPerField);
 
   /**
