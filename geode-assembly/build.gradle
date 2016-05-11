@@ -45,6 +45,7 @@ configurations {
   bundled {
     description 'A dependency that is shipped with geode, but is not required to compile'
   }
+  gfshDependencies
 }
 
 dependencies {
@@ -72,6 +73,11 @@ dependencies {
   testCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
 
   testRuntime files("${System.getProperty('java.home')}/../lib/tools.jar")
+
+  gfshDependencies ('org.springframework:spring-web:' + project.'springframework.version'){
+    exclude module: 'spring-core'
+    exclude module: 'commons-logging'
+  }
 }
 
 sourceSets {
@@ -188,13 +194,12 @@ task depsJar (type: Jar, dependsOn: ':geode-core:classes') {
 // a dependent project.  Please fix me.
 task gfshDepsJar (type: Jar, dependsOn: ':geode-core:classes') {
   description 'Assembles the jar archive that defines the gfsh classpath.'
-  def springWeb = configurations.runtime.collect { it.getName() }.find { it.contains('spring-web') }
   archiveName 'gfsh-dependencies.jar'
   doFirst {
     manifest {
       attributes("Class-Path": cp() + 
         ' ' + project(':geode-core').webJar.archiveName +
-        ' ' + springWeb
+        ' ' + configurations.gfshDependencies.collect{ it.getName() }.flatten().join(' ')
       )
     }
   }
@@ -325,6 +330,7 @@ distributions {
         from project(":geode-lucene").configurations.archives.allArtifacts.files
 
         from configurations.bundled
+        from configurations.gfshDependencies
 
         //These tasks are included as closures (wrapped in {}) because gradle may evaluate
         //this CopySpec before it evaluates the geode-core build file.
