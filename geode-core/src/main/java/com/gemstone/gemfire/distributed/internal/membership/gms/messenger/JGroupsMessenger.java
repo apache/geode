@@ -140,7 +140,7 @@ public class JGroupsMessenger implements Messenger {
    * reduces the amount of suspect processing initiated by IOExceptions and the
    * amount of exceptions logged
    */
-  private Set<Address> addressesWithioExceptionsProcessed = Collections.synchronizedSet(new HashSet<Address>());
+  private Set<Address> addressesWithIoExceptionsProcessed = Collections.synchronizedSet(new HashSet<Address>());
   
   static {
     // register classes that we've added to jgroups that are put on the wire
@@ -376,7 +376,7 @@ public class JGroupsMessenger implements Messenger {
     logger.trace("installing JGroups view: {}", jgv);
     this.myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
 
-    addressesWithioExceptionsProcessed.clear();
+    addressesWithIoExceptionsProcessed.clear();
   }
   
 
@@ -390,10 +390,10 @@ public class JGroupsMessenger implements Messenger {
     if (services.getManager().shutdownInProgress()) { // GEODE-634 - don't log IOExceptions during shutdown
       return;
     }
-    if (addressesWithioExceptionsProcessed.contains(dest)) {
+    if (addressesWithIoExceptionsProcessed.contains(dest)) {
       return;
     }
-    addressesWithioExceptionsProcessed.add(dest);
+    addressesWithIoExceptionsProcessed.add(dest);
     NetView v = this.view;
     JGAddress jgMbr = (JGAddress)dest;
     if (jgMbr != null && v != null) {
@@ -952,7 +952,7 @@ public class JGroupsMessenger implements Messenger {
           if (digest != null) {
             logger.trace("installing JGroups message digest {}", digest);
             this.myChannel.getProtocolStack()
-                .getTopProtocol().down(new Event(Event.SET_DIGEST, digest));
+                .getTopProtocol().down(new Event(Event.MERGE_DIGEST, digest));
             jrsp.setMessengerData(null);
           }
         } catch (Exception e) {

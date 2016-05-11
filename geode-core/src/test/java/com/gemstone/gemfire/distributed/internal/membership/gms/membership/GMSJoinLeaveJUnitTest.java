@@ -1128,7 +1128,7 @@ public class GMSJoinLeaveJUnitTest {
       }
        
       Thread.sleep(1000);
-      System.out.println("Empty sleeps " + sleeps +  " stoppping: " + gmsJoinLeave.isStopping() );
+      System.out.println("Empty sleeps " + sleeps +  " stopping: " + gmsJoinLeave.isStopping() );
     }
   }
   

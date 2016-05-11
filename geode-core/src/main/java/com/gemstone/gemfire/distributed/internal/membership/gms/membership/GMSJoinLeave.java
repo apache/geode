@@ -750,6 +750,13 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     return newView;
   }
 
+  private void sendJoinResponses(NetView newView, List<InternalDistributedMember> newMbrs) {
+    for (InternalDistributedMember mbr : newMbrs) {
+      JoinResponseMessage response = new JoinResponseMessage(mbr, newView);
+      services.getMessenger().send(response);
+    }
+  }
+
   private void sendRemoveMessages(List<InternalDistributedMember> removals, List<String> reasons, NetView newView, Set<InternalDistributedMember> oldIds) {
     Iterator<String> reason = reasons.iterator();
     for (InternalDistributedMember mbr : removals) {
@@ -1128,8 +1135,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    */
   private void processJoinResponse(JoinResponseMessage rsp) {
     synchronized (joinResponse) {
-      joinResponse[0] = rsp;
-      joinResponse.notifyAll();
+      if (!this.isJoined) {
+        joinResponse[0] = rsp;
+        joinResponse.notifyAll();
+      }
     }
   }
 
@@ -2257,6 +2266,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       lastConflictingView = null;
 
       sendView(newView, joinReqs);
+
+      // we also send a join response so that information like the multicast message digest
+      // can be transmitted to the new members w/o including it in the view message
+      sendJoinResponses(newView, joinReqs);
 
       if (markViewCreatorForShutdown && getViewCreator() != null) {
         shutdown = true;
