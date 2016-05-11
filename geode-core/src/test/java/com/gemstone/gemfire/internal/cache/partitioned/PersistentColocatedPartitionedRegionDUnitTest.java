@@ -1354,7 +1354,8 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     async1.getResult();
     async2.getResult();
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-1380: time sensitive, async actions with 30 sec max
   public void testRebalanceWithOfflineChildRegionTwoDiskStores() throws Throwable {
     SerializableRunnable createParentPR = new SerializableRunnable() {
       public void run() {
