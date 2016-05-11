@@ -33,7 +33,6 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -62,7 +61,7 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
 
         SharedConfiguration sharedConfig = locator.getSharedConfiguration();
         if (sharedConfig != null) {
-          sharedConfig.destroySharedConfiguration_forTestsOnly();
+          sharedConfig.destroySharedConfiguration();
         }
       });
     }

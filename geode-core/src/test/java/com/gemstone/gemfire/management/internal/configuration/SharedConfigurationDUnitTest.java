@@ -187,7 +187,7 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
       public Object call() {
         InternalLocator locator = (InternalLocator) Locator.getLocator();
         SharedConfiguration sharedConfig = locator.getSharedConfiguration();
-        sharedConfig.destroySharedConfiguration_forTestsOnly();
+        sharedConfig.destroySharedConfiguration();
         locator.stop();
         return null;
       }

@@ -406,7 +406,7 @@ public class SharedConfiguration {
    * <p/>
    * Throws {@code AssertionError} wrapping any exception thrown by operation.
    */
-  public void destroySharedConfiguration_forTestsOnly() {
+  public void destroySharedConfiguration() {
     try {
       Region<String, Configuration> configRegion = getConfigurationRegion();
       if (configRegion != null) {

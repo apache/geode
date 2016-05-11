@@ -30,7 +30,7 @@ public class SharedConfigurationTestUtils {
       if (locator != null) {
         SharedConfiguration sharedConfig = locator.getSharedConfiguration();
         if (sharedConfig != null) {
-          sharedConfig.destroySharedConfiguration_forTestsOnly();
+          sharedConfig.destroySharedConfiguration();
         }
         locator.stop();
       }
