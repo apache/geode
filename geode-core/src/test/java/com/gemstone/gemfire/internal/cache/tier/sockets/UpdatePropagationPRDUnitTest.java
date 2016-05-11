@@ -24,9 +24,7 @@ import com.gemstone.gemfire.cache.*;
  */
 public class UpdatePropagationPRDUnitTest extends UpdatePropagationDUnitTest {
 
-  public UpdatePropagationPRDUnitTest(String name) {
-    super(name);
-  }
+  @Override
   protected RegionAttributes createCacheServerAttributes()
   {
     AttributesFactory factory = new AttributesFactory();
