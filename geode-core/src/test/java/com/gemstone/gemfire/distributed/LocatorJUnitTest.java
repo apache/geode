@@ -31,8 +31,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.IntSupplier;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -60,6 +60,7 @@ import org.junit.runners.Parameterized;
 
 @Category(IntegrationTest.class)
 @RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class LocatorJUnitTest {
 
   private static final int REQUEST_TIMEOUT = 5 * 1000;
