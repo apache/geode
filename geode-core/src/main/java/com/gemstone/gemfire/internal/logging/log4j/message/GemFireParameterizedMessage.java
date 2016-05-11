@@ -14,8 +14,7 @@
  * See the license for the specific language governing permissions and
  * limitations under the license.
  */
-package com.gemstone.org.apache.logging.log4j.message;
-
+package com.gemstone.gemfire.internal.logging.log4j.message;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -33,10 +32,13 @@ import com.gemstone.gemfire.internal.cache.EntriesSet;
 /**
  * Handles messages that consist of a format string containing '{}' to represent each replaceable token, and
  * the parameters.
- * <p>
+ * <p/>
  * This class was originally written for <a href="http://lilithapp.com/">Lilith</a> by Joern Huxhorn where it is
  * licensed under the LGPL. It has been relicensed here with his permission providing that this attribution remain.
- * </p>
+ * <p/>
+ * Copied into Geode from org.apache.logging.log4j.message.ParameterizedMessage (http://logging.apache.org/log4j/2.x/license.html)
+ * <p/>
+ * Geode changes include changing class name and package. Additional changes are commented with "// GEODE: note"
  */
 public class GemFireParameterizedMessage implements Message {
 
@@ -449,7 +451,7 @@ public class GemFireParameterizedMessage implements Message {
               }
               //str.append(Arrays.deepToString((Object[]) o));
           }
-      } else if (o instanceof Map && !(o instanceof Region)) {
+      } else if (o instanceof Map && !(o instanceof Region)) { // GEODE: do NOT use Map handling if instanceof Geode Region
           // special handling of container Map
           final String id = identityToString(o);
           if (dejaVu.contains(id)) {
@@ -474,7 +476,7 @@ public class GemFireParameterizedMessage implements Message {
               }
               str.append('}');
           }
-      } else if (o instanceof Collection && !(o instanceof EntriesSet)) {
+      } else if (o instanceof Collection && !(o instanceof EntriesSet)) { // GEODE: do NOT use Colleciton handling if instanceof Geode EntriesSet
           // special handling of container Collection
           final String id = identityToString(o);
           if (dejaVu.contains(id)) {
@@ -549,6 +551,6 @@ public class GemFireParameterizedMessage implements Message {
   @Override
   public String toString() {
       return "GemFireParameterizedMessage[messagePattern=" + messagePattern + ", stringArgs=" +
-          Arrays.toString(stringArgs) + ", throwable=" + throwable + ']';
+          Arrays.toString(stringArgs) + ", throwable=" + throwable + ']'; // GEODE: adjust toString to GemFireParameterizedMessage
   }
 }

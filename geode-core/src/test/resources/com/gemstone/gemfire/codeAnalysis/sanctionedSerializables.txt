@@ -765,7 +765,6 @@ com/gemstone/gemfire/management/internal/configuration/functions/DeleteJarFuncti
 com/gemstone/gemfire/management/internal/configuration/functions/DeleteXmlEntityFunction,true,1
 com/gemstone/gemfire/management/internal/configuration/functions/GetAllJarsFunction,true,1
 com/gemstone/gemfire/management/internal/configuration/functions/ModifyPropertiesFunction,true,1
-com/gemstone/gemfire/management/internal/security/Resource,false
 com/gemstone/gemfire/management/internal/web/domain/Link,false,href:java/net/URI,method:com/gemstone/gemfire/management/internal/web/http/HttpMethod,relation:java/lang/String
 com/gemstone/gemfire/management/internal/web/domain/QueryParameterSource,true,34131123582155,objectName:javax/management/ObjectName,queryExpression:javax/management/QueryExp
 com/gemstone/gemfire/management/internal/web/http/HttpHeader,false,name:java/lang/String
@@ -797,5 +796,3 @@ com/gemstone/gemfire/security/AuthenticationFailedException,true,-82028664722790
 com/gemstone/gemfire/security/AuthenticationRequiredException,true,4675976651103154919
 com/gemstone/gemfire/security/GemFireSecurityException,true,3814254578203076926,cause:java/lang/Throwable
 com/gemstone/gemfire/security/NotAuthorizedException,true,419215768216387745,principal:java/security/Principal
-com/gemstone/org/apache/logging/log4j/message/GemFireParameterizedMessage,true,-665975803997290697,messagePattern:java/lang/String,stringArgs:java/lang/String[]
-com/gemstone/org/apache/logging/log4j/message/GemFireParameterizedMessageFactory,true,1

@@ -19,6 +19,8 @@ com/gemstone/gemfire/internal/logging/log4j/LocalizedMessage
 com/gemstone/gemfire/internal/logging/log4j/LogWriterAppenders
 com/gemstone/gemfire/internal/logging/log4j/LogWriterAppenders$Identifier
 com/gemstone/gemfire/internal/logging/log4j/LogWriterLogger
+com/gemstone/gemfire/internal/logging/log4j/message/GemFireParameterizedMessage
+com/gemstone/gemfire/internal/logging/log4j/message/GemFireParameterizedMessageFactory
 com/gemstone/gemfire/internal/offheap/RefCountChangeInfo
 com/gemstone/gemfire/internal/process/BlockingProcessStreamReader
 com/gemstone/gemfire/internal/process/NonBlockingProcessStreamReader
