@@ -19,6 +19,7 @@ package com.gemstone.gemfire.internal.cache.versions;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 import org.apache.logging.log4j.Logger;
 
@@ -74,6 +75,7 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
   private static final int BITS_TIMESTAMP_APPLIED = 0x20;
 
   private static final int BITS_ALLOWED_BY_RESOLVER = 0x40;
+  // Note: the only valid BITS_* are 0xFFFF.
   
   /**
    * the per-entry version number for the operation
@@ -100,10 +102,19 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
    */
   private byte distributedSystemId;
 
+  // In GEODE-1252 we found that the bits field
+  // was concurrently modified by calls to
+  // setPreviousMemberID and setRecorded.
+  // So bits has been changed to volatile and
+  // all modification to it happens using AtomicIntegerFieldUpdater.
+  private static final AtomicIntegerFieldUpdater<VersionTag> bitsUpdater =
+      AtomicIntegerFieldUpdater.newUpdater(VersionTag.class, "bits");
   /**
    * boolean bits
+   * Note: this is an int field so it has 32 bits BUT only the lower 16 bits are serialized.
+   * So all our code should treat this an an unsigned short field.
    */
-  private int bits;
+  private volatile int bits;
 
   /**
    * the initiator of the operation.  If null, the initiator was the sender
@@ -128,7 +139,11 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
 
   /** record that the timestamp from this tag was applied to the cache */
   public void setTimeStampApplied(boolean isTimeStampUpdated) {
-    this.bits |= BITS_TIMESTAMP_APPLIED;
+    if (isTimeStampUpdated) {
+      setBits(BITS_TIMESTAMP_APPLIED);
+    } else {
+      clearBits(~BITS_TIMESTAMP_APPLIED);
+    }
   }
 
   /**
@@ -152,9 +167,9 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
 
   public void setIsGatewayTag(boolean isGateway) {
     if (isGateway) {
-      this.bits = this.bits | BITS_GATEWAY_TAG;
+      setBits(BITS_GATEWAY_TAG);
     } else {
-      this.bits = this.bits & ~BITS_GATEWAY_TAG;
+      clearBits(~BITS_GATEWAY_TAG);
     }
   }
 
@@ -193,7 +208,7 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
    * set that this tag has been recorded in a receiver's RVV
    */
   public void setRecorded() {
-    this.bits |= BITS_RECORDED;
+    setBits(BITS_RECORDED);
   }
 
   /**
@@ -236,7 +251,7 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
    * @param previousMemberID the previousMemberID to set
    */
   public void setPreviousMemberID(T previousMemberID) {
-    this.bits |= BITS_HAS_PREVIOUS_ID;
+    setBits(BITS_HAS_PREVIOUS_ID);
     this.previousMemberID = previousMemberID;
   }
 
@@ -249,9 +264,9 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
    */
   public VersionTag setPosDup(boolean flag) {
     if (flag) {
-      this.bits |= BITS_POSDUP;
+      setBits(BITS_POSDUP);
     } else {
-      this.bits &= ~BITS_POSDUP;
+      clearBits(~BITS_POSDUP);
     }
     return this;
   }
@@ -268,9 +283,9 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
    */
   public VersionTag setAllowedByResolver(boolean flag) {
     if (flag) {
-      this.bits |= BITS_ALLOWED_BY_RESOLVER;
+      setBits(BITS_ALLOWED_BY_RESOLVER);
     } else {
-      this.bits &= ~BITS_ALLOWED_BY_RESOLVER;
+      clearBits(~BITS_ALLOWED_BY_RESOLVER);
     }
     return this;
   }
@@ -317,21 +332,6 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
    */
   public boolean hasValidVersion() {
     return !(this.entryVersion == 0 && this.regionVersionHighBytes == 0 && this.regionVersionLowBytes == 0);
-  }
-
-  public VersionTag() {
-  }
-
-  /**
-   * creates a version tag for a WAN gateway event
-   *
-   * @param timestamp
-   * @param dsid
-   */
-  public VersionTag(long timestamp, int dsid) {
-    this.timeStamp = timestamp;
-    this.distributedSystemId = (byte) (dsid & 0xFF);
-    this.bits = BITS_GATEWAY_TAG + BITS_IS_REMOTE_TAG;
   }
 
   public void toData(DataOutput out) throws IOException {
@@ -386,7 +386,7 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
     if (logger.isTraceEnabled(LogMarker.VERSION_TAG)) {
       logger.info(LogMarker.VERSION_TAG, "deserializing {} with flags 0x{}", this.getClass(), Integer.toHexString(flags));
     }
-    this.bits = in.readUnsignedShort();
+    bitsUpdater.set(this, in.readUnsignedShort());
     this.distributedSystemId = in.readByte();
     if ((flags & VERSION_TWO_BYTES) != 0) {
       this.entryVersion = in.readShort() & 0xffff;
@@ -408,11 +408,11 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
         this.previousMemberID = readMember(in);
       }
     }
-    this.bits |= BITS_IS_REMOTE_TAG;
+    setIsRemoteForTesting();
   }
   
   public void setIsRemoteForTesting() {
-    this.bits |= BITS_IS_REMOTE_TAG;
+    setBits(BITS_IS_REMOTE_TAG);
   }
 
   public abstract T readMember(DataInput in) throws IOException, ClassNotFoundException;
@@ -440,14 +440,14 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
       if (this.memberID != null) {
         s.append("; mbr=").append(this.memberID);
       }
-      if ((this.bits & BITS_HAS_PREVIOUS_ID) != 0) {
+      if (hasPreviousMemberID()) {
         s.append("; prev=").append(this.previousMemberID);
       }
       if (this.distributedSystemId >= 0) {
         s.append("; ds=").append(this.distributedSystemId);
       }
       s.append("; time=").append(getVersionTimeStamp());
-      if ((this.bits & BITS_IS_REMOTE_TAG) != 0) {
+      if (isFromOtherMember()) {
         s.append("; remote");
       }
       if (this.isAllowedByResolver()) {
@@ -543,5 +543,28 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
       }
     }
     return true;
+  }
+  
+  /**
+   * Set any bits in the given bitMask on the bits field
+   */
+  private void setBits(int bitMask) {
+    int oldBits;
+    int newBits;
+    do {
+      oldBits = this.bits;
+      newBits = oldBits | bitMask;
+    } while (!bitsUpdater.compareAndSet(this, oldBits, newBits));
+  }
+  /**
+   * Clear any bits not in the given bitMask from the bits field
+   */
+  private void clearBits(int bitMask) {
+    int oldBits;
+    int newBits;
+    do {
+      oldBits = this.bits;
+      newBits = oldBits & bitMask;
+    } while (!bitsUpdater.compareAndSet(this, oldBits, newBits));
   }
 }
