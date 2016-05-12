@@ -19,10 +19,15 @@
 
 package com.gemstone.gemfire.cache.lucene;
 
+import java.io.File;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
+import com.gemstone.gemfire.test.junit.rules.DiskDirRule;
 
 import org.junit.After;
 import org.junit.Before;
@@ -33,15 +38,15 @@ public class LuceneIntegrationTest {
 
   protected Cache cache;
   protected LuceneService luceneService;
-
   @Rule
-  public TestName name = new TestName();
+  public DiskDirRule diskDirRule = new DiskDirRule();
 
   @After
   public void tearDown() {
     if(this.cache != null) {
       this.cache.close();
     }
+    MemoryAllocatorImpl.freeOffHeapMemory();
   }
 
   @Before
@@ -49,7 +54,12 @@ public class LuceneIntegrationTest {
     CacheFactory cf = new CacheFactory();
     cf.set("mcast-port", "0");
     cf.set("locators", "");
+    cf.set("off-heap-memory-size", "100m");
     this.cache = cf.create();
+    cache.createDiskStoreFactory()
+      .setDiskDirs(new File[] {diskDirRule.get()})
+      .setMaxOplogSize(1)
+      .create(GemFireCacheImpl.getDefaultDiskStoreName());
     luceneService = LuceneServiceProvider.get(this.cache);
   }
 }

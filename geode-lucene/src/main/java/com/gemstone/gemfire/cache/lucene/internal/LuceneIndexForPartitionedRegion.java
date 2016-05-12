@@ -29,7 +29,6 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
-import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
@@ -88,45 +87,36 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       repositoryManager = new PartitionedRepositoryManager(dataRegion, (PartitionedRegion)fileRegion, (PartitionedRegion)chunkRegion, mapper, analyzer);
       
       // create AEQ, AEQ listener and specify the listener to repositoryManager
-      if (withPersistence) {
-        createAEQWithPersistence();
-      }
-      else {
-        createAEQ();
-      }
+      createAEQ(dataRegion);
 
       addExtension(dataRegion);
       hasInitialized = true;
     }
   }
 
-  private AsyncEventQueueFactoryImpl createAEQFactory() {
+  private AsyncEventQueueFactoryImpl createAEQFactory(final Region dataRegion) {
     AsyncEventQueueFactoryImpl factory = (AsyncEventQueueFactoryImpl) cache.createAsyncEventQueueFactory();
     factory.setParallel(true); // parallel AEQ for PR
     factory.setMaximumQueueMemory(1000);
     factory.setDispatcherThreads(1);
     factory.setIsMetaQueue(true);
+    if(dataRegion.getAttributes().getDataPolicy().withPersistence()) {
+      factory.setPersistent(true);
+    }
+    factory.setDiskSynchronous(dataRegion.getAttributes().isDiskSynchronous());
     return factory;
   }
 
-  AsyncEventQueue createAEQWithPersistence() {
-    AsyncEventQueueFactoryImpl factory = createAEQFactory();
-    factory.setPersistent(true);
-    return createAEQ(factory);
-  }
-
-  AsyncEventQueue createAEQ() {
-    return createAEQ(createAEQFactory());
+  AsyncEventQueue createAEQ(Region dataRegion) {
+    return createAEQ(createAEQFactory(dataRegion));
   }
 
   private AsyncEventQueue createAEQ(AsyncEventQueueFactoryImpl factory) {
     LuceneEventListener listener = new LuceneEventListener(repositoryManager);
     String aeqId = LuceneServiceImpl.getUniqueIndexName(getName(), regionPath);
-    AsyncEventQueueImpl aeq = (AsyncEventQueueImpl)cache.getAsyncEventQueue(aeqId);
     AsyncEventQueue indexQueue = factory.create(aeqId, listener);
     return indexQueue;
   }
-
 
   boolean fileRegionExists(String fileRegionName) {
     return cache.<String, File> getRegion(fileRegionName) != null;
@@ -156,7 +146,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     return LuceneServiceImpl.getUniqueIndexName(indexName, regionPath) + ".chunks";
   }
 
-  private PartitionAttributesFactory configureLuceneRegionAttributesFactory(PartitionAttributesFactory attributesFactory, PartitionAttributes dataRegionAttributes) {
+  private PartitionAttributesFactory configureLuceneRegionAttributesFactory(PartitionAttributesFactory attributesFactory, PartitionAttributes<?,?> dataRegionAttributes) {
     attributesFactory.setTotalNumBuckets(dataRegionAttributes.getTotalNumBuckets());
     attributesFactory.setRedundantCopies(dataRegionAttributes.getRedundantCopies());
     return attributesFactory;

@@ -32,6 +32,7 @@ import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.MembershipAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributes;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
@@ -120,12 +121,16 @@ public class LuceneIndexForPartitionedRegionTest {
     String name = "indexName";
     String regionPath = "regionName";
     Cache cache = Fakes.cache();
+    final Region region =Fakes.region(regionPath, cache);
+    RegionAttributes attributes  = region.getAttributes();
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
     AsyncEventQueueFactoryImpl aeqFactory = mock(AsyncEventQueueFactoryImpl.class);
     when(cache.createAsyncEventQueueFactory()).thenReturn(aeqFactory);
 
     LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-    index.createAEQWithPersistence();
+    index.createAEQ(region);
 
+    verify(aeqFactory).setPersistent(eq(true));
     verify(aeqFactory).create(any(), any());
   }
 
@@ -134,21 +139,23 @@ public class LuceneIndexForPartitionedRegionTest {
     String name = "indexName";
     String regionPath = "regionName";
     Cache cache = Fakes.cache();
+    final Region region =Fakes.region(regionPath, cache);
     AsyncEventQueueFactoryImpl aeqFactory = mock(AsyncEventQueueFactoryImpl.class);
     when(cache.createAsyncEventQueueFactory()).thenReturn(aeqFactory);
 
     LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-    index.createAEQ();
+    index.createAEQ(region);
 
+    verify(aeqFactory, never()).setPersistent(eq(true));
     verify(aeqFactory).create(any(), any());
   }
 
-  private void initializeScenario(final boolean withPersistence, final String regionPath, final Cache cache) {
+  private Region initializeScenario(final boolean withPersistence, final String regionPath, final Cache cache) {
     int defaultLocalMemory = 100;
-    initializeScenario(withPersistence, regionPath, cache, defaultLocalMemory);
+    return initializeScenario(withPersistence, regionPath, cache, defaultLocalMemory);
   }
 
-  private void initializeScenario(final boolean withPersistence, final String regionPath, final Cache cache, int localMaxMemory) {
+  private Region initializeScenario(final boolean withPersistence, final String regionPath, final Cache cache, int localMaxMemory) {
     PartitionedRegion region = mock(PartitionedRegion.class);
     RegionAttributes regionAttributes = mock(RegionAttributes.class);
     PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
@@ -162,6 +169,8 @@ public class LuceneIndexForPartitionedRegionTest {
     when(partitionAttributes.getTotalNumBuckets()).thenReturn(113);
     when(dataPolicy.withPersistence()).thenReturn(withPersistence);
     when(region.getExtensionPoint()).thenReturn(extensionPoint);
+
+    return region;
   }
 
   private PartitionAttributes initializeAttributes(final Cache cache) {
@@ -192,41 +201,22 @@ public class LuceneIndexForPartitionedRegionTest {
   }
 
   @Test
-  public void initializeWithPersistenceShouldCreateAEQWithPersistence() {
-    boolean withPersistence = true;
-    String name = "indexName";
-    String regionPath = "regionName";
-    Cache cache = Fakes.cache();
-    initializeScenario(withPersistence, regionPath, cache);
-
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-    index.setSearchableFields(new String[]{"field"});
-    LuceneIndexForPartitionedRegion spy = spy(index);
-    doReturn(null).when(spy).createFileRegion(any(), any(), any());
-    doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any());
-    doReturn(null).when(spy).createAEQWithPersistence();
-    spy.initialize();
-
-    verify(spy).createAEQWithPersistence();
-  }
-
-  @Test
   public void initializeWithoutPersistenceShouldCreateAEQ() {
     boolean withPersistence = false;
     String name = "indexName";
     String regionPath = "regionName";
     Cache cache = Fakes.cache();
-    initializeScenario(withPersistence, regionPath, cache);
+    Region region = initializeScenario(withPersistence, regionPath, cache);
 
     LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     index.setSearchableFields(new String[]{"field"});
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createFileRegion(any(), any(), any());
     doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any());
-    doReturn(null).when(spy).createAEQ();
+    doReturn(null).when(spy).createAEQ(eq(region));
     spy.initialize();
 
-    verify(spy).createAEQ();
+    verify(spy).createAEQ(eq(region));
   }
 
   @Test
@@ -235,14 +225,14 @@ public class LuceneIndexForPartitionedRegionTest {
     String name = "indexName";
     String regionPath = "regionName";
     Cache cache = Fakes.cache();
-    initializeScenario(withPersistence, regionPath, cache);
+    Region region = initializeScenario(withPersistence, regionPath, cache);
 
     LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     index.setSearchableFields(new String[]{"field"});
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createFileRegion(any(), any(), any());
     doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any());
-    doReturn(null).when(spy).createAEQ();
+    doReturn(null).when(spy).createAEQ(eq(region));
     spy.initialize();
 
     verify(spy).createChunkRegion(eq(RegionShortcut.PARTITION), eq(index.createFileRegionName()), any(), eq(index.createChunkRegionName()));
@@ -254,14 +244,14 @@ public class LuceneIndexForPartitionedRegionTest {
     String name = "indexName";
     String regionPath = "regionName";
     Cache cache = Fakes.cache();
-    initializeScenario(withPersistence, regionPath, cache);
+    Region region = initializeScenario(withPersistence, regionPath, cache);
 
     LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     index.setSearchableFields(new String[]{"field"});
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createFileRegion(any(), any(), any());
     doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any());
-    doReturn(null).when(spy).createAEQ();
+    doReturn(null).when(spy).createAEQ(eq(region));
     spy.initialize();
 
     verify(spy).createFileRegion(eq(RegionShortcut.PARTITION), eq(index.createFileRegionName()), any());
@@ -309,7 +299,7 @@ public class LuceneIndexForPartitionedRegionTest {
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createFileRegion(any(), any(), any());
     doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any());
-    doReturn(null).when(spy).createAEQWithPersistence();
+    doReturn(null).when(spy).createAEQ(any());
     spy.initialize();
 
     verify(spy).createChunkRegion(eq(RegionShortcut.PARTITION_PERSISTENT), eq(index.createFileRegionName()), any(), eq(index.createChunkRegionName()));
@@ -328,7 +318,7 @@ public class LuceneIndexForPartitionedRegionTest {
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createFileRegion(any(), any(), any());
     doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any());
-    doReturn(null).when(spy).createAEQWithPersistence();
+    doReturn(null).when(spy).createAEQ(any());
     spy.initialize();
 
     verify(spy).createFileRegion(eq(RegionShortcut.PARTITION_PERSISTENT), eq(index.createFileRegionName()), any());
@@ -347,7 +337,7 @@ public class LuceneIndexForPartitionedRegionTest {
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createFileRegion(any(), any(), any());
     doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any());
-    doReturn(null).when(spy).createAEQWithPersistence();
+    doReturn(null).when(spy).createAEQ(any());
     spy.initialize();
     spy.initialize();
 

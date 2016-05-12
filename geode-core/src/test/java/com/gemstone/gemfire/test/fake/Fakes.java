@@ -23,6 +23,10 @@ import java.net.UnknownHostException;
 import org.junit.Assert;
 
 import com.gemstone.gemfire.CancelCriterion;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.distributed.internal.DSClock;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -94,6 +98,21 @@ public class Fakes {
    */
   public static InternalDistributedSystem distributedSystem() {
     return cache().getDistributedSystem();
+  }
+
+  /**
+   * A fake region, which contains a fake cache and some other
+   * fake attributes
+   */
+  public static Region region(String name, Cache cache) {
+    Region region = mock(Region.class);
+    RegionAttributes attributes = mock(RegionAttributes.class);
+    DataPolicy policy = mock(DataPolicy.class);
+    when(region.getAttributes()).thenReturn(attributes);
+    when(attributes.getDataPolicy()).thenReturn(policy);
+    when(region.getCache()).thenReturn(cache);
+    when(region.getRegionService()).thenReturn(cache);
+    return region;
   }
 
   private Fakes() {

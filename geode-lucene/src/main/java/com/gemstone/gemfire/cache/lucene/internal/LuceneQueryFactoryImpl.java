@@ -54,6 +54,9 @@ public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
   
   public <K, V> LuceneQuery<K, V> create(String indexName, String regionName, LuceneQueryProvider provider) {
     Region<K, V> region = cache.getRegion(regionName);
+    if(region == null) {
+      throw new IllegalArgumentException("Region not found: " + regionName);
+    }
     LuceneQueryImpl<K, V> luceneQuery = new LuceneQueryImpl<K, V>(indexName, region, provider, projectionFields, limit, pageSize);
     return luceneQuery;
   }
