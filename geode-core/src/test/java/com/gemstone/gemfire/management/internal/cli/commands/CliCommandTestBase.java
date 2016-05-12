@@ -43,8 +43,6 @@ import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 
-import org.junit.runners.Parameterized;
-
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
@@ -396,7 +394,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
     printStream.print(commandResultToString(commandResult));
   }
 
-  protected String commandResultToString(final CommandResult commandResult) {
+  protected static String commandResultToString(final CommandResult commandResult) {
     assertNotNull(commandResult);
 
     commandResult.resetToFirstLine();
