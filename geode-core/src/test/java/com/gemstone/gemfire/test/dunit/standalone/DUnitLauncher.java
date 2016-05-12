@@ -38,10 +38,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 import java.util.Properties;
 
-import batterytest.greplogs.ExpectedStrings;
-import batterytest.greplogs.LogConsumer;
-import hydra.Log;
-import hydra.MethExecutorResult;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -49,6 +45,10 @@ import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.Assert;
+
+import batterytest.greplogs.ExpectedStrings;
+import batterytest.greplogs.LogConsumer;
+import hydra.MethExecutorResult;
 
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -68,8 +68,6 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 
  * Also, it's a good idea to set your working directory, because the test code
  * a lot of files that it leaves around.
- * 
- *
  */
 public class DUnitLauncher {
 
@@ -115,6 +113,7 @@ public class DUnitLauncher {
       return false;
     }
   }
+
   /**
    * Launch DUnit. If the unit test was launched through
    * the hydra framework, leave the test alone.
@@ -145,11 +144,7 @@ public class DUnitLauncher {
     return "localhost[" + locatorPort + "]";
   }
 
-  
-  private static void launch() throws URISyntaxException, AlreadyBoundException, IOException, InterruptedException, NotBoundException  {
-//  initialize the log writer that hydra uses
-    Log.createLogWriter( "dunit-master", LOG_LEVEL );
-
+  private static void launch() throws URISyntaxException, AlreadyBoundException, IOException, InterruptedException, NotBoundException {
     DUNIT_SUSPECT_FILE = new File(SUSPECT_FILENAME);
     DUNIT_SUSPECT_FILE.delete();
     DUNIT_SUSPECT_FILE.deleteOnExit();
