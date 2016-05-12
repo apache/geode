@@ -52,7 +52,7 @@ public class JSONFormatter {
   
   public static final String JSON_CLASSNAME = "__GEMFIRE_JSON";
   
-  enum states {NONE, ObJECT_START,  FIELD_NAME, INNER_OBJECT_FOUND, SCALER_FOUND, LIST_FOUND, OBJECT_ENDS};
+  enum states {NONE, ObJECT_START,  FIELD_NAME, SCALER_FOUND, LIST_FOUND, LIST_ENDS, OBJECT_ENDS};
   
   private JSONFormatter() {
   }
@@ -192,9 +192,10 @@ public class JSONFormatter {
         {
           //need to create array; fieldname may be there; will it case it not there
           arrayStarts(currentState);
+          currentState = states.LIST_FOUND;
           PdxListHelper list = getList(jp, currentState, null);
           currentPdxInstance.addListField(currentFieldName, list);
-          currentState = states.LIST_FOUND;
+          currentState = states.LIST_ENDS;
           currentFieldName = null;          
           break;
         }
@@ -409,10 +410,10 @@ public class JSONFormatter {
         {
           //array is end
           arrayEnds(currentState);
+          currentState = states.LIST_ENDS;
           if(currentPdxList.getParent() == null)
             return currentPdxList;
-          currentPdxList = currentPdxList.getParent(); 
-          currentState = states.LIST_FOUND;
+          currentPdxList = currentPdxList.getParent();          
           break;
         }
         case VALUE_EMBEDDED_OBJECT :
@@ -486,6 +487,8 @@ public class JSONFormatter {
     case FIELD_NAME:
     case OBJECT_ENDS://in list
     case SCALER_FOUND://inlist
+    case LIST_FOUND:
+    case LIST_ENDS:
       return true;
       default:
         throw new IllegalStateException("Object start called when state is " +currentState);
@@ -499,7 +502,7 @@ public class JSONFormatter {
     {
     case ObJECT_START: //when empty object on field
     case SCALER_FOUND:
-    case LIST_FOUND:
+    case LIST_ENDS:
     case OBJECT_ENDS://inner object closes
       return true;
       default:
@@ -515,6 +518,7 @@ public class JSONFormatter {
     case SCALER_FOUND:
     case FIELD_NAME:
     case LIST_FOUND:
+    case LIST_ENDS:
       return true;
       default:
         throw new IllegalStateException("Array start called when state is " +currentState);
@@ -529,6 +533,7 @@ public class JSONFormatter {
     case FIELD_NAME://when empty array
     case SCALER_FOUND:
     case LIST_FOUND:
+    case LIST_ENDS:  
     case OBJECT_ENDS:
       return true;
       default:
@@ -544,6 +549,7 @@ public class JSONFormatter {
     case FIELD_NAME:
     case SCALER_FOUND:
     case LIST_FOUND:
+    case LIST_ENDS:
     case OBJECT_ENDS:
       return true;
       default:
@@ -559,6 +565,7 @@ public class JSONFormatter {
     case FIELD_NAME:
     case SCALER_FOUND:
     case LIST_FOUND:
+    case LIST_ENDS:
     case OBJECT_ENDS:
       return true;
       default:
@@ -574,6 +581,7 @@ public class JSONFormatter {
     case FIELD_NAME:
     case SCALER_FOUND:
     case LIST_FOUND:
+    case LIST_ENDS:
     case OBJECT_ENDS:
       return true;
       default:
@@ -589,6 +597,7 @@ public class JSONFormatter {
     case FIELD_NAME:
     case SCALER_FOUND:
     case LIST_FOUND:
+    case LIST_ENDS:
     case OBJECT_ENDS:
       return true;
       default:
@@ -604,6 +613,7 @@ public class JSONFormatter {
     case ObJECT_START:
     case SCALER_FOUND:
     case LIST_FOUND:
+    case LIST_ENDS:
     case OBJECT_ENDS:
       return true;
       default:
@@ -619,6 +629,7 @@ public class JSONFormatter {
     case FIELD_NAME:
     case SCALER_FOUND:
     case LIST_FOUND:
+    case LIST_ENDS:
     case OBJECT_ENDS:
       return true;
       default:
