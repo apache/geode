@@ -23,7 +23,9 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import com.jayway.awaitility.Awaitility;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -109,6 +111,8 @@ public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements Ca
         System.setProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
         Cache newCache;
         if (client) {
+          System.setProperty("gemfire.locators", "");
+          System.setProperty("gemfire.mcast-port", "0");
           newCache = (Cache)new ClientCacheFactory(getSystem().getProperties()).create();
         } else {
           if(factory == null) {
@@ -240,16 +244,9 @@ public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements Ca
       final GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
               && gemFireCache.getCancelCriterion().cancelInProgress() != null) {
-        Wait.waitForCriterion(new WaitCriterion() { // TODO: replace with Awaitility
-          @Override
-          public boolean done() {
-            return gemFireCache.isClosed();
-          }
-          @Override
-          public String description() {
-            return "waiting for cache to close";
-          }
-        }, 30 * 1000, 300, true);
+        Awaitility.await().pollDelay(100, TimeUnit.MILLISECONDS)
+            .pollInterval(100,TimeUnit.MILLISECONDS).timeout(60,TimeUnit.SECONDS)
+            .until(() -> gemFireCache.isClosed());
       }
       if (cache == null || cache.isClosed()) {
         cache = null;
