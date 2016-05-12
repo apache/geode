@@ -29,7 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
+import com.gemstone.gemfire.cache.EvictionAttributes;
+import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
@@ -74,26 +77,82 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
   }
 
   @Test
-  public void verifyLuceneRegionInternal() {
+  public void shouldUseRedundancyForInternalRegionsWhenUserRegionHasRedundancy() {
+    createIndex("text");
+    cache.createRegionFactory(RegionShortcut.PARTITION_REDUNDANT).create(REGION_NAME);
+    verifyInternalRegions(region -> {
+      assertEquals(1, region.getAttributes().getPartitionAttributes().getRedundantCopies());
+    });
+  }
+
+  @Test
+  public void shouldNotUseEvictionForInternalRegionsWhenUserRegionHasEviction() {
+    createIndex("text");
+    cache.createRegionFactory(RegionShortcut.PARTITION)
+      .setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(1))
+      .create(REGION_NAME);
+
+    verifyInternalRegions(region -> {
+      assertEquals(true, region.getAttributes().getEvictionAttributes().getAction().isNone());
+    });
+  }
+
+  @Test
+  public void shouldNotUseIdleTimeoutForInternalRegionsWhenUserRegionHasIdleTimeout() {
+    createIndex("text");
+    cache.createRegionFactory(RegionShortcut.PARTITION)
+      .setEntryIdleTimeout(new ExpirationAttributes(5))
+      .create(REGION_NAME);
+
+    verifyInternalRegions(region -> {
+      assertEquals(0, region.getAttributes().getEntryIdleTimeout().getTimeout());
+    });
+  }
+
+  @Test
+  public void shouldNotUseTTLForInternalRegionsWhenUserRegionHasTTL() {
+    createIndex("text");
+    cache.createRegionFactory(RegionShortcut.PARTITION)
+      .setEntryTimeToLive(new ExpirationAttributes(5))
+      .create(REGION_NAME);
+
+    verifyInternalRegions(region -> {
+      assertEquals(0, region.getAttributes().getEntryTimeToLive().getTimeout());
+    });
+  }
+
+  @Test
+  public void shouldNotUseOverflowForInternalRegionsWhenUserRegionHasOverflow() {
+    createIndex("text");
+    cache.createRegionFactory(RegionShortcut.PARTITION_OVERFLOW).create(REGION_NAME);
+    verifyInternalRegions(region -> {
+      assertTrue(region.getAttributes().getEvictionAttributes().getAction().isNone());
+    });
+  }
+
+  @Test
+  public void shouldCreateInternalRegionsForIndex() {
     createIndex("text");
 
     // Create partitioned region
     createRegion();
 
+    verifyInternalRegions(region -> {
+      region.isInternalRegion();
+      cache.rootRegions().contains(region);
+    });
+  }
+
+  private void verifyInternalRegions(Consumer<LocalRegion> verify) {
     // Get index
     LuceneIndexForPartitionedRegion index = (LuceneIndexForPartitionedRegion) luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
     // Verify the meta regions exist and are internal
     LocalRegion chunkRegion = (LocalRegion) cache.getRegion(index.createChunkRegionName());
-    assertTrue(chunkRegion.isInternalRegion());
     LocalRegion fileRegion = (LocalRegion) cache.getRegion(index.createFileRegionName());
-    assertTrue(fileRegion.isInternalRegion());
+    verify.accept(chunkRegion);
+    verify.accept(fileRegion);
 
-    // Verify the meta regions are not contained in the root regions
-    for (Region region : cache.rootRegions()) {
-      assertNotEquals(chunkRegion.getFullPath(), region.getFullPath());
-      assertNotEquals(fileRegion.getFullPath(), region.getFullPath());
-    }
   }
 
   private Region createRegion() {
