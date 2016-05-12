@@ -2191,7 +2191,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         unresponsive.removeAll(removalReqs);
         unresponsive.removeAll(leaveReqs);
         if (!unresponsive.isEmpty()) {
-          removeHealthyMembers(unresponsive);          
+          removeHealthyMembers(unresponsive);
+          synchronized (viewRequests) {
+            //now lets get copy of it in viewRequests sync, as other thread might be accessing it 
+            unresponsive = new HashSet<>(unresponsive);
+          }
         }
 
         logger.debug("unresponsive members that could not be reached: {}", unresponsive);
