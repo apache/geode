@@ -336,11 +336,12 @@ public class MemoryBlockNodeJUnitTest {
   public void getDataValueCatchesCacheClosedException() {
     Object obj = getValue();
     storedObject = createValueAsSerializedStoredObject(obj);
-    StoredObject spyStoredObject = spy(storedObject);
-    MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) spyStoredObject);
-    when(((OffHeapStoredObject)spyStoredObject).getRawBytes()).thenCallRealMethod().thenThrow(new CacheClosedException("Unit test forced exception"));
+    OffHeapStoredObject spyStoredObject = spy((OffHeapStoredObject) storedObject);
+    doReturn("java.lang.Long").when(spyStoredObject).getDataType();
+    doThrow(new CacheClosedException("Unit test forced exception")).when(spyStoredObject).getRawBytes();
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
+    MemoryBlock mb = new MemoryBlockNode(ma, spyStoredObject);
     softly.assertThat(mb.getDataValue()).isEqualTo("CacheClosedException:Unit test forced exception");
   }
   
@@ -349,11 +350,12 @@ public class MemoryBlockNodeJUnitTest {
   public void getDataValueCatchesClassNotFoundException() throws Exception {
     Object obj = getValue();
     storedObject = createValueAsSerializedStoredObject(obj);
-    StoredObject spyStoredObject = spy(storedObject);
-    MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) spyStoredObject);
-    when(((OffHeapStoredObject)spyStoredObject).getRawBytes()).thenCallRealMethod().thenThrow(ClassNotFoundException.class);
+    OffHeapStoredObject spyStoredObject = spy((OffHeapStoredObject)storedObject);
+    doReturn("java.lang.Long").when(spyStoredObject).getDataType();
+    doThrow(ClassNotFoundException.class).when(spyStoredObject).getRawBytes();
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
+    MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) spyStoredObject);
     softly.assertThat(mb.getDataValue()).isEqualTo("ClassNotFoundException:null");
   }
   

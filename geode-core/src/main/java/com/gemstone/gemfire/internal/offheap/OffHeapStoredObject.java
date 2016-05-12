@@ -417,12 +417,13 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       MemoryAllocatorImpl.getAllocator().getStats().incReads();
       return result;
     }
+    /**
+     * This method should only be called on uncompressed objects
+     * @return byte array of the StoredObject value. 
+     */
     protected byte[] getRawBytes() {
-      byte[] result = getCompressedBytes();
-      if (isCompressed()) {
-        throw new UnsupportedOperationException();
-      }
-      return result;
+      assert !isCompressed();
+      return getCompressedBytes(); 
     }
 
     @Override
