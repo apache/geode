@@ -803,7 +803,7 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     assertThat(chunk.getDataValue()).isNull();
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test(expected = AssertionError.class)
   public void getRawBytesShouldThrowExceptionIfValueIsCompressed() {
     Object regionEntryValue = getValue();
     byte[] regionEntryValueAsBytes = convertValueToByteArray(regionEntryValue);
@@ -816,6 +816,7 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     chunk.getRawBytes();
 
     chunk.release();
+    fail("Expected getRawBytes() for a compressed value to throw java.lang.AssertionError");
   }
 
   @Test

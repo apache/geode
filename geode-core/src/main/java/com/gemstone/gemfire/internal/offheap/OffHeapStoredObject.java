@@ -417,11 +417,13 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       MemoryAllocatorImpl.getAllocator().getStats().incReads();
       return result;
     }
+    /**
+     * @return byte array of the StoredObject value. 
+     * @throws AssertionError if this.isCompressed() == true
+     */
     protected byte[] getRawBytes() {
       byte[] result = getCompressedBytes();
-      if (isCompressed()) {
-        throw new UnsupportedOperationException();
-      }
+      assert(!isCompressed());
       return result;
     }
 
