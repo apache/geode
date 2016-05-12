@@ -144,27 +144,22 @@ public class AutoConnectionSourceImplJUnitTest {
   
   @Test
   public void testNoServers() throws Exception {
-    
     startFakeLocator();
     handler.nextConnectionResponse = new ClientConnectionResponse(null);
-    
     assertEquals(null, source.findServer(null));
   }
   
   @Test
   public void testDiscoverServers() throws Exception {
     startFakeLocator();
-    
     ServerLocation loc1 = new ServerLocation("localhost", 4423);
     handler.nextConnectionResponse = new ClientConnectionResponse(loc1);
-    
     assertEquals(loc1, source.findServer(null));
   }
   
   @Test
   public void testDiscoverLocators() throws Exception {
     startFakeLocator();
-    
     int secondPort = AvailablePortHelper.getRandomAvailableTCPPort();
     TcpServer server2 = new TcpServer(secondPort, InetAddress.getLocalHost(), null, null, handler, new FakeHelper(), Thread.currentThread().getThreadGroup(), "tcp server");
     server2.start();
