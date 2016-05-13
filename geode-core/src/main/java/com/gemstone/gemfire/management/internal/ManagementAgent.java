@@ -201,10 +201,9 @@ public class ManagementAgent {
         if (logger.isDebugEnabled()) {
           logger.debug(message);
         }
-
-        if (isCustomAuthorizer()){
-          System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
-        }
+      }
+      else if (isCustomAuthenticator()){
+        System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
       }
 
       // Find developer REST WAR file
