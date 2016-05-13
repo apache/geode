@@ -1,0 +1,6 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ReferencePath>$(OSBUILDDIR)\hidden\lib\</ReferencePath>
+    <ProjectView>ProjectFiles</ProjectView>
+  </PropertyGroup>
+</Project>

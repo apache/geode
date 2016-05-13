@@ -1,0 +1,335 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=iso-8859-1">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 11">
+<meta name=Originator content="Microsoft Word 11">
+<link rel=File-List href="README_files/filelist.xml">
+<title>cqQuery: Pivotal GemFire&#174; Native Client C++ Example</title>
+<!--[if gte mso 9]><xml>
+ <o:DocumentProperties>
+  <o:Author>qhe</o:Author>
+  <o:Template>Normal</o:Template>
+  <o:LastAuthor>qhe</o:LastAuthor>
+  <o:Revision>9</o:Revision>
+  <o:TotalTime>8</o:TotalTime>
+  <o:Created>2008-10-29T17:48:00Z</o:Created>
+  <o:LastSaved>2008-10-29T18:11:00Z</o:LastSaved>
+  <o:Pages>1</o:Pages>
+  <o:Words>429</o:Words>
+  <o:Characters>2446</o:Characters>
+  <o:Company>GemStone Systems, Inc.</o:Company>
+  <o:Lines>20</o:Lines>
+  <o:Paragraphs>5</o:Paragraphs>
+  <o:CharactersWithSpaces>2870</o:CharactersWithSpaces>
+  <o:Version>11.6360</o:Version>
+ </o:DocumentProperties>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:SpellingState>Clean</w:SpellingState>
+  <w:GrammarState>Clean</w:GrammarState>
+  <w:ValidateAgainstSchemas/>
+  <w:SaveIfXMLInvalid>false</w:SaveIfXMLInvalid>
+  <w:IgnoreMixedContent>false</w:IgnoreMixedContent>
+  <w:AlwaysShowPlaceholderText>false</w:AlwaysShowPlaceholderText>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:LatentStyles DefLockedState="false" LatentStyleCount="156">
+ </w:LatentStyles>
+</xml><![endif]-->
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+h1
+	{mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	mso-outline-level:1;
+	font-size:24.0pt;
+	font-family:"Times New Roman";
+	font-weight:bold;}
+h2
+	{mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	mso-outline-level:2;
+	font-size:18.0pt;
+	font-family:"Times New Roman";
+	font-weight:bold;}
+h4
+	{mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	mso-outline-level:4;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	font-weight:bold;}
+p
+	{font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+code
+	{font-family:"Courier New";
+	mso-ascii-font-family:"Courier New";
+	mso-fareast-font-family:"Times New Roman";
+	mso-hansi-font-family:"Courier New";
+	mso-bidi-font-family:"Courier New";}
+span.SpellE
+	{mso-style-name:"";
+	mso-spl-e:yes;}
+span.GramE
+	{mso-style-name:"";
+	mso-gram-e:yes;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+ @list l0
+	{mso-list-id:226569577;
+	mso-list-template-ids:-1947287032;}
+@list l0:level2
+	{mso-level-text:"%2\)";
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:"Table Normal";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0in 5.4pt 0in 5.4pt;
+	mso-para-margin:0in;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-ansi-language:#0400;
+	mso-fareast-language:#0400;
+	mso-bidi-language:#0400;}
+</style>
+<![endif]-->
+<meta http-equiv=Content-Style-Type content="text/css">
+</head>
+
+<IMG SRC="../../../docs/PIVOTAL_GemFire_190x81.png" BORDER="0">
+<body lang=EN-US link=blue vlink=blue style='tab-interval:.5in'>
+
+<div class=Section1>
+
+<div>
+
+<h1 align=center style='text-align:center'><span class=SpellE><span
+class=GramE>cqQuery</span></span></h1>
+
+<h2 align=center style='text-align:center'>Pivotal<b><sup><font size=-0>&#8482;</font></sup></b> GemFire<b><sup><font size=-0>&#174;</font></sup></b> Native Client </h2>
+
+<h2 align=center style='text-align:center'>C++ Programming Example</h2>
+
+</div>
+
+<div>
+
+<h2><br>
+About the <span class=SpellE>cqQuery</span> Example </h2>
+
+<p>The <span class=SpellE><code><span style='font-size:10.0pt'>cqQuery</span></code></span>
+example demonstrates the native client C++ API for continuous query. The <span
+class=SpellE><code><span style='font-size:10.0pt'>cqQuery</span></code></span>
+example is located in <span class=SpellE><code><span style='font-size:10.0pt'>SampleCode_InstallDir/examples/cqQuery</span></code></span>.</p>
+
+<p>The client application comes with a cache configuration file, <code><span
+style='font-size:10.0pt'><a href="XMLs/clientCqQuery.xml"
+target="_blank"><span class=SpellE><span style='font-size:12.0pt;font-family:
+"Times New Roman"'>clientCqQuery.xml</span></span></a></span></code>, which is
+configured to create a root region and establish the native client endpoints to
+the locally-run server by specifying <code><span style='font-size:10.0pt'>localhost<span
+class=GramE>:50505</span></span></code>. If java server is located on another
+host, you can change <span class=SpellE>localhost</span> to that host
+accordingly.</p>
+
+</div>
+
+<div>
+
+<h2><a name="configuring_environment"></a>Configuring the Environment </h2>
+
+</div>
+
+<div>
+
+<p>The following is a list of the environment configuration commands for the <span
+class=SpellE><code><span style='font-size:10.0pt'>cqQuery</span></code></span>
+example. Choose the set of commands that are appropriate for your operating
+system. The text that you type is shown in <code><b><span style='font-size:
+10.0pt'>bold</span></b></code>.</p>
+
+<p><strong>Bourne and <span class=SpellE>Korn</span> shells (<span
+class=SpellE>sh</span>, <span class=SpellE>ksh</span>, bash)</strong> </p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p><code><span style='font-size:10.0pt'>% </span></code><strong><span
+style='font-size:10.0pt;font-family:"Courier New"'>GFCPP=&lt;path to <span
+class=SpellE>NativeClient_InstallDir</span> directory&gt;; export GFCPP </span></strong><span
+style='font-size:10.0pt;font-family:"Courier New"'><br>
+<code>% </code><strong><span style='font-family:"Courier New"'>PATH=$GFCPP/<span
+class=SpellE>bin<span class=GramE>:$</span>PATH</span>; export PATH</span></strong><br>
+<code>% </code><strong><span style='font-family:"Courier New"'>LD_LIBRARY_PATH=$GFCPP/lib;
+export LD_LIBRARY_PATH</span></strong></span></p>
+
+</blockquote>
+
+<p><strong>Windows</strong></p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p><em>The Windows native client installer sets the required environment
+configurations for you, so they are listed for reference only.</em></p>
+
+<p style='margin-bottom:12.0pt'><strong><code><span style='font-size:10.0pt'>&gt;
+GFCPP=&lt;path to <span class=SpellE>NativeClient_InstallDir</span> directory&gt;</span></code><span
+style='font-size:10.0pt;font-family:"Courier New"'><br>
+<code>&gt; PATH=%GFCPP%\<span class=SpellE>bin<span class=GramE>;%</span>PATH</span>%</code><br
+style='mso-special-character:line-break'>
+<![if !supportLineBreakNewLine]><br style='mso-special-character:line-break'>
+<![endif]></span></strong></p>
+
+</blockquote>
+
+</div>
+
+<div>
+
+<h2>Running <span class=SpellE>cqQuery</span> </h2>
+
+<p>Follow these steps to run the <span class=SpellE><code><span
+style='font-size:10.0pt'>cqQuery</span></code></span> example. The steps
+reflect Windows operations, so alter them as needed for your operating system.</p>
+
+<p>When you're prompted to enter the name of the native client directory,
+replace the <span class=SpellE><code><span style='font-size:10.0pt'>xxxx</span></code></span>
+in <span class=SpellE><code><span style='font-size:10.0pt'>NativeClient_InstallDir</span></code></span>
+with the actual four-digit product version number. Note that step 1, 3, 4 can
+be run on other operating system hosts.</p>
+
+</div>
+
+<div>
+
+<p style='margin-left:.5in;text-indent:-.25in;mso-list:l0 level1 lfo1;
+tab-stops:list .5in'><![if !supportLists]><span style='mso-list:Ignore'>1.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;</span></span><![endif]>Create
+a session, <span class=GramE>then</span> configure the session environment
+according to the steps listed in <a href="#configuring_environment">Configuring
+the Environment</a><a href="../envsetup.html" target="_blank"></a>.</p>
+
+<ol start=2 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l0 level1 lfo1;tab-stops:list .5in'>Go to the <span class=SpellE><code><span
+     style='font-size:10.0pt'>cqQuery</span></code></span> example directory.</li>
+</ol>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+
+<p style='margin-left:.5in;text-indent:-.10in'><span class=SpellE><span class=GramE><code><b><span
+style='font-size:10.0pt'>cd NativeClient_InstallDir\SampleCode\examples\cqQuery</span></span></b></code></p>
+
+</blockquote>
+
+<ol start=3 type=1>
+ <li class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto;
+     mso-list:l0 level1 lfo1;tab-stops:list .5in'>Enter the following commands
+     to start the example: </li>
+</ol>
+
+<p style='margin-left:1.0in;text-indent:-.25in;mso-list:l0 level2 lfo1;
+tab-stops:list 1.0in'><![if !supportLists]><code><span style='mso-ansi-font-size:
+12.0pt;mso-bidi-font-size:12.0pt;font-family:"Times New Roman"'><span
+style='mso-list:Ignore'>1)<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span></code><![endif]><span class=SpellE><code><b><span
+style='font-size:10.0pt'>startServer.bat</span></b></code></span><code><span
+style='mso-ansi-font-size:12.0pt;mso-bidi-font-size:12.0pt;font-family:"Times New Roman"'><o:p></o:p></span></code></p>
+
+<p style='margin-left:1.0in;text-indent:-.25in;mso-list:l0 level2 lfo1;
+tab-stops:list 1.0in'><![if !supportLists]><code><span style='mso-ansi-font-size:
+12.0pt;mso-bidi-font-size:12.0pt;font-family:"Times New Roman"'><span
+style='mso-list:Ignore'>2)<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span></code><![endif]><span class=SpellE><code><b><span
+style='font-size:10.0pt'>runCqQuery.bat</span></b></code></span><code><span
+style='mso-ansi-font-size:12.0pt;mso-bidi-font-size:12.0pt;font-family:"Times New Roman"'><o:p></o:p></span></code></p>
+
+<p style='margin-left:1.0in;text-indent:-.25in;mso-list:l0 level2 lfo1;
+tab-stops:list 1.0in'><![if !supportLists]><code><span style='mso-ansi-font-size:
+12.0pt;mso-bidi-font-size:12.0pt;font-family:"Times New Roman"'><span
+style='mso-list:Ignore'>3)<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span></code><![endif]><code><b><span style='font-size:10.0pt'>In
+another window, <span class=SpellE>runUpdater.bat</span> &lt;<span
+class=SpellE>itr</span> number&gt;, where &lt;<span class=SpellE>itr</span>
+number&gt; is the number of iterations you want this program to run, <span
+class=SpellE>e.g</span>, 500.</span></b></code><code><span style='mso-ansi-font-size:
+12.0pt;mso-bidi-font-size:12.0pt;font-family:"Times New Roman"'><o:p></o:p></span></code></p>
+
+<p style='margin-left:1.0in;text-indent:-.25in;mso-list:l0 level2 lfo1;
+tab-stops:list 1.0in'><![if !supportLists]><span style='mso-list:Ignore'>4)<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><![endif]><span
+class=SpellE><span class=GramE><code><b><span style='font-size:10.0pt'>stopServer.bat</span></b></code></span></span><code><b><span
+style='font-size:10.0pt'> when finished.</span></b></code></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+</div>
+
+<div>
+
+<h2>Changing System Parameters</h2>
+
+<p style='margin-bottom:12.0pt'>By default, this product ships configured for
+multicast membership resolution. If your network environment does not allow
+multicast, you can configure GemFire for <span class=SpellE>unicast</span>. See
+the <em>GemFire User's Guide</em> for instructions
+on configuring TCP transport for membership and discovery. </p>
+
+</div>
+
+<p class=MsoNormal><a href="#Top">Top</a> </p>
+
+<p><br>
+<p><span class=GramE>Copyright &#169; 2006-2014 Pivotal Software, Inc. All rights reserved.  This product is protected by U.S. and international copyright and intellectual property laws. Pivotal products are covered by one or more patents listed at http://www.pivotal.io/patents.</p>
+</div>
+
+</body>
+
+</html>

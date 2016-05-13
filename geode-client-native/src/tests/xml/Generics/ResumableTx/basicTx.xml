@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">600</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>50</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+  
+  <data name="keyType">str</data>
+  <data name="clientCount">3</data>
+  <data name="minExecutions">100</data>
+  
+  <data name="ThinClientPool">
+    <snippet>
+      <pool name="_Test_Pool1" min-connections="2" locators="true" thread-local-connections="true" subscription-enabled="true" subscription-redundancy="-1" />
+    </snippet>
+  </data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" pool-name="_Test_Pool1" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set count="3" name="Client"/>
+   
+  <test name="BasicTransactiontest" description="This is a Basic test ,which will test the general transactional flow with a single Thread.">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 1 -e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH Generics/ResumableTx/csTx.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="CreatePool" action="doCreatePool" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.resumabletx" waitTime="5m" argTypes="String,String">
+      <data name="poolSpec">ThinClientPool</data>
+      <client-set count="3" name="Client"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.resumabletx" waitTime="5m" argTypes="String,String">
+      <client-set count="3" name="Client"/>
+      <data name="regionSpec">ThinClientRegion</data>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.resumabletx" waitTime="2m" argTypes="String,String">
+      <data name="regionName">TestTCR1</data>
+      <client-set count="3" name="Client"/>
+    </task>
+    <task name="Populate Entries" action="doPopulateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.resumabletx" waitTime="15m" argTypes="String,String">
+      <client-set count="3" name="Client"/>
+    </task>
+    <task name="Basic Transactions " action="doBasicTX" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.resumabletx" waitTime="15m" argTypes="String,String">
+      <client-set count="3" name="Client"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.resumabletx" waitTime="5m" argTypes="String,String"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+   </test>
+</test-driver>

@@ -1,0 +1,29 @@
+
+NAMESPACE = testobject
+CLASSES = \
+	PortfolioPdxAuto \
+	PositionPdxAuto \
+
+ifeq ($(strip $(NAMESPACE)),)
+	SERIALIZER_PATTERN = %Serializable.cpp
+else
+	SERIALIZER_PATTERN = $(NAMESPACE)_%Serializable.cpp
+endif
+SERIALIZERS = $(patsubst %,$(SERIALIZER_PATTERN),$(CLASSES))
+PDXAUTOSERIALIZER = $(GFCPP)/bin/pdxautoserializer
+PDXAUTOSERIALIZER_FLAGS = 
+
+.PHONY: all
+all: $(CLASSES) 
+
+.PHONY: clean
+clean:
+	rm -rf $(SERIALIZERS) 
+
+.PHONY: $(CLASSES)
+$(CLASSES): % : $(SERIALIZER_PATTERN)
+
+$(SERIALIZER_PATTERN): %.hpp
+	$(PDXAUTOSERIALIZER) $(PDXAUTOSERIALIZER_FLAGS) $<
+
+

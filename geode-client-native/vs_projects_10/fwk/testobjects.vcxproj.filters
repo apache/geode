@@ -1,0 +1,300 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="Header Files\PdxAuto">
+      <UniqueIdentifier>{9621a121-1504-4cd1-9c28-4f21bb665265}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PdxAuto">
+      <UniqueIdentifier>{25722ec1-253f-46af-b170-28038267505b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PdxAuto\generated">
+      <UniqueIdentifier>{62334f93-b968-4687-9271-4d6d8de4a0a9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\tests\testobject\BatchObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\DeltaFastAssetAccount.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\DeltaPSTObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\DeltaTestImpl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\FastAsset.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\FastAssetAccount.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\NoopAuthInit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\Portfolio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\Position.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PSTObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\TestObject1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\NestedPdxObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\NonPdxType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxClassV1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxClassV2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\InvalidPdxUsage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PortfolioPdx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PositionPdx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\VariousPdxTypes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxVersioned1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxVersioned2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\EqStruct.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxAutoMegaType.cpp">
+      <Filter>Source Files\PdxAuto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxAutoMegaTypeSerializable.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypeWithAuto.cpp">
+      <Filter>Source Files\PdxAuto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\CharTypes_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxType_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\Address_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\VariousPdxTypesWithAuto.cpp">
+      <Filter>Source Files\PdxAuto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypes1_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypes2_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypes3_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypes4_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypes5_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypes6_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypes7_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypes8_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypes9_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypes10_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxClassV1WithAuto.cpp">
+      <Filter>Source Files\PdxAuto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxClassV2WithAuto.cpp">
+      <Filter>Source Files\PdxAuto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxType1V1_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxType2V1_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxType3V1_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypes1V2_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypes2V2_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypes3V2_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypesIgnoreUnreadFieldsV1_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypesIgnoreUnreadFieldsV2_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypesR1V2_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypesR2V2_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypesV1R1_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxTypesV1R2_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxVersionedV2_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\TestEqualsV1_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\PdxVersionedV1_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\NestedPdx_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\testobject\Child_UTImpl.cpp">
+      <Filter>Source Files\PdxAuto\generated</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\tests\testobject\ArrayOfByte.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\BatchObject.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\DeltaFastAssetAccount.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\DeltaPSTObject.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\DeltaTestImpl.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\DeltaTestObj.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\FastAsset.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\FastAssetAccount.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\NoopAuthInit.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\Portfolio.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\Position.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\PSTObject.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\TestObject1.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\TimestampedObject.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\NestedPdxObject.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\NonPdxType.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\PdxClassV1.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\PdxClassV2.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\PdxType.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\InvalidPdxUsage.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\PortfolioPdx.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\PositionPdx.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\VariousPdxTypes.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\PdxVersioned1.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\PdxVersioned2.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\EqStruct.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\PdxAutoMegaType.hpp">
+      <Filter>Header Files\PdxAuto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\PdxTypeWithAuto.hpp">
+      <Filter>Header Files\PdxAuto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\VariousPdxTypesWithAuto.hpp">
+      <Filter>Header Files\PdxAuto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\PdxClassV2WithAuto.hpp">
+      <Filter>Header Files\PdxAuto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tests\testobject\PdxClassV1WithAuto.hpp">
+      <Filter>Header Files\PdxAuto</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.1//EN" "http://www.gemstone.com/dtd/cache4_1.dtd">
+<cache cache-proxy-enabled="true" lock-lease="120" lock-timeout="60" search-timeout="300">
+  <region-attributes id="attTemplate" scope="local" mirror-type="none" initial-capacity="16" load-factor="0.75" concurrency-level="16" statistics-enabled="true">
+    <key-constraint>java.lang.String</key-constraint>
+  </region-attributes>
+  <vm-root-region name="root">
+    <region-attributes refid="attTemplate" scope="distributed-no-ack">
+      <region-time-to-live>
+        <expiration-attributes timeout="0" action="invalidate"/>
+      </region-time-to-live>
+      <region-idle-time>
+        <expiration-attributes timeout="0" action="invalidate"/>
+      </region-idle-time>
+      <entry-time-to-live>
+        <expiration-attributes timeout="0" action="invalidate"/>
+      </entry-time-to-live>
+      <entry-idle-time>
+        <expiration-attributes timeout="0" action="invalidate"/>
+      </entry-idle-time>
+    </region-attributes>
+    <entry>
+      <key><string>Application Version</string></key>
+      <value><string>1.0</string></value>
+    </entry>
+    <region name="rlocal">
+      <region-attributes refid="attTemplate">
+      </region-attributes>
+    </region>
+    <region name="rdistnoack">
+      <region-attributes refid="attTemplate" scope="distributed-no-ack">
+      </region-attributes>
+    </region>
+    <region name="rglobalmirrored">
+      <region-attributes refid="attTemplate" scope="global" mirror-type="keys-values">
+      </region-attributes>
+    </region>
+  </vm-root-region>
+</cache>

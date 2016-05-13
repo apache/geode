@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">100</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="redundancyLevel">1</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>100000</item>
+    </list>
+  </data>
+	
+  <data name="valueSizes">
+    <list>
+      <item>1000</item>
+    </list>
+  </data>
+	
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="keyType">str</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true"
+            initial-capacity="18500" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set name="Putter1"/>
+  <client-set name="Getter1"/>
+	
+  <test name="ThinClientPerf" description="Thin Client perf test">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 3 Native/csNotifySubscription.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StopCacheServers CS2" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServers CS2" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set name="Putter1"/>
+      <client-set name="Getter1"/>
+    </task>
+    <task name="Measure Put Throughput" action="doPuts" container="perftests" waitTime="30m">
+      <client-set name="Putter1"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="30m">
+      <client-set name="Putter1"/>
+      <client-set name="Getter1"/>
+    </task>
+    <task name="Verify update list" action="doVerifyInterestList" container="perftests" waitTime="30m">
+      <client-set name="Getter1"/>
+      <data name="registerKeys">0</data>
+      <data name="keyIndexBegin">0</data>
+      <data name="valueSizes">0</data>
+    </task>
+    <task name="Update Entries from Publisher" action="doPuts" container="perftests" waitTime="30m">
+      <data name="valueSizes">
+        <list>
+          <item>200</item>
+        </list>
+      </data>
+      <client-set name="Putter1"/>
+    </task>
+    <task name="Wait for updates" action="doSleep" container="utils" waitTime="2m">
+      <data name="sleepTime">60</data>
+    </task>
+    <task name="Verify update list" action="doVerifyInterestList" container="perftests" waitTime="30m">
+      <client-set name="Getter1"/>
+      <data name="registerKeys">0</data>
+      <data name="keyIndexBegin">0</data>
+      <data name="valueSizes">0</data>
+    </task>
+    <task name="Local destroy region" action="doLocalDestroyRegion" container="perftests" waitTime="2m">
+      <client-set name="Getter1"/>
+    </task>
+    <task name="CreateRegion again" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set name="Getter1"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="30m">
+      <client-set name="Getter1"/>
+      <data name="getInitialValues">true</data>
+    </task>
+    <task name="Update Entries from Publisher" action="doPuts" container="perftests" waitTime="30m">
+      <data name="valueSizes">
+        <list>
+          <item>300</item>
+        </list>
+      </data>
+      <client-set name="Putter1"/>
+    </task>
+    <task name="Wait for updates" action="doSleep" container="utils" waitTime="2m">
+      <data name="sleepTime">60</data>
+    </task>
+    <task name="Verify update list" action="doVerifyInterestList" container="perftests" waitTime="30m">
+      <client-set name="Getter1"/>
+      <data name="registerKeys">100000</data>
+      <data name="keyIndexBegin">0</data>
+      <data name="valueSizes">300</data>
+    </task>
+    <task name="Local destroy region" action="doLocalDestroyRegion" container="perftests" waitTime="2m">
+      <client-set name="Getter1"/>
+    </task>
+    <task name="CreateRegion again" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set name="Getter1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StopCacheServers CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="10m">
+      <client-set name="Getter1"/>
+      <data name="getInitialValues">true</data>
+    </task>
+    <task name="Verify update list" action="doVerifyInterestList" container="perftests" waitTime="30m">
+      <client-set name="Getter1"/>
+      <data name="registerKeys">100000</data>
+      <data name="keyIndexBegin">0</data>
+      <data name="valueSizes">300</data>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="2m"/>
+    <task name="StopCacheServers CS2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServers CS2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+  </test>
+
+</test-driver>

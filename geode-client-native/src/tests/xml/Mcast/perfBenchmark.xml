@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="timedInterval">120</data>
+  <data name="distinctKeys">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+  <data name="valueSizes">
+    <list>
+      <item>1000</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+      <item>10</item>
+    </list>
+  </data>
+  
+  <data name="Local">
+    <snippet>
+      <region name="Local">
+        <region-attributes scope="local"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckMirrorNil">
+    <snippet>
+      <region name="AckMirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackMirrorNil">
+    <snippet>
+      <region name="NackMirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorNcacheNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="false" interest-list-enabled="false"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNcacheNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="false" interest-list-enabled="false"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <client-set>
+    <client name="Producer"/>
+  </client-set>
+  <client-set count="19" name="Consumer"/>
+  <test name="AckMirrorNil" description="AckMirrorNil Entry Event test" waitTime="5400">
+    <task name="CreateRegion-AckMirrorNil" action="doCreateRegion" container="perftests" waitTime="1200">
+      <data name="regionSpec">AckMirrorNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1200">
+      <client-set>
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-AckNmirrorNil" action="doCreateRegion" container="perftests" waitTime="1200">
+      <data name="regionSpec">AckNmirrorNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1200">
+      <client-set>
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-AckNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="1200">
+      <data name="regionSpec">AckNmirrorNcacheNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1200">
+      <client-set>
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="1200">
+    </task>
+    <task name="CreateLocal" action="doCreateRegion" container="perftests" waitTime="1200">
+      <client-set>
+        <client name="Producer"/>
+      </client-set>
+      <data name="regionSpec">Local</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1200">
+      <client-set>
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-NackMirrorNil" action="doCreateRegion" container="perftests" waitTime="1200">
+      <data name="regionSpec">NackMirrorNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1200">
+      <client-set>
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-NackNmirrorNil" action="doCreateRegion" container="perftests" waitTime="1200">
+      <data name="regionSpec">NackNmirrorNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1200">
+      <client-set>
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-NackNmirrorNcacheNil" action="doCreateRegion" container="perftests" waitTime="1200">
+      <data name="regionSpec">NackNmirrorNcacheNil</data>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1200">
+      <client-set>
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="1200">
+    </task>
+  </test>
+</test-driver>
+

@@ -1,0 +1,18 @@
+#! /usr/bin/bash
+
+# -w -- whole word
+# -i -- case insensitive
+
+#glimpse=/usr/local/10bin/glimpse
+#glimpse=glimpse
+glimpse=/usr/local/10bin/glimpse41/bin/glimpse
+
+if [ -z ${GFBASE-} ]; then
+	GFBASE=`pwd`
+fi
+if [ ! -d "${GFBASE}/glimpsefiles" ]; then
+	echo "Cannot find glimpsefiles (${GFBASE}/glimpsefiles)."
+	exit 1;
+fi
+
+exec $glimpse -H $GFBASE/glimpsefiles "$@"

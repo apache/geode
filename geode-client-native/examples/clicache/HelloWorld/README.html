@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+	<HEAD>
+		<TITLE>HelloWorld: Pivotal GemFire Native&#174; Client C# Example</TITLE>
+		<META http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<META http-equiv="Content-Style-Type" content="text/css">
+		<META content="Adobe FrameMaker 7.0/HTML Export Filter" name="GENERATOR">
+		<LINK href="DocIndex.css" type="text/css" charset="ISO-8859-1" rel="STYLESHEET">
+			<style type="text/css">.style1 { FONT-FAMILY: "Courier New" }
+	BODY { BACKGROUND-COLOR: #ffffff }
+        <IMG SRC="../../../docs/PIVOTAL_GemFire_190x81.png" BORDER="0">
+	.style5 { FONT-WEIGHT: bold }
+	</style>
+	</HEAD>
+	<BODY>
+		<DIV>
+			<H4 class="Title2">HelloWorld</H4>
+			<P></P>
+			<H5 class="Title2"><A name="pgfId-1003977"></A>Pivotal GemFire&#174; Native Client C#
+				<H5 class="Title2"><A name="pgfId-1003982"></A>C# API Programming Example
+					<P></P>
+					<P class="Body"><A name="pgfId-1005899"></A>The <EM class="Code9">HelloWorld</EM> example 
+						demonstrates the simplest functionality of the GemFire Native Client C# product:
+					</P>
+					<OL class="Body">						
+						<LI class="Body">
+							<P class="Body">Create a GemFire cache.</P>
+						<LI class="Body">
+							<P class="Body">Create a local region.</P>
+						<LI class="Body">
+							<P class="Body">Put some keys and values into the region.</P>
+						<LI class="Body">
+							<P class="Body">Get those&nbsp;keys and values.</P>
+						<LI class="Body">
+							<P class="Body">Close the cache.</P>
+						</LI>
+					</OL>
+					<br>
+					<P class="Body"></EM>The sample code is located in the Native Client SampleCode <EM class="Code9">examples/HelloWorld</EM>.
+					</P>
+					<P class="Body"></EM>To view the GemFire manuals, the online API documentation, and 
+						the complete set of examples, see <EM class="Code9">docs/index.html</EM> in the Native Client Installation.
+					</P>
+					<EM class="Code9 style1">
+						<H2 class="Head-B"><A name="pgfId-1004038"></A>Setting Up the Environment
+							<P></P>
+							<P class="Body">Verify that there is a valid&nbsp;<EM class="Code9">gfCppLicense.zip </EM>
+								file, version 1.1, in the&nbsp;<EM class="Italic">GemFireProductDirectory</EM>.</P>
+							<P class="Body">Create a file in the projects&nbsp; <EM class="Code9">.../bin</EM>
+								directory named&nbsp;<EM class="Code9">gfcpp.properties</EM> containing the 
+								following two&nbsp;lines:</P>
+							<P class="Code-Indented"></A><A name="pgfId-1004053"># turn off most log messages </A>
+							</P>
+							<P class="Code-Indented">log-level=error&nbsp;
+							</P>
+							<P class="Body">The GemFire - C# product requires an environment variable, <FONT face="Courier New">GFCPP</FONT> for the product base path.</P>
+							<P class="Body">Cygwin:</P>
+							<P class="Code-Indented"><A name="pgfId-1004040"></A>export GFCPP=<EM class="Italic">GemFireProductDirectory</EM>
+							</P>
+							<P class="Code-Indented"><A name="pgfId-1004041"></A>export PATH=$GFCPP/bin:$PATH</P>
+							<P class="Body"><A name="pgfId-1004043"></A>Windows:</P>
+							<P class="Code-Indented"><A name="pgfId-1004041"></A>set GFCPP=<EM class="Italic">GemFireProductDirectory</EM>&nbsp;&nbsp;</P>
+							<P class="Code-Indented">PATH=%GFCPP%/bin;%PATH%</A></P>
+							<H2 class="Head-B"><A name="pgfId-1006430"></A>Running&nbsp;HelloWorld
+								<P></P>
+								<P class="Body"><A name="pgfId-1006097"></A>Run the <EM class="Code9">HelloWorld</EM>
+								executable. There are no command line arguments.
+								<P class="Body">Cygwin:</P>
+								<P class="Code-Indented">cd .../bin</P>
+								<P class="Code-Indented">./HelloWorld.exe
+								</P>
+								<P class="Code-Indented">
+								</P>
+								<P class="Body"><A name="pgfId-1004043"></A>Windows:
+								</P>
+								<STRONG><FONT face="Courier New">
+										<P class="Code-Indented">cd ...\bin</P>
+										<P class="Code-Indented">HelloWorld.exe
+										</P>
+										<P class="Code-Indented">
+									</FONT></STRONG><STRONG><FONT face="Courier New"></FONT></STRONG>
+								<P class="Body">&nbsp;</P>
+								<P class="Body">The output is:
+								</P>
+								<P class="Code-Indented">
+									<EM CLASS="Code9">Created the GemFire Cache</EM></P>
+								<P class="Code-Indented"><EM class="Code9"> </EM>
+								</P>
+								<P class="Code-Indented"><EM class="Code9">Putting entries </EM>
+								</P>
+								<P class="Code-Indented"><EM class="Code9"> Put string &nbsp;-- key: abc value: Hello, 
+										world! </EM>
+								</P>
+								<P class="Code-Indented"><EM class="Code9"><EM class="Code9"></EM><EM class="Code9"></EM><EM class="Code9"></EM>
+										Put integer -- key: 777 value: 12345678 </EM>
+								</P>
+								<P class="Code-Indented"><EM class="Code9"> </EM>
+								</P>
+								<P class="Code-Indented"><EM class="Code9">Getting entries </EM>
+								</P>
+								<P class="Code-Indented"><EM class="Code9"> Get string &nbsp;-- key: abc value: Hello, 
+										world! </EM>
+								</P>
+								<P class="Code-Indented"><EM class="Code9"> Get integer -- key: 777 value: 12345678 </EM>
+								</P>
+								<P class="Code-Indented"><EM class="Code9"></EM>&nbsp;</P>
+								<P class="Code-Indented"><EM class="Code9"> Closed the cache.</EM></P>
+								<P></P>
+								<P></P>
+								<P CLASS="Company">&nbsp;</P>
+								<P CLASS="Company-Copyright">Copyright &#169; 2006-2014 Pivotal Software, Inc. All rights reserved.  This product is protected by U.S. and international copyright and intellectual property laws. Pivotal products are covered by one or more patents listed at http://www.pivotal.io/patents.</P>
+								<P CLASS="Body">
+									<A NAME="pgfId-998290"></A>&nbsp;</P>
+		</DIV>
+		</H2></H2></EM></H5></H5>
+	</BODY>
+</HTML>

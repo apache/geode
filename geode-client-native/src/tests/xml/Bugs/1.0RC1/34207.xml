@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="maxTestTime">10200</data>
+  <data name="BBName">CacheServer</data>
+  <data name="systemName">CSTest</data>
+  <data name="cacheType">PEER</data>
+  <data name="scope">NACK</data>
+  <data name="regionName">CSRegion</data>
+  <client-set name="All">
+    <client name="Feeder"></client>
+    <client count="1" name="Server"></client>
+    <client count="600" name="Client"></client>
+  </client-set>
+
+  <test name="FeederUpdatesClientsGet" description="Feeder updates entries while clients do gets" waitTime="780">
+    <task name="CreateFeeder" action="createProcess" container="cacheserver" waitTime="600">
+      <data name="cacheType">PEER</data>
+      <client-set name="Feeders">
+          <client name="Feeder"></client>
+      </client-set>
+    </task>
+    <task name="CreateServers" action="createProcess" container="cacheserver" waitTime="600">
+      <data name="cacheType">SERVER</data>
+      <client-set name="Servers"> 
+        <client name="Server0"></client>
+      </client-set>
+    </task>
+    <task name="CreateClients" action="createProcess" container="cacheserver" waitTime="600">
+      <data name="cacheType">CLIENT</data>
+      <client-set name="Clients"> 
+        <client count="600" name="Client"> </client> 
+      </client-set>
+    </task>
+    <task name="FeedSystem" action="doFeed" container="cacheserver" waitTime="600">
+      <data name="batchSize">1</data>
+      <data name="workTime">120</data>
+      <client-set name="Feeders">
+        <client name="Feeder"></client> 
+      </client-set>
+    </task>
+    <task name="FeederUpdatesClientsGet" action="doEntryOperations" container="cacheserver" waitTime="6000">
+      <data name="workTime">120</data>
+      <data name="sleepTime">1</data>
+      <data name="entryOps">localDestroy</data>
+      <client-set name="FeederAndClients">
+        <client name="Feeder"></client>
+        <client count="600" name="Client"> </client> 
+      </client-set>
+    </task>
+  </test>
+</test-driver>

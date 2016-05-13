@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.1//EN"
+  "http://www.gemstone.com/dtd/cache5_8.dtd">
+<cache>
+  <cache-server port="$PORT_NUM" notify-by-subscription="true">
+    <client-subscription eviction-policy="entry" capacity="1"/>
+  </cache-server> 
+  <region name="TestTCR1">
+    <region-attributes scope="distributed-ack"  data-policy="replicate">
+    </region-attributes>
+  </region>
+</cache> 

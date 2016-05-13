@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Cache 6.0//EN" "http://www.gemstone.com/dtd/cache6_0.dtd">
+<cache lock-lease="120" lock-timeout="60" search-timeout="300" is-server="false" copy-on-read="false">
+	
+	<bridge-server port="$PORT_NUM" />
+	
+	<region name="notifyBySubscriptionRegion">
+		<region-attributes scope="distributed-ack" data-policy="replicate" statistics-enabled="true" />
+	</region>
+	
+	<region name="noNotifyBySubscriptionRegion">
+		<region-attributes scope="distributed-ack" data-policy="replicate" statistics-enabled="true" />
+	</region>
+	
+</cache>

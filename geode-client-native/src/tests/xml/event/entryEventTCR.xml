@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+	<data name="keySize">
+		<range low="4" high="12"/>
+	</data>
+	<data name="distinctKeys">
+		<range low="1000" high="5000"/>
+	</data>
+	<data name="valueSizes">
+		<range low="0" high="100"/>
+	</data>
+  <localFile name="runJavaServer" append="false" description="Script starting a Java Cache Server">
+    if ($3 = "start")
+    then
+      ssh $1 "cd $2; . bin/setenv.sh; ./bin/cacheserver $3 -J-Xmx1024m -J-Xms512m -J-XX:+UseConcMarkSweepGC -J-XX:+UseParNewGC -J-Xss256k"
+    else 
+      ssh $1 "cd $2; . bin/setenv.sh; ./bin/cacheserver $3"
+    fi
+  </localFile>
+  <client-set count="2" name="ThinClient"/>
+  <client-set count="1" name="JavaCacheServer"/>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes scope="local" endpoints="sam:30303" client-notification="true"/>
+     </region>
+    </snippet>
+  </data>
+	
+	<test name="TCR event test" description="ThinClientRegion Entry Event test">
+		<task name="startCacheServer" action="doRunProcess" container="utils" waitTime="2000" continueOnError="true">
+      <data name="program">. runJavaServer</data>
+      <data name="arguments">sam /export/ea/users/xzhou/Work2/my422/build-artifacts/linux/product start</data>
+      <client-set count="1" name="JavaCacheServer"/>
+		</task>
+		<task name="createRegion" action="doCreateRootRegion" container="eventtest" waitTime="2000" continueOnError="true">
+			<data name="regionSpec">ThinClientRegion</data>
+      <client-set count="2" name="ThinClient"/>
+		</task>
+		<task name="doBasicTest" action="doBasicTest" container="eventtest" waitTime="2000" timesToRun="1" continueOnError="true">
+      <client-set count="1" name="ThinClient"/>
+		</task>
+		<task name="doBasicTest" action="doBasicTest" container="eventtest" waitTime="2000" timesToRun="1" continueOnError="true">
+      <client-set begin="2" count="1" name="ThinClient"/>
+		</task>
+		<task name="destroyRegion" action="doRemoveRootRegion" container="eventtest" waitTime="2000" continueOnError="true">
+      <client-set count="2" name="ThinClient"/>
+		</task>
+ 		<task name="stopCacheServer" action="doRunProcess" container="utils" waitTime="2000" continueOnError="true">
+      <data name="program">. runJavaServer</data>
+      <data name="arguments">sam /export/ea/users/xzhou/Work2/my422/build-artifacts/linux/product stop</data>
+      <client-set count="1" name="JavaCacheServer"/>
+		</task>
+ </test>	
+</test-driver>

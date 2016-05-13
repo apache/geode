@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="redundancyLevel">1</data>
+  <data name="minServers">2</data>
+   
+  <data name="valueSizes">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+
+   <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+    <!--region-attributes caching-enabled="true" client-notification="true"/-->
+       <region-attributes caching-enabled="true" lru-entries-limit="10" disk-policy="overflows">
+         <persistence-manager library="SqLiteImpl" function="createSqLiteInstance">
+           <properties>
+             <property name="PersistenceDirectory" value="SqLiteRoot1"/>
+               <property name="MaxPageCount" value="1073741823"/>
+               <property name="PageSize" value="65536"/>
+             </properties>
+           </persistence-manager>
+         <!--persistence-manager library="BDBImpl" function="createBDBInstance">
+            <properties>
+               <property name="PersistenceDirectory" value="./BDBLocal"/>
+               <property name="EnvironmentDirectory" value="./BDBLocalEnv"/>
+               <property name="CacheSizeGb" value="0"/>
+               <property name="CacheSizeMb" value="512"/>
+               <property name="PageSize" value="65536"/>
+               <property name="MaxFileSize" value="512000000"/>
+            </properties>
+          </persistence-manager-->
+         </region-attributes>
+       </region>
+     </snippet>
+    </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="Feeder"/>
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+
+  <test name="Thin Client Entry Events" description="Test to check if evicted entries are received properly from the db for the Clients to perform random entry events and also after the random operations the count for overflowed entries is equal to local (regionSize - lru-limit)">
+    <task name="SetupCacheServers" action="doRunProcess" container="utils" waitTime="10m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 2 Native/csAckMirror.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 1" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 2" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="Init Feeder" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data> 
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="2m">
+      <client-set name="Feeder"/>
+    </task>
+    <task name="FeedSystem" action="doFeed" container="cacheserver" waitTime="20m">
+      <data name="entryCount">100</data>
+      <data name="opsSecond">120</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Check OverFlow value" action="doCheckOverFlow" container="perftests" waitTime="1h">
+      <client-set name="Feeder"/>
+      <data name="entryCount">100</data>
+    </task>
+    <task name="Client Events" action="doEntryOperations" container="cacheserver" waitTime="30m" parallel="true">
+      <data name="entryOps">
+        <oneof>
+          <item>add</item>
+          <!--item>update</item-->
+          <item>invalidate</item>
+          <item>invalidate</item>
+          <item>update</item>
+          <item>update</item>
+          <item>read</item>
+          <item>read</item>
+        </oneof>
+      </data>
+      <data name="workTime">10</data>
+      <data name="opsSecond">12</data>
+      <data name="entryCount">100</data>
+      <data name="valueSizes">1</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Check OverFlow value" action="doCheckOverFlow" container="perftests" waitTime="1h">
+      <client-set name="Feeder"/>
+      <data name="entryCount">100</data>
+     </task>
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="2m"/>
+    <task name="StopCacheServer 1" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServer 2" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+  </test>
+</test-driver>

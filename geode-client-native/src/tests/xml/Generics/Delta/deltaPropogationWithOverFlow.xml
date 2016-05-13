@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">10m</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>100</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="keyType">str</data>
+
+  <data name="sleepTime">
+    <oneof>
+      <item>20</item>
+      <item>30</item>
+      <item>40</item>
+      <item>50</item>
+      <item>60</item>
+      <item>90</item>
+      <item>120</item>
+    </oneof>
+  </data>
+ <data name="operation">
+    <oneof>
+      <item>stop</item>
+      <item>term</item>
+      <item>kill</item>
+    </oneof>
+  </data>
+  
+ <data name="ThinClientPool">
+   <snippet>
+     <pool name="_Test_Pool1" subscription-enabled="true" locators="true" ping-interval="100" read-timeout="60000" subscription-redundancy="3" />
+   </snippet>
+ </data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" pool-name="_Test_Pool1" client-notification="true">
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="ThinClientRegionWithListener">
+    <snippet>
+      <region name="TestTCR1">
+        <!--region-attributes caching-enabled="true" client-notification="true" cloning-enabled="false"-->
+        <region-attributes caching-enabled="true" pool-name="_Test_Pool1" client-notification="true">
+        <cache-listener library="deltatest" function="createDeltaValidationCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set name="JCS4" hostGroup="CS"/>
+  <client-set count="4" name="Client"/>
+  <client-set name="Feeder"/>
+
+  <test name="deltaPropogationWithOverFlow" description="test for delta with Overflow">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH -p \"-J-DslowStartTimeForTesting=170000\" -c 4 Delta/csDeltaOverflow.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers2" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServers3" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StartCacheServers4" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="CreatePool" action="doCreatePool" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.deltatest" waitTime="5m" argTypes="String,DeltaTestImpl">
+      <data name="poolSpec">ThinClientPool</data>
+      <client-set  count="4" name="Client"/>
+      <client-set name="Feeder"/>
+    </task>
+     <task name="CreateRegion" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.deltatest" waitTime="5m" argTypes="String,DeltaTestImpl">
+      <client-set count="4" name="Client"/>
+      <data name="regionSpec">ThinClientRegionWithListener</data>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.deltatest" waitTime="5m" argTypes="String,DeltaTestImpl">
+      <client-set  name="Feeder"/>
+      <data name="regionSpec">ThinClientRegion</data>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.deltatest" waitTime="2m" argTypes="String,DeltaTestImpl">
+      <data name="regionName">TestTCR1</data>
+      <client-set count="4" name="Client"/>
+    </task>
+    <task name="Populating Entries in Region" action="doPopulateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.deltatest" waitTime="10m" argTypes="String,DeltaTestImpl">
+      <data name="regionName">TestTCR1</data>
+      <data name="opsSecond">5</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="do random entry ops " action="doEntryOperation" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.deltatest" waitTime="30m" parallel="true" argTypes="String,DeltaTestImpl">
+      <data name="entryOps">
+        <oneof>
+          <item>put</item>
+          <!--item>destroy</item-->
+          <item>put</item>
+          <item>put</item>
+        </oneof>
+      </data>
+      <data name="regionName">TestTCR1</data>
+      <data name="opsSecond">5</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="stopStartCacheServer 1" action="doStopStartServer" container="utils" timesToRun="2" waitTime="40m" continueOnError="true" parallel="true">
+      <data name="ServerId">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="stopStartCacheServer 2" action="doStopStartServer" container="utils" timesToRun="2" waitTime="40m" continueOnError="true" parallel="true">
+      <data name="ServerId">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="160">
+      <client-set name="Client"/>
+      <data name="sleepTime">120</data>
+    </task>
+    <task name="validate test" action="doValidateDeltaTest" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.deltatest" waitTime="5m" argTypes="String,DeltaTestImpl">
+      <client-set count="4" name="Client"/>
+      <data name="failover">true</data>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.deltatest" waitTime="5m" argTypes="String,DeltaTestImpl"/>
+    <task name="StopCacheServers1" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServers2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServers3" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StopCacheServers4" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+ </test>
+
+</test-driver>
+
+
+
+

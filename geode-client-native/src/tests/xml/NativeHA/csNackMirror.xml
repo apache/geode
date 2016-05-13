@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.1//EN"
+  "http://www.gemstone.com/dtd/cache5_1.dtd">
+<cache>
+  <bridge-server port="$PORT_NUM" notify-by-subscription="true" />
+  <region name="TestTCR1">
+    <region-attributes scope="distributed-no-ack" mirror-type="keys-values">
+      <eviction-attributes>
+        <lru-memory-size maximum="$LRU_MEM" action="overflow-to-disk"/>
+      </eviction-attributes>
+    </region-attributes>
+  </region>
+</cache>

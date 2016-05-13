@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">15m</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="regionName">TestTCR1</data>
+
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+
+  <client-set name="csharpFeeder"/>
+  <client-set count="4" name="csharpnative"/>
+
+  <test name="DataValiadtionTest" description="This test would authenticate that the data seen by C# and native clients are same even with failover">
+    <task name="setupCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">CPP</data>
+      <client-set name="csharpFeeder"/>
+      <client-set count="4" name="csharpnative"/>
+    </task>
+
+    <task name="CreateRegion" action="doCreateUserDefineRegion" container="queryTests" waitTime="3m">
+      <data name="regionSpec">ThinClientRegion</data> 
+      <client-set name="csharpFeeder"/>
+      <client-set count="4" name="csharpnative"/>
+    </task>
+
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="2m">
+      <client-set name="csharpFeeder"/>
+      <client-set count="4" name="csharpnative"/>
+    </task>
+
+    <task name="PopulateRegion" action="doPopulateRangePositions" container="querytests" waitTime="15m">
+      <data name="range-start">501</data>
+      <data name="range-end">1000</data>
+      <client-set name="csharpFeeder"/>
+    </task>
+
+    <task name="DonePopulateCS" action="doRunProcess" container="utils" waitTime="2m">
+      <data name="program">FwkBB</data>
+      <data name="arguments">set INTEROP DonePopulateCS true</data>
+      <client-set name="csharpFeeder"/>
+    </task>
+
+    <task name="WaitForPopulate" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">waitForBBKey</data>
+      <data name="arguments">INTEROP DonePopulate 1200</data>
+      <client-set name="csharpFeeder"/>
+    </task>
+
+    <task name="Client Events" action="doUpdateRangePositions" container="queryTests" waitTime="2h10m">
+      <data name="workTime">30m</data>
+      <data name="range-max">1000</data>
+      <client-set name="C++Feeder"/>
+      <client-set count="4" name="csharpnative"/>
+    </task>
+
+    <task name="Client Events" action="doVerifyAllPositionObjects" container="queryTests" waitTime="2h10m"> 
+      <data name="range-max">1000</data>
+      <client-set name="csharpFeeder"/>
+      <client-set count="4" name="csharpnative"/>
+    </task>
+
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="2m"/>
+
+    <task name="DoneCSharp" action="doRunProcess" container="utils" waitTime="2m">
+      <data name="program">FwkBB</data>
+      <data name="arguments">set INTEROP DoneCSharp true</data>
+      <client-set name="csharpFeeder"/>
+    </task>
+  </test>
+</test-driver>

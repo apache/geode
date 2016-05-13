@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE client-cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+  "http://www.gemstone.com/dtd/cache6_5.dtd">
+<client-cache>
+  <region name="exampleRegion">
+    <region-attributes refid="CACHING_PROXY"/>
+  </region>
+</client-cache>

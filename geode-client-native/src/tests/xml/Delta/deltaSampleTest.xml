@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">60</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>2</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>2</item>
+    </list>
+  </data>
+
+  <data name="keyType">str</data>
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true">
+        </region-attributes>  
+      </region>
+    </snippet>
+  </data>
+  <data name="ThinClientRegionWithListener">
+    <snippet>
+      <region name="TestTCR1">
+        <!--region-attributes caching-enabled="true" client-notification="true" cloning-enabled="false"-->
+        <region-attributes caching-enabled="true" client-notification="true">
+        <cache-listener library="deltatest" function="createDeltaValidationCacheListener"/>
+        </region-attributes>  
+      </region>
+    </snippet>
+  </data>
+                                 
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="Client"/>
+  <client-set name="Feeder"/>
+
+  <test name="deltaSampleTest" description="Sample test for delta">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 2 -e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH Delta/cacheserver_with_deltaobj.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="deltatest" waitTime="5m">
+      <client-set name="Client"/>
+      <data name="regionSpec">ThinClientRegionWithListener</data>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="deltatest" waitTime="5m">
+      <client-set name="Feeder"/>
+      <data name="regionSpec">ThinClientRegion</data>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="deltatest" waitTime="2m">
+      <data name="regionName">TestTCR1</data>
+      <client-set name="Client"/>
+    </task>
+    <task name="Populating Entries in Region" action="doPopulateRegion" container="deltatest" waitTime="10m">
+      <data name="regionName">TestTCR1</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Update Entries in Region" action="doPuts" container="deltatest" waitTime="10m">
+      <data name="regionName">TestTCR1</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="160">
+      <client-set name="Client"/>
+      <data name="sleepTime">60</data>
+    </task>
+    <task name="validate test" action="doValidateDeltaTest" container="deltatest" waitTime="5m">
+      <client-set name="Client"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="deltatest" waitTime="5m"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+  </test>
+
+</test-driver>

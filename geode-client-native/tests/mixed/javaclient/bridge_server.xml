@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Initializes a cache to serve the /root/bridge_region region, 
+    waiting for bridge client communication on port 40404 -->
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.0//EN"
+  "http://www.gemstone.com/dtd/cache4_0.dtd">
+<cache cache-proxy-enabled="false" is-server="false">
+  <bridge-server port="40404"/>
+  <vm-root-region name="root">
+    <region-attributes scope="distributed-no-ack">
+    </region-attributes>
+    <region name="bridge_region">
+      <region-attributes scope="distributed-ack" mirror-type="keys-values">
+        <cache-loader>
+          <class-name>javaclient.StringLoader</class-name>
+        </cache-loader>
+      </region-attributes>
+    </region>
+  </vm-root-region>
+</cache>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+  <data name="getInitialValues">true</data>
+  <data name="entryCount">1000</data>
+  <data name="NumNewKeys">200</data>
+  <data name="objectType">PdxVersioned</data>
+  <data name="isSkipOps">true</data>
+  <data name="ThinClientPool1">
+    <snippet>
+      <pool name="_Test_Pool1" subscription-enabled="true" thread-local-connections="false" min-connections="2" read-timeout="60000" 
+           subscription-redundancy="0" load-conditioning-interval="5000" servers="true" />
+    </snippet>
+  </data>
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes pool-name="_Test_Pool1" scope="distributed-ack" caching-enabled="false" client-notification="false"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="ThinClientRegionWithListener">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes scope="distributed-ack" pool-name="_Test_Pool1" caching-enabled="true" client-notification="true" concurrency-checks-enabled="true">
+          <cache-listener library="cacheserver" function="createSilenceListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+
+
+  <data name="isPdxObject">true</data>
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set count="3" name="Client"/>
+  <data name="funcName">RegionOperationsFunctionPdx</data>    
+
+  <test name="pdxPRRegionFE" description="This test creates a PR region , then does various entry operations(using function execution)
+ on a known key range. Values are checked for correctness in the close task.
+ This test is with client server configuration.">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 2 -e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH Generics/parReg/pdx/Pdx/csPRPdxFERegion.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 1" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 2" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="CreatePool" action="doCreatePool" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.pdxtests"  waitTime="3m" argTypes="int,object">
+      <data name="poolSpec">ThinClientPool1</data>
+      <client-set count="3" name="Client"/>
+    </task>
+    <task name="CreateClients" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.pdxtests" waitTime="10m" argTypes="int,object">
+      <data name="regionSpec">ThinClientRegionWithListener</data>
+      <client-set begin="1" count="1" name="Client"/>
+      <data name="versionNum">1</data>
+    </task>
+     <task name="CreateClients" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.pdxtests" waitTime="10m" argTypes="int,object">
+      <data name="regionSpec">ThinClientRegionWithListener</data>
+      <client-set begin="2" count="1" name="Client"/>
+      <data name="versionNum">2</data>
+    </task>
+     <task name="CreateClients" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.pdxtests" waitTime="10m" argTypes="int,object">
+      <data name="regionSpec">ThinClientRegion</data>
+      <data name="versionNum">1</data>
+      <client-set begin="3" count="1" name="Client"/>
+    </task>
+    <task name="InitInstance" action="doInitInstance" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" waitTime="20m" argTypes="int,object">
+      <client-set begin="1" count="2" name="Client"/>
+    </task>
+    <task name="Register All keys" action="doRegisterAllKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" waitTime="2m" argTypes="int,object">
+      <client-set begin="1" count="2" name="Client"/>
+    </task>
+    <task name="LoadRegion" action="doFeedInt" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" waitTime="20m" argTypes="int,object">
+      <client-set begin="1" count="1" name="Client"/>
+      <data name="versionNum">1</data>
+    </task>
+    <task name="DoGetServerKeys" action="doGetServerKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.functionExecution" waitTime="10m" argTypes="int,object">
+      <client-set begin="2" count="1" name="Client"/>
+      <data name="versionNum">2</data>
+    </task>
+    <task name="DoOperations" action="doOps" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.functionExecution" waitTime="10m" argTypes="int,object">
+      <client-set begin="2" count="1" name="Client"/>
+      <data name="versionNum">2</data>
+    </task>
+     <task name="Wait for updates" action="doWaitForSilenceListenerComplete" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" waitTime="5m" argTypes="int,object">
+      <client-set count="2" name="Client"/>
+    </task>
+    <task name="VerifYRegionContents after doOps by FE" action="doVerifyRegionContentsAfterLateOps" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" waitTime="10m" argTypes="int,object">
+      <client-set begin="1" count="1" name="Client"/>
+      <data name="versionNum">1</data>
+    </task>
+    <task name="DoGetServerKeys" action="doGetServerKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.functionExecution" waitTime="10m" argTypes="int,object">
+      <client-set begin="3" count="1" name="Client"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="2m" argTypes="int,object"/>
+    <task name="StopCacheServer 1" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServer 2" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    
+    
+  </test>
+</test-driver>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 3.0//EN"
+    "http://www.gemstone.com/dtd/gfcpp-cache3000.dtd">
+  
+<!-- Sample cache.xml file -->
+<!-- Example 3.1 Declarative Cache Initialization with cache.xml -->
+<cache>
+    <pool name="examplePool" subscription-enabled="true">
+      <server host="localhost" port="24680" />    
+    </pool> 
+	<region name="root1">
+		<region-attributes refid="CACHING_PROXY" scope="distributed-ack" pool-name="examplePool" caching-enabled="true"
+			initial-capacity="25"
+			load-factor="0.32"
+			concurrency-level="10"
+			lru-entries-limit="35">
+			<region-idle-time>
+				<expiration-attributes timeout="20" action="destroy"/>
+			</region-idle-time>
+			<entry-idle-time>
+				<expiration-attributes timeout="10" action="invalidate"/>
+			</entry-idle-time>
+			<region-time-to-live>
+				<expiration-attributes timeout="5" action="local-destroy"/>
+			</region-time-to-live>
+			<entry-time-to-live>
+				<expiration-attributes timeout="10" action="local-invalidate"/>
+			</entry-time-to-live>
+		</region-attributes>
+</region>
+	<region name="root2">
+		<region-attributes refid="CACHING_PROXY" scope="distributed-ack" pool-name="examplePool" caching-enabled="true"
+			initial-capacity="16"
+			load-factor="0.75"
+			concurrency-level="16">
+			<region-idle-time>
+				<expiration-attributes timeout="20" action="destroy"/>
+			</region-idle-time>
+			<entry-idle-time>
+				<expiration-attributes timeout="10" action="invalidate"/>
+			</entry-idle-time>
+			<region-time-to-live>
+				<expiration-attributes timeout="5"/>
+			</region-time-to-live>
+			<entry-time-to-live>
+				<expiration-attributes timeout="10" action="invalidate"/>
+			</entry-time-to-live>
+		</region-attributes>
+	</region>
+</cache>

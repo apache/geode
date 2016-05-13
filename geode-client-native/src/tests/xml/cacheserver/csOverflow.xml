@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="maxTestTime">10200</data>
+  <data name="BBName">CacheServer</data>
+  <data name="systemName">CSTest</data>
+  <data name="cacheType">PEER</data>
+  <data name="scope">ACK</data>
+  <data name="regionName">CSRegion</data>
+  <client-set count="3" name="Server"/>
+  <client-set count="5" name="Client"/>
+
+  <test name="Overflow" description="server overflow test">
+    <task name="CreateServerProcesses" action="doInitProcess" container="cacheserver" waitTime="600">
+      <data name="cacheType">SERVER</data>
+      <client-set count="3" name="Server"/> 
+    </task>
+    <task name="CreateServerRegion" action="doCreateRegion" container="cacheserver" waitTime="600">
+      <data name="cacheType">SERVER</data>
+      <data name="enableOverflow">true</data>
+      <client-set count="1" name="Server"/>
+    </task>
+    <task name="CreateClients" action="createProcess" container="cacheserver" waitTime="600" >
+      <data name="cacheType">CLIENT</data>
+      <data name="enableCache">false</data>
+      <client-set count="5" name="Client"/> 
+    </task>
+    <task name="FeedSystem" action="doFeed" container="cacheserver" waitTime="3600" parallel="true">
+      <data name="entryCount">20000</data>
+      <data name="valueSizes">10240</data>
+      <data name="opsSecond">40</data>
+      <client-set count="1" name="Client"/> 
+    </task>
+    <task name="TwinkleServer" action="doReInitProcess" container="cacheserver" waitTime="3600" parallel="true">
+      <data name="workTime">600</data>
+      <data name="cacheType">SERVER</data>
+      <client-set begin="1" count="2" name="Server"/> 
+    </task>
+    </test>
+</test-driver>

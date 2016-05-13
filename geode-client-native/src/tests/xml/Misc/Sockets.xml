@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+	<data name="maxTestTime">10200</data>
+	<data name="BBName">Sockets</data>
+	<data name="systemName">Sockets</data>
+	<data name="cacheType">PEER</data>
+	<data name="scope">NACK</data>
+  
+  <client-set name="All">
+    <!-- client name="ClientF1"/>
+    <client name="ClientF2"/>
+    <client name="ClientS1"/>
+    <client name="ClientS2"/ -->
+    <client name="ClientC1"/>
+    <client name="ClientC2"/>
+    <client name="ClientC3"/>
+    <client name="ClientC4"/>
+    <client name="ClientC5"/>
+    <client name="ClientC6"/>
+    <client name="ClientC7"/>
+    <client name="ClientC8"/>
+  </client-set>
+  
+	<test name="Sockets" description="Count Process Sockets" waitTime="780">
+		<task name="CountSockets" action="doSocketCount" container="libcacheserver" waitTime="600"/>
+    
+		<!-- task name="CreateFeed" action="createProcess" container="libcacheserver" waitTime="600" parallel="true">
+      <data name="cacheType">PEER</data>
+      <data name="regionName">
+        <list>
+          <item>SocketsRegion</item>
+        </list>
+      </data>
+      <client-set>
+        <client name="ClientF1"/>
+      </client-set>
+    </task>
+    
+		<task name="CountSockets" action="doSocketCount" container="libcacheserver" waitTime="600"/>
+    
+		<task name="CreateServers" action="createProcess" container="libcacheserver" waitTime="600" parallel="true">
+      <data name="cacheType">SERVER</data>
+      <data name="regionName">SocketsRegion</data>
+      <client-set>
+        <client name="ClientS1"/>
+      </client-set>
+    </task>
+    
+		<task name="CountSockets" action="doSocketCount" container="libcacheserver" waitTime="600"/ -->
+
+		<task name="CreateClients" action="createProcess" container="libcacheserver" waitTime="600" parallel="true">
+      <data name="cacheType">CLIENT</data>
+      <data name="regionName">SocketsRegion</data>
+    <client-set>
+      <client name="ClientC1"/>
+    </client-set>
+    </task>
+    
+		<task name="CountSockets" action="doSocketCount" container="libcacheserver" waitTime="600"/>
+    
+		<task name="CreateClients" action="createProcess" container="libcacheserver" waitTime="600" parallel="true">
+      <data name="cacheType">CLIENT</data>
+      <data name="regionName">SocketsRegion</data>
+    <client-set>
+      <client name="ClientC2"/>
+    </client-set>
+    </task>
+    
+		<task name="CountSockets" action="doSocketCount" container="libcacheserver" waitTime="600"/>
+    
+		<task name="CreateClients" action="createProcess" container="libcacheserver" waitTime="600" parallel="true">
+      <data name="cacheType">CLIENT</data>
+      <data name="regionName">SocketsRegion</data>
+    <client-set>
+      <client name="ClientC3"/>
+    </client-set>
+    </task>
+    
+		<task name="CountSockets" action="doSocketCount" container="libcacheserver" waitTime="600"/>
+    
+		<task name="CreateClients" action="createProcess" container="libcacheserver" waitTime="600" parallel="true">
+      <data name="cacheType">CLIENT</data>
+      <data name="regionName">SocketsRegion</data>
+    <client-set>
+      <client name="ClientC4"/>
+    </client-set>
+    </task>
+    
+		<task name="CountSockets" action="doSocketCount" container="libcacheserver" waitTime="600"/>
+    
+		<!-- task name="CreateFeed" action="createProcess" container="libcacheserver" waitTime="600" parallel="true">
+      <data name="cacheType">PEER</data>
+      <data name="regionName">
+        <list>
+          <item>SocketsRegion2</item>
+        </list>
+      </data>
+      <client-set>
+        <client name="ClientF2"/>
+      </client-set>
+    </task>
+    
+		<task name="CountSockets" action="doSocketCount" container="libcacheserver" waitTime="600"/>
+    
+		<task name="CreateServers" action="createProcess" container="libcacheserver" waitTime="600" parallel="true">
+      <data name="cacheType">SERVER</data>
+      <data name="regionName">SocketsRegion2</data>
+      <client-set>
+        <client name="ClientS2"/>
+      </client-set>
+    </task>
+    
+		<task name="CountSockets" action="doSocketCount" container="libcacheserver" waitTime="600"/ -->
+
+		<task name="CreateClients" action="createProcess" container="libcacheserver" waitTime="600" parallel="true">
+      <data name="cacheType">CLIENT</data>
+      <data name="regionName">SocketsRegion</data>
+    <client-set>
+      <client name="ClientC5"/>
+    </client-set>
+    </task>
+    
+		<task name="CountSockets" action="doSocketCount" container="libcacheserver" waitTime="600"/>
+    
+		<task name="CreateClients" action="createProcess" container="libcacheserver" waitTime="600" parallel="true">
+      <data name="cacheType">CLIENT</data>
+      <data name="regionName">SocketsRegion</data>
+    <client-set>
+      <client name="ClientC6"/>
+    </client-set>
+    </task>
+    
+		<task name="CountSockets" action="doSocketCount" container="libcacheserver" waitTime="600"/>
+    
+		<task name="CreateClients" action="createProcess" container="libcacheserver" waitTime="600" parallel="true">
+      <data name="cacheType">CLIENT</data>
+      <data name="regionName">SocketsRegion</data>
+    <client-set>
+      <client name="ClientC7"/>
+    </client-set>
+    </task>
+    
+		<task name="CountSockets" action="doSocketCount" container="libcacheserver" waitTime="600"/>
+    
+		<task name="CreateClients" action="createProcess" container="libcacheserver" waitTime="600" parallel="true">
+      <data name="cacheType">CLIENT</data>
+      <data name="regionName">SocketsRegion</data>
+    <client-set>
+      <client name="ClientC8"/>
+    </client-set>
+    </task>
+    
+		<task name="CountSockets" action="doSocketCount" container="libcacheserver" waitTime="600"/>
+    
+	</test>
+
+</test-driver>

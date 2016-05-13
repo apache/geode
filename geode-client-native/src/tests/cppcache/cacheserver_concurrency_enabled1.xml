@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
+  "http://www.gemstone.com/dtd/cache7_0.dtd">
+<cache>
+  <cache-server port="HOST_PORT1" notify-by-subscription="true">
+  <group>A</group>
+  </cache-server>
+  <vm-root-region name="DistRegionAck">
+    <region-attributes scope="distributed-ack" mirror-type="keys-values" concurrency-checks-enabled="true"></region-attributes>
+  </vm-root-region>
+</cache> 
+

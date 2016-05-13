@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <client-set count="220" name="client"/>
+  
+  <data name="workIterations">30000</data>
+  <test name="Udp Ipc Test" description="" waitTime="60m">
+    <task name="Exercise BB" action="doBBExercise" container="utils" waitTime="40m"/>
+  </test>
+</test-driver>

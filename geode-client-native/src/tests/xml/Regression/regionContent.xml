@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" ?> <!-- Test for check get Initail Image and region content -->
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="valueSizes">100</data>
+  
+  <data name="Local">
+    <snippet>
+      <region name="Local">
+        <region-attributes scope="local"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckMirrorNil">
+    <snippet>
+      <region name="AckMirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackMirrorNil">
+    <snippet>
+      <region name="NackMirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckMirrorNilLstnr">
+    <snippet>
+      <region name="AckMirrorNilLstnr">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackMirrorNilLstnr">
+    <snippet>
+      <region name="NackMirrorNilLstnr">
+        <region-attributes scope="distributed-no-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <client-set count="40" name="Client"/>
+  <data name="EntryCount">1000</data>
+  <test name="CheckRegionContent" description="AckMirrorNil Validating Cache Content Test">
+    <task name="doCreateRootRgn" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionName">DistRegionA</data>
+      <data name="regionSpec">AckMirrorNil</data>
+      <client-set exclude="true">
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="doCreateRootRgn" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionName">DistRegionA</data>
+      <data name="regionSpec">AckMirrorNilLstnr</data>
+      <data name="installListener">true</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="PopulateRegion" action="doAddEntry" container="eventtest" waitTime="1200">
+      <data name="regionName">DistRegionA</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="doCreateLocalRgn" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionName">LocalRegionA</data>
+      <data name="regionSpec">Local</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="doIterateOnEntry" action="doIterateOnEntry" container="eventtest" waitTime="1200">
+      <data name="testRegion">DistRegionA</data>
+      <data name="validateRegion">LocalRegionA</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="regionContentValidation" action="doValidateRegionContent" container="eventtest"
+      waitTime="1200">
+      <data name="testRegion">DistRegionA</data>
+      <data name="validateRegion">LocalRegionA</data>
+      <data name="regionName">DistRegionA</data>
+      <data name="regionSpec">AckMirrorNilLstnr</data>
+      <data name="installListener">true</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+  </test>
+  <test name="CheckRegionContent" description="AckNmirrorNil Validating Cache Content Test">
+    <task name="doCreateRootRgn" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionName">DistRegionB</data>
+      <data name="regionSpec">AckNmirrorNil</data>
+      <client-set exclude="true">
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="doCreateRootRgn" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionName">DistRegionB</data>
+      <data name="regionSpec">AckMirrorNilLstnr</data>
+      <data name="installListener">true</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="doCreateLocalRgn" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionName">LocalRegionB</data>
+      <data name="regionSpec">Local</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="PopulateRegion" action="doAddEntry" container="eventtest" waitTime="1h">
+      <data name="usePID">1</data>
+      <data name="regionName">DistRegionB</data>
+      <client-set exclude="true">
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="doIterateOnEntry" action="doIterateOnEntry" container="eventtest" waitTime="1200">
+      <data name="testRegion">DistRegionB</data>
+      <data name="validateRegion">LocalRegionB</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="regionContentValidation" action="doValidateRegionContent" container="eventtest"
+      waitTime="1200">
+      <data name="testRegion">DistRegionB</data>
+      <data name="validateRegion">LocalRegionB</data>
+      <data name="regionName">DistRegionB</data>
+      <data name="regionSpec">AckMirrorNilLstnr</data>
+      <data name="installListener">true</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+  </test>
+  <test name="CheckRegionContent" description="NackMirrorNil Validating Cache Content Test">
+    <task name="doCreateRootRgn" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionName">DistRegionC</data>
+      <data name="regionSpec">NackMirrorNil</data>
+      <client-set exclude="true">
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="doCreateRootRgn" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionName">DistRegionC</data>
+      <data name="regionSpec">NackMirrorNilLstnr</data>
+      <data name="installListener">true</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="PopulateRegion" action="doAddEntry" container="eventtest" waitTime="1200">
+      <data name="regionName">DistRegionC</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="doCreateLocalRgn" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionName">LocalRegionC</data>
+      <data name="regionSpec">Local</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="doIterateOnEntry" action="doIterateOnEntry" container="eventtest" waitTime="1200">
+      <data name="testRegion">DistRegionC</data>
+      <data name="validateRegion">LocalRegionC</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="regionContentValidation" action="doValidateRegionContent" container="eventtest"
+      waitTime="1200">
+      <data name="testRegion">DistRegionC</data>
+      <data name="validateRegion">LocalRegionC</data>
+      <data name="regionName">DistRegionC</data>
+      <data name="regionSpec">NackMirrorNilLstnr</data>
+      <data name="installListener">true</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+  </test>
+  <test name="CheckRegionContent" description="NackNmirrorNil Validating Cache Content Test">
+    <task name="doCreateRootRgn" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionName">DistRegionD</data>
+      <data name="regionSpec">NackNmirrorNil</data>
+      <client-set exclude="true">
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="doCreateRootRgn" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionName">DistRegionD</data>
+      <data name="regionSpec">NackMirrorNilLstnr</data>
+      <data name="installListener">true</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="doCreateLocalRgn" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <data name="regionName">LocalRegionD</data>
+      <data name="regionSpec">Local</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="PopulateRegion" action="doAddEntry" container="eventtest" waitTime="1200">
+      <data name="usePID">1</data>
+      <data name="regionName">DistRegionD</data>
+      <client-set exclude="true">
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="doIterateOnEntry" action="doIterateOnEntry" container="eventtest" waitTime="1200">
+      <data name="testRegion">DistRegionD</data>
+      <data name="validateRegion">LocalRegionD</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+    <task name="regionContentValidation" action="doValidateRegionContent" container="eventtest"
+      waitTime="1200">
+      <data name="testRegion">DistRegionD</data>
+      <data name="validateRegion">LocalRegionD</data>
+      <data name="regionName">DistRegionD</data>
+      <data name="regionSpec">NackMirrorNilLstnr</data>
+      <data name="installListener">true</data>
+      <client-set>
+        <client name="Client_1"/>
+      </client-set>
+    </task>
+  </test>
+</test-driver>

@@ -1,0 +1,44 @@
+#/bin/bash
+
+set -e
+
+src_name=cmake
+src_version=3.4.1
+src_hash=d41462bdd80dc37f0d5608167b354bb3af8c068eee640be04c907154c5c113e2
+
+build_dir="`pwd`/build-artifacts"
+
+src_filename=${src_name}-${src_version}
+src_dir=${build_dir}/${src_filename}
+src_archive=${build_dir}/${src_filename}.tar.gz
+src_url=https://cmake.org/files/v3.4/${src_filename}.tar.gz
+
+
+install_dir="${build_dir}/${src_name}-prefix"
+
+if [ -d "${build_dir}" ]; then
+    echo " ${build_dir} does not exist"; 
+else
+     mkdir "${build_dir}";
+fi
+
+if [ -x buildfiles/nprocs ]; then
+  nprocs=`buildfiles/nprocs`
+fi
+
+if [ ! -f ${src_archive} ]; then
+	curl ${src_url} -o ${src_archive} --insecure
+fi
+
+if (! echo "${src_hash}  ${src_archive}" | sha256sum -c -); then
+	rm ${src_archive}
+	exit 1;
+	#TODO retry
+fi
+
+tar -zxf ${src_archive} -C ${build_dir}
+
+cd ${src_dir}
+./bootstrap --prefix=${install_dir} --parallel=${nprocs}
+gmake -j${nprocs} all install
+

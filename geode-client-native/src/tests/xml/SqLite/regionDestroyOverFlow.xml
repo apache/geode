@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">100</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>1000</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>100</item>
+    </list>
+  </data>
+  
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+  <data name="expectedCount">1000</data>
+
+  <data name="keyType">str</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" lru-entries-limit="100" disk-policy="overflows">
+          <persistence-manager library="SqLiteImpl" function="createSqLiteInstance">
+            <properties>
+              <property name="PersistenceDirectory" value="SqLiteRoot1"/>
+              <property name="MaxPageCount" value="1073741823"/>
+              <property name="PageSize" value="65536"/>
+            </properties>
+          </persistence-manager>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="Publisher"/>
+  <client-set name="Subscriber"/>
+
+  <test name="RegionDestroyOverFlowTest" description="Thin client test to test that regions and sub region are created  multiple times and verify that same region repeatedly to ensure that the persistence files are created and destroyed correctly .">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 2 SqLite/csNotifySubscription.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set name="Publisher"/>
+    </task>
+    <task name="Verify DB exists before DestroyRegion" action="doVerifyDB" container="perftests" waitTime="2m">
+      <client-set name="Publisher"/>
+      <data name="expectedPass">true</data>
+      <data name="regionName">TestTCR1</data>
+    </task>
+    <task name="Local destroy region" action="doLocalDestroyRegion" container="perftests" waitTime="2m">
+      <client-set name="Publisher"/>
+    </task>
+    <task name="Verify DB exists after DestroyRegion" action="doVerifyDB" container="perftests" waitTime="2m">
+      <client-set name="Publisher"/>
+      <data name="regionName">TestTCR1</data>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set name="Publisher"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="Publisher"/>
+      <data name="sleepTime">10</data>
+    </task>
+    <task name="Local destroy region" action="doLocalDestroyRegion" container="perftests" waitTime="2m">
+      <client-set name="Publisher"/>
+    </task>
+    <task name="Verify DB exists after DestroyRegion" action="doVerifyDB" container="perftests" waitTime="2m">
+      <client-set name="Publisher"/>
+      <data name="expectedPass">false</data>
+      <data name="regionName">TestTCR1</data>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="2m"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+  </test>
+</test-driver>

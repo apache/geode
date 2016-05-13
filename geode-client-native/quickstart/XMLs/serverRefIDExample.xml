@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<!-- serverRefIDExample.xml
+     Configures a server to for clients at port 40404.
+-->
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+  "http://www.gemstone.com/dtd/cache6_5.dtd">
+<cache>
+  <cache-server port="40404"/>
+  <region name="root1">
+    <region-attributes scope="distributed-no-ack" data-policy="replicate"/>    
+  </region>
+  <region name="root2">
+    <region-attributes scope="distributed-no-ack" data-policy="replicate"/>    
+  </region>
+</cache>

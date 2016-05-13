@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\impl">
+      <UniqueIdentifier>{43fd9f3a-a72a-47ca-81f8-51370ce954c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\impl">
+      <UniqueIdentifier>{5fe94d20-1f66-4d93-a24c-3a7daccde423}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\impl\CPPParser">
+      <UniqueIdentifier>{4c240721-f1bb-4787-aaad-e6cd59e9d867}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\impl\CPPParser">
+      <UniqueIdentifier>{0faa0743-b507-469b-88e4-e64e8f93dfa1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\executables\pdxautoserializer\CodeGeneratorFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\executables\pdxautoserializer\InputParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\executables\pdxautoserializer\InputParserFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\executables\pdxautoserializer\OutputFormatter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\executables\pdxautoserializer\impl\CPPCodeGenerator.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\executables\pdxautoserializer\impl\Helper.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\executables\pdxautoserializer\impl\Log.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\executables\pdxautoserializer\impl\Main.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\executables\pdxautoserializer\impl\CPPParser\CPPInputParser.cpp">
+      <Filter>Source Files\impl\CPPParser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\executables\pdxautoserializer\impl\CPPParser\Dictionary.cpp">
+      <Filter>Source Files\impl\CPPParser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\executables\pdxautoserializer\impl\CPPParser\Support.cpp">
+      <Filter>Source Files\impl\CPPParser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\executables\pdxautoserializer\impl\CPPParser\CPPLexer.cpp">
+      <Filter>Source Files\impl\CPPParser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\executables\pdxautoserializer\impl\CPPParser\CPPParser.cpp">
+      <Filter>Source Files\impl\CPPParser</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\ASBuiltins.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\ASCLIBuiltins.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\ASCPPInclude.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\base_types.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\CodeGenerator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\CodeGeneratorFactory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\InputParser.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\InputParserFactory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\OutputFormatter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\impl\CPPCodeGenerator.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\impl\Helper.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\impl\Log.hpp">
+      <Filter>Header Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\impl\CPPParser\CPPDictionary.hpp">
+      <Filter>Header Files\impl\CPPParser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\impl\CPPParser\CPPInputParser.hpp">
+      <Filter>Header Files\impl\CPPParser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\impl\CPPParser\CPPSymbol.hpp">
+      <Filter>Header Files\impl\CPPParser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\impl\CPPParser\DictEntry.hpp">
+      <Filter>Header Files\impl\CPPParser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\impl\CPPParser\Dictionary.hpp">
+      <Filter>Header Files\impl\CPPParser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\impl\CPPParser\STDCTokenTypes.hpp">
+      <Filter>Header Files\impl\CPPParser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\impl\CPPParser\CPPLexer.hpp">
+      <Filter>Header Files\impl\CPPParser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\executables\pdxautoserializer\impl\CPPParser\CPPParser.hpp">
+      <Filter>Header Files\impl\CPPParser</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

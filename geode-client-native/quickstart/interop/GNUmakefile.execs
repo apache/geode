@@ -1,0 +1,20 @@
+default: all
+
+
+SRC = $(wildcard *.cpp)
+EXECS = $(patsubst %.cpp,%,$(SRC))
+
+.PHONY: all clean
+all: $(EXECS)
+
+clean:
+	rm -rf $(EXECS)
+	rm -f $(SRC:.cpp=.o)
+	rm -f $(SRC:.cpp=.d)
+
+$(EXECS) : % : %.o
+	$(CXX) $(CXXLDFLAGS) $(CXXLIBS) -o $@ $^
+	
+-include $(SRC:.cpp=.d)
+
+include ../GNUmakefile.common

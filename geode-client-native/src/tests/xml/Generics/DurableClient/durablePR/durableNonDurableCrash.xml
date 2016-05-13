@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+<!-- Description 
+# Servers  1
+# Clients  2  durable , 1 nonDurable
+Purpose  - To test durable and non durable clients crash
+Details  R = 1. 3 types of Reg Int - All.
+-->
+  <data name="cacheType">CLIENT</data>
+  <data name="redundancyLevel">1</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>1000</item>
+    </list>
+  </data>
+	
+  <data name="keyType">str</data>
+
+  <!--Default Values for this test only-->
+  <data name="isDurable">true</data>
+  <data name="durableTimeout">300</data>
+  <data name="restartTime">30</data>
+  <data name="updateReceiveTime">30</data>
+
+  <data name="ThinClientRegionWithListener">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true">
+          <cache-listener library="durableclienttests" function="createDurableCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegionWithListener</data>
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set name="DClient1"/>
+  <client-set name="DClient2"/>
+  <client-set name="NDClient1"/>
+  <client-set name="Feeder"/>
+  
+  <test name="DurableSerialCrash" description="Basic test for durable client Crash Client">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 3 DurableClient/durablePR/csNotifySubsNoLimit.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 1" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServer 3" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="Create Durable Clients" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="5m" argTypes="String,Int32">
+      <client-set name="DClient1"/>
+      <client-set name="DClient2"/>
+    </task>
+    <task name="Create Durable Clients" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="5m" argTypes="String,Int32">
+      <client-set name="NDClient1"/>
+      <data name="isDurable">false</data>
+    </task>
+    <task name="Create Feeder" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="5m" argTypes="String,Int32">
+      <client-set name="Feeder"/>
+      <data name="isFeeder">true</data>
+    </task>
+    <task name="Register All Keys Durable" action="doRegisterAllKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="5m" argTypes="String,Int32">
+      <data name="isDurableReg">true</data>
+      <client-set name="DClient1"/>
+    </task>
+    <task name="Register All Keys Durable" action="doRegisterAllKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="5m" argTypes="String,Int32">
+      <client-set name="DClient2"/>
+      <client-set name="NDClient1"/>
+    </task>
+    <task name="Intial Puts" action="doIncrementalPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="30m" argTypes="String,Int32">
+      <data name="valueEnd">10000</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Crash All Clients: Cycle 1" action="doRunProcess" container="utils" waitTime="5m" >
+      <data name="program">stopClient</data>
+      <data name="arguments">all 4 5 6</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="Intermediate Puts : Cycle 1" action="doIncrementalPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="30m" argTypes="String,Int32">
+      <data name="valuestart">10001</data>
+      <data name="valueEnd">20000</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="ReStart Client: Cycle 1" action="doDummyTask" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="5m" argTypes="String,Int32">
+      <client-set name="DClient1"/>
+      <client-set name="DClient2"/>
+      <client-set name="NDClient1"/>
+    </task>
+    <task name="Reinit DC 1: Cycle 1 " action="doRestartClientAndRegInt" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="10m" parallel="true" argTypes="String,Int32">
+      <data name="isDurableReg">true</data>
+      <data name="registerType">All</data>
+      <client-set name="DClient1"/>
+    </task>
+    <task name="Reinit DC 2: Cycle 1 " action="doRestartClientAndRegInt" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="10m" parallel="true" argTypes="String,Int32">
+      <data name="registerType">All</data>
+      <client-set name="DClient2"/>
+    </task>
+    <task name="Reinit NDC 1: Cycle 1" action="doRestartClientAndRegInt" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="10m" parallel="true" argTypes="String,Int32">
+      <data name="isDurable">false</data>
+      <data name="registerType">All</data>
+      <client-set name="NDClient1"/>
+    </task>
+    <task name="Parrellel Puts: Cycle 1" action="doIncrementalPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="30m"  parallel="true" argTypes="String,Int32">
+      <data name="valuestart">20001</data>
+      <data name="valueEnd">30000</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Crash All Clients: Cycle 2" action="doRunProcess" container="utils" waitTime="5m" >
+      <data name="program">stopClient</data>
+      <data name="arguments">all 4 5 6</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="Intermediate Puts : Cycle 2" action="doIncrementalPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="30m" argTypes="String,Int32">
+      <data name="valuestart">30001</data>
+      <data name="valueEnd">40000</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="ReStart Client: Cycle 2" action="doDummyTask" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="5m" argTypes="String,Int32">
+      <client-set name="DClient1"/>
+      <client-set name="DClient2"/>
+      <client-set name="NDClient1"/>
+    </task>
+    <task name="Reinit DC 1: Cycle 2 " action="doRestartClientAndRegInt" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="10m" parallel="true" argTypes="String,Int32">
+      <data name="isDurableReg">true</data>
+      <data name="registerType">All</data>
+      <client-set name="DClient1"/>
+    </task>
+    <task name="Reinit DC 2: Cycle 2 " action="doRestartClientAndRegInt" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="10m" parallel="true" argTypes="String,Int32">
+      <data name="registerType">All</data>
+      <client-set name="DClient2"/>
+    </task>
+    <task name="Reinit NDC 1: Cycle 2" action="doRestartClientAndRegInt" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="10m" parallel="true" argTypes="String,Int32">
+      <data name="isDurable">false</data>
+      <data name="registerType">All</data>
+      <client-set name="NDClient1"/>
+    </task>
+    <task name="Parrellel Puts: Cycle 2" action="doIncrementalPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="30m"  parallel="true" argTypes="String,Int32">
+      <data name="valuestart">40001</data>
+      <data name="valueEnd">50000</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Crash All Clients: Cycle 3" action="doRunProcess" container="utils" waitTime="5m" >
+      <data name="program">stopClient</data>
+      <data name="arguments">all 4 5 6</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="Intermediate Puts : Cycle 3" action="doIncrementalPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="30m" argTypes="String,Int32">
+      <data name="valuestart">50001</data>
+      <data name="valueEnd">60000</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="ReStart Client: Cycle 3" action="doDummyTask" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="5m" argTypes="String,Int32">
+      <client-set name="DClient1"/>
+      <client-set name="DClient2"/>
+      <client-set name="NDClient1"/>
+    </task>
+    <task name="Reinit DC 1: Cycle 3 " action="doRestartClientAndRegInt" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="10m" parallel="true" argTypes="String,Int32">
+      <data name="isDurableReg">true</data>
+      <data name="registerType">All</data>
+      <client-set name="DClient1"/>
+    </task>
+    <task name="Reinit DC 2: Cycle 3 " action="doRestartClientAndRegInt" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="10m" parallel="true" argTypes="String,Int32">
+      <data name="registerType">All</data>
+      <client-set name="DClient2"/>
+    </task>
+    <task name="Reinit NDC 1: Cycle 3" action="doRestartClientAndRegInt" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="10m" parallel="true" argTypes="String,Int32">
+      <data name="isDurable">false</data>
+      <data name="registerType">All</data>
+      <client-set name="NDClient1"/>
+    </task>
+    <task name="Parrellel Puts: Cycle 3" action="doIncrementalPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="30m"  parallel="true" argTypes="String,Int32">
+      <data name="valuestart">60001</data>
+      <data name="valueEnd">70000</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Crash All Clients: Cycle 4" action="doRunProcess" container="utils" waitTime="5m" >
+      <data name="program">stopClient</data>
+      <data name="arguments">all 4 5 6</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="Intermediate Puts : Cycle 4" action="doIncrementalPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="30m" argTypes="String,Int32">
+      <data name="valuestart">70001</data>
+      <data name="valueEnd">80000</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="ReStart Client: Cycle 4" action="doDummyTask" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="5m" argTypes="String,Int32">
+      <client-set name="DClient1"/>
+      <client-set name="DClient2"/>
+      <client-set name="NDClient1"/>
+    </task>
+    <task name="Reinit DC 1: Cycle 4 " action="doRestartClientAndRegInt" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="10m" parallel="true" argTypes="String,Int32">
+      <data name="isDurableReg">true</data>
+      <data name="registerType">All</data>
+      <client-set name="DClient1"/>
+    </task>
+    <task name="Reinit DC 2: Cycle 4 " action="doRestartClientAndRegInt" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="10m" parallel="true" argTypes="String,Int32">
+      <data name="registerType">All</data>
+      <client-set name="DClient2"/>
+    </task>
+    <task name="Reinit NDC 1: Cycle 4" action="doRestartClientAndRegInt" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="10m" parallel="true" argTypes="String,Int32">
+      <data name="isDurable">false</data>
+      <data name="registerType">All</data>
+      <client-set name="NDClient1"/>
+    </task>
+    <task name="Parrellel Puts: Cycle 4" action="doIncrementalPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="30m"  parallel="true" argTypes="String,Int32">
+      <data name="valuestart">80001</data>
+      <data name="valueEnd">90000</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="5m">
+      <data name="sleepTime">120</data>
+      <client-set name="DClient1"/>
+      <client-set name="DClient2"/>
+      <client-set name="NDClient1"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="5m" argTypes="String,Int32">
+      <client-set name="DClient1"/>
+      <client-set name="DClient2"/>
+      <client-set name="NDClient1"/>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Verify" action="doVerifyEventCount" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="5m" argTypes="String,Int32">
+      <client-set name="DClient1"/>
+    </task>
+    <task name="Verify" action="doVerifyEventCount" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="5m" argTypes="String,Int32">
+      <client-set name="DClient2"/>
+      <client-set name="NDClient1"/>
+      <data name="restartTime">5</data>
+      <data name="missedEvents">true</data>
+    </task>
+    <task name="StopCacheServer 1" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServer 2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServer 3" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+  </test>
+</test-driver>

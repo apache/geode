@@ -1,0 +1,280 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{C61EF505-1E36-3CEF-A4C2-4AFE803F7551}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>GemStone.GemFire.Cache.FwkLib</RootNamespace>
+    <AssemblyName>FwkLib</AssemblyName>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>${CMAKE_SOURCE_DIR}/../release/keys/gemfire.snk</AssemblyOriginatorKeyFile>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <NoWarn>618</NoWarn>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>618</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+    <IntermediateOutputPath>Debug</IntermediateOutputPath>
+    <OutputPath>Debug</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <NoWarn>618</NoWarn>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <IntermediateOutputPath>Debug</IntermediateOutputPath>
+    <OutputPath>Debug</OutputPath>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>618</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="nunit.framework">
+      <HintPath>${NUNIT}\bin\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DUnitFramework\DUnitFramework.csproj">
+      <Project>{796727E8-3A6A-46BE-A2DB-584A4774CD51}</Project>
+      <Name>DUnitFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\clicache\gfclicache.vcxproj">
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\FwkUtil\FwkUtil.csproj">
+      <Project>{0DDB5AAF-C707-4F65-9000-659A24504D36}</Project>
+      <Name>FwkUtil</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PkcsWrapper\PkcsWrapper.vcxproj">
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <Name>PkcsWrapper</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\QueryHelper\QueryWrapper.vcxproj">
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <Name>QueryWrapper</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SecurityUtil\SecurityUtil.csproj">
+      <Project>{29CFC13C-1D6C-4FE8-B56E-A5E7BA7F849F}</Project>
+      <Name>SecurityUtil</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\AssemblyInfo.cs">
+      <Link>AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\CacheHelper.cs">
+      <Link>CacheHelper.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\CacheServer.cs">
+      <Link>CacheServer.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\DeltaTest\DeltaClientValidationListener.cs">
+      <Link>DeltaTest\DeltaClientValidationListener.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\DeltaTest\DeltaTest.cs">
+      <Link>DeltaTest\DeltaTest.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\DurableTest\DurableClientTests.cs">
+      <Link>DurableTest\DurableClientTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\DurableTest\DurableListener.cs">
+      <Link>DurableTest\DurableListener.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\DurableTest\DurablePerfListener.cs">
+      <Link>DurableTest\DurablePerfListener.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\EventTest\ETCacheListener.cs">
+      <Link>EventTest\ETCacheListener.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\EventTest\ETCacheLoader.cs">
+      <Link>EventTest\ETCacheLoader.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\EventTest\ETCacheWriter.cs">
+      <Link>EventTest\ETCacheWriter.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\EventTest\EventTasks.cs">
+      <Link>EventTest\EventTasks.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\EventTest\EventTests.cs">
+      <Link>EventTest\EventTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\FunctionExecution\FunctionExecution.cs">
+      <Link>FunctionExecution\FunctionExecution.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\FunctionExecution\MyResultCollector.cs">
+      <Link>FunctionExecution\MyResultCollector.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\FwkTask.cs">
+      <Link>FwkTask.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\FwkTest.cs">
+      <Link>FwkTest.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\PerfTest\DupChecker.cs">
+      <Link>PerfTest\DupChecker.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\PerfTest\LatencyListener.cs">
+      <Link>PerfTest\LatencyListener.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\PerfTest\PerfTasks.cs">
+      <Link>PerfTest\PerfTasks.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\PerfTest\PerfTestCacheListener.cs">
+      <Link>PerfTest\PerfTestCacheListener.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\PerfTest\PerfTests.cs">
+      <Link>PerfTest\PerfTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\QueryTest\QueryTests.cs">
+      <Link>QueryTest\QueryTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\SecurityTest\Security.cs">
+      <Link>SecurityTest\Security.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\SmokePerf\ObjectHelper.cs">
+      <Link>SmokePerf\ObjectHelper.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\SmokePerf\PerfStat.cs">
+      <Link>SmokePerf\PerfStat.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\SmokePerf\SmokePerf.cs">
+      <Link>SmokePerf\SmokePerf.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\SmokePerf\SmokeTasks.cs">
+      <Link>SmokePerf\SmokeTasks.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\FwkLib\Utils.cs">
+      <Link>Utils.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\QueryHelper\QueryHelper.cs">
+      <Link>QueryTest\QueryHelper.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\ArrayOfByte.cs">
+      <Link>SmokePerf\ArrayOfByte.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\BatchObject.cs">
+      <Link>SmokePerf\BatchObject.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\DeltaFastAssetAccount.cs">
+      <Link>SmokePerf\DeltaFastAssetAccount.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\DeltaPSTObject.cs">
+      <Link>SmokePerf\DeltaPSTObject.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\DeltaTestImpl.cs">
+      <Link>DeltaTest\DeltaTestImpl.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\FastAsset.cs">
+      <Link>SmokePerf\FastAsset.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\FastAssetAccount.cs">
+      <Link>SmokePerf\FastAssetAccount.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\NoopAuthInit.cs">
+      <Link>SmokePerf\NoopAuthInit.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\Portfolio.cs">
+      <Link>QueryTest\Portfolio.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\Position.cs">
+      <Link>QueryTest\Position.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\PSTObject.cs">
+      <Link>SmokePerf\PSTObject.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\TestObject1.cs">
+      <Link>DeltaTest\TestObject1.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\TimeStampdObject.cs">
+      <Link>SmokePerf\TimeStampdObject.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DurableTest\" />
+    <Folder Include="EventTest\" />
+    <Folder Include="FunctionExecution\" />
+    <Folder Include="PerfTest\" />
+    <Folder Include="SecurityTest\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="minTaskGranularitySec">60</data>
+  <data name="preemptCounter">100</data>
+  <!-- abort, exit, done ops downcounter before execution -->
+  <data name="haltIfBadResult">true</data>
+  <data name="maxRegions">100</data>
+  <data name="installListener">true</data>
+  <data name="installWriter">false</data>
+  <data name="installLoader">false</data>
+  <data name="keySize">
+    <range low="4" high="12"/>
+  </data>
+  <data name="distinctKeys">
+    10000
+  </data>
+  <data name="valueSizes">
+    <range low="0" high="85607"/>
+  </data>
+  <data name="entryOps">
+    <oneof>
+      <item>add</item>
+      <item>add</item>
+      <item>add</item>
+      <item>add</item>
+      <item>add</item>
+      <item>add</item>
+      <item>add</item>
+      <item>add</item>
+      <item>add</item>
+      <item>add</item>
+      <item>add</item>
+      <item>add</item>
+      <item>update</item>
+      <item>update</item>
+      <item>update</item>
+      <!-- <item>abort</item>  seg v -->
+      <!-- <item>exit</item>  exit(0) -->
+      <!-- <item>done</item>  leave doOperation, exit while loop -->
+    </oneof>
+  </data>
+  <data name="opCount">
+    <range low="1" high="10"/>
+  </data>
+
+  <data-set name="AckMirrorNil">
+    <data name="regionName">AckMirrorNil</data>
+    <data name="scope">ack</data>
+    <data name="mirroring">true</data>
+    <data name="interestListEnabled">false</data>
+  </data-set>
+  
+  <data-set name="NackMirrorNil">
+    <data name="regionName">NackMirrorNil</data>
+    <data name="scope">nack</data>
+    <data name="mirroring">true</data>
+    <data name="interestListEnabled">false</data>
+  </data-set>
+  
+  <data-set name="AckMirrorIl">
+    <data name="regionName">AckMirrorIl</data>
+    <data name="scope">ack</data>
+    <data name="mirroring">true</data>
+    <data name="interestListEnabled">true</data>
+  </data-set>
+  
+  <data-set name="NackMirrorIl">
+    <data name="regionName">NackMirrorIl</data>
+    <data name="scope">nack</data>
+    <data name="mirroring">true</data>
+    <data name="interestListEnabled">true</data>
+  </data-set>
+  
+  
+  <test name="33104" description="33104 Bug, Entry Event test">
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">AckMirrorNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">NackMirrorNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">AckMirrorIl</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">NackMirrorIl</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionName">MixedNil</data>
+      <data name="regionSpec">
+        <oneof>
+          <item>NackMirrorNil</item>
+          <item>AckMirrorNil</item>
+        </oneof>
+      </data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">AckMirrorNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">NackMirrorNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">AckMirrorIl</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">NackMirrorIl</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionName">MixedNil</data>
+      <data name="regionSpec">
+        <oneof>
+          <item>NackMirrorNil</item>
+          <item>AckMirrorNil</item>
+        </oneof>
+      </data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">AckMirrorNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">NackMirrorNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">AckMirrorIl</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">NackMirrorIl</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionName">MixedNil</data>
+      <data name="regionSpec">
+        <oneof>
+          <item>NackMirrorNil</item>
+          <item>AckMirrorNil</item>
+        </oneof>
+      </data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">AckMirrorNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">NackMirrorNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">AckMirrorIl</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">NackMirrorIl</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionName">MixedNil</data>
+      <data name="regionSpec">
+        <oneof>
+          <item>NackMirrorNil</item>
+          <item>AckMirrorNil</item>
+        </oneof>
+      </data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">AckMirrorNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">NackMirrorNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">AckMirrorIl</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">NackMirrorIl</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionName">MixedNil</data>
+      <data name="regionSpec">
+        <oneof>
+          <item>NackMirrorNil</item>
+          <item>AckMirrorNil</item>
+        </oneof>
+      </data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">AckMirrorNil</data>
+    </task>
+   <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">NackMirrorNil</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">AckMirrorIl</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionSpec">NackMirrorIl</data>
+    </task>
+    <task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600" timesToRun="150" continueOnError="true">
+      <data name="regionName">MixedNil</data>
+      <data name="regionSpec">
+        <oneof>
+          <item>NackMirrorNil</item>
+          <item>AckMirrorNil</item>
+        </oneof>
+      </data>
+    </task>
+  </test>
+    
+</test-driver>

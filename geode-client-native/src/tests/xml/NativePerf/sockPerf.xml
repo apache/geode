@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">30</data>
+  <data name="sockBufferSize">-222</data>
+  
+	<client-set name="Source"/>
+  <client-set name="Sink"/>
+	
+  <data name="addrKey">IpAddr</data> 
+  
+	<test name="Local" description="Local Entry Event test" waitTime="30m">
+    <task name="Gets" action="doSockSink" container="perftests" waitTime="55m" parallel="true">
+      <client-set name="Sink"/>
+      <data name="valueSizes"><list><item>1024</item></list></data>
+    </task>
+    <task name="Puts" action="doSockPuts" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Source"/>
+      <data name="valueSizes"><list><item>1024</item></list></data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="20">
+      <client-set name="Source"/>
+      <data name="sleepTime">3</data>
+    </task>
+    <task name="Gets" action="doSockSink" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Sink"/>
+      <data name="valueSizes"><list><item>2048</item></list></data>
+    </task>
+    <task name="Puts" action="doSockPuts" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Source"/>
+      <data name="valueSizes"><list><item>2048</item></list></data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="20">
+      <client-set name="Source"/>
+      <data name="sleepTime">3</data>
+    </task>
+    <task name="Gets" action="doSockSink" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Sink"/>
+      <data name="valueSizes"><list><item>4096</item></list></data>
+    </task>
+    <task name="Puts" action="doSockPuts" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Source"/>
+      <data name="valueSizes"><list><item>4096</item></list></data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="20">
+      <client-set name="Source"/>
+      <data name="sleepTime">3</data>
+    </task>
+    <task name="Gets" action="doSockSink" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Sink"/>
+      <data name="valueSizes"><list><item>8192</item></list></data>
+    </task>
+    <task name="Puts" action="doSockPuts" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Source"/>
+      <data name="valueSizes"><list><item>8192</item></list></data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="20">
+      <client-set name="Source"/>
+      <data name="sleepTime">3</data>
+    </task>
+    <task name="Gets" action="doSockSink" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Sink"/>
+      <data name="valueSizes"><list><item>16384</item></list></data> 
+    </task>
+    <task name="Puts" action="doSockPuts" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Source"/>
+      <data name="valueSizes"><list><item>16384</item></list></data> 
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="20">
+      <client-set name="Source"/>
+      <data name="sleepTime">3</data>
+    </task>
+    <task name="Gets" action="doSockSink" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Sink"/>
+      <data name="valueSizes"><list><item>32768</item></list></data> 
+    </task>
+    <task name="Puts" action="doSockPuts" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Source"/>
+      <data name="valueSizes"><list><item>32768</item></list></data> 
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="20">
+      <client-set name="Source"/>
+      <data name="sleepTime">3</data>
+    </task>
+    <task name="Gets" action="doSockSink" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Sink"/>
+      <data name="valueSizes"><list><item>65536</item></list></data> 
+    </task>
+    <task name="Puts" action="doSockPuts" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Source"/>
+      <data name="valueSizes"><list><item>65536</item></list></data> 
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="20">
+      <client-set name="Source"/>
+      <data name="sleepTime">3</data>
+    </task>
+    <task name="Gets" action="doSockSink" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Sink"/>
+      <data name="valueSizes"><list><item>131072</item></list></data> 
+    </task>
+    <task name="Puts" action="doSockPuts" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Source"/>
+      <data name="valueSizes"><list><item>131072</item></list></data> 
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="20">
+      <client-set name="Source"/>
+      <data name="sleepTime">3</data>
+    </task>
+    <task name="Gets" action="doSockSink" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Sink"/>
+      <data name="valueSizes"><list><item>262144</item></list></data> 
+    </task>
+    <task name="Puts" action="doSockPuts" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Source"/>
+      <data name="valueSizes"><list><item>262144</item></list></data> 
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="20">
+      <client-set name="Source"/>
+      <data name="sleepTime">3</data>
+    </task>
+    <task name="Gets" action="doSockSink" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Sink"/>
+      <data name="valueSizes"><list><item>524288</item></list></data> 
+    </task>
+    <task name="Puts" action="doSockPuts" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Source"/>
+      <data name="valueSizes"><list><item>524288</item></list></data> 
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="20">
+      <client-set name="Source"/>
+      <data name="sleepTime">3</data>
+    </task>
+    <task name="Gets" action="doSockSink" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Sink"/>
+      <data name="valueSizes"><list><item>1048576</item></list></data> 
+    </task>
+    <task name="Puts" action="doSockPuts" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Source"/>
+      <data name="valueSizes"><list><item>1048576</item></list></data> 
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="20">
+      <client-set name="Source"/>
+      <data name="sleepTime">3</data>
+    </task>
+    <task name="Gets" action="doSockSink" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Sink"/>
+      <data name="valueSizes"><list><item>2097152</item></list></data> 
+    </task>
+    <task name="Puts" action="doSockPuts" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Source"/>
+      <data name="valueSizes"><list><item>2097152</item></list></data> 
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="20">
+      <client-set name="Source"/>
+      <data name="sleepTime">3</data>
+    </task>
+    <task name="Gets" action="doSockSink" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Sink"/>
+      <data name="valueSizes"><list><item>4194304</item></list></data> 
+    </task>
+    <task name="Puts" action="doSockPuts" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Source"/>
+      <data name="valueSizes"><list><item>4194304</item></list></data> 
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="20">
+      <client-set name="Source"/>
+      <data name="sleepTime">3</data>
+    </task>
+    <task name="Gets" action="doSockSink" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Sink"/>
+      <data name="valueSizes"><list><item>8388608</item></list></data> 
+    </task>
+    <task name="Puts" action="doSockPuts" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Source"/>
+      <data name="valueSizes"><list><item>8388608</item></list></data> 
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="20">
+      <client-set name="Source"/>
+      <data name="sleepTime">3</data>
+    </task>
+    <task name="Gets" action="doSockSink" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Sink"/>
+      <data name="valueSizes"><list><item>16777216</item></list></data> 
+    </task>
+    <task name="Puts" action="doSockPuts" container="perftests" waitTime="5m" parallel="true">
+      <client-set name="Source"/>
+      <data name="valueSizes"><list><item>16777216</item></list></data> 
+    </task>
+	</test>
+		
+</test-driver>

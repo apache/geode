@@ -1,0 +1,9 @@
+DurableClient/durableFailoverR2.xml
+DurableClient/durableNonDurableKAFalse.xml
+DurableClient/durableNonDurableKATrue.xml
+DurableClient/durableNonDurableTimeout.xml
+DurableClient/durablePerfVariableTest.xml
+DurableClient/durablePR/durableFailoverR2.xml
+DurableClient/durablePR/durableNonDurableKAFalse.xml
+DurableClient/durablePR/durableNonDurableKATrue.xml
+DurableClient/durablePR/durableNonDurableTimeout.xml

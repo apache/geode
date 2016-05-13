@@ -1,0 +1,17 @@
+Generics/Native/perfBenchmarkTCR.xml
+Generics/Native/perfTCRServerEviction.xml
+Generics/Native/clientEventsFailover.xml # 52
+Generics/Native/failoverTest.xml
+Generics/Native/perfClientsUpdateTest.xml
+Generics/Native/perfTestPutGetDestroyTCR.xml
+Generics/Native/perfTCROverflowToDisk.xml
+Generics/Native/perfTestPutGetDestroy_PartialInterestTCR.xml
+Generics/Native/perfTestPutGetDestroyTCRscaledUp.xml
+Generics/Native/ticket226.xml
+Generics/Native/registerAllKeysTest.xml 
+Generics/Native/registerKeysAndRegexTest.xml
+Generics/Native/registerAndUnregisterRegexTest.xml
+Generics/Native/getAllTest.xml
+Generics/Native/registerAllKeysGIIValueTest.xml
+Generics/Native/putGetAllTest.xml
+Generics/Native/registerKeysAndRegexWithReceiveValue.xml

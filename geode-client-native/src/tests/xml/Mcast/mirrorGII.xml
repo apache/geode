@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <client-set count="20" name="A"/>
+  <data name="regionName">MirrorGII</data>
+  
+  <data name="AckMirrorNil">
+    <snippet>
+      <region name="MirrorGII">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNil">
+    <snippet>
+      <region name="MirrorGII">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="valueSizes">100</data>
+  <data name="EntryCount">100</data>
+  <data name="usePID">1</data>
+  <test name="MirrorGII" description="AckMirrorNilGII test" waitTime="2400">
+    <task name="CreateRegion-AckNmirrorNil" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <client-set exclude="true">
+        <client name="A_1"/>
+      </client-set>
+      <data name="regionSpec">AckNmirrorNil</data>
+    </task>
+    <task name="Populate-AckMirrorNil" action="doAddEntry" container="eventtest" waitTime="600">
+      <client-set exclude="true">
+        <client name="A_1"/>
+      </client-set>
+    </task>
+    <task name="CreateRegion-AckMirrorNil" action="doCreateRootRegion" container="eventtest" waitTime="600">
+      <client-set>
+        <client name="A_1"/>
+      </client-set>
+      <data name="regionSpec">AckMirrorNil</data>
+    </task>
+    <task name="Verify" action="doVerifyKeyCount" container="eventtest" waitTime="600">
+      <client-set>
+        <client name="A_1"/>
+      </client-set>
+      <data name="expectedKeyCount">1900</data>
+    </task>
+  </test>
+</test-driver>

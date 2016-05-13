@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.0//EN"
+  "http://www.gemstone.com/dtd/cache6_0.dtd">
+
+<cache>
+  <bridge-server port="24680" notify-by-subscription="true"/>
+
+<vm-root-region name="partition_region">
+    <region-attributes
+    data-policy="partition"
+    />
+  </vm-root-region>
+  <function-service>  
+    <function>
+      <class-name>javaobject.MultiGetFunctionI</class-name>
+    </function>
+  </function-service>
+    
+</cache> 

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="utilities">
+  <description>
+    The Utilities Ant XML build script file defines reusable and useful utility functions/tasks for use inside other
+    GemFire build targets.
+  </description>
+
+  <path id="path.svnant">
+    <pathelement location="${svnant.dir}/lib/svnant.jar"/>
+    <pathelement location="${svnant.dir}/lib/svnClientAdapter.jar"/>
+    <pathelement location="${svnant.dir}/lib/svnkit-javahl16-1.7.5-v1.jar"/>
+    <pathelement location="${svnant.dir}/lib/svnkit-1.7.5-v1.jar"/>
+    <pathelement location="${svnant.dir}/lib/sqljet-1.1.4.jar"/>
+    <pathelement location="${svnant.dir}/lib/svnkit-cli-1.7.5-v1.jar"/>
+    <pathelement location="${svnant.dir}/lib/jna-3.4.0.jar"/>
+    <pathelement location="${svnant.dir}/lib/antlr-runtime-3.4.jar"/>
+    <pathelement location="${svnant.dir}/lib/sequence-library-1.0.2.jar"/>
+   </path>
+   
+  <typedef resource="org/tigris/subversion/svnant/svnantlib.xml" 
+           classpathref="path.svnant" />
+
+  <condition property="antcontrib.taskfile" value="net/sf/antcontrib/antlib.xml">
+    <antversion atleast="1.8"/>
+  </condition>
+  
+  <!-- If antcontrib.taskfile is not set -->
+  <property name="antcontrib.taskfile" value="net/sf/antcontrib/antcontrib.properties"/>
+  
+  <taskdef resource="${antcontrib.taskfile}" classpath="${ant-contrib.jar}"/>
+  
+  <taskdef resource="org/apache/ant/dotnet/antlib.xml" classpath="${ant-dotnet.jar}"/>
+  
+</project>

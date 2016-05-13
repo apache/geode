@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+  <data name="burstMillis">300</data>
+  <data name="burstPause">6</data>
+  <data name="timedInterval">30</data>
+  <data name="keyType">int</data>
+  <data name="opsSecond">100</data>
+  <data name="interestPercent">10</data>
+  <data name="cacheType">CLIENT</data>
+
+  <!-- Loop variables must be lists -->
+  <data name="numThreads">
+    <list>
+      <item>4</item>
+    </list>
+  </data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true"
+            client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+
+  <client-set count="48" name="Client"/>
+
+  <!-- This test was created for the 100 Node Test, 1 Feed, 3 Servers, and up to 96 Clients -->
+
+  <test name="32 clients per server 32k values" description="Feed throughput testing">
+    <task name="setupCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">CPP</data>
+      <client-set count="1" name="Client"/>
+    </task>
+    <task name="CreateClients" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set count="48" name="Client"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="2m">
+      <client-set count="48" name="Client"/>
+    </task>
+
+    <task name="WaitForPopulate" action="doRunProcess" container="utils" waitTime="30m">
+      <data name="program">waitForBBKey</data>
+      <data name="arguments">INTEROP DonePopulate 1200</data>
+      <client-set count="1" name="Client"/>
+    </task>
+
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="1h">
+      <data name="distinctKeys"><list><item>16384</item></list></data>
+      <data name="clientCount">48</data>
+      <client-set count="48" name="Client"/>
+    </task>
+
+    <task name="DonePopClient" action="doRunProcess" container="utils" waitTime="30m">
+      <data name="program">FwkBB</data>
+      <data name="arguments">set INTEROP DonePopClient true</data>
+      <client-set count="1" name="Client"/>
+    </task>
+
+  <!-- Throughput measurement with 3 servers, 32 clients per server -->
+    <task name="WaitForDestroy" action="doRunProcess" container="utils" waitTime="30m">
+      <data name="program">waitForBBKey</data>
+      <data name="arguments">INTEROP DoneDestroy 1200</data>
+      <client-set count="1" name="Client"/>
+    </task>
+
+    <task name="DestroyRegion" action="doLocalDestroyRegion" container="perftests" waitTime="10m">
+      <client-set count="48" name="Client"/>
+      <client-set name="Feeder"/>
+    </task>
+
+  <!--test with 24 clients per server and 32k values-->
+    <task name="WaitForPopulate2" action="doRunProcess" container="utils" waitTime="30m">
+      <data name="program">waitForBBKey</data>
+      <data name="arguments">INTEROP DonePopulate2 1200</data>
+      <client-set count="1" name="Client"/>
+    </task>
+
+    <task name="CreateClients" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set count="36" name="Client"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="2m">
+      <client-set count="36" name="Client"/>
+    </task>
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="1h">
+      <data name="distinctKeys"><list><item>16384</item></list></data>
+      <data name="clientCount">36</data>
+      <client-set count="36" name="Client"/>
+    </task>
+
+    <task name="DonePopClient2" action="doRunProcess" container="utils" waitTime="30m">
+      <data name="program">FwkBB</data>
+      <data name="arguments">set INTEROP DonePopClient2 true</data>
+      <client-set count="1" name="Client"/>
+    </task>
+
+  <!-- Throughput measurement with 3 servers, 24 clients per server -->
+    <task name="WaitForDestroy2" action="doRunProcess" container="utils" waitTime="30m">
+      <data name="program">waitForBBKey</data>
+      <data name="arguments">INTEROP DoneDestroy2 1200</data>
+      <client-set count="1" name="Client"/>
+    </task>
+
+    <task name="DestroyRegion" action="doLocalDestroyRegion" container="perftests" waitTime="10m">
+      <client-set count="36" name="Client"/>
+      <client-set name="Feeder"/>
+    </task>
+
+  <!--test with 16 clients per server and 32k values-->
+    <task name="WaitForPopulate3" action="doRunProcess" container="utils" waitTime="30m">
+      <data name="program">waitForBBKey</data>
+      <data name="arguments">INTEROP DonePopulate3 1200</data>
+      <client-set count="1" name="Client"/>
+    </task>
+
+    <task name="CreateClients" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set count="24" name="Client"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="2m">
+      <client-set count="24" name="Client"/>
+    </task>
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="1h">
+      <data name="distinctKeys"><list><item>16384</item></list></data>
+      <data name="clientCount">24</data>
+      <client-set count="24" name="Client"/>
+    </task>
+
+    <task name="DonePopClient3" action="doRunProcess" container="utils" waitTime="30m">
+      <data name="program">FwkBB</data>
+      <data name="arguments">set INTEROP DonePopClient3 true</data>
+      <client-set count="1" name="Client"/>
+    </task>
+
+  <!-- Throughput measurement with 3 servers, 16 clients per server -->
+    <task name="WaitForDestroy3" action="doRunProcess" container="utils" waitTime="30m">
+      <data name="program">waitForBBKey</data>
+      <data name="arguments">INTEROP DoneDestroy3 1200</data>
+      <client-set count="1" name="Client"/>
+    </task>
+
+    <task name="DestroyRegion" action="doLocalDestroyRegion" container="perftests" waitTime="10m">
+      <client-set count="24" name="Client"/>
+      <client-set name="Feeder"/>
+    </task>
+
+  <!--test with 8 clients per server and 32k values-->
+    <task name="WaitForPopulate4" action="doRunProcess" container="utils" waitTime="30m">
+      <data name="program">waitForBBKey</data>
+      <data name="arguments">INTEROP DonePopulate4 1200</data>
+      <client-set count="1" name="Client"/>
+    </task>
+
+    <task name="CreateClients" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set count="12" name="Client"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="2m">
+      <client-set count="12" name="Client"/>
+    </task>
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="1h">
+      <data name="distinctKeys"><list><item>16384</item></list></data>
+      <data name="clientCount">12</data>
+      <client-set count="12" name="Client"/>
+    </task>
+
+    <task name="DonePopClient4" action="doRunProcess" container="utils" waitTime="30m">
+      <data name="program">FwkBB</data>
+      <data name="arguments">set INTEROP DonePopClient4 true</data>
+      <client-set count="1" name="Client"/>
+    </task>
+
+  <!-- Throughput measurement with 3 servers, 8 clients per server -->
+    <task name="WaitForDestroy4" action="doRunProcess" container="utils" waitTime="30m">
+      <data name="program">waitForBBKey</data>
+      <data name="arguments">INTEROP DoneDestroy4 1200</data>
+      <client-set count="1" name="Client"/>
+    </task>
+
+    <task name="DestroyRegion" action="doLocalDestroyRegion" container="perftests" waitTime="10m">
+      <client-set count="12" name="Client"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="2m"/>
+    <task name="DoneCSharp" action="doRunProcess" container="utils" waitTime="2m">
+      <data name="program">FwkBB</data>
+      <data name="arguments">set INTEROP DoneCSharp true</data>
+      <client-set count="1" name="Client"/>
+    </task>
+  </test>
+</test-driver>

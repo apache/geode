@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">100</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>50000</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>1000</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+  <data name="expectedCount">100000</data>
+
+  <data name="keyType">str</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true"
+            initial-capacity="150000" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="Publisher"/>
+  <client-set name="Subscriber"/>
+  <client-set name="Subscriber2"/>
+
+  <test name="ThinClientPerf" description="Thin Client perf test">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 2 Native/csNotifySubscription.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="String,byte[]">
+      <client-set name="Publisher"/>
+      <client-set name="Subscriber"/>
+      <client-set name="Subscriber2"/>
+    </task>
+    <task name="Populate Entries in publisher" action="doPutAll" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Publisher"/>
+    </task>
+    <task name="Verify getAll list" action="doGetAllAndVerification" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Subscriber"/>
+      <client-set name="Subscriber2"/>
+      <data name="valueSizes">1000</data>
+      <data name="addToLocalCache">true</data>
+    </task>
+    <task name="Update Entries from Publisher" action="doPutAll" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <data name="valueSizes">
+        <list>
+          <item>2000</item>
+        </list>
+      </data>
+      <client-set name="Publisher"/>
+    </task>
+    <task name="Verify getAll list" action="doGetAllAndVerification" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Subscriber"/>
+      <client-set name="Subscriber2"/>
+      <data name="valueSizes">1000</data>
+      <data name="addToLocalCache">true</data>
+    </task>
+    <task name="Local destroy region" action="doLocalDestroyRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="2m" argTypes="String,byte[]">
+      <client-set name="Subscriber"/>
+      <client-set name="Subscriber2"/>
+    </task>
+    <task name="CreateRegion again" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="String,byte[]">
+      <client-set name="Subscriber"/>
+      <client-set name="Subscriber2"/>
+    </task>
+    <task name="Verify getAll list" action="doGetAllAndVerification" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Subscriber"/>
+      <client-set name="Subscriber2"/>
+      <data name="valueSizes">2000</data>
+      <data name="addToLocalCache">true</data>
+    </task>
+    <task name="Local destroy region" action="doLocalDestroyRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="2m" argTypes="String,byte[]">
+      <client-set name="Subscriber"/>
+      <client-set name="Subscriber2"/>
+    </task>
+    <task name="CreateRegion again" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="String,byte[]">
+      <client-set name="Subscriber"/>
+      <client-set name="Subscriber2"/>
+    </task>
+    <task name="Verify getAll list" action="doGetAllAndVerification" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Subscriber"/>
+      <client-set name="Subscriber2"/>
+      <data name="valueSizes">2000</data>
+      <data name="addToLocalCache">false</data>
+    </task>
+    <task name="Local destroy region" action="doLocalDestroyRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="2m" argTypes="String,byte[]">
+      <client-set name="Subscriber"/>
+      <client-set name="Subscriber2"/>
+    </task>
+    <task name="CreateRegion again" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="String,byte[]">
+      <client-set name="Subscriber"/>
+      <client-set name="Subscriber2"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="Verify getAll list" action="doGetAllAndVerification" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests"  timesToRun="3" waitTime="15m" parallel="true" argTypes="String,byte[]">
+      <client-set name="Subscriber"/>
+      <data name="valueSizes">2000</data>
+      <data name="addToLocalCache">false</data>
+    </task>
+    <task name="Verify getAll list" action="doGetAllAndVerification" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests"  timesToRun="3" waitTime="15m" parallel="true" argTypes="String,byte[]">
+      <client-set name="Subscriber2"/>
+      <data name="valueSizes">2000</data>
+      <data name="addToLocalCache">true</data>
+      <data name="invalidateRegion">true</data>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="2m" argTypes="String,byte[]"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+  </test>
+</test-driver>

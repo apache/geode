@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">7m</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>100</item>
+    </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="keyType">int</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true">
+          <cache-listener library="perftests" function="createPerfTestCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set count="10" name="ThinClientHA1"/>
+  <client-set count="10" name="ThinClientHA2"/>
+  <client-set count="10" name="ThinClientHA3"/>
+
+  <test name="TcrHAMixedRedundancy" description="Thin Client HA mixed redundancy test">
+    <task name="SetupCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 3 NativeHA/csAckMirror.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 2" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServer 3" action="doRunProcess" container="utils" waitTime="30m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StopCacheServer 3" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+
+    <task name="CreateRegion1" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="3m" argTypes="Int32,byte[]">
+      <client-set count="10" name="ThinClientHA1"/>
+      <data name="redundancyLevel">0</data>
+    </task>
+    <task name="CreateRegion2" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="3m" argTypes="Int32,byte[]">
+      <client-set count="10" name="ThinClientHA2"/>
+      <data name="redundancyLevel">1</data>
+    </task>
+    <task name="CreateRegion3" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="3m" argTypes="Int32,byte[]">
+      <client-set count="10" name="ThinClientHA3"/>
+      <data name="redundancyLevel">2</data>
+    </task>
+    <task name="Populating Entries" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="30m" argTypes="Int32,byte[]">
+      <client-set begin="6" count="1" name="ThinClientHA1"/>
+    </task>
+    <task name="Register Partial Interest List 1" action="doRegisterInterestList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="Int32,byte[]">
+      <data name="registerKeys">1000</data>
+      <data name="keyIndexBegin">100</data>
+      <client-set count="10" name="ThinClientHA1"/>
+    </task>
+    <task name="Register Partial Interest List 2" action="doRegisterInterestList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="Int32,byte[]">
+      <data name="registerKeys">1000</data>
+      <data name="keyIndexBegin">100</data>
+      <client-set count="10" name="ThinClientHA2"/>
+    </task>
+    <task name="Register Partial Interest List 3" action="doRegisterInterestList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="Int32,byte[]">
+      <data name="registerKeys">1000</data>
+      <data name="keyIndexBegin">100</data>
+      <client-set count="10" name="ThinClientHA3"/>
+    </task>
+
+    <task name="StartCacheServer 3" action="doRunProcess" container="utils" waitTime="30m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StopCacheServer 1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+
+    <task name="Gets1" action="doGets" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="30m" parallel="true" argTypes="Int32,byte[]">
+      <client-set count="5" name="ThinClientHA1"/>
+    </task>
+    <task name="Gets2" action="doGets" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="30m" parallel="true" argTypes="Int32,byte[]">
+      <client-set count="5" name="ThinClientHA2"/>
+    </task>
+    <task name="Gets3" action="doGets" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="30m" parallel="true" argTypes="Int32,byte[]">
+      <client-set count="5" name="ThinClientHA3"/>
+    </task>
+    <task name="Puts1" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="30m" parallel="true" argTypes="Int32,byte[]">
+      <client-set begin="6" count="5" name="ThinClientHA1"/>
+    </task>
+    <task name="Puts2" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="30m" parallel="true" argTypes="Int32,byte[]">
+      <client-set begin="6" count="5" name="ThinClientHA2"/>
+    </task>
+    <task name="Puts3" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="30m" parallel="true" argTypes="Int32,byte[]">
+      <client-set begin="6" count="5" name="ThinClientHA3"/>
+    </task>
+
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="Int32,byte[]"/>
+    <task name="StopCacheServer 2" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServer 3" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+  </test>
+
+</test-driver>

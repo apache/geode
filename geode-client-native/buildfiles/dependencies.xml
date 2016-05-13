@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="dependencies">
+  <property name="svnant.dir" value="${thirdparty_base.dir}/common/ant/svnant/svnant-1.4.dev"/>
+  <property name="ant-contrib.jar" value="${thirdparty_base.dir}/common/ant/ant-contrib/ant-contrib-1.0b3/ant-contrib-1.0b3.jar"/>
+  <property name="ant-dotnet.jar" value="${thirdparty_base.dir}/common/ant/ant-dotnet/apache-ant-dotnet-1.1/ant-dotnet-1.1.jar"/>
+  <property name="sonar-ant-task.jar" value="${thirdparty_base.dir}/common/ant/sonar-ant-task/2.0/sonar-ant-task-2.0.jar"/>
+</project>

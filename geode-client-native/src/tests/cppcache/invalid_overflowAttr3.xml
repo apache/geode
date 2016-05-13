@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Property value not persent for persistence -->
+
+<client-cache>
+ <root-region name = "root1" >
+    <region-attributes scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "35" disk-policy="overflows">
+    <persistence-manager library-name="SqLiteImpl" library-function-name="createSqLiteInstance">
+         <properties>
+           <property name="PersistenceDirectory" value="SqLiteRegionData"/>
+           <property name="PageSize"/>
+         </properties>
+       </persistence-manager>
+
+    </region-attributes>
+  </root-region>
+</client-cache>
+                                                                                
+

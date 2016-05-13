@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+  "http://www.gemstone.com/dtd/cache6_5.dtd">
+<cache>
+	<!--bridge-server host="cod" port="24680" /-->
+  <bridge-server port="HOST_PORT1" notify-by-subscription="false"/>
+
+	<vm-root-region name="DistRegionAck1">
+		<region-attributes scope="distributed-ack" mirror-type="keys-values"/>
+	</vm-root-region>
+	<vm-root-region name="DistRegionAck2">
+		<region-attributes scope="distributed-ack" mirror-type="keys-values"/>
+	</vm-root-region>
+	<vm-root-region name="DistRegionAck3">
+		<region-attributes scope="distributed-ack" mirror-type="keys-values"/>
+	</vm-root-region>
+	<vm-root-region name="DistRegionAck4">
+		<region-attributes scope="distributed-ack" mirror-type="keys-values"/>
+	</vm-root-region>
+	<vm-root-region name="DistRegionAck5">
+		<region-attributes scope="distributed-ack" mirror-type="keys-values"/>
+	</vm-root-region>
+	<vm-root-region name="DistRegionAck6">
+		<region-attributes scope="distributed-ack" mirror-type="keys-values"/>
+	</vm-root-region>
+</cache> 

@@ -1,0 +1,34 @@
+Operating instructions:
+This is first cut of C client for Gemfire cache. 
+Source code is in src directory. There is a sample programe in sample
+directory, which demonstrates basic usage of the library. There is a
+Makefile provided which builds the library, as well as sample program.
+To run the sample program, execute runit.sh in sample directory.
+Befure executing runit.sh GEMFIRE and GFCCLIENT environment variables 
+have to be set. GEMFIRE should contain path to Gemfire installation 
+and GFCCLIENT should contain path to C client dist library (which is
+created while building using Makefile).
+
+NOTES:
+1. gf_connect function returns a CONTEXT pointer which should be passed
+    while doing any operation. 
+2. A CONTEXT pointer should not be used to perform multiple operations
+    simultaneously
+3. A program can maintain a pool of CONTEXT pointers, and any thread can
+    borrow the pointer and return it when done.
+4. There is a gf_ping function in the API. Idle timeout at the server is 
+    60 seconds certain interval, otherwise it closes the socket. A program
+    should call gf_ping function periodically in a separate thread.
+2. gf_disconnect frees up the CONTEXT pointer
+
+
+Troubleshooting:
+Write now, client does not have any logging. For troubleshooting,
+server logs have to be analysed. To enable all logs in the server,
+'log-level=all' has to be passed as command line arguments while 
+starting the server. In samples directory, 'runit.sh' contains the
+command for starting the server with all logging enabled.
+
+Contact information:
+Ankur Srivastava <ankurs@vmware.com>
+Vishal Rao <raov@vmware.com>

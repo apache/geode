@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<cache>
+  <region name="root">
+    <region-attributes scope="distributed-no-ack" endpoints="localhost:40404" />
+    <region name="exampleRegion">
+      <region-attributes
+        scope="distributed-no-ack"
+        endpoints="localhost:40404"
+        client-notification="true"/>
+    </region>
+  </region>
+</cache>
+

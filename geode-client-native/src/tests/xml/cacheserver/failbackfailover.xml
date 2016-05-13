@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+  <data name="systemName">CSTest</data>
+  <data name="cacheType">PEER</data>
+  <data name="scope">NACK</data>
+  <data name="regionName">CSIntelTestRegion</data>
+  <data name="valueSizes">100 </data>
+  <data name="entryCount">10000</data>
+  <client-set>
+    <client name="Feeder"/>
+  </client-set>
+  <client-set count="4" name="Server"/>
+  <client-set count="15" name="Client"/>
+
+  <test name="FailbackFailOver" description="Test client server failback and failover features" >
+    <task name="CreateFeeder" action="doCreateRegion" container="cacheserver" waitTime="600">
+      <client-set>
+          <client name="Feeder"/>
+      </client-set>
+     </task>
+    <task name="InitServers" action="doInitProcess" container="cacheserver" waitTime="600">
+      <data name="cacheType">SERVER</data>
+      <client-set count="3" name="Server"/> 
+    </task>
+    <task name="CreateServerRegion" action="createValidationProcess" container="cacheserver" waitTime="600">
+      <client-set count="1" name="Server"/> 
+    </task>
+    <task name="CreateClients" action="doCreateRegion" container="cacheserver" waitTime="3600">
+      <data name="cacheType">CLIENT</data>
+				<data name="clientCount">5</data>
+      <client-set count="15" name="Client"/> 
+    </task>
+    <task name="FeedSystem" action="doFeed" container="cacheserver" waitTime="600">
+      <data name="opsSecond">1200</data>
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+    </task>
+    <!-- task name="ClientsCacheEntries" action="doEntryOperations" container="cacheserver" waitTime="3600">
+      <data name="entryOps">read</data>
+      <data name="workTime">60</data>
+      <data name="opsSecond">1200</data>
+      <client-set count="15" name="Client"/> 
+    </task -->
+    <task name="VerifyClientCount" action="doVerifyClientCount" container="cacheserver" waitTime="600">
+      <data name="sleepTime">200</data>
+			<data name="clientCount">5</data>
+      <client-set count="3" name="Server"/> 
+    </task>
+    <!-- task name="FeederUpdates" action="doEntryOperations" container="cacheserver" waitTime="36000" parallel="true">
+      <data name="entryOps">update</data>
+      <data name="workTime">2000</data>
+      <data name="opsSecond">12</data>
+      <client-set> 
+        <client name="Feeder"/> 
+      </client-set>
+    </task-->  
+    <task name="CreateOneServer" action="doCreateRegion" container="cacheserver" waitTime="600">
+     <data name="cacheType">SERVER</data>
+     <client-set begin="3" count="1" name="Server"/> 
+    </task>
+    <task name="VerifyClientCount" action="doVerifyClientCount" container="cacheserver" waitTime="600">
+       <data name="sleepTime">200</data>
+ 				<data name="clientCount">4</data>
+     <client-set count="4" name="Server"/> 
+    </task>
+    <task name="DepartSystem" action="doDepartSystem" container="cacheserver" waitTime="600">
+      <client-set count="1" name="Server"/> 
+    </task>
+    <task name="VerifyClientCount" action="doVerifyClientCount" container="cacheserver" waitTime="600">
+        <data name="sleepTime">200</data>
+				<data name="clientCount">5</data>
+     <client-set begin="1" count="3" name="Server"/> 
+    </task>
+    <task name="DepartSystem" action="doDepartSystem" container="cacheserver" waitTime="600">
+      <client-set begin="12" count="3" name="Client"/> 
+    </task>
+    <task name="VerifyClientCount" action="doVerifyClientCount" container="cacheserver" waitTime="600">
+        <data name="sleepTime">200</data>
+				<data name="clientCount">4</data>
+      <client-set begin="1" count="3" name="Server"/> 
+    </task>
+    <task name="DepartSystem" action="doDepartSystem" container="cacheserver" waitTime="600">
+       <data name="exit">1</data>
+      <client-set begin="9" count="3" name="Client"/> 
+    </task>
+    <task name="VerifyClientCount" action="doVerifyClientCount" container="cacheserver" waitTime="600">
+        <data name="sleepTime">200</data>
+				<data name="clientCount">3</data>
+      <client-set begin="1" count="3" name="Server"/> 
+    </task>
+    <task name="DepartSystem" action="doDepartSystem" container="cacheserver" waitTime="600">
+       <data name="exit">1</data>
+      <client-set begin="3" count="1" name="Server"/> 
+    </task>
+    <task name="VerifyClientCount" action="doVerifyClientCount" container="cacheserver" waitTime="600">
+        <data name="sleepTime">200</data>
+				<data name="clientCount">5</data>
+      <client-set begin="1" count="2" name="Server"/> 
+    </task>
+ </test>
+</test-driver>

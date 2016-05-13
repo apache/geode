@@ -1,0 +1,21 @@
+#/bin/bash
+
+set -e
+
+system=`uname -s`
+
+case ${system} in
+  Linux)
+    nprocs=`grep processor /proc/cpuinfo | wc -l | tr -d ' '`
+    ;;
+  SunOS)
+    nprocs=`/usr/sbin/psrinfo 2>/dev/null | wc -l | tr -d ' '`
+    ;;
+  *)
+    echo 'not implemented for ${system}'
+    exit 1
+    ;;
+esac
+
+echo $nprocs
+exit 0

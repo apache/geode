@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>1000</item>
+    </list>
+  </data>
+  <data name="valueSizes">
+    <list>
+      <item>100</item>
+    </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+
+  <!--data name="keyType">int</data-->
+  <data name="cq">true</data>
+
+  <data name="regionPaths">
+    <list>
+      <item>/Portfolios</item>
+      <item>/Portfolios2</item>
+      <item>/Portfolios3</item>
+    </list>
+  </data>
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="Portfolios">
+        <region-attributes caching-enabled="true" client-notification="true">
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="ThinClient"/>
+  <client-set name="Feeder"/>
+
+  <test name="serialMultRegOpsCQListenerWithFeeder" description="cq with multiregion test">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 2 Generics/parReg/pdx/CqQuery/csAckMirror.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="CreateClients" action="doAddRootAndSubRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="10m" argTypes="String,PortfolioPdx">
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set name="ThinClient"/>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Register CQ" action="doRegisterCqForConc" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,PortfolioPdx">
+      <client-set name="ThinClient"/>
+      <data name="query">
+         <list>
+           <item>select * from /Portfolios</item>
+           <item>select * from /Portfolios2</item>
+           <item>select * from /Portfolios3</item>
+         </list>
+      </data>
+    </task>
+    <task name="PopulateRegion" action="doPopulateUserObject" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="10m" argTypes="String,PortfolioPdx">
+      <data name="regionName">Portfolios</data>
+      <client-set name="Feeder"/>
+      <data name="objectType">PortfolioPdx</data>
+    </task>
+    <task name="PopulateRegion" action="doPopulateUserObject" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="10m" argTypes="String,PortfolioPdx">
+      <data name="regionName">Portfolios2</data>
+      <client-set name="Feeder"/>
+      <data name="objectType">PortfolioPdx</data>
+    </task>
+    <task name="PopulateRegion" action="doPopulateUserObject" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="10m" argTypes="String,PortfolioPdx">
+      <data name="regionName">Portfolios3</data>
+      <client-set name="Feeder"/>
+      <data name="objectType">PortfolioPdx</data>
+    </task>
+    <task name="Running Query with initial result" action="doRunQuery" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="15m" argTypes="String,PortfolioPdx">
+      <client-set name="ThinClient"/>
+      <data name="query">
+         <list>
+           <item>select * from /Portfolios</item>
+           <item>select * from /Portfolios2</item>
+           <item>select * from /Portfolios3</item>
+         </list>
+      </data>
+      <data name="resultSize">
+        <list>
+          <item>1000</item>
+          <item>1000</item>
+          <item>1000</item>
+        </list>
+      </data>
+    </task>
+    <task name="destroyKeys" action="doDestroyUserObject" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="10m" argTypes="String,PortfolioPdx">
+      <data name="regionName">Portfolios</data>
+      <client-set name="Feeder"/>
+      <data name="objectType">PortfolioPdx</data>
+      <data name="destroyKeys">100</data>
+    </task>
+    <task name="destroyKeys" action="doDestroyUserObject" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="10m" argTypes="String,PortfolioPdx">
+      <data name="regionName">Portfolios3</data>
+      <client-set name="Feeder"/>
+      <data name="objectType">PortfolioPdx</data>
+      <data name="destroyKeys">100</data>
+    </task>
+    <task name="stop all cqs" action="doCqState" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,PortfolioPdx">
+      <data name="cqState">stopped</data>
+      <client-set name="ThinClient"/>
+    </task>
+    <task name="Running Query with initial result" action="doRunQuery" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="15m" argTypes="String,PortfolioPdx">
+      <client-set name="ThinClient"/>
+      <data name="query">
+         <list>
+           <item>select * from /Portfolios</item>
+           <item>select * from /Portfolios2</item>
+           <item>select * from /Portfolios3</item>
+         </list>
+      </data>
+      <data name="resultSize">
+        <list>
+          <item>900</item>
+          <item>1000</item>
+          <item>900</item>
+        </list>
+      </data>
+    </task>
+    <task name="PopulateRegion" action="doPopulateUserObject" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="10m" argTypes="String,PortfolioPdx">
+      <data name="regionName">Portfolios</data>
+      <client-set name="Feeder"/>
+      <data name="objectType">PortfolioPdx</data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <data name="sleepTime">5</data>
+      <client-set name="ThinClient"/>
+    </task>
+    <task name="verify CQ listener is called" action="doVerifyCQListenerInvoked" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,PortfolioPdx">
+      <client-set name="ThinClient"/>
+    </task>
+    <task name="stop all cqs" action="doCqState" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,PortfolioPdx">
+      <data name="cqState">stopped</data>
+      <client-set name="ThinClient"/>
+    </task>
+    <task name="Running Query with initial result" action="doRunQuery" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="15m" argTypes="String,PortfolioPdx">
+      <client-set name="ThinClient"/>
+      <data name="query">
+         <list>
+           <item>select * from /Portfolios</item>
+           <item>select * from /Portfolios2</item>
+           <item>select * from /Portfolios3</item>
+         </list>
+      </data>
+      <data name="resultSize">
+        <list>
+          <item>1000</item>
+          <item>1000</item>
+          <item>900</item>
+        </list>
+      </data>
+    </task>
+    <task name="destroyKeys" action="doDestroyUserObject" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="10m" argTypes="String,PortfolioPdx">
+      <data name="regionName">Portfolios2</data>
+      <client-set name="Feeder"/>
+      <data name="objectType">PortfolioPdx</data>
+      <data name="destroyKeys">100</data>
+    </task>
+    <task name="do random entry ops on portfolio" action="doEntryOperations" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" waitTime="5m" argTypes="String,PortfolioPdx">
+      <data name="entryOps">
+        <oneof>
+          <item>add</item>
+          <item>update</item>
+          <item>update</item>
+          <item>putAll</item>
+          <item>destroy</item>
+          <item>destroy</item>
+        </oneof>
+      </data>
+      <data name="workTime">1m</data>
+      <data name="opsSecond">5</data>
+      <data name="entryCount">1000</data>
+      <data name="valueSizes">100</data>
+      <data name="multiRegion">true</data>
+      <data name="objectType">PortfolioPdx</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="verify CQ listener is called" action="doVerifyCQListenerInvoked" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,PortfolioPdx">
+      <client-set name="ThinClient"/>
+    </task>
+    <task name="stop all cqs" action="doCqState" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,PortfolioPdx">
+      <data name="cqState">stopped</data>
+      <client-set name="ThinClient"/>
+    </task>
+    <task name="execute all cqs" action="doCqState" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,PortfolioPdx">
+      <data name="cqState">execute</data>
+      <client-set name="ThinClient"/>
+    </task>
+    <task name="verify CQ listener is called" action="doVerifyCQListenerInvoked" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,PortfolioPdx">
+      <client-set name="ThinClient"/>
+    </task>
+    <task name="close all cqs" action="doCqState" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,PortfolioPdx">
+      <data name="cqState">closed</data>
+      <client-set name="ThinClient"/>
+    </task>
+    <task name="close cache for CPP clients" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,PortfolioPdx"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+  </test>
+
+</test-driver>

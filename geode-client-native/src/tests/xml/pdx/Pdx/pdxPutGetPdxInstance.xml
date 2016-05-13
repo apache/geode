@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">30</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>100</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+  <data name="keyType">str</data>
+  <data name="clientCount">2</data>
+  <data name="objectType">PdxType</data>
+  <data name="PdxReadSerialized">true</data>
+  
+  <data name="ThinClientPool1">
+    <snippet>
+      <pool name="_Test_Pool1" thread-local-connections="false" min-connections="2" read-timeout="3600000" 
+           subscription-redundancy="0" load-conditioning-interval="5000" servers="true" />
+    </snippet>
+  </data>
+<data name="EmptyClientRegion">
+  <snippet>
+    <region name="TestTCR1">
+      <region-attributes caching-enabled="false" pool-name="_Test_Pool1">
+      </region-attributes>
+    </region>
+  </snippet>
+</data>
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" pool-name="_Test_Pool1">
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+                                 
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set count="2" name="Client"/>
+
+  <test name="pdxPutGetPdxInstance" description="This test executes operations on entries on a PartitionedRegion and carefully
+validates for correctness. The data store for the partitioned region is spread
+across all VMs. The test put of pdx class from all clients and get from clientsi and modify the fields of pdx object and verify those field.">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 2 Generics/parReg/pdx/Pdx/csPdxInstance.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+   
+    <task name="CreatePool" action="doCreatePool" container="pdxtests"   waitTime="3m">
+      <data name="poolSpec">ThinClientPool1</data>
+      <client-set count="2" name="Client"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="pdxtests"   waitTime="5m">
+      <client-set begin="1" count="1" name="Client"/>
+      <data name="regionSpec">ThinClientRegion</data>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="pdxtests"   waitTime="5m">
+      <client-set begin="2" count="1" name="Client"/>
+      <!--data name="regionSpec">ThinClientRegion</data-->
+      <data name="regionSpec">EmptyClientRegion</data>
+    </task>
+    <!--task name="Register All Keys" action="doRegisterAllKeys" container="pdxtests" waitTime="2m" >
+      <client-set count="4" name="Client"/>
+    </task-->
+    <task name="Create Object" action="doPopulateRegion" container="pdxtests" waitTime="30m" >
+      <data name="entryOps">
+        <oneof>
+          <item>create</item>
+         </oneof>
+      </data>
+      <client-set begin="2" count="1" name="Client"/>
+    </task>
+    <task name="Do put" action="doPuts" container="pdxtests" waitTime="30m" >
+      <data name="entryOps">
+        <oneof>
+          <item>update</item>
+         </oneof>
+      </data>
+      <client-set begin="2" count="1" name="Client"/>
+    </task>
+    <task name="ValidatePdxInstance" action="doVerifyAndModifyPdxInstance" container="pdxtests" waitTime="30m" >
+      <client-set begin="2" count="1" name="Client"/>
+    </task>
+    <task name="Do put" action="doPuts" container="pdxtests" waitTime="30m" >
+      <data name="entryOps">
+        <oneof>
+          <item>update</item>
+         </oneof>
+      </data>
+      <client-set begin="2" count="1" name="Client"/>
+    </task>
+    <task name="ValidatePdxInstance" action="doVerifyAndModifyPdxInstance" container="pdxtests" waitTime="30m" >
+      <client-set begin="1" count="1" name="Client"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="smokeperf"   waitTime="5m"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    
+  </test>
+
+</test-driver>

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<!-- serverHACache2.xml
+     Configures a server to for clients at port 40404.
+-->
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
+  "http://www.gemstone.com/dtd/cache6_5.dtd">
+<cache>
+  <cache-server port="40404"/>
+    <region name="exampleRegion">
+      <region-attributes scope="distributed-ack"  mirror-type="keys-values" statistics-enabled="true">
+        <entry-time-to-live>
+          <expiration-attributes timeout="5" action="destroy"/>
+        </entry-time-to-live>
+      </region-attributes>
+    </region>
+</cache>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Well-formed and valid xml file -->
+<client-cache redundancy-level="1" endpoints="localhost:HOST_PORT1,localhost:HOST_PORT2" >
+</client-cache>

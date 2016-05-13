@@ -1,0 +1,2044 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B274E3B1-6A09-4322-952B-8BDA712892CE}</ProjectGuid>
+    <RootNamespace>gfclicache</RootNamespace>
+    <Keyword>ManagedCProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+    <CLRSupport>true</CLRSupport>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+    <CLRSupport>true</CLRSupport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+    <CLRSupport>true</CLRSupport>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+    <CLRSupport>true</CLRSupport>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OSBUILDDIR)/hidden/lib/debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OSBUILDDIR)/src/cli_objects_g\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OSBUILDDIR)/hidden/lib/debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OSBUILDDIR)/src/cli_objects_g\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OSBUILDDIR)/hidden/lib\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OSBUILDDIR)/src/cli_objects\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OSBUILDDIR)/hidden/lib\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OSBUILDDIR)/src/cli_objects\</IntDir>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">GemStone.GemFire.Cache</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">GemStone.GemFire.Cache</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">GemStone.GemFire.Cache</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">GemStone.GemFire.Cache</TargetName>
+    <LinkKeyFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)/../../release/keys/gemfire.snk</LinkKeyFile>
+    <LinkDelaySign Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkDelaySign>
+    <LinkKeyFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)/../../release/keys/gemfire.snk</LinkKeyFile>
+    <LinkDelaySign Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkDelaySign>
+    <LinkKeyFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)/../../release/keys/gemfire.snk</LinkKeyFile>
+    <LinkDelaySign Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkDelaySign>
+    <LinkKeyFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)/../../release/keys/gemfire.snk</LinkKeyFile>
+    <LinkDelaySign Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkDelaySign>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <BuildLog>
+      <Path>$(IntDir)vslogs/BuildLog_$(ProjectName)_$(Configuration).htm</Path>
+    </BuildLog>
+    <PreBuildEvent>
+      <Message>Checking the version of the assembly ...</Message>
+      <Command>bash --norc "$(ProjectDir)/../../release/scripts/setCLIVersion.sh" "$(ProjectDir)/../../release/keys/generic.exe.config" "$(ProjectDir)/../../src/com/gemstone/gemfire/internal/clicache/impl/AssemblyInfo.cpp" "$(ProjectDir)/../../templates/security/csharp/AssemblyInfo.cs"</Command>
+    </PreBuildEvent>
+    <ClCompile>
+      <AdditionalOptions>/clr:initialAppDomain  /MP4 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../../src/com/gemstone/gemfire/internal;$(ACE_DIR);$(STLPORT)/stlport;$(XML)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ACE_NLOGGING;ACE_NDEBUG;__ACE_INLINE__;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;WINVER=0x0500;_WIN32_WINNT=0x0500;DEBUG;GF_DEBUG_ASSERTS=1;GF_DEVEL_ASSERTS=$(CPPDEVEL);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4635;4638;%(DisableSpecificWarnings);4947</DisableSpecificWarnings>
+      <TreatWarningAsError>true</TreatWarningAsError>
+    </ClCompile>
+    <ProjectReference>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>strace.lib;$(ACELINKNAME)d.lib;psapi.lib;gfcppcache.lib</AdditionalDependencies>
+      <OutputFile>$(OutDir)GemStone.GemFire.Cache.dll</OutputFile>
+      <AdditionalLibraryDirectories>$(OSBUILDDIR)/hidden/lib/debug;$(STACKTRACE)/LIB;$(ACE_DIR)/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ManifestFile>$(IntDir)GemStone.GemFire.Cache.intermediate.manifest</ManifestFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AssemblyDebug>true</AssemblyDebug>
+      <GenerateMapFile>true</GenerateMapFile>
+      <TargetMachine>MachineX86</TargetMachine>
+      <KeyFile>$(ProjectDir)/../../release/keys/gemfire.snk</KeyFile>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <BuildLog>
+      <Path>$(IntDir)vslogs/BuildLog_$(ProjectName)_$(Configuration).htm</Path>
+    </BuildLog>
+    <PreBuildEvent>
+      <Message>Checking the version of the assembly ...</Message>
+      <Command>bash --norc "$(ProjectDir)/../../release/scripts/setCLIVersion.sh" "$(ProjectDir)/../../release/keys/generic.exe.config" "$(ProjectDir)/../../src/com/gemstone/gemfire/internal/clicache/impl/AssemblyInfo.cpp" "$(ProjectDir)/../../templates/security/csharp/AssemblyInfo.cs"</Command>
+    </PreBuildEvent>
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/clr:initialAppDomain /MP4 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../../src/com/gemstone/gemfire/internal;$(ACE_DIR);$(STLPORT)/stlport;$(XML)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ACE_NLOGGING;ACE_NDEBUG;__ACE_INLINE__;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;WINVER=0x0500;_WIN32_WINNT=0x0500;DEBUG;GF_DEBUG_ASSERTS=1;GF_DEVEL_ASSERTS=$(CPPDEVEL);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4635;4638;%(DisableSpecificWarnings);4947</DisableSpecificWarnings>
+      <TreatWarningAsError>true</TreatWarningAsError>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(ACELINKNAME)d.lib;psapi.lib;gfcppcache.lib</AdditionalDependencies>
+      <OutputFile>$(OutDir)GemStone.GemFire.Cache.dll</OutputFile>
+      <AdditionalLibraryDirectories>$(OSBUILDDIR)/hidden/lib/debug;$(ACE_DIR)/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ManifestFile>$(IntDir)GemStone.GemFire.Cache.intermediate.manifest</ManifestFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AssemblyDebug>true</AssemblyDebug>
+      <GenerateMapFile>true</GenerateMapFile>
+      <TargetMachine>MachineX64</TargetMachine>
+      <KeyFile>$(ProjectDir)/../../release/keys/gemfire.snk</KeyFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <BuildLog>
+      <Path>$(IntDir)vslogs/BuildLog_$(ProjectName)_$(Configuration).htm</Path>
+    </BuildLog>
+    <PreBuildEvent>
+      <Message>Checking the version of the assembly ...</Message>
+      <Command>bash --norc "$(ProjectDir)/../../release/scripts/setCLIVersion.sh" "$(ProjectDir)/../../release/keys/generic.exe.config" "$(ProjectDir)/../../src/com/gemstone/gemfire/internal/clicache/impl/AssemblyInfo.cpp" "$(ProjectDir)/../../templates/security/csharp/AssemblyInfo.cs"</Command>
+    </PreBuildEvent>
+    <ClCompile>
+      <AdditionalOptions>/clr:initialAppDomain /MP4 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Full</Optimization>
+      <AdditionalIncludeDirectories>../../src/com/gemstone/gemfire/internal;$(ACE_DIR);$(STLPORT)/stlport;$(XML)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ACE_NLOGGING;ACE_NDEBUG;__ACE_INLINE__;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;WINVER=0x0500;_WIN32_WINNT=0x0500;GF_DEVEL_ASSERTS=$(CPPDEVEL);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4635;4638;%(DisableSpecificWarnings);4947</DisableSpecificWarnings>
+      <TreatWarningAsError>true</TreatWarningAsError>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>strace.lib;$(ACELINKNAME).lib;psapi.lib;gfcppcache.lib</AdditionalDependencies>
+      <OutputFile>$(OutDir)GemStone.GemFire.Cache.dll</OutputFile>
+      <AdditionalLibraryDirectories>$(OSBUILDDIR)/hidden/lib;$(STACKTRACE)/LIB;$(ACE_DIR)/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ManifestFile>$(IntDir)GemStone.GemFire.Cache.intermediate.manifest</ManifestFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <TargetMachine>MachineX86</TargetMachine>
+      <KeyFile>$(ProjectDir)/../../release/keys/gemfire.snk</KeyFile>
+    </Link>
+    <PostBuildEvent>
+      <Message>Fixing the XML documentation ...</Message>
+      <Command>bash --norc "$(ProjectDir)/../../release/scripts/fixCLIXML.sh" "$(TargetDir)$(TargetName).xml"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <BuildLog>
+      <Path>$(IntDir)vslogs/BuildLog_$(ProjectName)_$(Configuration).htm</Path>
+    </BuildLog>
+    <PreBuildEvent>
+      <Message>Checking the version of the assembly ...</Message>
+      <Command>bash --norc "$(ProjectDir)/../../release/scripts/setCLIVersion.sh" "$(ProjectDir)/../../release/keys/generic.exe.config" "$(ProjectDir)/../../src/com/gemstone/gemfire/internal/clicache/impl/AssemblyInfo.cpp" "$(ProjectDir)/../../templates/security/csharp/AssemblyInfo.cs"</Command>
+    </PreBuildEvent>
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/clr:initialAppDomain /MP4 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Full</Optimization>
+      <AdditionalIncludeDirectories>../../src/com/gemstone/gemfire/internal;$(ACE_DIR);$(STLPORT)/stlport;$(XML)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ACE_NLOGGING;ACE_NDEBUG;__ACE_INLINE__;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;WINVER=0x0500;_WIN32_WINNT=0x0500;GF_DEVEL_ASSERTS=$(CPPDEVEL);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4635;4638;%(DisableSpecificWarnings);4947</DisableSpecificWarnings>
+      <TreatWarningAsError>true</TreatWarningAsError>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(ACELINKNAME).lib;psapi.lib;gfcppcache.lib</AdditionalDependencies>
+      <OutputFile>$(OutDir)GemStone.GemFire.Cache.dll</OutputFile>
+      <AdditionalLibraryDirectories>$(OSBUILDDIR)/hidden/lib;$(ACE_DIR)/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ManifestFile>$(IntDir)GemStone.GemFire.Cache.intermediate.manifest</ManifestFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <TargetMachine>MachineX64</TargetMachine>
+      <KeyFile>$(ProjectDir)/../../release/keys/gemfire.snk</KeyFile>
+    </Link>
+    <PostBuildEvent>
+      <Message>Fixing the XML documentation ...</Message>
+      <Command>bash --norc "$(ProjectDir)/../../release/scripts/fixCLIXML.sh" "$(TargetDir)$(TargetName).xml"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Reference Include="System">
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </Reference>
+    <Reference Include="System.Xml">
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </Reference>
+    <Reference Include="System.Data">
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </Reference>
+    <Reference Include="System.Drawing">
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </Reference>
+    <Reference Include="System.Windows.Forms">
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\AttributesFactoryM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\AttributesMutatorM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableDateM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableFileNameM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableHashMapM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableKeyM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableObject.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableObjectArrayM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableObjectXml.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableStackM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableStringArrayM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableStringM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableUndefinedM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableVectorM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheAttributesFactoryM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheAttributesM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheFactoryM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheStatisticsM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCqStatusListenerN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedPersistenceManagerN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\UserFunctionExecutionExceptionMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqAttributesFactoryM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqAttributesM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqAttributesMutatorM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqEventM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqQueryM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqServiceStatisticsM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqStateM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqStatisticsM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\DataInputM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\DataOutputM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\DistributedSystemM.cpp">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">GEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)";GEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">GEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)";GEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">GEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)";GEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">GEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)";GEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\EntryEventM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\ExceptionTypesM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\ExecutionM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\FunctionServiceM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\LogM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\PoolFactoryM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\PoolM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\PoolManagerM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\PropertiesM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\QueryM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\QueryServiceM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionAttributesM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionEntryM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionEventM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionFactoryM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\ResultCollectorM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\ResultSetM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\SelectResultsIteratorM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\SerializableM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\StatisticDescriptorM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\StatisticsFactoryM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\StatisticsM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\StatisticsTypeM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\StructM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\StructSetM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\SystemPropertiesM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\UserFunctionExecutionExceptionM.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\Utils.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\AssemblyInfo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\AuthenticatedCacheM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\CacheLoaderM.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedAuthInitialize.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheableDelta.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheableDeltaBytes.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheableKey.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheableKeyBytes.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheListener.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheLoader.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheWriter.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCqListener.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedFixedPartitionResolver.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedPartitionResolver.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedResultCollector.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedVisitor.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\MemoryPressureHandler.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\AttributesFactoryMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\AttributesMutatorMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableDateMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableFileNameMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableHashMapMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableKeyMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableObjectArrayMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableObjectN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableObjectXmlN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableStackMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableStringArrayMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableStringMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableUndefinedMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableVectorMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheAttributesFactoryMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheAttributesMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheFactoryMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheStatisticsMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheTransactionManagerMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqAttributesFactoryMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqAttributesMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqAttributesMutatorMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqEventMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqQueryMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqServiceStatisticsMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqStateMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqStatisticsMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\DataInputMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\DataOutputMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\DistributedSystemMN.cpp">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">GEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)";GEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">GEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)";GEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">GEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)";GEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">GEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)";GEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\EntryEventMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ExceptionTypesMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ExecutionMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\FunctionServiceMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\LocalRegionMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\LogMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PoolFactoryMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PoolManagerMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PoolMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PropertiesMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\QueryMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\QueryServiceMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ReflectionBasedAutoSerializer.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionAttributesMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionEntryMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionEventMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionFactoryMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ResultCollectorMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ResultSetMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\SelectResultsIteratorMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\SerializableMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StatisticDescriptorMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StatisticsFactoryMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StatisticsMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StatisticsTypeMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StructMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StructSetMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\SystemPropertiesMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\TransactionEventMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\UtilsN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\AssemblyInfoN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\AuthenticatedCacheMN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedAuthInitializeN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheableDeltaBytesN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheableDeltaN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheableKeyBytesN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheableKeyN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheListenerN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheLoaderN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheWriterN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCqListenerN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedFixedPartitionResolverN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedPartitionResolverN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedResultCollectorN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedTransactionListenerN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedTransactionWriterN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedVisitorN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\MemoryPressureHandlerN.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxFieldType.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxHelper.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxInstanceImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxInstanceFactoryImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxLocalReader.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxLocalWriter.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxManagedCacheableKey.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxManagedCacheableKeyBytes.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxReaderWithTypeCollector.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxRemoteReader.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxRemoteWriter.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxType.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\EnumInfo.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxTypeRegistry.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxWriterWithTypeCollector.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\RegionImplN.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\AttributesFactoryM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\AttributesMutatorM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableArrayListM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableBuiltinsM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableDateM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableFileNameM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableHashMapM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableHashSetM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableHashTableM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableIdentityHashMapM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableKeyM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableObject.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableObjectArrayM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableObjectXml.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableStackM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableStringArrayM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableStringM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableUndefinedM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheableVectorM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheAttributesFactoryM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheAttributesM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheFactoryM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheListenerAdapter.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheStatisticsM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CacheWriterAdapter.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICqStatusListenerN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\CqStatusListenerProxyMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCqStatusListenerN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedPersistenceManagerN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PersistenceManagerProxyMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPersistenceManagerN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\UserFunctionExecutionExceptionMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqAttributesFactoryM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqAttributesM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqAttributesMutatorM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqEventM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqListenerM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqOperationM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqQueryM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqServiceStatisticsM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqStateM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\CqStatisticsM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\DataInputM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\DataOutputM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\DiskPolicyTypeM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\DistributedSystemM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\EntryEventM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ExceptionTypesM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ExecutionM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ExpirationActionM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\FunctionServiceM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\GemFireClassIdsM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\gf_defs.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\gf_includes.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\IAuthInitialize.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICacheableKey.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICacheListener.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICacheLoader.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICacheWriter.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICqAttributes.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICqEvent.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICqListener.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICqResults.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ICqStatusListener.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\IFixedPartitionResolver.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\IGemFireCache.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\IGFDelta.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\IGFSerializable.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\IPartitionResolver.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\IRegionService.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\IResultCollector.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ISelectResults.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\LogM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\PoolFactoryM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\PoolM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\PoolManagerM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\PropertiesM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\QueryM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\QueryServiceM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionAttributesM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionEntryM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionEventM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionFactoryM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\RegionShortcutM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ResultCollectorM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ResultSetM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\ScopeTypeM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\SelectResultsIteratorM.hpp" />
+    <CustomBuild Include="..\..\src\com\gemstone\gemfire\internal\clicache\SerializableM.hpp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Command>
+    </CustomBuild>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\StatisticDescriptorM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\StatisticsFactoryM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\StatisticsM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\StatisticsTypeM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\StructM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\StructSetM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\SystemPropertiesM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\UserFunctionExecutionExceptionM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\Utils.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\AuthenticatedCacheM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\DelegateWrapper.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\GFDataInputStream.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\GFDataOutputStream.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\GFNullStream.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedAuthInitialize.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheableDelta.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheableDeltaBytes.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheableKey.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheableKeyBytes.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheListener.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheLoader.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCacheWriter.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedCqListener.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedFixedPartitionResolver.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedPartitionResolver.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedResultCollector.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedString.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\ManagedVisitor.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\MemoryPressureHandler.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\NativeWrapper.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\impl\SafeConvert.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\AttributesFactoryMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\AttributesMutatorMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableArrayListMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableBuiltinsMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableDateMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableFileNameMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableHashMapMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableHashSetMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableHashTableMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableIdentityHashMapMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableKeyMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableLinkedListMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableObjectArrayMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableObjectN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableObjectXmlN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableStackMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableStringArrayMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableStringMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableUndefinedMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheableVectorMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheAttributesFactoryMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheAttributesMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheFactoryMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheListenerAdapterN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheStatisticsMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheTransactionManagerMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CacheWriterAdapterN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqAttributesFactoryMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqAttributesMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqAttributesMutatorMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqEventMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqListenerMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqOperationMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqQueryMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqServiceStatisticsMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqStateMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\CqStatisticsMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\DataInputMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\DataOutputMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\DiskPolicyTypeMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\DistributedSystemMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\EntryEventMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ExceptionTypesMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ExecutionMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ExpirationActionMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\FunctionServiceMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\GemFireClassIdsMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IAuthInitializeN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICacheableKeyN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICacheListenerN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICacheLoaderN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICacheWriterN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICqAttributesN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICqEventN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICqListenerN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ICqResultsN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IFixedPartitionResolverN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IGemFireCacheN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IGFDeltaN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IGFSerializableN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPartitionResolverN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPdxInstance.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPdxTypeMapper.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPdxInstanceFactory.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPdxReaderN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPdxSerializableN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPdxSerializer.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPdxUnreadFields.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IPdxWriterN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IRegionN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IRegionServiceN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IResultCollectorN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ISelectResultsN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ISubscriptionServiceN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ITransactionListenerN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ITransactionWriterN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\IWritablePdxInstance.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\LocalRegionMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\LogMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PdxIdentityFieldAttribute.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PoolFactoryMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PoolManagerMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PoolMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\PropertiesMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\QueryMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\QueryServiceMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ReflectionBasedAutoSerializer.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionAttributesMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionEntryMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionEventMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionFactoryMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\RegionShortcutMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ResultCollectorMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ResultSetMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\ScopeTypeMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\SelectResultsIteratorMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\SerializableMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StatisticDescriptorMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StatisticsFactoryMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StatisticsMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StatisticsTypeMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StructMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\StructSetMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\SystemPropertiesMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\TransactionEventMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\TransactionIdMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\TransactionListenerAdapterN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\TransactionWriterAdapterN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\UtilsN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\AuthenticatedCacheMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\AuthInitializeMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\CacheListenerMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\CacheLoaderMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\CacheWriterMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\CqListenerProxyMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\DelegateWrapperN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\DotNetTypes.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\FixedPartitionResolverMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\GFDataInputStreamN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\GFDataOutputStreamN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\GFNullStreamN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedAuthInitializeN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheableDeltaBytesN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheableDeltaN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheableKeyBytesN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheableKeyN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheListenerN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheLoaderN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCacheWriterN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedCqListenerN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedFixedPartitionResolverN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedPartitionResolverN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedResultCollectorN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedStringN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedTransactionListenerN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedTransactionWriterN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ManagedVisitorN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\MemoryPressureHandlerN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\NativeWrapperN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PartitionResolverMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxFieldType.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxHelper.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxInstanceImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxInstanceFactoryImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxLocalReader.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxLocalWriter.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxManagedCacheableKey.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxManagedCacheableKeyBytes.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxReaderWithTypeCollector.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxRemotePreservedData.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxRemoteReader.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxRemoteWriter.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxType.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\EnumInfo.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxTypeRegistry.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxWrapper.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\PdxWriterWithTypeCollector.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\RegionImplN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\ResultCollectorProxyMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\SafeConvertN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\TransactionListenerMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\TransactionWriterMN.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\clicache\com\vmware\impl\WeakhashMap.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

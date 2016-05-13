@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">60</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>10</item>
+      <item>100</item>
+      <item>1000</item>
+      <item>10000</item>
+      <item>1000</item>
+      <item>100</item>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="keyType">int</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="false" client-notification="true">
+          <cache-listener library="perftests" function="createPerfTestCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="JCS" hostGroup="CS"/>
+  <client-set count="10" name="ThinClient"/>
+  <client-set name="Feeder"/>
+
+  <test name="ThinClientPerf" description="Thin Client perf test">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">Native/csAckMirrorQsize.xml</data>
+      <client-set name="JCS"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments"></data>
+      <client-set name="JCS"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="5m">
+      <data name="appdomain">AppDomainTest</data>
+      <client-set count="10" name="ThinClient"/>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="2m">
+      <data name="appdomain">AppDomainTest</data>
+      <client-set count="10" name="ThinClient"/>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="IterateKeys" action="doIterateInt32Keys" container="perftests" waitTime="45m">
+      <data name="appdomain">AppDomainTest</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="PopulateRegion" action="doPopulateRegion" container="perftests" waitTime="30m">
+      <data name="appdomain">AppDomainTest</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="IterateKeys" action="doIterateInt32Keys" container="perftests" waitTime="45m">
+      <data name="appdomain">AppDomainTest</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="15m">
+      <data name="appdomain">AppDomainTest</data>
+      <client-set count="10" name="ThinClient"/>
+    </task>
+    <task name="IterateKeys" action="doIterateInt32Keys" container="perftests" waitTime="45m">
+      <data name="appdomain">AppDomainTest</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="90m">
+      <data name="appdomain">AppDomainTest</data>
+      <client-set count="10" name="ThinClient"/>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="IterateKeys" action="doIterateInt32Keys" container="perftests" waitTime="45m">
+      <data name="appdomain">AppDomainTest</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="2m">
+      <data name="appdomain">AppDomainTest</data>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments"></data>
+      <client-set name="JCS"/>
+    </task>
+  </test>
+
+</test-driver>

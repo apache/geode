@@ -1,0 +1,482 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fwk", "fwk", "{175BC7B2-0C26-4C56-B988-3D0AE1500E12}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "antTasks", "antTasks", "{0FA61193-29A8-451D-8E81-9E5163F6AD91}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external", "external", "{2B50BBDB-6092-46A4-B055-40F6D012BBF6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{412030BA-C971-482A-A3B6-74ECDA71526D}"
+	ProjectSection(SolutionItems) = preProject
+		..\build.sh = ..\build.sh
+		..\filehdr.txt = ..\filehdr.txt
+		..\gfgrep = ..\gfgrep
+		..\myBuild.sh = ..\myBuild.sh
+		..\myBuild.sh.example = ..\myBuild.sh.example
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "xml", "xml", "{4664128E-F93F-4880-8E41-4BFB5CD68E15}"
+	ProjectSection(SolutionItems) = preProject
+		..\tests\xml\event\combineEvent.xml = ..\tests\xml\event\combineEvent.xml
+		..\tests\xml\event\combineEventLong.xml = ..\tests\xml\event\combineEventLong.xml
+		..\tests\xml\event\combineEventMT.xml = ..\tests\xml\event\combineEventMT.xml
+		..\tests\xml\event\combineEventOverflow.xml = ..\tests\xml\event\combineEventOverflow.xml
+		..\tests\xml\cron.regression = ..\tests\xml\cron.regression
+		..\tests\xml\event\entryEvent.xml = ..\tests\xml\event\entryEvent.xml
+		..\tests\xml\event\entryEventCacheLoader.xml = ..\tests\xml\event\entryEventCacheLoader.xml
+		..\tests\xml\event\entryEventDone.xml = ..\tests\xml\event\entryEventDone.xml
+		..\tests\xml\event\entryEventExit.xml = ..\tests\xml\event\entryEventExit.xml
+		..\tests\xml\event\entryEventIlBug.xml = ..\tests\xml\event\entryEventIlBug.xml
+		..\tests\xml\event\entryEventIT.xml = ..\tests\xml\event\entryEventIT.xml
+		..\tests\xml\event\entryEventLong.xml = ..\tests\xml\event\entryEventLong.xml
+		..\tests\xml\event\entryEventLRU.xml = ..\tests\xml\event\entryEventLRU.xml
+		..\tests\xml\event\entryEventMcast.xml = ..\tests\xml\event\entryEventMcast.xml
+		..\tests\xml\event\entryEventMT.xml = ..\tests\xml\event\entryEventMT.xml
+		..\tests\xml\event\entryEventMT100.xml = ..\tests\xml\event\entryEventMT100.xml
+		..\tests\xml\event\entryEventNewTTL.xml = ..\tests\xml\event\entryEventNewTTL.xml
+		..\tests\xml\event\entryEventOverflow.xml = ..\tests\xml\event\entryEventOverflow.xml
+		..\tests\xml\event\entryEventSegv.xml = ..\tests\xml\event\entryEventSegv.xml
+		..\tests\xml\event\entryEventTCR.xml = ..\tests\xml\event\entryEventTCR.xml
+		..\tests\xml\event\entryEventTTL.xml = ..\tests\xml\event\entryEventTTL.xml
+		..\tests\xml\event\entryTest.xml = ..\tests\xml\event\entryTest.xml
+		..\tests\xml\gfcpp-cache.xsd = ..\tests\xml\gfcpp-cache.xsd
+		..\tests\xml\event\netSearch.xml = ..\tests\xml\event\netSearch.xml
+		..\tests\xml\oneOff.list = ..\tests\xml\oneOff.list
+		..\tests\xml\event\quickEntryEvent.xml = ..\tests\xml\event\quickEntryEvent.xml
+		..\tests\xml\event\regionEvent.xml = ..\tests\xml\event\regionEvent.xml
+		..\tests\xml\event\regionEventLong.xml = ..\tests\xml\event\regionEventLong.xml
+		..\tests\xml\event\regionEventMT.xml = ..\tests\xml\event\regionEventMT.xml
+		..\tests\xml\event\regionEventOverflow.xml = ..\tests\xml\event\regionEventOverflow.xml
+		..\tests\xml\run24Hours.list = ..\tests\xml\run24Hours.list
+		..\tests\xml\shortNightly.list = ..\tests\xml\shortNightly.list
+		..\tests\xml\testDefinition.xsd = ..\tests\xml\testDefinition.xsd
+		..\tests\xml\testDefinition.xsx = ..\tests\xml\testDefinition.xsx
+		..\tests\xml\valid_overflowAttr.xml = ..\tests\xml\valid_overflowAttr.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bugs", "Bugs", "{84297F81-C9C4-43CE-B3A6-FC4CE3956912}"
+	ProjectSection(SolutionItems) = preProject
+		..\tests\xml\Bugs\32152.xml = ..\tests\xml\Bugs\32152.xml
+		..\tests\xml\Bugs\33201.xml = ..\tests\xml\Bugs\33201.xml
+		..\tests\xml\Bugs\34647.xml = ..\tests\xml\Bugs\34647.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "event", "event", "{F53A5833-210F-4CF7-8119-1AC5CF3380CA}"
+	ProjectSection(SolutionItems) = preProject
+		..\tests\xml\event\combineEvent.xml = ..\tests\xml\event\combineEvent.xml
+		..\tests\xml\event\combineEventLong.xml = ..\tests\xml\event\combineEventLong.xml
+		..\tests\xml\event\combineEventMT.xml = ..\tests\xml\event\combineEventMT.xml
+		..\tests\xml\event\combineEventOverflow.xml = ..\tests\xml\event\combineEventOverflow.xml
+		..\tests\xml\event\entryEvent.xml = ..\tests\xml\event\entryEvent.xml
+		..\tests\xml\event\entryEventCacheLoader.xml = ..\tests\xml\event\entryEventCacheLoader.xml
+		..\tests\xml\event\entryEventDone.xml = ..\tests\xml\event\entryEventDone.xml
+		..\tests\xml\event\entryEventExit.xml = ..\tests\xml\event\entryEventExit.xml
+		..\tests\xml\event\entryEventIlBug.xml = ..\tests\xml\event\entryEventIlBug.xml
+		..\tests\xml\event\entryEventIT.xml = ..\tests\xml\event\entryEventIT.xml
+		..\tests\xml\event\entryEventLong.xml = ..\tests\xml\event\entryEventLong.xml
+		..\tests\xml\event\entryEventLRU.xml = ..\tests\xml\event\entryEventLRU.xml
+		..\tests\xml\event\entryEventMcast.xml = ..\tests\xml\event\entryEventMcast.xml
+		..\tests\xml\event\entryEventMT.xml = ..\tests\xml\event\entryEventMT.xml
+		..\tests\xml\event\entryEventMT100.xml = ..\tests\xml\event\entryEventMT100.xml
+		..\tests\xml\event\entryEventNewTTL.xml = ..\tests\xml\event\entryEventNewTTL.xml
+		..\tests\xml\event\entryEventOverflow.xml = ..\tests\xml\event\entryEventOverflow.xml
+		..\tests\xml\event\entryEventSegv.xml = ..\tests\xml\event\entryEventSegv.xml
+		..\tests\xml\event\entryEventTCR.xml = ..\tests\xml\event\entryEventTCR.xml
+		..\tests\xml\event\entryEventTTL.xml = ..\tests\xml\event\entryEventTTL.xml
+		..\tests\xml\event\entryTest.xml = ..\tests\xml\event\entryTest.xml
+		..\tests\xml\event\netSearch.xml = ..\tests\xml\event\netSearch.xml
+		..\tests\xml\event\quickEntryEvent.xml = ..\tests\xml\event\quickEntryEvent.xml
+		..\tests\xml\event\regionEvent.xml = ..\tests\xml\event\regionEvent.xml
+		..\tests\xml\event\regionEventLong.xml = ..\tests\xml\event\regionEventLong.xml
+		..\tests\xml\event\regionEventMT.xml = ..\tests\xml\event\regionEventMT.xml
+		..\tests\xml\event\regionEventOverflow.xml = ..\tests\xml\event\regionEventOverflow.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mcast", "Mcast", "{1630FA25-7480-4B00-A7D3-D01C95EA6CC2}"
+	ProjectSection(SolutionItems) = preProject
+		..\tests\xml\Mcast\entryEvent.xml = ..\tests\xml\Mcast\entryEvent.xml
+		..\tests\xml\Mcast\entryEventLong.xml = ..\tests\xml\Mcast\entryEventLong.xml
+		..\tests\xml\Mcast\largeMembership.xml = ..\tests\xml\Mcast\largeMembership.xml
+		..\tests\xml\Mcast\mirrorGII.xml = ..\tests\xml\Mcast\mirrorGII.xml
+		..\tests\xml\Mcast\netSearch.xml = ..\tests\xml\Mcast\netSearch.xml
+		..\tests\xml\Mcast\perfBenchmark.xml = ..\tests\xml\Mcast\perfBenchmark.xml
+		..\tests\xml\Mcast\regionContentTest.xml = ..\tests\xml\Mcast\regionContentTest.xml
+		..\tests\xml\Mcast\regionEventMT.xml = ..\tests\xml\Mcast\regionEventMT.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{9D947ECB-99FB-4A41-BCE4-232029850CB7}"
+	ProjectSection(SolutionItems) = preProject
+		..\tests\xml\Misc\Sockets.xml = ..\tests\xml\Misc\Sockets.xml
+		..\tests\xml\Misc\cacheContentTest.xml = ..\tests\xml\Misc\cacheContentTest.xml
+		..\tests\xml\Misc\getInitialImage.xml = ..\tests\xml\Misc\getInitialImage.xml
+		..\tests\xml\Misc\memoryMeasurement.xml = ..\tests\xml\Misc\memoryMeasurement.xml
+		..\tests\xml\Misc\rawLBM.xml = ..\tests\xml\Misc\rawLBM.xml
+		..\tests\xml\Misc\regionContentTest.xml = ..\tests\xml\Misc\regionContentTest.xml
+		..\tests\xml\Misc\regionMemory.xml = ..\tests\xml\Misc\regionMemory.xml
+		..\tests\xml\Misc\sampleJavaCS.xml = ..\tests\xml\Misc\sampleJavaCS.xml
+		..\tests\xml\Misc\smallMembership.xml = ..\tests\xml\Misc\smallMembership.xml
+		..\tests\xml\Misc\VerifyPeerRegionCount.xml = ..\tests\xml\Misc\VerifyPeerRegionCount.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{B76176CC-7603-4832-B5C6-AA9341B4F986}"
+	ProjectSection(SolutionItems) = preProject
+		..\tests\xml\perf\atomicIncDecTest.xml = ..\tests\xml\perf\atomicIncDecTest.xml
+		..\tests\xml\perf\perfBenchmark.xml = ..\tests\xml\perf\perfBenchmark.xml
+		..\tests\xml\perf\perfBenchmarkOverflow.xml = ..\tests\xml\perf\perfBenchmarkOverflow.xml
+		..\tests\xml\perf\perfBenchmarkPub.xml = ..\tests\xml\perf\perfBenchmarkPub.xml
+		..\tests\xml\perf\perfBenchmarkVaryClients.xml = ..\tests\xml\perf\perfBenchmarkVaryClients.xml
+		..\tests\xml\perf\perfBenchmarkVaryClientsOF.xml = ..\tests\xml\perf\perfBenchmarkVaryClientsOF.xml
+		..\tests\xml\perf\perfBenchmarkVaryKeys.xml = ..\tests\xml\perf\perfBenchmarkVaryKeys.xml
+		..\tests\xml\perf\perfBenchmarkVaryValueSize.xml = ..\tests\xml\perf\perfBenchmarkVaryValueSize.xml
+		..\tests\xml\perf\perfBenchmarkVaryValueSizeOF.xml = ..\tests\xml\perf\perfBenchmarkVaryValueSizeOF.xml
+		..\tests\xml\perf\perfByteArrayConcat.xml = ..\tests\xml\perf\perfByteArrayConcat.xml
+		..\tests\xml\perf\perfFairQueue.xml = ..\tests\xml\perf\perfFairQueue.xml
+		..\tests\xml\perf\perfNodeScale.xml = ..\tests\xml\perf\perfNodeScale.xml
+		..\tests\xml\perf\perfTest.xml = ..\tests\xml\perf\perfTest.xml
+		..\tests\xml\perf\perfTestPutGetDestroy.xml = ..\tests\xml\perf\perfTestPutGetDestroy.xml
+		..\tests\xml\perf\perfTestPutGetDestroyOF.xml = ..\tests\xml\perf\perfTestPutGetDestroyOF.xml
+		..\tests\xml\perf\quickPerfTest.xml = ..\tests\xml\perf\quickPerfTest.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "regression", "regression", "{AE1920D3-6DF1-4C04-9E8A-775AC9E94006}"
+	ProjectSection(SolutionItems) = preProject
+		..\tests\xml\Regression\entryEvent.xml = ..\tests\xml\Regression\entryEvent.xml
+		..\tests\xml\Regression\entryEvent33Hour.xml = ..\tests\xml\Regression\entryEvent33Hour.xml
+		..\tests\xml\Regression\largeMembership.xml = ..\tests\xml\Regression\largeMembership.xml
+		..\tests\xml\Regression\latencyBenchmark.xml = ..\tests\xml\Regression\latencyBenchmark.xml
+		..\tests\xml\Regression\mirrorGII.xml = ..\tests\xml\Regression\mirrorGII.xml
+		..\tests\xml\Regression\perfBenchmark.xml = ..\tests\xml\Regression\perfBenchmark.xml
+		..\tests\xml\Regression\regionContent.xml = ..\tests\xml\Regression\regionContent.xml
+		..\tests\xml\Regression\regionEventLocalRoots.xml = ..\tests\xml\Regression\regionEventLocalRoots.xml
+		..\tests\xml\Regression\regionEventRoots.xml = ..\tests\xml\Regression\regionEventRoots.xml
+		..\tests\xml\Regression\regionPeerCount.xml = ..\tests\xml\Regression\regionPeerCount.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "buildfiles", "buildfiles", "{F40324F4-B271-44B4-9DCF-33F717C9763A}"
+	ProjectSection(SolutionItems) = preProject
+		..\buildfiles\build-docs.xml = ..\buildfiles\build-docs.xml
+		..\buildfiles\build-examples.xml = ..\buildfiles\build-examples.xml
+		..\buildfiles\build-src.xml = ..\buildfiles\build-src.xml
+		..\buildfiles\build-tests.xml = ..\buildfiles\build-tests.xml
+		..\buildfiles\build_from_eclipse.bat = ..\buildfiles\build_from_eclipse.bat
+		..\buildfiles\composit-ar.sh = ..\buildfiles\composit-ar.sh
+		..\buildfiles\jedit-gfcpp.xml = ..\buildfiles\jedit-gfcpp.xml
+		..\buildfiles\prettycode.sh = ..\buildfiles\prettycode.sh
+		..\buildfiles\uniqueTransportConfig.sh = ..\buildfiles\uniqueTransportConfig.sh
+		..\buildfiles\vcvars32_7.sh = ..\buildfiles\vcvars32_7.sh
+		..\buildfiles\winlog.sh = ..\buildfiles\winlog.sh
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{C0F443E8-FF86-4FC5-AE00-F3B06046F973}"
+	ProjectSection(SolutionItems) = preProject
+		..\tests\scripts\cron.sample = ..\tests\scripts\cron.sample
+		..\tests\scripts\cronbeaverton.sh = ..\tests\scripts\cronbeaverton.sh
+		..\tests\scripts\cronbeaverton.txt = ..\tests\scripts\cronbeaverton.txt
+		..\tests\scripts\cronpune.txt = ..\tests\scripts\cronpune.txt
+		..\tests\scripts\gdb.pl = ..\tests\scripts\gdb.pl
+		..\tests\scripts\killJavaServers.sh = ..\tests\scripts\killJavaServers.sh
+		..\tests\scripts\nightly-batch.sh = ..\tests\scripts\nightly-batch.sh
+		..\tests\scripts\runBatch.sh = ..\tests\scripts\runBatch.sh
+		..\tests\scripts\runBuild.sh = ..\tests\scripts\runBuild.sh
+		..\tests\scripts\runDriver.sh = ..\tests\scripts\runDriver.sh
+		..\tests\scripts\setupJavaServers.sh = ..\tests\scripts\setupJavaServers.sh
+		..\tests\scripts\startJavaServers.sh = ..\tests\scripts\startJavaServers.sh
+		..\tests\scripts\stopJavaServers.sh = ..\tests\scripts\stopJavaServers.sh
+		..\tests\scripts\using_runDriver = ..\tests\scripts\using_runDriver
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{B1E9209E-5336-491C-850B-C8801554F072}"
+	ProjectSection(SolutionItems) = preProject
+		..\tests\tools\checkSync.cpp = ..\tests\tools\checkSync.cpp
+		..\tests\tools\checkTS.cpp = ..\tests\tools\checkTS.cpp
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D5CC5D60-97E0-49B0-923B-63FC88A50EEE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Native", "Native", "{86046BE2-001D-42DF-BA1D-7C53E60A2380}"
+	ProjectSection(SolutionItems) = preProject
+		..\tests\xml\Native\cache.xml = ..\tests\xml\Native\cache.xml
+		..\tests\xml\Native\cacheserver_notify_subscription.xml = ..\tests\xml\Native\cacheserver_notify_subscription.xml
+		..\tests\xml\Native\cacheserver_notify_subscription2.xml = ..\tests\xml\Native\cacheserver_notify_subscription2.xml
+		..\tests\xml\Native\cacheserverperf1.xml = ..\tests\xml\Native\cacheserverperf1.xml
+		..\tests\xml\Native\cacheserverperf2.xml = ..\tests\xml\Native\cacheserverperf2.xml
+		..\tests\xml\Native\cacheserverperf3.xml = ..\tests\xml\Native\cacheserverperf3.xml
+		..\tests\xml\Native\clientScalabilityMultiServerTest.xml = ..\tests\xml\Native\clientScalabilityMultiServerTest.xml
+		..\tests\xml\Native\clientScalabilityTest.xml = ..\tests\xml\Native\clientScalabilityTest.xml
+		..\tests\xml\Native\csClientEvents.xml = ..\tests\xml\Native\csClientEvents.xml
+		..\tests\xml\Native\perfBenchmarkTCR.xml = ..\tests\xml\Native\perfBenchmarkTCR.xml
+		..\tests\xml\Native\perfClientsUpdateTest.xml = ..\tests\xml\Native\perfClientsUpdateTest.xml
+		..\tests\xml\Native\perfTCROverflowToDisk.xml = ..\tests\xml\Native\perfTCROverflowToDisk.xml
+		..\tests\xml\Native\perfTCRServerEviction.xml = ..\tests\xml\Native\perfTCRServerEviction.xml
+		..\tests\xml\Native\perfTestPutGetDestroy_FullInterestTCR.xml = ..\tests\xml\Native\perfTestPutGetDestroy_FullInterestTCR.xml
+		..\tests\xml\Native\perfTestPutGetDestroy_PartialInterestTCR.xml = ..\tests\xml\Native\perfTestPutGetDestroy_PartialInterestTCR.xml
+		..\tests\xml\Native\perfTestPutGetDestroyTCR.xml = ..\tests\xml\Native\perfTestPutGetDestroyTCR.xml
+		..\tests\xml\Native\perfTestPutGetDestroyTCRscaledUp.xml = ..\tests\xml\Native\perfTestPutGetDestroyTCRscaledUp.xml
+		..\tests\xml\Native\putgetdestroyscale1.xml = ..\tests\xml\Native\putgetdestroyscale1.xml
+		..\tests\xml\Native\putgetdestroyscale2.xml = ..\tests\xml\Native\putgetdestroyscale2.xml
+		..\tests\xml\Native\serverEviction1.xml = ..\tests\xml\Native\serverEviction1.xml
+		..\tests\xml\Native\serverEviction2.xml = ..\tests\xml\Native\serverEviction2.xml
+		..\tests\xml\Native\serverOverflowToDisk1.xml = ..\tests\xml\Native\serverOverflowToDisk1.xml
+		..\tests\xml\Native\serverOverflowToDisk2.xml = ..\tests\xml\Native\serverOverflowToDisk2.xml
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ace-props", "antTasks\build_setup.vcxproj", "{1665888E-3F46-46FB-8D82-EE83E7C2AD43}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "framework", "fwk\framework.vcxproj", "{9DD0D4ED-A137-4CC3-8B5C-4663EB22B5AA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testobject", "fwk\testobjects.vcxproj", "{9EB77FBD-BE51-400E-AAEC-BA4BF8A66A02}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "security", "fwk\security.vcxproj", "{FFF589F9-7C56-4690-8972-BDB6D23E97AE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utils", "fwk\utils.vcxproj", "{41E0A5CD-E00E-4A4E-8B01-BB776425DF3A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pack-core", "antTasks\pack-core.vcxproj", "{FCADEF46-DC71-4256-B78C-BDF4D7830366}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "perftests", "fwk\perftest.vcxproj", "{36FEF62A-3131-473C-A148-E29A082F4ABD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eventtest", "fwk\eventtest.vcxproj", "{7F67BBC8-99CB-4B09-9CA4-43A9CFCFD4B7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver", "fwk\driver.vcxproj", "{02B83BDD-B83F-45C3-A1FF-FBDB656D3896}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client", "fwk\client.vcxproj", "{D94E29E6-FF15-407A-8189-95D266E2A49C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fileprocessor", "fwk\fileprocessor.vcxproj", "{2F148A54-59CF-421E-804A-32F28CB6C605}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pack-tests", "antTasks\pack-tests.vcxproj", "{358C0425-4251-44B4-BC37-5D4B4438AEED}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extern-examples", "antTasks\extern-examples.vcxproj", "{193BE58C-E2C2-4B11-B69A-87E85044C62A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extern-gfclicache", "antTasks\extern-gfclicache.vcxproj", "{1A9D8380-04FB-4351-88DA-0B3890D1BF64}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Validate", "fwk\Validate.vcxproj", "{C427EDB9-A56B-478C-97EB-26268FE897C7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FwkBB", "fwk\FwkBB.vcxproj", "{00CC999A-8A2F-4A61-B40E-79C343D382DD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "extern-compile-cpp-tests", "antTasks\extern-compile-cpp-tests.vcxproj", "{AA9B2AB1-9B88-4627-863E-2387A8776D03}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "userobject", "fwk\userobjects.vcxproj", "{28172478-E846-422B-AC97-6B74C2693CF2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "timestr", "fwk\timestr.vcxproj", "{B3A0C31D-EA6C-4212-B9FF-C26C73C60F96}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "queryTests", "fwk\queryTests.vcxproj", "{47CB0444-E5CD-409B-91B7-65FAB167A5F4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cppPerf", "fwk\cppPerf.vcxproj", "{9796FF39-B21C-486D-8A13-8AE114F27679}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "durableclienttests", "fwk\durableclienttests.vcxproj", "{22F78B25-BA6D-4F71-B5EB-A6AA05479B7D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "functionExecution", "fwk\functionExecution.vcxproj", "{4C0AEAB0-13CF-11DE-B681-E95455D89593}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deltatest", "fwk\delta.vcxproj", "{F6965152-7B91-11DE-83B8-5A0D56D89593}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "smokeperf", "fwk\smokeperf.vcxproj", "{629DA115-9AFD-4615-B3DB-E688FB7C1862}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pdxtests", "fwk\pdxtest.vcxproj", "{3EB76DB8-B8BB-4230-8ABF-1A0477CC231D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cacheserver", "fwk\cacheserver.vcxproj", "{302866D3-0D69-459B-9287-273E353489A8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1665888E-3F46-46FB-8D82-EE83E7C2AD43}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1665888E-3F46-46FB-8D82-EE83E7C2AD43}.Debug|x64.ActiveCfg = Debug|x64
+		{1665888E-3F46-46FB-8D82-EE83E7C2AD43}.Release|Win32.ActiveCfg = Release|Win32
+		{1665888E-3F46-46FB-8D82-EE83E7C2AD43}.Release|x64.ActiveCfg = Release|x64
+		{9DD0D4ED-A137-4CC3-8B5C-4663EB22B5AA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9DD0D4ED-A137-4CC3-8B5C-4663EB22B5AA}.Debug|Win32.Build.0 = Debug|Win32
+		{9DD0D4ED-A137-4CC3-8B5C-4663EB22B5AA}.Debug|x64.ActiveCfg = Debug|x64
+		{9DD0D4ED-A137-4CC3-8B5C-4663EB22B5AA}.Debug|x64.Build.0 = Debug|x64
+		{9DD0D4ED-A137-4CC3-8B5C-4663EB22B5AA}.Release|Win32.ActiveCfg = Release|Win32
+		{9DD0D4ED-A137-4CC3-8B5C-4663EB22B5AA}.Release|Win32.Build.0 = Release|Win32
+		{9DD0D4ED-A137-4CC3-8B5C-4663EB22B5AA}.Release|x64.ActiveCfg = Release|x64
+		{9DD0D4ED-A137-4CC3-8B5C-4663EB22B5AA}.Release|x64.Build.0 = Release|x64
+		{9EB77FBD-BE51-400E-AAEC-BA4BF8A66A02}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9EB77FBD-BE51-400E-AAEC-BA4BF8A66A02}.Debug|Win32.Build.0 = Debug|Win32
+		{9EB77FBD-BE51-400E-AAEC-BA4BF8A66A02}.Debug|x64.ActiveCfg = Debug|x64
+		{9EB77FBD-BE51-400E-AAEC-BA4BF8A66A02}.Debug|x64.Build.0 = Debug|x64
+		{9EB77FBD-BE51-400E-AAEC-BA4BF8A66A02}.Release|Win32.ActiveCfg = Release|Win32
+		{9EB77FBD-BE51-400E-AAEC-BA4BF8A66A02}.Release|Win32.Build.0 = Release|Win32
+		{9EB77FBD-BE51-400E-AAEC-BA4BF8A66A02}.Release|x64.ActiveCfg = Release|x64
+		{9EB77FBD-BE51-400E-AAEC-BA4BF8A66A02}.Release|x64.Build.0 = Release|x64
+		{FFF589F9-7C56-4690-8972-BDB6D23E97AE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FFF589F9-7C56-4690-8972-BDB6D23E97AE}.Debug|Win32.Build.0 = Debug|Win32
+		{FFF589F9-7C56-4690-8972-BDB6D23E97AE}.Debug|x64.ActiveCfg = Debug|x64
+		{FFF589F9-7C56-4690-8972-BDB6D23E97AE}.Debug|x64.Build.0 = Debug|x64
+		{FFF589F9-7C56-4690-8972-BDB6D23E97AE}.Release|Win32.ActiveCfg = Release|Win32
+		{FFF589F9-7C56-4690-8972-BDB6D23E97AE}.Release|Win32.Build.0 = Release|Win32
+		{FFF589F9-7C56-4690-8972-BDB6D23E97AE}.Release|x64.ActiveCfg = Release|x64
+		{FFF589F9-7C56-4690-8972-BDB6D23E97AE}.Release|x64.Build.0 = Release|x64
+		{41E0A5CD-E00E-4A4E-8B01-BB776425DF3A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{41E0A5CD-E00E-4A4E-8B01-BB776425DF3A}.Debug|Win32.Build.0 = Debug|Win32
+		{41E0A5CD-E00E-4A4E-8B01-BB776425DF3A}.Debug|x64.ActiveCfg = Debug|x64
+		{41E0A5CD-E00E-4A4E-8B01-BB776425DF3A}.Debug|x64.Build.0 = Debug|x64
+		{41E0A5CD-E00E-4A4E-8B01-BB776425DF3A}.Release|Win32.ActiveCfg = Release|Win32
+		{41E0A5CD-E00E-4A4E-8B01-BB776425DF3A}.Release|Win32.Build.0 = Release|Win32
+		{41E0A5CD-E00E-4A4E-8B01-BB776425DF3A}.Release|x64.ActiveCfg = Release|x64
+		{41E0A5CD-E00E-4A4E-8B01-BB776425DF3A}.Release|x64.Build.0 = Release|x64
+		{FCADEF46-DC71-4256-B78C-BDF4D7830366}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FCADEF46-DC71-4256-B78C-BDF4D7830366}.Debug|x64.ActiveCfg = Debug|x64
+		{FCADEF46-DC71-4256-B78C-BDF4D7830366}.Release|Win32.ActiveCfg = Release|Win32
+		{FCADEF46-DC71-4256-B78C-BDF4D7830366}.Release|x64.ActiveCfg = Release|x64
+		{36FEF62A-3131-473C-A148-E29A082F4ABD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{36FEF62A-3131-473C-A148-E29A082F4ABD}.Debug|Win32.Build.0 = Debug|Win32
+		{36FEF62A-3131-473C-A148-E29A082F4ABD}.Debug|x64.ActiveCfg = Debug|x64
+		{36FEF62A-3131-473C-A148-E29A082F4ABD}.Debug|x64.Build.0 = Debug|x64
+		{36FEF62A-3131-473C-A148-E29A082F4ABD}.Release|Win32.ActiveCfg = Release|Win32
+		{36FEF62A-3131-473C-A148-E29A082F4ABD}.Release|Win32.Build.0 = Release|Win32
+		{36FEF62A-3131-473C-A148-E29A082F4ABD}.Release|x64.ActiveCfg = Release|x64
+		{36FEF62A-3131-473C-A148-E29A082F4ABD}.Release|x64.Build.0 = Release|x64
+		{7F67BBC8-99CB-4B09-9CA4-43A9CFCFD4B7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7F67BBC8-99CB-4B09-9CA4-43A9CFCFD4B7}.Debug|Win32.Build.0 = Debug|Win32
+		{7F67BBC8-99CB-4B09-9CA4-43A9CFCFD4B7}.Debug|x64.ActiveCfg = Debug|x64
+		{7F67BBC8-99CB-4B09-9CA4-43A9CFCFD4B7}.Debug|x64.Build.0 = Debug|x64
+		{7F67BBC8-99CB-4B09-9CA4-43A9CFCFD4B7}.Release|Win32.ActiveCfg = Release|Win32
+		{7F67BBC8-99CB-4B09-9CA4-43A9CFCFD4B7}.Release|Win32.Build.0 = Release|Win32
+		{7F67BBC8-99CB-4B09-9CA4-43A9CFCFD4B7}.Release|x64.ActiveCfg = Release|x64
+		{7F67BBC8-99CB-4B09-9CA4-43A9CFCFD4B7}.Release|x64.Build.0 = Release|x64
+		{02B83BDD-B83F-45C3-A1FF-FBDB656D3896}.Debug|Win32.ActiveCfg = Debug|Win32
+		{02B83BDD-B83F-45C3-A1FF-FBDB656D3896}.Debug|Win32.Build.0 = Debug|Win32
+		{02B83BDD-B83F-45C3-A1FF-FBDB656D3896}.Debug|x64.ActiveCfg = Debug|x64
+		{02B83BDD-B83F-45C3-A1FF-FBDB656D3896}.Debug|x64.Build.0 = Debug|x64
+		{02B83BDD-B83F-45C3-A1FF-FBDB656D3896}.Release|Win32.ActiveCfg = Release|Win32
+		{02B83BDD-B83F-45C3-A1FF-FBDB656D3896}.Release|Win32.Build.0 = Release|Win32
+		{02B83BDD-B83F-45C3-A1FF-FBDB656D3896}.Release|x64.ActiveCfg = Release|x64
+		{02B83BDD-B83F-45C3-A1FF-FBDB656D3896}.Release|x64.Build.0 = Release|x64
+		{D94E29E6-FF15-407A-8189-95D266E2A49C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D94E29E6-FF15-407A-8189-95D266E2A49C}.Debug|Win32.Build.0 = Debug|Win32
+		{D94E29E6-FF15-407A-8189-95D266E2A49C}.Debug|x64.ActiveCfg = Debug|x64
+		{D94E29E6-FF15-407A-8189-95D266E2A49C}.Debug|x64.Build.0 = Debug|x64
+		{D94E29E6-FF15-407A-8189-95D266E2A49C}.Release|Win32.ActiveCfg = Release|Win32
+		{D94E29E6-FF15-407A-8189-95D266E2A49C}.Release|Win32.Build.0 = Release|Win32
+		{D94E29E6-FF15-407A-8189-95D266E2A49C}.Release|x64.ActiveCfg = Release|x64
+		{D94E29E6-FF15-407A-8189-95D266E2A49C}.Release|x64.Build.0 = Release|x64
+		{2F148A54-59CF-421E-804A-32F28CB6C605}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2F148A54-59CF-421E-804A-32F28CB6C605}.Debug|Win32.Build.0 = Debug|Win32
+		{2F148A54-59CF-421E-804A-32F28CB6C605}.Debug|x64.ActiveCfg = Debug|x64
+		{2F148A54-59CF-421E-804A-32F28CB6C605}.Debug|x64.Build.0 = Debug|x64
+		{2F148A54-59CF-421E-804A-32F28CB6C605}.Release|Win32.ActiveCfg = Release|Win32
+		{2F148A54-59CF-421E-804A-32F28CB6C605}.Release|Win32.Build.0 = Release|Win32
+		{2F148A54-59CF-421E-804A-32F28CB6C605}.Release|x64.ActiveCfg = Release|x64
+		{2F148A54-59CF-421E-804A-32F28CB6C605}.Release|x64.Build.0 = Release|x64
+		{358C0425-4251-44B4-BC37-5D4B4438AEED}.Debug|Win32.ActiveCfg = Debug|Win32
+		{358C0425-4251-44B4-BC37-5D4B4438AEED}.Debug|x64.ActiveCfg = Debug|x64
+		{358C0425-4251-44B4-BC37-5D4B4438AEED}.Release|Win32.ActiveCfg = Release|Win32
+		{358C0425-4251-44B4-BC37-5D4B4438AEED}.Release|x64.ActiveCfg = Release|x64
+		{193BE58C-E2C2-4B11-B69A-87E85044C62A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{193BE58C-E2C2-4B11-B69A-87E85044C62A}.Debug|x64.ActiveCfg = Debug|x64
+		{193BE58C-E2C2-4B11-B69A-87E85044C62A}.Release|Win32.ActiveCfg = Release|Win32
+		{193BE58C-E2C2-4B11-B69A-87E85044C62A}.Release|x64.ActiveCfg = Release|x64
+		{1A9D8380-04FB-4351-88DA-0B3890D1BF64}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1A9D8380-04FB-4351-88DA-0B3890D1BF64}.Debug|x64.ActiveCfg = Debug|x64
+		{1A9D8380-04FB-4351-88DA-0B3890D1BF64}.Release|Win32.ActiveCfg = Release|Win32
+		{1A9D8380-04FB-4351-88DA-0B3890D1BF64}.Release|x64.ActiveCfg = Release|x64
+		{C427EDB9-A56B-478C-97EB-26268FE897C7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C427EDB9-A56B-478C-97EB-26268FE897C7}.Debug|Win32.Build.0 = Debug|Win32
+		{C427EDB9-A56B-478C-97EB-26268FE897C7}.Debug|x64.ActiveCfg = Debug|x64
+		{C427EDB9-A56B-478C-97EB-26268FE897C7}.Debug|x64.Build.0 = Debug|x64
+		{C427EDB9-A56B-478C-97EB-26268FE897C7}.Release|Win32.ActiveCfg = Release|Win32
+		{C427EDB9-A56B-478C-97EB-26268FE897C7}.Release|Win32.Build.0 = Release|Win32
+		{C427EDB9-A56B-478C-97EB-26268FE897C7}.Release|x64.ActiveCfg = Release|x64
+		{C427EDB9-A56B-478C-97EB-26268FE897C7}.Release|x64.Build.0 = Release|x64
+		{00CC999A-8A2F-4A61-B40E-79C343D382DD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{00CC999A-8A2F-4A61-B40E-79C343D382DD}.Debug|Win32.Build.0 = Debug|Win32
+		{00CC999A-8A2F-4A61-B40E-79C343D382DD}.Debug|x64.ActiveCfg = Debug|x64
+		{00CC999A-8A2F-4A61-B40E-79C343D382DD}.Debug|x64.Build.0 = Debug|x64
+		{00CC999A-8A2F-4A61-B40E-79C343D382DD}.Release|Win32.ActiveCfg = Release|Win32
+		{00CC999A-8A2F-4A61-B40E-79C343D382DD}.Release|Win32.Build.0 = Release|Win32
+		{00CC999A-8A2F-4A61-B40E-79C343D382DD}.Release|x64.ActiveCfg = Release|x64
+		{00CC999A-8A2F-4A61-B40E-79C343D382DD}.Release|x64.Build.0 = Release|x64
+		{AA9B2AB1-9B88-4627-863E-2387A8776D03}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AA9B2AB1-9B88-4627-863E-2387A8776D03}.Debug|x64.ActiveCfg = Debug|x64
+		{AA9B2AB1-9B88-4627-863E-2387A8776D03}.Release|Win32.ActiveCfg = Release|Win32
+		{AA9B2AB1-9B88-4627-863E-2387A8776D03}.Release|x64.ActiveCfg = Release|x64
+		{28172478-E846-422B-AC97-6B74C2693CF2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{28172478-E846-422B-AC97-6B74C2693CF2}.Debug|Win32.Build.0 = Debug|Win32
+		{28172478-E846-422B-AC97-6B74C2693CF2}.Debug|x64.ActiveCfg = Debug|x64
+		{28172478-E846-422B-AC97-6B74C2693CF2}.Debug|x64.Build.0 = Debug|x64
+		{28172478-E846-422B-AC97-6B74C2693CF2}.Release|Win32.ActiveCfg = Release|Win32
+		{28172478-E846-422B-AC97-6B74C2693CF2}.Release|Win32.Build.0 = Release|Win32
+		{28172478-E846-422B-AC97-6B74C2693CF2}.Release|x64.ActiveCfg = Release|x64
+		{28172478-E846-422B-AC97-6B74C2693CF2}.Release|x64.Build.0 = Release|x64
+		{B3A0C31D-EA6C-4212-B9FF-C26C73C60F96}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B3A0C31D-EA6C-4212-B9FF-C26C73C60F96}.Debug|Win32.Build.0 = Debug|Win32
+		{B3A0C31D-EA6C-4212-B9FF-C26C73C60F96}.Debug|x64.ActiveCfg = Debug|x64
+		{B3A0C31D-EA6C-4212-B9FF-C26C73C60F96}.Debug|x64.Build.0 = Debug|x64
+		{B3A0C31D-EA6C-4212-B9FF-C26C73C60F96}.Release|Win32.ActiveCfg = Release|Win32
+		{B3A0C31D-EA6C-4212-B9FF-C26C73C60F96}.Release|Win32.Build.0 = Release|Win32
+		{B3A0C31D-EA6C-4212-B9FF-C26C73C60F96}.Release|x64.ActiveCfg = Release|x64
+		{B3A0C31D-EA6C-4212-B9FF-C26C73C60F96}.Release|x64.Build.0 = Release|x64
+		{47CB0444-E5CD-409B-91B7-65FAB167A5F4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{47CB0444-E5CD-409B-91B7-65FAB167A5F4}.Debug|Win32.Build.0 = Debug|Win32
+		{47CB0444-E5CD-409B-91B7-65FAB167A5F4}.Debug|x64.ActiveCfg = Debug|x64
+		{47CB0444-E5CD-409B-91B7-65FAB167A5F4}.Debug|x64.Build.0 = Debug|x64
+		{47CB0444-E5CD-409B-91B7-65FAB167A5F4}.Release|Win32.ActiveCfg = Release|Win32
+		{47CB0444-E5CD-409B-91B7-65FAB167A5F4}.Release|Win32.Build.0 = Release|Win32
+		{47CB0444-E5CD-409B-91B7-65FAB167A5F4}.Release|x64.ActiveCfg = Release|x64
+		{47CB0444-E5CD-409B-91B7-65FAB167A5F4}.Release|x64.Build.0 = Release|x64
+		{9796FF39-B21C-486D-8A13-8AE114F27679}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9796FF39-B21C-486D-8A13-8AE114F27679}.Debug|Win32.Build.0 = Debug|Win32
+		{9796FF39-B21C-486D-8A13-8AE114F27679}.Debug|x64.ActiveCfg = Debug|x64
+		{9796FF39-B21C-486D-8A13-8AE114F27679}.Debug|x64.Build.0 = Debug|x64
+		{9796FF39-B21C-486D-8A13-8AE114F27679}.Release|Win32.ActiveCfg = Release|Win32
+		{9796FF39-B21C-486D-8A13-8AE114F27679}.Release|Win32.Build.0 = Release|Win32
+		{9796FF39-B21C-486D-8A13-8AE114F27679}.Release|x64.ActiveCfg = Release|x64
+		{9796FF39-B21C-486D-8A13-8AE114F27679}.Release|x64.Build.0 = Release|x64
+		{22F78B25-BA6D-4F71-B5EB-A6AA05479B7D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{22F78B25-BA6D-4F71-B5EB-A6AA05479B7D}.Debug|Win32.Build.0 = Debug|Win32
+		{22F78B25-BA6D-4F71-B5EB-A6AA05479B7D}.Debug|x64.ActiveCfg = Debug|x64
+		{22F78B25-BA6D-4F71-B5EB-A6AA05479B7D}.Debug|x64.Build.0 = Debug|x64
+		{22F78B25-BA6D-4F71-B5EB-A6AA05479B7D}.Release|Win32.ActiveCfg = Release|Win32
+		{22F78B25-BA6D-4F71-B5EB-A6AA05479B7D}.Release|Win32.Build.0 = Release|Win32
+		{22F78B25-BA6D-4F71-B5EB-A6AA05479B7D}.Release|x64.ActiveCfg = Release|x64
+		{22F78B25-BA6D-4F71-B5EB-A6AA05479B7D}.Release|x64.Build.0 = Release|x64
+		{4C0AEAB0-13CF-11DE-B681-E95455D89593}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4C0AEAB0-13CF-11DE-B681-E95455D89593}.Debug|Win32.Build.0 = Debug|Win32
+		{4C0AEAB0-13CF-11DE-B681-E95455D89593}.Debug|x64.ActiveCfg = Debug|x64
+		{4C0AEAB0-13CF-11DE-B681-E95455D89593}.Debug|x64.Build.0 = Debug|x64
+		{4C0AEAB0-13CF-11DE-B681-E95455D89593}.Release|Win32.ActiveCfg = Release|Win32
+		{4C0AEAB0-13CF-11DE-B681-E95455D89593}.Release|Win32.Build.0 = Release|Win32
+		{4C0AEAB0-13CF-11DE-B681-E95455D89593}.Release|x64.ActiveCfg = Release|x64
+		{4C0AEAB0-13CF-11DE-B681-E95455D89593}.Release|x64.Build.0 = Release|x64
+		{F6965152-7B91-11DE-83B8-5A0D56D89593}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F6965152-7B91-11DE-83B8-5A0D56D89593}.Debug|Win32.Build.0 = Debug|Win32
+		{F6965152-7B91-11DE-83B8-5A0D56D89593}.Debug|x64.ActiveCfg = Debug|x64
+		{F6965152-7B91-11DE-83B8-5A0D56D89593}.Debug|x64.Build.0 = Debug|x64
+		{F6965152-7B91-11DE-83B8-5A0D56D89593}.Release|Win32.ActiveCfg = Release|Win32
+		{F6965152-7B91-11DE-83B8-5A0D56D89593}.Release|Win32.Build.0 = Release|Win32
+		{F6965152-7B91-11DE-83B8-5A0D56D89593}.Release|x64.ActiveCfg = Release|x64
+		{F6965152-7B91-11DE-83B8-5A0D56D89593}.Release|x64.Build.0 = Release|x64
+		{629DA115-9AFD-4615-B3DB-E688FB7C1862}.Debug|Win32.ActiveCfg = Debug|Win32
+		{629DA115-9AFD-4615-B3DB-E688FB7C1862}.Debug|Win32.Build.0 = Debug|Win32
+		{629DA115-9AFD-4615-B3DB-E688FB7C1862}.Debug|x64.ActiveCfg = Debug|x64
+		{629DA115-9AFD-4615-B3DB-E688FB7C1862}.Debug|x64.Build.0 = Debug|x64
+		{629DA115-9AFD-4615-B3DB-E688FB7C1862}.Release|Win32.ActiveCfg = Release|Win32
+		{629DA115-9AFD-4615-B3DB-E688FB7C1862}.Release|Win32.Build.0 = Release|Win32
+		{629DA115-9AFD-4615-B3DB-E688FB7C1862}.Release|x64.ActiveCfg = Release|x64
+		{629DA115-9AFD-4615-B3DB-E688FB7C1862}.Release|x64.Build.0 = Release|x64
+		{3EB76DB8-B8BB-4230-8ABF-1A0477CC231D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3EB76DB8-B8BB-4230-8ABF-1A0477CC231D}.Debug|Win32.Build.0 = Debug|Win32
+		{3EB76DB8-B8BB-4230-8ABF-1A0477CC231D}.Debug|x64.ActiveCfg = Debug|x64
+		{3EB76DB8-B8BB-4230-8ABF-1A0477CC231D}.Debug|x64.Build.0 = Debug|x64
+		{3EB76DB8-B8BB-4230-8ABF-1A0477CC231D}.Release|Win32.ActiveCfg = Release|Win32
+		{3EB76DB8-B8BB-4230-8ABF-1A0477CC231D}.Release|Win32.Build.0 = Release|Win32
+		{3EB76DB8-B8BB-4230-8ABF-1A0477CC231D}.Release|x64.ActiveCfg = Release|x64
+		{3EB76DB8-B8BB-4230-8ABF-1A0477CC231D}.Release|x64.Build.0 = Release|x64
+		{302866D3-0D69-459B-9287-273E353489A8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{302866D3-0D69-459B-9287-273E353489A8}.Debug|Win32.Build.0 = Debug|Win32
+		{302866D3-0D69-459B-9287-273E353489A8}.Debug|x64.ActiveCfg = Debug|x64
+		{302866D3-0D69-459B-9287-273E353489A8}.Debug|x64.Build.0 = Debug|x64
+		{302866D3-0D69-459B-9287-273E353489A8}.Release|Win32.ActiveCfg = Release|Win32
+		{302866D3-0D69-459B-9287-273E353489A8}.Release|Win32.Build.0 = Release|Win32
+		{302866D3-0D69-459B-9287-273E353489A8}.Release|x64.ActiveCfg = Release|x64
+		{302866D3-0D69-459B-9287-273E353489A8}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

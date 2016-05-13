@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.1//EN"
+  "http://www.gemstone.com/dtd/cache5_1.dtd">
+<cache>
+  <bridge-server port="$PORT_NUM" notify-by-subscription="true" maximum-time-between-pings="600000" />
+  <region name="IndexRegion">
+    <region-attributes>
+      <partition-attributes redundant-copies="0"/>
+    </region-attributes>
+    <entry>
+      <key><string>port1-1</string></key>
+      <value>
+        <declarable>
+          <class-name>javaobject.Portfolio</class-name>
+          <parameter name="ID">
+            <string>76343</string>
+          </parameter>
+          <parameter name="pkid">
+            <string>Gemstone</string>
+          </parameter>
+          <parameter name="type">
+            <string>type1</string>
+          </parameter>
+          <parameter name="status">
+            <string>active</string>
+          </parameter>
+          <parameter name="newVal">
+            <string>CCCCC</string>
+          </parameter>
+          <parameter name="position1">
+            <declarable>
+                <class-name>javaobject.Position</class-name>
+                <parameter name="secId">
+                    <string>SUN</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>3400</string>
+                </parameter>
+                <parameter name="secType">
+                    <string>r</string>
+                </parameter>
+                <parameter name="pid">
+                    <string>345</string>
+                </parameter>
+            </declarable>
+          </parameter>
+          <parameter name="position2">
+            <declarable>
+                <class-name>javaobject.Position</class-name>
+                <parameter name="secId">
+                    <string>IBM</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>8765</string>
+                </parameter>
+                <parameter name="secType">
+                   <string>p</string>
+                </parameter>
+                <parameter name="pid">
+                   <string>123</string>
+                </parameter>
+            </declarable>
+          </parameter>
+        </declarable>
+      </value>
+     </entry>
+  </region>
+  <region name="Portfolios">
+    <region-attributes>
+      <partition-attributes redundant-copies="0"/>
+    </region-attributes>
+    <index name="index1">
+        <functional from-clause="/Portfolios" expression="ID" />
+    </index>
+    <index name="index5">
+      <functional from-clause="/Portfolios.keys" expression="toString" />
+    </index>
+    <index name="index7">
+      <functional from-clause="/Portfolios.values k" expression="nvl(k.position2.toString(),'nopes')" />
+    </index>
+    <index name="index8">
+      <functional from-clause="/Portfolios.keys k" expression="k" />
+    </index>
+  </region>
+  <region name="Portfolios2">
+    <region-attributes>
+      <partition-attributes redundant-copies="0"/>
+    </region-attributes>
+    <index name="index2">
+      <functional from-clause="/Portfolios2" expression="ID" />
+    </index>
+  </region>
+  <region name="Portfolios3">
+    <region-attributes>
+      <partition-attributes redundant-copies="0"/>
+    </region-attributes>
+    <index name="index3">
+      <functional from-clause="/Portfolios3" expression="ID" />
+    </index>
+  </region>
+  <region name="Positions">
+    <region-attributes>
+      <partition-attributes redundant-copies="0"/>
+    </region-attributes>
+    <index name="index4">
+      <functional from-clause="/Positions" expression="secId" />
+    </index>
+  </region>
+
+</cache> 

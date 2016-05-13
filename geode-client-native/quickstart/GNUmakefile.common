@@ -1,0 +1,70 @@
+BUILD_BITS := __BUILD_BITS__
+USE_CPP11 := __USE_CPP11__
+
+CXXFLAGS += -I$(GFCPP)/include
+CXXLDFLAGS += -L$(GFCPP)/lib
+CXXLIBS += -lpthread -lgfcppcache
+
+OSNAME := $(shell uname)
+ifeq ($(OSNAME),SunOS)
+  CXX = CC
+  # using -xMMD to fix issue with implicit rule to rebuild string from string.cc
+  CXXFLAGS += -xMMD
+  CXXFLAGS += -mt -D_RWSTD_MULTI_THREAD -DTHREAD=MULTI -D_REENTRANT
+  CXXFLAGS += -m$(BUILD_BITS) -xO3
+  CXXLDFLAGS += -m$(BUILD_BITS) -zdefs
+  CXXLIBS += -lrt -lkstat
+  ifeq ($(USE_CPP11),1)
+    CXXFLAGS += -std=c++11
+    CXXLDFLAGS += -std=c++11 
+    CXXLIBS += -lstdc++ -lgcc_s -lCrunG3
+  else
+    CXXLIBS += -lCstd -lCrun
+  endif
+  CXXLIBS += -lc
+else
+ifeq ($(OSNAME),Linux)
+  CXXFLAGS += -MD
+  CXXFLAGS += -D_REENTRANT -O3 -Wall -m$(BUILD_BITS)
+  CXXLDFLAGS += -m$(BUILD_BITS)
+  ifeq ($(USE_CPP11),1)
+    CXXFLAGS += -std=c++11
+  endif
+else
+  $(error "Not Supported Platform")
+endif
+endif
+
+%.o : %.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+
+.PHONY: all
+all: subdirs subs
+
+
+.PHONY: subdirs $(SUBDIRS) subs $(SUBS)
+
+subdirs: $(SUBDIRS)
+
+$(SUBDIRS):
+	$(MAKE) -C $@ -f GNUmakefile
+
+subs: $(SUBS)
+
+$(SUBS):
+	$(MAKE) -f GNUmakefile.$@
+
+SUBDIRSCLEAN = $(addsuffix .clean,$(SUBDIRS))
+
+SUBSCLEAN = $(addsuffix .clean,$(SUBS))
+        
+.PHONY: clean $(SUBDIRSCLEAN) $(SUBSCLEAN)
+clean: $(SUBDIRSCLEAN) $(SUBSCLEAN)
+        
+$(SUBDIRSCLEAN): %.clean:
+	$(MAKE) -C $* -f GNUmakefile clean
+
+$(SUBSCLEAN): %.clean:
+	$(MAKE) -f GNUmakefile.$* clean
+

@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">10</data> 
+  
+  <data name="distinctKeys">
+    <list>
+      <item>1000</item>
+      <item>10000</item>
+      <item>100000</item>
+    </list>
+  </data>
+  
+	<data name="valueSizes">
+		<list>
+			<item>100</item>
+			<item>1000</item>
+			<item>10000</item>
+		</list>
+	</data>
+	
+	<data name="numThreads">
+		<list>
+			<item>1</item>
+			<item>2</item>
+			<item>4</item>
+			<item>7</item>
+			<item>10</item>
+		</list>
+	</data>
+	
+  <data name="Local">
+    <snippet>
+      <region name="Local">
+        <region-attributes scope="local"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckMirrorNil">
+    <snippet>
+      <region name="AckMirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackMirrorNil">
+    <snippet>
+      <region name="NackMirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckMirrorIl">
+    <snippet>
+      <region name="AckMirrorIl">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="true"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackMirrorIl">
+    <snippet>
+      <region name="NackMirrorIl">
+        <region-attributes scope="distributed-no-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="true"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorIl">
+    <snippet>
+      <region name="AckNmirrorIl">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="true"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorIl">
+    <snippet>
+      <region name="NackNmirrorIl">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="true"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorNcacheNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="false" interest-list-enabled="false"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNcacheNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="false" interest-list-enabled="false"/> 
+      </region>
+    </snippet>
+  </data>
+	
+  <data name="AckMirrorNil">
+    <snippet>
+      <region name="AckMirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="perftests" 
+            function="createPerfTestCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackMirrorNil">
+    <snippet>
+      <region name="NackMirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="perftests" 
+            function="createPerfTestCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="perftests" 
+            function="createPerfTestCacheListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="perftests" 
+            function="createPerfTestCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckMirrorIl">
+    <snippet>
+      <region name="AckMirrorIl">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="true">
+          <cache-listener library="perftests" 
+            function="createPerfTestCacheListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackMirrorIl">
+    <snippet>
+      <region name="NackMirrorIl">
+        <region-attributes scope="distributed-no-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="true">
+          <cache-listener library="perftests" 
+            function="createPerfTestCacheListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorIl">
+    <snippet>
+      <region name="AckNmirrorIl">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="true">
+          <cache-listener library="perftests" 
+            function="createPerfTestCacheListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorIl">
+    <snippet>
+      <region name="NackNmirrorIl">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="true">
+          <cache-listener library="perftests" 
+            function="createPerfTestCacheListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorNcacheNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="false" interest-list-enabled="false">
+          <cache-listener library="perftests" 
+            function="createPerfTestCacheListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNcacheNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="false" interest-list-enabled="false">
+          <cache-listener library="perftests" 
+            function="createPerfTestCacheListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+	
+	<client-set name="Driver">
+		<client name="Producer"/>
+		<client name="Preloader"/>
+	</client-set>
+	
+	<test name="NackMirrorNil" description="NackMirrorNil Entry Event test">
+		<task name="CreateRegion-NackMirrorNil" action="doCreateRegion" container="perftests" waitTime="1200">
+			<data name="regionSpec">NackMirrorNil</data>
+		</task>
+    <!-- task name="EmptyGets" action="doGets" container="perftests" waitTime="160">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1200">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+	</test>
+	
+	<test name="NackMirrorIl" description="NackMirrorIl Entry Event test">
+		<task name="CreateRegion-NackMirrorIl" action="doCreateRegion" container="perftests" waitTime="1200">
+			<data name="regionSpec">NackMirrorIl</data>
+		</task>
+    <!-- task name="EmptyGets" action="doGets" container="perftests" waitTime="160">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1200">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+	</test>
+	
+	<test name="AckMirrorNil" description="AckMirrorNil Entry Event test">
+		<task name="CreateRegion-AckMirrorNil" action="doCreateRegion" container="perftests" waitTime="1200">
+			<data name="regionSpec">AckMirrorNil</data>
+		</task>
+    <!-- task name="EmptyGets" action="doGets" container="perftests" waitTime="160">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1200">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+	</test>
+	
+	<test name="AckMirrorIl" description="AckMirrorIl Entry Event test">
+		<task name="CreateRegion-AckMirrorIl" action="doCreateRegion" container="perftests" waitTime="1200">
+			<data name="regionSpec">AckMirrorIl</data>
+		</task>
+    <!-- task name="EmptyGets" action="doGets" container="perftests" waitTime="160">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1200">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+	</test>
+	
+	
+	
+	
+	
+	
+	
+	
+	<test name="AckMirrorNilLstnr" description="AckMirrorNilLstnr Entry Event test">
+		<task name="CreateRegion-AckMirrorNilLstnr" action="doCreateRegion" container="perftests" waitTime="60">
+			<data name="regionSpec">AckMirrorNilLstnr</data>
+		</task>
+    <!-- task name="EmptyGets" action="doGets" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>    
+	</test>
+	
+	<test name="NackMirrorNilLstnr" description="NackMirrorNilLstnr Entry Event test">
+		<task name="CreateRegion-NackMirrorNilLstnr" action="doCreateRegion" container="perftests" waitTime="60">
+			<data name="regionSpec">NackMirrorNilLstnr</data>
+		</task>
+    <!-- task name="EmptyGets" action="doGets" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>    
+	</test>
+	
+	<test name="AckNmirrorNilLstnr" description="AckNmirrorNilLstnr Entry Event test">
+		<task name="CreateRegion-AckNmirrorNilLstnr" action="doCreateRegion" container="perftests" waitTime="60">
+			<data name="regionSpec">AckNmirrorNilLstnr</data>
+		</task>
+    <!-- task name="EmptyGets" action="doGets" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+    <task name="Puts" action="doPuts" container="perftests" waitTime="980">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>    
+    <!-- task name="LocalDestroy" action="doLocalDestroyEntries" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Netsearch" action="doGets" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+	</test>
+	
+	<test name="NackNmirrorNilLstnr" description="NackNmirrorNilLstnr Entry Event test">
+		<task name="CreateRegion-NackNmirrorNilLstnr" action="doCreateRegion" container="perftests" waitTime="60">
+			<data name="regionSpec">NackNmirrorNilLstnr</data>
+		</task>
+    <!-- task name="EmptyGets" action="doGets" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>    
+    <!-- task name="LocalDestroy" action="doLocalDestroyEntries" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Netsearch" action="doGets" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+	</test>
+	
+	<test name="AckMirrorIlLstnr" description="AckMirrorIlLstnr Entry Event test">
+		<task name="CreateRegion-AckMirrorIlLstnr" action="doCreateRegion" container="perftests" waitTime="60">
+			<data name="regionSpec">AckMirrorIlLstnr</data>
+		</task>
+    <!-- task name="EmptyGets" action="doGets" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>    
+	</test>
+	
+	<test name="NackMirrorIlLstnr" description="NackMirrorIlLstnr Entry Event test">
+		<task name="CreateRegion-NackMirrorIlLstnr" action="doCreateRegion" container="perftests" waitTime="60">
+			<data name="regionSpec">NackMirrorIlLstnr</data>
+		</task>
+    <!-- task name="EmptyGets" action="doGets" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>    
+	</test>
+	
+	<test name="AckNmirrorIlLstnr" description="AckNmirrorIlLstnr Entry Event test">
+		<task name="CreateRegion-AckNmirrorIlLstnr" action="doCreateRegion" container="perftests" waitTime="60">
+			<data name="regionSpec">AckNmirrorIlLstnr</data>
+		</task>
+    <!-- task name="EmptyGets" action="doGets" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>    
+    <!-- task name="LocalDestroy" action="doLocalDestroyEntries" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Netsearch" action="doGets" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+	</test>
+	
+	<test name="NackNmirrorIlLstnr" description="NackNmirrorIlLstnr Entry Event test">
+		<task name="CreateRegion-NackNmirrorIlLstnr" action="doCreateRegion" container="perftests" waitTime="60">
+			<data name="regionSpec">NackNmirrorIlLstnr</data>
+		</task>
+    <!-- task name="EmptyGets" action="doGets" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>    
+    <!-- task name="LocalDestroy" action="doLocalDestroyEntries" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Netsearch" action="doGets" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+	</test>
+	
+	<test name="AckNmirrorNcacheNilLstnr" description="AckNmirrorNcacheNilLstnr Entry Event test">
+		<task name="CreateRegion-AckNmirrorNcacheNilLstnr" action="doCreateRegion" container="perftests" waitTime="60">
+			<data name="regionSpec">AckNmirrorNcacheNilLstnr</data>
+		</task>
+    <!-- task name="EmptyGets" action="doGets" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>    
+    <!-- task name="LocalDestroy" action="doLocalDestroyEntries" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Netsearch" action="doGets" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+	</test>
+	
+	<test name="NackNmirrorNcacheNilLstnr" description="NackNmirrorNcacheNilLstnr Entry Event test">
+		<task name="CreateRegion-NackNmirrorNcacheNilLstnr" action="doCreateRegion" container="perftests" waitTime="60">
+			<data name="regionSpec">NackNmirrorNcacheNilLstnr</data>
+		</task>
+    <!-- task name="EmptyGets" action="doGets" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+    <task name="Puts" action="doPuts" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Destroys" action="doDestroys" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>    
+    <!-- task name="LocalDestroy" action="doLocalDestroyEntries" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Netsearch" action="doGets" container="perftests" waitTime="1780">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task -->
+	</test>
+	
+</test-driver>

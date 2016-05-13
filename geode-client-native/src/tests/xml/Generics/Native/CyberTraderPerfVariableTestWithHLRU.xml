@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">100</data>
+  <data name="heapLruLimit">100</data>
+  <data name="cacheType">CLIENT</data>
+
+
+  <data name="distinctKeys">
+    <list>
+      <item>184877</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>80</item>
+      <item>160</item>
+      <item>320</item>
+      <item>640</item>
+      <item>1280</item>
+      <item>2560</item>
+    </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="keyType">str</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="CS1" hostGroup="CS"/>
+  <client-set name="CS2" hostGroup="CS"/>
+  <client-set name="CS3" hostGroup="CS"/>
+  <client-set name="Publisher"/>
+  <client-set name="Subscriber"/>
+
+  <test name="ThinClientPerf" description="Thin Client perf test with puts and gets for keyType string">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 3 Native/csAckMirror.xml</data>
+      <client-set name="CS1"/>
+    </task>
+    <task name="StartCacheServers CS1" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="CS1"/>
+    </task>
+    <task name="StartCacheServers CS2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="CS2"/>
+    </task>
+
+    <task name="CreateRegionForPerformanceVariable" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="String,byte[]">
+      <client-set name="Publisher"/>
+      <client-set name="Subscriber"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="2m" argTypes="String,byte[]">
+      <client-set name="Publisher"/>
+      <client-set name="Subscriber"/>
+    </task>
+    <task name="Measure Performance Variable with string keys" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="1h" argTypes="String,byte[]">
+      <client-set name="Publisher"/>
+      <data name="keySize">
+        <list>
+          <item>6</item>
+        </list>
+      </data>
+    </task>
+
+    <task name="Measure Performance Variable with cache size" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="45m" argTypes="String,byte[]">
+      <client-set name="Publisher"/>
+      <data name="distinctKeys">
+        <list>
+          <item>1</item>
+          <item>100</item>
+          <item>10000</item>
+          <item>184877</item>
+        </list>
+      </data>
+      <data name="valueSizes">
+        <list>
+          <item>100</item>
+        </list>
+      </data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="Publisher"/>
+      <data name="sleepTime">5</data>
+    </task>
+    <task name="Measure Get Throughput" action="doGets" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="30m" argTypes="String,byte[]">
+      <client-set name="Subscriber"/>
+    </task>
+
+    <task name="Measure Performance Variable with payload size" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="1h" argTypes="String,byte[]">
+      <client-set name="Publisher"/>
+      <data name="valueSizes">
+        <list>
+          <item>80</item>
+          <item>160</item>
+          <item>320</item>
+          <item>640</item>
+          <item>1280</item>
+          <item>2560</item>
+        </list>
+      </data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="Publisher"/>
+      <data name="sleepTime">5</data>
+    </task>
+
+    <task name="StartCacheServers CS3" action="doRunProcess" container="utils" waitTime="30m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="CS3"/>
+    </task>
+
+    <task name="Measure Performance Variable with cache size with 3rd cache member" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="45m" argTypes="String,byte[]">
+      <client-set name="Publisher"/>
+      <data name="distinctKeys">
+        <list>
+          <item>1</item>
+          <item>100</item>
+          <item>10000</item>
+          <item>184877</item>
+        </list>
+      </data>
+      <data name="valueSizes">
+        <list>
+          <item>100</item>
+        </list>
+      </data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="Publisher"/>
+      <data name="sleepTime">5</data>
+    </task>
+    <task name="Measure Get Throughput with 3rd cache member" action="doGets" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="30m" argTypes="String,byte[]">
+      <client-set name="Subscriber"/>
+    </task>
+
+    <task name="Measure Performance Variable with payload size with 3rd cache member" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="1h" argTypes="String,byte[]">
+      <client-set name="Publisher"/>
+      <data name="valueSizes">
+        <list>
+          <item>80</item>
+          <item>160</item>
+          <item>320</item>
+          <item>640</item>
+          <item>1280</item>
+          <item>2560</item>
+        </list>
+      </data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="Publisher"/>
+      <data name="sleepTime">5</data>
+    </task>
+
+    <task name="DestroyRegion" action="doLocalDestroyRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="String,byte[]">
+      <client-set name="Publisher"/>
+      <client-set name="Subscriber"/>
+    </task>
+
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="2m" argTypes="String,byte[]"/>
+
+    <task name="StopCacheServers CS1" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="CS1"/>
+    </task>
+    <task name="StopCacheServers CS2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="CS2"/>
+    </task>
+    <task name="StopCacheServers CS3" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="CS3"/>
+    </task>
+  </test>
+
+</test-driver>

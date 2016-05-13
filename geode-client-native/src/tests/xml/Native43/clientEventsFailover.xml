@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+  <data name="valueSizes">
+    <list>
+      <item>100000</item>
+      <item>1000</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes scope="distributed-ack" caching-enabled="false" client-notification="true"/>
+     </region>
+    </snippet>
+  </data>
+  <data name="ThinClientRegionWithListener">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes scope="distributed-ack" caching-enabled="false" client-notification="true">
+          <cache-listener library="perftests" function="createPerfTestCacheListener"/>
+       </region-attributes>
+     </region>
+    </snippet>
+  </data>
+
+  <client-set name="Feeder"/>
+  <client-set name="JavaCacheServer"/>
+  <client-set count="50" name="Client"/>
+
+  <test name="Thin Client Entry Events" description="Clients perform entry events">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 6 Native43/csAckMirror.xml</data>
+      <client-set name="JavaCacheServer"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">-c 6</data>
+      <client-set name="JavaCacheServer"/>
+    </task>
+
+    <task name="Init Feeder" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data> 
+      <client-set name="Feeder"/>
+    </task>
+    <task name="CreateClients" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegionWithListener</data> 
+      <client-set count="50" name="Client"/>
+    </task>    
+    <task name="FeedSystem" action="doFeed" container="cacheserver" waitTime="10m">
+      <data name="entryCount">5000</data>
+      <data name="opsSecond">1200</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Client Events" action="doEntryOperations" container="cacheserver" waitTime="2h10m" parallel="true">
+      <data name="entryOps">
+        <oneof>
+          <item>add</item>
+          <item>update</item>
+          <item>update</item>
+          <item>update</item>
+          <item>read</item>
+          <item>read</item>
+          <item>read</item>
+          <item>invalidate</item>
+          <item>destroy</item>
+        </oneof>
+      </data>
+      <data name="workTime">2h</data>
+      <data name="opsSecond">12</data>
+      <data name="entryCount">5000</data>
+      <data name="valueSizes">100</data>
+      <client-set name="Feeder"/>
+      <client-set count="50" name="Client"/>
+    </task>
+    <task name="stopStartCacheServer" action="doRunProcessAndSleep" container="utils" timesToRun="15" waitTime="3h30m" continueOnError="true" parallel="true">
+      <data name="program">
+        <oneof>
+          <item>stopJavaServers 1 ; sleep 60 ; startJavaServers 1 </item>
+          <item>stopJavaServers 2 ; sleep 60 ; startJavaServers 2 </item>
+          <item>stopJavaServers 3 ; sleep 60 ; startJavaServers 3 </item>
+          <item>stopJavaServers 4 ; sleep 60 ; startJavaServers 4 </item>
+          <item>stopJavaServers 5 ; sleep 60 ; startJavaServers 5 </item>
+          <item>stopJavaServers 6 ; sleep 60 ; startJavaServers 6 </item>
+          <item>killJavaServers 1 ; sleep 60 ; startJavaServers 1 </item>
+          <item>killJavaServers 2 ; sleep 60 ; startJavaServers 2 </item>
+          <item>killJavaServers 3 ; sleep 60 ; startJavaServers 3 </item>
+          <item>killJavaServers 4 ; sleep 60 ; startJavaServers 4 </item>
+          <item>killJavaServers 5 ; sleep 60 ; startJavaServers 5 </item>
+          <item>killJavaServers 6 ; sleep 60 ; startJavaServers 6 </item>
+          <item>killJavaServers 1 9 ; sleep 60 ; startJavaServers 1 </item>
+          <item>killJavaServers 2 9 ; sleep 60 ; startJavaServers 2 </item>
+          <item>killJavaServers 3 9 ; sleep 60 ; startJavaServers 3 </item>
+          <item>killJavaServers 4 9 ; sleep 60 ; startJavaServers 4 </item>
+          <item>killJavaServers 5 9 ; sleep 60 ; startJavaServers 5 </item>
+          <item>killJavaServers 6 9 ; sleep 60 ; startJavaServers 6 </item>
+        </oneof>
+      </data>
+      <data name="arguments">
+        <list>
+          <item></item>
+        </list>
+      </data>
+      <data name="sleepTime">
+        <oneof>
+          <item>20</item>
+          <item>30</item>
+          <item>40</item>
+          <item>50</item>
+          <item>60</item>
+          <item>90</item>
+          <item>120</item>
+        </oneof>
+      </data>
+      <client-set name="JavaCacheServer"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">-c 6</data>
+      <client-set name="JavaCacheServer"/>
+    </task>
+
+  </test>
+</test-driver>

@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+  <data name="timedInterval">30</data>
+  <data name="keyType">str</data>
+  <data name="opsSecond">100</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="redundancyLevel">2</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>65536</item>
+    </list>
+  </data>
+  <data name="valueSizes">
+    <list>
+      <item>8192</item>
+    </list>
+  </data>
+
+  <!-- Loop variables must be lists -->
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCHAR1">
+        <region-attributes caching-enabled="false"
+            client-notification="false"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="ThinClientRegionWithListener">
+    <snippet>
+      <region name="TestTCHAR1">
+        <region-attributes caching-enabled="false"
+           client-notification="true">
+          <cache-listener library="perftests" function="createLatencyListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+
+  <client-set count="96" name="Client"/>
+  <client-set count="1" name="JCS1" hostGroup="CS"/>
+  <client-set count="1" name="JCS2" hostGroup="CS"/>
+  <client-set count="1" name="JCS3" hostGroup="CS"/>
+  <client-set count="1" name="Feeder" hostGroup="CS"/>
+
+
+  <test name="96 client with 8k values" description="Feed latency testing">
+    <task name="SetupCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 3 NativeHA/csAckMirror.xml</data>
+      <client-set count="1" name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 2" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServer 3" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+
+    <task name="Init Feeder" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set count="1" name="Feeder"/>
+    </task>
+    <task name="Populate server regions" action="doPopServers" container="perftests" waitTime="1h">
+      <data name="opsSecond">500</data>
+      <client-set count="1" name="Feeder"/>
+    </task>
+    <task name="CreateClients" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegionWithListener</data>
+      <client-set count="96" name="Client"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="10m">
+      <client-set count="96" name="Client"/>
+    </task>
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="1h">
+      <data name="clientCount">96</data>
+      <client-set count="96" name="Client"/>
+    </task>
+
+    <!-- Latency measurement with 3 servers, 32 clients per server -->
+    <task name="Measure Feed Latency with 3 servers, 32 client per server" action="doLatencyPuts" container="perftests" waitTime="1h">
+      <client-set count="1" name="Feeder"/>
+      <data name="opsSecond">100</data>
+      <data name="clientCount">96</data>
+    </task>
+    <task name="Destroys-entries" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set count="1" name="Feeder"/>
+    </task>
+    <task name="DestroyRegion" action="doLocalDestroyRegion" container="perftests" waitTime="10m">
+      <client-set count="96" name="Client"/>
+      <client-set count="1" name="Feeder"/>
+    </task>
+
+    <!--test with 24 clients per server and 8k values-->
+    <task name="Init Feeder" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set count="1" name="Feeder"/>
+    </task>
+    <task name="Populate server regions" action="doPopServers" container="perftests" waitTime="1h">
+      <data name="opsSecond">500</data>
+      <client-set count="1" name="Feeder"/>
+    </task>
+    <task name="CreateClients" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegionWithListener</data>
+      <client-set count="72" name="Client"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="10m">
+      <client-set count="72" name="Client"/>
+    </task>
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="1h">
+      <data name="clientCount">72</data>
+      <client-set count="72" name="Client"/>
+    </task>
+
+    <!-- Latency measurement with 3 servers, 24 clients per server -->
+    <task name="Measure Feed Latency with 3 server, 24 client per server" action="doLatencyPuts" container="perftests" waitTime="1h">
+      <client-set count="1" name="Feeder"/>
+      <data name="opsSecond">100</data>
+      <data name="clientCount">72</data>
+    </task>
+    <task name="Destroys-entries" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set count="1" name="Feeder"/>
+    </task>
+    <task name="DestroyRegion" action="doLocalDestroyRegion" container="perftests" waitTime="10m">
+      <client-set count="72" name="Client"/>
+      <client-set count="1" name="Feeder"/>
+    </task>
+
+    <!--test with 16 clients per server and 8k values-->
+    <task name="Init Feeder" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set count="1" name="Feeder"/>
+    </task>
+    <task name="Populate server regions" action="doPopServers" container="perftests" waitTime="1h">
+      <data name="opsSecond">500</data>
+      <client-set count="1" name="Feeder"/>
+    </task>
+    <task name="CreateClients" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegionWithListener</data>
+      <client-set count="48" name="Client"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="10m">
+      <client-set count="48" name="Client"/>
+    </task>
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="1h">
+      <data name="clientCount">48</data>
+      <client-set count="48" name="Client"/>
+    </task>
+
+    <!-- Latency measurement with 3 servers, 16 clients per server -->
+    <task name="Measure Feed Latency with 3 server, 16 client per server" action="doLatencyPuts" container="perftests" waitTime="1h">
+      <client-set count="1" name="Feeder"/>
+      <data name="opsSecond">100</data>
+      <data name="clientCount">48</data>
+    </task>
+    <task name="Destroys-entries" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set count="1" name="Feeder"/>
+    </task>
+    <task name="DestroyRegion" action="doLocalDestroyRegion" container="perftests" waitTime="10m">
+      <client-set count="48" name="Client"/>
+      <client-set count="1" name="Feeder"/>
+    </task>
+
+    <!--test with 8 clients per server and 8k values-->
+    <task name="Init Feeder" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set count="1" name="Feeder"/>
+    </task>
+    <task name="Populate server regions" action="doPopServers" container="perftests" waitTime="1h">
+      <data name="opsSecond">500</data>
+      <client-set count="1" name="Feeder"/>
+    </task>
+    <task name="CreateClients" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegionWithListener</data>
+      <client-set count="24" name="Client"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="10m">
+      <client-set count="24" name="Client"/>
+    </task>
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="1h">
+      <data name="clientCount">24</data>
+      <client-set count="24" name="Client"/>
+    </task>
+
+    <!-- Latency measurement with 3 servers, 8 clients per server -->
+    <task name="Measure Feed Latency with 3 server, 8 client per server" action="doLatencyPuts" container="perftests" waitTime="1h">
+      <client-set count="1" name="Feeder"/>
+      <data name="opsSecond">100</data>
+      <data name="clientCount">24</data>
+    </task>
+    <task name="Destroys-entries" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set count="1" name="Feeder"/>
+    </task>
+    <task name="DestroyRegion" action="doLocalDestroyRegion" container="perftests" waitTime="10m">
+      <client-set count="24" name="Client"/>
+      <client-set count="1" name="Feeder"/>
+    </task>
+
+    <!-- Close the clients and the servers -->
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="5m"/>
+    <task name="StopCacheServer 1" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServer 2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServer 3" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+  </test>
+</test-driver>

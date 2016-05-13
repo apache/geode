@@ -1,0 +1,33 @@
+@echo off
+setlocal
+set PATH=%PATH%;$<TARGET_LINKER_FILE_DIR:gfcppcache>
+set PATH=%PATH%;$<TARGET_LINKER_FILE_DIR:framework>
+set PATH=%PATH%;$<TARGET_LINKER_FILE_DIR:testobject>
+set PATH=%PATH%;${DEPENDENCIES_ACE_DIR}/lib
+set PATH=%PATH%;${DEPENDENCIES_libxml2_DIR}/bin
+set TESTSRC=${CMAKE_CURRENT_SOURCE_DIR}
+set GF_JAVA=${Java_JAVA_EXECUTABLE}
+set GFJAVA=${GEMFIRE_HOME}
+set GFE_LOGLEVEL=config
+set GFE_SECLOGLEVEL=config
+set MCAST_ADDR=224.10.13.63
+set MCAST_PORT=${PORT}
+set TIMEBOMB=1800
+rem set CLASSPATH=%CLASSPATH%;${GEMFIRE_HOME}/lib/server-dependencies.jar
+rem set CLASSPATH=%CLASSPATH%;${CMAKE_BINARY_DIR}/javaobject.jar
+set GF_CLASSPATH=%GF_CLASSPATH%;${CMAKE_BINARY_DIR}/javaobject.jar
+set PROFILERCMD=
+set BUG481=
+set TESTNAME=${TEST}
+
+rmdir /q /s "${TEST_DIR}" 2>nul
+mkdir "${TEST_DIR}"
+if %errorlevel% neq 0 exit /b %errorlevel%
+pushd "${TEST_DIR}"
+if %errorlevel% neq 0 exit /b %errorlevel%
+
+$<TARGET_FILE:${TEST}>
+if %errorlevel% neq 0 exit /b %errorlevel%
+
+popd
+if %errorlevel% neq 0 exit /b %errorlevel%

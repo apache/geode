@@ -1,0 +1,767 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{CC6D226A-1DFF-31D1-89D1-D99420F6AF72}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>GemStone.GemFire.Cache.UnitTests</RootNamespace>
+    <AssemblyName>UnitTests</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <NoWarn>618</NoWarn>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>618</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+    <IntermediateOutputPath>Debug</IntermediateOutputPath>
+    <OutputPath>Debug</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>618</NoWarn>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>    
+    <IntermediateOutputPath>Debug</IntermediateOutputPath>
+    <OutputPath>Debug</OutputPath>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>618</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="nunit.framework">
+      <HintPath>${NUNIT}\bin\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\NewTestObject\PortfolioPdx.cs">
+      <Link>PortfolioPdx.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\NewTestObject\PositionPdx.cs">
+      <Link>PositionPdx.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\QueryHelper\QueryHelper.cs">
+      <Link>QueryHelper.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\QueryHelper\QueryHelperN.cs">
+      <Link>QueryHelperN.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\DeltaEx.cs">
+      <Link>DeltaEx.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\DeltaTestImpl.cs">
+      <Link>DeltaTestImpl.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\Portfolio.cs">
+      <Link>Portfolio.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\PortfolioN.cs">
+      <Link>PortfolioN.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\Position.cs">
+      <Link>Position.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\PositionN.cs">
+      <Link>PositionN.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\SimpleCacheListener.cs">
+      <Link>SimpleCacheListener.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\TestObject1.cs">
+      <Link>TestObject1.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\AssemblyInfo.cs">
+      <Link>AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\AttributesFactoryTests.cs">
+      <Link>AttributesFactoryTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\BasicTests.cs">
+      <Link>BasicTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\BuiltinCacheableWrappers.cs">
+      <Link>BuiltinCacheableWrappers.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\CacheableWrapper.cs">
+      <Link>CacheableWrapper.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\CacheHelper.cs">
+      <Link>CacheHelper.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\DefaultCacheable.cs">
+      <Link>DefaultCacheable.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\DefaultCacheableN.cs">
+      <Link>DefaultCacheableN.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\DUnitTests.cs">
+      <Link>DUnitTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\DupListener.cs">
+      <Link>DupListener.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\DurableListener.cs">
+      <Link>DurableListener.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\LinkageTests.cs">
+      <Link>LinkageTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\RegionOperation.cs">
+      <Link>RegionOperation.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\RegionWrapper.cs">
+      <Link>RegionWrapper.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\SystemPropertiesTests.cs">
+      <Link>SystemPropertiesTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\TallyListener.cs">
+      <Link>TallyListener.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\TallyLoader.cs">
+      <Link>TallyLoader.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\TallyResolverN.cs">
+      <Link>TallyResolverN.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\TallyWriter.cs">
+      <Link>TallyWriter.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientCallbackArg.cs">
+      <Link>ThinClientCallbackArg.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientCallbackArgN.cs">
+      <Link>ThinClientCallbackArgN.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientConflationTests.cs">
+      <Link>ThinClientConflationTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientDeltaTest.cs">
+      <Link>ThinClientDeltaTest.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientDocExamples.cs">
+      <Link>ThinClientDocExamples.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientDurableCqTestsN.cs">
+      <Link>ThinClientDurableCqTestsN.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientDurableTests.cs">
+      <Link>ThinClientDurableTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientHARegionTests.cs">
+      <Link>ThinClientHARegionTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientListenerWriter.cs">
+      <Link>ThinClientListenerWriter.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientPdxTests.cs">
+      <Link>ThinClientPdxTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientPoolTests.cs">
+      <Link>ThinClientPoolTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientQueryTests.cs">
+      <Link>ThinClientQueryTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientRegionInterestTests.cs">
+      <Link>ThinClientRegionInterestTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientRegionSteps.cs">
+      <Link>ThinClientRegionSteps.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientRegionTests.cs">
+      <Link>ThinClientRegionTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientSecurityAuthTests.cs">
+      <Link>ThinClientSecurityAuthTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientSecurityAuthTestsMU.cs">
+      <Link>ThinClientSecurityAuthTestsMU.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientSecurityAuthzTestBase.cs">
+      <Link>ThinClientSecurityAuthzTestBase.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientSecurityAuthzTests.cs">
+      <Link>ThinClientSecurityAuthzTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientSecurityAuthzTestsMU.cs">
+      <Link>ThinClientSecurityAuthzTestsMU.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientStatisticTests.cs">
+      <Link>ThinClientStatisticTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\UnitTests.cs">
+      <Link>UnitTests.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\DistOpsSteps.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\PutGetTests.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\SecurityTestUtil.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\SerializationTests.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\AttributesMutatorTests.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\CachelessTests.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\CacheTests.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ExpirationTests.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\OverflowTests.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\RegionMapTests.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientCqTests.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientCqIRTests.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientCacheableStringArrayTests.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientFunctionExecutionTests.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\AttributesFactoryTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\AttributesMutatorTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\CacheHelperN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\CachelessTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\DistOpsStepsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\PutGetTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\RegionWrapperN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\SecurityTestUtilN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\TallyListenerN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\TallyLoaderN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\TallyWriterN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientRegionStepsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientRegionTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\UnitTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientRegionInterestTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientSecurityAuthTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientStatisticTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientSecurityAuthTestsMUN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientSecurityAuthzTestBaseN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientSecurityAuthzTestsMUN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientSecurityAuthzTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientQueryTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\BuiltinCacheableWrappersN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\CacheableWrapperN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\DupListenerN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\RegionOperationN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientFunctionExecutionTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientHARegionTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientListenerWriterN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientPoolTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\DurableListenerN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientDurableTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ExpirationTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\OverflowTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\SerializationTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\SystemPropertiesTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientConflationTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientCqIRTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientCqTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientDocExamplesN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientStringArrayTestsN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientCSTXN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\UnitTests\ThinClientDeltaTestN.cs" />
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\DeltaTestImplN.cs">
+      <Link>DeltaTestImplN.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\TestObject1N.cs">
+      <Link>TestObject1N.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\DeltaExN.cs">
+      <Link>DeltaExN.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_CURRENT_SOURCE_DIR}\TestObject\SimpleCacheListenerN.cs">
+      <Link>SimpleCacheListenerN.cs</Link>
+    </Compile>
+    <Compile Include="${CMAKE_SOURCE_DIR}\..\examples\clicache\CacheRunner\ComplexNumber.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="${CMAKE_SOURCE_DIR}\tests\clicache\UnitTests\gfcpp.properties.mixed">
+      <Link>gfcpp.properties.mixed</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="${CMAKE_SOURCE_DIR}\tests\clicache\UnitTests\gfcpp.properties.nativeclient">
+      <Link>gfcpp.properties.nativeclient</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="${CMAKE_SOURCE_DIR}\tests\clicache\UnitTests\system.properties">
+      <Link>system.properties</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cache4_1.dtd">
+      <Link>cache4_1.dtd</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cache6_5.dtd">
+      <Link>cache6_5.dtd</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cache6_6.dtd">
+      <Link>cache6_6.dtd</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="authz5_5.dtd" />
+    <None Include="cdb.pl" />
+    <None Include="runCSFunctions.sh" />
+    <None Include="runCSTests.sh" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\clicache\UnitTests\cacheserver_notify_subscription_forDoc.xml">
+      <Link>cacheserver_notify_subscription_forDoc.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver1_partitioned.xml">
+      <Link>cacheserver1_partitioned.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver1_TradeKey.xml">
+      <Link>cacheserver1_TradeKey.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver2_partitioned.xml">
+      <Link>cacheserver2_partitioned.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver2_TradeKey.xml">
+      <Link>cacheserver2_TradeKey.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver3_TradeKey.xml">
+      <Link>cacheserver3_TradeKey.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserverDurableCqs.xml">
+      <Link>cacheserverDurableCqs.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_pdxinstance_hashcode.xml">
+      <Link>cacheserver_pdxinstance_hashcode.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_servergroup.xml">
+      <Link>cacheserver_servergroup.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_servergroup2.xml">
+      <Link>cacheserver_servergroup2.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\client_generics_plugins.xml">
+      <Link>client_generics_plugins.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\client_pdx.xml">
+      <Link>client_pdx.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\clicache\UnitTests\Settings.xml">
+      <Link>Settings.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\clicache\UnitTests\Timeouts.xml">
+      <Link>Timeouts.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\clicache\UnitTests\valid_overflowAttr.xml">
+      <Link>valid_overflowAttr.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver.xml">
+      <Link>cacheserver.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserverPdxSerializer.xml">
+      <Link>cacheserverPdxSerializer.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheServer_pdxreadserialized.xml">
+      <Link>cacheServer_pdxreadserialized.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserverPdx2.xml">
+      <Link>cacheserverPdx2.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserverForPdx.xml">
+      <Link>cacheserverForPdx.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserverMDS1.xml">
+      <Link>cacheserverMDS1.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserverMDS2.xml">
+      <Link>cacheserverMDS2.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserverPdx.xml">
+      <Link>cacheserverPdx.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver1_expiry.xml">
+      <Link>cacheserver1_expiry.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver1_fpr.xml">
+      <Link>cacheserver1_fpr.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver1_pool.xml">
+      <Link>cacheserver1_pool.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver1_pr.xml">
+      <Link>cacheserver1_pr.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver2.xml">
+      <Link>cacheserver2.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver2_fpr.xml">
+      <Link>cacheserver2_fpr.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver2_pool.xml">
+      <Link>cacheserver2_pool.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver2_pr.xml">
+      <Link>cacheserver2_pr.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver3.xml">
+      <Link>cacheserver3.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver3_fpr.xml">
+      <Link>cacheserver3_fpr.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver3_pool.xml">
+      <Link>cacheserver3_pool.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver3_pr.xml">
+      <Link>cacheserver3_pr.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_conflation.xml">
+      <Link>cacheserver_conflation.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_hashcode.xml">
+      <Link>cacheserver_hashcode.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_interest_notify.xml">
+      <Link>cacheserver_interest_notify.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_notify_subscription.xml">
+      <Link>cacheserver_notify_subscription.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_notify_subscription2.xml">
+      <Link>cacheserver_notify_subscription2.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_notify_subscription3.xml">
+      <Link>cacheserver_notify_subscription3.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_notify_subscription4.xml">
+      <Link>cacheserver_notify_subscription4.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_notify_subscription5.xml">
+      <Link>cacheserver_notify_subscription5.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_notify_subscription5N.xml">
+      <Link>cacheserver_notify_subscription5N.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_notify_subscription6.xml">
+      <Link>cacheserver_notify_subscription6.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_pool_client.xml">
+      <Link>cacheserver_pool_client.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_remoteoql.xml">
+      <Link>cacheserver_remoteoql.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_remoteoql2.xml">
+      <Link>cacheserver_remoteoql2.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_remoteoqlN.xml">
+      <Link>cacheserver_remoteoqlN.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_remoteoql2N.xml">
+      <Link>cacheserver_remoteoql2N.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_with_delta.xml">
+      <Link>cacheserver_with_delta.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_with_deltaAD.xml">
+      <Link>cacheserver_with_deltaAD.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cacheserver_with_delta_test_impl.xml">
+      <Link>cacheserver_with_delta_test_impl.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\CacheServPoolRedun1.xml">
+      <Link>CacheServPoolRedun1.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\CacheServPoolRedun2.xml">
+      <Link>CacheServPoolRedun2.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\CacheServPoolRedun3.xml">
+      <Link>CacheServPoolRedun3.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cache_redundancy.xml">
+      <Link>cache_redundancy.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\client_pool.xml">
+      <Link>client_pool.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\invalid_cache1.xml">
+      <Link>invalid_cache1.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\invalid_cache2.xml">
+      <Link>invalid_cache2.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\invalid_cache3.xml">
+      <Link>invalid_cache3.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\invalid_cache_pool.xml">
+      <Link>invalid_cache_pool.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\invalid_cache_pool2.xml">
+      <Link>invalid_cache_pool2.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\invalid_cache_pool3.xml">
+      <Link>invalid_cache_pool3.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\invalid_cache_pool4.xml">
+      <Link>invalid_cache_pool4.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\invalid_overflowAttr1.xml">
+      <Link>invalid_overflowAttr1.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\invalid_overflowAttr2.xml">
+      <Link>invalid_overflowAttr2.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\invalid_overflowAttr3.xml">
+      <Link>invalid_overflowAttr3.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\regionquery_diffconfig.xml">
+      <Link>regionquery_diffconfig.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\regionquery_diffconfig2.xml">
+      <Link>regionquery_diffconfig2.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\regionquery_diffconfigN.xml">
+      <Link>regionquery_diffconfigN.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\regionquery_diffconfig2N.xml">
+      <Link>regionquery_diffconfig2N.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\remotequery.xml">
+      <Link>remotequery.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\remotequeryN.xml">
+      <Link>remotequeryN.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\cqqueryfailover.xml">
+      <Link>cqqueryfailover.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\serverDurableClient.xml">
+      <Link>serverDurableClient.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\valid_cache.xml">
+      <Link>valid_cache.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\valid_cache_pool.xml">
+      <Link>valid_cache_pool.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\multi_get_function_server.xml">
+      <Link>multi_get_function_server.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\func_cacheserver1_pool.xml">
+      <Link>func_cacheserver1_pool.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\func_cacheserver2_pool.xml">
+      <Link>func_cacheserver2_pool.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\func_cacheserver3_pool.xml">
+      <Link>func_cacheserver3_pool.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\client_server_persistent_transactions.xml">
+      <Link>client_server_persistent_transactions.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="${CMAKE_SOURCE_DIR}\tests\cppcache\client_server_transactions.xml">
+      <Link>client_server_transactions.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="authz-dummy.xml" />
+    <Content Include="authz-ldap.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\plugins\SQLiteCLI\SQLiteCLI.csproj">
+      <Project>{FF9597E3-A4DD-4FDE-871D-B0C66088762F}</Project>
+      <Name>SQLiteCLI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\clicache\gfclicache.vcxproj">
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </ProjectReference>       
+    <ProjectReference Include="..\DUnitFramework\DUnitFramework.csproj">
+      <Project>{796727E8-3A6A-46BE-A2DB-584A4774CD51}</Project>
+      <Name>DUnitFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FwkClient\FwkClient.csproj">
+      <Project>{9EFAA401-B5D1-4592-A2FF-0972C776FF6A}</Project>
+      <Name>FwkClient</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PdxClassLibrary\PdxClassLibrary.csproj">
+      <Project>{10613802-A371-4C27-8F66-CE79BFCAC3F2}</Project>
+      <Name>PdxClassLibrary</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PdxVersion1Lib\PdxVersion1Lib.csproj">
+      <Project>{97F9965D-6B3D-44F6-92B3-5880A3C7178E}</Project>
+      <Name>PdxVersion1Lib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PdxVersion2Lib\PdxVersion2Lib.csproj">
+      <Project>{5055633B-6D1C-488D-B934-1AC482C915F7}</Project>
+      <Name>PdxVersion2Lib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\QueryHelper\QueryWrapper.vcxproj">
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <Name>QueryWrapper</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NativeWrapper\NativeWrapper.vcxproj">
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <Name>NativeWrapper</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SecurityUtil\SecurityUtil.csproj">
+      <Project>{29CFC13C-1D6C-4FE8-B56E-A5E7BA7F849F}</Project>
+      <Name>SecurityUtil</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>

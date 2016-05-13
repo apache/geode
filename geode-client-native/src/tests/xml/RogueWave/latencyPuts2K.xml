@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">RogueWave</data>
+  <data name="systemName">RWTest</data>
+  <data name="cacheType">PEER</data>
+  
+  <data name="timedInterval">30</data>
+  <data name="keyType">int</data>
+  <data name="opsSecond">100</data>
+  <data name="localDestroy">true</data>
+  
+  <!-- Loop variables must be lists -->
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+	
+  <data name="distinctKeys"><list><item>102400</item></list></data>
+  <data name="valueSizes"><list><item>2048</item></list></data>
+  <data name="clientCount">1</data>
+  <data name="localDestroy">false</data>
+
+  <data name="regionName">CSEvents</data>
+  <data name="AckMirrorNil">
+    <snippet>
+      <region name="CSEvents">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="perftests" function="createLatencyListener"/>
+          <entry-time-to-live>
+            <expiration-attributes timeout="2" action="destroy"/>
+          </entry-time-to-live>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="regionSpec">NackNmirrorNil</data>
+  
+  <client-set count="1" name="Receiver"/>
+  <client-set count="1" name="Feeder"/>
+
+  <test name="2 peers, 2k values" description="Feed latency testing">
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">AckMirrorNil</data>
+    </task>
+    <task name="Puts" action="doLatencyPuts" container="perftests" waitTime="300">
+      <client-set count="1" name="Feeder"/>
+    </task>
+  </test>
+</test-driver>

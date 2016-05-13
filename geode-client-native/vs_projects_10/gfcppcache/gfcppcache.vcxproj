@@ -1,0 +1,787 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1AB03357-6AD1-4DB7-96AB-7E2AF2A9062B}</ProjectGuid>
+    <RootNamespace>gfcppcache</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OSBUILDDIR)/hidden/lib/debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OSBUILDDIR)/src/cpp_objects_g\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OSBUILDDIR)/hidden/lib/debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OSBUILDDIR)/src/cpp_objects_g\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OSBUILDDIR)/hidden/lib\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OSBUILDDIR)/src/cpp_objects\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</EmbedManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OSBUILDDIR)/hidden/lib\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OSBUILDDIR)/src/cpp_objects\</IntDir>
+    <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</EmbedManifest>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</GenerateManifest>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</GenerateManifest>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</GenerateManifest>
+    <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</EmbedManifest>
+    <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</EmbedManifest>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <BuildLog>
+      <Path>$(IntDir)vslogs\BuildLog_$(ProjectName)_$(Configuration).htm</Path>
+    </BuildLog>
+    <ClCompile>
+      <AdditionalOptions>/wd4996 /MP4 /W3 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(ACE_DIR);$(XML)/include;$(ZZIP)/product/include;$(STACKTRACE)/INCLUDE;$(STLPORT)/stlport;$(OPENSSL)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BUILD_CPPCACHE;ACE_NLOGGING;ACE_NDEBUG;__ACE_INLINE__;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;WINVER=0x0500;_WIN32_WINNT=0x0500;GEMFIRE_VERSION="$(GEMFIRE_VERSION)";GEMFIRE_BUILDID="$(GEMFIRE_BUILDID)";GEMFIRE_PRODUCTNAME="$(GEMFIRE_PRODUCTNAME)";GEMFIRE_BITS="$(GEMFIRE_BITS)";GEMFIRE_BUILDDATE="$(GEMFIRE_BUILDDATE)";GEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)";GEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)";LICENSE_VERSION="$(LICENSE_VERSION)";_CRT_SECURE_NO_DEPRECATE;DEBUG;GF_DEBUG_ASSERTS=1;GF_DEVEL_ASSERTS=$(CPPDEVEL);Z_PREFIX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ShowIncludes>false</ShowIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4355</DisableSpecificWarnings>
+      <ProgramDataBaseFileName>$(TargetName).pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>wsock32.lib;netapi32.lib;advapi32.lib;comdlg32.lib;user32.lib;gdi32.lib;kernel32.lib;winspool.lib;strace.lib;dbghelp.lib;libxml2_ad.lib;zziplibd.lib;zlib.1.2.3d.lib;$(ACELINKNAME)d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(STACKTRACE)/LIB;$(ZLIB)/lib;$(ZZIP)/product/lib;$(ACE_DIR)/lib;$(XML)/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
+      <TargetMachine>MachineX86</TargetMachine>
+      <LinkErrorReporting>
+      </LinkErrorReporting>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <BuildLog>
+      <Path>$(IntDir)vslogs\BuildLog_$(ProjectName)_$(Configuration).htm</Path>
+    </BuildLog>
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/wd4996 /MP4 /W3 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(ACE_DIR);$(XML)/include;$(ZZIP)/product/include;$(STACKTRACE)/INCLUDE;$(STLPORT)/stlport;$(OPENSSL)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BUILD_CPPCACHE;ACE_NLOGGING;ACE_NDEBUG;__ACE_INLINE__;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;WINVER=0x0500;_WIN32_WINNT=0x0500;GEMFIRE_VERSION="$(GEMFIRE_VERSION)";GEMFIRE_BUILDID="$(GEMFIRE_BUILDID)";GEMFIRE_PRODUCTNAME="$(GEMFIRE_PRODUCTNAME)";GEMFIRE_BITS="$(GEMFIRE_BITS)";GEMFIRE_BUILDDATE="$(GEMFIRE_BUILDDATE)";GEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)";GEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)";LICENSE_VERSION="$(LICENSE_VERSION)";DEBUG;GF_DEBUG_ASSERTS=1;GF_DEVEL_ASSERTS=$(CPPDEVEL);Z_PREFIX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <ProgramDataBaseFileName>$(TargetName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4355</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>libxml2_ad.lib;zziplibd.lib;zlib.1.2.3d.lib;$(ACELINKNAME)d.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(ZLIB)/lib;$(ZZIP)/product/lib;$(ACE_DIR)/lib;$(XML)/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>strace.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <BuildLog>
+      <Path>$(IntDir)vslogs\BuildLog_$(ProjectName)_$(Configuration).htm</Path>
+    </BuildLog>
+    <ClCompile>
+      <AdditionalOptions>/wd4996 /MP4 /W3 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Full</Optimization>
+      <AdditionalIncludeDirectories>$(ACE_DIR);$(XML)/include;$(ZZIP)/product/include;$(STACKTRACE)/INCLUDE;$(STLPORT)/stlport;$(OPENSSL)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BUILD_CPPCACHE;ACE_NLOGGING;ACE_NDEBUG;__ACE_INLINE__;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;WINVER=0x0500;_WIN32_WINNT=0x0500;GEMFIRE_VERSION="$(GEMFIRE_VERSION)";GEMFIRE_BUILDID="$(GEMFIRE_BUILDID)";GEMFIRE_PRODUCTNAME="$(GEMFIRE_PRODUCTNAME)";GEMFIRE_BITS="$(GEMFIRE_BITS)";GEMFIRE_BUILDDATE="$(GEMFIRE_BUILDDATE)";GEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)";GEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)";LICENSE_VERSION="$(LICENSE_VERSION)";_CRT_SECURE_NO_DEPRECATE;GF_DEVEL_ASSERTS=$(CPPDEVEL);Z_PREFIX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <ProgramDataBaseFileName>$(TargetName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ShowIncludes>false</ShowIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4355</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>wsock32.lib;netapi32.lib;advapi32.lib;comdlg32.lib;user32.lib;gdi32.lib;kernel32.lib;winspool.lib;dbghelp.lib;strace.lib;libxml2_a.lib;zziplib.lib;zlib.1.2.3.lib;$(ACELINKNAME).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(STACKTRACE)/LIB;$(ZLIB)/lib;$(ZZIP)/product/lib;$(ACE_DIR)/lib;$(XML)/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
+      <TargetMachine>MachineX86</TargetMachine>
+      <LinkErrorReporting>
+      </LinkErrorReporting>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <BuildLog>
+      <Path>$(IntDir)vslogs\BuildLog_$(ProjectName)_$(Configuration).htm</Path>
+    </BuildLog>
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/wd4996 /MP4 /W3 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Full</Optimization>
+      <AdditionalIncludeDirectories>$(ACE_DIR);$(XML)/include;$(ZZIP)/product/include;$(STACKTRACE)/INCLUDE;$(STLPORT)/stlport;$(OPENSSL)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BUILD_CPPCACHE;ACE_NLOGGING;ACE_NDEBUG;__ACE_INLINE__;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;WINVER=0x0500;_WIN32_WINNT=0x0500;GEMFIRE_VERSION="$(GEMFIRE_VERSION)";GEMFIRE_BUILDID="$(GEMFIRE_BUILDID)";GEMFIRE_PRODUCTNAME="$(GEMFIRE_PRODUCTNAME)";GEMFIRE_BITS="$(GEMFIRE_BITS)";GEMFIRE_BUILDDATE="$(GEMFIRE_BUILDDATE)";GEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)";GEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)";LICENSE_VERSION="$(LICENSE_VERSION)";GF_DEVEL_ASSERTS=$(CPPDEVEL);Z_PREFIX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <ProgramDataBaseFileName>$(TargetName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4355</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>libxml2_a.lib;zziplib.lib;zlib.1.2.3.lib;$(ACELINKNAME).lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(ZLIB)/lib;$(ZZIP)/product/lib;$(ACE_DIR)/lib;$(XML)/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>strace.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Assert.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\AttributesFactory.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\AttributesMutator.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Cache.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableBuiltins.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableDate.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableEnum.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableFileName.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableKey.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableObjectArray.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableString.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableUndefined.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheAttributes.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheAttributesFactory.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheFactory.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheListener.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheLoader.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheStatistics.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheTransactionManager.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheWriter.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CqAttributesFactory.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CqListener.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CqState.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CqStatusListener.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\DataInput.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\DataOutput.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Delta.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\DiskPolicyType.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\DistributedSystem.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\EntryEvent.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Exception.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\ExceptionTypes.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\ExpirationAction.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\ExpirationAttributes.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\FunctionService.cpp">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)/statistics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)/statistics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)/statistics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory)/statistics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\HashMapOfSharedBase.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\HashSetOfSharedBase.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\DiskStoreId.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\EnumInfo.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\InternalCacheTransactionManager2PCImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxEnumInstantiator.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxFieldType.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxHelper.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxInstanceFactoryImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxInstanceImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxInstantiator.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxLocalReader.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxLocalWriter.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxReaderWithTypeCollector.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxRemoteReader.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxRemoteWriter.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxType.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxTypeRegistry.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxWriterWithTypeCollector.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PreservedDataExpiryHandler.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ServerLocation.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\StackFrame.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TombstoneExpiryHandler.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TombstoneList.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TXCleaner.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\VersionedCacheableObjectPartList.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\VersionStamp.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\MemberListForVersionStamp.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\VersionTag.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\WindowsSignalHandler.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\InternalCacheTransactionManager2PC.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Log.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PartitionResolver.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PdxSerializable.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PdxWrapper.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PersistenceManager.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Pool.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PoolFactory.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PoolManager.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Properties.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Region.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\RegionAttributes.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\RegionEntry.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\RegionEvent.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\RegionFactory.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\ResultCollector.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\ScopeType.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\SelectResultsIterator.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Serializable.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\SharedBase.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\SharedPtr.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\SignalHandler.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Struct.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\SystemProperties.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\TransactionId.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\UserFunctionExecutionException.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\VectorOfSharedBase.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ACEDummy.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\AdminRegion.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheableObjectPartList.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheableToken.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheConfig.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheTransactionManagerImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheXml.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheXmlCreation.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheXmlParser.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ClientConnectionRequest.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ClientConnectionResponse.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ClientHealthStats.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ClientMetadata.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ClientMetadataService.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ClientProxyMembershipID.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ClientReplacementRequest.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ConcurrentEntriesMap.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\Condition.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ConnectCounter.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CppCacheLibrary.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CqAttributesImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CqAttributesMutatorImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CqEventImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CqQueryImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CqQueryVsdStats.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CqService.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CqServiceVsdStats.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\DiffieHellman.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\DistributedSystemImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\dllmain.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\EntriesMapFactory.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\EntryExpiryHandler.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\EventId.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\EventIdMap.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\EvictionController.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\EvictionThread.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ExecutionImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ExpiryTaskManager.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ExpMapEntry.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\FarSideEntryOp.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\FunctionServiceImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\GetAllServersRequest.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\GetAllServersResponse.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\gfcppBanner.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\HostAsm.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\InterestResultPolicy.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\InternalDataView.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LocalRegion.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LocatorListRequest.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LocatorListResponse.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LRUAction.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LRUEntriesMap.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LRUExpMapEntry.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LRUList.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LRULocalDestroyAction.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LRUMapEntry.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\MapEntry.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\MapSegment.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\NanoTimer.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PoolAttributes.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PooledBase.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PoolStatistics.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PoolXmlCreation.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ProxyCache.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ProxyRegion.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ProxyRemoteQueryService.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\QueueConnectionRequest.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\QueueConnectionResponse.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ReadWriteLock.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RegionCommit.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RegionConfig.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RegionExpiryHandler.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RegionInternal.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RegionStats.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RegionXmlCreation.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RemoteQuery.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RemoteQueryService.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ResultSetImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\SerializationRegistry.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ServerLocationRequest.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\SpinLock.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\SslSockStream.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\StackTrace.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\StructSetImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\SuspendedTxExpiryHandler.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcpConn.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcpSslConn.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcrConnection.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcrConnectionManager.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcrDistributionManager.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcrEndpoint.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcrHADistributionManager.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcrMessage.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcrPoolEndPoint.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientBaseDM.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientCacheDistributionManager.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientDistributionManager.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientHARegion.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientLocatorHelper.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientPoolDM.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientPoolHADM.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientPoolRegion.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientPoolStickyDM.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientPoolStickyHADM.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientRedundancyManager.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientRegion.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientStickyManager.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThreadPool.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TrackedMapEntry.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TransactionalOperation.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TransactionSuspender.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TssConnectionWrapper.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TSSTXStateWrapper.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TXCommitMessage.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TXEntryState.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TXId.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TXRegionState.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TXState.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\UserAttributes.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\Utils.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\Version.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\WinThread.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PutAllPartialResult.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PutAllPartialResultServerException.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\AtomicStatisticsImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\GemfireStatisticsFactory.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\HostStatHelper.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\HostStatHelperLinux.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\HostStatHelperSolaris.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\HostStatHelperWin.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\HostStatSampler.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\LinuxProcessStats.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\OsStatisticsImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\PoolStatsSampler.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\ProcessStats.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\SolarisProcessStats.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\StatArchiveWriter.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\StatisticDescriptorImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\Statistics.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\StatisticsFactory.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\StatisticsManager.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\StatisticsTypeImpl.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\StatSamplerStats.cpp" />
+    <ClCompile Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\WindowsProcessStats.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableEnum.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CqStatusListener.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\AdminRegion.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\AtomicInc.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\AutoDelete.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\BucketServerLocation.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\BufferManager.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\BufferPool.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheableObjectPartList.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheableToken.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheConfig.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CachedDeserializableHelper.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CachePerfStats.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheRegionHelper.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheTransactionManagerImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheXml.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheXmlCreation.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CacheXmlParser.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ClientConnectionRequest.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ClientConnectionResponse.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ClientHealthStats.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ClientMetadata.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ClientMetadataService.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ClientProxyMembershipID.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ClientReplacementRequest.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ConcurrentEntriesMap.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\Condition.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ConnectCounter.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\Connector.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ContainerWithLock.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CppCacheLibrary.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CqAttributesImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CqAttributesMutatorImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CqEventImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CqQueryImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CqQueryVsdStats.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CqService.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\CqServiceVsdStats.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\DiffieHellman.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\DiskStoreId.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\DiskVersionTag.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\DistributedSystemImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\DSMemberForVersionStamp.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\EntriesMap.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\EntriesMapFactory.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\EntryExpiryHandler.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\EnumInfo.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\EventId.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\EventIdMap.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\EventType.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\EvictionController.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\EvictionThread.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ExecutionImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ExpiryHandler_T.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ExpiryTaskManager.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ExpMapEntry.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\FairQueue.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\FarSideEntryOp.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\FixedPartitionAttributesImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\FunctionServiceImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\GatewayEventCallbackArgument.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\GatewaySenderEventCallbackArgument.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\GemfireTSS_T.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\GemfireTypeIdsImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\GenericPool.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\GetAllServersRequest.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\GetAllServersResponse.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\GF_TASK_T.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\gfcppBanner.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\HostAsm.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\InterestResultPolicy.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\InternalCacheTransactionManager2PCImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\InternalDataView.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\IntQueue.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LocalRegion.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LocatorListRequest.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LocatorListResponse.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LRUAction.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LRUEntriesMap.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LRUExpMapEntry.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LRUList.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LRULocalDestroyAction.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\LRUMapEntry.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\MapEntry.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\MapSegment.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\MapWithLock.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\NanoTimer.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\OpTimer.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxEnumInstantiator.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxFieldType.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxHelper.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxInstanceFactoryImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxInstanceImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxInstantiator.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxLocalReader.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxLocalWriter.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxReaderWithTypeCollector.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxRemotePreservedData.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxRemoteReader.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxRemoteWriter.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxType.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxTypeRegistry.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxTypes.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PdxWriterWithTypeCollector.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PoolAttributes.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PooledBase.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PooledBasePool.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PoolStatistics.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PoolXmlCreation.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PreservedDataExpiryHandler.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ProxyCache.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ProxyRegion.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ProxyRemoteQueryService.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\Queue.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\QueueConnectionRequest.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\QueueConnectionResponse.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ReadWriteLock.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RegionCommit.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RegionConfig.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RegionExpiryHandler.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RegionGlobalLocks.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RegionInternal.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RegionStats.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RegionXmlCreation.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RemoteQuery.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\RemoteQueryService.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ResultSetImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\SerializationRegistry.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ServerLocation.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ServerLocationRequest.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ServerLocationResponse.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\Set.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\SpinLock.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\SslSockStream.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\StackFrame.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\StackTrace.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\StructSetImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\SuspendedTxExpiryHandler.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TableOfPrimes.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcpConn.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcpSslConn.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcrChunkedContext.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcrConnection.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcrConnectionManager.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcrDistributionManager.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcrEndpoint.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcrHADistributionManager.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcrMessage.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TcrPoolEndPoint.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientBaseDM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientCacheDistributionManager.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientDistributionManager.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientHARegion.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientLocatorHelper.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientPoolDM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientPoolHADM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientPoolRegion.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientPoolStickyDM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientPoolStickyHADM.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientRedundancyManager.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientRegion.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThinClientStickyManager.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\ThreadPool.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TimeoutTimer.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TombstoneExpiryHandler.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TombstoneList.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TrackedMapEntry.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TransactionalOperation.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TransactionSuspender.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TssConnectionWrapper.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TSSTXStateWrapper.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TXCleaner.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TXCommitMessage.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TXEntryState.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TXId.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TXRegionState.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\TXState.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\UserAttributes.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\Utils.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\Version.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\VersionedCacheableObjectPartList.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\VersionStamp.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\MemberListForVersionStamp.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\VersionTag.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\WindowsSignalHandler.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\WinThread.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PutAllPartialResult.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\impl\PutAllPartialResultServerException.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Assert.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\AttributesFactory.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\AttributesMutator.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\AuthInitialize.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Cache.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Cacheable.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableBuiltins.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableDate.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableFileName.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableKey.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableKeys.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableObjectArray.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableString.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheableUndefined.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheAttributes.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheAttributesFactory.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheFactory.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheListener.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheLoader.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheStatistics.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheTransactionManager.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CacheWriter.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CqAttributesFactory.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CqAttributesMutator.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CqEvent.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CqListener.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CqOperation.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CqQuery.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CqResults.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CqServiceStatistics.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CqState.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\CqStatistics.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\DataInput.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\DataOutput.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Delta.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\DiskPolicyType.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\DistributedSystem.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\EntryEvent.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Exception.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\ExceptionTypes.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Execution.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\ExpirationAction.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\ExpirationAttributes.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\FixedPartitionResolver.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\FunctionService.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\GemFireCache.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\GemfireCppCache.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\GemfireTypeIds.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\gf_base.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\gf_types.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\gfcpp_globals.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\HashFunction.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\HashMapOfSharedBase.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\HashMapT.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\HashSetOfSharedBase.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\HashSetT.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\InternalCacheTransactionManager2PC.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Log.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PartitionResolver.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PdxAutoSerializer.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PdxFieldTypes.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PdxInstance.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PdxInstanceFactory.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PdxReader.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PdxSerializable.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PdxSerializer.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PdxUnreadFields.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PdxWrapper.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PdxWriter.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PersistenceManager.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Pool.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PoolFactory.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\PoolManager.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Properties.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Query.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\QueryService.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Region.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\RegionAttributes.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\RegionEntry.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\RegionEvent.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\RegionFactory.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\RegionService.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\RegionShortcut.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\ResultCollector.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\ResultSet.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\ScopeType.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\SelectResults.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\SelectResultsIterator.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Serializable.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Serializer.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\SharedBase.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\SharedPtr.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\SharedPtrHelper.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\SignalHandler.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\Struct.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\StructSet.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\SystemProperties.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\TransactionId.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\TypeHelper.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\UserData.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\UserFunctionExecutionException.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\VectorOfSharedBase.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\VectorT.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\AtomicStatisticsImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\GemfireStatisticsFactory.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\HostStatHelper.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\HostStatHelperLinux.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\HostStatHelperSolaris.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\HostStatHelperWin.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\HostStatSampler.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\LinuxProcessStats.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\OsStatisticsImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\PoolStatsSampler.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\ProcessStats.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\SolarisProcessStats.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\StatArchiveWriter.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\StatisticDescriptor.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\StatisticDescriptorImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\Statistics.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\StatisticsFactory.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\StatisticsManager.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\StatisticsType.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\StatisticsTypeImpl.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\StatSamplerStats.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\StatsDef.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\statistics\WindowsProcessStats.hpp" />
+    <ClInclude Include="..\..\src\com\gemstone\gemfire\internal\cppcache\WritablePdxInstance.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

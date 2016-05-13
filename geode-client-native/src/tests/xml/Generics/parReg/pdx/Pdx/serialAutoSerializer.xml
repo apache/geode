@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">60</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>100</item>
+    </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>2</item>
+    </list>
+  </data>
+  <data name="keyType">str</data>
+  <data name="clientCount">4</data>
+  <data name="serialExecution">true</data>
+  <data name="numPutAllExistingKeys">10</data>
+  <data name="objectType">AutoSerilizer</data>
+  
+  <data name="ThinClientPool1">
+    <snippet>
+      <pool name="_Test_Pool1" subscription-enabled="true" thread-local-connections="false" min-connections="2" read-timeout="3600000" 
+           subscription-redundancy="0" load-conditioning-interval="5000" servers="true" />
+    </snippet>
+  </data>
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" pool-name="_Test_Pool1">
+          <cache-listener library="pdxtests" function="createSilenceListenerPdx"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="EmptyClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="false" pool-name="_Test_Pool1">
+          <cache-listener library="pdxtests" function="createSilenceListenerPdx"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+                                 
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set count="4" name="Client"/>
+
+  <test name="serialAutoSerilizer" description="This test executes operations on entries on a PartitionedRegion and carefully
+validates for correctness. The data store for the partitioned region is spread
+across all VMs. The test uses serial round robin; the first client
+in the round does a random operation then all other clients in the round
+verify their view of the operation.">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 3 Generics/parReg/pdx/Pdx/csPartitionRegion.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="CreatePool" action="doCreatePool" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.pdxtests" argTypes="String,Object"  waitTime="3m">
+      <data name="poolSpec">ThinClientPool1</data>
+      <client-set count="4" name="Client"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.pdxtests" argTypes="String,Object"  waitTime="5m">
+      <client-set begin="1" count="3" name="Client"/>
+      <data name="regionSpec">ThinClientRegion</data>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.pdxtests" argTypes="String,Object"  waitTime="5m">
+      <client-set begin="4" count="1" name="Client"/>
+      <data name="regionSpec">EmptyClientRegion</data>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.pdxtests" waitTime="2m" argTypes="String,Object">
+      <client-set count="4" name="Client"/>
+    </task>
+    <task name="Create Operations" action="doPopulateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.pdxtests" waitTime="30m" argTypes="String,Object">
+      <data name="entryOps">
+        <oneof>
+          <item>create</item>
+         </oneof>
+      </data>
+      <client-set begin="1" count="1" name="Client"/>
+    </task>
+    <task name="Random Operations" action="doRandomEntryOperation" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.pdxtests" waitTime="30m" parallel="true" argTypes="String,Object">
+      <data name="entryOps">
+        <oneof>
+          <item>update</item>
+          <item>invalidate</item>
+          <item>destroy</item>
+          <item>update</item>
+          <item>get</item>    
+          <!--item>putAll</item-->             
+         </oneof>
+      </data>
+      <client-set count="4" name="Client"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="String,Object"  waitTime="5m"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+
+  </test>
+
+</test-driver>

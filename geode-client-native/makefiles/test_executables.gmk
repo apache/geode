@@ -1,0 +1,233 @@
+include $(BASEDIR)/makefiles/platform.gmk
+
+ifdef WINDOWS
+    EXE = .exe
+    OBJ = .obj
+else
+    EXE =
+    OBJ = .o
+endif
+# dirs
+
+ifeq ($(VARIANT),FAST)
+  OBJDIR = $(OSBUILDDIR)/tests/objects/$(SUITE)
+#	DESTDIR = $(OSBUILDDIR)/hidden/bin
+else
+  OBJDIR = $(OSBUILDDIR)/tests/objects_g/$(SUITE)
+#	DESTDIR = $(OSBUILDDIR)/hidden/bin/debug
+endif
+
+# objects
+
+DIRS = .
+
+FILES_CPP := $(subst ./,,$(sort $(foreach dir,$(DIRS),$(wildcard $(dir)/*.cpp))))
+SRC_INCLUDES := $(foreach file_include,. $(OSBUILDDIR)/product/include $(OSBUILDDIR)/product/include/gfcpp $(BASEDIR)/src/com/gemstone/gemfire/internal/cppcache/impl $(BASEDIR)/tests/fwklib $(BASEDIR)/tests,-I$(call NATIVEDIR_FUNC,$(file_include)))
+#SRC_INCLUDES := -I. -I$(OSBUILDDIR)/product/include -I$(OSBUILDDIR)/product/include/gfcpp -I$(BASEDIR)/src/com/gemstone/gemfire/internal/cppcache/impl -I$(BASEDIR)/tests/fwklib -I$(BASEDIR)/tests
+
+FILES_EXE = $(foreach src,$(BUILD_EXES),$(OBJDIR)/$(src)$(EXE))
+
+executables: $(FILES_EXE)
+
+ifdef WINDOWS
+#####################
+# WINDOWS
+CXX = cl
+#WARN_OPTIONS = /Wall /WX
+WARN_OPTIONS = 
+WINVER = 0x0500
+SLOW_OPTIONS = /MDd /Od $(CFLAGS$(VCVER)) /RTC1 /Zi -DDEBUG=1 -DASSERT_LEVEL=4
+FAST_OPTIONS = /MD /Ox $(CFLAGS$(VCVER)) -DNDEBUG=1 -DASSERT_LEVEL=1
+CXX_OPTIONS = /nologo $($(VARIANT)_OPTIONS) $(WARN_OPTIONS) /Fd$(OBJDIR)/$(LIBRARY).pdb
+CXX_OPTIONS += /GR /EHac
+CXX_OPTIONS += /DWINVER=0x0500 /D_WIN32_WINNT=0x0500
+CXX_OPTIONS += /Fe$@
+FAST_TP_LIBS = $(ACEDIR)/lib/ACE.lib $(XERCESDIR)/lib/xerces-c.lib 
+SLOW_TP_LIBS = $(ACEDIR)/lib/ACEd.lib $(XERCESDIR)/lib/xerces-c.lib 
+FAST_LIBS_TMP = $($(VARIANT)_TP_LIBS) $(OSBUILDDIR)/product/lib/gfcppcache.lib $(OSBUILDDIR)/framework/lib/framework.lib
+SLOW_LIBS_TMP = $($(VARIANT)_TP_LIBS) $(OSBUILDDIR)/hidden/lib/debug/gfcppcache.lib $(OSBUILDDIR)/framework/lib/debug/framework.lib
+LIBS = $(foreach lib,$($(VARIANT)_LIBS_TMP),$(call NATIVEDIR_FUNC,$(lib)))
+# windows/microsoft libraries.
+LIBS += wsock32.lib netapi32.lib advapi32.lib comdlg32.lib user32.lib gdi32.lib kernel32.lib winspool.lib
+ifeq ($(VCVER),vc8)
+	LIBS += mscoree.lib
+endif
+FAST_LD_OPTIONS =
+SLOW_LD_OPTIONS = -debug
+LIB_PATH = 
+LINK_OPTIONS = /link -OPT:REF -INCREMENTAL:NO -MAP $($(VARIANT)_LD_OPTIONS)
+LIB_OPTIONS = $(LIB_PATH) $(LIBS)
+ifeq ($(VCVER),vc8)
+	MT_COMMAND = mt /nologo -manifest $(call NATIVEDIR_FUNC,$@).manifest -outputresource:$(call NATIVEDIR_FUNC,$@)
+endif
+# 
+#####################
+else
+ifdef LINUX
+#####################
+# LINUX 
+CXX = $(GccCCompiler)
+#WARN_OPTIONS = -Wall -Wno-long-long 
+WARN_OPTIONS = -Wswitch \
+   -Wunused-variable -Wcomments \
+   -Wparentheses -Wsign-compare -Wconversion -Wno-long-long 
+NOT_USED = \
+ -W -Wabi -Woverloaded-virtual -Wundef \
+ -Wpointer-arith -Wold-style-cast -Wcast-qual -Wcast-align -Wwrite-strings \
+ -Wconversion -Wno-long-long -Wdisabled-optimization -Wcomment -Wtrigraphs \
+ -Wimport -Winline -Werror
+
+ifdef USE_SMARTHEAP
+  SMARTHEAP_OPTIONS = -DUSE_SMARTHEAP=1
+  SMARTHEAP_DIR = /export/cplusplus/users/thirdparty/linux/smartheap_7.4
+  SMARTHEAP_LINK = $(SMARTHEAP_DIR)/lib/libsmartheap_mtd.a $(SMARTHEAP_DIR)/lib/libsmartheapC_mtd.a -Bdynamic
+endif
+
+STATICCXX_OPTIONS = $(CFLAGS_MODEL) $(FPIC) -ansi -fno-nonansi-builtins \
+  -ftemplate-depth-17 -D_LINUX \
+  $(SMARTHEAP_OPTIONS) \
+  $($(VARIANT)_OPTIONS) $(WARN_OPTIONS) -D_REENTRANT -D_LARGEFILE64_SOURCE \
+  -D_REENTRANT -o $(subst /tests/objects/fwkbin,/framework/bin/static,$@)
+CXX_OPTIONS = $(CFLAGS_MODEL) $(FPIC) -MD -ansi -fno-nonansi-builtins -ftemplate-depth-17 -D_LINUX \
+  $(SMARTHEAP_OPTIONS) \
+  $($(VARIANT)_OPTIONS) $(WARN_OPTIONS) -D_REENTRANT -D_LARGEFILE64_SOURCE -D_REENTRANT -o $@
+SLOW_OPTIONS = -g -O0 -DDEBUG=1 -DASSERT_LEVEL=4 -fno-inline
+FAST_OPTIONS = -O3 -DNDEBUG=1 -DASSERT_LEVEL=1
+STATICLIBS = -Bsymbolic $(OSBUILDDIR)/product/lib/libgfcppcache.a $(SMARTHEAP_LINK) -ldl -lm -ldl -lpthread -lc -lstdc++ -lxerces-c -lframework -l$(ACELINKNAME)
+LIBS = $(SMARTHEAP_LINK) -ldl -lm -ldl -lpthread -lc -lstdc++ -lxerces-c -lframework -lgfcppcache -l$(ACELINKNAME)
+FAST_LD_OPTIONS =
+SLOW_LD_OPTIONS =
+TP_LIB_PATH = -L$(XERCESDIR)/lib 
+FAST_LIB_PATH = -L$(OSBUILDDIR)/product/lib -L$(OSBUILDDIR)/framework/lib -L$(OSBUILDDIR)/hidden/lib 
+SLOW_LIB_PATH = -L$(OSBUILDDIR)/framework/lib/debug -L$(OSBUILDDIR)/hidden/lib/debug -L$(OSBUILDDIR)/hidden/lib -L$(OSBUILDDIR)/product/lib
+STATICLIB_PATH = $(TP_LIB_PATH) -L$(OSBUILDDIR)/product/lib -L$(OSBUILDDIR)/framework/lib/static -L$(OSBUILDDIR)/hidden/lib
+LIB_PATH = $(TP_LIB_PATH) $($(VARIANT)_LIB_PATH)
+LINK_OPTIONS = $(CFLAGS_MODEL) $($(VARIANT)_LD_OPTIONS)
+STATICLIB_OPTIONS = $(STATICLIB_PATH) $(STATICLIBS)
+LIB_OPTIONS = $(LIB_PATH) $(LIBS)
+#STATICLINK_COMMAND = g++ -o $@_static $(LINK_OPTIONS) $(FILES_O) $(SMARTHEAP_LINK) $(LIB_OPTIONS)
+#LINK_COMMAND = g++ -o $@ $(LINK_OPTIONS) $(FILES_O) $(SMARTHEAP_LINK) $(LIB_OPTIONS)
+# 
+#####################
+else
+ifdef SOLARIS
+#####################
+# SOLARIS 
+UNAME_P := $(shell uname -p)
+  ifeq ($(UNAME_P),sparc)
+    HOSTTYPE_OSTYPE=sparc.Solaris
+  else
+    HOSTTYPE_OSTYPE=x86.Solaris
+  endif
+
+CXX = $(SunCompilerDir)/CC
+WARN_OPTIONS = 
+
+ifdef USE_CPP11
+  CFLAGS_STD = -std=c++11
+else
+# TODO jbarrett ????  CFLAGS_STD = -library=no%Cstd,no%iostream
+endif
+
+STATICCXX_OPTIONS = $(CFLAGS_MODEL) $(CFLAGS_STD) \
+  -mt -KPIC -D_SOLARIS \
+  $(SMARTHEAP_OPTIONS) \
+  $($(VARIANT)_OPTIONS) $(WARN_OPTIONS) -D_REENTRANT -D_LARGEFILE64_SOURCE \
+  -D_RWSTD_MULTI_THREAD -DTHREAD=MULTI \
+  -o $(subst /tests/objects/fwkbin,/framework/bin/static,$@)
+
+CXX_OPTIONS =  $(CFLAGS_MODEL) $(CFLAGS_STD) \
+  -mt -KPIC -D_SOLARIS -xMD \
+  $(SMARTHEAP_OPTIONS) \
+  $($(VARIANT)_OPTIONS) $(WARN_OPTIONS) -D_REENTRANT -D_LARGEFILE64_SOURCE \
+  -D_RWSTD_MULTI_THREAD -DTHREAD=MULTI \
+  -o $@
+
+ifeq ($(HOSTTYPE_OSTYPE), sparc.Solaris)
+  STATICCXX_OPTIONS += -D_SPARC_SOLARIS
+#TODO jbarrett STATICCXX_OPTIONS +=  -dalign
+#TODO jbarrett STATICCXX_OPTIONS += -xmemalign=4s
+
+  CXX_OPTIONS += -D_SPARC_SOLARIS
+#TODO jbarrett CXX_OPTIONS += -xmemalign=4s
+else
+  STATICCXX_OPTIONS += -D_X86_SOLARIS 
+  CXX_OPTIONS += -D_X86_SOLARIS
+endif
+
+SLOW_OPTIONS = -g -O0 -DDEBUG=1 -DASSERT_LEVEL=4
+FAST_OPTIONS = -O3 -DNDEBUG=1 -DASSERT_LEVEL=1
+STATICLIBS = $(OSBUILDDIR)/product/lib/libgfcppcache.a $(SMARTHEAP_LINK) -ldl -lpthread -lc -lxerces-c -lframework -l$(ACELINKNAME) -lrt -lnsl -lsocket -ldemangle
+LIBS = $(SMARTHEAP_LINK) -ldl -lpthread -lc -lxerces-c -lframework -lgfcppcache -l$(ACELINKNAME) -lrt -lnsl -lsocket -ldemangle
+FAST_LD_OPTIONS =
+SLOW_LD_OPTIONS =
+##TP_LIB_PATH = -L$(ACEDIR)/lib -L$(XERCESDIR)/lib 
+TP_LIB_PATH = -L$(XERCESDIR)/lib 
+FAST_LIB_PATH = -L$(OSBUILDDIR)/product/lib -L$(OSBUILDDIR)/framework/lib -L$(OSBUILDDIR)/hidden/lib 
+SLOW_LIB_PATH = -L$(OSBUILDDIR)/framework/lib/debug -L$(OSBUILDDIR)/hidden/lib/debug -L$(OSBUILDDIR)/hidden/lib -L$(OSBUILDDIR)/product/lib
+STATICLIB_PATH = $(TP_LIB_PATH) -L$(OSBUILDDIR)/product/lib -L$(OSBUILDDIR)/framework/lib/static -L$(OSBUILDDIR)/hidden/lib
+LIB_PATH = $(TP_LIB_PATH) $($(VARIANT)_LIB_PATH)
+LINK_OPTIONS = $($(VARIANT)_LD_OPTIONS)
+STATICLIB_OPTIONS = $(STATICLIB_PATH) $(STATICLIBS)
+LIB_OPTIONS = $(LIB_PATH) $(LIBS)
+endif
+endif
+endif
+# -I$(STLPORTDIR)/stlport
+THIRD_PARTY_INCLUDES = -I$(XERCESDIR)/include -I$(ACEDIR)/include
+VERSION_INFO_DEFINES =  \
+                    '-DGEMFIRE_SOURCE_REVISION="$(GEMFIRE_SOURCE_REVISION)"' \
+                    '-DGEMFIRE_SOURCE_REPOSITORY="$(GEMFIRE_SOURCE_REPOSITORY)"'
+STATICCXX_OPTIONS += -DACE_NLOGGING -DACE_NDEBUG -D__ACE_INLINE__ 
+STATICCXX_OPTIONS += $(VERSION_INFO_DEFINES)
+STATICCXX_OPTIONS += $(CPP_OPTIONS)
+STATICCXX_OPTIONS += $(THIRD_PARTY_INCLUDES) $(SRC_INCLUDES)
+CXX_OPTIONS += -DACE_NLOGGING -DACE_NDEBUG -D__ACE_INLINE__ 
+CXX_OPTIONS += $(VERSION_INFO_DEFINES)
+CXX_OPTIONS += $(CPP_OPTIONS)
+CXX_OPTIONS += $(THIRD_PARTY_INCLUDES) $(SRC_INCLUDES)
+
+ifdef WINDOWS
+STATICCXX_COMPILE=
+else
+STATICCXX_COMPILE = XXX $(CXX) $(STATICCXX_OPTIONS) $(CURRENTDIR)/$< $(LINK_OPTIONS) $(STATICLIB_OPTIONS)
+endif
+
+ifeq ($(CPPDEVEL),1)
+  CXX_OPTIONS += -DGF_DEVEL_ASSERTS=1
+endif
+
+CXX_COMPILE = $(CXX) $(CXX_OPTIONS) $(CURRENTDIR)/$< $(LINK_OPTIONS) $(LIB_OPTIONS)
+
+showCompileCommand:
+	@echo "compile command: $(CXX_COMPILE)"
+
+$(OBJDIR)/%$(EXE): %.cpp
+	@echo mkdir -p $(dir $@)
+	@mkdir -p $(dir $@)
+	$(CXX_COMPILE)
+	@echo $(MT_COMMAND)
+	@$(MT_COMMAND)
+	
+	
+##	@echo $(STATICCXX_COMPILE)
+##	@$(STATICCXX_COMPILE)
+# target setup
+
+all: makeslow makefast
+
+makeslow:
+	@$(MAKE) VARIANT=SLOW executables
+
+makefast:
+	@$(MAKE) VARIANT=FAST executables
+
+# dependency checking
+
+-include $(FILES_o:.o=.d)
+
+# phony list targets that are not in the filesystem.
+
+.phony += all showCompileCommand executables
+
+

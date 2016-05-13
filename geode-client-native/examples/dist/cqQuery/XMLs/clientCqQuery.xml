@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Well-formed and valid xml file -->
+<cache>
+  <region name = "exampleRegion" >
+     <region-attributes refid="PROXY" />
+  </region>	
+  <region name = "Portfolios" >
+     <region-attributes refid="PROXY" />
+  </region>	
+</cache>

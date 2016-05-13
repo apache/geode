@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Well-formed and valid xml file -->
+<client-cache>
+
+<region name = "root" >
+  <region-attributes scope="local" caching-enabled="true"/>
+  <region name = "exampleRegion" >
+     <region-attributes scope="local" caching-enabled="true" client-notification="true"/>
+  </region>	
+ </region>
+																
+</client-cache>

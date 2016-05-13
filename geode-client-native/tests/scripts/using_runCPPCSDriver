@@ -1,0 +1,40 @@
+This file contains the setup and usage instructions for running the C++ and C#
+mixed-mode tests using the runCPPCSDriver script.
+
+The script starts both the C++ and C# frameworks. See the setup instructions
+in using_runCSDriver file in this directory to setup the C# XML framework.
+
+The primary driver is the C++ framework that shall start the C# framework
+as a client and the two communicate/synchronize using the FwkBB program and
+waitForBBKey script. Each test shall require two XMLs -- one for the C++
+framework that shall start off the cacheservers and C# framework
+(and other clients as required) while the other shall be the one that
+C# framework shall use for starting C# clients. The convention is that
+the C# framework is started in "CSD" hostGroup and the runCPPCSDriver
+script automatically adds the local machine in the group. Please check
+the existing XMLs in MixedModeCS directory for more details.
+
+The runCPPCSDriver script start the C# black-board, asks user for password,
+writes those on the C# BB and then starts the runDriver script with all the
+options as provided (except for adding "CSD:<current host>" if CSD hostGroup
+is not given). Hence its arguments are identical to those of the runDriver
+script. Please see using_runDriver file in this directory for usage details
+of the runDriver script.
+
+The logs are created in the current directory as with runDriver.
+A sub-directory "csharp" is created inside the latest directory that contains
+the C# driver logs. The following files will be read from the current directory:
+
+  * gfcsharp.env: same as for C# driver; it is recommended that the user does
+                  not override GFCPP, GFBASE, GFXMLBASE and FWK_WINLOGDIR
+                  variables unless absolutely sure of the effect; these are
+                  setup by the runCPPCSDriver to work with the C++ runDriver
+                  and hence should not be altered.
+  * gfcpp.env: same as for C++ runDriver
+  * gfcpp.properties: same as for C++ runDriver
+  * gfcsharp.properties: if found this is used as gfcpp.properties for
+                         C# clients otherwise gfcpp.properties is used;
+                         the path to native license for C++ and C#
+                         frameworks is different and so this is recommended;
+                         for C# the path to native license should be like:
+                         ../../../build_CYG/hidden/...

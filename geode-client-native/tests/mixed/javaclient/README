@@ -1,0 +1,220 @@
+How to build
+============
+cd ${basedir}
+./build.sh mixed-mode
+
+- A mixed.jar will be created under build-artifacts/${os}/product/lib/
+- A directory build-artifacts/${os}/tests/mixed/javaclient/ contains all the *.class files. It also contain a few sample *.xml files (this most important one is bridge_client.xml), and a gemfire.properties file.
+
+Note: The default build will use /export/gcm/where/cplusplus/thirdparty/${os}/gfe/product/lib/gemfire.jar, which is gemfire43_maint.
+The java client can work with this version and gemfire5.0 (trunk). If you want to run this client with gemfire5.0 cache-server, you should compile with gemfire5.0's gemfire.jar.
+
+How to run
+==========
+export CLASSPATH=${path_of_gemfire.jar}:${tests.out.dir}/mixed.jar
+or 
+export CLASSPATH=${path_of_gemfire.jar}:${tests.out.dir}/mixed
+
+java -Xmx1024m -Xms256m javaclient.CacheRunner ${tests.out.dir}/mixed/javaclient/bridge_client.xml [-batch file=mytest.txt]
+
+Note: You can use your own bridge_client.xml. The gemfire.properties should be under the current directory, otherwise, it will use gemfire's default setting.
+
+
+Batch file
+==========
+-batch file=mytest.txt will run all the pre-defined commands in the file. If the file does not contain "quit" or "exit", it will wait for futher input when reached EOF. echo "exit" >> mytest.txt will let it exit. 
+
+A sample batch file is here:
+
+chrgn listenerWriterLoader
+# comments
+get entry1
+ls
+chrgn sub1
+put entry2 2 int
+ls
+des -l entry2
+get entry2
+reg entry2 entry1
+reg ALL_KEYS
+unreg entry2
+mput keytype=int keyrange=25-30 valuesize=10
+clear
+mget keytype=int keyrange=25-30
+#commends
+#quit
+
+How to get help
+===============
+java javaclient.CacheRunner ${tests.out.dir}/mixed/javaclient/bridge_client.xml -batch help
+
+Some tips
+=========
+- Can specify any region name in xml file.
+- Create region (mkrgn) can only create local subregion
+- chrgn cannot change to up layer. We have to run "chrgn" to change to root, then chrgn to subregion one by one.
+- In mput() and mget(), keys range can only be an integer style, such as 1,123. We can specify keytype=str, which will end up with key "1" and "123". We cannot specify a key "entry2" by limitation. You can have arbitary key in put() and get().
+- An example cache.xml for java cache-server has been included.
+- -Xmx is necessary if running big number of put operations. 
+- reg keys will create entries in local region.
+
+A copy of help content
+======================
+
+A distributed system is created with properties loaded from your 
+gemfire.properties file.  You can specify alternative property files using
+-DgemfirePropertyFile=path.
+
+Entry creation and retrieval handles byte[] (default), String, Integer, 
+and a complex object generated using gfgen.
+
+You have to use mkrgn and chrgn to create and descend into a region
+before using entry commands
+
+Use a backward slash (\) at the end of a line to continue a 
+command on the next line. This is particularly useful for the
+exec command.
+
+Arguments can be wrapped in double-quotes so they can contain whitespace.
+
+Commands:
+ls
+     List cache entries and subregions in current region and their stats.
+
+lsAtts
+     Lists the names of the region attributes templates stored in the cache.
+
+status
+     Display the current region global name, its stats, and the current
+     attributes settings
+
+create name [value=n [str|int|obj]] [keytype={int|str}]
+     Define a new entry (see mkrgn to create a region). The complex object
+     fields are filled based on the value given.
+
+echo
+     Toggle the echo setting. When echo is on then input commands are echoed to stdout.
+
+put name {value=n [int|long|str|obj|usr]|valuesize=n} [keytype={int|str}]
+     Associate a name with a value in the current region. As with create, the
+     complex object fields are filled based on the value provided.
+
+mput {keytype=[int|str] keyrange=n-m [base="AAA BBB"] | k1 k2 .. kn} [value=n [valuetype=int|long|str|obj|usr] | valuesize=n] [seqid=x] [waittime=y]
+     If valuetype is omited, it will be str. 
+     If valuesize is specified, the valuetype should be str. Otherwise it will throw exception.
+
+get name [keytype={int|str}]
+     Get the value of a cache entry. 
+
+mget keytype=[int|str] [base="AAA BBB"] keyrange=n-m | k1 k2 .. kn [seqid=x] [waittime=y]
+     Get values of multiple keys. 
+
+run name number
+     run a certain number of get() on this entry. 
+
+reg {k1 k2 ... kn | keytype={int|str} [base="AAA BBB"] keyrange=n-m | ALL_KEYS } [seqid=x]
+     Use for client regions with servers set for notify-by-subscriptions. Registers interest in specific keys.
+
+unreg {k1 k2 ... kn | keytype={int|str} [base="AAA BBB"] keyrange=n-m | ALL_KEYS } [seqid=x]
+     unregister the keys from interest list.
+
+verify name {value=n [int|long|str|obj|usr] | valuesize=n} [keytype={int|str}] [seqid=x]
+     verify the value specified is the same as the one get from cache.
+
+mverify keytype={int|str} {keyrange=n-m [base="AAA BBB"] | k1 k2 .. kn} {value [valuetype=int|long|str|obj|usr] | valuesize=n} [seqid=x]
+     unregister the keys from interest list.
+
+clear
+     clear local region, i.e. local destroy all entries
+
+des [-l] [name] [keytype={int|str}]
+     Destroy an object or current region.  -l is for local destroy
+
+mdes [-l] {k1 k2 ... kn | keytype={int|str} [base="AAA BBB"] keyrange=n-m} [seqid=x]
+     Destroy entries in current region.  -l is for local destroy
+
+inv [-l] [name] [keytype={int|str}]
+     Invalidate a cache entry or current region. -l is for local invalidation
+
+minv [-l] {k1 k2 ... kn | keytype={int|str} [base="AAA BBB"] keyrange=n-m} [seqid=x]
+     Invalidate entries in current region.  -l is for local destroy
+
+exec queryExpr
+     Execute a query. All input after the exec command is considered the query string
+
+mkidx name type idxExpr fromClause
+     Create an query index.
+        name         name of the index
+        type         func | pkey
+        idxExpr      the indexed expression (e.g. the attribute)
+        fromExpr     the FROM clause
+
+rmidx name
+     Remove an query index.
+        name         name of the index
+
+indexes
+     Prints information about all indexes in the cache. 
+
+lock [name]
+     Lock a cache entry or current region.
+
+unlock [name]
+     Unlock a cache entry or current region.
+
+locks
+     List the locks you hold
+
+mkrgn name [attributeID]
+     Create a subregion with the current attributes settings.
+     The current attributes settings can be viewed with the status command
+     and modified with the set and reset commands
+
+reset
+     Return the current attributes settings to the previously saved
+
+save
+     Save the current regions attributes
+
+set [loader|listener|writer|capacitycontroller] [null]
+     Add or remove a cache callback.  Accepted values: loader, listener,
+     writer, and capacitycontroller. Use the optional null keyword to 
+     remove the cache callback
+
+set expiration <attribute> <value> <action>
+     Set the value and action for an expiration attribute
+       set expiration regionIdleTime 100 destroy
+     The above example sets regionIdleTimeout to 100 ms and
+     its action to destroy. Accepted attributes: regionIdleTime,
+     entryIdleTime, regionTTL, entryTTL. Accepted actions: destroy,
+     invalidate, localDestroy, localInvalidate
+
+chrgn name
+     Change current region (can use a local or global name)
+
+chrgn ..
+      Go up one region (parent region)
+
+chrgn
+     Go to cache root level
+
+open
+     Creates a Cache
+
+load fileName
+     Re-initializes the cache based using a cache.xml file
+
+begin
+     Begins a transaction in the current thread
+
+commit
+     Commits the current thread's transaction
+
+rollback
+     Rolls back the current thread's transaction
+
+help or ?
+     List command descriptions
+
+exit or quit
+     Closes the current cache and exits

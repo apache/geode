@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.1//EN"
+  "http://www.gemstone.com/dtd/cache4_1.dtd">
+<cache>
+  <bridge-server port="$PORT_NUM" />
+  <vm-root-region name="TestTCR1">
+    <region-attributes scope="distributed-ack" mirror-type="keys-values" enable-conflation="true">
+      <capacity-controller>
+        <class-name>com.gemstone.gemfire.cache.util.MemLRUCapacityController</class-name>
+          <parameter name="maximum-megabytes">
+            <string>$LRU_MEM</string>
+          </parameter>
+          <parameter name="eviction-action">
+            <string>overflow-to-disk</string>
+          </parameter>
+       </capacity-controller>
+    </region-attributes>
+  </vm-root-region>
+</cache> 

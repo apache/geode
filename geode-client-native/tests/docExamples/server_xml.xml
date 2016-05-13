@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.0//EN"
+  "http://www.gemstone.com/dtd/cache6_0.dtd">
+<cache>
+  <bridge-server port="24680" notify-by-subscription="true"/>
+  
+  <vm-root-region name="ThinClientRegion1">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+  </vm-root-region>
+  
+  <vm-root-region name="NativeClientRegion">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+  </vm-root-region>
+  
+  <vm-root-region name="Root1">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+  </vm-root-region>
+  
+  <vm-root-region name="root1">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>	
+  </vm-root-region>
+  
+  <vm-root-region name="root2">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+ </vm-root-region>
+ 
+  <vm-root-region name="A">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>	
+  </vm-root-region>
+  
+</cache>

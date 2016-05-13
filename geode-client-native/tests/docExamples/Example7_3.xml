@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cache PUBLIC
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 3.0//EN"
+    "http://www.gemstone.com/dtd/gfcpp-cache3000.dtd">
+
+<!-- Example 7.3 Enabling subscription HA in pool configuration -->
+<cache>
+<pool name="examplePool"  subscription-enabled="true" subscription-redundancy="1">
+    <server host="localhost" port="24680" />    
+    <server host="localhost" port="24681" />    
+  </pool> 
+	<region name = "ThinClientRegion1" >
+		<region-attributes refid="CACHING_PROXY" caching-enabled="true" pool-name="examplePool">
+		</region-attributes>
+	</region>
+</cache>

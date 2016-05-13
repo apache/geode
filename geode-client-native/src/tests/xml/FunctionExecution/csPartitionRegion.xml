@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
+  "http://www.gemstone.com/dtd/cache7_0.dtd">
+<cache>
+  <bridge-server port="$PORT_NUM" notify-by-subscription="true"/>
+  <pdx read-serialized="true" />
+  <vm-root-region name="TestTCR1">
+    <region-attributes  data-policy="partition">
+    </region-attributes>
+  </vm-root-region>
+  <function-service>
+    <function>
+      <class-name>javaobject.RegionOperationsFunction</class-name>
+    </function>
+    <function>
+      <class-name>javaobject.ServerOperationsFunction</class-name>
+    </function>
+    <function>
+      <class-name>javaobject.RegionOperationsWithOutResultFunction</class-name>
+    </function>
+    <function>
+      <class-name>javaobject.ServerOperationsWithOutResultFunction</class-name>
+    </function>
+    <function>
+      <class-name>javaobject.RegionOperationsFunctionOptimized</class-name>
+    </function>
+    <function>
+      <class-name>javaobject.RegionOperationsFunctionOptimizedFalse</class-name>
+    </function>
+  </function-service>
+</cache>

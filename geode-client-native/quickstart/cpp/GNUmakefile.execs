@@ -1,0 +1,61 @@
+default: all
+
+
+SRC = $(wildcard *.cpp)
+EXECS = $(patsubst %.cpp,%,$(SRC))
+
+.PHONY: all clean
+all: $(EXECS)
+
+clean:
+	rm -rf $(EXECS)
+	rm -f *.o plugins/*.o queryobjects/*.o
+	rm -f *.d
+
+LoaderListenerWriter: LoaderListenerWriter.o \
+                      plugins/SimpleCacheLoader.o \
+                      plugins/SimpleCacheListener.o \
+                      plugins/SimpleCacheWriter.o
+
+DataExpiration: DataExpiration.o \
+                plugins/SimpleCacheListener.o
+
+DurableClient: DurableClient.o \
+               plugins/DurableCacheListener.o
+
+RemoteQuery: RemoteQuery.o \
+             queryobjects/Portfolio.o \
+             queryobjects/Position.o
+
+PoolRemoteQuery: PoolRemoteQuery.o \
+                 queryobjects/Portfolio.o \
+                 queryobjects/Position.o 
+
+CqQuery: CqQuery.o \
+         queryobjects/Portfolio.o \
+         queryobjects/Position.o
+
+PoolCqQuery: PoolCqQuery.o \
+             queryobjects/Portfolio.o \
+             queryobjects/Position.o
+
+PoolCqQuery: PoolCqQuery.o \
+             queryobjects/Portfolio.o \
+             queryobjects/Position.o
+
+PdxRemoteQuery: PdxRemoteQuery.o \
+                queryobjects/PortfolioPdx.o \
+                queryobjects/PositionPdx.o
+
+PdxAutoSerializer: PdxAutoSerializer.o \
+                   queryobjects/PortfolioPdxAuto.o \
+                   queryobjects/PositionPdxAuto.o  \
+                   queryobjects/testobject_PortfolioPdxAutoSerializable.o \
+                   queryobjects/testobject_PositionPdxAutoSerializable.o
+
+$(EXECS) : % : %.o
+	$(CXX) $(CXXLDFLAGS) $(CXXLIBS) -o $@ $^
+	
+-include $(SRC:.cpp=.d)
+
+include ../GNUmakefile.common

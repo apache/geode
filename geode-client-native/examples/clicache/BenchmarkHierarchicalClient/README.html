@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"><HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+<META NAME="GENERATOR" CONTENT="Adobe FrameMaker 7.0/HTML Export Filter">
+
+<TITLE>BenchmarkHierarchicalClient: Pivotal GemFire&#174; Native Client Example</TITLE>
+
+</HEAD>
+<BODY>
+ <IMG SRC="../../../docs/PIVOTAL_GemFire_190x81.png" BORDER="0">
+ <DIV>
+   <h1 align="center"><a name="Top" id="Top"></a>BenchmarkHierarchicalClient</h1>
+   <h2 align="center">
+     Pivotal GemFire&#174; Native Client </h2>
+   <h2 align="center">C# Programming Example</h2>
+</DIV>
+
+ <DIV>
+<H2>
+<br>
+About the BenchmarkHierarchicalClient Example </H2>
+<P>The <code>BenchmarkHierarchicalClient</code> example is an interactive C# program that uses Microsoft .NET Framework 4.0 to access the GemFire C++ API for benchmarking performance between a client and a server.</P>
+<blockquote>
+  <p align="left"><em>Microsoft .NET Framework 4.0 must be installed before running this example. For information about installing the .NET Framework, see  the </em>GemFire Native Client User's Guide<em>.</em></p>
+</blockquote>
+<P><code>BenchmarkHierarchicalClient</code> measures the time it takes for a <code>put</code> operation to return in a hierarchical cache configuration. In this test, the client does the <code>put</code> and its BridgeWriter automatically forwards the <code>put</code> to the server. Consequently, the measurement includes the time required to send the data to the server.</P>
+<P>To run the server and client on separate machines, you need to modify the client configuration file, <a href="./BenchmarkHierarchicalClient.xml" target="_blank"><code>BenchmarkHierarchicalClient.xml</code></a>, changing the two occurrences of the endpoints parameter string, <code>localhost</code>, to the name of the server's machine.</P>
+ </DIV>
+
+<DIV>
+<H2>
+<a name="configuring_environment" id="configuring_environment"></a>Configuring the Environment </H2>
+<P>
+Examples that interact with a Java cache server require specific environment configurations so the Java cache server will run properly. Follow the configuration steps listed below that apply to your operating system: </P>
+</DIV>
+ <DIV>
+<ol>
+  <li>From the GemFire product installation directory, configure your environment settings by following the steps in   <code>examples/EnvSetup.html</code>.<br>
+      <br>
+  <li>Set the <code>JAVA_HOME</code> and <code>GF_JAVA_HOME</code>  environment variables to your installed Java JRE or JDK. See the Installation chapter of the   <em>GemFire User's Guide</em> for the versions of Java that are compatible with GemFire. The <code>JAVA_HOME</code> setting is for your applications, and  <code>GF_JAVA_HOME</code> is for the GemFire scripts.  You must have a compatible Java JRE or JDK installed and you must set <code>JAVA_HOME</code> and <code>GF_JAVA_HOME</code> to point to it.<br>
+      <br>
+  <li>Add <code>$JAVA_HOME/bin</code> to the start of your <code>PATH</code>. <br>
+  <br>
+  <li>Add the GemFire quickstart classes to your <code>CLASSPATH</code>. <br>
+  <blockquote>
+  <p><strong> <code><strong>set CLASSPATH=%GEMFIRE%\quickstart\classes;%CLASSPATH%</strong></code></strong></p>
+</blockquote>  
+</ol>
+<p>The following is a list of the environment configuration commands for the <code>BenchmarkHierarchicalClient</code> example. Choose the set of commands that are appropriate for your operating system. The text that you type is shown in bold.
+  These configurations only need to be performed for the sessions that invoke the Java cache server.</p>
+<p><strong>Bourne and Korn shells (sh, ksh, bash)</strong></p>
+<blockquote>
+  <p>    <code>% <strong>cd GemFireInstallDirectory</strong><br>
+    % <strong>CLASSPATH=$CLASSPATH:$GEMFIRE/quickstart/classes; export CLASSPATH</strong><br>
+    % <strong>cd $GEMFIRE/quickstart</strong><br>
+    % <strong>JAVA_HOME=&lt;installed JRE PATH&gt;; export JAVA_HOME</strong><br>
+    % <strong>GF_JAVA_HOME=$JAVA_HOME; export GF_JAVA_HOME</strong><br>
+    % <strong>PATH=$JAVA_HOME/bin:$PATH; export PATH</strong></code></p>
+</blockquote>
+<p><strong>Windows</strong></p>
+<blockquote>
+  <p><code>&gt; <strong>cd GemFireInstallDirectory</strong><br>
+&gt; <strong>set CLASSPATH=%GEMFIRE%\quickstart\classes;%CLASSPATH%</strong><br>
+&gt; <strong>cd %GEMFIRE%\quickstart</strong><br>
+&gt; <strong>set JAVA_HOME=&lt;installed JRE PATH&gt;</strong><br>
+&gt; <strong>set GF_JAVA_HOME=%JAVA_HOME%</strong><br>
+&gt; <strong>set PATH=%JAVA_HOME%\bin;%PATH%</strong> </code></p>
+</blockquote>
+</DIV>
+
+<DIV>
+<H2>
+Starting BenchmarkHierarchicalClient </H2>
+<P>
+To start the <code>BenchmarkHierarchicalClient</code> example, create a session from the GemFire product installation directory and complete the following steps.  Throughout this example, when you're prompted to enter the native client directory, replace the <code>xxxx</code> in <code>NativeClient_xxxx</code> with the actual four-digit product version number.</P>
+<P>This first session starts the Java cache server. </P>
+</DIV>
+<DIV>
+<OL>
+<LI CLASS="Numbered-1st"><p>
+Configure the session environment according to the steps listed in <a href="#configuring_environment">Configuring the Environment</a><a href="../envsetup.html" target="_blank"></a>.</p>
+</LI>
+<LI CLASS="Numbered-1st">If you have not already done so, go to the <code>%GEMFIRE%/quickstart</code> directory.</LI>
+<blockquote>
+  <p><strong> <code>cd %GEMFIRE%/quickstart</code></strong></p>
+</blockquote>
+<LI CLASS="Numbered">
+Enter this command to start the Java cache server:
+
+  <blockquote>
+   <p><strong>
+     <code>java quickstart.BenchmarkHierarchicalServer</code></strong></p>
+   </blockquote>
+ </LI>
+<LI CLASS="Numbered">
+Create another session and change its working directory to the native client <code>cli_BenchmarkHierarchicalClient</code> example directory:
+  <blockquote>
+    <p><strong><code>cd examples\cli_BenchmarkHierarchicalClient</code></strong></p>
+  </blockquote>
+  <li>
+    Start the <code>BenchmarkHierarchicalClient</code> application:</li>
+  <blockquote>
+   <p><strong>
+     <code>BenchmarkHierarchicalClient.exe</code></strong></p>
+   </blockquote>	
+</OL>
+</DIV>
+<DIV>
+<H2>
+Running the Example </H2>
+</DIV>
+<DIV>
+<P><strong>
+In the client session</strong></P>
+<blockquote>
+  <p>
+    The benchmarking tests may take several moments to finish. After the benchmarking is complete, the following statistical categories are reported in the client session:</p>
+  <blockquote class="style1">
+    <p><code>Benchmark Statistics</code></p>
+    <p><code>Benchmark Averages (Mean)</code></p>
+    <p><code>Best Benchmark Results   </code></p>
+  </blockquote>
+</blockquote>
+<blockquote>
+  <p> When you have finished reviewing the benchmarking results, press <code>Enter</code> to end the <code>BenchmarkHierarchicalClient</code> application. Next, type <strong><code>Exit</code></strong> to close the session.</p>
+</blockquote>
+<p><strong>In the server session</strong></p>
+<blockquote>
+  <p>Press <code>Enter</code> to end the cache server, then type <strong><code>Exit</code></strong> to close the session.</p>
+</blockquote>
+</DIV>
+<DIV>
+<H2>
+Changing System Parameters</H2>
+<P>
+This product ships configured to run with default system properties. If you need to run in a non-default configuration, GemFire also takes a system-level configuration file. To configure a .NET client, rename any <code>gfcpp.properties</code> file currently in the example directory, then copy <code>gfcpp.properties</code> file into your <code>cli_BenchmarkHierarchicalClient</code> directory from the <code>defaultSystem</code> directory. Edit the <code>gfcpp.properties</code> file in your <code>cli_BenchmarkHierarchicalClient</code> directory, as needed.</P>
+<P>If you also need to make a non-default configuration for the Java cache server, rename any <code>gemfire.properties</code> file currently in the <code>%GEMFIRE%/quickstart</code>, then copy <code>gemfire.properties</code> into the <code>/quickstart</code> directory from the <code>%GEMFIRE%/defaultConfigs</code> directory and edit it. For example, to change the name of the <code>cache.xml</code> file, uncomment this line and change the file name:</P>
+<P> <code>#cache-xml-file=cache.xml</code></P>
+<P>When you're done with the example, delete your edited versions of <code>gemfire.properties</code> and <code>gfcpp.properties</code>, then restore the renamed original versions to their original names so other examples can use the unedited files.<code><br>
+    <br>
+</code></P>
+</DIV>
+<a href="#Top">Top</a>
+<P>
+<br>
+<p><span class=GramE>Copyright &#169; 2005-2014 Pivotal Software, Inc. All rights reserved.  This product is protected by U.S. and international copyright and intellectual property laws. Pivotal products are covered by one or more patents listed at
+http://www.pivotal.io/patents. </p>
+</BODY>
+</HTML>
+

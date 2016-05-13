@@ -1,0 +1,194 @@
+<?xml version="1.0"?>
+
+<!-- This is the Ant build file for running quickstart examples.  It is designed 
+     to be invoked from the build.xml Ant script in the top level directory
+     of the GemFire tree, and expects to inherit the properties set
+     there.
+  -->
+<project name ="gemfire" default="usage">
+  <description>Runs GemFire quickstart examples</description>
+  <target name="usage">
+    <echo>
+    This script is designed to be invoked from the build.xml script
+    in the base directory.
+    </echo>
+  </target>
+
+  <target name="-run-test">
+
+   <condition property="OPENSSL" value="//inf1/shared/where/cplusplus/thirdparty/windows/openssl/ssllibs">
+     <os family="windows"/>
+   </condition>
+   <condition property="OPENSSL" value="/export/gcm/where/cplusplus/thirdparty/linux/openssl/ssllibs">
+     <not><os family="windows"/></not>
+   </condition>
+ 
+   
+   <condition property="csharp">
+     <equals arg1="${runscript.file}" arg2="${product.dir}/SampleCode/quickstart/runcs.bat"/>
+   </condition>
+
+   <condition property="cpp">
+    <or> 
+      <equals arg1="${runscript.file}" arg2="${product.dir}/SampleCode/quickstart/runcpp.bat"/>
+      <equals arg1="${runscript.file}" arg2="${product.dir}/SampleCode/quickstart/runcpp.sh"/>
+    </or> 
+   </condition>
+
+  <conditional if="csharp">
+    <property name="folderType" value="csharp"/> 
+    <condition property="quickstart" value="${csharp.quickstart}">
+      <isset property="csharp.quickstart"/>
+    </condition>
+    <conditional unless="quickstart">
+      <property name="thisTestOk" value="true"/>
+    </conditional>
+    <conditional if="quickstart">
+      <condition property="thisTestOk">
+        <equals arg1="${testName}" arg2="${csharp.quickstart}"/>
+      </condition>
+    </conditional>
+  </conditional> 
+ 
+  <conditional if="cpp"> 
+    <property name="folderType" value="cpp"/>
+    <condition property="quickstart" value="${cpp.quickstart}">
+      <isset property="cpp.quickstart"/>
+    </condition>
+    <conditional unless="quickstart">
+      <property name="thisTestOk" value="true"/>
+    </conditional>
+    <conditional if="quickstart">
+      <condition property="thisTestOk">
+        <equals arg1="${testName}" arg2="${cpp.quickstart}"/>
+      </condition>
+    </conditional>
+  </conditional>
+
+  <condition property="okToRun">
+    <isset property="thisTestOk"/>
+  </condition>
+
+  <conditional unless="okToRun">
+   <echo level="info" message="Skipping test ${testName}"/>
+  </conditional>
+
+  <conditional if="okToRun">
+   <mkdir dir="${tests.quickstart.out.dir}/${folderType}/${testName}"/>
+    <condition property="test_name" value="${testName}">
+      <isset property="thisTestOk"/>
+    </condition>
+    <tstamp>
+      <format property="test.time" pattern="HH:mm:ss"/>
+    </tstamp>
+    <echo level="info" message="${test.time}: ${testName} "/> 
+    <property environment="env"/>
+    
+    <exec dir="${product.dir}/SampleCode/quickstart"
+         executable="${runscript.file}"
+         output="${tests.quickstart.out.dir}/${folderType}/${testName}/${testName}.out"
+         failonerror="false" resultproperty="ExitCode">
+    <!-- Setting the environment configuration -->
+      <env key="GEMFIRE" path="${gfe.dir}"/>
+      <env key="GFCPP" path="${product.dir}"/>
+      <env key="PATH" path="${java.home}/bin:${GEMFIRE}/bin:${env.PATH}"/>
+      <env key="OPENSSL" value="${OPENSSL}"/>
+      <env key="LD_LIBRARY_PATH" value="${OPENSSL}/lib"/>
+      <env key="LD_LIBRARY_PATH" value="${OPENSSL}/bin"/>
+      <arg value="${test_name}"/>
+   </exec>
+  <condition property="TestFailed">
+    <not>
+      <equals arg1="${ExitCode}" arg2="0"/>
+    </not>
+  </condition>
+
+ <conditional if="TestFailed">
+    <antcall target="moveDir">
+      <param name="test_name" value="${test_name}"/>
+      <param name="folderType" value="${folderType}"/>
+   </antcall>
+  </conditional>
+  <conditional unless="TestFailed">
+    <antcall target="moveDir">
+     <param name="test_name" value="${test_name}"/>
+     <param name="folderType" value="${folderType}"/>
+   </antcall>
+ </conditional>
+ </conditional>
+ <fail message="Output can be found at ${tests.quickstart.out.dir}/${folderType}/${test_name}/${testName}.out" if="TestFailed"/>
+
+</target>
+
+ <target name="moveDir">
+   <move todir="${tests.quickstart.out.dir}/${folderType}/${test_name}">
+     <fileset dir="${product.dir}/SampleCode/quickstart">
+       <include name="gfecs*/*"/>
+     </fileset>
+   </move>
+ </target>
+
+
+<target name="quickstart-tests">
+
+    <echo>running tests</echo>
+    <antcall target="-run-test">
+      <param name="testName" value="BasicOperations"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="CqQuery"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="DataExpiration"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="Delta"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="DistributedSystem"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="DurableClient"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="Exceptions"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="ExecuteFunctions"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="HACache"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="LoaderListenerWriter"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="MultiuserSecurity"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="PoolCqQuery"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="PoolRemoteQuery"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="PoolWithEndpoints"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="PutAllGetAllOperations"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="RefIDExample"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="RegisterInterest"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="RemoteQuery"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="Security"/>
+    </antcall>
+</target>
+
+</project>

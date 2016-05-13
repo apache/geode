@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.1//EN"
+  "http://www.gemstone.com/dtd/cache4_1.dtd">
+<cache>
+  <bridge-server port="HOST_PORT1" notify-by-subscription="true"/>
+
+  <vm-root-region name="DistRegionAck">
+    <region-attributes scope="distributed-ack" mirror-type="keys-values"/>
+    <entry>
+      <key>
+        <string>DefaultCacheable-1</string>
+      </key>
+      <value>
+        <declarable>
+          <class-name>javaobject.DefaultCacheable</class-name>
+          <parameter name="ID">
+            <string>1</string>
+          </parameter>
+          <parameter name="pkid">
+            <string>A0</string>
+          </parameter>
+          <parameter name="type">
+            <string>type1</string>
+          </parameter>
+          <parameter name="status">
+            <string>active</string>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>
+    <region name="AuthSubregion">
+      <region-attributes scope="distributed-ack" mirror-type="keys-values"/>
+    </region>
+  </vm-root-region>
+  <vm-root-region name="DistRegionNoAck">
+    <region-attributes scope="distributed-no-ack" mirror-type="keys-values"/>
+    <region name="AuthSubregion">
+      <region-attributes scope="distributed-no-ack" mirror-type="keys-values"/>
+    </region>
+  </vm-root-region>
+</cache> 

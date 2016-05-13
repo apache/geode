@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+   <list>
+     <item>10000</item>
+   </list>
+  </data>
+  <data name="valueSizes">
+   <list>
+     <item>100</item>
+    </list>
+  </data>
+  <data name="numThreads">
+   <list>
+     <item>6</item>
+   </list>
+  </data>
+  <data name="keyType">int</data>
+  <data name="clientCnt">3</data>
+  <data name="serverCount">2</data>
+  <data name="cqtest">true</data>
+  <data name="entryCount">10000</data>
+  <data name="NumNewKeys">200</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true">
+          <cache-listener library="cacheserver" function="createSilenceListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+ <client-set name="JCS1" hostGroup="CS"/>
+ <client-set name="JCS2" hostGroup="CS"/>
+ <client-set count="3" name="Client"/>
+ <client-set name="Feeder"/>
+
+ <test name="conCQBridge" description="Test CQ with a variety of operations with careful validation and concurrent execution ,with multiple threads">
+   <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m">
+     <data name="program">setupJavaServers</data>
+     <data name="arguments">-c 2 -e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH hct/csAckMirror.xml</data>
+     <client-set name="JCS1"/>
+   </task>
+   <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+     <data name="program">startJavaServers</data>
+     <data name="arguments">1</data>
+     <client-set name="JCS1"/>
+   </task>
+   <task name="CreateRegion" action="doCreateUserDefineRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" argTypes="int,object" waitTime="5m">
+     <data name="regionName">TestTCR1</data>
+     <data name="regionSpec">ThinClientRegion</data>
+     <client-set count="3" name="Client"/>
+     <client-set name="Feeder"/>
+   </task>
+   <task name="Register All keys" action="doRegisterAllKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" argTypes="int,object" waitTime="2m">
+     <client-set count="3" name="Client"/>
+   </task>
+   <task name="InitInstance" action="doInitInstance" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" argTypes="int,object" waitTime="20m">
+     <client-set name="Feeder"/>
+     <client-set count="1" name="Client"/>
+   </task>
+   <task name="LoadRegion" action="doFeedInt" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" argTypes="int,object" waitTime="20m">
+     <client-set name="Feeder"/>
+   </task>
+   <task name="Register CQ with executeWithIR " action="doRegisterCqForConc" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" argTypes="int,object" waitTime="5m">
+     <data name="query">
+       <list>
+         <item>select * from /TestTCR1</item>
+       </list>
+     </data>
+     <client-set count="3" name="Client"/>
+  </task>
+  <task name="verify queryResults" action="doVerifyQueryResult" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" argTypes="int,object" waitTime="5m">
+    <data name="query">
+      <list>
+        <item>select * from /TestTCR1</item>
+      </list>
+    </data>
+    <client-set count="3" name="Client"/>
+  </task>
+  <task name="DoOperations in concurrent fashion" action="doRROps" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.cacheserver" argTypes="int,object" waitTime="10m">
+    <data name="query">
+      <list>
+        <item>select * from /TestTCR1</item>
+      </list>
+    </data>
+    <client-set count="1" name="Client"/>
+  </task>
+  <task name="validate entry events against the listener count" action="doValidateEvents" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" argTypes="int,object" waitTime="5m">
+    <client-set count="3" name="Client"/>
+  </task>
+  <task name="close cache for CPP clients" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" argTypes="int,object" waitTime="5m"/>
+  <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+    <data name="program">stopJavaServers</data>
+    <data name="arguments">1</data>
+    <client-set name="JCS1"/>
+  </task>
+  <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+    <data name="program">stopJavaServers</data>
+    <data name="arguments">2</data>
+    <client-set name="JCS2"/>
+  </task>
+ </test>
+</test-driver>

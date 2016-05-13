@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="cacheType">CLIENT</data>
+  <data name="conflate">true</data>
+  <data name="redundancyLevel">2</data>
+  <data name="minServers">4</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="sleepTime">
+    <oneof>
+      <item>90</item>
+      <item>120</item>
+    </oneof>
+  </data>
+  
+  <data name="operation">
+    <oneof>
+      <item>stop</item>
+      <item>term</item>
+      <item>kill</item>
+    </oneof>
+  </data>
+
+  <data name="keyType">int</data>
+
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true">
+          <cache-listener library="perftests" function="createConflationTestCacheListener"/>
+          <!--cache-listener library="perftests" function="createPerfTestCacheListener"/-->
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="ThinClientRegionDurable">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true">
+          <cache-listener library="durableclienttests" function="createConflationTestCacheListenerDC"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+
+  <client-set count="30" name="ThinClient"/>
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set name="JCS4" hostGroup="CS"/>
+  <client-set name="JCS5" hostGroup="CS"/>
+  <client-set name="JCS6" hostGroup="CS"/>
+  <client-set name="Feeder"/>
+
+  <test name="ThinClientQConflationTest" description="Thin Client Q conflation test">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH -p \"-J-DslowStartTimeForTesting=60000\" -c 6 Native/csAckMirrorConflate.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">5</data>
+      <client-set name="JCS5"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">6</data>
+      <client-set name="JCS6"/>
+    </task>
+    <task name="CreateRegion with conflation setting yes" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="Int32,byte[]">
+      <client-set begin="1" count="5" name="ThinClient"/>
+      <client-set name="Feeder"/>
+      <data name="regionSpec">ThinClientRegion</data>
+      <data name="conflateEvents">true</data>
+    </task>
+    <task name="CreateRegion with conflation setting no" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="Int32,byte[]">
+      <client-set begin="6" count="5" name="ThinClient"/>
+      <data name="regionSpec">ThinClientRegion</data>
+      <data name="conflateEvents">false</data>
+    </task>
+    <task name="CreateRegion with conflation setting server" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="Int32,byte[]">
+      <client-set begin="11" count="5" name="ThinClient"/>
+      <data name="regionSpec">ThinClientRegion</data>
+      <data name="conflateEvents">server</data>
+    </task>
+    <task name="CreateRegion for durable client with conflation on" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="5m" argTypes="Int32,byte[]">
+      <client-set begin="16" count="5" name="ThinClient"/>
+      <data name="regionSpec">ThinClientRegionDurable</data>
+      <data name="isDurable">true</data>
+      <data name="durableTimeout">120</data>
+      <data name="conflateEvents">true</data>
+    </task>
+    <task name="CreateRegion for durable client with conflation setting no" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="5m" argTypes="Int32,byte[]">
+      <client-set begin="21" count="5" name="ThinClient"/>
+      <data name="regionSpec">ThinClientRegionDurable</data>
+      <data name="isDurable">true</data>
+      <data name="durableTimeout">120</data>
+      <data name="conflateEvents">false</data>
+    </task>
+    <task name="CreateRegion for durable client with conflation setting server" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="5m" argTypes="Int32,byte[]">
+      <client-set begin="26" count="5" name="ThinClient"/>
+      <data name="regionSpec">ThinClientRegionDurable</data>
+      <data name="isDurable">true</data>
+      <data name="durableTimeout">120</data>
+      <data name="conflateEvents">server</data>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="Int32,byte[]">
+      <client-set begin="1" count="15" name="ThinClient"/>
+    </task>
+    <task name="Register All Keys for durable client" action="doRegisterAllKeys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.durableclienttests" waitTime="5m" argTypes="Int32,byte[]">
+      <client-set begin="16" count="15" name="ThinClient"/>
+    </task>
+    <task name="PopulateRegion" action="doPopulateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="30m" argTypes="Int32,byte[]">
+      <client-set name="Feeder"/>
+    </task>
+    <task name="update" action="doPopulateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" timesToRun="350"  continueOnError="true" parallel="true" waitTime="60m" argTypes="Int32,byte[]">
+      <client-set name="Feeder"/>
+      <data name="valueSizes">20</data>
+    </task>
+    <task name="stopStartCacheServer 1" action="doStopStartServer" container="utils" timesToRun="2" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="stopStartCacheServer 2" action="doStopStartServer" container="utils" timesToRun="2" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="stopStartCacheServer 3" action="doStopStartServer" container="utils" timesToRun="2" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="stopStartCacheServer 4" action="doStopStartServer" container="utils" timesToRun="2" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="stopStartCacheServer 5" action="doStopStartServer" container="utils" timesToRun="2" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">5</data>
+      <client-set name="JCS5"/>
+    </task>
+    <task name="stopStartCacheServer 6" action="doStopStartServer" container="utils" timesToRun="2" waitTime="30m" continueOnError="true" parallel="true">
+      <data name="ServerId">6</data>
+      <client-set name="JCS6"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="360">
+      <data name="sleepTime">300</data>
+    </task>
+    <!--task name="validate conflation with client conflation on" action="doValidateQConflation" container="perftests" waitTime="5m">
+      <client-set begin="1" count="5" name="ThinClient"/>
+      <data name="expectedAfterCreateCount">10</data>
+      <data name="expectedAfterUpdateCount">10</data>
+    </task-->
+    <task name="validate conflation with client conflation off" action="doValidateQConflation" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="Int32,byte[]">
+      <client-set begin="6" count="5" name="ThinClient"/>
+      <data name="expectedAfterCreateCount">10</data>
+      <data name="expectedAfterUpdateCount">3500</data>
+    </task>
+    <!--task name="validate conflation with client conflation as server" action="doValidateQConflation" container="perftests" waitTime="5m">
+      <client-set begin="11" count="5" name="ThinClient"/>
+      <data name="expectedAfterCreateCount">10</data>
+      <data name="expectedAfterUpdateCount">10</data>
+      <data name="isServerConflateTrue">true</data>
+    </task>
+    <task name="validate conflation with durable client conflation on" action="doValidateQConflation" container="perftests" waitTime="5m">
+      <client-set begin="16" count="5" name="ThinClient"/>
+      <data name="expectedAfterCreateCount">10</data>
+      <data name="expectedAfterUpdateCount">10</data>
+    </task-->
+    <task name="validate conflation with durable client conflation off" action="doValidateQConflation" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="Int32,byte[]">
+      <client-set begin="21" count="5" name="ThinClient"/>
+      <data name="expectedAfterCreateCount">10</data>
+      <data name="expectedAfterUpdateCount">3500</data>
+    </task>
+    <!--task name="validate conflation with durable client conflation as server" action="doValidateQConflation" container="perftests" waitTime="5m">
+      <client-set begin="26" count="5" name="ThinClient"/>
+      <data name="expectedAfterCreateCount">10</data>
+      <data name="expectedAfterUpdateCount">10</data>
+      <data name="isServerConflateTrue">true</data>
+    </task-->
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="Int32,byte[]"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">5</data>
+      <client-set name="JCS5"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">6</data>
+      <client-set name="JCS6"/>
+    </task>
+  </test>
+
+</test-driver>

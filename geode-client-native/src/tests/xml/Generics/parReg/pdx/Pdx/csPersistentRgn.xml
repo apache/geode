@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.6//EN" "http://www.gemstone.com/dtd/cache6_6.dtd">
+<cache>
+  <!--Configure the pdx framework.  -->
+  <bridge-server port="$PORT_NUM" notify-by-subscription="true"/>
+  <pdx persistent="true" read-serialized="true"/>
+
+  <!-- define a region to hold portfolio objects -->
+  <region name="TestTCR1">
+    <region-attributes data-policy="persistent-replicate"/>
+  </region>
+  <function-service>
+  <function>
+    <class-name>javaobject.RegionOperationsFunctionPdx</class-name>
+  </function>
+</function-service>
+</cache>

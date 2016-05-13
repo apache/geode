@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Well-formed and valid xml file -->
+<client-cache>
+
+  <region name = "Person" >
+     <region-attributes refid="PROXY" pool-name="examplePool" />
+  </region>	
+  <pool name="examplePool"  subscription-enabled="true" >
+    <server host="localhost" port="40404" />    
+  </pool> 										
+</client-cache>

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.0//EN"
+  "http://www.gemstone.com/dtd/cache6_0.dtd">
+<cache>
+  <bridge-server port="$PORT_NUM" notify-by-subscription="true"/>
+  <vm-root-region name="TestTCR1">
+    <region-attributes scope="distributed-ack" mirror-type="keys-values">
+    </region-attributes>
+  </vm-root-region>
+ </cache>
