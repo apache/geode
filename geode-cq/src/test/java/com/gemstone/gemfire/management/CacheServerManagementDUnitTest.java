@@ -16,9 +16,26 @@
  */
 package com.gemstone.gemfire.management;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.Properties;
+
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanServer;
+import javax.management.Notification;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.client.internal.LocatorTestBase;
-import com.gemstone.gemfire.cache.query.*;
+import com.gemstone.gemfire.cache.query.IndexExistsException;
+import com.gemstone.gemfire.cache.query.IndexInvalidException;
+import com.gemstone.gemfire.cache.query.IndexNameConflictException;
+import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.cache.query.RegionNotFoundException;
 import com.gemstone.gemfire.cache.query.cq.dunit.CqQueryDUnitTest;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -29,34 +46,37 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.management.internal.JmxManagerLocatorRequest;
+import com.gemstone.gemfire.management.internal.JmxManagerLocatorResponse;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
-import com.gemstone.gemfire.test.dunit.*;
-
-import javax.management.*;
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.Properties;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  * Cache Server related management test cases
+ * 
+ * 
  */
 public class CacheServerManagementDUnitTest extends LocatorTestBase {
 
   private static final long serialVersionUID = 1L;
-
-  private static int CONNECT_LOCATOR_TIMEOUT_MS = 30000;
+  
+  private static int CONNECT_LOCATOR_TIMEOUT_MS = 30000; 
 
   private ManagementTestBase helper;
 
   private static final String queryName = "testClientWithFeederAndCQ_0";
 
   private static final String indexName = "testIndex";
-
+  
   private static MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
+  
 
   protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest(
       "CqDataDUnitTest");
@@ -64,7 +84,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   public CacheServerManagementDUnitTest(String name) {
     super(name);
     this.helper = new ManagementTestBase(name);
-
+    
   }
 
   @Override
@@ -78,6 +98,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   }
 
   /**
+   * 
    * @throws Exception
    */
   public void testCacheServerMBean() throws Exception {
@@ -91,11 +112,12 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     helper.startManagingNode(managingNode);
     //helper.createCache(server);
     int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    cqDUnitTest.createServer(server, serverPort);
-
+    cqDUnitTest.createServer(server,serverPort);
+    
+   
     DistributedMember member = helper.getMember(server);
-
-    verifyCacheServer(server, serverPort);
+    
+    verifyCacheServer(server,serverPort);
 
     final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
@@ -123,10 +145,10 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     // Close.
 
     Wait.pause(2000);
-    checkNavigation(managingNode, member, serverPort);
-    verifyIndex(server, serverPort);
+    checkNavigation(managingNode,member,serverPort);
+    verifyIndex(server,serverPort);
     // This will test all CQs and will close the cq in its final step
-    verifyCacheServerRemote(managingNode, member, serverPort);
+    verifyCacheServerRemote(managingNode, member,serverPort);
 
     verifyClosedCQ(server);
 
@@ -140,30 +162,30 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
 
   /**
    * Test for client server connection related management artifacts
-   * like notifications
-   *
+   * like notifications 
    * @throws Exception
    */
-
+  
   public void testCacheClient() throws Exception {
-
+    
     final Host host = Host.getHost(0);
     VM locator = host.getVM(0);
     VM server = host.getVM(1);
     VM client = host.getVM(2);
-
+    
     int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    locator.invoke("Start Locator", () -> startLocator(locator.getHost(), locatorPort, ""));
-
-    String locators = NetworkUtils.getServerHostName(locator.getHost()) + "[" + locatorPort + "]";
-
-    int serverPort = server.invoke("Start BridgeServer", () -> startBridgeServer(null, locators));
-
-    addClientNotifListener(server, serverPort);
+    startLocatorInVM(locator, locatorPort, "");
+    
+    String locators = NetworkUtils.getServerHostName(locator.getHost())+ "[" + locatorPort + "]";
+    
+   
+    int serverPort = startBridgeServerInVM(server, null, locators);
+    
+    addClientNotifListener(server,serverPort);
 
     // Start a client and make sure that proper notification is received
-    client.invoke("Start BridgeClient", () -> startBridgeClient(null, NetworkUtils.getServerHostName(locator.getHost()), locatorPort));
-
+    startBridgeClientInVM(client, null, NetworkUtils.getServerHostName(locator.getHost()), locatorPort);
+    
     //stop the client and make sure the bridge server notifies
     stopBridgeMemberVM(client);
     helper.closeCache(locator);
@@ -171,14 +193,13 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     helper.closeCache(client);
 
   }
-
+  
   /**
    * Intention of this test is to check if a node becomes manager after all the nodes are alive
    * it should have all the information of all  the members.
-   * <p>
+   * 
    * Thats why used  service.getLocalManager().runManagementTaskAdhoc() to make node
    * ready for federation when manager node comes up
-   *
    * @throws Exception
    */
 
@@ -187,72 +208,96 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     final Host host = Host.getHost(0);
     VM locator = host.getVM(0);
     VM server = host.getVM(1);
-
+    
     //Step 1:
     final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    locator.invoke("Start Locator", () -> startLocator(locator.getHost(), locatorPort, ""));
+    startLocator(locator, locatorPort, "");
 
-    String locators = NetworkUtils.getServerHostName(locator.getHost()) + "[" + locatorPort + "]";
-
+    String locators = NetworkUtils.getServerHostName(locator.getHost())+ "[" + locatorPort + "]";
+    
     //Step 2:
-    server.invoke("Start BridgeServer", () -> startBridgeServer(null, locators));
-
+    int serverPort = startBridgeServerInVM(server, null, locators);
+    
     //Step 3:
-    server.invoke("Check Server", () -> {
-      Cache cache = GemFireCacheImpl.getInstance();
-      assertNotNull(cache);
-      SystemManagementService service = (SystemManagementService) ManagementService
-          .getExistingManagementService(cache);
-      assertNotNull(service);
-      assertFalse(service.isManager());
-      assertNotNull(service.getMemberMXBean());
-      service.getLocalManager().runManagementTaskAdhoc();
+    server.invoke(new SerializableRunnable("Check Server") {
+
+      public void run() {
+        Cache cache = GemFireCacheImpl.getInstance();
+        assertNotNull(cache);
+        SystemManagementService service = (SystemManagementService)ManagementService
+            .getExistingManagementService(cache);
+        assertNotNull(service);
+        assertFalse(service.isManager());
+        assertNotNull(service.getMemberMXBean());
+        service.getLocalManager().runManagementTaskAdhoc();
+
+
+      }
     });
+    
+  //Step 4:
+    JmxManagerLocatorResponse locRes = JmxManagerLocatorRequest.send(locator
+        .getHost().getHostName(), locatorPort, CONNECT_LOCATOR_TIMEOUT_MS, Collections.<String, String> emptyMap());
+    
+  //Step 5:
+    locator.invoke(new SerializableRunnable("Check locator") {
 
-    //Step 4:
-    JmxManagerLocatorRequest.send(locator
-        .getHost().getHostName(), locatorPort, CONNECT_LOCATOR_TIMEOUT_MS, Collections.<String, String>emptyMap());
+      public void run() {
+        Cache cache = GemFireCacheImpl.getInstance();
+        assertNotNull(cache);
+        ManagementService service = ManagementService
+            .getExistingManagementService(cache);
+        assertNotNull(service);
+        assertTrue(service.isManager());
+        LocatorMXBean bean = service.getLocalLocatorMXBean();
+        assertEquals(locatorPort, bean.getPort());
+        DistributedSystemMXBean dsBean = service.getDistributedSystemMXBean();
+        ObjectName[] names = dsBean.listMemberObjectNames();
+       
+        assertEquals(2,dsBean.listMemberObjectNames().length);
 
-    //Step 5:
-    locator.invoke("Check locator", () -> {
-      Cache cache = GemFireCacheImpl.getInstance();
-      assertNotNull(cache);
-      ManagementService service = ManagementService
-          .getExistingManagementService(cache);
-      assertNotNull(service);
-      assertTrue(service.isManager());
-      LocatorMXBean bean = service.getLocalLocatorMXBean();
-      assertEquals(locatorPort, bean.getPort());
-      DistributedSystemMXBean dsBean = service.getDistributedSystemMXBean();
-
-      assertEquals(2, dsBean.listMemberObjectNames().length);
+      }
     });
+    
+
 
     helper.closeCache(locator);
     helper.closeCache(server);
-
+    
+ 
   }
+  
+  
+  protected void startLocator(final VM vm, final int locatorPort, final String otherLocators) {
+    vm.invoke(new SerializableRunnable("Create Locator") {
 
-  protected void startLocator(Host vmHost, final int locatorPort, final String otherLocators) {
-    disconnectFromDS();
-    Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, String.valueOf(0));
-    props.setProperty(DistributionConfig.LOCATORS_NAME, otherLocators);
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
-    props.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-    File logFile = new File(getUniqueName() + "-locator" + locatorPort + ".log");
-    try {
-      InetAddress bindAddr = InetAddress.getByName(NetworkUtils.getServerHostName(vmHost));
-      Locator locator = Locator.startLocatorAndDS(locatorPort, logFile, bindAddr, props);
-      remoteObjects.put(LOCATOR_KEY, locator);
-    } catch (UnknownHostException uhe) {
-      Assert.fail("While resolving bind address ", uhe);
-    } catch (IOException ex) {
-      Assert.fail("While starting locator on port " + locatorPort, ex);
-    }
+      final String testName= getUniqueName();
+      public void run() {
+        disconnectFromDS();
+        Properties props = new Properties();
+        props.setProperty(DistributionConfig.MCAST_PORT_NAME, String.valueOf(0));
+        props.setProperty(DistributionConfig.LOCATORS_NAME, otherLocators);
+        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+        props.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
+        props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+        try {
+          File logFile = new File(testName + "-locator" + locatorPort
+              + ".log");
+          InetAddress bindAddr = null;
+          try {
+            bindAddr = InetAddress.getByName(NetworkUtils.getServerHostName(vm.getHost()));
+          } catch (UnknownHostException uhe) {
+            Assert.fail("While resolving bind address ", uhe);
+          }
+          Locator locator = Locator.startLocatorAndDS(locatorPort, logFile, bindAddr, props);
+          remoteObjects.put(LOCATOR_KEY, locator);
+        } catch (IOException ex) {
+          Assert.fail("While starting locator on port " + locatorPort, ex);
+        }
+      }
+    });
   }
-
+  
   protected void checkNavigation(final VM vm,
       final DistributedMember cacheServerMember, final int serverPort) {
     SerializableRunnable checkNavigation = new SerializableRunnable(
@@ -282,14 +327,14 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     };
     vm.invoke(checkNavigation);
   }
-
+  
   /**
    * Verify the Cache Server details
-   *
+   * 
    * @param vm
    */
   @SuppressWarnings("serial")
-  protected void addClientNotifListener(final VM vm, final int serverPort) throws Exception {
+  protected void addClientNotifListener(final VM vm , final int serverPort) throws Exception {
     SerializableRunnable addClientNotifListener = new SerializableRunnable(
         "Add Client Notif Listener") {
       public void run() {
@@ -314,19 +359,18 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
         TestCacheServerNotif nt = new TestCacheServerNotif();
         try {
           mbeanServer.addNotificationListener(MBeanJMXAdapter
-              .getClientServiceMBeanName(serverPort, cache.getDistributedSystem().getMemberId()), nt, null, null);
+              .getClientServiceMBeanName(serverPort,cache.getDistributedSystem().getMemberId()), nt, null, null);
         } catch (InstanceNotFoundException e) {
           fail("Failed With Exception " + e);
         }
-
+        
       }
     };
     vm.invoke(addClientNotifListener);
   }
-
   /**
    * Verify the closed CQ which is closed from Managing Node
-   *
+   * 
    * @param vm
    */
   @SuppressWarnings("serial")
@@ -361,7 +405,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
           bean.removeIndex(indexName);
         } catch (Exception e) {
           fail("Failed With Exception " + e);
-
+        
         }
         assertEquals(bean.getIndexCount(), 0);
 
@@ -372,7 +416,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
 
   /**
    * Verify the closed CQ which is closed from Managing Node
-   *
+   * 
    * @param vm
    */
   @SuppressWarnings("serial")
@@ -390,9 +434,11 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     vm.invoke(verifyClosedCQ);
   }
 
+ 
+
   /**
    * Verify the Cache Server details
-   *
+   * 
    * @param vm
    */
   @SuppressWarnings("serial")
@@ -450,7 +496,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
 
   /**
    * Verify the Cache Server details
-   *
+   * 
    * @param vm
    */
   @SuppressWarnings("serial")
@@ -476,14 +522,14 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
           LogWriterUtils.getLogWriter().info(
               "<ExpectedString> Active Query Count  "
                   + bean.getActiveCQCount() + "</ExpectedString> ");
-
+          
           LogWriterUtils.getLogWriter().info(
               "<ExpectedString> Registered Query Count  "
                   + bean.getRegisteredCQCount() + "</ExpectedString> ");
 
-          assertTrue(bean.showAllClientStats()[0].getClientCQCount() == 1);
-          int numQueues = bean.getNumSubscriptions();
-          assertEquals(numQueues, 1);
+          assertTrue(bean.showAllClientStats()[0].getClientCQCount() == 1); 
+          int numQueues = bean.getNumSubscriptions(); 
+          assertEquals(numQueues, 1); 
           // test for client connection Count
           
           /* @TODO */
@@ -506,9 +552,11 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     };
     vm.invoke(verifyCacheServerRemote);
   }
-
+  
   /**
    * Notification handler
+   * 
+   * 
    */
   private static class TestCacheServerNotif implements
       NotificationListener {
