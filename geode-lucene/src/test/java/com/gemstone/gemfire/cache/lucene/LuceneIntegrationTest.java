@@ -38,28 +38,26 @@ public class LuceneIntegrationTest {
 
   protected Cache cache;
   protected LuceneService luceneService;
-  @Rule
-  public DiskDirRule diskDirRule = new DiskDirRule();
 
   @After
-  public void tearDown() {
+  public void closeCache() {
     if(this.cache != null) {
       this.cache.close();
     }
-    MemoryAllocatorImpl.freeOffHeapMemory();
   }
 
   @Before
   public void createCache() {
+    CacheFactory cf = getCacheFactory();
+    this.cache = cf.create();
+
+    luceneService = LuceneServiceProvider.get(this.cache);
+  }
+
+  protected CacheFactory getCacheFactory() {
     CacheFactory cf = new CacheFactory();
     cf.set("mcast-port", "0");
     cf.set("locators", "");
-    cf.set("off-heap-memory-size", "100m");
-    this.cache = cf.create();
-    cache.createDiskStoreFactory()
-      .setDiskDirs(new File[] {diskDirRule.get()})
-      .setMaxOplogSize(1)
-      .create(GemFireCacheImpl.getDefaultDiskStoreName());
-    luceneService = LuceneServiceProvider.get(this.cache);
+    return cf;
   }
 }

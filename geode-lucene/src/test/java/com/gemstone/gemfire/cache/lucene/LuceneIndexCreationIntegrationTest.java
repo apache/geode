@@ -19,9 +19,9 @@
 
 package com.gemstone.gemfire.cache.lucene;
 
+import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,10 +36,8 @@ import com.gemstone.gemfire.cache.FixedPartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexForPartitionedRegion;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
+import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
+import com.gemstone.gemfire.cache.lucene.test.TestObject;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
@@ -47,14 +45,26 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordTokenizer;
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+
+/**
+ * Tests of creating lucene indexes on regions. All tests of index creation
+ * use cases should be in classes starting with LuceneIndexCreation*. Most
+ * tests belong in this class, except for:
+ * <ul>
+ * <li> Tests that use persistence are in {@link LuceneIndexCreationPersistenceIntegrationTest}  </li>
+ * <li> Tests that use offheap are in {@link LuceneIndexCreationOffHeapIntegrationTest}  </li>
+ * </ul>
+ */
 @Category(IntegrationTest.class)
+@RunWith(JUnitParamsRunner.class)
 public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
-  public static final String INDEX_NAME = "index";
-  public static final String REGION_NAME = "region";
+
 
   @Test
   public void shouldCreateIndexWriterWithAnalyzersWhenSettingPerFieldAnalyzers()
@@ -70,18 +80,22 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
     Region region = createRegion();
     final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
     region.put("key1", new TestObject());
-    verifyIndexFinishFlushing(INDEX_NAME, REGION_NAME);
+    verifyIndexFinishFlushing(cache, INDEX_NAME, REGION_NAME);
     assertEquals(analyzers, index.getFieldAnalyzers());
     assertEquals(Arrays.asList("field1"), field1Analyzer.analyzedfields);
     assertEquals(Arrays.asList("field2"), field2Analyzer.analyzedfields);
   }
 
   @Test
-  public void shouldUseRedundancyForInternalRegionsWhenUserRegionHasRedundancy() {
+  @Parameters({"0", "1", "2"})
+  public void shouldUseRedundancyForInternalRegionsWhenUserRegionHasRedundancy(int redundancy) {
     createIndex("text");
-    cache.createRegionFactory(RegionShortcut.PARTITION_REDUNDANT).create(REGION_NAME);
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setRedundantCopies(redundancy);
+
+    cache.createRegionFactory(RegionShortcut.PARTITION_REDUNDANT).setPartitionAttributes(paf.create()).create(REGION_NAME);
     verifyInternalRegions(region -> {
-      assertEquals(1, region.getAttributes().getPartitionAttributes().getRedundantCopies());
+      assertEquals(redundancy, region.getAttributes().getPartitionAttributes().getRedundantCopies());
     });
   }
 
@@ -122,103 +136,6 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
   }
 
   @Test
-  public void shouldNotUseOffHeapForInternalRegionsWhenUserRegionHasOffHeap() {
-    createIndex("text");
-    cache.createRegionFactory(RegionShortcut.PARTITION)
-      .setOffHeap(true)
-      .create(REGION_NAME);
-
-    verifyInternalRegions(region -> {
-      assertEquals(false, region.getOffHeap());
-    });
-  }
-
-  @Test
-  public void shouldNotUseOverflowForInternalRegionsWhenUserRegionHasOverflow() {
-    createIndex("text");
-    cache.createRegionFactory(RegionShortcut.PARTITION_OVERFLOW).create(REGION_NAME);
-    verifyInternalRegions(region -> {
-      assertTrue(region.getAttributes().getEvictionAttributes().getAction().isNone());
-    });
-  }
-
-  @Test
-  public void shouldUseDiskSynchronousWhenUserRegionHasDiskSynchronous() {
-    createIndex("text");
-    cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
-      .setDiskSynchronous(true)
-      .create(REGION_NAME);
-    verifyInternalRegions(region -> {
-      assertTrue(region.getDataPolicy().withPersistence());
-      assertTrue(region.isDiskSynchronous());
-    });
-    AsyncEventQueue queue = getIndexQueue();
-    assertEquals(true, queue.isDiskSynchronous());
-    assertEquals(true, queue.isPersistent());
-  }
-
-  @Test
-  public void shouldUseDiskSyncFalseOnQueueWhenUserRegionHasDiskSynchronousFalse() {
-    createIndex("text");
-    cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
-      .setDiskSynchronous(false)
-      .create(REGION_NAME);
-    verifyInternalRegions(region -> {
-      assertTrue(region.getDataPolicy().withPersistence());
-      assertTrue(region.isDiskSynchronous());
-    });
-    AsyncEventQueue queue = getIndexQueue();
-    assertEquals(false, queue.isDiskSynchronous());
-    assertEquals(true, queue.isPersistent());
-  }
-
-  @Test
-  public void shouldRecoverPersistentIndexWhenDataStillInQueue() throws ParseException, InterruptedException {
-    createIndex("field1", "field2");
-    Region dataRegion = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
-      .create(REGION_NAME);
-    //Pause the sender so that the entry stays in the queue
-    final AsyncEventQueueImpl queue = (AsyncEventQueueImpl) getIndexQueue();
-    queue.getSender().pause();
-
-    dataRegion.put("A", new TestObject());
-    cache.close();
-    createCache();
-    createIndex("field1", "field2");
-    dataRegion = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
-      .create(REGION_NAME);
-    verifyIndexFinishFlushing(INDEX_NAME, REGION_NAME);
-    LuceneQuery<Object, Object> query = luceneService.createLuceneQueryFactory()
-      .create(INDEX_NAME, REGION_NAME,
-        "field1:world");
-    assertEquals(1, query.search().size());
-  }
-
-  private void verifyIndexFinishFlushing(String indexName, String regionName) {
-    LuceneIndex index = luceneService.getIndex(indexName, regionName);
-    boolean flushed = index.waitUntilFlushed(60000);
-    assertTrue(flushed);
-  }
-  
-  @Test
-  public void shouldRecoverPersistentIndexWhenDataIsWrittenToIndex() throws ParseException, InterruptedException {
-    createIndex("field1", "field2");
-    Region dataRegion = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
-      .create(REGION_NAME);
-    dataRegion.put("A", new TestObject());
-    verifyIndexFinishFlushing(INDEX_NAME, REGION_NAME);
-    cache.close();
-    createCache();
-    createIndex("text");
-    dataRegion = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
-      .create(REGION_NAME);
-    LuceneQuery<Object, Object> query = luceneService.createLuceneQueryFactory()
-      .create(INDEX_NAME, REGION_NAME,
-      "field1:world");
-    assertEquals(1, query.search().size());
-  }
-
-  @Test
   public void shouldCreateInternalRegionsForIndex() {
     createIndex("field1", "field2");
 
@@ -252,19 +169,7 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
 
 
   private void verifyInternalRegions(Consumer<LocalRegion> verify) {
-    // Get index
-    LuceneIndexForPartitionedRegion index = (LuceneIndexForPartitionedRegion) luceneService.getIndex(INDEX_NAME, REGION_NAME);
-
-    // Verify the meta regions exist and are internal
-    LocalRegion chunkRegion = (LocalRegion) cache.getRegion(index.createChunkRegionName());
-    LocalRegion fileRegion = (LocalRegion) cache.getRegion(index.createFileRegionName());
-    verify.accept(chunkRegion);
-    verify.accept(fileRegion);
-  }
-
-  private AsyncEventQueue getIndexQueue() {
-    String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX_NAME, REGION_NAME);
-    return cache.getAsyncEventQueue(aeqId);
+    LuceneTestUtilities.verifyInternalRegions(luceneService, cache, verify);
   }
 
   private Region createRegion() {
@@ -272,13 +177,7 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
   }
 
   private void createIndex(String ... fieldNames) {
-    LuceneServiceProvider.get(this.cache).createIndex(INDEX_NAME, REGION_NAME, fieldNames);
-  }
-
-  private static class TestObject implements Serializable {
-
-    String field1 = "hello world";
-    String field2 = "this is a field";
+    LuceneTestUtilities.createIndex(cache, fieldNames);
   }
 
   private static class RecordingAnalyzer extends Analyzer {
