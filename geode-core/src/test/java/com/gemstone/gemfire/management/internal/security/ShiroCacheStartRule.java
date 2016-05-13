@@ -43,7 +43,7 @@ public class ShiroCacheStartRule extends ExternalResource {
     properties.put(DistributionConfig.JMX_MANAGER_START_NAME, "true");
     properties.put(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxManagerPort));
     properties.put(DistributionConfig.HTTP_SERVICE_PORT_NAME, "0");
-    properties.put(DistributionConfig.SHIRO_INIT_NAME, shiroFile);
+    properties.put(DistributionConfig.SECURITY_SHIRO_INIT_NAME, shiroFile);
 
     cache = new CacheFactory(properties).create();
     cache.addCacheServer().start();

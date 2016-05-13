@@ -112,7 +112,7 @@ public class GfshCommandsSecurityTest {
 
 
   private void runCommandsWithAndWithout(String permission) throws Exception{
-    List<TestCommand> permitted = TestCommand.getPermittedCommands(new WildcardPermission(permission));
+    List<TestCommand> permitted = TestCommand.getPermittedCommands(new WildcardPermission(permission, true));
     for(TestCommand clusterRead:permitted) {
       LogService.getLogger().info("Processing authorized command: "+clusterRead.getCommand());gfsh.executeCommand(clusterRead.getCommand());
       CommandResult result = (CommandResult) gfsh.getResult();

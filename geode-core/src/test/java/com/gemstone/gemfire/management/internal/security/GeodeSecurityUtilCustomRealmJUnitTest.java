@@ -17,16 +17,10 @@
 
 package com.gemstone.gemfire.management.internal.security;
 
-import java.util.Properties;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.realm.Realm;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 
@@ -39,14 +33,10 @@ import org.junit.experimental.categories.Category;
 public class GeodeSecurityUtilCustomRealmJUnitTest extends GeodeSecurityUtilWithIniFileJUnitTest {
   @BeforeClass
   public static void beforeClass() throws Exception{
-    Properties properties = new Properties();
-    properties.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
-    properties.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
+    props.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
+    props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
     JSONAuthorization.setUpWithJsonFile("shiro-ini.json");
-
-    Realm realm = new CustomAuthRealm(properties);
-    SecurityManager securityManager = new DefaultSecurityManager(realm);
-    SecurityUtils.setSecurityManager(securityManager);
+    GeodeSecurityUtil.initSecurity(props);
   }
 
 }

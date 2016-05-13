@@ -304,7 +304,7 @@ public abstract class OperationContext extends WildcardPermission{
   }
 
   public String getRegionName(){
-    return "NULL";
+    return null;
   }
 
   /**
@@ -356,6 +356,14 @@ public abstract class OperationContext extends WildcardPermission{
         || opCode.isRemoveAll()
         || opCode.isInvalidate() || opCode.isRegionCreate()
         || opCode.isRegionDestroy() || opCode.isRegionClear());
+  }
+
+  @Override
+  public String toString(){
+    if(getRegionName()==null)
+      return getResource()+":"+getOperationCode();
+    else
+      return getResource()+":"+getOperationCode()+":"+getRegionName();
   }
 
 }

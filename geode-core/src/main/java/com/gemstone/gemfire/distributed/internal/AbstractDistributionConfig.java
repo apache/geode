@@ -1125,7 +1125,7 @@ public abstract class AbstractDistributionConfig
     m.put(LOCK_MEMORY_NAME, LocalizedStrings.AbstractDistributionConfig_LOCK_MEMORY.toLocalizedString(DEFAULT_LOCK_MEMORY));
     m.put(DISTRIBUTED_TRANSACTIONS_NAME, "Flag to indicate whether all transactions including JTA should be distributed transactions.  Default is false, meaning colocated transactions.");
 
-    m.put(SHIRO_INIT_NAME, "The name of the shiro configuration file in the classpath, e.g. shiro.ini");
+    m.put(SECURITY_SHIRO_INIT_NAME, "The name of the shiro configuration file in the classpath, e.g. shiro.ini");
 
     dcAttDescriptions = Collections.unmodifiableMap(m);
 

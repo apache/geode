@@ -96,14 +96,14 @@ public class TestCommand {
     createTestCommand("destroy region --name=value", dataManage);
 
     //Data Commands
-    createTestCommand("rebalance --include-region=regionA", dataManage);
-    createTestCommand("export data --region=regionA --file=export.txt --member=exportMember", regionARead);
-    createTestCommand("import data --region=regionA --file=import.txt --member=importMember", regionAWrite);
-    createTestCommand("put --key=key1 --value=value1 --region=regionA", regionAWrite);
-    createTestCommand("get --key=key1 --region=regionA", regionARead);
-    createTestCommand("remove --region=regionA", dataManage);
-    createTestCommand("query --query='SELECT * FROM /region1'", dataRead);
-    createTestCommand("locate entry --key=k1 --region=regionA", regionARead);
+    createTestCommand("rebalance --include-region=RegionA", dataManage);
+    createTestCommand("export data --region=RegionA --file=export.txt --member=exportMember", regionARead);
+    createTestCommand("import data --region=RegionA --file=import.txt --member=importMember", regionAWrite);
+    createTestCommand("put --key=key1 --value=value1 --region=RegionA", regionAWrite);
+    createTestCommand("get --key=key1 --region=RegionA", regionARead);
+    createTestCommand("remove --region=RegionA", dataManage);
+    createTestCommand("query --query='SELECT * FROM /RegionA'", dataRead);
+    createTestCommand("locate entry --key=k1 --region=RegionA", regionARead);
 
     // Deploy commands
     //createTestCommand("deploy --jar=group1_functions.jar --group=Group1", dataManage); // TODO: this command will fail in GfshCommandsSecurityTest at interceptor for jar file checking

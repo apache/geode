@@ -83,7 +83,7 @@ public class CacheServerMBeanShiroJUnitTest {
 
   @Test
   @JMXConnectionConfiguration(user = "dataReader", password = "12345")
-  public void testDataRead() throws Exception{
+  public void ztestDataRead() throws Exception{
     assertThatThrownBy(() -> bean.removeIndex("foo")).hasMessageContaining(TestCommand.dataManage.toString());
     assertThatThrownBy(() -> bean.fetchLoadProbe()).hasMessageContaining(TestCommand.clusterRead.toString());
     assertThatThrownBy(() -> bean.getActiveCQCount()).hasMessageContaining(TestCommand.clusterRead.toString());

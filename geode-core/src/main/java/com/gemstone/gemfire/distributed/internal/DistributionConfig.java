@@ -17,6 +17,17 @@
 
 package com.gemstone.gemfire.distributed.internal;
 
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.Config;
 import com.gemstone.gemfire.internal.ConfigSource;
@@ -24,12 +35,6 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogConfig;
 import com.gemstone.gemfire.internal.tcp.Connection;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
-
-import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.util.*;
 
 /**
  * Provides accessor (and in some cases mutator) methods for the
@@ -47,7 +52,8 @@ import java.util.*;
  *
  * @since 2.1
  */
-public interface DistributionConfig extends Config, LogConfig {
+public interface
+DistributionConfig extends Config, LogConfig {
 
   ////////////////////  Instance Methods  ////////////////////
 
@@ -3739,11 +3745,11 @@ public interface DistributionConfig extends Config, LogConfig {
   public void setLockMemory(boolean value);
 
   @ConfigAttribute(type=String.class)
-  public String SHIRO_INIT_NAME="shiro-init";
+  public String SECURITY_SHIRO_INIT_NAME ="security-shiro-init";
 
-  @ConfigAttributeSetter(name=SHIRO_INIT_NAME)
+  @ConfigAttributeSetter(name= SECURITY_SHIRO_INIT_NAME)
   public void setShiroInit(String value);
-  @ConfigAttributeGetter(name=SHIRO_INIT_NAME)
+  @ConfigAttributeGetter(name= SECURITY_SHIRO_INIT_NAME)
   public String getShiroInit();
 
 

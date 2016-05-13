@@ -19,14 +19,14 @@ package com.gemstone.gemfire.management.internal.security;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Properties;
+
 import com.gemstone.gemfire.cache.operations.OperationContext;
-import com.gemstone.gemfire.security.GemFireSecurityException;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.config.IniSecurityManagerFactory;
-import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.util.ThreadContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -39,12 +39,11 @@ import org.junit.experimental.categories.Category;
  */
 @Category(UnitTest.class)
 public class GeodeSecurityUtilWithIniFileJUnitTest {
+  protected static Properties props = new Properties();
   @BeforeClass
   public static void beforeClass() throws Exception{
-    ThreadContext.remove();
-    IniSecurityManagerFactory factory = new IniSecurityManagerFactory("classpath:shiro.ini");
-    SecurityManager securityManager = factory.getInstance();
-    SecurityUtils.setSecurityManager(securityManager);
+    props.setProperty(DistributionConfig.SECURITY_SHIRO_INIT_NAME, "shiro.ini");
+    GeodeSecurityUtil.initSecurity(props);
   }
 
   @AfterClass

@@ -172,7 +172,7 @@ public abstract class AbstractConfig implements Config {
         }
       }
       // hide the shiro-init configuration for now. Remove after we can allow customer to specify shiro.ini file
-      if(attName.equals("shiro-init")){
+      if(attName.equals(DistributionConfig.SECURITY_SHIRO_INIT_NAME)){
         continue;
       }
       pw.print(attName);

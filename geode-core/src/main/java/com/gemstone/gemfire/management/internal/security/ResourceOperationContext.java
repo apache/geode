@@ -43,7 +43,15 @@ public class ResourceOperationContext extends OperationContext {
     if (operation != null) this.operation = OperationCode.valueOf(operation);
     if (regionName !=null ) this.regionName = regionName;
 
-    setParts(this.resource.name()+":"+this.operation.name()+":"+this.regionName);
+    //for DATA resource, when we construct the lock to guard the operations, there should always be a 3rd part (regionName),
+    // if no regionName is specified, we need to add "NULL" to it.
+    // this means, for general data operations, or operations that we can't put a regionName on yet, like backup diskstore, query data, create regions
+    // it will require DATA:REAT/WRITE:NULL role
+    if(this.resource==Resource.DATA && this.regionName==null){
+      this.regionName = "NULL";
+    }
+
+    setParts(this.resource.name()+":"+this.operation.name()+":"+this.regionName, true);
   }
 
   @Override

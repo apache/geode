@@ -18,13 +18,16 @@
 package com.gemstone.gemfire.internal.security;
 
 import java.security.AccessController;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
 import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.cache.operations.OperationContext.Resource;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
 import com.gemstone.gemfire.internal.security.shiro.ShiroPrincipal;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.management.internal.security.ResourceOperationContext;
@@ -37,6 +40,11 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.config.Ini.Section;
+import org.apache.shiro.config.IniSecurityManagerFactory;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.realm.Realm;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 
@@ -209,6 +217,39 @@ public class GeodeSecurityUtil {
       return false;
     }
     return true;
+  }
+
+  /**
+   * initialize Shiro's Security Manager and Security Utilities
+   * @param securityProps
+   */
+  public static void initSecurity(Properties securityProps){
+    if(securityProps==null)
+      return;
+
+    String shiroConfig = securityProps.getProperty(DistributionConfig.SECURITY_SHIRO_INIT_NAME);
+    String customAuthenticator =securityProps.getProperty(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
+    if (!com.gemstone.gemfire.internal.lang.StringUtils.isBlank(shiroConfig)) {
+      IniSecurityManagerFactory factory = new IniSecurityManagerFactory("classpath:"+shiroConfig);
+
+      // we will need to make sure that shiro uses a case sensitive permission resolver
+      Section main = factory.getIni().addSection("main");
+      main.put("geodePermissionResolver", "com.gemstone.gemfire.internal.security.shiro.GeodePermissionResolver");
+      if(!main.containsKey("iniRealm.permissionResolver")) {
+        main.put("iniRealm.permissionResolver", "$geodePermissionResolver");
+      }
+
+      SecurityManager securityManager = factory.getInstance();
+      SecurityUtils.setSecurityManager(securityManager);
+    }
+    else if (!com.gemstone.gemfire.internal.lang.StringUtils.isBlank(customAuthenticator)) {
+      Realm realm = new CustomAuthRealm(securityProps);
+      SecurityManager securityManager = new DefaultSecurityManager(realm);
+      SecurityUtils.setSecurityManager(securityManager);
+    }
+    else{
+      SecurityUtils.setSecurityManager(null);
+    }
   }
 
 }

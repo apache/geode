@@ -74,10 +74,10 @@ public class DataCommandsSecurityTest {
     assertThatThrownBy(() -> bean.processCommand("import data --region=region2 --file=foo.txt --member=value")).isInstanceOf(GemFireSecurityException.class);
 
     assertThatThrownBy(() -> bean.processCommand("put --key=key1 --value=value1 --region=region2")).isInstanceOf(GemFireSecurityException.class)
-        .hasMessageContaining("[data]:[write]:[region2]");
+        .hasMessageContaining("DATA:WRITE:region2");
 
     assertThatThrownBy(() -> bean.processCommand("get --key=key1 --region=region2")).isInstanceOf(GemFireSecurityException.class)
-        .hasMessageContaining("[data]:[read]:[region2]");
+        .hasMessageContaining("DATA:READ:region2");
     }
 
 }
