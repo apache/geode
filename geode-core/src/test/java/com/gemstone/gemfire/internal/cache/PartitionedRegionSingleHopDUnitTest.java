@@ -342,7 +342,6 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   // Put data, get data and make the metadata stable.
   // Now verify that metadata has all 8 buckets info.
   // Now update and ensure the fetch service is never called.
-  @Category(FlakyTest.class) // GEODE-493: random ports, waitForCriterions
   public void test_MetadataContents() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
@@ -368,7 +367,6 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   // once,
   // fetchservice has to be triggered.
   // Now put again from c2.There should be no hop at all.
-  @Category(FlakyTest.class) // GEODE-699: random ports, async actions, time sensitive
   public void test_MetadataServiceCallAccuracy() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
@@ -390,6 +388,9 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     region.put(new Integer(3), "create3");
 
     Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> cms.isRefreshMetadataTestOnly() == true);
+
+    //make sure all fetch tasks are completed
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> cms.getFetchTaskCount() == 0);
 
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
     region.put(new Integer(0), "create0");
@@ -1973,6 +1974,9 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
 
   private void verifyMetadata() {
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
+    //make sure all fetch tasks are completed
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> cms.getFetchTaskCount() == 0);
+
     final Map<String, ClientPartitionAdvisor> regionMetaData = cms
         .getClientPRMetadata_TEST_ONLY();
     Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (regionMetaData.size() == 4));

@@ -72,7 +72,13 @@ public final class ClientMetadataService {
   /** random number generator used in pruning */
   private final Random rand = new Random();
   
-  private volatile boolean isMetadataStable = true; 
+  private volatile boolean isMetadataStable = true;
+
+  private boolean isMetadataRefreshed_TEST_ONLY = false;
+  
+  private int fetchTaskCount = 0;
+  
+  private final Object fetchTaskCountLock = new Object();
   
   public ClientMetadataService(Cache cache) {
     this.cache = cache;
@@ -528,6 +534,9 @@ public final class ClientMetadataService {
       }
     }
     else {
+      synchronized (fetchTaskCountLock){
+        fetchTaskCount++;
+      }
       Runnable fetchTask = new Runnable() {
         @SuppressWarnings("synthetic-access")
         public void run() {
@@ -542,6 +551,11 @@ public final class ClientMetadataService {
             SystemFailure.checkFailure();
             if (logger.isDebugEnabled()) {
               logger.debug("An exception occurred while fetching metadata", e);
+            }
+          }
+          finally {
+            synchronized (fetchTaskCountLock){
+              fetchTaskCount--;
             }
           }
         }
@@ -630,6 +644,9 @@ public final class ClientMetadataService {
         }
       }
     } else {
+      synchronized (fetchTaskCountLock){
+        fetchTaskCount++;
+      }
       Runnable fetchTask = new Runnable() {
         @SuppressWarnings("synthetic-access")
         public void run() {
@@ -642,6 +659,11 @@ public final class ClientMetadataService {
             SystemFailure.checkFailure();
             if (logger.isDebugEnabled()) {
               logger.debug("An exception occurred while fetching metadata", e);
+            }
+          }
+          finally {
+            synchronized (fetchTaskCountLock){
+              fetchTaskCount--;
             }
           }
         }
@@ -841,6 +863,9 @@ public final class ClientMetadataService {
     this.isMetadataStable = isMetadataStable;
   }
 
-  private boolean isMetadataRefreshed_TEST_ONLY = false;
-
+  public int getFetchTaskCount() {
+    synchronized(fetchTaskCountLock) {
+      return fetchTaskCount;
+    }
+  }
 }
