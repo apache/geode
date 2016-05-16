@@ -1350,6 +1350,7 @@ public class InternalLocator extends Locator implements ConnectListener {
         return response;
       }
     }
+
     private JmxManagerLocatorResponse findJmxManager(JmxManagerLocatorRequest request) {
       JmxManagerLocatorResponse result = null;
       // NYI

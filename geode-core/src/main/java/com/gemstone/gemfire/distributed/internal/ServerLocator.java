@@ -24,12 +24,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelCriterion;
@@ -42,7 +42,6 @@ import com.gemstone.gemfire.cache.client.internal.locator.GetAllServersRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.GetAllServersResponse;
 import com.gemstone.gemfire.cache.client.internal.locator.LocatorListRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.LocatorListResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusResponse;
 import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
 import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionResponse;
@@ -176,34 +175,34 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
       logger.debug("ServerLocator: Received request {}", request);
     }
 
-    Object response;
+    if ( ! (request instanceof ServerLocationRequest) ) {
+      throw new InternalGemFireException("Expected ServerLocationRequest, got " + request.getClass());
+    }
 
-    if (request instanceof ServerLocationRequest) {
-      if (request instanceof LocatorStatusRequest) {
+    Object response;
+    int id = ((DataSerializableFixedID)request).getDSFID();
+    switch (id) {
+      case DataSerializableFixedID.LOCATOR_STATUS_REQUEST:
         response = new LocatorStatusResponse()
           .initialize(this.port, this.hostName, this.logFile, this.memberName);
-      }
-      else if (request instanceof LocatorListRequest) {
+        break;
+      case DataSerializableFixedID.LOCATOR_LIST_REQUEST:
         response = getLocatorListResponse((LocatorListRequest) request);
-      }
-      else if (request instanceof ClientReplacementRequest) {
+        break;
+      case DataSerializableFixedID.CLIENT_REPLACEMENT_REQUEST:
         response = pickReplacementServer((ClientReplacementRequest) request);
-      }
-      else if (request instanceof GetAllServersRequest) {
+        break;
+      case DataSerializableFixedID.GET_ALL_SERVERS_REQUEST:
         response = pickAllServers((GetAllServersRequest) request);
-      }
-      else if (request instanceof ClientConnectionRequest) {
+        break;
+      case DataSerializableFixedID.CLIENT_CONNECTION_REQUEST:
         response = pickServer((ClientConnectionRequest) request);
-      }
-      else if (request instanceof QueueConnectionRequest) {
+        break;
+      case DataSerializableFixedID.QUEUE_CONNECTION_REQUEST:
         response = pickQueueServers((QueueConnectionRequest) request);
-      }
-      else {
+        break;
+      default:
         throw new InternalGemFireException("Unknown ServerLocationRequest: " + request.getClass());
-      }
-    }
-    else {
-      throw new InternalGemFireException("Expected ServerLocationRequest, got " + request.getClass());
     }
 
     if(logger.isDebugEnabled()) {
@@ -290,6 +289,9 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
       this.loadSnapshot = new LocatorLoadSnapshot();
       this.ds = (InternalDistributedSystem)ds;
       this.advisor = ControllerAdvisor.createControllerAdvisor(this); // escapes constructor but allows field to be final
+      if (ds.isConnected()) {
+        this.advisor.handshake();  // GEODE-1393: need to get server information during restart
+      }
     }
   }
   

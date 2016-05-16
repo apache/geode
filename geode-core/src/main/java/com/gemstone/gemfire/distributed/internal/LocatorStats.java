@@ -117,13 +117,6 @@ public class LocatorStats {
   }
   
   
-  /**
-   * Used by tests to create an instance given its already existings stats.
-   */
-  public LocatorStats(Statistics stats) {
-    this._stats = stats;
-  }
-
   public final void setServerCount(int sc) {
     if(this._stats==null) {
       this.endpoints_known.set(sc);
@@ -139,14 +132,6 @@ public class LocatorStats {
       this._stats.setInt(_KNOWN_LOCATORS, lc);
     }
   }
-  
-  public final void incLocatorRequests() {
-    if(this._stats==null) {
-      this.requests_to_locator.incrementAndGet();
-    } else {
-      this._stats.incLong(_REQUESTS_TO_LOCATOR, 1);
-    }
-  }  
   
   public final void endLocatorRequest(long startTime) {
     long took = DistributionStats.getStatTime()-startTime;
@@ -180,14 +165,6 @@ public class LocatorStats {
   
   
   
-  public final void incLocatorResponses() {
-    if(this._stats==null) {
-      this.responses_from_locator.incrementAndGet();
-    } else {
-      this._stats.incLong(_RESPONSES_FROM_LOCATOR, 1);
-    }
-  }  
-  
   public final void setLocatorRequests(long rl) {
     if(this._stats==null) {
       this.requests_to_locator.set(rl);
@@ -217,14 +194,6 @@ public class LocatorStats {
       this.serverLoadUpdates.incrementAndGet();
     } else {
       this._stats.incLong(_SERVER_LOAD_UPDATES, 1);
-    }
-  }  
-  
-  public void setRequestInProgress(int threads) {
-    if(this._stats!=null) {
-      this._stats.setInt(_REQUESTS_IN_PROGRESS, threads);
-    } else {
-      requestsInProgress.set(threads);
     }
   }
   

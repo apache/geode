@@ -27,6 +27,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.ReconnectListener;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.ServerLocator;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
@@ -78,6 +79,7 @@ public class ReconnectDUnitTest extends CacheTestCase
           locatorPort = locPort;
           Properties props = getDistributedSystemProperties();
           locator = Locator.startLocatorAndDS(locatorPort, new File(""), props);
+          ReconnectDUnitTest.savedSystem = InternalDistributedSystem.getConnectedInstance();
           IgnoredException.addIgnoredException("com.gemstone.gemfire.ForcedDisconnectException||Possible loss of quorum");
 //          MembershipManagerHelper.getMembershipManager(InternalDistributedSystem.getConnectedInstance()).setDebugJGroups(true);
         } catch (IOException e) {
@@ -163,10 +165,6 @@ public class ReconnectDUnitTest extends CacheTestCase
     return factory.create();
   }
 
-  /*
-  TODO this test is not actually using quorum checks.  To do that it needs to
-  have the locator disconnect & reconnect
-   */
 
   public void testReconnectWithQuorum() throws Exception {
     // quorum check fails, then succeeds
@@ -174,7 +172,7 @@ public class ReconnectDUnitTest extends CacheTestCase
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
+    VM locatorVm = host.getVM(locatorVMNumber);
     
     final int locPort = locatorPort;
 
@@ -210,33 +208,23 @@ public class ReconnectDUnitTest extends CacheTestCase
       }
     };
     
-    System.out.println("creating caches in vm0, vm1 and vm2");
+    System.out.println("creating caches in vm0 and vm1");
     vm0.invoke(create);
     vm1.invoke(create);
-    vm2.invoke(create);
-    
+
     // view is [locator(3), vm0(15), vm1(10), vm2(10)]
     
-    /* now we want to cause vm0 and vm1 to force-disconnect.  This may cause the other
-     * non-locator member to also disconnect, depending on the timing
+    /* now we want to kick out the locator and observe that it reconnects
+     * using its rebooted location service
      */
-    System.out.println("disconnecting vm0");
-    forceDisconnect(vm0);
-    Wait.pause(10000);
-    System.out.println("disconnecting vm1");
-    forceDisconnect(vm1);
+    System.out.println("disconnecting locator");
+    forceDisconnect(locatorVm);
+    waitForReconnect(locatorVm);
 
-    /* now we wait for them to auto-reconnect */
-    try {
-      System.out.println("waiting for vm0 to reconnect");
-      waitForReconnect(vm0);
-      System.out.println("waiting for vm1 to reconnect");
-      waitForReconnect(vm1);
-      System.out.println("done reconnecting vm0 and vm1");
-    } catch (Exception e) {
-      ThreadUtils.dumpAllStacks();
-      throw e;
-    }
+    // if the locator reconnected it did so with its own location
+    // service since it doesn't know about any other locators
+    ensureLocationServiceRunning(locatorVm);
+
   }
   
   public void testReconnectOnForcedDisconnect() throws Exception  {
@@ -418,6 +406,19 @@ public class ReconnectDUnitTest extends CacheTestCase
       }
     });
   }
+
+  /** this will throw an exception if location services aren't running */
+  private void ensureLocationServiceRunning(VM vm) {
+    vm.invoke(new SerializableRunnable("ensureLocationServiceRunning") {
+      public void run() {
+        InternalLocator intloc = (InternalLocator)locator;
+        ServerLocator serverLocator = intloc.getServerLocatorAdvisee();
+        // the initialization flag in the locator's ControllerAdvisor will
+        // be set if a handshake has been performed
+        assertTrue(serverLocator.getDistributionAdvisor().isInitialized());
+      }
+    });
+  }
   
   private DistributedMember waitForReconnect(VM vm) {
     return (DistributedMember)vm.invoke(new SerializableCallable("wait for Reconnect and return ID") {
@@ -456,7 +457,7 @@ public class ReconnectDUnitTest extends CacheTestCase
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    VM vm3 = host.getVM(3);
+    VM locatorVm = host.getVM(3);
     DistributedMember dm, newdm;
     
     final int locPort = locatorPort;
@@ -467,7 +468,7 @@ public class ReconnectDUnitTest extends CacheTestCase
     final String xmlFileLoc = (new File(".")).getAbsolutePath();
 
     //This locator was started in setUp.
-    File locatorViewLog = new File(vm3.getWorkingDirectory(), "locator"+locatorPort+"views.log");
+    File locatorViewLog = new File(locatorVm.getWorkingDirectory(), "locator"+locatorPort+"views.log");
     assertTrue("Expected to find " + locatorViewLog.getPath() + " file", locatorViewLog.exists());
     long logSize = locatorViewLog.length();
 
