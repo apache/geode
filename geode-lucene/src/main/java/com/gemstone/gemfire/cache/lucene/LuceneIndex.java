@@ -56,4 +56,9 @@ public interface LuceneIndex {
    */
   public Map<String, Analyzer> getFieldAnalyzers();
   
+  /* 
+   * wait until the current entries in cache are indexed
+   */
+  public void waitUntilFlushed(int maxWait);
+  
 }

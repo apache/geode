@@ -35,6 +35,8 @@ import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
+import com.gemstone.gemfire.internal.cache.CacheObserverHolder;
+import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy.TestHook;
 import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
@@ -70,6 +72,10 @@ public class LuceneEventListener implements AsyncEventListener {
         IndexRepository repository = repositoryManager.getRepository(region, key, callbackArgument);
 
         Operation op = event.getOperation();
+        
+        if (testHook != null) {
+          testHook.doTestHook("FOUND_AND_BEFORE_PROCESSING_A_EVENT");
+        }
 
         if (op.isCreate()) {
           repository.create(key, event.getDeserializedValue());
@@ -96,4 +102,9 @@ public class LuceneEventListener implements AsyncEventListener {
       DefaultQuery.setPdxReadSerialized(false);
     }
   }
+  
+  public interface TestHook {
+    public void doTestHook(String spot);
+  }
+  public static TestHook testHook;
 }

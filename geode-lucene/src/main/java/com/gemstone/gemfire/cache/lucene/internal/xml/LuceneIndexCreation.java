@@ -114,4 +114,8 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
   public void addFieldNames(String[] fieldNames) {
     this.fieldNames.addAll(Arrays.asList(fieldNames));
   }
+
+  @Override
+  public void waitUntilFlushed(int maxWait) {
+  }
 }
