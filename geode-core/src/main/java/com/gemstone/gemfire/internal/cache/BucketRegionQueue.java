@@ -269,10 +269,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         requireOldValue, lastModified, overwriteDestroyed);
 
     if (success) {
-      Object ov = event.getRawOldValue();
-      if (ov instanceof GatewaySenderEventImpl) {
-        ((GatewaySenderEventImpl) ov).release();
-      }
+      GatewaySenderEventImpl.release(event.getRawOldValue());
 
       if (getPartitionedRegion().getColocatedWith() == null) {
         return success;
@@ -370,10 +367,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
     super.basicDestroy(event, cacheWrite, expectedOldValue);
 
-    Object rov = event.getRawOldValue();
-    if (rov instanceof GatewaySenderEventImpl) {
-      ((GatewaySenderEventImpl) rov).release();
-    }
+    GatewaySenderEventImpl.release(event.getRawOldValue());
     // Primary buckets should already remove the key while peeking
     if (!this.getBucketAdvisor().isPrimary()) {
       if (logger.isDebugEnabled()) {

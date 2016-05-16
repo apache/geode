@@ -232,7 +232,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
           setOldValBytes((byte[]) old);
         } else {
           this.oldValueIsSerialized = true;
-          setOldValObj(old);
+          setOldValObj(AbstractRegion.handleNotAvailable(old));
         }
       }
     }

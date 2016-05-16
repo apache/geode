@@ -1407,7 +1407,7 @@ public class EntryEventImpl
         importer.importOldObject(cdV, true);
       }
     } else {
-      importer.importOldObject(ov, true);
+      importer.importOldObject(AbstractRegion.handleNotAvailable(ov), true);
     }
   }
 
