@@ -26,7 +26,6 @@ import com.gemstone.gemfire.cache.client.internal.LocatorTestBase;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 
 public class Bug47667DUnitTest extends LocatorTestBase {
@@ -56,31 +55,28 @@ public class Bug47667DUnitTest extends LocatorTestBase {
 
     final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String locatorHost = NetworkUtils.getServerHostName(host);
-    startLocatorInVM(locator, locatorPort, "");
+    locator.invoke("Start Locator", () -> startLocator(locatorHost, locatorPort, ""));
 
     String locString = getLocatorString(host, locatorPort);
-    startBridgeServerInVM(server1, new String[] {"R1"}, locString, new String[] {"R1"});
-    startBridgeServerInVM(server2, new String[] {"R2"}, locString, new String[] {"R2"});
+    server1.invoke("Start BridgeServer", () -> startBridgeServer(new String[] { "R1" }, locString, new String[] { "R1" }));
+    server2.invoke("Start BridgeServer", () -> startBridgeServer(new String[] { "R2" }, locString, new String[] { "R2" }));
 
-    client.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        ClientCacheFactory ccf = new ClientCacheFactory();
-        ccf.addPoolLocator(locatorHost, locatorPort);
-        ClientCache cache = ccf.create();
-        PoolManager.createFactory().addLocator(locatorHost, locatorPort).setServerGroup("R1").create("R1");
-        PoolManager.createFactory().addLocator(locatorHost, locatorPort).setServerGroup("R2").create("R2");
-        Region r1 = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).setPoolName("R1").create("R1");
-        Region r2 = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).setPoolName("R2").create("R2");
-        CacheTransactionManager mgr = cache.getCacheTransactionManager();
-        mgr.begin();
-        r1.put(1, "value1");
-        mgr.commit();
-        mgr.begin();
-        r2.put(2, "value2");
-        mgr.commit();
-        return null;
-      }
+    client.invoke("create region and insert data in transaction", () -> {
+      ClientCacheFactory ccf = new ClientCacheFactory();
+      ccf.addPoolLocator(locatorHost, locatorPort);
+      ClientCache cache = ccf.create();
+      PoolManager.createFactory().addLocator(locatorHost, locatorPort).setServerGroup("R1").create("R1");
+      PoolManager.createFactory().addLocator(locatorHost, locatorPort).setServerGroup("R2").create("R2");
+      Region region1 = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).setPoolName("R1").create("R1");
+      Region region2 = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).setPoolName("R2").create("R2");
+      CacheTransactionManager transactionManager = cache.getCacheTransactionManager();
+      transactionManager.begin();
+      region1.put(1, "value1");
+      transactionManager.commit();
+      transactionManager.begin();
+      region2.put(2, "value2");
+      transactionManager.commit();
+      return null;
     });
   }
 }

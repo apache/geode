@@ -44,7 +44,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     @Override
     public void execute(FunctionContext context) {
 
-      LogWriterUtils.getLogWriter().fine("SWAP:1:executing OnMembersFunction:" + invocationCount);
+      System.out.println("SWAP:1:executing OnMembersFunction:" + invocationCount);
       invocationCount++;
 
       context.getResultSender().lastResult(Boolean.TRUE);
@@ -71,15 +71,14 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     }
   }
 
-  private String createCacheAndRegisterFunction(VM vm, String memberName) {
-    final String hostName = vm.getHost().getHostName();
-    final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+  private String createCacheAndRegisterFunction(String hostName, String memberName) {
+    final int servicePort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     Properties props = new Properties();
     props.setProperty(DistributionConfig.NAME_NAME, memberName);
     props.setProperty(DistributionConfig.START_DEV_REST_API_NAME, "true");
     props.setProperty(DistributionConfig.HTTP_SERVICE_BIND_ADDRESS_NAME, hostName);
-    props.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(serverPort));
+    props.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(servicePort));
 
     Cache c = null;
     try {
@@ -91,7 +90,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     c = CacheFactory.create(new RestAPIsOnMembersFunctionExecutionDUnitTest("temp").getSystem(props));
     FunctionService.registerFunction(new OnMembersFunction());
 
-    String restEndPoint = "http://" + hostName + ":" + serverPort + "/gemfire-api/v1";
+    String restEndPoint = "http://" + hostName + ":" + servicePort + "/gemfire-api/v1";
     return restEndPoint;
 
   }
@@ -115,10 +114,10 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
   }
 
   private void createCacheForVMs() {
-    restURLs.add(vm0.invoke(() -> createCacheAndRegisterFunction(vm0, "m1")));
-    restURLs.add(vm1.invoke(() -> createCacheAndRegisterFunction(vm1, "m2")));
-    restURLs.add(vm2.invoke(() -> createCacheAndRegisterFunction(vm2, "m3")));
-    restURLs.add(vm3.invoke(() -> createCacheAndRegisterFunction(vm3, "m4")));
+    restURLs.add(vm0.invoke("createCacheAndRegisterFunction",() -> createCacheAndRegisterFunction(vm0.getHost().getHostName(), "m1")));
+    restURLs.add(vm1.invoke("createCacheAndRegisterFunction",() -> createCacheAndRegisterFunction(vm1.getHost().getHostName(), "m2")));
+    restURLs.add(vm2.invoke("createCacheAndRegisterFunction",() -> createCacheAndRegisterFunction(vm2.getHost().getHostName(), "m3")));
+    restURLs.add(vm3.invoke("createCacheAndRegisterFunction",() -> createCacheAndRegisterFunction(vm3.getHost().getHostName(), "m4")));
   }
 
   public void testFunctionExecutionEOnSelectedMembers() {

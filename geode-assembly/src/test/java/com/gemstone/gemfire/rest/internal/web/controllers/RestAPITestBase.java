@@ -1,4 +1,5 @@
 /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,7 +67,6 @@ public class RestAPITestBase extends DistributedTestCase {
     if (agentUtil.findWarLocation("geode-web-api") == null) {
       fail("unable to locate geode-web-api WAR file");
     }
-    Wait.pause(1000); // TODO: replace this with Awaitility
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
@@ -102,11 +102,10 @@ public class RestAPITestBase extends DistributedTestCase {
     }
   }
 
-  public String createCacheWithGroups(VM vm, final String groups) {
+  public String createCacheWithGroups(final String hostName, final String groups) {
     RestAPITestBase test = new RestAPITestBase(getTestMethodName());
 
-    final String hostName = vm.getHost().getHostName();
-    final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    final int servicePort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     Properties props = new Properties();
 
@@ -116,12 +115,12 @@ public class RestAPITestBase extends DistributedTestCase {
 
     props.setProperty(DistributionConfig.START_DEV_REST_API_NAME, "true");
     props.setProperty(DistributionConfig.HTTP_SERVICE_BIND_ADDRESS_NAME, hostName);
-    props.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(serverPort));
+    props.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(servicePort));
 
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
 
-    String restEndPoint = "http://" + hostName + ":" + serverPort + "/gemfire-api/v1";
+    String restEndPoint = "http://" + hostName + ":" + servicePort + "/gemfire-api/v1";
     return restEndPoint;
   }
 
@@ -132,7 +131,7 @@ public class RestAPITestBase extends DistributedTestCase {
 
   protected CloseableHttpResponse executeFunctionThroughRestCall(String function, String regionName, String filter, String jsonBody, String groups,
                                                                  String members) {
-    LogWriterUtils.getLogWriter().info("Entering executeFunctionThroughRestCall");
+    System.out.println("Entering executeFunctionThroughRestCall");
     try {
       CloseableHttpClient httpclient = HttpClients.createDefault();
       Random randomGenerator = new Random();
@@ -140,7 +139,7 @@ public class RestAPITestBase extends DistributedTestCase {
 
       HttpPost post = createHTTPPost(function, regionName, filter, restURLIndex, groups, members, jsonBody);
 
-      LogWriterUtils.getLogWriter().info("Request: POST " + post.toString());
+      System.out.println("Request: POST " + post.toString());
       return httpclient.execute(post);
     } catch (Exception e) {
       throw new RuntimeException("unexpected exception", e);
@@ -185,7 +184,7 @@ public class RestAPITestBase extends DistributedTestCase {
     try {
       String httpResponseString = processHttpResponse(response);
       response.close();
-      LogWriterUtils.getLogWriter().info("Response : " + httpResponseString);
+      System.out.println("Response : " + httpResponseString);
       //verify function execution result
       JSONArray resultArray = new JSONArray(httpResponseString);
       assertEquals(resultArray.length(), expectedServerResponses);
