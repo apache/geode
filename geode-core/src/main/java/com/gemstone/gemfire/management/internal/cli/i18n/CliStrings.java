@@ -394,7 +394,7 @@ public class CliStrings {
   public static final String CONNECT__MSG__CONNECTING_TO_MANAGER_AT_0 = "Connecting to Manager at {0} ..";
   public static final String CONNECT__MSG__CONNECTING_TO_MANAGER_HTTP_SERVICE_AT_0 = "Connecting to Manager's HTTP service at {0} ..";
   public static final String CONNECT__MSG__LOCATOR_COULD_NOT_FIND_MANAGER = "Locator could not find a JMX Manager";
-  public static final String CONNECT__MSG__JMX_PASSWORD_MUST_BE_SPECIFIED = "jmx password must be specified.";
+  public static final String CONNECT__MSG__JMX_PASSWORD_MUST_BE_SPECIFIED = "password must be specified.";
   public static final String CONNECT__MSG__ALREADY_CONNECTED = "Already connected to: {0}";
   public static final String CONNECT__MSG__SUCCESS = "Successfully connected to: {0}";
   public static final String CONNECT__MSG__ERROR = "Could not connect to : {0}. {1}";

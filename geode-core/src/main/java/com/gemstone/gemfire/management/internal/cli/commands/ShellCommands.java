@@ -200,7 +200,7 @@ public class ShellCommands implements CommandMarker {
 
         if (userName != null && userName.length() > 0) {
           if (passwordToUse == null || passwordToUse.length() == 0) {
-            passwordToUse = gemfireShell.readWithMask("http password: ", '*');
+            passwordToUse = gemfireShell.readWithMask("password: ", '*');
           }
           if (passwordToUse == null || passwordToUse.length() == 0) {
             throw new IllegalArgumentException(CliStrings.CONNECT__MSG__JMX_PASSWORD_MUST_BE_SPECIFIED);
@@ -266,7 +266,7 @@ public class ShellCommands implements CommandMarker {
         // JMX Authentication Config
         if (userName != null && userName.length() > 0) {
           if (passwordToUse == null || passwordToUse.length() == 0) {
-            passwordToUse = gfshInstance.readWithMask("jmx password: ", '*');
+            passwordToUse = gfshInstance.readWithMask("password: ", '*');
           }
           if (passwordToUse == null || passwordToUse.length() == 0) {
               throw new IllegalArgumentException(CliStrings.CONNECT__MSG__JMX_PASSWORD_MUST_BE_SPECIFIED);
