@@ -26,7 +26,16 @@ public class SlabImpl implements Slab {
   private final int size;
   
   public SlabImpl(int size) {
-    this(AddressableMemoryManager.allocate(size), size);
+    this(size, false);
+  }
+
+  /**
+   * This constructor is used by unit test to add padding
+   * to prevent intermittent combining of fragments during
+   * defragmentation.
+   */
+  public SlabImpl(int size, boolean withPadding) {
+    this(AddressableMemoryManager.allocate(size + (withPadding ? 4 : 0)), size);
   }
 
   public SlabImpl(long addr, int size) {
