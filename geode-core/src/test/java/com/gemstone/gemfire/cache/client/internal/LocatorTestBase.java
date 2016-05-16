@@ -91,22 +91,43 @@ public abstract class LocatorTestBase extends DistributedTestCase {
   }
 
   protected void startLocator(final String hostName, final int locatorPort, final String otherLocators) {
+    final String testName = getUniqueName();
     disconnectFromDS();
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, String.valueOf(0));
     props.setProperty(DistributionConfig.LOCATORS_NAME, otherLocators);
     props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-    File logFile = new File(getUniqueName() + "-locator" + locatorPort + ".log");
     try {
-      InetAddress bindAddress = InetAddress.getByName(hostName);
-      Locator locator = Locator.startLocatorAndDS(locatorPort, logFile, bindAddress, props);
+      File logFile = new File(testName + "-locator" + locatorPort + ".log");
+      InetAddress bindAddr = null;
+      try {
+        bindAddr = InetAddress.getByName(hostName);
+      } catch (UnknownHostException uhe) {
+        Assert.fail("While resolving bind address ", uhe);
+      }
+      Locator locator = Locator.startLocatorAndDS(locatorPort, logFile, bindAddr, props);
       remoteObjects.put(LOCATOR_KEY, locator);
-    } catch (UnknownHostException uhe) {
-      Assert.fail("While resolving bind address ", uhe);
     } catch (IOException ex) {
       Assert.fail("While starting locator on port " + locatorPort, ex);
     }
+  }
+
+  protected void startLocatorInVM(final VM vm, final int locatorPort, final String otherLocators) {
+    vm.invoke(new SerializableRunnable("Create Locator") {
+      public void run() {
+        String hostName = NetworkUtils.getServerHostName(vm.getHost());
+        startLocator(hostName, locatorPort, otherLocators);
+      }
+    });
+  }
+
+  protected void stopLocatorInVM(VM vm) {
+    vm.invoke(new SerializableRunnable("Stop Locator") {
+      public void run() {
+        stopLocator();
+      }
+    });
   }
 
   protected void stopLocator() {
@@ -114,8 +135,8 @@ public abstract class LocatorTestBase extends DistributedTestCase {
     locator.stop();
   }
 
-  protected int startBridgeServer(String[] groups, String locators) throws IOException {
-    return startBridgeServer(groups, locators, new String[] { REGION_NAME });
+  protected int startBridgeServerInVM(VM vm, String[] groups, String locators) {
+    return startBridgeServerInVM(vm, groups, locators, new String[] { REGION_NAME });
   }
 
   protected int addCacheServer(final String[] groups) throws IOException {
@@ -127,42 +148,59 @@ public abstract class LocatorTestBase extends DistributedTestCase {
     return new Integer(server.getPort());
   }
 
+  protected int addCacheServerInVM(VM vm, final String[] groups) {
+    SerializableCallable connect =
+        new SerializableCallable("Add Bridge server") {
+          public Object call() throws Exception {
+            return addCacheServer(groups);
+          }
+        };
+    Integer port = (Integer) vm.invoke(connect);
+    return port.intValue();
+  }
+
+  protected int startBridgeServerInVM(VM vm, final String[] groups, final String locators, final String[] regions) {
+    return startBridgeServerInVM(vm, groups, locators, regions, CacheServer.DEFAULT_LOAD_PROBE);
+  }
+
+  protected int startBridgeServerInVM(VM vm, final String[] groups, final String locators, final String[] regions, final ServerLoadProbe probe) {
+    SerializableCallable connect =
+        new SerializableCallable("Start bridge server") {
+          public Object call() throws IOException {
+            return startBridgeServer(groups, locators, regions, probe);
+          }
+        };
+    Integer port = (Integer) vm.invoke(connect);
+    return port.intValue();
+  }
+
+  protected int startBridgeServer(String[] groups, String locators) throws IOException {
+    return startBridgeServer(groups, locators, new String[] { REGION_NAME });
+  }
+
   protected int startBridgeServer(final String[] groups, final String locators, final String[] regions) throws IOException {
     return startBridgeServer(groups, locators, regions, CacheServer.DEFAULT_LOAD_PROBE);
   }
 
   protected int startBridgeServer(final String[] groups, final String locators, final String[] regions, final ServerLoadProbe probe)
       throws IOException {
-    return startBridgeServer(null, -1, groups, locators, regions, probe);
-  }
-
-  protected int startBridgeServer(final String hostName, final int restServicePort, final String[] groups
-      , final String locators, final String[] regions, final ServerLoadProbe probe) throws IOException {
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
-    if (hostName != null) {
-      props.setProperty(DistributionConfig.START_DEV_REST_API_NAME, "true");
-      props.setProperty(DistributionConfig.HTTP_SERVICE_BIND_ADDRESS_NAME, hostName);
-      props.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(restServicePort));
-    }
-
     DistributedSystem ds = getSystem(props);
     Cache cache = CacheFactory.create(ds);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableBridgeConflation(true);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    RegionAttributes attributes = factory.create();
+    RegionAttributes attrs = factory.create();
     for (int i = 0; i < regions.length; i++) {
-      cache.createRegion(regions[i], attributes);
+      cache.createRegion(regions[i], attrs);
     }
     CacheServer server = cache.addCacheServer();
     server.setPort(0);
     server.setGroups(groups);
-    if (probe != null) {
-      server.setLoadProbe(probe);
-    }
+    server.setLoadProbe(probe);
     server.start();
 
     remoteObjects.put(CACHE_KEY, cache);
@@ -195,6 +233,45 @@ public abstract class LocatorTestBase extends DistributedTestCase {
     remoteObjects.put(CACHE_KEY, cache);
 
     return new Integer(server.getPort());
+  }
+
+  protected int startBridgeServerWithEmbeddedLocatorInVM(VM vm, final String[] groups, final String locators, final String[] regions,
+      final ServerLoadProbe probe) {
+    SerializableCallable connect =
+        new SerializableCallable("Start bridge server") {
+          public Object call() throws IOException {
+            return startBridgeServerWithEmbeddedLocator(groups, locators, regions, probe);
+          }
+        };
+    Integer port = (Integer) vm.invoke(connect);
+    return port.intValue();
+  }
+
+  protected void startBridgeClientInVM(VM vm, final String group, final String host, final int port) throws Exception {
+    startBridgeClientInVM(vm, group, host, port, new String[] { REGION_NAME });
+  }
+
+  protected void startBridgeClientInVM(VM vm, final String group, final String host, final int port, final String[] regions) throws Exception {
+    PoolFactoryImpl pf = new PoolFactoryImpl(null);
+    pf.addLocator(host, port)
+        .setServerGroup(group)
+        .setPingInterval(200)
+        .setSubscriptionEnabled(true)
+        .setSubscriptionRedundancy(-1);
+    startBridgeClientInVM(vm, pf.getPoolAttributes(), regions);
+  }
+
+  protected void startBridgeClientInVM(VM vm, final Pool pool, final String[] regions) throws Exception {
+    SerializableRunnable connect = new SerializableRunnable("Start bridge client") {
+      public void run() throws Exception {
+        startBridgeClient(pool, regions);
+      }
+    };
+    if (vm == null) {
+      connect.run();
+    } else {
+      vm.invoke(connect);
+    }
   }
 
   protected void startBridgeClient(final String group, final String host, final int port) throws Exception {

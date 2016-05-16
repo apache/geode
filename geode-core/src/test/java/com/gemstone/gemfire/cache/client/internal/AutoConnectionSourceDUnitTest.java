@@ -317,7 +317,10 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
 
     //start a bridge client with a listener
     addBridgeListener(clientVM);
-    clientVM.invoke("StartBridgeClient", () -> startBridgeClient(null, NetworkUtils.getServerHostName(locatorVM.getHost()), locatorPort));
+    clientVM.invoke("StartBridgeClient", () -> {
+      String locatorHostName = NetworkUtils.getServerHostName(locatorVM.getHost());
+      startBridgeClient(null, locatorHostName, locatorPort);
+    });
     // wait for client to connect
     checkEndpoints(clientVM, new int[] { serverPort1 });
 
