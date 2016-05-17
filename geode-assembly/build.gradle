@@ -73,6 +73,8 @@ dependencies {
   testCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
 
   testRuntime files("${System.getProperty('java.home')}/../lib/tools.jar")
+  testRuntime files("$buildDir/install/apache-geode/lib/geode-dependencies.jar")
+
 
   gfshDependencies ('org.springframework:spring-web:' + project.'springframework.version'){
     exclude module: 'spring-core'
