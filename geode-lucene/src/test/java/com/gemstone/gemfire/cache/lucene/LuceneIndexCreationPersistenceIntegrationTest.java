@@ -18,7 +18,9 @@
  */
 package com.gemstone.gemfire.cache.lucene;
 
+import static com.gemstone.gemfire.cache.RegionShortcut.*;
 import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
+import static junitparams.JUnitParamsRunner.$;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -130,7 +132,58 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
     assertEquals(1, query.search().size());
   }
 
+  @Test
+  @Parameters(method = "getRegionShortcuts")
+  public void shouldHandleMultipleIndexes(RegionShortcut shortcut) throws ParseException {
+    LuceneServiceProvider.get(this.cache).createIndex(INDEX_NAME+"_1", REGION_NAME, "field1");
+    LuceneServiceProvider.get(this.cache).createIndex(INDEX_NAME+"_2", REGION_NAME, "field2");
+    Region region = cache.createRegionFactory(shortcut).create(REGION_NAME);
+    region.put("key1", new TestObject());
+    verifyQueryResultSize(INDEX_NAME+"_1", REGION_NAME, "field1:world", 1);
+    verifyQueryResultSize(INDEX_NAME+"_2", REGION_NAME, "field2:field", 1);
+  }
+
+  @Test
+  @Parameters(method = "getRegionShortcuts")
+  public void shouldCreateInternalRegionsForIndex(RegionShortcut shortcut) {
+    luceneService.createIndex(INDEX_NAME, REGION_NAME, "field1", "field2");
+
+    // Create partitioned region
+    createRegion(REGION_NAME, shortcut);
+
+    verifyInternalRegions(region -> {
+      region.isInternalRegion();
+      assertTrue(region.isInternalRegion());
+
+      assertNotNull(region.getAttributes().getPartitionAttributes().getColocatedWith());
+      cache.rootRegions().contains(region);
+      assertFalse(cache.rootRegions().contains(region));
+    });
+  }
+
+  private void verifyQueryResultSize(String indexName, String regionName, String queryString, int size) throws ParseException {
+    LuceneQuery query = luceneService.createLuceneQueryFactory().create(indexName, regionName, queryString);
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      assertEquals(size, query.search().size());
+    });
+  }
+
   private void verifyInternalRegions(Consumer<LocalRegion> verify) {
     LuceneTestUtilities.verifyInternalRegions(luceneService, cache, verify);
   }
+
+
+  private static final Object[] getRegionShortcuts() {
+    return $(
+      new Object[] { PARTITION },
+      new Object[] { PARTITION_REDUNDANT },
+      new Object[] { PARTITION_PERSISTENT },
+      new Object[] { PARTITION_REDUNDANT_PERSISTENT },
+      new Object[] { PARTITION_OVERFLOW },
+      new Object[] { PARTITION_REDUNDANT_OVERFLOW },
+      new Object[] { PARTITION_PERSISTENT_OVERFLOW },
+      new Object[] { PARTITION_REDUNDANT_PERSISTENT_OVERFLOW }
+    );
+  }
+
 }

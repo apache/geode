@@ -19,10 +19,14 @@
 
 package com.gemstone.gemfire.cache.lucene;
 
+import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+
 import java.io.File;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -59,5 +63,9 @@ public class LuceneIntegrationTest {
     cf.set("mcast-port", "0");
     cf.set("locators", "");
     return cf;
+  }
+
+  protected Region createRegion(String regionName, RegionShortcut shortcut) {
+    return this.cache.createRegionFactory(shortcut).create(regionName);
   }
 }

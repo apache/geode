@@ -19,9 +19,12 @@
 
 package com.gemstone.gemfire.cache.lucene;
 
+import static com.gemstone.gemfire.cache.RegionShortcut.*;
 import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
+import static junitparams.JUnitParamsRunner.*;
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,11 +45,15 @@ import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.jayway.awaitility.Awaitility;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordTokenizer;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import junitparams.JUnitParamsRunner;
@@ -65,6 +72,8 @@ import junitparams.Parameters;
 @RunWith(JUnitParamsRunner.class)
 public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
 
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void shouldCreateIndexWriterWithAnalyzersWhenSettingPerFieldAnalyzers()
@@ -136,20 +145,6 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
   }
 
   @Test
-  public void shouldCreateInternalRegionsForIndex() {
-    createIndex("field1", "field2");
-
-    // Create partitioned region
-    createRegion();
-
-    verifyInternalRegions(region -> {
-      region.isInternalRegion();
-      assertNotNull(region.getAttributes().getPartitionAttributes().getColocatedWith());
-      cache.rootRegions().contains(region);
-    });
-  }
-
-  @Test
   public void shouldUseFixedPartitionsForInternalRegions() {
     createIndex("text");
 
@@ -167,13 +162,26 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
     });
   }
 
+  @Test(expected = IllegalStateException.class)
+  public void cannotCreateLuceneIndexAfterRegionHasBeenCreated() throws IOException, ParseException {
+    createRegion();
+    createIndex("field1", "field2", "field3");
+  }
+
+  @Test
+  public void cannotCreateLuceneIndexForReplicateRegion() throws IOException, ParseException {
+    expectedException.expect(UnsupportedOperationException.class);
+    expectedException.expectMessage("Lucene indexes on replicated regions are not supported");
+    createIndex("field1", "field2", "field3");
+    this.cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+  }
 
   private void verifyInternalRegions(Consumer<LocalRegion> verify) {
     LuceneTestUtilities.verifyInternalRegions(luceneService, cache, verify);
   }
 
   private Region createRegion() {
-    return this.cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+    return createRegion(REGION_NAME, RegionShortcut.PARTITION);
   }
 
   private void createIndex(String ... fieldNames) {
