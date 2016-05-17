@@ -20,14 +20,15 @@ import static com.gemstone.gemfire.management.internal.cli.i18n.CliStrings.*;
 import static junitparams.JUnitParamsRunner.*;
 import static org.assertj.core.api.Assertions.*;
 
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 /**
  * Unit tests for WanCommandsController. 

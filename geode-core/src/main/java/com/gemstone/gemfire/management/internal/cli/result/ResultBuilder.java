@@ -116,8 +116,7 @@ public class ResultBuilder {
   }
 
   public static Result createGemFireUnAuthorizedErrorResult(String message) {
-    return createErrorResult(ERRORCODE_UNAUTHORIZED,
-        "Could not process command due to GemFire error. " + message);
+    return createErrorResult(ERRORCODE_UNAUTHORIZED, message);
   }
 
   public static Result createUserErrorResult(String message) {

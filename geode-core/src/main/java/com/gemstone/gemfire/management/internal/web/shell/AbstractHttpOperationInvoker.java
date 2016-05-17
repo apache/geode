@@ -42,7 +42,6 @@ import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.management.internal.web.domain.Link;
 import com.gemstone.gemfire.management.internal.web.domain.QueryParameterSource;
 import com.gemstone.gemfire.management.internal.web.http.ClientHttpRequest;
@@ -51,6 +50,7 @@ import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
 import com.gemstone.gemfire.management.internal.web.http.converter.SerializableObjectHttpMessageConverter;
 import com.gemstone.gemfire.management.internal.web.shell.support.HttpMBeanProxyFactory;
 import com.gemstone.gemfire.management.internal.web.util.UriUtils;
+import com.gemstone.gemfire.security.NotAuthorizedException;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -206,15 +206,17 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
 
       @Override
       public void handleError(final ClientHttpResponse response) throws IOException {
-        final String message = String.format("The HTTP request failed with: %1$d - %2$s", response.getRawStatusCode(),
-          response.getStatusText());
-
-        //gfsh.logSevere(message, null);
+        String body = readBody(response);
+        final String message = String.format("The HTTP request failed with: %1$d - %2$s.", response.getRawStatusCode(), body);
 
         if (gfsh.getDebug()) {
-          gfsh.logSevere(readBody(response), null);
+          gfsh.logSevere(body, null);
         }
-        throw new RuntimeException(message);
+
+        if(response.getRawStatusCode()==403)
+          throw new NotAuthorizedException(message);
+        else
+          throw new RuntimeException(message);
       }
 
       private String readBody(final ClientHttpResponse response) throws IOException {

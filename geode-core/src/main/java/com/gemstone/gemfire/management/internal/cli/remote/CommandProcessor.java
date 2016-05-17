@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Properties;
 
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.management.cli.CommandProcessingException;
 import com.gemstone.gemfire.management.cli.CommandStatement;
 import com.gemstone.gemfire.management.cli.Result;
@@ -30,8 +31,7 @@ import com.gemstone.gemfire.management.internal.cli.LogWrapper;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.util.CommentSkipHelper;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.security.NotAuthorizedException;
 
 import org.springframework.shell.core.Parser;
 import org.springframework.shell.event.ParseResult;
@@ -126,12 +126,13 @@ public class CommandProcessor {
           logWrapper.info("Could not parse \""+cmdStmt.getCommandString()+"\".", e);
         }
         return ResultBuilder.createParsingErrorResult(e.getMessage());
-      } catch (GemFireSecurityException e) {
+      } catch (NotAuthorizedException e) {
         setLastExecutionStatus(1);
         if (logWrapper.infoEnabled()) {
           logWrapper.info("Could not execute \""+cmdStmt.getCommandString()+"\".", e);
         }
-        return ResultBuilder.createGemFireUnAuthorizedErrorResult("Unauthorized while processing command <" +cmdStmt.getCommandString()+"> Reason : " + e.getMessage());
+        // for NotAuthorizedException, will catch this later in the code
+        throw e;
       }catch (RuntimeException e) {
         setLastExecutionStatus(1);
         if (logWrapper.infoEnabled()) {

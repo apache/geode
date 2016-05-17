@@ -123,10 +123,9 @@ import com.gemstone.gemfire.management.internal.cli.CommandResponseBuilder;
 import com.gemstone.gemfire.management.internal.cli.remote.CommandExecutionContext;
 import com.gemstone.gemfire.management.internal.cli.remote.MemberCommandService;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
-import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
-import com.gemstone.gemfire.security.GemFireSecurityException;
+
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -1738,17 +1737,8 @@ public class MemberMBeanBridge {
     }
 
     if (isGfshRequest) {
-      String responseJson = CommandResponseBuilder.createCommandResponseJson(getMember(), (CommandResult) result);
-  //    System.out.println("responseJson :: "+responseJson);
-      return responseJson;
+      return CommandResponseBuilder.createCommandResponseJson(getMember(), (CommandResult) result);
     } else {
-      // throw GemFireSecurityException is the returned error code is 415
-      if(((CommandResult) result).getResultData() instanceof ErrorResultData){
-        ErrorResultData resultData = (ErrorResultData) ((CommandResult)result).getResultData();
-        if(resultData.getErrorCode()==ResultBuilder.ERRORCODE_UNAUTHORIZED){
-          throw new GemFireSecurityException(resultData.getGfJsonObject().toString());
-        }
-      }
       return ResultBuilder.resultAsString(result);
     }
   }
@@ -1758,14 +1748,12 @@ public class MemberMBeanBridge {
     if (env != null) {
       appName = env.get(Gfsh.ENV_APP_NAME);
     }
-//    System.out.println("appName :: "+appName);
     
     return Gfsh.GFSH_APP_NAME.equals(appName);
   }
   
   public long getTotalDiskUsage() {
-    long diskSpaceUsage = regionMonitor.getDiskSpace();
-    return diskSpaceUsage;
+    return regionMonitor.getDiskSpace();
   }
 
 

@@ -33,6 +33,7 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.management.internal.security.ResourceOperationContext;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
+import com.gemstone.gemfire.security.NotAuthorizedException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -51,31 +52,6 @@ import org.apache.shiro.util.ThreadContext;
 public class GeodeSecurityUtil {
 
   private static Logger logger = LogService.getLogger();
-
-  /**
-   *
-   * @param username
-   * @param password
-   * @return null if security is not enabled, otherwise return a shiro subject
-   */
-  public static Subject login(String username, String password){
-    if(!isSecured())
-      return null;
-
-    Subject currentUser = SecurityUtils.getSubject();
-
-    UsernamePasswordToken token =
-        new UsernamePasswordToken(username, password);
-    try {
-      logger.info("Logging in "+username+"/"+password);
-      currentUser.login(token);
-    } catch (ShiroException e) {
-      logger.info(e.getMessage(), e);
-      throw new AuthenticationFailedException(e.getMessage(), e);
-    }
-
-    return currentUser;
-  }
 
   /**
    * It first looks the shiro subject in AccessControlContext since JMX will use multiple threads to process operations from the same client.
@@ -114,6 +90,31 @@ public class GeodeSecurityUtil {
     return currentUser;
   }
 
+  /**
+   *
+   * @param username
+   * @param password
+   * @return null if security is not enabled, otherwise return a shiro subject
+   */
+  public static Subject login(String username, String password){
+    if(!isSecured())
+      return null;
+
+    Subject currentUser = SecurityUtils.getSubject();
+
+    UsernamePasswordToken token =
+      new UsernamePasswordToken(username, password);
+    try {
+      logger.info("Logging in "+username+"/"+password);
+      currentUser.login(token);
+    } catch (ShiroException e) {
+      logger.info(e.getMessage(), e);
+      throw new AuthenticationFailedException("Authentication error. Please check your username/password.", e);
+    }
+
+    return currentUser;
+  }
+
   public static void logout(){
     Subject currentUser = getSubject();
     if(currentUser==null)
@@ -125,7 +126,7 @@ public class GeodeSecurityUtil {
     }
     catch(ShiroException e){
       logger.info(e.getMessage(), e);
-      throw new AuthenticationFailedException(e.getMessage(), e);
+      throw new GemFireSecurityException(e.getMessage(), e);
     }
     // clean out Shiro's thread local content
     ThreadContext.remove();
@@ -205,7 +206,7 @@ public class GeodeSecurityUtil {
     }
     catch(ShiroException e){
       logger.info(currentUser.getPrincipal() + " not authorized for " + context);
-      throw new GemFireSecurityException(e.getMessage(), e);
+      throw new NotAuthorizedException(e.getMessage(), e);
     }
   }
 

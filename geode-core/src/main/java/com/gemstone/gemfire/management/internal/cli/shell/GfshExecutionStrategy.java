@@ -16,16 +16,10 @@
  */
 package com.gemstone.gemfire.management.internal.cli.shell;
 
-import static com.gemstone.gemfire.management.internal.cli.multistep.CLIMultiStepHelper.execCLISteps;
+import static com.gemstone.gemfire.management.internal.cli.multistep.CLIMultiStepHelper.*;
 
 import java.lang.reflect.Method;
 import java.util.Map;
-
-import org.springframework.shell.core.ExecutionStrategy;
-import org.springframework.shell.core.Shell;
-import org.springframework.shell.event.ParseResult;
-import org.springframework.util.Assert;
-import org.springframework.util.ReflectionUtils;
 
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.management.cli.CliMetaData;
@@ -42,6 +36,13 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.multistep.MultiStepCommand;
 import com.gemstone.gemfire.management.internal.cli.result.FileResult;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
+import com.gemstone.gemfire.security.NotAuthorizedException;
+
+import org.springframework.shell.core.ExecutionStrategy;
+import org.springframework.shell.core.Shell;
+import org.springframework.shell.event.ParseResult;
+import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Defines the {@link ExecutionStrategy} for commands that are executed in
@@ -81,43 +82,40 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
     Object result = null;
     Method method = parseResult.getMethod();
     try {
-      
-    //Check if it's a multi-step command
+      //Check if it's a multi-step command
       Method reflectmethod = parseResult.getMethod();
-      MultiStepCommand cmd = reflectmethod.getAnnotation(MultiStepCommand.class);      
-      if(cmd!=null){
-        return execCLISteps(logWrapper, shell,parseResult);
+      MultiStepCommand cmd = reflectmethod.getAnnotation(MultiStepCommand.class);
+      if (cmd != null) {
+        return execCLISteps(logWrapper, shell, parseResult);
       }
 
-//      See #46072 
-//      String commandName = getCommandName(parseResult);
-//      if (commandName != null) {
-//        shell.flashMessage("Executing " + getCommandName(parseResult) + " ... ");
-//      }
-      //Check if it's a remote command
-      if (!isShellOnly(method)) {
-        if (GfshParseResult.class.isInstance(parseResult)) {
-          result = executeOnRemote((GfshParseResult)parseResult);
-        } else {//Remote command means implemented for Gfsh and ParseResult should be GfshParseResult.
-          //TODO - Abhishek: should this message be more specific?
-          throw new IllegalStateException("Configuration error!");
-        }
-      } else {
+      //check if it's a shell only command
+      if(isShellOnly(method)){
         Assert.notNull(parseResult, "Parse result required");
         synchronized (mutex) {
-          //TODO: Remove Assert
           Assert.isTrue(isReadyForCommands(), "ProcessManagerHostedExecutionStrategy not yet ready for commands");
-          result = ReflectionUtils.invokeMethod(parseResult.getMethod(), parseResult.getInstance(), parseResult.getArguments());
+          return ReflectionUtils.invokeMethod(parseResult.getMethod(), parseResult.getInstance(), parseResult.getArguments());
         }
       }
-//    See #46072
-//      shell.flashMessage("");
-    } catch (JMXInvocationException e) {
+
+      //check if it's a GfshParseResult
+      if(!GfshParseResult.class.isInstance(parseResult)){
+        throw new IllegalStateException("Configuration error!");
+      }
+
+      result = executeOnRemote((GfshParseResult) parseResult);
+    }
+    catch(NotAuthorizedException e) {
+      result = ResultBuilder.createGemFireUnAuthorizedErrorResult("Unauthorized. Reason : " + e.getMessage());
+    }
+    catch (JMXInvocationException e) {
       Gfsh.getCurrentInstance().logWarning(e.getMessage(), e);
-    } catch (IllegalStateException e) {
+    }
+    catch (IllegalStateException e) {
       // Shouldn't occur - we are always using GfsParseResult
       Gfsh.getCurrentInstance().logWarning(e.getMessage(), e);
-    } catch (CommandProcessingException e) {
+    }
+    catch (CommandProcessingException e) {
       Gfsh.getCurrentInstance().logWarning(e.getMessage(), null);
       Object errorData = e.getErrorData();
       if (errorData != null && errorData instanceof Throwable) {
@@ -125,16 +123,17 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       } else {
         logWrapper.warning(e.getMessage());
       }
-    } catch (RuntimeException e) {
+    }
+    catch (RuntimeException e) {
       Gfsh.getCurrentInstance().logWarning("Exception occurred. " + e.getMessage(), e);
       // Log other runtime exception in gfsh log
       logWrapper.warning("Error occurred while executing command : "+((GfshParseResult)parseResult).getUserInput(), e);
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       Gfsh.getCurrentInstance().logWarning("Unexpected exception occurred. " + e.getMessage(), e);
       // Log other exceptions in gfsh log
       logWrapper.warning("Unexpected error occurred while executing command : "+((GfshParseResult)parseResult).getUserInput(), e);
     }
-    
     return result;
   }
   
@@ -204,90 +203,97 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
   private Result executeOnRemote(GfshParseResult parseResult) {
     Result   commandResult = null;
     Object   response      = null;
-    if (shell.isConnectedAndReady()) {
-      byte[][]             fileData    = null;
-      CliAroundInterceptor interceptor = null;
-      
-      String interceptorClass = getInterceptor(parseResult.getMethod());
-      
-      //1. Pre Remote Execution
-      if (!CliMetaData.ANNOTATION_NULL_VALUE.equals(interceptorClass)) {
-        try {
-          interceptor = (CliAroundInterceptor) ClassPathLoader.getLatest().forName(interceptorClass).newInstance();
-        } catch (InstantiationException e) {
-          shell.logWarning("Configuration error", e);
-        } catch (IllegalAccessException e) {
-          shell.logWarning("Configuration error", e);
-        } catch (ClassNotFoundException e) {
-          shell.logWarning("Configuration error", e);
-        }
-        if (interceptor != null) {
-          Result preExecResult = interceptor.preExecution(parseResult);
-          if (Status.ERROR.equals(preExecResult.getStatus())) {
-            return preExecResult;
-          } else if (preExecResult instanceof FileResult) {            
-            FileResult fileResult = (FileResult) preExecResult;
-            fileData = fileResult.toBytes();
-          }
-        } else {
-          return ResultBuilder.createBadConfigurationErrorResult("Interceptor Configuration Error");
-        }
-      }
 
-      //2. Remote Execution
-      final Map<String, String> env = shell.getEnv();
-      response = shell.getOperationInvoker().processCommand(new CommandRequest(parseResult, env, fileData));
-      env.clear();
-      
-      if (response == null) {
-        shell.logWarning("Response was null for: \""+parseResult.getUserInput()+"\". (gfsh.isConnected="+shell.isConnectedAndReady()+")", null);
-        commandResult = 
-            ResultBuilder.createBadResponseErrorResult(" Error occurred while " + 
-                "executing \""+parseResult.getUserInput()+"\" on manager. " +
-                		"Please check manager logs for error.");
-      } else {
-        if (logWrapper.fineEnabled()) {
-          logWrapper.fine("Received response :: "+response);
-        }
-        CommandResponse commandResponse = CommandResponseBuilder.prepareCommandResponseFromJson((String) response);
-        
-        if (commandResponse.isFailedToPersist()) {
-          shell.printAsSevere(CliStrings.SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES);
-          logWrapper.severe(CliStrings.SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES);
-        }
-        
-        String debugInfo = commandResponse.getDebugInfo();
-        if (debugInfo != null && !debugInfo.trim().isEmpty()) {
-          //TODO - Abhishek When debug is ON, log response in gfsh logs
-          //TODO - Abhishek handle \n better. Is it coming from GemFire formatter
-          debugInfo = debugInfo.replaceAll("\n\n\n", "\n");
-          debugInfo = debugInfo.replaceAll("\n\n", "\n");
-          debugInfo = debugInfo.replaceAll("\n", "\n[From Manager : "+commandResponse.getSender()+"]");
-          debugInfo = "[From Manager : "+commandResponse.getSender()+"]" + debugInfo;
-          LogWrapper.getInstance().info(debugInfo);
-        }
-        commandResult = ResultBuilder.fromJson((String) response);
-        
-        
-        //3. Post Remote Execution
-        if (interceptor != null) {
-          Result postExecResult = interceptor.postExecution(parseResult, commandResult);
-          if (postExecResult != null) {
-            if (Status.ERROR.equals(postExecResult.getStatus())) {
-              if (logWrapper.infoEnabled()) {
-                logWrapper.info("Post execution Result :: "+ResultBuilder.resultAsString(postExecResult));
-              }
-            } else if (logWrapper.fineEnabled()) {
-              logWrapper.fine("Post execution Result :: "+ResultBuilder.resultAsString(postExecResult));
-            }
-            commandResult = postExecResult;
-          }
-        }
-      }// not null response
-    } else {
+    if(!shell.isConnectedAndReady()){
       shell.logWarning("Can't execute a remote command without connection. Use 'connect' first to connect.", null);
       logWrapper.info("Can't execute a remote command \""+parseResult.getUserInput()+"\" without connection. Use 'connect' first to connect to GemFire.");
+      return null;
     }
+
+    byte[][]             fileData    = null;
+    CliAroundInterceptor interceptor = null;
+
+    String interceptorClass = getInterceptor(parseResult.getMethod());
+
+    //1. Pre Remote Execution
+    if (!CliMetaData.ANNOTATION_NULL_VALUE.equals(interceptorClass)) {
+      try {
+        interceptor = (CliAroundInterceptor) ClassPathLoader.getLatest().forName(interceptorClass).newInstance();
+      } catch (InstantiationException e) {
+        shell.logWarning("Configuration error", e);
+      } catch (IllegalAccessException e) {
+        shell.logWarning("Configuration error", e);
+      } catch (ClassNotFoundException e) {
+        shell.logWarning("Configuration error", e);
+      }
+      if (interceptor != null) {
+        Result preExecResult = interceptor.preExecution(parseResult);
+        if (Status.ERROR.equals(preExecResult.getStatus())) {
+          return preExecResult;
+        } else if (preExecResult instanceof FileResult) {
+          FileResult fileResult = (FileResult) preExecResult;
+          fileData = fileResult.toBytes();
+        }
+      } else {
+        return ResultBuilder.createBadConfigurationErrorResult("Interceptor Configuration Error");
+      }
+    }
+
+    //2. Remote Execution
+    final Map<String, String> env = shell.getEnv();
+    try {
+      response = shell.getOperationInvoker().processCommand(new CommandRequest(parseResult, env, fileData));
+    } catch(NotAuthorizedException e) {
+      return ResultBuilder.createGemFireUnAuthorizedErrorResult("Unauthorized. Reason : " + e.getMessage());
+    }
+    finally {
+      env.clear();
+    }
+
+    if (response == null) {
+      shell.logWarning("Response was null for: \"" + parseResult.getUserInput() + "\". (gfsh.isConnected=" + shell.isConnectedAndReady() + ")", null);
+      return ResultBuilder.createBadResponseErrorResult(" Error occurred while " +
+        "executing \"" + parseResult.getUserInput() + "\" on manager. " +
+        "Please check manager logs for error.");
+    }
+
+    if (logWrapper.fineEnabled()) {
+      logWrapper.fine("Received response :: "+response);
+    }
+    CommandResponse commandResponse = CommandResponseBuilder.prepareCommandResponseFromJson((String) response);
+
+    if (commandResponse.isFailedToPersist()) {
+      shell.printAsSevere(CliStrings.SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES);
+      logWrapper.severe(CliStrings.SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES);
+    }
+
+    String debugInfo = commandResponse.getDebugInfo();
+    if (debugInfo != null && !debugInfo.trim().isEmpty()) {
+      //TODO - Abhishek When debug is ON, log response in gfsh logs
+      //TODO - Abhishek handle \n better. Is it coming from GemFire formatter
+      debugInfo = debugInfo.replaceAll("\n\n\n", "\n");
+      debugInfo = debugInfo.replaceAll("\n\n", "\n");
+      debugInfo = debugInfo.replaceAll("\n", "\n[From Manager : "+commandResponse.getSender()+"]");
+      debugInfo = "[From Manager : "+commandResponse.getSender()+"]" + debugInfo;
+      LogWrapper.getInstance().info(debugInfo);
+    }
+    commandResult = ResultBuilder.fromJson((String) response);
+
+    //3. Post Remote Execution
+    if (interceptor != null) {
+      Result postExecResult = interceptor.postExecution(parseResult, commandResult);
+      if (postExecResult != null) {
+        if (Status.ERROR.equals(postExecResult.getStatus())) {
+          if (logWrapper.infoEnabled()) {
+            logWrapper.info("Post execution Result :: "+ResultBuilder.resultAsString(postExecResult));
+          }
+        } else if (logWrapper.fineEnabled()) {
+          logWrapper.fine("Post execution Result :: "+ResultBuilder.resultAsString(postExecResult));
+        }
+        commandResult = postExecResult;
+      }
+    }
+
     return commandResult;
   }
 }

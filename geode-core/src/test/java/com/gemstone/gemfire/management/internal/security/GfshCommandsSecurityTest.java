@@ -112,9 +112,11 @@ public class GfshCommandsSecurityTest {
 
 
   private void runCommandsWithAndWithout(String permission) throws Exception{
-    List<TestCommand> permitted = TestCommand.getPermittedCommands(new WildcardPermission(permission, true));
-    for(TestCommand clusterRead:permitted) {
-      LogService.getLogger().info("Processing authorized command: "+clusterRead.getCommand());gfsh.executeCommand(clusterRead.getCommand());
+    List<TestCommand> allPermitted = TestCommand.getPermittedCommands(new WildcardPermission(permission, true));
+    for(TestCommand permitted:allPermitted) {
+      LogService.getLogger().info("Processing authorized command: "+permitted.getCommand());
+
+      gfsh.executeCommand(permitted.getCommand());
       CommandResult result = (CommandResult) gfsh.getResult();
       assertNotNull(result);
 
@@ -127,7 +129,7 @@ public class GfshCommandsSecurityTest {
     }
 
     List<TestCommand> others = TestCommand.getCommands();
-    others.removeAll(permitted);
+    others.removeAll(allPermitted);
     for(TestCommand other:others) {
       // skip no permission commands
       if(other.getPermission()==null)
@@ -135,6 +137,7 @@ public class GfshCommandsSecurityTest {
 
       LogService.getLogger().info("Processing unauthorized command: "+other.getCommand());
       gfsh.executeCommand(other.getCommand());
+
       CommandResult result = (CommandResult) gfsh.getResult();
       int errorCode = ((ErrorResultData) result.getResultData()).getErrorCode();
 
