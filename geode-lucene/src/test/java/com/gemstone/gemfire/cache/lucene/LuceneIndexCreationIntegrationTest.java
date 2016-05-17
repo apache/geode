@@ -185,9 +185,9 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
     cache.close();
     createCache();
     createIndex("field1", "field2");
-    verifyIndexFinishFlushing(INDEX_NAME, REGION_NAME);
     dataRegion = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
       .create(REGION_NAME);
+    verifyIndexFinishFlushing(INDEX_NAME, REGION_NAME);
     LuceneQuery<Object, Object> query = luceneService.createLuceneQueryFactory()
       .create(INDEX_NAME, REGION_NAME,
         "field1:world");
