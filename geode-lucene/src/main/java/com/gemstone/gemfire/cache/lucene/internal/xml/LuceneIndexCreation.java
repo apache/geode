@@ -116,6 +116,7 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
   }
 
   @Override
-  public void waitUntilFlushed(int maxWait) {
+  public boolean waitUntilFlushed(int maxWaitInMillisecond) {
+    return true;
   }
 }

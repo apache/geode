@@ -81,19 +81,17 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     searchableFieldNames = fields;
   }
 
-  /*
-   *  For test and demo purpose. To use it, the data region should stop feeding
-   *  A more advanced version is under-development
-   */
   @Override
-  public void waitUntilFlushed(int maxWait) {
+  public boolean waitUntilFlushed(int maxWaitInMillisecond) {
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
     AsyncEventQueue queue = (AsyncEventQueue)cache.getAsyncEventQueue(aeqId);
+    boolean flushed = false;
     if (queue != null) {
       long start = System.nanoTime();
-      while (System.nanoTime() - start < TimeUnit.MILLISECONDS.toNanos(maxWait)) {
+      while (System.nanoTime() - start < TimeUnit.MILLISECONDS.toNanos(maxWaitInMillisecond)) {
         if (0 == queue.size()) {
           logger.debug("waitUntilFlushed: Queue size is 0");
+          flushed = true;
           break;
         } else {
           try {
@@ -105,6 +103,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     } else { 
       throw new IllegalArgumentException("The AEQ does not exist for the index "+indexName+" region "+regionPath);
     }
+    return flushed;
   }
 
   @Override

@@ -41,6 +41,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQuery;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
@@ -55,7 +56,6 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.jayway.awaitility.Awaitility;
 
 @Category(IntegrationTest.class)
 public class LuceneIndexRecoveryHAIntegrationTest {
@@ -139,7 +139,7 @@ public class LuceneIndexRecoveryHAIntegrationTest {
     value = new Type1("lucene world", 1, 2L, 3.0, 4.0f);
     userRegion.put("value3", value);
 
-    waitUntilQueueEmpty(aeqId);
+    verifyIndexFinishFlushing(INDEX, REGION);
 
     LuceneQuery<Integer, Type1> query = service.createLuceneQueryFactory().create(INDEX, REGION, "s:world");
     LuceneQueryResults<Integer, Type1> results = query.search();
@@ -190,7 +190,7 @@ public class LuceneIndexRecoveryHAIntegrationTest {
     value = new Type1("lucene world", 1, 2L, 3.0, 4.0f);
     userRegion.put("value3", value);
 
-    waitUntilQueueEmpty(aeqId);
+    verifyIndexFinishFlushing(INDEX, REGION);
 
     PartitionedRegion fileRegion = (PartitionedRegion) cache.getRegion(aeqId + ".files");
     assertNotNull(fileRegion);
@@ -203,9 +203,9 @@ public class LuceneIndexRecoveryHAIntegrationTest {
     Assert.assertEquals(3, results.size());
   }
 
-  private void waitUntilQueueEmpty(final String aeqId) {
-    // TODO flush queue
-    AsyncEventQueue queue = cache.getAsyncEventQueue(aeqId);
-    Awaitility.waitAtMost(1000, TimeUnit.MILLISECONDS).until(() -> assertEquals(0, queue.size()));
+  private void verifyIndexFinishFlushing(String indexName, String regionName) {
+    LuceneIndex index = LuceneServiceProvider.get(cache).getIndex(indexName, regionName);
+    boolean flushed = index.waitUntilFlushed(60000);
+    assertTrue(flushed);
   }
 }

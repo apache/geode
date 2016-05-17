@@ -58,7 +58,9 @@ public interface LuceneIndex {
   
   /* 
    * wait until the current entries in cache are indexed
+   * @param maxWaitInMilliseconds max wait time in millisecond
+   * @return if entries are flushed within maxWait
    */
-  public void waitUntilFlushed(int maxWait);
+  public boolean waitUntilFlushed(int maxWaitInMillisecond);
   
 }

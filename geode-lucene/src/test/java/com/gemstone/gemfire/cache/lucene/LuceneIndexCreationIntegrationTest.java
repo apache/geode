@@ -44,7 +44,6 @@ import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.jayway.awaitility.Awaitility;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordTokenizer;
@@ -71,12 +70,10 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
     Region region = createRegion();
     final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
     region.put("key1", new TestObject());
-
+    verifyIndexFinishFlushing(INDEX_NAME, REGION_NAME);
     assertEquals(analyzers, index.getFieldAnalyzers());
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
-      assertEquals(Arrays.asList("field1"), field1Analyzer.analyzedfields);
-      assertEquals(Arrays.asList("field2"), field2Analyzer.analyzedfields);
-    });
+    assertEquals(Arrays.asList("field1"), field1Analyzer.analyzedfields);
+    assertEquals(Arrays.asList("field2"), field2Analyzer.analyzedfields);
   }
 
   @Test
@@ -188,26 +185,28 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
     cache.close();
     createCache();
     createIndex("field1", "field2");
+    verifyIndexFinishFlushing(INDEX_NAME, REGION_NAME);
     dataRegion = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
       .create(REGION_NAME);
     LuceneQuery<Object, Object> query = luceneService.createLuceneQueryFactory()
       .create(INDEX_NAME, REGION_NAME,
         "field1:world");
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
-      assertEquals(1, query.search().size());
-    });
+    assertEquals(1, query.search().size());
   }
 
+  private void verifyIndexFinishFlushing(String indexName, String regionName) {
+    LuceneIndex index = luceneService.getIndex(indexName, regionName);
+    boolean flushed = index.waitUntilFlushed(60000);
+    assertTrue(flushed);
+  }
+  
   @Test
   public void shouldRecoverPersistentIndexWhenDataIsWrittenToIndex() throws ParseException, InterruptedException {
     createIndex("field1", "field2");
     Region dataRegion = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
       .create(REGION_NAME);
     dataRegion.put("A", new TestObject());
-    final AsyncEventQueueImpl queue = (AsyncEventQueueImpl) getIndexQueue();
-
-    //Wait until the queue has drained
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(0, queue.size()));
+    verifyIndexFinishFlushing(INDEX_NAME, REGION_NAME);
     cache.close();
     createCache();
     createIndex("text");
