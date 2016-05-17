@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.util;
 
 import java.io.IOException;
@@ -26,19 +25,17 @@ import com.gemstone.gemfire.internal.ByteArrayDataInput;
 import com.gemstone.gemfire.internal.DSCODE;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.pdx.internal.PdxInputStream;
 
 /**
  * A "blob" is a serialized representation of an object into a byte[].
- * BlobHelper provides utility methods for
- * serializing and deserializing the object.
- * 
- * 
+ * BlobHelper provides utility methods for serializing and deserializing the
+ * object.
+ *
+ * TODO: compare performance with org.apache.commons.lang.SerializationUtils
  */
-
 public class BlobHelper {
 
   /**
@@ -50,12 +47,10 @@ public class BlobHelper {
   }
 
   /**
-   * A blob is a serialized Object.  This method serializes the
-   * object into a blob and returns the byte array that contains the blob.
+   * A blob is a serialized Object.  This method serializes the object into a
+   * blob and returns the byte array that contains the blob.
    */
-  public static byte[] serializeToBlob(Object obj, Version version)
-  throws IOException
-  {
+  public static byte[] serializeToBlob(Object obj, Version version) throws IOException {
     final long start = startSerialization();
     HeapDataOutputStream hdos = new HeapDataOutputStream(version);
     DataSerializer.writeObject(obj, hdos);
@@ -65,45 +60,32 @@ public class BlobHelper {
   }
 
   /**
-   * A blob is a serialized Object.  This method serializes the
-   * object into the given HeapDataOutputStream.
+   * A blob is a serialized Object.  This method serializes the object into
+   * the given HeapDataOutputStream.
    */
-  public static void serializeTo(Object obj, HeapDataOutputStream hdos)
-    throws IOException
-  {
+  public static void serializeTo(Object obj, HeapDataOutputStream hdos) throws IOException {
     final int startBytes = hdos.size();
     final long start = startSerialization();
     DataSerializer.writeObject(obj, hdos);
     endSerialization(start, hdos.size()-startBytes);
   }
-                                                                        
-
 
   /**
-   * A blob is a serialized Object.  This method 
-   * returns the deserialized object.
+   * A blob is a serialized Object.  This method returns the deserialized
+   * object.
    */
-  public static Object deserializeBlob(byte[] blob) throws IOException,
-      ClassNotFoundException {
+  public static Object deserializeBlob(byte[] blob) throws IOException, ClassNotFoundException {
     return deserializeBlob(blob, null, null);
   }
 
   /**
-   * A blob is a serialized Object.  This method 
-   * returns the deserialized object.
+   * A blob is a serialized Object.  This method returns the deserialized
+   * object.
    */
-  public static Object deserializeBlob(byte[] blob, Version version,
-      ByteArrayDataInput in) throws IOException, ClassNotFoundException {
+  public static Object deserializeBlob(byte[] blob, Version version, ByteArrayDataInput in) throws IOException, ClassNotFoundException {
     Object result;
     final long start = startDeserialization();
-    /*
-    final StaticSystemCallbacks sysCb;
-    if (version != null && (sysCb = GemFireCacheImpl.FactoryStatics
-        .systemCallbacks) != null) {
-      // may need to change serialized shape for SQLFire
-      result = sysCb.fromVersion(blob, true, version, in);
-    }
-    else*/ if (blob.length > 0 && blob[0] == DSCODE.PDX) {
+    if (blob.length > 0 && blob[0] == DSCODE.PDX) {
       // If the first byte of blob indicates a pdx then wrap
       // blob in a PdxInputStream instead.
       // This will prevent us from making a copy of the byte[]
@@ -121,24 +103,13 @@ public class BlobHelper {
       result = DataSerializer.readObject(in);
     }
     endDeserialization(start, blob.length);
-    // this causes a small performance drop in d-no-ack performance tests
-//    if (dis.available() != 0) {
-//      LogWriterI18n lw = InternalDistributedSystem.getLoggerI18n();
-//      if (lw != null && lw.warningEnabled()) {
-//        lw.warning(
-//            LocalizedStrings.BlobHelper_DESERIALIZATION_OF_A_0_DID_NOT_READ_1_BYTES_THIS_INDICATES_A_LOGIC_ERROR_IN_THE_SERIALIZATION_CODE_FOR_THIS_CLASS,
-//            new Object[] {((result!=null) ? result.getClass().getName() : "NULL"), Integer.valueOf(dis.available())});   
-//            
-//      }
-//    }
     return result;
   }
 
   /**
-   * A blob is a serialized Object.  This method 
-   * returns the deserialized object.
-   * If a PdxInstance is returned then it will refer to Chunk's off-heap memory
-   * with an unretained reference.
+   * A blob is a serialized Object.  This method returns the deserialized
+   * object. If a PdxInstance is returned then it will refer to Chunk's
+   * off-heap memory with an unretained reference.
    */
   public static @Unretained Object deserializeOffHeapBlob(StoredObject blob) throws IOException, ClassNotFoundException {
     Object result;
@@ -152,8 +123,10 @@ public class BlobHelper {
     return result;
   }
 
-  public static Object deserializeBuffer(ByteArrayDataInput in, int numBytes)
-      throws IOException, ClassNotFoundException {
+  /**
+   * Unused
+   */
+  public static Object deserializeBuffer(ByteArrayDataInput in, int numBytes) throws IOException, ClassNotFoundException {
     final long start = startDeserialization();
     Object result = DataSerializer.readObject(in);
     endDeserialization(start, numBytes);
