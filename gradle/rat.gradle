@@ -117,6 +117,7 @@ rat {
     'geode-site/website/content/css/font-awesome.min.css',
     'geode-site/website/lib/pandoc.template',
     'geode-site/website/content/font/**',
+    'geode-site/content/**',
     // compiled logs and locks
     'geode-site/website/tmp/**',
     'geode-site/website/layouts/**',
