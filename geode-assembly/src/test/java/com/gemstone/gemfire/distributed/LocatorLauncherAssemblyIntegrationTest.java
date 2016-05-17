@@ -27,7 +27,6 @@ import com.gemstone.gemfire.internal.process.ProcessUtils;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.ManagerMXBean;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -143,17 +142,19 @@ public class LocatorLauncherAssemblyIntegrationTest extends AbstractLocatorLaunc
       this.errorCollector.addError(e);
     }
 
-    int finalThreadCount = Integer.MAX_VALUE;
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS)
+        .timeout(60, TimeUnit.SECONDS).until(() -> initialThreadCount == Thread.activeCount());
 
     // Spin for up to 5 seconds waiting for threads to finish
-    for (int i = 0; i < 50 && finalThreadCount > initialThreadCount; i++) {
-      try {
-        Thread.sleep(100);
-      } catch (InterruptedException ex) {
-        // ignored
-      }
-      finalThreadCount = Thread.activeCount();
-    }
+    //    for (int i = 0; i < 50 && finalThreadCount > initialThreadCount; i++) {
+    //      try {
+    //        Thread.sleep(100);
+    //      } catch (InterruptedException ex) {
+    //         ignored
+    //      }
+    //      finalThreadCount = Thread.activeCount();
+    //    }
+    int finalThreadCount = Thread.activeCount();
 
     assertEquals(initialThreadCount, finalThreadCount);
   }
