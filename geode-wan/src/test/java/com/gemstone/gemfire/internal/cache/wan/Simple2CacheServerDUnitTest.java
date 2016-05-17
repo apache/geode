@@ -17,22 +17,31 @@
 package com.gemstone.gemfire.internal.cache.wan;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.cache.EvictionAction;
+import com.gemstone.gemfire.cache.EvictionAttributes;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.ha.HAContainerRegion;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.jayway.awaitility.Awaitility;
 
@@ -45,11 +54,6 @@ public class Simple2CacheServerDUnitTest extends WANTestBase {
     super(name);
   }
   
-  // GEODE-1183: random ports, failure to start threads, eats exceptions, time sensitive
-  public void testDurableClient2MultipleCacheServer() throws Exception {
-    doMultipleCacheServer(true);
-  }
-
   public void testNormalClient2MultipleCacheServer() throws Exception {
     doMultipleCacheServer(false);
   }
@@ -80,11 +84,38 @@ public class Simple2CacheServerDUnitTest extends WANTestBase {
     Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> { return checkProxyIsPrimary(vm0) || checkProxyIsPrimary(vm1); });
     
     // close the current primary cache server, then re-test
-    vm1.invoke(()-> CacheClientNotifierDUnitTest.closeACacheServer(serverPort2));
-    Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> { return checkProxyIsPrimary(vm0) || checkProxyIsPrimary(vm1); });
+    int serverPortAtVM1 = vm1.invoke(()-> findCacheServerForPrimaryProxy());
+    if (serverPortAtVM1 != 0) {
+      vm1.invoke(()-> CacheClientNotifierDUnitTest.closeACacheServer(serverPortAtVM1));
+      LogService.getLogger().info("Closed cache server on vm1:"+serverPortAtVM1);
+      Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> { return checkProxyIsPrimary(vm0) || checkProxyIsPrimary(vm1); });
+    } else {
+      vm0.invoke(()-> CacheClientNotifierDUnitTest.closeACacheServer(serverPort3));
+      LogService.getLogger().info("Closed cache server on vm0:"+serverPort3);
+      assertTrue(checkProxyIsPrimary(vm1));
+    }
     disconnectAllFromDS();
   }
-
+  
+  private static int findCacheServerForPrimaryProxy() {
+    List<CacheServer> cacheServers = ((GemFireCacheImpl)cache).getCacheServers();
+    CacheServerImpl server = null;
+    for (CacheServer cs:cacheServers) {
+      server = (CacheServerImpl)cs;
+      long acceptorId = server.getAcceptor().getAcceptorId();
+      for (CacheClientProxy proxy:CacheClientNotifier.getInstance().getClientProxies()) {
+        if (proxy.isPrimary() == false) {
+          continue;
+        }
+        if (proxy.getAcceptorId() == acceptorId) {
+          LogService.getLogger().info("Found cache server "+server+" for the primary proxy "+proxy);
+          return server.getPort();
+        }
+      }
+    }
+    return 0;
+  }
+  
   public static void setClientServerObserver()
   {
     PoolImpl.AFTER_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = true;
