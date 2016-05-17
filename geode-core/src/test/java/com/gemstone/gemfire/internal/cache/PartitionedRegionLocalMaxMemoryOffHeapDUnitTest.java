@@ -38,7 +38,7 @@ public class PartitionedRegionLocalMaxMemoryOffHeapDUnitTest extends Partitioned
   }
   
   @Override
-  protected final void preTearDownPartitionedRegionDUnitTest() throws Exception {
+  public final void preTearDownAssertions() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override

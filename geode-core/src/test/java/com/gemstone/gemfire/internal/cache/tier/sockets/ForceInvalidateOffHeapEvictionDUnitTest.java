@@ -35,7 +35,7 @@ public class ForceInvalidateOffHeapEvictionDUnitTest extends
   }
 
   @Override
-  public final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownAssertions() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override

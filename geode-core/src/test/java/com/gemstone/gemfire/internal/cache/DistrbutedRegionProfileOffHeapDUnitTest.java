@@ -40,7 +40,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends CacheTestCase {
   }
 
   @Override
-  public final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownAssertions() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override

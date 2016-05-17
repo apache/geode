@@ -33,7 +33,7 @@ public class CompressionRegionOperationsOffHeapDUnitTest extends
   }
   
   @Override
-  protected final void preTearDownCompressionRegionOperationsDUnitTest() throws Exception {
+  public final void preTearDownAssertions() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override

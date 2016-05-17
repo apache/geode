@@ -40,7 +40,7 @@ public class CompressionCacheListenerOffHeapDUnitTest extends
   }
 
   @Override
-  protected final void preTearDownCompressionCacheListenerDUnitTest() throws Exception {
+  public final void preTearDownAssertions() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override

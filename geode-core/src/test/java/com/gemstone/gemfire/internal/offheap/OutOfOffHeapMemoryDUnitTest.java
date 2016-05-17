@@ -77,7 +77,7 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
   }
 
   @Override
-  public final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownAssertions() throws Exception {
     final SerializableRunnable checkOrphans = new SerializableRunnable() {
       @Override
       public void run() {
