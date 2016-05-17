@@ -19,6 +19,7 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.experimental.categories.Category;
 
@@ -50,6 +51,7 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import com.jayway.awaitility.Awaitility;
 
 /**
  * Test to verify Startup. and failover during startup.
@@ -289,15 +291,16 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
     /**
      * Tests failover initialization by cache operation Threads on secondary
      */
-    @Category(FlakyTest.class) // GEODE-357: random ports, eats exceptions (fixed 1), time sensitive, waitForCriterions
     public void testInitiateFailoverByCacheOperationThreads_Secondary() throws Exception {
-      // create a client with large retry interval for server monitors and no client updater thread
+      //Stop the 3rd server to guarantee the client put will go to the first server
+      server3.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
+      // create a client with no client updater thread
       // so that only cache operation can detect a server failure and should initiate failover
       createClientCacheWithLargeRetryIntervalAndWithoutCallbackConnection(this.getName()
           , NetworkUtils.getServerHostName(server1.getHost()));
       server2.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
       put();
-      verifyDeadAndLiveServers(1,2);
+      verifyDeadAndLiveServers(1,1);
     }
 
     public static void put()
@@ -316,32 +319,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
     public static void verifyDeadAndLiveServers(final int expectedDeadServers, 
         final int expectedLiveServers)
   {
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
-      public boolean done() {
-        return pool.getConnectedServerCount() == expectedLiveServers;
-      }
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
-//     while (proxy.getDeadServers().size() != expectedDeadServers) { // wait until condition is met
-//       assertTrue("Waited over " + maxWaitTime + "for dead servers to become : " + expectedDeadServers ,
-//           //" This issue can occur on Solaris as DSM thread get stuck in connectForServer() call, and hence not recovering any newly started server. This may be beacuase of tcp_ip_abort_cinterval kernal level property on solaris which has 3 minutes as a default value ",
-//           (System.currentTimeMillis() - start) < maxWaitTime);
-//       try {
-//         Thread.yield();
-//         if(proxy.getDeadServers().size() != expectedDeadServers){
-//           synchronized(delayLock) {delayLock.wait(2000);}
-          
-//         }
-//       }
-//       catch (InterruptedException ie) {
-//         fail("Interrupted while waiting ", ie);
-//       }
-//     }
-//     start = System.currentTimeMillis();
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(expectedLiveServers, pool.getConnectedServerCount()));
   }
  
     public static void setClientServerObserver() {
@@ -641,7 +619,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
         .addServer(host, PORT1.intValue())
         .addServer(host, PORT2.intValue())
         .addServer(host, PORT3.intValue())
-        .setReadTimeout(10000)
+        .setPingInterval(500)
         // .setRetryInterval(200000)
         .create("HAStartupAndFailoverDUnitTestPool");
     } finally {
