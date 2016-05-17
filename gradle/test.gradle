@@ -80,6 +80,10 @@ subprojects {
       excludeCategories 'com.gemstone.gemfire.test.junit.categories.UITest'
     }
 
+    //Skip launching any DUnit VMs during this run. This will prevent
+    //junit from launching VMs while parsing categories
+    systemProperty 'gemfire.DUnitLauncher.LAUNCHED', 'true'
+
     beforeTest { descriptor ->
       throw new GradleException("The test " + descriptor.getClassName() + "." + descriptor.getName() + " does not include a junit category.");
     }

@@ -54,10 +54,14 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+import org.junit.experimental.categories.Category;
 
 /**
  * This class tests distributed ownership via the DistributedLockService api.
  */
+@Category(DistributedTest.class)
 public class DistributedLockServiceDUnitTest extends DistributedTestCase {
   
 	protected static DistributedSystem dlstSystem;
@@ -72,25 +76,10 @@ public class DistributedLockServiceDUnitTest extends DistributedTestCase {
 
   public DistributedLockServiceDUnitTest(String name) {
     super(name);
-    if (blackboard == null) {
-      try {
-        blackboard = DistributedLockBlackboardImpl.getInstance();
-      } catch (Exception e) {
-        throw new RuntimeException("initialization error", e);
-      }
-    }
   }
   
   /////////// Test lifecycle //////////
- 
-  public static void caseSetUp() throws Exception {
-    disconnectAllFromDS();
-  }
-  
-  public static void caseTearDown() throws Exception {
-    disconnectAllFromDS();
-  }
-  
+
   /**
    * Returns a previously created (or new, if this is the first
    * time this method is called in this VM) distributed system
@@ -98,23 +87,25 @@ public class DistributedLockServiceDUnitTest extends DistributedTestCase {
    */
   @Override
   public final void postSetUp() throws Exception {
+
+    createBlackboard();
+    Invoke.invokeInEveryVM(() -> createBlackboard());
+
     // Create a DistributedSystem in every VM
     connectDistributedSystem();
 
-    for (int h = 0; h < Host.getHostCount(); h++) {
-      Host host = Host.getHost(h);
+    Invoke.invokeInEveryVM(() -> connectDistributedSystem());
+  }
 
-      for (int v = 0; v < host.getVMCount(); v++) {
-        host.getVM(v).invoke(
-          DistributedLockServiceDUnitTest.class, "connectDistributedSystem", null);
-      }
+  private void createBlackboard() throws Exception {
+    if (blackboard == null) {
+      blackboard = DistributedLockBlackboardImpl.getInstance();
     }
   }
 
   @Override
   public final void preTearDown() throws Exception {
-    Invoke.invokeInEveryVM(DistributedLockServiceDUnitTest.class,
-                    "destroyAllDLockServices"); 
+    Invoke.invokeInEveryVM(() -> destroyAllDLockServices());
 //    invokeInEveryVM(DistributedLockServiceDUnitTest.class,
 //                    "remoteDumpAllDLockServices"); 
                     
@@ -126,7 +117,12 @@ public class DistributedLockServiceDUnitTest extends DistributedTestCase {
     
     this.lockGrantor = null;
   }
-  
+
+  @Override
+  public void postTearDown() throws Exception {
+    disconnectAllFromDS();
+  }
+
   public static void destroyAllDLockServices() {
     DLockService.destroyAll();
     dlstSystem = null;
