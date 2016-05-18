@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQuery;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
@@ -81,5 +82,15 @@ public class LuceneTestUtilities {
         .forEach(struct -> actualKeySet.add(struct.getKey()));
     }
     assertEquals(expectedKeySet, actualKeySet);
+  }
+
+  public static void pauseSender(final Cache cache) {
+    final AsyncEventQueueImpl queue = (AsyncEventQueueImpl) getIndexQueue(cache);
+    queue.getSender().pause();
+  }
+
+  public static void resumeSender(final Cache cache) {
+    final AsyncEventQueueImpl queue = (AsyncEventQueueImpl) getIndexQueue(cache);
+    queue.getSender().resume();
   }
 }

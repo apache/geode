@@ -19,6 +19,7 @@
 
 package com.gemstone.gemfire.cache.lucene;
 
+import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
@@ -60,6 +61,7 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     dataStore2.invoke(() -> initDataStore(createIndex));
 
     rebalanceRegion(dataStore1);
+    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
     executeTextSearch(accessor);
   }
 

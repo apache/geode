@@ -18,6 +18,7 @@
  */
 package com.gemstone.gemfire.cache.lucene;
 
+import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
@@ -48,8 +49,6 @@ import org.junit.Test;
   */
 public abstract class LuceneQueriesBase extends JUnit4CacheTestCase {
 
-  protected static final String INDEX_NAME = "index";
-  protected static final String REGION_NAME = "index";
   private static final long serialVersionUID = 1L;
   protected VM dataStore1;
   protected VM dataStore2;
@@ -78,6 +77,7 @@ public abstract class LuceneQueriesBase extends JUnit4CacheTestCase {
     accessor.invoke(() -> initAccessor(createIndex));
 
     putDataInRegion(accessor);
+    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
     executeTextSearch(accessor);
   }
 
@@ -91,55 +91,26 @@ public abstract class LuceneQueriesBase extends JUnit4CacheTestCase {
     dataStore2.invoke(() -> initDataStore(createIndex));
     accessor.invoke(() -> initAccessor(createIndex));
 
-    try {
-      dataStore1.invoke(() -> setTestHook());
-      putDataInRegion(accessor);
-      waitForFlushBeforeExecuteTextSearch(accessor, 10);
-      executeTextSearch(accessor);
-    } finally {
-      dataStore1.invoke(() -> checkResultAndresetTestHook());
-    }
+    //Pause the sender to make sure some entries are queued up
+    dataStore1.invoke(() -> pauseSender(getCache()));
+    dataStore2.invoke(() -> pauseSender(getCache()));
+    putDataInRegion(accessor);
+    assertFalse(waitForFlushBeforeExecuteTextSearch(accessor, 500));
+    dataStore1.invoke(() -> resumeSender(getCache()));
+    dataStore2.invoke(() -> resumeSender(getCache()));
+    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    executeTextSearch(accessor);
   }
 
-  protected void waitForFlushBeforeExecuteTextSearch(VM vm, final int expectKeyNum) {
-    vm.invoke(() -> {
+  protected boolean waitForFlushBeforeExecuteTextSearch(VM vm, int ms) {
+    return vm.invoke(() -> {
       Cache cache = getCache();
-      Region<Object, Object> region = cache.getRegion(REGION_NAME);
 
       LuceneService service = LuceneServiceProvider.get(cache);
       LuceneIndexImpl index = (LuceneIndexImpl)service.getIndex(INDEX_NAME, REGION_NAME);
-      assertNotNull(index);
-      LuceneQuery<Integer, TestObject> query;
 
-      String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX_NAME, REGION_NAME);
-      AsyncEventQueue queue = cache.getAsyncEventQueue(aeqId);
-      assertNotNull(queue);
-      assertTrue(queue.size()>0);
-      index.waitUntilFlushed(30000);
-      return null;
+      return index.waitUntilFlushed(ms);
     });
-  }
-
-  public static void setTestHook() {
-    LuceneEventListener.testHook = new LuceneEventListener.TestHook() {
-
-      @Override
-      public void doTestHook(String spot) {
-        if (spot.equals("FOUND_AND_BEFORE_PROCESSING_A_EVENT")) {
-          try {
-            Thread.sleep(1000);
-            LogService.getLogger().debug("Waited in test hook");
-          }
-          catch (InterruptedException e) {
-          }
-        }
-      }
-    };
-  }
-  
-  public static void checkResultAndresetTestHook()
-  {
-    LuceneEventListener.testHook = null;
   }
 
   protected void executeTextSearch(VM vm) {

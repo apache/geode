@@ -22,23 +22,19 @@ import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
 import com.gemstone.gemfire.cache.lucene.test.TestObject;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.rules.DiskDirRule;
-import com.jayway.awaitility.Awaitility;
 
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -101,8 +97,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
     Region dataRegion = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
       .create(REGION_NAME);
     //Pause the sender so that the entry stays in the queue
-    final AsyncEventQueueImpl queue = (AsyncEventQueueImpl) getIndexQueue(cache);
-    queue.getSender().pause();
+    pauseSender(cache);
 
     dataRegion.put("A", new TestObject());
     cache.close();

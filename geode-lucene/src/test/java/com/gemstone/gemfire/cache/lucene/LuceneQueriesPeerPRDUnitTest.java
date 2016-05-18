@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.cache.lucene;
 
+import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
