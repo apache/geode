@@ -18,13 +18,20 @@
  */
 package com.gemstone.gemfire.cache.lucene.test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
+import com.gemstone.gemfire.cache.lucene.LuceneQuery;
+import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
+import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexForPartitionedRegion;
@@ -60,5 +67,19 @@ public class LuceneTestUtilities {
     LuceneIndex index = luceneService.getIndex(indexName, regionName);
     boolean flushed = index.waitUntilFlushed(60000);
     assertTrue(flushed);
+  }
+
+  /**
+   * Verify that a query returns the expected list of keys. Ordering is ignored.
+   */
+  public static <K> void  verifyQueryKeys(LuceneQuery<K,Object> query,K ... expectedKeys) {
+    Set<K> expectedKeySet = new HashSet<>(Arrays.asList(expectedKeys));
+    Set<K> actualKeySet = new HashSet<>(Arrays.asList(expectedKeys));
+    final LuceneQueryResults<K, Object> results = query.search();
+    while(results.hasNextPage()) {
+      results.getNextPage().stream()
+        .forEach(struct -> actualKeySet.add(struct.getKey()));
+    }
+    assertEquals(expectedKeySet, actualKeySet);
   }
 }
