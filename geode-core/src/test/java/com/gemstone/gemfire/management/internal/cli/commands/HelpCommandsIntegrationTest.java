@@ -16,7 +16,9 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.management.internal.cli.CommandManager;
 import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
@@ -27,8 +29,10 @@ import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.experimental.categories.Category;
 
 import java.util.Map;
@@ -39,11 +43,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @Category(IntegrationTest.class)
-public class HelpCommandsIntegrationTest extends JUnit4DistributedTestCase {
+public class HelpCommandsIntegrationTest {
 
   private int jmxPort;
 
   private Gfsh gfsh;
+
+  @ClassRule
+  public static final ProvideSystemProperty isGfsh = new ProvideSystemProperty("gfsh", "true");
 
   @Before
   public void setup() throws Exception {
@@ -53,19 +60,20 @@ public class HelpCommandsIntegrationTest extends JUnit4DistributedTestCase {
     localProps.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
     localProps.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
     localProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
-    getSystem(localProps);
+
+    new CacheFactory(localProps).create();
 
     gfsh = Gfsh.getInstance(false, new String[0], new GfshConfig());
   }
 
   @After
   public void teardown() {
-    disconnectAllFromDS();
-
-    gfsh.executeCommand("disconnect");
+    InternalDistributedSystem ids = InternalDistributedSystem.getConnectedInstance();
+    if (ids != null) {
+      ids.disconnect();
+    }
   }
 
-  @Ignore("Disconnect command doesn't appear to be working")
   @Test
   public void testOfflineHelp() throws Exception {
     Properties helpProps = new Properties();
