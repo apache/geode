@@ -39,7 +39,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @Category(IntegrationTest.class)
-public class HelpCommandsJUnitTest extends JUnit4DistributedTestCase {
+public class HelpCommandsIntegrationTest extends JUnit4DistributedTestCase {
 
   private int jmxPort;
 
@@ -69,7 +69,7 @@ public class HelpCommandsJUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testOfflineHelp() throws Exception {
     Properties helpProps = new Properties();
-    helpProps.load(HelpCommandsJUnitTest.class.getResourceAsStream("golden-help-offline.properties"));
+    helpProps.load(HelpCommandsIntegrationTest.class.getResourceAsStream("golden-help-offline.properties"));
 
     CommandManager cm = CommandManager.getInstance();
     for (Map.Entry<String, CommandTarget> e : cm.getCommands().entrySet()) {
@@ -97,7 +97,7 @@ public class HelpCommandsJUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testOnlineHelp() throws Exception {
     Properties helpProps = new Properties();
-    helpProps.load(HelpCommandsJUnitTest.class.getResourceAsStream("golden-help-online.properties"));
+    helpProps.load(HelpCommandsIntegrationTest.class.getResourceAsStream("golden-help-online.properties"));
 
     gfsh.executeCommand("connect --jmx-manager=localhost[" + jmxPort + "]");
 
