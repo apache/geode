@@ -42,6 +42,10 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
+  static {
+    ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
+  }
+
   private MemoryAllocator ma;
 
   @Before

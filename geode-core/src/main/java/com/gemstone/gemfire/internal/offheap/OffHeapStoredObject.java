@@ -418,12 +418,12 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
       return result;
     }
     /**
+     * This method should only be called on uncompressed objects
      * @return byte array of the StoredObject value. 
-     * @throws AssertionError if this.isCompressed() == true
      */
     protected byte[] getRawBytes() {
+      assert !isCompressed();
       byte[] result = getCompressedBytes();
-      assert(!isCompressed());
       return result;
     }
 
