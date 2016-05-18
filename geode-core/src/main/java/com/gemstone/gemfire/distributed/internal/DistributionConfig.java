@@ -52,8 +52,7 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
  *
  * @since 2.1
  */
-public interface
-DistributionConfig extends Config, LogConfig {
+public interface DistributionConfig extends Config, LogConfig {
 
   ////////////////////  Instance Methods  ////////////////////
 

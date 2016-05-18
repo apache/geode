@@ -22,7 +22,8 @@ import org.apache.shiro.authz.permission.PermissionResolver;
 import org.apache.shiro.authz.permission.WildcardPermission;
 
 public class GeodePermissionResolver implements PermissionResolver {
-  @Override public Permission resolvePermission(final String permissionString) {
+  @Override
+  public Permission resolvePermission(final String permissionString) {
     return new WildcardPermission(permissionString, true);
   }
 }
