@@ -68,7 +68,6 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
   public RestAPIsWithSSLDUnitTest(String name) {
     super(name);
     this.jks = findTrustedJKS();
-
   }
 
   @Override
@@ -170,7 +169,9 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String locatorHostName = NetworkUtils.getServerHostName(locator.getHost());
 
-    locator.invoke("Start Locator", () -> startLocator(locatorHostName, locatorPort, ""));
+    locator.invoke("Start Locator", () -> {
+      startLocator(locatorHostName, locatorPort, "");
+    });
 
     // find locators
     String locators = locatorHostName + "[" + locatorPort + "]";
@@ -222,18 +223,19 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     client.invoke(()-> closeCache());
   }
 
-  private void closeCache() {
-    Cache cache = CacheFactory.getAnyInstance();
+  private void closeCache()
+  {
+    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();
     }
   }
 
-  private void sslPropertyConverter(Properties oldProperties, Properties newProperties, String oldPropertyName, String newPropertyName) {
-    String oldProperty = oldProperties.getProperty(oldPropertyName);
-    if (oldProperty != null) {
-      newProperties.setProperty((newPropertyName != null ? newPropertyName : oldPropertyName), oldProperty);
+  private void sslPropertyConverter(Properties properties, Properties newProperties, String propertyName, String newPropertyName) {
+    String property = properties.getProperty(propertyName);
+    if (property != null) {
+      newProperties.setProperty((newPropertyName != null ? newPropertyName : propertyName), property);
     }
   }
 
@@ -274,16 +276,14 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
     props.setProperty("jmx-manager", "true");
     props.setProperty("jmx-manager-start", "true");
-    props.setProperty("http-service-port", "7070");
-    props.setProperty("jmx-manager-port", "1099");
 
     Cache cache = null;
     configureSSL(props, sslProperties, false);
     while (true) {
       try {
         DistributedSystem ds = getSystem(props);
-        System.out.println("Creating cache with http-service-port " + props.getProperty("http-service-port")
-            + " and jmx-manager-port " + props.getProperty("jmx-manager-port"));
+        System.out.println("Creating cache with http-service-port " + props.getProperty("http-service-port", "7070")
+            + " and jmx-manager-port " + props.getProperty("jmx-manager-port", "1099"));
         cache = CacheFactory.create(ds);
         System.out.println("Successfully created cache.");
         break;
