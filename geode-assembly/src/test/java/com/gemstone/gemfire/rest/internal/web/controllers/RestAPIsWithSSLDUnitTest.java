@@ -170,12 +170,15 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     VM client = host.getVM(3);
 
     // start locator
-    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final String locatorHostName = NetworkUtils.getServerHostName(locator.getHost());
 
-    locator.invoke("Start Locator", () -> startLocator(NetworkUtils.getServerHostName(locator.getHost()), locatorPort, ""));
+    locator.invoke("Start Locator", () -> {
+      startLocator(locatorHostName, locatorPort, "");
+    });
 
     // find locators
-    String locators = NetworkUtils.getServerHostName(locator.getHost()) + "[" + locatorPort + "]";
+    String locators = locatorHostName + "[" + locatorPort + "]";
 
     // start manager (peer cache)
     manager.invoke("StartManager", () -> startManager(locators, new String[] { REGION_NAME }, sslProperties));
@@ -192,7 +195,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     client.invoke("Create ClientCache", () -> {
       new ClientCacheFactory()
           .setPdxReadSerialized(true)
-          .addPoolLocator(NetworkUtils.getServerHostName(locator.getHost()), locatorPort).create();
+          .addPoolLocator(locatorHostName, locatorPort).create();
       return null;
     });
 
@@ -218,10 +221,10 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
     // stop the client and make sure the bridge server notifies
     // stopBridgeMemberVM(client);
-    helper.closeCache(locator);
-    helper.closeCache(manager);
-    helper.closeCache(server);
-    helper.closeCache(client);
+    locator.invoke(()-> helper.closeCache());
+    manager.invoke(()-> helper.closeCache());
+    server.invoke(()-> helper.closeCache());
+    client.invoke(()-> helper.closeCache());
   }
 
   private void sslPropertyConverter(Properties properties, Properties newProperties, String propertyName, String newPropertyName) {
@@ -257,7 +260,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     }
   }
 
-  private void startManager(final String locators, final String[] regions, final Properties sslProperties) throws IOException {
+  private int startManager(final String locators, final String[] regions, final Properties sslProperties) throws IOException {
 
     IgnoredException.addIgnoredException("java.net.BindException");
     IgnoredException.addIgnoredException("java.rmi.server.ExportException");
@@ -315,6 +318,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     CacheServer server = cache.addCacheServer();
     server.setPort(0);
     server.start();
+    return server.getPort();
   }
 
   private void createRegionInClientCache() {
@@ -331,7 +335,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     regionFactory.create(PEOPLE_REGION_NAME);
   }
 
-  private CloseableHttpClient getSSLBasedHTTPClient() throws Exception {
+  private CloseableHttpClient getSSLBasedHTTPClient(String algo) throws Exception {
     File jks = findTrustedJKS();
 
     KeyStore clientKeys = KeyStore.getInstance("JKS");
@@ -353,7 +357,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     return httpclient;
   }
 
-  private void validateConnection(String restEndpoint) {
+  private void validateConnection(String restEndpoint, String algo) {
 
     try {
       // 1. Get on key="1" and validate result.
@@ -362,7 +366,8 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
         get.addHeader("Content-Type", "application/json");
         get.addHeader("Accept", "application/json");
 
-        CloseableHttpClient httpclient = getSSLBasedHTTPClient();
+
+        CloseableHttpClient httpclient = getSSLBasedHTTPClient(algo);
         CloseableHttpResponse response = httpclient.execute(get);
 
         HttpEntity entity = response.getEntity();
@@ -397,82 +402,76 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME, "JKS");
-    validateConnection(startInfraWithSSL(props, false));
+    String restEndpoint = startInfraWithSSL(props,false);
+    validateConnection(restEndpoint, "SSL");
   }
 
   public void testSSLWithoutKeyStoreType() throws Exception {
-
     Properties props = new Properties();
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
 
-    validateConnection(startInfraWithSSL(props, false));
-
+    String restEndpoint = startInfraWithSSL(props, false);
+    validateConnection(restEndpoint, "SSL");
   }
 
   public void testSSLWithSSLProtocol() throws Exception {
-
     Properties props = new Properties();
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME, "SSL");
 
-    validateConnection(startInfraWithSSL(props, false));
-
+    String restEndpoint = startInfraWithSSL(props, false);
+    validateConnection(restEndpoint, "SSL");
   }
 
   public void testSSLWithTLSProtocol() throws Exception {
-
     Properties props = new Properties();
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME, "TLS");
 
-    validateConnection(startInfraWithSSL(props, false));
-
+    String restEndpoint = startInfraWithSSL(props, false);
+    validateConnection(restEndpoint, "TLS");
   }
 
   public void testSSLWithTLSv11Protocol() throws Exception {
-
     Properties props = new Properties();
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME, "TLSv1.1");
 
-    validateConnection(startInfraWithSSL(props, false));
-
+    String restEndpoint = startInfraWithSSL(props, false);
+    validateConnection(restEndpoint, "TLSv1.1");
   }
 
   public void testSSLWithTLSv12Protocol() throws Exception {
-
     Properties props = new Properties();
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME, "TLSv1.2");
 
-    validateConnection(startInfraWithSSL(props, false));
-
+    String restEndpoint = startInfraWithSSL(props, false);
+    validateConnection(restEndpoint, "TLSv1.2");
   }
 
   public void testWithMultipleProtocol() throws Exception {
-
     Properties props = new Properties();
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME, "SSL,TLSv1.2");
 
-    validateConnection(startInfraWithSSL(props, false));
-
+    String restEndpoint = startInfraWithSSL(props, false);
+    validateConnection(restEndpoint, "TLSv1.2");
   }
 
   public void testSSLWithCipherSuite() throws Exception {
-
     System.setProperty("javax.net.debug", "ssl");
     Properties props = new Properties();
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
@@ -487,12 +486,11 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_CIPHERS_NAME, cipherSuites[0]);
 
-    validateConnection(startInfraWithSSL(props, false));
-
+    String restEndpoint = startInfraWithSSL(props, false);
+    validateConnection(restEndpoint, "TLSv1.2");
   }
 
   public void testSSLWithMultipleCipherSuite() throws Exception {
-
     Properties props = new Properties();
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
@@ -506,12 +504,11 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_CIPHERS_NAME, cipherSuites[0] + "," + cipherSuites[1]);
 
-    validateConnection(startInfraWithSSL(props, false));
-
+    String restEndpoint = startInfraWithSSL(props, false);
+    validateConnection(restEndpoint, "TLSv1.2");
   }
 
   public void testMutualAuthentication() throws Exception {
-
     Properties props = new Properties();
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
@@ -522,7 +519,9 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_TRUSTSTORE_NAME, jks.getCanonicalPath());
 
     props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME, "password");
-    validateConnection(startInfraWithSSL(props, false));
+
+    String restEndpoint = startInfraWithSSL(props, false);
+    validateConnection(restEndpoint, "SSL");
   }
 
 }

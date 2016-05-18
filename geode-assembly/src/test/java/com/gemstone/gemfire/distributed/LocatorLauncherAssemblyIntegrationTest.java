@@ -142,19 +142,17 @@ public class LocatorLauncherAssemblyIntegrationTest extends AbstractLocatorLaunc
       this.errorCollector.addError(e);
     }
 
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS)
-        .timeout(60, TimeUnit.SECONDS).until(() -> initialThreadCount == Thread.activeCount());
+    int finalThreadCount = Integer.MAX_VALUE;
 
     // Spin for up to 5 seconds waiting for threads to finish
-    //    for (int i = 0; i < 50 && finalThreadCount > initialThreadCount; i++) {
-    //      try {
-    //        Thread.sleep(100);
-    //      } catch (InterruptedException ex) {
-    //         ignored
-    //      }
-    //      finalThreadCount = Thread.activeCount();
-    //    }
-    int finalThreadCount = Thread.activeCount();
+    for (int i = 0; i < 50 && finalThreadCount > initialThreadCount; i++) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException ex) {
+        // ignored
+      }
+      finalThreadCount = Thread.activeCount();
+    }
 
     assertEquals(initialThreadCount, finalThreadCount);
   }
