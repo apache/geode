@@ -18,11 +18,14 @@ package com.gemstone.gemfire.test.fake;
 
 import static org.mockito.Mockito.*;
 
+import java.io.File;
 import java.net.UnknownHostException;
 
 import org.junit.Assert;
 
 import com.gemstone.gemfire.CancelCriterion;
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
@@ -65,6 +68,8 @@ public class Fakes {
     DistributionManager distributionManager = mock(DistributionManager.class);
     CancelCriterion systemCancelCriterion = mock(CancelCriterion.class);
     DSClock clock = mock(DSClock.class);
+    LogWriter logger = mock(LogWriter.class);
+    Statistics stats = mock(Statistics.class);
     
     InternalDistributedMember member;
     try {
@@ -73,6 +78,8 @@ public class Fakes {
       throw new RuntimeException(e);
     }
     
+    when(config.getCacheXmlFile()).thenReturn(new File(""));
+    when(config.getDeployWorkingDir()).thenReturn(new File("."));
     
     when(cache.getDistributedSystem()).thenReturn(system);
     when(cache.getMyId()).thenReturn(member);
@@ -84,6 +91,9 @@ public class Fakes {
     when(system.getDistributionManager()).thenReturn(distributionManager);
     when(system.getCancelCriterion()).thenReturn(systemCancelCriterion);
     when(system.getClock()).thenReturn(clock);
+    when(system.getLogWriter()).thenReturn(logger);
+    when(system.createAtomicStatistics(any(), any(), anyLong())).thenReturn(stats);
+    when(system.createAtomicStatistics(any(), any())).thenReturn(stats);
 
     when(distributionManager.getId()).thenReturn(member);
     when(distributionManager.getConfig()).thenReturn(config);

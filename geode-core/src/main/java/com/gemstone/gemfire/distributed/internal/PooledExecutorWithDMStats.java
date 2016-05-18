@@ -39,7 +39,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
   /** 
    * Create a new pool
    **/
-  public PooledExecutorWithDMStats(BlockingQueue<Runnable> q, int maxPoolSize, PoolStatHelper stats, ThreadFactory tf, int msTimeout, RejectedExecutionHandler reh) {
+  public PooledExecutorWithDMStats(SynchronousQueue<Runnable> q, int maxPoolSize, PoolStatHelper stats, ThreadFactory tf, int msTimeout, RejectedExecutionHandler reh) {
     super(getCorePoolSize(maxPoolSize), maxPoolSize,
           msTimeout, TimeUnit.MILLISECONDS,
           q, tf, reh);
@@ -61,9 +61,9 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
    */
   private Thread bufferConsumer;
   
-  private static BlockingQueue<Runnable> initQ(BlockingQueue<Runnable> q) {
+  private static SynchronousQueue<Runnable> initQ(BlockingQueue<Runnable> q) {
     if (q instanceof SynchronousQueue) {
-      return q;
+      return (SynchronousQueue<Runnable>) q;
     } else {
       return new SynchronousQueue/*NoSpin*/<Runnable>();
     }
@@ -95,7 +95,8 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
             try {
               for (;;) {
                 SystemFailure.checkFailure();
-                putQueue.put(takeQueue.take());
+                Runnable job = takeQueue.take();
+                putQueue.put(job);
               }
             }
             catch (InterruptedException ie) {

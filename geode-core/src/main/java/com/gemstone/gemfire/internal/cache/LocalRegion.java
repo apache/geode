@@ -7582,7 +7582,7 @@ public class LocalRegion extends AbstractRegion
           }
         }
         
-        if (!GemFireCacheImpl.ASYNC_EVENT_LISTENERS) {
+        if (this.cache.getEventThreadPool() == null) {
           dispatchEvent(this, event, op);
         }
         else {

@@ -125,9 +125,8 @@ public class JNDIInvoker  {
    * </p>
    *  
    */
-  public static void mapTransactions() {
+  public static void mapTransactions(DistributedSystem distSystem) {
     try {
-      DistributedSystem distSystem = InternalDistributedSystem.getAnyInstance();
       TransactionUtils.setLogWriter(distSystem.getLogWriter().convertToLogWriterI18n());
       cleanup();
       if (IGNORE_JTA) {

@@ -133,7 +133,7 @@ public class DLockService extends DistributedLockService {
   private DLockRecoverGrantorProcessor.MessageProcessor recoverGrantorProcessor;
   
   /** Thread-safe reference to DistributedLockStats */
-  private final DistributedLockStats dlockStats = getOrCreateStats();
+  private final DistributedLockStats dlockStats;
   
   /** 
    * Protects {@link #lockGrantorId}, {@link #grantor} and 
@@ -2145,6 +2145,7 @@ public class DLockService extends DistributedLockService {
                          boolean destroyOnDisconnect,
                          boolean automateFreeResources) {
     super();
+    this.dlockStats = getOrCreateStats(ds);
     this.serialNumber = createSerialNumber();
     this.serviceName = serviceName;
     this.ds = (InternalDistributedSystem) ds;
@@ -3185,12 +3186,10 @@ public class DLockService extends DistributedLockService {
   }
   
   /** Get or create static dlock stats */
-  protected static synchronized DistributedLockStats getOrCreateStats() {
+  protected static synchronized DistributedLockStats getOrCreateStats(DistributedSystem ds) {
     if (stats == DUMMY_STATS) {
-      InternalDistributedSystem ds =
-          InternalDistributedSystem.getAnyInstance();
       Assert.assertTrue(ds != null, 
-          "Cannot find any instance of InternalDistributedSystem");
+          "Need an instance of InternalDistributedSystem");
       StatisticsFactory statFactory = ds;
       long statId = OSProcess.getId();
       stats = new DLockStats(statFactory, statId);

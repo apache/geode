@@ -66,7 +66,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -270,9 +269,9 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   private static final Set<CacheLifecycleListener> cacheLifecycleListeners = new HashSet<CacheLifecycleListener>();
 
   /**
-   * Define LocalRegion.ASYNC_EVENT_LISTENERS=true to invoke event listeners in the background
+   * Define gemfire.Cache.ASYNC_EVENT_LISTENERS=true to invoke event listeners in the background
    */
-  public static final boolean ASYNC_EVENT_LISTENERS = Boolean.getBoolean("gemfire.Cache.ASYNC_EVENT_LISTENERS");
+  private static final boolean ASYNC_EVENT_LISTENERS = Boolean.getBoolean("gemfire.Cache.ASYNC_EVENT_LISTENERS");
 
   /**
    * If true then when a delta is applied the size of the entry value will be recalculated. If false (the default) then
@@ -283,6 +282,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   public static boolean DELTAS_RECALCULATE_SIZE = Boolean.getBoolean("gemfire.DELTAS_RECALCULATE_SIZE");
 
   public static final int EVENT_QUEUE_LIMIT = Integer.getInteger("gemfire.Cache.EVENT_QUEUE_LIMIT", 4096).intValue();
+  public static final int EVENT_THREAD_LIMIT = Integer.getInteger("gemfire.Cache.EVENT_THREAD_LIMIT", 16).intValue();
 
   /**
    * System property to limit the max query-execution time. By default its turned off (-1), the time is set in MiliSecs.
@@ -763,18 +763,22 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   // }
 
   public static GemFireCacheImpl createClient(DistributedSystem system, PoolFactory pf, CacheConfig cacheConfig) {
-    return basicCreate(system, true, cacheConfig, pf, true);
+    return basicCreate(system, true, cacheConfig, pf, true, ASYNC_EVENT_LISTENERS);
   }
 
   public static GemFireCacheImpl create(DistributedSystem system, CacheConfig cacheConfig) {
-    return basicCreate(system, true, cacheConfig, null, false);
+    return basicCreate(system, true, cacheConfig, null, false, ASYNC_EVENT_LISTENERS);
   }
 
-  public static Cache create(DistributedSystem system, boolean existingOk, CacheConfig cacheConfig) {
-    return basicCreate(system, existingOk, cacheConfig, null, false);
+  public static GemFireCacheImpl createWithAsyncEventListeners(DistributedSystem system, CacheConfig cacheConfig) {
+    return basicCreate(system, true, cacheConfig, null, false, true);
+  }
+  
+ public static Cache create(DistributedSystem system, boolean existingOk, CacheConfig cacheConfig) {
+    return basicCreate(system, existingOk, cacheConfig, null, false, ASYNC_EVENT_LISTENERS);
   }
 
-  private static GemFireCacheImpl basicCreate(DistributedSystem system, boolean existingOk, CacheConfig cacheConfig, PoolFactory pf, boolean isClient)
+  private static GemFireCacheImpl basicCreate(DistributedSystem system, boolean existingOk, CacheConfig cacheConfig, PoolFactory pf, boolean isClient, boolean asyncEventListeners)
   throws CacheExistsException, TimeoutException, CacheWriterException,
   GatewayException,
   RegionExistsException 
@@ -782,7 +786,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     try {
       GemFireCacheImpl instance = checkExistingCache(existingOk, cacheConfig);
       if (instance == null) {
-        instance = new GemFireCacheImpl(isClient, pf, system, cacheConfig);
+        instance = new GemFireCacheImpl(isClient, pf, system, cacheConfig, asyncEventListeners);
         instance.initialize();
       }
       return instance;
@@ -814,7 +818,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * Creates a new instance of GemFireCache and populates it according to the <code>cache.xml</code>, if appropriate.
    */
-  private GemFireCacheImpl(boolean isClient, PoolFactory pf, DistributedSystem system, CacheConfig cacheConfig) {
+  private GemFireCacheImpl(boolean isClient, PoolFactory pf, DistributedSystem system, CacheConfig cacheConfig, boolean asyncEventListeners) {
     this.isClient = isClient;
     this.clientpf = pf;
     this.cacheConfig = cacheConfig; // do early for bug 43213
@@ -825,7 +829,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
       
       // start JTA transaction manager within this synchronized block
       // to prevent race with cache close. fixes bug 43987
-      JNDIInvoker.mapTransactions();
+      JNDIInvoker.mapTransactions(system);
       this.system = (InternalDistributedSystem) system;
       this.dm = this.system.getDistributionManager();
       if (!this.isClient && PoolManager.getAll().isEmpty()) {
@@ -868,7 +872,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
 
       this.persistentMemberManager = new PersistentMemberManager();
 
-      if (ASYNC_EVENT_LISTENERS) {
+      if (asyncEventListeners) {
         final ThreadGroup group = LoggingThreadGroup.createThreadGroup("Message Event Threads",logger);
         ThreadFactory tf = new ThreadFactory() {
           public Thread newThread(final Runnable command) {
@@ -883,11 +887,8 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
             return thread;
           }
         };
-        // @todo darrel: add stats
-        // this.cachePerfStats.getEventQueueHelper());
         ArrayBlockingQueue q = new ArrayBlockingQueue(EVENT_QUEUE_LIMIT);
-        this.eventThreadPool = new PooledExecutorWithDMStats(q, 16, this.cachePerfStats.getEventPoolHelper(), tf, 1000,
-            new CallerRunsPolicy());
+        this.eventThreadPool = new PooledExecutorWithDMStats(q, EVENT_THREAD_LIMIT, this.cachePerfStats.getEventPoolHelper(), tf, 1000);
       } else {
         this.eventThreadPool = null;
       }
@@ -2078,7 +2079,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
 
         destroyGatewaySenderLockService();
 
-        if (ASYNC_EVENT_LISTENERS) {
+        if (this.eventThreadPool != null) {
           if (isDebugEnabled) {
             logger.debug("{}: stopping event thread pool...", this);
           }
@@ -3812,11 +3813,11 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
 
   /**
    * Returns the <code>Executor</code> (thread pool) that is used to execute cache event listeners.
+   * Returns <code>null</code> if no pool exists.
    *
    * @since 3.5
    */
   Executor getEventThreadPool() {
-    Assert.assertTrue(this.eventThreadPool != null);
     return this.eventThreadPool;
   }
 
