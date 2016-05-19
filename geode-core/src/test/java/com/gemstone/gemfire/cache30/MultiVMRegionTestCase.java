@@ -6945,7 +6945,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
     };
 
-    assertEquals(4, Host.getHost(0).getVMCount());
 //GemFireVersion.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
     VM vm0 = Host.getHost(0).getVM(0);
     VM vm1 = Host.getHost(0).getVM(1);
