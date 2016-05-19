@@ -33,6 +33,7 @@ public class TestCommand {
 
   public static OperationContext regionARead = new ResourceOperationContext("DATA", "READ", "RegionA");
   public static OperationContext regionAWrite = new ResourceOperationContext("DATA", "WRITE", "RegionA");
+  public static OperationContext regionAManage = new ResourceOperationContext("DATA", "MANAGE", "RegionA");
 
   public static OperationContext clusterRead = new ResourceOperationContext("CLUSTER", "READ");
   public static OperationContext clusterWrite = new ResourceOperationContext("CLUSTER", "WRITE");
@@ -91,7 +92,7 @@ public class TestCommand {
     createTestCommand("export config --member=member1", clusterRead);
 
     //CreateAlterDestroyRegionCommands
-    createTestCommand("alter region --name=region1 --eviction-max=5000", dataManage);
+    createTestCommand("alter region --name=RegionA --eviction-max=5000", regionAManage);
     createTestCommand("create region --name=region12 --type=REPLICATE", dataManage);
     createTestCommand("destroy region --name=value", dataManage);
 
@@ -102,7 +103,7 @@ public class TestCommand {
     createTestCommand("put --key=key1 --value=value1 --region=RegionA", regionAWrite);
     createTestCommand("get --key=key1 --region=RegionA", regionARead);
     createTestCommand("remove --region=RegionA", dataManage);
-    createTestCommand("query --query='SELECT * FROM /RegionA'", dataRead);
+    createTestCommand("query --query='SELECT * FROM /RegionA'", regionARead);
     createTestCommand("locate entry --key=k1 --region=RegionA", regionARead);
 
     // Deploy commands
@@ -147,8 +148,8 @@ public class TestCommand {
     //IndexCommands
     createTestCommand("clear defined indexes", dataManage);
     createTestCommand("create defined indexes", dataManage);
-    createTestCommand("create index --name=myKeyIndex --expression=region1.Id --region=region1 --type=key", dataManage);
-    createTestCommand("define index --name=myIndex1 --expression=exp1 --region=/exampleRegion", dataManage);
+    createTestCommand("create index --name=myKeyIndex --expression=region1.Id --region=RegionA --type=key", regionAManage);
+    createTestCommand("define index --name=myIndex1 --expression=exp1 --region=/RegionA", regionAManage);
     createTestCommand("destroy index --member=server2", dataManage);
     createTestCommand("list indexes", clusterRead);
 

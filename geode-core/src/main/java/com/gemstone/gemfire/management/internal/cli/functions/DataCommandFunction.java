@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -59,6 +57,7 @@ import com.gemstone.gemfire.internal.InternalEntity;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.commands.DataCommands;
@@ -77,6 +76,8 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.JsonUtil;
 import com.gemstone.gemfire.pdx.PdxInstance;
+
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 
 /***
@@ -912,6 +913,12 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
         CompiledValue compiledQuery = compiler.compileQuery(query);
         Set<String> regions = new HashSet<String>();
         compiledQuery.getRegionsInQuery(regions, null);
+
+        // authorize data read on these regions
+        for(String region:regions){
+          GeodeSecurityUtil.authorizeRegionRead(region);
+        }
+
         regionsInQuery = Collections.unmodifiableSet(regions);
         if (regionsInQuery.size() > 0) {
           Set<DistributedMember> members = DataCommands.getQueryRegionsAssociatedMembers(regionsInQuery, cache, false);

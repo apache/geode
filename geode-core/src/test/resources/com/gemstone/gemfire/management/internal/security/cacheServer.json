@@ -82,6 +82,27 @@
       "regions": "null,region1"
     },
     {
+      "name": "regionA-manage",
+      "operationsAllowed": [
+        "DATA:MANAGE"
+      ],
+      "regions": "RegionA"
+    },
+    {
+      "name": "regionA-write",
+      "operationsAllowed": [
+        "DATA:WRITE"
+      ],
+      "regions": "RegionA"
+    },
+    {
+      "name": "regionA-read",
+      "operationsAllowed": [
+        "DATA:READ"
+      ],
+      "regions": "RegionA"
+    },
+    {
       "name": "secure-use",
       "operationsAllowed": [
         "DATA:READ",
@@ -182,6 +203,27 @@
       "password": "1234567",
       "roles": [
         "cluster-manage"
+      ]
+    },
+    {
+      "name": "regionA-manager",
+      "password": "1234567",
+      "roles": [
+        "regionA-manage"
+      ]
+    },
+    {
+      "name": "regionA-writer",
+      "password": "1234567",
+      "roles": [
+        "regionA-write"
+      ]
+    },
+    {
+      "name": "regionA-reader",
+      "password": "1234567",
+      "roles": [
+        "regionA-read"
       ]
     }
   ]

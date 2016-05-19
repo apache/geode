@@ -16,13 +16,15 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import static org.assertj.core.api.AssertionsForClassTypes.*;
+import static org.assertj.core.api.AssertionsForClassTypes.fail;
+import static org.junit.Assert.*;
 
 import java.util.List;
 
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.MemberMXBean;
+import com.gemstone.gemfire.security.NotAuthorizedException;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 import org.junit.Before;
@@ -58,14 +60,20 @@ public class CliCommandsSecurityTest {
   @JMXConnectionConfiguration(user = "stranger", password = "1234567")
   public void testNoAccess(){
    for (TestCommand command:commands) {
+     // skip query commands since query commands are only available in client shell
+     if(command.getCommand().startsWith("query"))
+       continue;
       LogService.getLogger().info("processing: "+command.getCommand());
-      // for those commands that don't require any permission, any user can execute them
-      if(command.getPermission()==null){
-        bean.processCommand(command.getCommand());
-      }
-      else {
-        assertThatThrownBy(() -> bean.processCommand(command.getCommand()))
-            .hasMessageContaining(command.getPermission().toString());
+      // for those commands that requires a permission, we expect an exception to be thrown
+      if(command.getPermission()!=null){
+        try{
+          String result = bean.processCommand(command.getCommand());
+          fail(command.getCommand() + " has result: "+ result);
+        }
+        catch(NotAuthorizedException e){
+          assertTrue(e.getMessage()+" should contain "+command.getPermission(),
+            e.getMessage().contains(command.getPermission().toString()));
+        }
       }
     }
   }

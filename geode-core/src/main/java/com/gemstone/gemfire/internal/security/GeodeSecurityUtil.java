@@ -173,6 +173,10 @@ public class GeodeSecurityUtil {
     authorize("DATA", "READ");
   }
 
+  public static void authorizeRegionManage(String regionName){
+    authorize("DATA", "MANAGE", regionName);
+  }
+
   public static void authorizeRegionWrite(String regionName){
     authorize("DATA", "WRITE", regionName);
   }
