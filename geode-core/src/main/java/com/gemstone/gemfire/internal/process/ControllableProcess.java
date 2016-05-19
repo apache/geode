@@ -64,12 +64,18 @@ public final class ControllableProcess {
         if (statusFile.exists()) {
           statusFile.delete();
         }
-        boolean created = statusFile.createNewFile();
+        final File statusFileTmp = new File(workingDir, processType.getStatusFileName() + ".tmp");
+        if (statusFileTmp.exists()) {
+          statusFileTmp.delete();
+        }
+        boolean created = statusFileTmp.createNewFile();
         assert created;
-        final FileWriter writer = new FileWriter(statusFile);
+        final FileWriter writer = new FileWriter(statusFileTmp);
         writer.write(state.toJson());
         writer.flush();
         writer.close();
+        boolean renamed = statusFileTmp.renameTo(statusFile);
+        assert renamed;
       }
     };
     
