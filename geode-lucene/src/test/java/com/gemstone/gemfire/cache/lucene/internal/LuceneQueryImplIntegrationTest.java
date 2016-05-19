@@ -36,6 +36,7 @@ import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.cache.lucene.LuceneIntegrationTest;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
 import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
@@ -46,25 +47,22 @@ import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollecto
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class LuceneQueryImplIntegrationTest {
+public class LuceneQueryImplIntegrationTest extends LuceneIntegrationTest {
   private static int LIMIT = 123;
-  private Cache cache;
   private Region<Object, Object> region;
 
   @Before
-  public void createCache() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
-    region = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT).create("region");
+  public void createRegion() {
+    region = cache.createRegionFactory(RegionShortcut.PARTITION).create("region");
   }
 
   @After
-  public void removeCache() {
+  public void removeFunction() {
     FunctionService.unregisterFunction(LuceneFunction.ID);
-    cache.close();
   }
 
   @Test
-  public void test() {
+  public void shouldInvokeLuceneFunctionWithCorrectArguments() {
     // Register a fake function to observe the function invocation
     FunctionService.unregisterFunction(LuceneFunction.ID);
     TestLuceneFunction function = new TestLuceneFunction();
