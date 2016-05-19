@@ -73,14 +73,16 @@ idea.module.iml {
 }
 
 distributedTest {
-  dependsOn ':geode-core:webJar', 'war'
+  dependsOn war
 }
 
 integrationTest {
-  dependsOn ':geode-core:webJar', 'war'
+  dependsOn war
 }
 
 war {
-  classpath configurations.runtime 
+  dependsOn ':geode-core:webJar'
+
+  classpath configurations.runtime
   classpath project(':geode-core').webJar.archivePath
 }
