@@ -141,7 +141,7 @@ public class JSONPdxClientServerDUnitTest extends CacheTestCase {
     Region region = getRootRegion("testSimplePdx");
     
     //Create Object and initialize its members.
-    TestObjectForPdxFormatter testObject = new TestObjectForPdxFormatter();
+    TestObjectForJSONFormatter testObject = new TestObjectForJSONFormatter();
     testObject.defaultInitialization();
 
     // put the object into cache.
@@ -205,7 +205,7 @@ public class JSONPdxClientServerDUnitTest extends CacheTestCase {
     }
     
     //TestCase-2 : Validate Java-->JSON-->PdxInstance --> Java Mapping
-    TestObjectForPdxFormatter actualTestObject = new TestObjectForPdxFormatter();
+    TestObjectForJSONFormatter actualTestObject = new TestObjectForJSONFormatter();
     actualTestObject.defaultInitialization();
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.setDateFormat(new SimpleDateFormat("MM/dd/yyyy"));
@@ -227,13 +227,13 @@ public class JSONPdxClientServerDUnitTest extends CacheTestCase {
         
         //4. get the actualType testObject from the pdxInstance and compare it with actualTestObject
         Object getObj = receivedPdxInstance.getObject();
-        if(getObj instanceof TestObjectForPdxFormatter){
-          TestObjectForPdxFormatter receivedTestObject = (TestObjectForPdxFormatter)getObj;
+        if(getObj instanceof TestObjectForJSONFormatter){
+          TestObjectForJSONFormatter receivedTestObject = (TestObjectForJSONFormatter)getObj;
           
           boolean isEqual = actualTestObject.equals(receivedTestObject);
           Assert.assertTrue(isEqual, "actualTestObject and receivedTestObject should be equal");
         }else {
-          fail("getObj is expected to be an instance of TestObjectForPdxFormatter");
+          fail("getObj is expected to be an instance of TestObjectForJSONFormatter");
         }
       }else {
         fail("receivedObject is expected to be of type PdxInstance");

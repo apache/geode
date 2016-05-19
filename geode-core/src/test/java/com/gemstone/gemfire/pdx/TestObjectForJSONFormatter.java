@@ -31,9 +31,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxSerializable;
-import com.gemstone.gemfire.pdx.PdxWriter;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,7 +38,7 @@ enum Day {
   Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
 }
 
-public class TestObjectForPdxFormatter implements PdxSerializable {
+public class TestObjectForJSONFormatter implements PdxSerializable {
 
   private boolean p_bool;
   private byte p_byte;
@@ -99,12 +96,12 @@ public class TestObjectForPdxFormatter implements PdxSerializable {
 
   private Employee employee;
   
-  public TestObjectForPdxFormatter(){
+  public TestObjectForJSONFormatter(){
   }
   
   public String addClassTypeToJson(String json) throws JSONException {
     JSONObject jsonObj = new JSONObject(json);
-    jsonObj.put("@type", "com.gemstone.gemfire.pdx.TestObjectForPdxFormatter");
+    jsonObj.put("@type", "com.gemstone.gemfire.pdx.TestObjectForJSONFormatter");
     return jsonObj.toString();
   }
   
@@ -230,7 +227,7 @@ public class TestObjectForPdxFormatter implements PdxSerializable {
     day = Day.Thursday;
   }
 
-  public TestObjectForPdxFormatter(boolean p_bool, byte p_byte, short p_short,
+  public TestObjectForJSONFormatter(boolean p_bool, byte p_byte, short p_short,
       int p_int, long p_long, float p_float, double p_double, Boolean w_bool,
       Byte w_byte, Short w_short, Integer w_int, Long w_long,
       BigInteger w_bigInt, Float w_float, BigDecimal w_bigDec,
@@ -871,7 +868,7 @@ public class TestObjectForPdxFormatter implements PdxSerializable {
     out.writeObject("day", day);
 
     out.writeObject("employee", this.employee);
-    //out.writeString("@type", "com.gemstone.gemfire.pdx.TestObjectForPdxFormatter");
+    //out.writeString("@type", "com.gemstone.gemfire.pdx.TestObjectForJSONFormatter");
   }
 
   @Override
@@ -883,7 +880,7 @@ public class TestObjectForPdxFormatter implements PdxSerializable {
     if (getClass() != obj.getClass())
       return false;
 
-    TestObjectForPdxFormatter other = (TestObjectForPdxFormatter) obj;
+    TestObjectForJSONFormatter other = (TestObjectForJSONFormatter) obj;
 
     // primitive type
     if (p_bool != other.p_bool)
