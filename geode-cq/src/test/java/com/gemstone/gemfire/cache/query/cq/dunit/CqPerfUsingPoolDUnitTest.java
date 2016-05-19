@@ -429,7 +429,6 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
     // Create.
     cqDUnitTest.createValues(server, cqDUnitTest.regions[0], size);
     cqDUnitTest.waitForCreated(client, "testMatchingCqs_0", CqQueryUsingPoolDUnitTest.KEY+size);
-    cqDUnitTest.waitForCreated(client, "testMatchingCqs_3", CqQueryUsingPoolDUnitTest.KEY+size);
 
     // Close one of the CQ.
     cqDUnitTest.closeCQ(client, "testMatchingCqs_0");      
@@ -438,6 +437,7 @@ public class CqPerfUsingPoolDUnitTest extends CacheTestCase {
     // Update.
     cqDUnitTest.createValues(server, cqDUnitTest.regions[0], size);
     cqDUnitTest.waitForUpdated(client, "testMatchingCqs_3", CqQueryUsingPoolDUnitTest.KEY+size);
+    cqDUnitTest.waitForUpdated(client, "testMatchingCqs_1", CqQueryUsingPoolDUnitTest.KEY+size);
     
     // Stop one of the CQ.
     cqDUnitTest.stopCQ(client, "testMatchingCqs_1");      
