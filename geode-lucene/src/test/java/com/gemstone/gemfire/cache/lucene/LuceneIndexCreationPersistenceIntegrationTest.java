@@ -24,6 +24,7 @@ import static junitparams.JUnitParamsRunner.$;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import com.gemstone.gemfire.cache.Region;
@@ -35,6 +36,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.rules.DiskDirRule;
+import com.jayway.awaitility.Awaitility;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Rule;
