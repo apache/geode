@@ -25,31 +25,26 @@ public class ResourceOperationContext extends OperationContext {
 
   private boolean isPostOperation = false;
   private Object opResult = null;
+
+  // these default values are used when creating a lock around an operation
   private Resource resource = Resource.NULL;
   private OperationCode operation = OperationCode.NULL;
-
-  private String regionName = null;
+  private String regionName = OperationContext.ALL_REGIONS;
 
   public ResourceOperationContext() {
     this(null, null, null);
   }
 
+  // When only specified a resource and operation, it's assumed that you need access to all regions in order to perform the operations
+  // guarded by this ResourceOperationConext
   public ResourceOperationContext(String resource, String operation) {
-    this(resource, operation, null);
+    this(resource, operation, OperationContext.ALL_REGIONS);
   }
 
   public ResourceOperationContext(String resource, String operation, String regionName) {
     if (resource != null) this.resource = Resource.valueOf(resource);
     if (operation != null) this.operation = OperationCode.valueOf(operation);
     if (regionName !=null ) this.regionName = regionName;
-
-    //for DATA resource, when we construct the lock to guard the operations, there should always be a 3rd part (regionName),
-    // if no regionName is specified, we need to add "NULL" to it.
-    // this means, for general data operations, or operations that we can't put a regionName on yet, like backup diskstore, query data, create regions
-    // it will require DATA:READ/WRITE:NULL role
-    if(this.resource==Resource.DATA && this.regionName==null){
-      this.regionName = "NULL";
-    }
 
     setParts(this.resource.name()+":"+this.operation.name()+":"+this.regionName, true);
   }

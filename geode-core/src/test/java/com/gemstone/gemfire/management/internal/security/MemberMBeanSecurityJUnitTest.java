@@ -103,7 +103,7 @@ public class MemberMBeanSecurityJUnitTest {
     assertThatThrownBy(() -> bean.isCacheServer()).hasMessageContaining(TestCommand.clusterRead.toString());
     assertThatThrownBy(() -> bean.isServer()).hasMessageContaining(TestCommand.clusterRead.toString());
     assertThatThrownBy(() -> bean.listConnectedGatewayReceivers()).hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.processCommand("create region --name=Region_A")).hasMessageContaining("DATA:MANAGE");
+    assertThatThrownBy(() -> bean.processCommand("create region --name=Region_A")).hasMessageContaining(TestCommand.dataManage.toString());
     assertThatThrownBy(() -> bean.showJVMMetrics()).hasMessageContaining(TestCommand.clusterRead.toString());
     assertThatThrownBy(() -> bean.status()).hasMessageContaining(TestCommand.clusterRead.toString());
   }

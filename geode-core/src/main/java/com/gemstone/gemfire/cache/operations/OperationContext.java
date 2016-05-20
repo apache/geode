@@ -31,6 +31,7 @@ import org.apache.shiro.authz.permission.WildcardPermission;
  * @since 5.5
  */
 public abstract class OperationContext extends WildcardPermission{
+  public static String ALL_REGIONS="*";
 
   public enum Resource {
     NULL,
@@ -304,7 +305,7 @@ public abstract class OperationContext extends WildcardPermission{
   }
 
   public String getRegionName(){
-    return null;
+    return ALL_REGIONS;
   }
 
   /**
@@ -360,7 +361,7 @@ public abstract class OperationContext extends WildcardPermission{
 
   @Override
   public String toString(){
-    if(getRegionName()==null)
+    if(ALL_REGIONS.equals(getRegionName()))
       return getResource()+":"+getOperationCode();
     else
       return getResource()+":"+getOperationCode()+":"+getRegionName();

@@ -19,6 +19,7 @@ package com.gemstone.gemfire.management.internal.security;
 
 import static org.junit.Assert.*;
 
+import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
@@ -37,7 +38,7 @@ public class ResourceOperationContextJUnitTest {
     context = new ResourceOperationContext();
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(OperationCode.NULL, context.getOperationCode());
-    assertEquals(null, context.getRegionName());
+    assertEquals(OperationContext.ALL_REGIONS, context.getRegionName());
   }
 
   @Test
@@ -51,22 +52,22 @@ public class ResourceOperationContextJUnitTest {
     context = new ResourceOperationContext(null, null, null);
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(OperationCode.NULL, context.getOperationCode());
-    assertEquals(null, context.getRegionName());
+    assertEquals(OperationContext.ALL_REGIONS, context.getRegionName());
 
     context = new ResourceOperationContext(null, null);
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(OperationCode.NULL, context.getOperationCode());
-    assertEquals(null, context.getRegionName());
+    assertEquals(OperationContext.ALL_REGIONS, context.getRegionName());
 
     context = new ResourceOperationContext("DATA", null, null);
     assertEquals(Resource.DATA, context.getResource());
     assertEquals(OperationCode.NULL, context.getOperationCode());
-    assertEquals("NULL", context.getRegionName());
+    assertEquals(OperationContext.ALL_REGIONS, context.getRegionName());
 
     context = new ResourceOperationContext("CLUSTER", null, null);
     assertEquals(Resource.CLUSTER, context.getResource());
     assertEquals(OperationCode.NULL, context.getOperationCode());
-    assertEquals(null, context.getRegionName());
+    assertEquals(OperationContext.ALL_REGIONS, context.getRegionName());
 
     context = new ResourceOperationContext(null, "MANAGE", "REGIONA");
     assertEquals(Resource.NULL, context.getResource());
@@ -85,7 +86,7 @@ public class ResourceOperationContextJUnitTest {
     assertEquals("NULL:NULL", context.toString());
 
     context = new ResourceOperationContext("DATA", "MANAGE");
-    assertEquals("DATA:MANAGE:NULL", context.toString());
+    assertEquals("DATA:MANAGE", context.toString());
 
     context = new ResourceOperationContext("DATA", "MANAGE", "REGIONA");
     assertEquals("DATA:MANAGE:REGIONA", context.toString());
