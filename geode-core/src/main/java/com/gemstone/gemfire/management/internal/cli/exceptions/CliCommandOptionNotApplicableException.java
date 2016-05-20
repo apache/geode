@@ -20,17 +20,21 @@ import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
 import com.gemstone.gemfire.management.internal.cli.parser.Option;
 import com.gemstone.gemfire.management.internal.cli.parser.OptionSet;
 
-public class CliCommandOptionNotApplicableException extends
-    CliCommandOptionException {
+public class CliCommandOptionNotApplicableException extends CliCommandOptionException {
 
-  public CliCommandOptionNotApplicableException(CommandTarget commandTarget,
-      Option option) {
-    super(commandTarget, option);
+  public CliCommandOptionNotApplicableException(final CommandTarget commandTarget, final Option option) {
+    this(commandTarget, option, null, null);
   }
 
-  public CliCommandOptionNotApplicableException(CommandTarget commandTarget,
-      Option option, OptionSet optionSet) {
-    super(commandTarget, option, optionSet);
+  public CliCommandOptionNotApplicableException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet) {
+    this(commandTarget, option, optionSet, null);
   }
 
+  public CliCommandOptionNotApplicableException(final Throwable cause) {
+    this(null, null, null, cause);
+  }
+
+  public CliCommandOptionNotApplicableException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet, Throwable cause) {
+    super(commandTarget, option, optionSet, cause);
+  }
 }

@@ -44,9 +44,11 @@ import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.TrimmedI
 /**
  * Implementation of {@link GfshOptionParser} which internally makes use of
  * {@link joptsimple.OptionParser}
+ *
+ * Newly constructed JoptOptionParser must be loaded with arguments and
+ * options before parsing command strings.
  * 
  * @since 7.0
- * 
  */
 public class JoptOptionParser implements GfshOptionParser {
 
@@ -119,11 +121,9 @@ public class JoptOptionParser implements GfshOptionParser {
       // int factor = 0;
       try {
         joptOptionSet = parser.parse(preProcessedInput);
-      } catch (Exception e) {
-        if (e instanceof OptionException) {
-          ce = processException(e);
-          joptOptionSet = ((OptionException) e).getDetected();
-        }
+      } catch (OptionException e) {
+        ce = processException(e);
+        joptOptionSet = e.getDetected();
       }
       if (joptOptionSet != null) {
 
@@ -244,19 +244,8 @@ public class JoptOptionParser implements GfshOptionParser {
     return optionSet;
   }
 
-  private CliCommandOptionException processException(Exception e) {
-    CliCommandOptionException ce = null;
-    if (e instanceof OptionException) {
-      ce = (CliCommandOptionException) ExceptionGenerator
-          .generate((OptionException) e);
-      if (ce != null) {
-        if (ce instanceof CliCommandOptionException) {
-          ((CliCommandOptionException) ce)
-              .setOption(getOption((OptionException) e));
-        }
-      }
-    }
-    return ce;
+  private CliCommandOptionException processException(final OptionException exception) {
+    return ExceptionGenerator.generate(getOption(exception), exception);
   }
 
   private Option getOption(OptionException oe) {

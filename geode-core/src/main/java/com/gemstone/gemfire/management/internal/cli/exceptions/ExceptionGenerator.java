@@ -22,22 +22,26 @@ import joptsimple.OptionException;
 import joptsimple.OptionMissingRequiredArgumentException;
 import joptsimple.UnrecognizedOptionException;
 
+import com.gemstone.gemfire.management.internal.cli.parser.Option;
+
 /**
- * 
- *         Converts joptsimple exceptions into corresponding exceptions for cli
- * 
+ * Converts joptsimple exceptions into corresponding exceptions for cli
  */
 public class ExceptionGenerator {
 
-  public static CliException generate(OptionException oe) {
-    if (oe instanceof MissingRequiredOptionException) {
-      return new CliCommandOptionMissingException(null, null, null);
-    } else if (oe instanceof OptionMissingRequiredArgumentException) {
-      return new CliCommandOptionValueMissingException(null, null, null, null);
-    } else if (oe instanceof UnrecognizedOptionException) {
-      return new CliCommandOptionNotApplicableException(null, null, null);
-    } else if (oe instanceof MultipleArgumentsForOptionException) {
-      return new CliCommandOptionHasMultipleValuesException(null, null, null);
+  public static CliCommandOptionException generate(Option option, OptionException e) {
+    if (MissingRequiredOptionException.class.isInstance(e)) {
+      return new CliCommandOptionMissingException(e);
+
+    } else if (OptionMissingRequiredArgumentException.class.isInstance(e)) {
+      return new CliCommandOptionValueMissingException(e);
+
+    } else if (UnrecognizedOptionException.class.isInstance(e)) {
+      return new CliCommandOptionNotApplicableException(e);
+
+    } else if (MultipleArgumentsForOptionException.class.isInstance(e)) {
+      return new CliCommandOptionHasMultipleValuesException(e);
+
     } else {
       return null;
     }

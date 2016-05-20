@@ -20,17 +20,17 @@ import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
 import com.gemstone.gemfire.management.internal.cli.parser.Option;
 import com.gemstone.gemfire.management.internal.cli.parser.OptionSet;
 
-public class CliCommandOptionValueConversionException extends
-    CliCommandOptionValueException {
+public class CliCommandOptionValueConversionException extends CliCommandOptionValueException {
 
-  public CliCommandOptionValueConversionException(CommandTarget commandTarget,
-      Option option, String value) {
-    super(commandTarget, option, value);
+  public CliCommandOptionValueConversionException(final CommandTarget commandTarget, final Option option, final String value) {
+    this(commandTarget, option, null, value, null);
   }
 
-  public CliCommandOptionValueConversionException(CommandTarget commandTarget,
-      Option option, OptionSet optionSet, String value) {
-    super(commandTarget, option, optionSet, value);
+  public CliCommandOptionValueConversionException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet, final String value) {
+    this(commandTarget, option, optionSet, value, null);
   }
 
+  public CliCommandOptionValueConversionException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet, final String value, final Throwable cause) {
+    super(commandTarget, option, optionSet, value, null);
+  }
 }

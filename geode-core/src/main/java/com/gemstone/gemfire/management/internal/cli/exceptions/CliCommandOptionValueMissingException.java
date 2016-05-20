@@ -20,17 +20,21 @@ import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
 import com.gemstone.gemfire.management.internal.cli.parser.Option;
 import com.gemstone.gemfire.management.internal.cli.parser.OptionSet;
 
-public class CliCommandOptionValueMissingException extends
-    CliCommandOptionValueException {
+public class CliCommandOptionValueMissingException extends CliCommandOptionValueException {
 
-  public CliCommandOptionValueMissingException(CommandTarget commandTarget,
-      Option option, String value) {
-    super(commandTarget, option, value);
+  public CliCommandOptionValueMissingException(final CommandTarget commandTarget, final Option option, final String value) {
+    this(commandTarget, option, null, value, null);
   }
 
-  public CliCommandOptionValueMissingException(CommandTarget commandTarget,
-      Option option, OptionSet optionSet, String value) {
+  public CliCommandOptionValueMissingException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet, final String value) {
+    this(commandTarget, option, optionSet, value, null);
+  }
+
+  public CliCommandOptionValueMissingException(final Throwable cause) {
+    this(null, null, null, null, cause);
+  }
+
+  public CliCommandOptionValueMissingException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet, final String value, final Throwable cause) {
     super(commandTarget, option, optionSet, value);
   }
-
 }

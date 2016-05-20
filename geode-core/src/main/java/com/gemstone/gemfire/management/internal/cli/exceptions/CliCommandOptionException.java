@@ -24,30 +24,36 @@ public class CliCommandOptionException extends CliCommandException {
 
   private Option option;
 
+  public CliCommandOptionException(final CommandTarget commandTarget, final Option option) {
+    this(commandTarget, option, null, null);
+  }
+
+  public CliCommandOptionException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet) {
+    this(commandTarget, option, optionSet, null);
+  }
+
+  public CliCommandOptionException(final CommandTarget commandTarget, final Option option, final Throwable cause) {
+    this(commandTarget, option, null, cause);
+  }
+
+  public CliCommandOptionException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet, final Throwable cause) {
+    super(commandTarget, optionSet, cause);
+    this.setOption(option);
+  }
+
   /**
-   * @return option for which the exception occured
+   * @return option for which the exception occurred
    */
   public Option getOption() {
     return option;
   }
 
   /**
-   * @param option
-   *          the option to set
+   * TODO: make this immutable
+   *
+   * @param option the option to set
    */
   public void setOption(Option option) {
     this.option = option;
   }
-
-  public CliCommandOptionException(CommandTarget commandTarget, Option option) {
-    super(commandTarget);
-    this.setOption(option);
-  }
-
-  public CliCommandOptionException(CommandTarget commandTarget, Option option,
-      OptionSet optionSet) {
-    super(commandTarget, optionSet);
-    this.setOption(option);
-  }
-
 }

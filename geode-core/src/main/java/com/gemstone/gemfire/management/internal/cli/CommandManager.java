@@ -365,8 +365,8 @@ public class CommandManager {
           for (Annotation annotation : annotations) {
             if (annotation instanceof CliArgument) {
               // Here we need to create the argument Object
-              arguments.add(createArgument((CliArgument) annotation,
-                  parameterType, parameterNo));
+              Argument argumentToAdd = createArgument((CliArgument) annotation, parameterType, parameterNo);
+              arguments.add(argumentToAdd);
               parameterNo++;
             } else if (annotation instanceof CliOption) {
               Option createdOption = createOption((CliOption) annotation, parameterType, parameterNo);

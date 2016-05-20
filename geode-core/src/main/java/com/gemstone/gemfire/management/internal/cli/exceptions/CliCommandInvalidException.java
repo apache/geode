@@ -21,13 +21,19 @@ import com.gemstone.gemfire.management.internal.cli.parser.OptionSet;
 
 public class CliCommandInvalidException extends CliCommandException {
 
-  public CliCommandInvalidException(CommandTarget commandTarget) {
-    super(commandTarget);
+  public CliCommandInvalidException(final CommandTarget commandTarget) {
+    this(commandTarget, null, null);
   }
 
-  public CliCommandInvalidException(CommandTarget commandTarget,
-      OptionSet optionSet) {
-    super(commandTarget, optionSet);
+  public CliCommandInvalidException(final CommandTarget commandTarget, OptionSet optionSet) {
+    this(commandTarget, optionSet, null);
   }
 
+  public CliCommandInvalidException(final Throwable cause) {
+    this(null, null, cause);
+  }
+
+  public CliCommandInvalidException(final CommandTarget commandTarget, OptionSet optionSet, Throwable cause) {
+    super(commandTarget, optionSet, cause);
+  }
 }

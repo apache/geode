@@ -21,13 +21,22 @@ import com.gemstone.gemfire.management.internal.cli.parser.Option;
 import com.gemstone.gemfire.management.internal.cli.parser.OptionSet;
 
 public class CliCommandOptionHasMultipleValuesException extends CliCommandOptionValueException {
+
   private static final long serialVersionUID = -5277268341319591711L;
 
-  public CliCommandOptionHasMultipleValuesException(CommandTarget commandTarget, Option option, String value) {
-    super(commandTarget, option, value);
+  public CliCommandOptionHasMultipleValuesException(final CommandTarget commandTarget, final Option option, final String value) {
+    this(commandTarget, option, null, value, null);
   }
 
-  public CliCommandOptionHasMultipleValuesException(CommandTarget commandTarget, Option option, OptionSet optionSet, String value) {
-    super(commandTarget, option, optionSet, value);
+  public CliCommandOptionHasMultipleValuesException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet, final String value) {
+    this(commandTarget, option, optionSet, value, null);
+  }
+
+  public CliCommandOptionHasMultipleValuesException(final Throwable cause) {
+    this(null, null, null, null, cause);
+  }
+
+  public CliCommandOptionHasMultipleValuesException(final CommandTarget commandTarget, Option option, final OptionSet optionSet, final String value, final Throwable cause) {
+    super(commandTarget, option, optionSet, value, cause);
   }
 }

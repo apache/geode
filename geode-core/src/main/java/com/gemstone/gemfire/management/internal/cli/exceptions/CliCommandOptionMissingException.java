@@ -22,14 +22,19 @@ import com.gemstone.gemfire.management.internal.cli.parser.OptionSet;
 
 public class CliCommandOptionMissingException extends CliCommandOptionException {
 
-  public CliCommandOptionMissingException(CommandTarget commandTarget,
-      Option option) {
-    super(commandTarget, option);
+  public CliCommandOptionMissingException(final CommandTarget commandTarget, final Option option) {
+    this(commandTarget, option, null, null);
   }
 
-  public CliCommandOptionMissingException(CommandTarget commandTarget,
-      Option option, OptionSet optionSet) {
-    super(commandTarget, option, optionSet);
+  public CliCommandOptionMissingException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet) {
+    this(commandTarget, option, optionSet, null);
   }
 
+  public CliCommandOptionMissingException(final Throwable cause) {
+    this(null, null, null, cause);
+  }
+
+  public CliCommandOptionMissingException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet, final Throwable cause) {
+    super(commandTarget, option, optionSet, cause);
+  }
 }

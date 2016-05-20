@@ -16,6 +16,21 @@
  */
 package com.gemstone.gemfire.management.internal.cli.exceptions;
 
-public class CliException extends Exception {
+public abstract class CliException extends Exception {
 
+  public CliException() {
+    this(null, null);
+  }
+
+  public CliException(String message) {
+    this(message, null);
+  }
+
+  public CliException(Throwable cause) {
+    super(null, cause);
+  }
+
+  public CliException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

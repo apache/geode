@@ -124,7 +124,7 @@ public class Option extends Parameter {
     return true;
   }
 
-  public final List<String> getAggregate() {
+  public List<String> getAggregate() {
     return aggregate;
   }
 

@@ -22,21 +22,26 @@ import com.gemstone.gemfire.management.internal.cli.parser.OptionSet;
 
 public class CliCommandOptionValueException extends CliCommandOptionException {
 
-  private String value;
+  private final String value;
+
+  public CliCommandOptionValueException(final CommandTarget commandTarget, final Option option, final String value) {
+    this(commandTarget, option, null, value, null);
+  }
+
+  public CliCommandOptionValueException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet, final String value) {
+    this(commandTarget, option, null, value, null);
+  }
+
+  public CliCommandOptionValueException(final Throwable cause) {
+    this(null, null, null, null, cause);
+  }
+
+  public CliCommandOptionValueException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet, final String value, final Throwable cause) {
+    super(commandTarget, option, optionSet, cause);
+    this.value = value;
+  }
 
   public String getValue() {
     return value;
-  }
-
-  public CliCommandOptionValueException(CommandTarget commandTarget,
-      Option option, String value) {
-    super(commandTarget, option);
-    this.value = value;
-  }
-
-  public CliCommandOptionValueException(CommandTarget commandTarget,
-      Option option, OptionSet optionSet, String value) {
-    super(commandTarget, option, optionSet);
-    this.value = value;
   }
 }
