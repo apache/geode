@@ -31,9 +31,9 @@ import com.gemstone.gemfire.internal.sequencelog.io.OutputStreamAppender;
  */
 public class SequenceLoggerImpl implements SequenceLogger {
 
-  private static final SequenceLogger INSTANCE;
+  private static final SequenceLoggerImpl INSTANCE;
   
-  public static final String ENABLED_TYPES_PROPERTY = "gemfire.GraphLoggerImpl.ENABLED_TYPES";
+  public static final String ENABLED_TYPES_PROPERTY = "gemfire.SequenceLoggerImpl.ENABLED_TYPES";
   
   private final EnumSet<GraphType> enabledTypes;
   
@@ -59,8 +59,8 @@ public class SequenceLoggerImpl implements SequenceLogger {
    * Should be invoked when GemFire cache is closing or closed. 
    */
   public static void signalCacheClose() {
-    if (INSTANCE != null) {
-      ((SequenceLoggerImpl)INSTANCE).consumerThread.interrupt();
+    if (INSTANCE != null && INSTANCE.consumerThread != null) {
+      INSTANCE.consumerThread.interrupt();
     }
   }
 
@@ -95,8 +95,10 @@ public class SequenceLoggerImpl implements SequenceLogger {
   }
   
   private void start() {
-    consumerThread = new ConsumerThread();
-    consumerThread.start();
+    if(!enabledTypes.isEmpty()) {
+      consumerThread = new ConsumerThread();
+      consumerThread.start();
+    }
   }
 
   private class ConsumerThread extends Thread {
@@ -110,13 +112,6 @@ public class SequenceLoggerImpl implements SequenceLogger {
     public void run() {
       Transition edge;
       while(true) {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        if (cache == null || cache.isClosed()) {
-          if (appender != null) {
-            appender.close();
-          }
-          break;
-        }
         try {
           edge = edges.take();
           if(edge instanceof FlushToken) {
