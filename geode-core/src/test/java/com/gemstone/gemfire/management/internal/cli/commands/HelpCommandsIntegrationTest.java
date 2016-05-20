@@ -57,6 +57,8 @@ public class HelpCommandsIntegrationTest {
     jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     Properties localProps = new Properties();
+    localProps.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     localProps.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
     localProps.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
     localProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
