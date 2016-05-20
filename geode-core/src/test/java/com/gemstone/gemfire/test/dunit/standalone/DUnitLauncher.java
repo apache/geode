@@ -38,6 +38,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 import java.util.Properties;
 
+import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -159,6 +160,9 @@ public class DUnitLauncher {
     final ProcessManager processManager = new ProcessManager(namingPort, registry);
     master = new Master(registry, processManager);
     registry.bind(MASTER_PARAM, master);
+
+    // inhibit banners to make logs smaller
+    System.setProperty(InternalLocator.INHIBIT_DM_BANNER, "true");
 
     Runtime.getRuntime().addShutdownHook(new Thread() {
       public void run() {

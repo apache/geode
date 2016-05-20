@@ -85,11 +85,15 @@ public class LogWriterFactory {
     }
     
     // log the banner
-    if (InternalDistributedSystem.getReconnectAttemptCounter() == 0 // avoid filling up logs during auto-reconnect
-        && !isSecure && (!isLoner /* do this on a loner to fix bug 35602 */
-        || !Boolean.getBoolean(InternalLocator.INHIBIT_DM_BANNER))) {
-      // LOG:CONFIG:
-      logger.info(LogMarker.CONFIG, Banner.getString(null));
+    if (!Boolean.getBoolean(InternalLocator.INHIBIT_DM_BANNER)) {
+      if (InternalDistributedSystem.getReconnectAttemptCounter() == 0 // avoid filling up logs during auto-reconnect
+          && !isSecure //&& !isLoner /* do this on a loner to fix bug 35602 */
+          ) {
+        // LOG:CONFIG:
+        logger.info(LogMarker.CONFIG, Banner.getString(null));
+      }
+    } else {
+      logger.debug("skipping banner - " + InternalLocator.INHIBIT_DM_BANNER + " is set to true");
     }
 
     // log the config

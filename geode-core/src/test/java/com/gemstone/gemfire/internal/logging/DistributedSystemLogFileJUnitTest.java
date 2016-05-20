@@ -127,7 +127,7 @@ public class DistributedSystemLogFileJUnitTest {
     // assert not empty
     FileInputStream fis = new FileInputStream(logFile);
     try {
-      assertTrue(fis.available() > 0);
+      assertTrue("log file is empty: " + logFile.getAbsoluteFile(), fis.available() > 0);
     } finally {
       fis.close();
     }

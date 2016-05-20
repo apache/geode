@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
+import com.gemstone.gemfire.distributed.internal.*;
 import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.CancelException;
@@ -56,10 +57,6 @@ import com.gemstone.gemfire.admin.SystemMembershipListener;
 import com.gemstone.gemfire.cache.persistence.PersistentID;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.FutureCancelledException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.Banner;
@@ -215,8 +212,12 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
     } else {      
       // LOG: create LogWriterLogger
       this.logWriter = LogWriterFactory.createLogWriterLogger(false, false, this.config.createLogConfig(), false);
-      // LOG: changed statement from config to info
-      this.logWriter.info(Banner.getString(null));
+      if (!Boolean.getBoolean(InternalLocator.INHIBIT_DM_BANNER)) {
+        // LOG: changed statement from config to info
+        this.logWriter.info(Banner.getString(null));
+      } else {
+        logger.debug("skipping banner - " + InternalLocator.INHIBIT_DM_BANNER + " is set to true");
+      }
       // Set this log writer in DistributedSystemConfigImpl
       this.config.setInternalLogWriter(this.logWriter);
     }
