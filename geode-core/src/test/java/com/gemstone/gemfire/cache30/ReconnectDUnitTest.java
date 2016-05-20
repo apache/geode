@@ -36,6 +36,8 @@ import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -452,7 +454,8 @@ public class ReconnectDUnitTest extends CacheTestCase
     });
   }
   
-  
+
+  @Category(FlakyTest.class) // GEODE-1407
   public void testReconnectALocator() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -523,8 +526,8 @@ public class ReconnectDUnitTest extends CacheTestCase
       newdm = waitForReconnect(vm0);
       assertGfshWaitingThreadAlive(vm0);
 
-      boolean running = (Boolean)vm0.invoke(new SerializableCallable("check for running locator") {
-        public Object call() {
+      vm0.invoke(new SerializableRunnable("check for running locator") {
+        public void run() {
           WaitCriterion wc = new WaitCriterion() {
             public boolean done() {
               return Locator.getLocator() != null;
@@ -535,20 +538,14 @@ public class ReconnectDUnitTest extends CacheTestCase
           };
           Wait.waitForCriterion(wc, 30000, 1000, false);
           if (Locator.getLocator() == null) {
-            LogWriterUtils.getLogWriter().error("expected to find a running locator but getLocator() returns null");
-            return false;
+            fail("expected to find a running locator but getLocator() returns null");
           }
           if (((InternalLocator)Locator.getLocator()).isStopped()) {
-            LogWriterUtils.getLogWriter().error("found a stopped locator");
-            return false;
+            fail("found a stopped locator");
           }
-          return true;
         }
       });
-      if (!running) {
-        fail("expected the restarted member to be hosting a running locator");
-      }
-      
+
       assertNotSame("expected a reconnect to occur in the locator", dm, newdm);
 
       // the log should have been opened and appended with a new view
