@@ -198,7 +198,7 @@ public class Put extends BaseCommand {
           else {
             // Put the entry
             result = region.basicBridgePut(key, value, null, isObject, callbackArg,
-                servConn.getProxyID(), true, new EventIDHolder(eventId), servConn.isSqlFabricSystem());
+                servConn.getProxyID(), true, new EventIDHolder(eventId));
           }
           if (result) {
             servConn.setModificationInfo(true, regionName, key);

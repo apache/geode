@@ -163,32 +163,7 @@ public abstract class AbstractRegionMap implements RegionMap {
           "expected LocalRegion or PlaceHolderDiskRegion");
     }
 
-    if (cache != null && cache.isSqlfSystem()) {
-      String provider = GemFireCacheImpl.SQLF_ENTRY_FACTORY_PROVIDER;
-      try {
-        Class<?> factoryProvider = ClassPathLoader.getLatest().forName(provider);
-        Method method = factoryProvider.getDeclaredMethod(
-            "getRegionEntryFactory", new Class[] { Boolean.TYPE, Boolean.TYPE,
-                Boolean.TYPE, Object.class, InternalRegionArguments.class });
-        RegionEntryFactory ref = (RegionEntryFactory)method.invoke(null,
-            new Object[] { Boolean.valueOf(attr.statisticsEnabled),
-                Boolean.valueOf(isLRU), Boolean.valueOf(isDisk), owner,
-                internalRegionArgs });
-
-        // TODO need to have the SQLF entry factory support version stamp storage
-        setEntryFactory(ref);
-
-      }
-      catch (Exception e) {
-        throw new CacheRuntimeException(
-            "Exception in obtaining RegionEntry Factory" + " provider class ",
-            e) {
-        };
-      }
-    }
-    else {
-      setEntryFactory(new RegionEntryFactoryBuilder().getRegionEntryFactoryOrNull(attr.statisticsEnabled,isLRU,isDisk,withVersioning,offHeap));
-    }
+    setEntryFactory(new RegionEntryFactoryBuilder().getRegionEntryFactoryOrNull(attr.statisticsEnabled,isLRU,isDisk,withVersioning,offHeap));
   }
 
   protected CustomEntryConcurrentHashMap<Object, Object> createConcurrentMap(
@@ -2835,7 +2810,6 @@ public abstract class AbstractRegionMap implements RegionMap {
 		re = getOrCreateRegionEntry(owner, event, 
 		    Token.REMOVED_PHASE1, null, onlyExisting, false);
         if (re == null) {
-          throwExceptionForSqlFire(event);
           return null;
         }
         while (true) {
@@ -2849,7 +2823,6 @@ public abstract class AbstractRegionMap implements RegionMap {
                 _getOwner().getCachePerfStats().incRetries();
               if (re == null) {
                 // this will happen when onlyExisting is true
-                throwExceptionForSqlFire(event);
                 return null;
               }
               continue;
@@ -3047,15 +3020,13 @@ public abstract class AbstractRegionMap implements RegionMap {
   private void setOldValueInEvent(EntryEventImpl event, RegionEntry re, boolean cacheWrite, boolean requireOldValue) {
     boolean needToSetOldValue = getIndexUpdater() != null || cacheWrite || requireOldValue || event.getOperation().guaranteesOldValue();
     if (needToSetOldValue) {
-      if (event.hasDelta() || event.getOperation().guaranteesOldValue()
-          || GemFireCacheImpl.sqlfSystem()) {
+      if (event.hasDelta() || event.getOperation().guaranteesOldValue()) {
         // In these cases we want to even get the old value from disk if it is not in memory
         ReferenceCountHelper.skipRefCountTracking();
         @Released Object oldValueInVMOrDisk = re.getValueOffHeapOrDiskWithoutFaultIn(event.getLocalRegion());
         ReferenceCountHelper.unskipRefCountTracking();
         try {
-          event.setOldValue(oldValueInVMOrDisk, requireOldValue
-              || GemFireCacheImpl.sqlfSystem());
+          event.setOldValue(oldValueInVMOrDisk, requireOldValue);
         } finally {
           OffHeapHelper.releaseWithNoTracking(oldValueInVMOrDisk);
         }
@@ -3067,8 +3038,7 @@ public abstract class AbstractRegionMap implements RegionMap {
         
         ReferenceCountHelper.unskipRefCountTracking();
         try {
-          event.setOldValue(oldValueInVM,
-              requireOldValue || GemFireCacheImpl.sqlfSystem());
+          event.setOldValue(oldValueInVM, requireOldValue);
         } finally {
           OffHeapHelper.releaseWithNoTracking(oldValueInVM);
         }
@@ -3081,18 +3051,6 @@ public abstract class AbstractRegionMap implements RegionMap {
       if (ov instanceof GatewaySenderEventImpl) {
         event.setOldValue(ov, true);
       }
-    }
-  }
-
-  /**
-   * Asif: If the system is sqlfabric and the event has delta, then re == null 
-   * implies update on non existent row . Throwing ENFE in that case 
-   * As  returning a boolean etc has other complications in terms of PR reattempt etc  
-   */
-  private void throwExceptionForSqlFire(EntryEventImpl event) {
-    if (event.hasDelta() && _getOwner().getGemFireCache().isSqlfSystem()) {
-      throw new EntryNotFoundException(
-          "SqlFabric::No row found for update");
     }
   }
 

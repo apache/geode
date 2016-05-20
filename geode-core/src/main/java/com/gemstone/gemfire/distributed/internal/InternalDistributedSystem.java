@@ -2583,14 +2583,9 @@ public class InternalDistributedSystem
     List<CacheServerCreation> cacheServerCreation = null;
     
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    boolean inhibitCacheForSQLFire = false;
     if (cache != null) {
-      if (cache.isSqlfSystem()) {
-        inhibitCacheForSQLFire = true;
-      } else {
-        cacheXML = cache.getCacheConfig().getCacheXMLDescription();
-        cacheServerCreation = cache.getCacheConfig().getCacheServerCreation();
-      }
+      cacheXML = cache.getCacheConfig().getCacheXMLDescription();
+      cacheServerCreation = cache.getCacheConfig().getCacheServerCreation();
     }
     
     DistributionConfig oldConfig = ids.getConfig();
@@ -2755,7 +2750,7 @@ public class InternalDistributedSystem
 
 
         DM newDM = this.reconnectDS.getDistributionManager();
-        if ( !inhibitCacheForSQLFire && (newDM instanceof DistributionManager) ) {
+        if (newDM instanceof DistributionManager) {
           // sqlfire will have already replayed DDL and recovered.
           // Admin systems don't carry a cache, but for others we can now create
           // a cache

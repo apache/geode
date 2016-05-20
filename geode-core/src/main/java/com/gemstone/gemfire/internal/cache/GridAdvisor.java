@@ -318,11 +318,6 @@ public abstract class GridAdvisor extends DistributionAdvisor {
           replyProfiles.add(advisee.getProfile());
         }
       }
-      final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-      if (cache != null && !cache.isClosed()) {
-        handleDistributionAdvisee(cache.getSqlfAdvisee(), removeProfile, false,
-            replyProfiles);
-      }
     }
 
     /**

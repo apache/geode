@@ -233,8 +233,7 @@ public class Put61 extends BaseCommand {
               delta = valuePart.getSerializedForm();              
             }
             result = region.basicBridgePut(key, value, delta, isObject,
-                callbackArg, servConn.getProxyID(), true, new EventIDHolder(eventId), servConn
-                    .isSqlFabricSystem());
+                callbackArg, servConn.getProxyID(), true, new EventIDHolder(eventId));
           }
           if (result) {
             servConn.setModificationInfo(true, regionName, key);

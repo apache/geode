@@ -279,7 +279,7 @@ com/gemstone/gemfire/internal/cache/FilterProfile$interestType,false
 com/gemstone/gemfire/internal/cache/FilterProfile$operationType,false
 com/gemstone/gemfire/internal/cache/ForceReattemptException,true,-595988965679204903,hasHash:boolean,keyHash:int
 com/gemstone/gemfire/internal/cache/ForceableLinkedBlockingQueue,true,-6903933977591709194,capacity:int,count:java/util/concurrent/atomic/AtomicInteger,notEmpty:java/util/concurrent/locks/Condition,notFull:java/util/concurrent/locks/Condition,putLock:java/util/concurrent/locks/ReentrantLock,takeLock:java/util/concurrent/locks/ReentrantLock
-com/gemstone/gemfire/internal/cache/GemFireCacheImpl$3,true,-6456778743822843838,this$0:com/gemstone/gemfire/internal/cache/GemFireCacheImpl
+com/gemstone/gemfire/internal/cache/GemFireCacheImpl$3,true,1,this$0:com/gemstone/gemfire/internal/cache/GemFireCacheImpl
 com/gemstone/gemfire/internal/cache/GemFireCacheImpl$4,true,1,this$0:com/gemstone/gemfire/internal/cache/GemFireCacheImpl
 com/gemstone/gemfire/internal/cache/GemFireCacheImpl$5,true,1,this$0:com/gemstone/gemfire/internal/cache/GemFireCacheImpl
 com/gemstone/gemfire/internal/cache/GemFireCacheImpl$6,true,1,this$0:com/gemstone/gemfire/internal/cache/GemFireCacheImpl

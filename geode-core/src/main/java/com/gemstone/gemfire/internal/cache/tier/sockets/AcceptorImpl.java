@@ -255,9 +255,6 @@ public class AcceptorImpl extends Acceptor implements Runnable
   /** The client health monitor tracking connections for this acceptor */
   private ClientHealthMonitor healthMonitor;
   
-  //Identifies if this Acceptor was started by SqlFabric Procedure
-  private final boolean isSqlFabricHub ;
-  
   /** bridge's setting of notifyBySubscription */
   private final boolean notifyBySubscription;
   
@@ -296,8 +293,6 @@ public class AcceptorImpl extends Acceptor implements Runnable
    *          the maximum number of connections allowed in the server pool
    * @param maxThreads
    *          the maximum number of threads allowed in the server pool
-   * @param  isSqlfStarted
-   *          true if the Accpetor is started via SqlFabric procedure      
    * 
    * @see SocketCreator#createServerSocket(int, int, InetAddress)
    * @see ClientHealthMonitor
@@ -310,7 +305,6 @@ public class AcceptorImpl extends Acceptor implements Runnable
                       int maximumMessageCount, int messageTimeToLive,
                       int transactionTimeToLive,
                       ConnectionListener listener,List overflowAttributesList, 
-                      boolean isSqlfStarted,
                       boolean isGatewayReceiver, List<GatewayTransportFilter> transportFilter,
                       boolean tcpNoDelay)
       throws IOException
@@ -318,7 +312,6 @@ public class AcceptorImpl extends Acceptor implements Runnable
     this.bindHostName = calcBindHostName(c, bindHostName);
     this.connectionListener = listener == null ? new ConnectionListenerAdapter() : listener;
     this.notifyBySubscription = notifyBySubscription;
-    this.isSqlFabricHub = isSqlfStarted;
     this.isGatewayReceiver = isGatewayReceiver;
     this.gatewayTransportFilters = transportFilter;
     {
@@ -1826,10 +1819,6 @@ public class AcceptorImpl extends Acceptor implements Runnable
     return connectionListener;
   }  
   
-  public boolean isSqlFabricSystem() {
-    return this.isSqlFabricHub;
-  }
-
   public boolean isGatewayReceiver() {
     return this.isGatewayReceiver;
   }

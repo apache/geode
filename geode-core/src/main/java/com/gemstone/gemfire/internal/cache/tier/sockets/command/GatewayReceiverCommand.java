@@ -340,8 +340,7 @@ public class GatewayReceiverCommand extends BaseCommand {
               // attempt to update the entry
               if (!result) {
                 result = region.basicBridgePut(key, value, null, isObject,
-                    callbackArg, servConn.getProxyID(), false, clientEvent,
-                    servConn.isSqlFabricSystem());
+                    callbackArg, servConn.getProxyID(), false, clientEvent);
               }
 
               if (result || clientEvent.isConcurrencyConflict()) {
@@ -441,8 +440,7 @@ public class GatewayReceiverCommand extends BaseCommand {
                 isObject = putContext.isObject();
               }
               boolean result = region.basicBridgePut(key, value, null, isObject,
-                  callbackArg, servConn.getProxyID(), false, clientEvent,
-                  servConn.isSqlFabricSystem());
+                  callbackArg, servConn.getProxyID(), false, clientEvent);
               if (result|| clientEvent.isConcurrencyConflict()) {
                 servConn.setModificationInfo(true, regionName, key);
                 stats.incUpdateRequest();

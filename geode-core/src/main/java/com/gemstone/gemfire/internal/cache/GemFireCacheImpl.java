@@ -359,14 +359,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /** thread pool for event dispatching */
   private final ThreadPoolExecutor eventThreadPool;
 
-  /** indicates whether this is a SQLFabric system */
-  private boolean sqlfSystem;
-
-  /**
-   * SQLFabric's static distribution advisee.
-   */
-  private volatile DistributionAdvisee sqlfAdvisee;
-
   /**
    * the list of all cache servers. CopyOnWriteArrayList is used to allow concurrent add, remove and retrieval
    * operations. It is assumed that the traversal operations on cache servers list vastly outnumber the mutative
@@ -546,13 +538,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
 
   private final int serialNumber;
 
-  /** system property to indicate SQLFabric product */
-  public static final String SQLFABRIC_PRODUCT_PROP = "sqlfabric.product";
-
   private final TXEntryStateFactory txEntryStateFactory;
-
-  static final String SQLF_ENTRY_FACTORY_PROVIDER = "com.gemstone.sqlfabric."
-      + "internal.engine.store.entry.RegionEntryFactoryProvider";
 
   private final CacheConfig cacheConfig;
   
@@ -931,26 +917,9 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
         this.creationStack = new Exception(LocalizedStrings.GemFireCache_CREATED_GEMFIRECACHE_0.toLocalizedString(toString()));
       }
 
-      // set custom entry factories for SQLFabric
-      this.sqlfSystem = Boolean.getBoolean(SQLFABRIC_PRODUCT_PROP);
-      if (this.sqlfSystem) {
-        String provider = SQLF_ENTRY_FACTORY_PROVIDER;
-        try {
-          Class<?> factoryProvider = Class.forName(provider);
-          Method method = factoryProvider.getDeclaredMethod("getTXEntryStateFactory", new Class[0]);
-          TXEntryStateFactory ref = (TXEntryStateFactory) method.invoke(null, new Object[0]);
-          this.txEntryStateFactory = ref;
-
-        } catch (Exception e) {
-          throw new CacheRuntimeException("Exception in obtaining SQLFabric " + "RegionEntry Factory provider class", e) {
-            private static final long serialVersionUID = -6456778743822843838L;
-          };
-        }
-      } else {
-        this.txEntryStateFactory = TXEntryState.getFactory();
-      }
+      this.txEntryStateFactory = TXEntryState.getFactory();
       if (xmlParameterizationEnabled) {
-        /** If gemfire prperties file is available replace properties from there */
+        /** If product properties file is available replace properties from there */
         Properties userProps = this.system.getConfig().getUserDefinedProps();
         if (userProps != null && !userProps.isEmpty()) {
           resolver = new CacheXmlPropertyResolver(false, PropertyResolver.NO_SYSTEM_PROPERTIES_OVERRIDE, userProps);
@@ -990,8 +959,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     final DistributionConfig config = this.system.getConfig();
 
     if (dm instanceof DistributionManager) {
-      if (!this.sqlfSystem 
-          && ((DistributionManager) dm).getDMType() != DistributionManager.LOCATOR_DM_TYPE
+      if (((DistributionManager) dm).getDMType() != DistributionManager.LOCATOR_DM_TYPE
           && !isClient
           && Locator.getLocator() == null
           ) {
@@ -4759,11 +4727,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   }
 
   public static void initializeRegionShortcuts(Cache c) {
-    // no shortcuts for SQLFabric since these are not used and some combinations
-    // are not supported
-    if (sqlfSystem()) {
-      return;
-    }
     for (RegionShortcut pra : RegionShortcut.values()) {
       switch (pra) {
       case PARTITION: {
@@ -5053,14 +5016,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     return this.regionsInDestroy.get(path);
   }
 
-  public DistributionAdvisee getSqlfAdvisee() {
-    return this.sqlfAdvisee;
-  }
-
-  public void setSqlfAdvisee(DistributionAdvisee advisee) {
-    this.sqlfAdvisee = advisee;
-  }
-
   /**
    * Mark a node as initialized or not initialized. Used by SQLFabric to avoid creation of buckets or routing of
    * operations/functions on a node that is still in the DDL replay phase.
@@ -5129,18 +5084,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
         members.remove(m);
       }
     }
-  }
-
-  public final boolean isSqlfSystem() {
-    return this.sqlfSystem;
-  }
-
-  public static boolean sqlfSystem() {
-    return (instance != null && instance.isSqlfSystem());
-  }
-
-  public void setSqlfSystem() {
-    this.sqlfSystem = true;
   }
 
   public TombstoneService getTombstoneService() {

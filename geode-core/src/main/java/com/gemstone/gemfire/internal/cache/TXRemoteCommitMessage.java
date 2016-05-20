@@ -85,7 +85,6 @@ public class TXRemoteCommitMessage extends TXMessage {
       logger.debug("TX: Committing: {}", txId);
     }
     final TXStateProxy txState = txMgr.getTXState();
-    boolean commitSuccessful = false;
     TXCommitMessage cmsg = null;
     try {
       // do the actual commit, only if it was not done before
@@ -97,26 +96,17 @@ public class TXRemoteCommitMessage extends TXMessage {
         if (txMgr.isExceptionToken(cmsg)) {
           throw txMgr.getExceptionForToken(cmsg, txId);
         }
-        commitSuccessful = true;
       } else {
         // if no TXState was created (e.g. due to only getEntry/size operations
         // that don't start remote TX) then ignore
         if (txState != null) {
           txState.setCommitOnBehalfOfRemoteStub(true);
           txMgr.commit();
-          commitSuccessful = true;
           cmsg = txState.getCommitMessage();
         }
       }
     } finally {
-      //Asif: If commit is successful then only remove the tx state
-      // else we expect a rollback to be issued . This is necessary for Sqlfabric 
-      //so that GFETransaction object behaves properly. presently adding this check
-      //only for sqlfabric, but may be this should hold true for GFE. Need to check if
-      //GFE in such cases send the rollback message or not.
-      if (commitSuccessful || !cache.isSqlfSystem()) {
-        txMgr.removeHostedTXState(txId);
-      }
+      txMgr.removeHostedTXState(txId);
     }
     TXRemoteCommitReplyMessage.send(getSender(), getProcessorId(), cmsg, getReplySender(dm));
     

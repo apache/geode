@@ -1605,7 +1605,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     if (cache != null && (cache instanceof Cache)) {
       if (!Boolean.getBoolean("gemfire.autoReconnect-useCacheXMLFile")
-          && !cache.isSqlfSystem() && !sharedConfigEnabled) {
+          && !sharedConfigEnabled) {
         try {
           logger.info("generating XML to rebuild the cache after reconnect completes");
           StringPrintWriter pw = new StringPrintWriter(); 

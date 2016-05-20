@@ -1655,23 +1655,14 @@ public class EntryEventImpl
         if (requireOldValue ||
             EVENT_OLD_VALUE
             || this.region instanceof HARegion // fix for bug 37909
-            || GemFireCacheImpl.sqlfSystem()
             ) {
           @Retained Object ov;
           if (ReferenceCountHelper.trackReferenceCounts()) {
             ReferenceCountHelper.setReferenceCountOwner(new OldValueOwner());
-            if (GemFireCacheImpl.sqlfSystem()) {
-              ov = reentry.getValueOffHeapOrDiskWithoutFaultIn(this.region);
-            } else {
-              ov = reentry._getValueRetain(owner, true);
-            }
+            ov = reentry._getValueRetain(owner, true);
             ReferenceCountHelper.setReferenceCountOwner(null);
           } else {
-            if (GemFireCacheImpl.sqlfSystem()) {
-              ov = reentry.getValueOffHeapOrDiskWithoutFaultIn(this.region);
-            } else {
-              ov = reentry._getValueRetain(owner, true);
-            }
+            ov = reentry._getValueRetain(owner, true);
           }
           if (ov == null) ov = Token.NOT_AVAILABLE;
           // ov has already been retained so call basicSetOldValue instead of retainAndSetOldValue

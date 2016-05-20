@@ -405,8 +405,7 @@ public class Put65 extends BaseCommand {
                   servConn.getProxyID(), true, clientEvent, true);
             } else {
               result = region.basicBridgePut(key, value, delta, isObject,
-                callbackArg, servConn.getProxyID(), true, clientEvent, servConn
-                    .isSqlFabricSystem());
+                callbackArg, servConn.getProxyID(), true, clientEvent);
             }
             if (msg.isRetry() && clientEvent.isConcurrencyConflict()
                 && clientEvent.getVersionTag() != null) {

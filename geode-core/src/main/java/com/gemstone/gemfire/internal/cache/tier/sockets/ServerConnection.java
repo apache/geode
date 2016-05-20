@@ -2099,8 +2099,4 @@ public class ServerConnection implements Runnable {
   public void setClientDisconnectCleanly() {
     this.clientDisconnectedCleanly = true;
   }
-  
-  public boolean isSqlFabricSystem() {
-    return this.acceptor.isSqlFabricSystem();
-  }
 }

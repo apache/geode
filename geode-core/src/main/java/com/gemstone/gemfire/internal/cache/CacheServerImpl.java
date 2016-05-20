@@ -307,7 +307,6 @@ public class CacheServerImpl
   @Override
   public synchronized void start() throws IOException {
     Assert.assertTrue(this.cache != null);
-    boolean isSqlFabricSystem = ((GemFireCacheImpl)this.cache).isSqlfSystem();
     
     this.serialNumber = createSerialNumber();
     if (DynamicRegionFactory.get().isOpen()) {
@@ -349,7 +348,6 @@ public class CacheServerImpl
                                      getTransactionTimeToLive(),
                                      this.loadMonitor,
                                      overflowAttributesList, 
-                                     isSqlFabricSystem,
                                      this.isGatewayReceiver,
                                      this.gatewayTransportFilters, this.tcpNoDelay);
 

@@ -2012,9 +2012,7 @@ public class LocalRegion extends AbstractRegion
   {
     checkReadiness();
     checkForNoAccess();
-    return new EntriesSet(this, false, IteratorType.KEYS,
-        false /* dontRememberReads */, false /* skipTxCheckInIteration */,
-        false /* allowTombstones */);
+    return new EntriesSet(this, false, IteratorType.KEYS, false /* allowTombstones */);
   }
 
   public Set keys()
@@ -5567,7 +5565,7 @@ public class LocalRegion extends AbstractRegion
 
   public boolean basicBridgePut(Object key, Object value, byte[] deltaBytes,
       boolean isObject, Object p_callbackArg, ClientProxyMembershipID memberId,
-      boolean fromClient, EntryEventImpl clientEvent, boolean isSqlFabricSystem)
+      boolean fromClient, EntryEventImpl clientEvent)
       throws TimeoutException, CacheWriterException {
     EventID eventID = clientEvent.getEventId();
     Object callbackArg = p_callbackArg;
@@ -5599,14 +5597,7 @@ public class LocalRegion extends AbstractRegion
     // serialized in a CachedDeserializable; otherwise store it directly
     // as a byte[].
     if (isObject && value instanceof byte[]) {
-      //Asif: If the system is SqlFabric, then the value byte[] corresponds to
-      //Delta , so we need to deserialize it & appropriately set the EntryEventImpl's.delta
-      //field to this value
-      if (isSqlFabricSystem) {
-        event.setNewValue(EntryEventImpl.deserialize((byte[])value));  
-      } else  {
-        event.setSerializedNewValue((byte[])value);
-      }
+      event.setSerializedNewValue((byte[])value);
     }
     else {
       event.setNewValue(value);
@@ -5614,9 +5605,7 @@ public class LocalRegion extends AbstractRegion
 
     boolean ifNew = false; // can overwrite an existing key
     
-    //Asif: If the system is SqlFabric, then update will always have value of type
-    //SerializableDelta (i.e Delta) which requires that the old value should be present    
-    boolean ifOld = isSqlFabricSystem ; //false; // can create a new key
+    boolean ifOld = false; // can create a new key
     long lastModified = 0L; // use now
     boolean overwriteDestroyed = false; // not okay to overwrite the DESTROYED token
     boolean success = false;

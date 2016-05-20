@@ -1128,12 +1128,7 @@ public class TXState implements TXStateInterface {
                                           Object expectedOldValue)
   throws EntryNotFoundException {
     boolean createIfAbsent = true;
-    // Asif: If it is a sqlf system & a delta arrives it implies it is update
-    // which means old value is must so, in this case RememberRead should be
-    // false ( no point in creating TxEntry)
-    if (event.hasDelta() && region.getGemFireCache().isSqlfSystem()) {
-      createIfAbsent = false;
-    } else if (event.getOperation() == Operation.REPLACE) {
+    if (event.getOperation() == Operation.REPLACE) {
       // replace(K,V) and replace(K,V,V) cannot create an entry
       createIfAbsent = false;
     }
@@ -1203,14 +1198,7 @@ public class TXState implements TXStateInterface {
       }
     }
     catch (EntryNotFoundException e) {
-      if (region.getCache().isSqlfSystem()) {
-        // Asif:throw entry not found exception as sqlfabric is relying on it
-        // for transactional update on non existent row.
-        throw e;
-      }
-      else {
-        result = false;
-      }
+      result = false;
     } finally {
       recordEventAndResult(event, result);
     }

@@ -46,8 +46,6 @@ public class EntriesSet extends AbstractSet {
 
   protected final InternalDataView view;
 
-  final boolean skipTxCheckInIteration;
-
   final boolean rememberReads;
 
   private boolean keepSerialized = false;
@@ -55,18 +53,10 @@ public class EntriesSet extends AbstractSet {
   protected boolean ignoreCopyOnReadForQuery = false;
   
   EntriesSet(LocalRegion region, boolean recursive, IteratorType viewType, boolean allowTombstones) {
-    this(region, recursive, viewType, true /* rememberReads */,
-        false /* skipTxCheckInIteration */, allowTombstones);
-  }
-
-  EntriesSet(LocalRegion region, boolean recursive, IteratorType viewType,
-      final boolean rememberReads, final boolean skipTxCheckInIteration, boolean allowTombstones) {
     this.topRegion = region;
     this.recursive = recursive;
     this.iterType = viewType;
     this.myTX = region.getTXState();
-    this.skipTxCheckInIteration = skipTxCheckInIteration
-        || region.getGemFireCache().isSqlfSystem();
     this.view = this.myTX == null ? region.getSharedDataView() : this.myTX;
     this.rememberReads = true;
     this.allowTombstones = allowTombstones;

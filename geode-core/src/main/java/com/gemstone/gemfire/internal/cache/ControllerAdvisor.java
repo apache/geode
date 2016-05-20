@@ -47,23 +47,6 @@ public class ControllerAdvisor extends GridAdvisor {
     return advisor;
   }
 
-  /**
-   * Tell everyone else who we are and find out who they are.
-   */
-  @Override
-  public final void handshake() {
-    super.handshake();
-    // also inform local SQLFabric advisor if any
-    final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    final DistributionAdvisee sqlfAdvisee;
-    final DistributionAdvisor sqlfAdvisor;
-    GridProfile profile = (GridProfile) createProfile();
-    if (cache != null && (sqlfAdvisee = cache.getSqlfAdvisee()) != null
-        && (sqlfAdvisor = sqlfAdvisee.getDistributionAdvisor()) != null) {
-      sqlfAdvisor.putProfile(profile);
-    }
-  }
-
   @Override
   protected void profileCreated(Profile profile) {
     super.profileCreated(profile);

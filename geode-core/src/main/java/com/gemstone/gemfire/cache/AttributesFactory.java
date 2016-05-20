@@ -1337,11 +1337,9 @@ public class AttributesFactory<K,V> {
         // on statisticsEnabled.
         setStatisticsEnabled(true);
       }
-      // SQLFabric does not handle PRELOADED, so do not change the policy
       if (attrs.getDataPolicy().withReplication()
           && !attrs.getDataPolicy().withPersistence()
-          && attrs.getScope().isDistributed()
-          && !GemFireCacheImpl.sqlfSystem()) {
+          && attrs.getScope().isDistributed()) {
         RegionAttributesImpl<?,?> rattr = attrs;
         if (!rattr.isForBucketRegion()) {
           if (attrs.getEvictionAttributes().getAction().isLocalDestroy()

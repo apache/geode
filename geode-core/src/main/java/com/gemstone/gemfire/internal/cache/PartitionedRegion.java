@@ -6503,7 +6503,7 @@ public class PartitionedRegion extends LocalRegion implements
       }
 
       public Object next() {
-        if (myTX != null && !skipTxCheckInIteration) {
+        if (myTX != null) {
           checkTX();
         }
         PartitionedRegion.this.checkReadiness();

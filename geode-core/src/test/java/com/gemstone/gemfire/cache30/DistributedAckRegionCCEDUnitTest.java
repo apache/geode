@@ -475,7 +475,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
       tag.setRegionVersion(CCRegion.getVersionVector().getNextVersion());
       VersionTagHolder holder = new VersionTagHolder(tag);
       ClientProxyMembershipID id = ClientProxyMembershipID.getNewProxyMembership(CCRegion.getDistributionManager().getSystem());
-      CCRegion.basicBridgePut("cckey0", "newvalue", null, true, null, id, true, holder, false);
+      CCRegion.basicBridgePut("cckey0", "newvalue", null, true, null, id, true, holder);
       vm0.invoke(new SerializableRunnable("check conflation count") {
         public void run() {
           assertEquals("expected one conflated event", 1, CCRegion.getCachePerfStats().getConflatedEventsCount());
