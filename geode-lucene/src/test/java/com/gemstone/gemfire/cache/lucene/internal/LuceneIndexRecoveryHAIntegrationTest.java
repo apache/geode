@@ -121,87 +121,8 @@ public class LuceneIndexRecoveryHAIntegrationTest {
     Assert.assertNotEquals(newRepo, repo);
   }
 
-  @Category(FlakyTest.class) // GEODE-1012: time sensitive, awaitility, short timeout
-  @Test
-  public void recoverPersistentIndex() throws Exception {
-    String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX, REGION);
 
-    LuceneService service = LuceneServiceProvider.get(cache);
-    service.createIndex(INDEX, REGION, Type1.fields);
 
-    RegionFactory<String, Type1> regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT);
-    Region<String, Type1> userRegion = regionFactory.create(REGION);
-
-    Type1 value = new Type1("hello world", 1, 2L, 3.0, 4.0f);
-    userRegion.put("value1", value);
-    value = new Type1("test world", 1, 2L, 3.0, 4.0f);
-    userRegion.put("value2", value);
-    value = new Type1("lucene world", 1, 2L, 3.0, 4.0f);
-    userRegion.put("value3", value);
-
-    verifyIndexFinishFlushing(INDEX, REGION);
-
-    LuceneQuery<Integer, Type1> query = service.createLuceneQueryFactory().create(INDEX, REGION, "s:world");
-    LuceneQueryResults<Integer, Type1> results = query.search();
-    Assert.assertEquals(3, results.size());
-
-    // close the cache and all the regions
-    cache.close();
-
-    cache = new CacheFactory().set("mcast-port", "0").create();
-    service = LuceneServiceProvider.get(cache);
-    service.createIndex(INDEX, REGION, Type1.fields);
-    regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT);
-    userRegion = regionFactory.create(REGION);
-
-    query = service.createLuceneQueryFactory().create(INDEX, REGION, "s:world");
-    results = query.search();
-    Assert.assertEquals(3, results.size());
-
-    PartitionedRegion chunkRegion = (PartitionedRegion) cache.getRegion(aeqId + ".chunks");
-    assertNotNull(chunkRegion);
-    chunkRegion.destroyRegion();
-    PartitionedRegion fileRegion = (PartitionedRegion) cache.getRegion(aeqId + ".files");
-    assertNotNull(fileRegion);
-    fileRegion.destroyRegion();
-    userRegion.destroyRegion();
-  }
-
-  @Category(FlakyTest.class) // GEODE-1013: time sensitive, awaitility, short timeout, possible disk pollution
-  @Test
-  public void overflowRegionIndex() throws Exception {
-    String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX, REGION);
-
-    LuceneService service = LuceneServiceProvider.get(cache);
-    service.createIndex(INDEX, REGION, Type1.fields);
-
-    RegionFactory<String, Type1> regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
-    EvictionAttributesImpl evicAttr = new EvictionAttributesImpl().setAction(EvictionAction.OVERFLOW_TO_DISK);
-    evicAttr.setAlgorithm(EvictionAlgorithm.LRU_ENTRY).setMaximum(1);
-    regionFactory.setEvictionAttributes(evicAttr);
-
-    PartitionedRegion userRegion = (PartitionedRegion) regionFactory.create(REGION);
-    Assert.assertEquals(0, userRegion.getDiskRegionStats().getNumOverflowOnDisk());
-
-    Type1 value = new Type1("hello world", 1, 2L, 3.0, 4.0f);
-    userRegion.put("value1", value);
-    value = new Type1("test world", 1, 2L, 3.0, 4.0f);
-    userRegion.put("value2", value);
-    value = new Type1("lucene world", 1, 2L, 3.0, 4.0f);
-    userRegion.put("value3", value);
-
-    verifyIndexFinishFlushing(INDEX, REGION);
-
-    PartitionedRegion fileRegion = (PartitionedRegion) cache.getRegion(aeqId + ".files");
-    assertNotNull(fileRegion);
-    PartitionedRegion chunkRegion = (PartitionedRegion) cache.getRegion(aeqId + ".chunks");
-    assertNotNull(chunkRegion);
-    Assert.assertTrue(0 < userRegion.getDiskRegionStats().getNumOverflowOnDisk());
-
-    LuceneQuery<Integer, Type1> query = service.createLuceneQueryFactory().create(INDEX, REGION, "s:world");
-    LuceneQueryResults<Integer, Type1> results = query.search();
-    Assert.assertEquals(3, results.size());
-  }
 
   private void verifyIndexFinishFlushing(String indexName, String regionName) {
     LuceneIndex index = LuceneServiceProvider.get(cache).getIndex(indexName, regionName);

@@ -57,9 +57,6 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
   @Rule
   public DiskDirRule diskDirRule = new DiskDirRule();
 
-  public static final String INDEX_NAME = "index";
-  public static final String REGION_NAME = "region";
-
   @Override
   public void createCache() {
     super.createCache();
