@@ -82,25 +82,17 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
   }
 
   @Override
-  public void onCreate(Extensible<Region<?, ?>> source,
-      Extensible<Region<?, ?>> target) {
-    Cache cache = target.getExtensionPoint().getTarget().getCache();
+  public void beforeCreate(Extensible<Region<?, ?>> source, Cache cache) {
     LuceneServiceImpl service = (LuceneServiceImpl) LuceneServiceProvider.get(cache);
-    Region region = target.getExtensionPoint().getTarget();
-    String aeqId = LuceneServiceImpl.getUniqueIndexName(getName(), getRegionPath());
-    //Here, it is safe to add the aeq with the mutator, because onCreate is
-    //fired in a special place before the region is initialized.
-    //TODO - this may only work for PRs. We need to intercept the attributes
-    //before the region is created with a RegionListener.
-    region.getAttributesMutator().addAsyncEventQueueId(aeqId);
-    Analyzer analyzer = null;
     if (this.fieldAnalyzers == null) {
-      analyzer = new StandardAnalyzer();
+      service.createIndex(getName(), getRegionPath(), getFieldNames());
     } else {
-      analyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(), this.fieldAnalyzers);
+      service.createIndex(getName(), getRegionPath(), this.fieldAnalyzers);
     }
-    service.afterDataRegionCreated(getName(), analyzer, getRegionPath(), this.fieldAnalyzers, getFieldNames());
   }
+
+  @Override
+  public void onCreate(Extensible<Region<?, ?>> source, Extensible<Region<?, ?>> target) {}
 
   protected void addField(String name) {
     this.fieldNames.add(name);

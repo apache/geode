@@ -19,10 +19,7 @@
 
 package com.gemstone.gemfire.cache.lucene.internal;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -132,15 +129,17 @@ public class LuceneServiceImpl implements InternalLuceneService {
       @Override
       public RegionAttributes beforeCreate(Region parent, String regionName,
           RegionAttributes attrs, InternalRegionArguments internalRegionArgs) {
+        RegionAttributes updatedRA = attrs;
         String path = parent == null ? "/" + regionName : parent.getFullPath() + "/" + regionName;
         if(path.equals(dataRegionPath)) {
           String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, dataRegionPath);
-          AttributesFactory af = new AttributesFactory(attrs);
-          af.addAsyncEventQueueId(aeqId);
-          return af.create();
-        } else {
-          return attrs;
+          if (!attrs.getAsyncEventQueueIds().contains(aeqId)) {
+            AttributesFactory af = new AttributesFactory(attrs);
+            af.addAsyncEventQueueId(aeqId);
+            updatedRA = af.create();
+          }
         }
+        return updatedRA;
       }
       
       @Override
@@ -222,11 +221,16 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   @Override
+  public void beforeCreate(Extensible<Cache> source, Cache cache) {
+    // Nothing to do here.
+  }
+
+  @Override
   public void onCreate(Extensible<Cache> source, Extensible<Cache> target) {
     //This is called when CacheCreation (source) is turned into a GemfireCacheImpl (target)
     //nothing to do there.
   }
-  
+
   public void registerIndex(LuceneIndex index){
     String regionAndIndex = getUniqueIndexName(index.getName(), index.getRegionPath()); 
     if( !indexMap.containsKey( regionAndIndex )) {

@@ -58,6 +58,7 @@ public class CreateMockCacheExtensionFunction extends FunctionAdapter {
     @SuppressWarnings("unchecked")
     final Extensible<Cache> extensible = (Extensible<Cache>) cache;
     final MockCacheExtension extension = new MockCacheExtension(value);
+    extension.beforeCreate(extensible, cache);
     extension.onCreate(extensible, extensible);
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType(ELEMENT_CACHE).withNamespace(PREFIX, NAMESPACE).build();

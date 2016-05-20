@@ -380,6 +380,8 @@ public class CacheCreation implements InternalCache {
     throws TimeoutException, CacheWriterException,
            GatewayException,
            RegionExistsException {
+    extensionPoint.beforeCreate(cache);
+
     cache.setDeclarativeCacheConfig(cacheConfig);
     
     if (cache.isClient()) {

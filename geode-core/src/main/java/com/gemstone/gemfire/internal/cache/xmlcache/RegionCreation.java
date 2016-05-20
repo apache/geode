@@ -257,7 +257,9 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
     this.attrs.inheritAttributes(cache);
     this.attrs.setIndexes(this.indexes);
     this.attrs.prepareForValidation();
-    
+
+    extensionPoint.beforeCreate(cache);
+
     try {
       root = ((GemFireCacheImpl)cache).basicCreateRegion(this.name, new AttributesFactory(this.attrs).create());
     } catch (RegionExistsException ex) {

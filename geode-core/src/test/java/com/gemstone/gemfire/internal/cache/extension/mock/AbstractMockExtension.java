@@ -19,6 +19,7 @@ package com.gemstone.gemfire.internal.cache.extension.mock;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.internal.cache.extension.Extensible;
 import com.gemstone.gemfire.internal.cache.extension.Extension;
 import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
@@ -30,6 +31,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
  * @since 8.1
  */
 public abstract class AbstractMockExtension<T> implements Extension<T> {
+  public AtomicInteger beforeCreateCounter = new AtomicInteger();
   public AtomicInteger onCreateCounter = new AtomicInteger();
   public AtomicInteger getXmlGeneratorCounter = new AtomicInteger();
 
@@ -45,6 +47,11 @@ public abstract class AbstractMockExtension<T> implements Extension<T> {
   
   public void setValue(final String value) {
     this.value = value;
+  }
+
+  @Override
+  public void beforeCreate(Extensible<T> source, Cache cache) {
+    beforeCreateCounter.incrementAndGet();
   }
 
   @Override

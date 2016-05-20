@@ -73,10 +73,7 @@ public class LuceneXmlParser extends AbstractXmlParser {
 
   private void startIndex(Attributes atts) {
     final RegionCreation region = (RegionCreation) stack.peek();
-    RegionAttributesCreation rac = (RegionAttributesCreation) region.getAttributes();
     String name = atts.getValue(NAME);
-    rac.addAsyncEventQueueId(LuceneServiceImpl.getUniqueIndexName(name, region.getFullPath()));
-    
     LuceneIndexCreation indexCreation = new LuceneIndexCreation();
     indexCreation.setName(name);
     indexCreation.setRegion(region);

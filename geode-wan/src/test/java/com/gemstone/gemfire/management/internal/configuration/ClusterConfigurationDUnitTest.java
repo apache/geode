@@ -312,6 +312,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         // should only be one region extension
         final MockRegionExtension mockRegionExtension = (MockRegionExtension) ((Extensible<Region<?,?>>) region1).getExtensionPoint().getExtensions().iterator().next();
         assertNotNull(mockRegionExtension);
+        assertEquals(1, mockRegionExtension.beforeCreateCounter.get());
         assertEquals(1, mockRegionExtension.onCreateCounter.get());
         assertEquals("value2", mockRegionExtension.getValue());
 
@@ -320,6 +321,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         // should only be one cache extension
         final MockCacheExtension mockCacheExtension = (MockCacheExtension) ((Extensible<Cache>) cache).getExtensionPoint().getExtensions().iterator().next();
         assertNotNull(mockCacheExtension);
+        assertEquals(1, mockCacheExtension.beforeCreateCounter.get());
         assertEquals(1, mockCacheExtension.onCreateCounter.get());
         assertEquals("value2", mockCacheExtension.getValue());
 

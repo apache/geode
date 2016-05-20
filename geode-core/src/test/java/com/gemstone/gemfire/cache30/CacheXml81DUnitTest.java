@@ -66,11 +66,13 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     final MockCacheExtension extension = new MockCacheExtension("testCacheExtension");
     cache.getExtensionPoint().addExtension(extension);
 
+    assertEquals(0, extension.beforeCreateCounter.get());
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(0, extension.getXmlGeneratorCounter.get());
 
     testXml(cache);
 
+    assertEquals(0, extension.beforeCreateCounter.get());
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(1, extension.getXmlGeneratorCounter.get());
 
@@ -80,6 +82,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     final MockCacheExtension m = (MockCacheExtension) c.getExtensionPoint().getExtensions().iterator().next();
     assertNotNull(m);
 
+    assertEquals(1, m.beforeCreateCounter.get());
     assertEquals(1, m.onCreateCounter.get());
     assertEquals(0, m.getXmlGeneratorCounter.get());
 
@@ -100,11 +103,13 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     final MockRegionExtension extension = new MockRegionExtension("test");
     region.getExtensionPoint().addExtension(extension);
 
+    assertEquals(0, extension.beforeCreateCounter.get());
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(0, extension.getXmlGeneratorCounter.get());
 
     testXml(cache);
 
+    assertEquals(0, extension.beforeCreateCounter.get());
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(1, extension.getXmlGeneratorCounter.get());
 
@@ -114,6 +119,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     final MockRegionExtension m = (MockRegionExtension) r.getExtensionPoint().getExtensions().iterator().next();
     assertNotNull(m);
 
+    assertEquals(1, m.beforeCreateCounter.get());
     assertEquals(1, m.onCreateCounter.get());
     assertEquals(0, m.getXmlGeneratorCounter.get());
 
@@ -136,6 +142,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     final MockRegionExtension extension = new MockRegionExtension("exception");
     region.getExtensionPoint().addExtension(extension);
 
+    assertEquals(0, extension.beforeCreateCounter.get());
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(0, extension.getXmlGeneratorCounter.get());
 

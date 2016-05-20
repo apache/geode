@@ -19,6 +19,7 @@ package com.gemstone.gemfire.internal.cache.extension;
 
 import java.util.ArrayList;
 
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.internal.util.CollectionUtils;
 
 /**
@@ -74,6 +75,12 @@ public class SimpleExtensionPoint<T> implements ExtensionPoint<T> {
   @Override
   public T getTarget() {
     return target;
+  }
+
+  public void beforeCreate(final Cache cache) {
+    for (final Extension<T> extension : extensions) {
+      extension.beforeCreate(extensible, cache);
+    }
   }
 
   public void fireCreate(final Extensible<T> newTarget) {
