@@ -17,9 +17,7 @@
 package com.gemstone.gemfire.management.internal.cli.functions;
 
 import java.io.File;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -44,9 +42,8 @@ public class ExportSharedConfigurationFunction extends FunctionAdapter
     
     if (locator.isSharedConfigurationRunning()) {
       SharedConfiguration sc = locator.getSharedConfiguration();
-      Date date= new Date();
-      new SimpleDateFormat("yyyyMMddhhmm").format(new Timestamp(date.getTime()));
-      String zipFileName =  CliStrings.format(CliStrings.EXPORT_SHARED_CONFIG__FILE__NAME, new Timestamp(date.getTime()).toString())  ;
+
+      String zipFileName =  CliStrings.format(CliStrings.EXPORT_SHARED_CONFIG__FILE__NAME, UUID.randomUUID());
       
       String targetFilePath = FilenameUtils.concat(sc.getSharedConfigurationDirPath(), zipFileName);
       try {

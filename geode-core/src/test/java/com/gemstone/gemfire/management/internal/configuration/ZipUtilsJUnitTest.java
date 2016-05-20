@@ -33,8 +33,6 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * JUnit Test for {@link ZipUtils}
- * 
- * TODO: this is broken on Windows: see bug #52036 (GEODE-312)
  */
 @Category(IntegrationTest.class)
 public class ZipUtilsJUnitTest {
