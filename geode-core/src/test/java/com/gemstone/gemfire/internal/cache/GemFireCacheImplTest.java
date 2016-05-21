@@ -22,6 +22,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -36,9 +38,9 @@ public class GemFireCacheImplTest {
   public void checkThatAsyncEventListenersUseAllThreadsInPool() {
     
     GemFireCacheImpl gfc = GemFireCacheImpl.createWithAsyncEventListeners(Fakes.distributedSystem(), new CacheConfig());
+    try {
     ThreadPoolExecutor executor = (ThreadPoolExecutor) gfc.getEventThreadPool();
     final long initialCount = executor.getCompletedTaskCount();
-    try {
       int MAX_THREADS = GemFireCacheImpl.EVENT_THREAD_LIMIT;
       final CountDownLatch cdl = new CountDownLatch(MAX_THREADS);
       for (int i = 1; i <= MAX_THREADS; i++) {
@@ -59,8 +61,10 @@ public class GemFireCacheImplTest {
         return executor.getCompletedTaskCount() == MAX_THREADS+initialCount;
       });
     } finally {
-      executor.shutdown();
+      // Note: if close is called it tries to dispatch and event which does not work
+      // because the async event pool has been shutdown.
+      // Once GEODE-1428 is fixed this test can call close instead of emergencyClose
+      gfc.emergencyClose();
     }
   }
-
 }
