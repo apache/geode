@@ -36,7 +36,11 @@ public class CliCommandOptionHasMultipleValuesException extends CliCommandOption
     this(null, null, null, null, cause);
   }
 
-  public CliCommandOptionHasMultipleValuesException(final CommandTarget commandTarget, Option option, final OptionSet optionSet, final String value, final Throwable cause) {
+  public CliCommandOptionHasMultipleValuesException(final Option option, final Throwable cause) {
+    this(null, option, null, null, cause);
+  }
+
+  public CliCommandOptionHasMultipleValuesException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet, final String value, final Throwable cause) {
     super(commandTarget, option, optionSet, value, cause);
   }
 }

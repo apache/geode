@@ -34,6 +34,10 @@ public class CliCommandOptionNotApplicableException extends CliCommandOptionExce
     this(null, null, null, cause);
   }
 
+  public CliCommandOptionNotApplicableException(final Option option, final Throwable cause) {
+    this(null, option, null, cause);
+  }
+
   public CliCommandOptionNotApplicableException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet, Throwable cause) {
     super(commandTarget, option, optionSet, cause);
   }

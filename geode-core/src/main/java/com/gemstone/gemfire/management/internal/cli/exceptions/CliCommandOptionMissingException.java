@@ -34,6 +34,10 @@ public class CliCommandOptionMissingException extends CliCommandOptionException 
     this(null, null, null, cause);
   }
 
+  public CliCommandOptionMissingException(final Option option, final Throwable cause) {
+    this(null, option, null, cause);
+  }
+
   public CliCommandOptionMissingException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet, final Throwable cause) {
     super(commandTarget, option, optionSet, cause);
   }
