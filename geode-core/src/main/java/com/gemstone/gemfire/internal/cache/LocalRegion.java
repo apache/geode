@@ -3280,10 +3280,6 @@ public class LocalRegion extends AbstractRegion
     //Fix for 45204 - don't include the tombstones in
     //any of our entry count stats.
     this.cachePerfStats.incEntryCount(-delta);
-    if(getDiskRegion() != null) {
-      getDiskRegion().incNumEntriesInVM(-delta);
-    }
-    DiskEntry.Helper.incrementBucketStats(this, -delta/*InVM*/, 0/*OnDisk*/, 0);
   }
   
   public int getTombstoneCount() {

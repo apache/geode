@@ -475,30 +475,14 @@ public class PartitionedRegionStatsJUnitTest
     assertEquals(singleEntryMemSize * entriesInMem, stats.getLong("dataStoreBytesInUse"));
     assertEquals(numEntries , stats.getInt("dataStoreEntryCount"));
     assertEquals((numEntries - entriesInMem) * entryOverflowSize, diskStats.getNumOverflowBytesOnDisk());
-    //Disabled for GEODE-93. numEntriesInVM and numOVerflowOnDisk are incorrect
-//    assertIndexDetailsEquals(entriesInMem , diskStats.getNumEntriesInVM());
-//    assertIndexDetailsEquals((numEntries - entriesInMem) , diskStats.getNumOverflowOnDisk());
-      assertEquals(stats.getLong("dataStoreBytesInUse"), getMemBytes(pr));
-      assertEquals(diskStats.getNumOverflowBytesOnDisk(), getDiskBytes(pr));
-    }
-
-  private int countEntriesInMem(PartitionedRegion pr) {
-    int entriesInMem = 0;
-    for(BucketRegion br : pr.getDataStore().getAllLocalBucketRegions()) {
-      for(RegionEntry entry : br.entries.regionEntries()) {
-        if(entry._getValue() != null && !Token.isRemoved(entry._getValue())) {
-          System.out.println("Still in memory " + entry.getKey());
-          entriesInMem++;
-        }
-      }
-    }
-    
-    System.out.println("EntriesInMem = " + entriesInMem);
-    return entriesInMem;
+    assertEquals(entriesInMem , diskStats.getNumEntriesInVM());
+    assertEquals((numEntries - entriesInMem) , diskStats.getNumOverflowOnDisk());
+    assertEquals(stats.getLong("dataStoreBytesInUse"), getMemBytes(pr));
+    assertEquals(diskStats.getNumOverflowBytesOnDisk(), getDiskBytes(pr));
   }
 
   private Object getDiskBytes(PartitionedRegion pr) {
-Set<BucketRegion> brs = pr.getDataStore().getAllLocalBucketRegions();
+    Set<BucketRegion> brs = pr.getDataStore().getAllLocalBucketRegions();
     
     long bytes = 0;
     for(Iterator<BucketRegion> itr = brs.iterator(); itr.hasNext(); ) {

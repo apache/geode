@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -49,6 +50,7 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.jayway.awaitility.Awaitility;
 
 /**
  * DUnit for ParallelSenderQueue overflow operations.
@@ -98,26 +100,30 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
     int numEventPuts = 50;
     vm4.invoke(() -> WANTestBase.doHeavyPuts( getTestMethodName(), numEventPuts ));
     
-    long numOvVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk( "ln" ));
-    long numOvVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk( "ln" ));
-    long numOvVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk( "ln" ));
-    long numOvVm7 = (Long) vm7.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk( "ln" ));
     
-    long numMemVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesInVM( "ln" ));
-    long numMemVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesInVM( "ln" ));
-    long numMemVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesInVM( "ln" ));
-    long numMemVm7 = (Long) vm7.invoke(() -> WANTestBase.getNumberOfEntriesInVM( "ln" ));
-    
-    LogWriterUtils.getLogWriter().info("Entries overflown to disk: " + numOvVm4 + "," + numOvVm5 + "," + numOvVm6 + "," + numOvVm7);
-    LogWriterUtils.getLogWriter().info("Entries in VM: " + numMemVm4 + "," + numMemVm5 + "," + numMemVm6 + "," + numMemVm7);
-    
-    long totalOverflown = numOvVm4 + numOvVm5 + numOvVm6 + numOvVm7; 
     //considering a memory limit of 40 MB, maximum of 40 events can be in memory. Rest should be on disk.
-    assertTrue("Total number of entries overflown to disk should be at least greater than 55", (totalOverflown > 55));
-    
-    long totalInMemory = numMemVm4 + numMemVm5 + numMemVm6 + numMemVm7;
-    //expected is twice the number of events put due to redundancy level of 1  
-    assertEquals("Total number of entries on disk and in VM is incorrect", (numEventPuts*2), (totalOverflown + totalInMemory));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(()-> 
+    {
+      long numOvVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk( "ln" ));
+      long numOvVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk( "ln" ));
+      long numOvVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk( "ln" ));
+      long numOvVm7 = (Long) vm7.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk( "ln" ));
+      
+      long numMemVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesInVM( "ln" ));
+      long numMemVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesInVM( "ln" ));
+      long numMemVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesInVM( "ln" ));
+      long numMemVm7 = (Long) vm7.invoke(() -> WANTestBase.getNumberOfEntriesInVM( "ln" ));
+      
+      LogWriterUtils.getLogWriter().info("Entries overflown to disk: " + numOvVm4 + "," + numOvVm5 + "," + numOvVm6 + "," + numOvVm7);
+      LogWriterUtils.getLogWriter().info("Entries in VM: " + numMemVm4 + "," + numMemVm5 + "," + numMemVm6 + "," + numMemVm7);
+      long totalOverflown = numOvVm4 + numOvVm5 + numOvVm6 + numOvVm7; 
+      assertTrue("Total number of entries overflown to disk should be at least greater than 55", (totalOverflown > 55));
+
+      long totalInMemory = numMemVm4 + numMemVm5 + numMemVm6 + numMemVm7;
+      //expected is twice the number of events put due to redundancy level of 1  
+      assertEquals("Total number of entries on disk and in VM is incorrect", (numEventPuts*2), (totalOverflown + totalInMemory));
+      
+    });
     
     vm4.invoke(() -> WANTestBase.resumeSender( "ln" ));
     vm5.invoke(() -> WANTestBase.resumeSender( "ln" ));

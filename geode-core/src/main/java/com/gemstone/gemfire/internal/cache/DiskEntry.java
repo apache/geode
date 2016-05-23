@@ -897,30 +897,31 @@ public interface DiskEntry extends RegionEntry {
           did.setUserBits(re.getUserBits());
           oldValueLength = did.getValueLength();
           did.setValueLength(re.getValueLength());
-          // The following undo and then do fixes bug 41849
-          // First, undo the stats done for the previous recovered value
-          if (oldKeyId < 0) {
-            dr.incNumOverflowOnDisk(-1L);
-            dr.incNumOverflowBytesOnDisk(-oldValueLength);
-            incrementBucketStats(region, 0/*InVM*/, -1/*OnDisk*/, -oldValueLength);
-          } else {
-            dr.incNumEntriesInVM(-1L);
-            incrementBucketStats(region, -1/*InVM*/, 0/*OnDisk*/, 0);
-          }
-          // Second, do the stats done for the current recovered value
+          
           if (re.getRecoveredKeyId() < 0) {
             if (!entry.isValueNull()) {
               entry.handleValueOverflow(region);
               entry.setValueWithContext(region, null); // fixes bug 41119
             }
-            dr.incNumOverflowOnDisk(1L);
-            dr.incNumOverflowBytesOnDisk(did.getValueLength());
-            incrementBucketStats(region, 0/*InVM*/, 1/*OnDisk*/,
-                                 did.getValueLength());
           } else {
             entry.setValueWithContext(region, entry.prepareValueForCache(region, re.getValue(), false));
-            dr.incNumEntriesInVM(1L);
-            incrementBucketStats(region, 1/*InVM*/, 0/*OnDisk*/, 0);
+          }
+          
+          if (re.getRecoveredKeyId() < 0) {
+            if(oldKeyId >= 0) {
+              dr.incNumEntriesInVM(-1L);
+              dr.incNumOverflowOnDisk(1L);
+              dr.incNumOverflowBytesOnDisk(did.getValueLength());
+              incrementBucketStats(region, -1/*InVM*/, 1/*OnDisk*/,
+                                   did.getValueLength());
+            }
+          } else {
+            if(oldKeyId < 0) {
+              dr.incNumEntriesInVM(1L);
+              dr.incNumOverflowOnDisk(-1L);
+              dr.incNumOverflowBytesOnDisk(-oldValueLength);
+              incrementBucketStats(region, 1/*InVM*/, -1/*OnDisk*/, -oldValueLength);
+            }
           }
         }
         else {
@@ -993,24 +994,33 @@ public interface DiskEntry extends RegionEntry {
             dr.incNumEntriesInVM(1L);
             incrementBucketStats(region, 1/*InVM*/, 0/*OnDisk*/, 0);
           }
-        }
-        if (entry instanceof LRUEntry) {
-          LRUEntry le = (LRUEntry)entry;
-          boolean wasEvicted = le.testEvicted();
-          le.unsetEvicted();
-          if (!Token.isRemovedFromDisk(newValue)) {
-            if (oldValue == null
-                // added null check for bug 41759
-                || wasEvicted && did != null && did.isPendingAsync()) {
-              // Note we do not append this entry because that will be
-              // done by lruEntryUpdate
+          
+          if(newValue == Token.TOMBSTONE) {
+            if (oldValue == null) {
+              dr.incNumOverflowOnDisk(-1L);
+              dr.incNumOverflowBytesOnDisk(-oldValueLength);
+              incrementBucketStats(region, 0/*InVM*/, -1/*OnDisk*/, -oldValueLength);
+            } else {
+              dr.incNumEntriesInVM(-1L);
+              incrementBucketStats(region, -1/*InVM*/, 0/*OnDisk*/, 0);
+            }
+          } else {
+            if (oldValue == null) {
               dr.incNumEntriesInVM(1L);
               dr.incNumOverflowOnDisk(-1L);
               dr.incNumOverflowBytesOnDisk(-oldValueLength);
               incrementBucketStats(region, 1/*InVM*/, -1/*OnDisk*/, -oldValueLength);
+            } else if(oldValue == Token.TOMBSTONE) {
+              dr.incNumEntriesInVM(1L);
+              incrementBucketStats(region, 1/*InVM*/, 0/*OnDisk*/, 0/*overflowBytesOnDisk*/);
             }
           }
         }
+        if (entry instanceof LRUEntry) {
+          LRUEntry le = (LRUEntry)entry;
+          le.unsetEvicted();          
+        }
+
       }
       } finally {
         if (syncObj == did) {
@@ -1158,11 +1168,6 @@ public interface DiskEntry extends RegionEntry {
                 // Seems like we could end up adding it to the queue multiple times.
                 did.setPendingAsync(false);
               }
-              // since it was evicted fix the stats here
-              dr.incNumEntriesInVM(1L);
-              dr.incNumOverflowOnDisk(-1L);
-              // no need to dec overflowBytesOnDisk because it was not inced in this case.
-              incrementBucketStats(region, 1/*InVM*/, -1/*OnDisk*/, 0);
             }
             lruEntryFaultIn((LRUEntry) entry, region);
             lruFaultedIn = true;
@@ -1445,7 +1450,6 @@ public interface DiskEntry extends RegionEntry {
             // and now we are faulting it out
           }
         }
-
         boolean movedValueToDisk = false; // added for bug 41849
         
         // If async then if it does not need to be written (because it already was)
@@ -1465,10 +1469,12 @@ public interface DiskEntry extends RegionEntry {
         if (movedValueToDisk) {
           valueLength = getValueLength(did);
         }
-        dr.incNumEntriesInVM(-1L);
-        dr.incNumOverflowOnDisk(1L);
-        dr.incNumOverflowBytesOnDisk(valueLength);
-        incrementBucketStats(region, -1/*InVM*/, 1/*OnDisk*/, valueLength);
+        if(dr.isSync() || movedValueToDisk) {
+          dr.incNumEntriesInVM(-1L);
+          dr.incNumOverflowOnDisk(1L);
+          dr.incNumOverflowBytesOnDisk(valueLength);
+          incrementBucketStats(region, -1/*InVM*/, 1/*OnDisk*/, valueLength);
+        }
       }
       } finally {
         dr.releaseReadLock();
@@ -1650,10 +1656,10 @@ public interface DiskEntry extends RegionEntry {
                   && ((LRUEntry)entry).testEvicted()) {
                 // Moved this here to fix bug 40116.
                 region.updateSizeOnEvict(entry.getKey(), entryValSize);
-                // note the old size was already accounted for
-                // onDisk was already inced so just do the valueLength here
+                dr.incNumEntriesInVM(-1);
+                dr.incNumOverflowOnDisk(1L);
                 dr.incNumOverflowBytesOnDisk(did.getValueLength());
-                incrementBucketStats(region, 0/*InVM*/, 0/*OnDisk*/,
+                incrementBucketStats(region, -1/*InVM*/, 1/*OnDisk*/,
                                      did.getValueLength());
                 entry.handleValueOverflow(region);
                 entry.setValueWithContext(region,null);
