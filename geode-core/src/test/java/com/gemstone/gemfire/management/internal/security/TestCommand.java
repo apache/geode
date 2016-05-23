@@ -151,6 +151,7 @@ public class TestCommand {
     createTestCommand("create index --name=myKeyIndex --expression=region1.Id --region=RegionA --type=key", regionAManage);
     createTestCommand("define index --name=myIndex1 --expression=exp1 --region=/RegionA", regionAManage);
     createTestCommand("destroy index --member=server2", dataManage);
+    createTestCommand("destroy index --region=RegionA --member=server2", regionAManage);
     createTestCommand("list indexes", clusterRead);
 
     //LauncherLifecycleCommands

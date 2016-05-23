@@ -72,7 +72,7 @@ public class CliCommandsSecurityTest {
         }
         catch(NotAuthorizedException e){
           assertTrue(e.getMessage()+" should contain "+command.getPermission(),
-            e.getMessage().contains(command.getPermission().toString()));
+            e.getMessage().contains("["+command.getPermission().toString()+"]"));
         }
       }
     }

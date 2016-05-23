@@ -112,19 +112,19 @@ public class GfshCommandsSecurityTest {
 
   @Test
   @JMXConnectionConfiguration(user = "regionA-reader", password = "1234567")
-  public void testregionAReader() throws Exception{
+  public void testRegionAReader() throws Exception{
     runCommandsWithAndWithout("DATA:READ:RegionA");
   }
 
   @Test
   @JMXConnectionConfiguration(user = "regionA-writer", password = "1234567")
-  public void testregionAWriter() throws Exception{
+  public void testRegionAWriter() throws Exception{
     runCommandsWithAndWithout("DATA:WRITE:RegionA");
   }
 
   @Test
   @JMXConnectionConfiguration(user = "regionA-manager", password = "1234567")
-  public void testregionAManager() throws Exception{
+  public void testRegionAManager() throws Exception{
     runCommandsWithAndWithout("DATA:MANAGE:RegionA");
   }
 
@@ -168,7 +168,7 @@ public class GfshCommandsSecurityTest {
       assertEquals(ResultBuilder.ERRORCODE_UNAUTHORIZED, ((ErrorResultData) result.getResultData()).getErrorCode());
       String resultMessage = result.getContent().toString();
       String permString = other.getPermission().toString();
-      assertTrue(resultMessage+" does not contain "+permString,resultMessage.contains(permString));
+      assertTrue(resultMessage+" does not contain "+permString,resultMessage.contains("["+permString+"]"));
     }
   }
 

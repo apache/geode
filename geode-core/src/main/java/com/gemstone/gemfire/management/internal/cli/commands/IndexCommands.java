@@ -322,8 +322,6 @@ public class IndexCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.DESTROY_INDEX, help = CliStrings.DESTROY_INDEX__HELP)
   @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEMFIRE_REGION, CliStrings.TOPIC_GEMFIRE_DATA}, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
-  //TODO : Add optioncontext for the index name.
   public Result destroyIndex(
       @CliOption(
       key = CliStrings.DESTROY_INDEX__NAME,
@@ -349,107 +347,114 @@ public class IndexCommands extends AbstractCommandsSupport {
     Result result = null;
     XmlEntity xmlEntity = null;
 
-    try {
-
-      if (StringUtils.isBlank(indexName)
-          && StringUtils.isBlank(regionPath)
-          && StringUtils.isBlank(memberNameOrID)
-          && StringUtils.isBlank(group)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(CliStrings.PROVIDE_ATLEAST_ONE_OPTION, CliStrings.DESTROY_INDEX));
-      }
-      String regionName = null;
-      final Cache cache = CacheFactory.getAnyInstance();
-      
-      if (!StringUtils.isBlank(regionPath)) {
-        regionName = regionPath.startsWith("/") ? regionPath.substring(1) : regionPath;
-      }
-      IndexInfo indexInfo = new IndexInfo(indexName, regionName);
-
-      Set<DistributedMember> targetMembers = CliUtil.findAllMatchingMembers(group, memberNameOrID);
-
-      ResultCollector rc = CliUtil.executeFunction(destroyIndexFunction, indexInfo, targetMembers);
-      List<Object> funcResults = (List<Object>) rc.getResult();
-
-      Set<String> successfulMembers = new TreeSet<String>();
-      Map<String, Set<String>> indexOpFailMap = new HashMap<String, Set<String>>();
-
-      for (Object funcResult : funcResults){
-
-        if (funcResult instanceof CliFunctionResult) {
-          CliFunctionResult cliFunctionResult = (CliFunctionResult) funcResult;
-
-          if (cliFunctionResult.isSuccessful()) {
-            successfulMembers.add(cliFunctionResult.getMemberIdOrName());
-            
-            if (xmlEntity == null) {
-              xmlEntity = cliFunctionResult.getXmlEntity();
-            }
-          } else {
-            String exceptionMessage  = cliFunctionResult.getMessage();
-            Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
-
-            if (failedMembers == null) {
-              failedMembers = new TreeSet<String>();
-            }
-            failedMembers.add(cliFunctionResult.getMemberIdOrName());
-            indexOpFailMap.put(exceptionMessage, failedMembers);
-          }
-        }
-      }
-
-      if (!successfulMembers.isEmpty()) {
-        InfoResultData infoResult = ResultBuilder.createInfoResultData();
-
-        if (!StringUtils.isBlank(indexName)) {
-          if (!StringUtils.isBlank(regionPath)) {
-            infoResult.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__ON__REGION__SUCCESS__MSG, indexName, regionPath));
-          } else {
-            infoResult.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__SUCCESS__MSG, indexName));
-          }
-        } else {
-           if (!StringUtils.isBlank(regionPath)) {
-             infoResult.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__ON__REGION__ONLY__SUCCESS__MSG, regionPath));
-           } else {
-             infoResult.addLine(CliStrings.DESTROY_INDEX__ON__MEMBERS__ONLY__SUCCESS__MSG);
-           }
-        }
-
-        int num = 0;
-        for (String memberId : successfulMembers) {
-          infoResult.addLine(CliStrings.format(CliStrings.format(CliStrings.DESTROY_INDEX__NUMBER__AND__MEMBER, ++num, memberId)));;
-        }
-        result = ResultBuilder.buildResult(infoResult);
-
-      } else {
-
-        ErrorResultData erd = ResultBuilder.createErrorResultData();
-        if (!StringUtils.isBlank(indexName)) {
-          erd.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__FAILURE__MSG, indexName));
-        } else {
-          erd.addLine("Indexes could not be destroyed for following reasons");
-        }
-
-        Set<String> exceptionMessages = indexOpFailMap.keySet();
-
-        for (String exceptionMessage : exceptionMessages) {
-          erd.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__REASON_MESSAGE, exceptionMessage));
-          erd.addLine(CliStrings.DESTROY_INDEX__EXCEPTION__OCCURRED__ON);
-
-          Set<String> memberIds = indexOpFailMap.get(exceptionMessage);
-          int num = 0;
-
-          for (String memberId : memberIds) {
-            erd.addLine(CliStrings.format(CliStrings.format(CliStrings.DESTROY_INDEX__NUMBER__AND__MEMBER, ++num, memberId)));
-          }
-          erd.addLine("");
-        }
-        result = ResultBuilder.buildResult(erd);
-      }
-    } catch (CommandResultException crex) {
-      result = crex.getResult();
-    } catch (Exception e) {
-      result = ResultBuilder.createGemFireErrorResult(e.getMessage());
+    if (StringUtils.isBlank(indexName)
+        && StringUtils.isBlank(regionPath)
+        && StringUtils.isBlank(memberNameOrID)
+        && StringUtils.isBlank(group)) {
+      return ResultBuilder.createUserErrorResult(CliStrings.format(CliStrings.PROVIDE_ATLEAST_ONE_OPTION, CliStrings.DESTROY_INDEX));
     }
+
+    String regionName = null;
+    final Cache cache = CacheFactory.getAnyInstance();
+
+    // If a regionName is specified, then authorize data manage on the regionName, otherwise, it requires data manage permission on all regions
+    if (!StringUtils.isBlank(regionPath)) {
+      regionName = regionPath.startsWith("/") ? regionPath.substring(1) : regionPath;
+      GeodeSecurityUtil.authorizeRegionManage(regionName);
+    }
+    else{
+      GeodeSecurityUtil.authorizeDataManage();
+    }
+
+    IndexInfo indexInfo = new IndexInfo(indexName, regionName);
+    Set<DistributedMember> targetMembers = null;
+
+    try {
+      targetMembers = CliUtil.findAllMatchingMembers(group, memberNameOrID);
+    }
+    catch (CommandResultException e) {
+      return e.getResult();
+    }
+
+    ResultCollector rc = CliUtil.executeFunction(destroyIndexFunction, indexInfo, targetMembers);
+    List<Object> funcResults = (List<Object>) rc.getResult();
+
+    Set<String> successfulMembers = new TreeSet<String>();
+    Map<String, Set<String>> indexOpFailMap = new HashMap<String, Set<String>>();
+
+    for (Object funcResult : funcResults){
+      if(!(funcResult instanceof CliFunctionResult)){
+        continue;
+      }
+
+      CliFunctionResult cliFunctionResult = (CliFunctionResult) funcResult;
+      if (cliFunctionResult.isSuccessful()) {
+        successfulMembers.add(cliFunctionResult.getMemberIdOrName());
+
+        if (xmlEntity == null) {
+          xmlEntity = cliFunctionResult.getXmlEntity();
+        }
+      } else {
+        String exceptionMessage  = cliFunctionResult.getMessage();
+        Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
+
+        if (failedMembers == null) {
+          failedMembers = new TreeSet<String>();
+        }
+        failedMembers.add(cliFunctionResult.getMemberIdOrName());
+        indexOpFailMap.put(exceptionMessage, failedMembers);
+      }
+    }
+
+    if (!successfulMembers.isEmpty()) {
+      InfoResultData infoResult = ResultBuilder.createInfoResultData();
+
+      if (!StringUtils.isBlank(indexName)) {
+        if (!StringUtils.isBlank(regionPath)) {
+          infoResult.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__ON__REGION__SUCCESS__MSG, indexName, regionPath));
+        } else {
+          infoResult.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__SUCCESS__MSG, indexName));
+        }
+      } else {
+         if (!StringUtils.isBlank(regionPath)) {
+           infoResult.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__ON__REGION__ONLY__SUCCESS__MSG, regionPath));
+         } else {
+           infoResult.addLine(CliStrings.DESTROY_INDEX__ON__MEMBERS__ONLY__SUCCESS__MSG);
+         }
+      }
+
+      int num = 0;
+      for (String memberId : successfulMembers) {
+        infoResult.addLine(CliStrings.format(CliStrings.format(CliStrings.DESTROY_INDEX__NUMBER__AND__MEMBER, ++num, memberId)));;
+      }
+      result = ResultBuilder.buildResult(infoResult);
+
+    } else {
+
+      ErrorResultData erd = ResultBuilder.createErrorResultData();
+      if (!StringUtils.isBlank(indexName)) {
+        erd.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__FAILURE__MSG, indexName));
+      } else {
+        erd.addLine("Indexes could not be destroyed for following reasons");
+      }
+
+      Set<String> exceptionMessages = indexOpFailMap.keySet();
+
+      for (String exceptionMessage : exceptionMessages) {
+        erd.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__REASON_MESSAGE, exceptionMessage));
+        erd.addLine(CliStrings.DESTROY_INDEX__EXCEPTION__OCCURRED__ON);
+
+        Set<String> memberIds = indexOpFailMap.get(exceptionMessage);
+        int num = 0;
+
+        for (String memberId : memberIds) {
+          erd.addLine(CliStrings.format(CliStrings.format(CliStrings.DESTROY_INDEX__NUMBER__AND__MEMBER, ++num, memberId)));
+        }
+        erd.addLine("");
+      }
+      result = ResultBuilder.buildResult(erd);
+    }
+
     
     if (xmlEntity != null) {
       result.setCommandPersisted((new SharedConfigurationWriter()).deleteXmlEntity(xmlEntity, group !=null ? group.split(",") : null));
