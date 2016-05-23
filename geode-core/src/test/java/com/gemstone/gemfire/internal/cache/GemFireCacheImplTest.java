@@ -61,10 +61,7 @@ public class GemFireCacheImplTest {
         return executor.getCompletedTaskCount() == MAX_THREADS+initialCount;
       });
     } finally {
-      // Note: if close is called it tries to dispatch and event which does not work
-      // because the async event pool has been shutdown.
-      // Once GEODE-1428 is fixed this test can call close instead of emergencyClose
-      gfc.emergencyClose();
+      gfc.close();
     }
   }
 }

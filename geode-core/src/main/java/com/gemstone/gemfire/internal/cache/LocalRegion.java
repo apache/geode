@@ -7581,7 +7581,7 @@ public class LocalRegion extends AbstractRegion
           }
           catch (RejectedExecutionException rex) {
             ed.release();
-            logger.warn(LocalizedMessage.create(LocalizedStrings.LocalRegion_0_EVENT_NOT_DISPATCHED_DUE_TO_REJECTED_EXECUTION), rex);
+            dispatchEvent(this, event, op);
           }
         }
       }
