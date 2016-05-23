@@ -39,6 +39,7 @@ import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
+import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 
@@ -59,9 +60,9 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
   public static final String USE_HTTP_SYSTEM_PROPERTY = "useHTTP";
   private boolean useHttpOnConnect = Boolean.getBoolean(USE_HTTP_SYSTEM_PROPERTY);
 
-  private transient int httpPort;
-  private transient int jmxPort;
-  private transient String jmxHost;
+  protected transient int httpPort;
+  protected transient int jmxPort;
+  protected transient String jmxHost;
   protected transient String gfshDir;
 
   @Rule
@@ -102,13 +103,27 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
    */
   @SuppressWarnings("serial")
   protected HeadlessGfsh setUpJmxManagerOnVm0ThenConnect(final Properties props) {
-    setUpJMXManagerOnVM(0, props);
+    Object[] result = setUpJMXManagerOnVM(0, props);
+    this.jmxHost = (String) result[0];
+    this.jmxPort = (Integer) result[1];
+    this.httpPort = (Integer) result[2];
     connect(this.jmxHost, this.jmxPort, this.httpPort, getDefaultShell());
     return shell;
   }
 
-  protected void setUpJMXManagerOnVM(int vm, final Properties props) {
-    Object[] result = (Object[]) Host.getHost(0).getVM(vm).invoke("setUpJmxManagerOnVm"+vm, () -> {
+  protected Object[] setUpJMXManagerOnVM(int vm, final Properties props) {
+    return setUpJMXManagerOnVM(vm, props, null);
+  }
+
+  /**
+   *
+   * @param vm
+   * @param props
+   * @param jsonFile
+   * @return an object array, result[0] is jmxHost(String), result[1] is jmxPort, result[2] is httpPort
+   */
+  protected Object[] setUpJMXManagerOnVM(int vm, final Properties props, String jsonFile) {
+    Object[] result = Host.getHost(0).getVM(vm).invoke("setUpJmxManagerOnVm"+vm, () -> {
       final Object[] results = new Object[3];
       final Properties localProps = (props != null ? props : new Properties());
 
@@ -137,16 +152,17 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
       getSystem(localProps);
       verifyManagementServiceStarted(getCache());
 
+      if(jsonFile!=null){
+        JSONAuthorization.setUpWithJsonFile(jsonFile);
+      }
+
       results[0] = jmxHost;
       results[1] = jmxPort;
       results[2] = httpPort;
-
       return results;
     });
 
-    this.jmxHost = (String) result[0];
-    this.jmxPort = (Integer) result[1];
-    this.httpPort = (Integer) result[2];
+    return result;
   }
 
   /**
@@ -203,6 +219,10 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
   }
 
   protected void connect(final String host, final int jmxPort, final int httpPort, HeadlessGfsh shell){
+    connect(host, jmxPort, httpPort, shell, null, null);
+  }
+
+  protected void connect(final String host, final int jmxPort, final int httpPort, HeadlessGfsh shell, String username, String password){
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.CONNECT);
 
     String endpoint;
@@ -214,13 +234,19 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
       endpoint = host + "[" + jmxPort + "]";
       command.addOption(CliStrings.CONNECT__JMX_MANAGER, endpoint);
     }
+    if(username!=null) {
+      command.addOption(CliStrings.CONNECT__USERNAME, username);
+    }
+    if(password!=null){
+      command.addOption(CliStrings.CONNECT__PASSWORD, password);
+    }
     System.out.println(getClass().getSimpleName()+" using endpoint: "+endpoint);
 
     CommandResult result = executeCommand(shell, command.toString());
 
     if (!shell.isConnectedAndReady()) {
       throw new AssertionError(
-          "Connect command failed to connect to manager " + endpoint + " result=" + commandResultToString(result));
+        "Connect command failed to connect to manager " + endpoint + " result=" + commandResultToString(result));
     }
 
     info("Successfully connected to managing node using " + (useHttpOnConnect ? "HTTP" : "JMX"));
