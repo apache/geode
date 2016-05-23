@@ -339,7 +339,7 @@ public final class LocalDataSet implements Region, QueryExecutor {
   }
 
   public boolean isEmpty() {
-    return this.proxy.isEmpty();
+    return size() == 0;
   }
 
   public Object getUserAttribute() {
