@@ -24,7 +24,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -42,11 +44,25 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
-  static {
+  private MemoryAllocator ma;
+  private static Boolean assertionsEnabled;
+
+  @BeforeClass
+  public static void setUpOnce() {
+    try {
+      assert false;
+      assertionsEnabled = false;
+    } catch (AssertionError e) {
+      assertionsEnabled = true;
+    }
     ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
+    System.out.println("assertionsEnabled = " + assertionsEnabled);
   }
 
-  private MemoryAllocator ma;
+  @AfterClass
+  public static void tearDownOnce() {
+    ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(assertionsEnabled);
+  }
 
   @Before
   public void setUp() {
@@ -820,7 +836,6 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     chunk.getRawBytes();
 
     chunk.release();
-    fail("Expected getRawBytes() for a compressed value to throw java.lang.AssertionError");
   }
 
   @Test

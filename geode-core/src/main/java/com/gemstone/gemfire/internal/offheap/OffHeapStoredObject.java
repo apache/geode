@@ -423,8 +423,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
      */
     protected byte[] getRawBytes() {
       assert !isCompressed();
-      byte[] result = getCompressedBytes();
-      return result;
+      return getCompressedBytes(); 
     }
 
     @Override
