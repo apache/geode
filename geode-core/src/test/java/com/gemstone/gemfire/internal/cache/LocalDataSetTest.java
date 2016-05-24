@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -49,4 +50,17 @@ public class LocalDataSetTest {
     assertFalse(lds.isEmpty());
   }
   
+  @Test
+  public void verifyThatGetCallbackArgIsCorrectlyPassedToGetHashKey() {
+    PartitionedRegion pr = mock(PartitionedRegion.class);
+    when(pr.getTotalNumberOfBuckets()).thenReturn(33);
+    LocalDataSet lds = new LocalDataSet(pr, Collections.emptySet());
+    LocalDataSet spy = spy(lds);
+    Object key = "key";
+    Object callbackArg = "callbackArg";
+    
+    spy.get(key, callbackArg);
+    
+    verify(spy).getHashKey(Operation.CONTAINS_KEY, key, null, callbackArg);
+  }
 }
