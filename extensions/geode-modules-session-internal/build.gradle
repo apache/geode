@@ -14,28 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'geode'
 
-include 'geode-common'
-include 'geode-joptsimple'
-include 'geode-json'
-include 'geode-junit'
-include 'geode-core'
-include 'geode-web'
-include 'geode-web-api'
-include 'geode-pulse'
-include 'geode-assembly'
-include 'geode-rebalancer'
-include 'geode-lucene'
-include 'geode-wan'
-include 'geode-cq'
-include 'extensions/geode-modules'
-include 'extensions/geode-modules-tomcat7'
-include 'extensions/geode-modules-hibernate'
-include 'extensions/geode-modules-session-internal'
-include 'extensions/geode-modules-session'
-include 'extensions/geode-modules-assembly'
+dependencies {
+  compile project(':extensions/geode-modules')
+  compile project(':geode-core')
+}
 
-if (GradleVersion.current() < GradleVersion.version(minimumGradleVersion)) {
-  throw new GradleException('Running with unsupported Gradle Version. Use Gradle Wrapper or with Gradle version >= ' + minimumGradleVersion)
+jar {
+  baseName = 'geode-modules-session-internal'
 }

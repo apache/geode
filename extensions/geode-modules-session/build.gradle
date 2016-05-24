@@ -16,7 +16,7 @@
  */
 
 dependencies {
-  compile project(':extensions/geode-modules')
+  compile project(':extensions/geode-modules-session-internal')
   compile project(':geode-core')
 
   testCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
@@ -31,24 +31,8 @@ dependencies {
 }
 
 jar {
-  include '**/session/filter/**/*'
-  include '**/session/installer/**/*'
-  includeEmptyDirs = false
-
   manifest {
     attributes 'Main-Class': 'com.gemstone.gemfire.modules.session.installer.Installer'
   }
   baseName = 'geode-modules-session'
-}
-
-task internalJar(type: Jar) {
-  from sourceSets.main.output
-  include '**/internal/**/*'
-  includeEmptyDirs = false
-  classifier = 'internal'
-  baseName = 'geode-modules-session-internal'
-}
-
-artifacts {
-  archives internalJar
 }

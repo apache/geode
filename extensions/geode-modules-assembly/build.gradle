@@ -167,9 +167,8 @@ task distAppServer(type: Zip, dependsOn: ':extensions/geode-modules-session:asse
   archiveName = "Apache_Geode_Modules-${version}-AppServer.zip"
 
   into('lib') {
-    // Use a closure here so that the evaluation is deferred. Without this the 'internal'
-    // jar won't be picked up.
-    from { getJarArtifact(':extensions/geode-modules-session') }
+    from getJarArtifact(':extensions/geode-modules-session')
+    from getJarArtifact(':extensions/geode-modules-session-internal')
     from getJarArtifact(':extensions/geode-modules')
     from configurations.slf4jDeps
   }
