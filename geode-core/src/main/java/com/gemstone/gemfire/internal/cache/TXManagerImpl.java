@@ -84,7 +84,7 @@ import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMa
  * 
  * @see CacheTransactionManager
  */
-public final class TXManagerImpl implements CacheTransactionManager,
+public class TXManagerImpl implements CacheTransactionManager,
     MembershipListener {
 
   private static final Logger logger = LogService.getLogger();
@@ -729,8 +729,26 @@ public final class TXManagerImpl implements CacheTransactionManager,
       return null;
     }
     TXId key = new TXId(msg.getMemberToMasqueradeAs(), msg.getTXUniqId());
-    TXStateProxy val;
-    val = this.hostedTXStates.get(key);
+    TXStateProxy val = getOrSetHostedTXState(key, msg);
+
+    if (val != null) {
+      boolean success = getLock(val, key);
+      while (!success) {
+        val = getOrSetHostedTXState(key, msg);
+        if (val != null) {
+          success = getLock(val, key);
+        } else {
+          break;
+        }
+      }
+    }
+
+    setTXState(val);
+    return val;
+  }
+
+  TXStateProxy getOrSetHostedTXState(TXId key, TransactionMessage msg) {
+    TXStateProxy val = this.hostedTXStates.get(key);
     if (val == null) {
       synchronized(this.hostedTXStates) {
         val = this.hostedTXStates.get(key);
@@ -746,14 +764,49 @@ public final class TXManagerImpl implements CacheTransactionManager,
         }
       }
     }
-    if (val != null) {
-      if (!val.getLock().isHeldByCurrentThread()) {
-        val.getLock().lock();
+    return val;
+  }
+
+  boolean getLock(TXStateProxy val, TXId key) {
+    if (!val.getLock().isHeldByCurrentThread()) {
+      val.getLock().lock();
+      synchronized (this.hostedTXStates) {
+        TXStateProxy curVal = this.hostedTXStates.get(key);
+        // Inflight op could be received later than TXFailover operation.
+        if (curVal == null) {
+          if (!isHostedTxRecentlyCompleted(key)) {
+            this.hostedTXStates.put(key, val);
+            // Failover op removed the val
+            // It is possible that the same operation can be executed
+            // twice by two threads, but data is consistent.
+          }
+        } else {
+          if (val != curVal) {
+            //Failover op replaced with a new TXStateProxyImpl
+            //Use the new one instead.
+            val.getLock().unlock();
+            return false;
+          }
+        }
       }
     }
-
-    setTXState(val);
-    return val;
+    return true;
+  }
+  
+  public boolean hasTxAlreadyFinished(TXStateProxy tx, TXId txid) {
+    if (tx == null) {
+      return false;
+    }
+    if (isHostedTxRecentlyCompleted(txid)) {
+      //Should only happen when handling a later arrival of transactional op from proxy,
+      //while the transaction has failed over and already committed or rolled back.
+      //Just send back reply as a success op.
+      //The client connection should be lost from proxy, or
+      //the proxy is closed for failover to occur.
+      logger.info("TxId {} has already finished." , txid);
+      return true;
+    }
+    return false;
   }
   
   /**
