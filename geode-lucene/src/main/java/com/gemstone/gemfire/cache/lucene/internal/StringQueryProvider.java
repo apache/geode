@@ -65,10 +65,13 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
     if (luceneQuery == null) {
       String[] fields = index.getFieldNames();
 
-      //TODO  get the analyzer from the index
-      MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, new StandardAnalyzer());
+      LuceneIndexImpl indexImpl = (LuceneIndexImpl)index;
+      MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, indexImpl.getAnalyzer());
       try {
         luceneQuery = parser.parse(query);
+        if (logger.isDebugEnabled()) {
+          logger.debug("User query "+query+" is parsed to be: "+luceneQuery);
+        }
       } catch (ParseException e) {
         logger.debug("Malformed lucene query: " + query, e);
         throw new QueryException(e);

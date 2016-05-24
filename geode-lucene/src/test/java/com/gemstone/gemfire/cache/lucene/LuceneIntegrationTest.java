@@ -61,6 +61,7 @@ public class LuceneIntegrationTest {
   protected CacheFactory getCacheFactory() {
     CacheFactory cf = new CacheFactory();
     cf.set("mcast-port", "0");
+    cf.set("log-level", System.getProperty("logLevel", "info"));
     cf.set("locators", "");
     return cf;
   }

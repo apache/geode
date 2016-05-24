@@ -20,8 +20,10 @@ package com.gemstone.gemfire.cache.lucene.internal.repository.serializer;
 
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
+import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteWeakHashMap;
 import com.gemstone.gemfire.pdx.PdxInstance;
 
@@ -48,6 +50,8 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
    */
   private Map<Class<?>, LuceneSerializer> mappers = new CopyOnWriteWeakHashMap<Class<?>, LuceneSerializer>();
   
+  private static final Logger logger = LogService.getLogger();
+  
   public HeterogeneousLuceneSerializer(String[] indexedFields) {
     this.indexedFields = indexedFields;
     pdxMapper = new PdxLuceneSerializer(indexedFields);
@@ -59,6 +63,9 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
     LuceneSerializer mapper = getFieldMapper(value);
     
     mapper.toDocument(value, doc);
+    if (logger.isDebugEnabled()) {
+      logger.debug("HeterogeneousLuceneSerializer.toDocument:"+doc);
+    }
   }
 
   /**

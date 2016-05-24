@@ -20,7 +20,9 @@
 package com.gemstone.gemfire.cache.lucene.internal.repository;
 
 import java.io.IOException;
+import java.util.Iterator;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
@@ -33,6 +35,7 @@ import org.apache.lucene.search.TopDocs;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.SerializerUtil;
+import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * A repository that writes to a single lucene index writer
@@ -47,6 +50,8 @@ public class IndexRepositoryImpl implements IndexRepository {
   private final LuceneSerializer serializer;
   private final SearcherManager searcherManager;
   private Region<?,?> region;
+  
+  private static final Logger logger = LogService.getLogger();
   
   public IndexRepositoryImpl(Region<?,?> region, IndexWriter writer, LuceneSerializer serializer) throws IOException {
     this.region = region;
@@ -85,6 +90,9 @@ public class IndexRepositoryImpl implements IndexRepository {
       for(ScoreDoc scoreDoc : docs.scoreDocs) {
         Document doc = searcher.doc(scoreDoc.doc);
         Object key = SerializerUtil.getKey(doc);
+        if (logger.isDebugEnabled()) {
+          logger.debug("query found doc:"+doc+":"+scoreDoc);
+        }
         collector.collect(key, scoreDoc.score);
       }
     } finally {

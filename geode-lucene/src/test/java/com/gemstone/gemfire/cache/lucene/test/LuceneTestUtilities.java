@@ -75,7 +75,7 @@ public class LuceneTestUtilities {
    */
   public static <K> void  verifyQueryKeys(LuceneQuery<K,Object> query,K ... expectedKeys) {
     Set<K> expectedKeySet = new HashSet<>(Arrays.asList(expectedKeys));
-    Set<K> actualKeySet = new HashSet<>(Arrays.asList(expectedKeys));
+    Set<K> actualKeySet = new HashSet<>();
     final LuceneQueryResults<K, Object> results = query.search();
     while(results.hasNextPage()) {
       results.getNextPage().stream()

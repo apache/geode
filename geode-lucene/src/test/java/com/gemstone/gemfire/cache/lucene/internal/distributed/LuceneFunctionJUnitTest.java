@@ -34,6 +34,7 @@ import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
 import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneIndex;
 import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneService;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
 import com.gemstone.gemfire.cache.lucene.internal.StringQueryProvider;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
@@ -44,11 +45,14 @@ import com.gemstone.gemfire.internal.cache.InternalCache;
 import com.gemstone.gemfire.internal.cache.execute.InternalRegionFunctionContext;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.search.Query;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 @Category(UnitTest.class)
 public class LuceneFunctionJUnitTest {
@@ -70,7 +74,7 @@ public class LuceneFunctionJUnitTest {
   IndexRepository mockRepository2;
   IndexResultCollector mockCollector;
   InternalLuceneService mockService;
-  InternalLuceneIndex mockIndex;
+  LuceneIndexImpl mockIndex;
 
   ArrayList<IndexRepository> repos;
   LuceneFunctionContext<IndexResultCollector> searchArgs;
@@ -263,10 +267,11 @@ public class LuceneFunctionJUnitTest {
     repos.add(mockRepository1);
     repos.add(mockRepository2);
     
-    mockIndex = mock(InternalLuceneIndex.class);
+    mockIndex = mock(LuceneIndexImpl.class);
     mockService = mock(InternalLuceneService.class);
     mockCache = mock(InternalCache.class);
-
+    Analyzer analyzer = new StandardAnalyzer();
+    Mockito.doReturn(analyzer).when(mockIndex).getAnalyzer();
     queryProvider = new StringQueryProvider("gemfire:lucene");
     
     searchArgs = new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName");

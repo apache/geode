@@ -18,27 +18,30 @@ package com.gemstone.gemfire.cache.lucene;
 
 import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.verifyQueryKeys;
 import static org.hamcrest.Matchers.isA;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.execute.FunctionException;
-import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
-import com.gemstone.gemfire.cache.lucene.test.TestObject;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.core.LowerCaseFilter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.util.CharTokenizer;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
+
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.execute.FunctionException;
+import com.gemstone.gemfire.cache.lucene.test.TestObject;
+import com.gemstone.gemfire.cache.query.QueryException;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * This class contains tests of lucene queries that can fit
@@ -62,21 +65,76 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
     //Put two values with some of the same tokens
     String value1 = "one three";
-    region.put("A", new TestObject(value1, value1));
     String value2 = "one two three";
+    String value3 = "one@three";
+    region.put("A", new TestObject(value1, value1));
     region.put("B", new TestObject(value2, value2));
+    region.put("C", new TestObject(value3, value3));
+
+    // The value will be tokenized into following documents using the analyzers:
+    // <field1:one three> <field2:one three>
+    // <field1:one two three> <field2:one two three>
+    // <field1:one@three> <field2:one@three>
+    
+    index.waitUntilFlushed(60000);
+
+    // standard analyzer with double quote
+    // this query string will be parsed as "one three"
+    // but standard analyzer will parse value "one@three" to be "one three"
+    // query will be--fields1:"one three"
+    // so C will be hit by query
+    verifyQuery("field1:\"one three\"", "A", "C");
+    
+    // standard analyzer will not tokenize by '_'
+    // this query string will be parsed as "one_three"
+    // query will be--field1:one_three
+    verifyQuery("field1:one_three");
+    
+    // standard analyzer will tokenize by '@'
+    // this query string will be parsed as "one" "three"
+    // query will be--field1:one field1:three
+    verifyQuery("field1:one@three", "A", "B", "C");
+    
+    // keyword analyzer, this query will only match the entry that exactly matches
+    // this query string will be parsed as "one three"
+    // but keyword analyzer will parse one@three to be "one three"
+    // query will be--field2:one three
+    verifyQuery("field2:\"one three\"", "A");
+
+    // keyword analyzer without double quote. It should be the same as 
+    // with double quote
+    // query will be--field2:one@three
+    verifyQuery("field2:one@three", "C");
+  }
+
+  @Test()
+  public void shouldTokenizeUsingMyCharacterAnalyser() throws ParseException {
+    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    // not to specify field1's analyzer, it should use standard analyzer
+    // Note: fields has to contain "field1", otherwise, field1 will not be tokenized
+    fields.put("field1", null);
+    fields.put("field2", new MyCharacterAnalyzer());
+    luceneService.createIndex(INDEX_NAME, REGION_NAME, fields);
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION)
+      .create(REGION_NAME);
+    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+
+    //Put two values with some of the same tokens
+    String value1 = "one three";
+    String value4 = "two_four";
+    String value3 = "two@four";
+    region.put("A", new TestObject(value1, value4));
+    region.put("B", new TestObject(value1, value3));
+    region.put("C", new TestObject(value3, value3));
+    region.put("D", new TestObject(value4, value4));
 
     index.waitUntilFlushed(60000);
 
-    //Using the standard analyzer, this query will match both results
-    verifyQuery("field1:\"one three\"", "A", "B");
-
-    //Using the keyword analyzer, this query will only match the entry that exactly matches
-    verifyQuery("field2:\"one three\"", "A");
-
-
+    verifyQuery("field1:one AND field2:two_four", "A");
+    verifyQuery("field1:one AND field2:two", "A");
+    verifyQuery("field1:three AND field2:four", "A");
   }
-
+  
   @Test()
   public void throwFunctionExceptionWhenGivenBadQuery() {
     LuceneService luceneService = LuceneServiceProvider.get(cache);
@@ -109,5 +167,20 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     verifyQueryKeys(queryWithStandardAnalyzer, expectedKeys);
   }
 
+  private static class MyCharacterTokenizer extends CharTokenizer {
+    @Override
+    protected boolean isTokenChar(final int character) {
+      return '_' != character;
+    }
+  }
+
+  private static class MyCharacterAnalyzer extends Analyzer {
+    @Override
+    protected TokenStreamComponents createComponents(final String field) {
+      Tokenizer tokenizer = new MyCharacterTokenizer();
+      TokenStream filter = new LowerCaseFilter(tokenizer);
+      return new TokenStreamComponents(tokenizer, filter);
+    }
+  }
 
 }

@@ -20,6 +20,8 @@ package com.gemstone.gemfire.cache.lucene.internal;
 
 import static org.junit.Assert.assertEquals;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.search.Query;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,12 +38,14 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class StringQueryProviderJUnitTest {
 
-  private LuceneIndex mockIndex;
+  private LuceneIndexImpl mockIndex;
 
   @Before
   public void initMocksAndCommonObjects() {
-    mockIndex = Mockito.mock(LuceneIndex.class, "mockIndex");
+    mockIndex = Mockito.mock(LuceneIndexImpl.class, "mockIndex");
     String[] fields = { "field-1", "field-2" };
+    Analyzer analyzer = new StandardAnalyzer();
+    Mockito.doReturn(analyzer).when(mockIndex).getAnalyzer();
     Mockito.doReturn(fields).when(mockIndex).getFieldNames();
     Mockito.doReturn("mockIndex").when(mockIndex).getName();
     Mockito.doReturn("mockRegionPath").when(mockIndex).getRegionPath();

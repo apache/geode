@@ -19,8 +19,10 @@
 
 package com.gemstone.gemfire.cache.lucene.internal.repository.serializer;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
+import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.pdx.PdxInstance;
 
 /**
@@ -29,6 +31,8 @@ import com.gemstone.gemfire.pdx.PdxInstance;
 class PdxLuceneSerializer implements LuceneSerializer {
 
   private String[] indexedFields;
+
+  private static final Logger logger = LogService.getLogger();
 
   public PdxLuceneSerializer(String[] indexedFields) {
     this.indexedFields = indexedFields;
@@ -42,6 +46,9 @@ class PdxLuceneSerializer implements LuceneSerializer {
         Object fieldValue = pdx.getField(field);
         SerializerUtil.addField(doc, field, fieldValue);
       }
+    }
+    if (logger.isDebugEnabled()) {
+      logger.debug("PdxLuceneSerializer.toDocument:"+doc);
     }
   }
 }
