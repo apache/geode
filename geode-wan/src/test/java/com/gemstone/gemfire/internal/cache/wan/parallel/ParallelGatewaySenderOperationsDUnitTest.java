@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
+import java.util.concurrent.TimeUnit;
+
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.GemFireIOException;
@@ -30,6 +32,7 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.RMIException;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import com.jayway.awaitility.Awaitility;
 
 /**
  * DUnit test for operations on ParallelGatewaySender
@@ -328,7 +331,8 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     stopSenders();
     
     LogWriterUtils.getLogWriter().info("All the senders are stopped");
-    Wait.pause(2000);
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 200, 120000));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 200, 120000));
     
     //SECOND RUN: do some of the puts after the senders are stopped
     vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", 1000 ));
@@ -348,8 +352,9 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     LogWriterUtils.getLogWriter().info("All the senders are started");
     
     async.join();
-        
-    Wait.pause(2000);
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 5000, 120000));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 5000, 120000));
     
     //verify all the buckets on all the sender nodes are drained
     validateParallelSenderQueueAllBucketsDrained();
