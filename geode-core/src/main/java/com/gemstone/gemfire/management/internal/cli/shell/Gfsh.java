@@ -499,7 +499,7 @@ public class Gfsh extends JLineShell {
     if (full) {
       return GemFireVersion.asString();
     } else {
-      return "v" + GemFireVersion.getGemFireVersion();
+      return GemFireVersion.getGemFireVersion();
     }
   }
 
