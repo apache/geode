@@ -749,22 +749,22 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   // }
 
   public static GemFireCacheImpl createClient(DistributedSystem system, PoolFactory pf, CacheConfig cacheConfig) {
-    return basicCreate(system, true, cacheConfig, pf, true, ASYNC_EVENT_LISTENERS);
+    return basicCreate(system, true, cacheConfig, pf, true, ASYNC_EVENT_LISTENERS, null);
   }
 
   public static GemFireCacheImpl create(DistributedSystem system, CacheConfig cacheConfig) {
-    return basicCreate(system, true, cacheConfig, null, false, ASYNC_EVENT_LISTENERS);
+    return basicCreate(system, true, cacheConfig, null, false, ASYNC_EVENT_LISTENERS, null);
   }
 
-  public static GemFireCacheImpl createWithAsyncEventListeners(DistributedSystem system, CacheConfig cacheConfig) {
-    return basicCreate(system, true, cacheConfig, null, false, true);
+  public static GemFireCacheImpl createWithAsyncEventListeners(DistributedSystem system, CacheConfig cacheConfig, TypeRegistry typeRegistry) {
+    return basicCreate(system, true, cacheConfig, null, false, true, typeRegistry);
   }
   
  public static Cache create(DistributedSystem system, boolean existingOk, CacheConfig cacheConfig) {
-    return basicCreate(system, existingOk, cacheConfig, null, false, ASYNC_EVENT_LISTENERS);
+    return basicCreate(system, existingOk, cacheConfig, null, false, ASYNC_EVENT_LISTENERS, null);
   }
 
-  private static GemFireCacheImpl basicCreate(DistributedSystem system, boolean existingOk, CacheConfig cacheConfig, PoolFactory pf, boolean isClient, boolean asyncEventListeners)
+  private static GemFireCacheImpl basicCreate(DistributedSystem system, boolean existingOk, CacheConfig cacheConfig, PoolFactory pf, boolean isClient, boolean asyncEventListeners, TypeRegistry typeRegistry)
   throws CacheExistsException, TimeoutException, CacheWriterException,
   GatewayException,
   RegionExistsException 
@@ -772,7 +772,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
     try {
       GemFireCacheImpl instance = checkExistingCache(existingOk, cacheConfig);
       if (instance == null) {
-        instance = new GemFireCacheImpl(isClient, pf, system, cacheConfig, asyncEventListeners);
+        instance = new GemFireCacheImpl(isClient, pf, system, cacheConfig, asyncEventListeners, typeRegistry);
         instance.initialize();
       }
       return instance;
@@ -803,11 +803,13 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
 
   /**
    * Creates a new instance of GemFireCache and populates it according to the <code>cache.xml</code>, if appropriate.
+   * @param typeRegistry: currently only unit tests set this parameter to a non-null value
    */
-  private GemFireCacheImpl(boolean isClient, PoolFactory pf, DistributedSystem system, CacheConfig cacheConfig, boolean asyncEventListeners) {
+  private GemFireCacheImpl(boolean isClient, PoolFactory pf, DistributedSystem system, CacheConfig cacheConfig, boolean asyncEventListeners, TypeRegistry typeRegistry) {
     this.isClient = isClient;
     this.clientpf = pf;
     this.cacheConfig = cacheConfig; // do early for bug 43213
+    this.pdxRegistry = typeRegistry;
 
     // Synchronized to prevent a new cache from being created
     // before an old one has finished closing
@@ -4387,8 +4389,8 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
 
   private final ArrayList<SimpleWaiter> riWaiters = new ArrayList<SimpleWaiter>();
 
-  private TypeRegistry pdxRegistry; // never changes but is currently not
-                                    // initialized in constructor
+  private TypeRegistry pdxRegistry; // never changes but is currently only
+                                    // initialized in constructor by unit tests
 
   /**
    * update stats for completion of a registerInterest operation

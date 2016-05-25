@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.internal.cache;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -27,6 +28,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.pdx.internal.TypeRegistry;
 import com.gemstone.gemfire.test.fake.Fakes;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import com.jayway.awaitility.Awaitility;
@@ -36,30 +39,27 @@ public class GemFireCacheImplTest {
 
   @Test
   public void checkThatAsyncEventListenersUseAllThreadsInPool() {
-    
-    GemFireCacheImpl gfc = GemFireCacheImpl.createWithAsyncEventListeners(Fakes.distributedSystem(), new CacheConfig());
+    InternalDistributedSystem ds = Fakes.distributedSystem();
+    CacheConfig cc = new CacheConfig();
+    TypeRegistry typeRegistry = mock(TypeRegistry.class);
+    GemFireCacheImpl gfc = GemFireCacheImpl.createWithAsyncEventListeners(ds, cc, typeRegistry);
     try {
-    ThreadPoolExecutor executor = (ThreadPoolExecutor) gfc.getEventThreadPool();
-    final long initialCount = executor.getCompletedTaskCount();
+      ThreadPoolExecutor executor = (ThreadPoolExecutor) gfc.getEventThreadPool();
+      assertEquals(0, executor.getCompletedTaskCount());
+      assertEquals(0, executor.getActiveCount());
       int MAX_THREADS = GemFireCacheImpl.EVENT_THREAD_LIMIT;
       final CountDownLatch cdl = new CountDownLatch(MAX_THREADS);
       for (int i = 1; i <= MAX_THREADS; i++) {
-        Runnable r = new Runnable() {
-          @Override
-          public void run() {
-            cdl.countDown();
-            try {
-              cdl.await();
-            } catch (InterruptedException e) {
-            }
+        executor.execute(() -> {
+          cdl.countDown();
+          try {
+            cdl.await();
+          } catch (InterruptedException e) {
           }
-        };
-        executor.execute(r);
+        });
       }
-      Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS).timeout(15, TimeUnit.SECONDS)
-      .until(() -> {
-        return executor.getCompletedTaskCount() == MAX_THREADS+initialCount;
-      });
+      Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS).timeout(90, TimeUnit.SECONDS)
+      .until(() -> assertEquals(MAX_THREADS, executor.getCompletedTaskCount()));
     } finally {
       gfc.close();
     }
