@@ -44,6 +44,9 @@ class PdxLuceneSerializer implements LuceneSerializer {
     for(String field : indexedFields) {
       if(pdx.hasField(field)) {
         Object fieldValue = pdx.getField(field);
+        if (fieldValue == null) {
+          continue;
+        }
         SerializerUtil.addField(doc, field, fieldValue);
       }
     }

@@ -80,4 +80,20 @@ public class ReflectionFieldMapperJUnitTest {
     assertEquals("a", doc.getField("s").stringValue());
     assertEquals("b", doc.getField("s2").stringValue());
   }
+  
+  @Test
+  public void testNullField() {
+
+    String[] fields = new String[] {"s", "o", "s2"};
+    ReflectionLuceneSerializer mapper = new ReflectionLuceneSerializer(Type2.class, fields);
+    
+    Type2 t = new Type2("a", 1, 2L, 3.0, 4.0f, null);
+    
+    Document doc = new Document();
+    mapper.toDocument(t, doc);
+    
+    assertEquals(1, doc.getFields().size());
+    assertEquals("a", doc.getField("s").stringValue());
+    assertNull(doc.getField("s2"));
+  }
 }

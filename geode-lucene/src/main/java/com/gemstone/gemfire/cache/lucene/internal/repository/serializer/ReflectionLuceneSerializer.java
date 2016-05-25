@@ -70,6 +70,9 @@ class ReflectionLuceneSerializer implements LuceneSerializer {
     for(Field field: fields) {
       try {
         Object fieldValue = field.get(value);
+        if (fieldValue == null) {
+          continue;
+        }
         SerializerUtil.addField(doc, field.getName(), fieldValue);
       } catch (IllegalArgumentException | IllegalAccessException e) {
         //TODO - what to do if we can't read a field?

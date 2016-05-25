@@ -134,7 +134,25 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     verifyQuery("field1:one AND field2:two", "A");
     verifyQuery("field1:three AND field2:four", "A");
   }
-  
+
+  @Test()
+  public void shouldAllowNullInFieldValue() throws ParseException {
+    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    fields.put("field1", null);
+    fields.put("field2", null);
+    luceneService.createIndex(INDEX_NAME, REGION_NAME, fields);
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION)
+      .create(REGION_NAME);
+    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+
+    //Put two values with some of the same tokens
+    String value1 = "one three";
+    region.put("A", new TestObject(value1, null));
+    index.waitUntilFlushed(60000);
+
+    verifyQuery("field1:one", "A");
+  }
+
   @Test()
   public void throwFunctionExceptionWhenGivenBadQuery() {
     LuceneService luceneService = LuceneServiceProvider.get(cache);

@@ -78,4 +78,24 @@ public class PdxFieldMapperJUnitTest {
     assertEquals("a", doc.getField("s").stringValue());
     assertEquals(5, doc.getField("i").numericValue());
   }
+  
+  @Test
+  public void testNullField() {
+    String[] fields = new String[] {"s", "i"};
+    PdxLuceneSerializer mapper = new PdxLuceneSerializer(fields);
+    
+    PdxInstance i = mock(PdxInstance.class);
+    
+    when(i.hasField("s")).thenReturn(true);
+    when(i.hasField("i")).thenReturn(true);
+    when(i.getField("s")).thenReturn("a");
+    when(i.getField("i")).thenReturn(null);
+    
+    Document doc = new Document();
+    mapper.toDocument(i, doc);
+    
+    assertEquals(1, doc.getFields().size());
+    assertEquals("a", doc.getField("s").stringValue());
+    assertNull(doc.getField("i"));
+  }
 }
