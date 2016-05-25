@@ -37,25 +37,21 @@ REM echo %scriptdir%
 :gfok
 @set GEMFIRE=%gf%
 
-@set GEMFIRE_JARS=%GEMFIRE%\lib\gfsh-dependencies.jar
+@set GFSH_JARS=%GEMFIRE%\lib\gfsh-dependencies.jar
 @if defined CLASSPATH (
-@set GEMFIRE_JARS=%GEMFIRE_JARS%;%CLASSPATH%
+    @set DEPENDENCIES=%GFSH_JARS%;%CLASSPATH%
+) else (
+    @set DEPENDENCIES=%GFSH_JARS%
 )
 
 @if not defined GF_JAVA (
 @REM %GF_JAVA% is not defined, assume it is on the PATH
-@if defined JAVA_HOME (
-@set GF_JAVA=%JAVA_HOME%\bin\java.exe
+    @if defined JAVA_HOME (
+    @set GF_JAVA=%JAVA_HOME%\bin\java.exe
 ) else (
-@set GF_JAVA=java
+    @set GF_JAVA=java
+  )
 )
-) 
-
-REM
-REM GFSH_JARS
-REM
-@set GFSH_JARS=;%GEMFIRE%\lib\gfsh-dependencies.jar
-@set CLASSPATH=%GFSH_JARS%;%GEMFIRE_JARS%
 
 REM
 REM Copy default .gfshrc to the home directory. Uncomment if needed.
@@ -74,14 +70,14 @@ REM )
 REM  Consider java is from JDK
 @set TOOLS_JAR=%JAVA_HOME%\lib\tools.jar
 @IF EXIST "%TOOLS_JAR%" (
-    @set CLASSPATH=%CLASSPATH%;%TOOLS_JAR%
+    @set DEPENDENCIES=%DEPENDENCIES%;%TOOLS_JAR%
 ) ELSE (
     set TOOLS_JAR=
 )
 
 @set LAUNCHER=com.gemstone.gemfire.management.internal.cli.Launcher
 @if defined JAVA_ARGS (
-@set JAVA_ARGS="%JAVA_ARGS%"
+    @set JAVA_ARGS="%JAVA_ARGS%"
 )
-@"%GF_JAVA%" -Dgfsh=true -Dlog4j.configurationFile=classpath:log4j2-cli.xml %JAVA_ARGS% %LAUNCHER% %*
+@"%GF_JAVA%" -Dgfsh=true -Dlog4j.configurationFile=classpath:log4j2-cli.xml -classpath %DEPENDENCIES% %JAVA_ARGS% %LAUNCHER% %*
 :done
