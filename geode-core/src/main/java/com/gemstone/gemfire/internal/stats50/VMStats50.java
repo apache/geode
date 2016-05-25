@@ -16,21 +16,44 @@
  */
 package com.gemstone.gemfire.internal.stats50;
 
-import com.gemstone.gemfire.*;
+import java.lang.management.ClassLoadingMXBean;
+import java.lang.management.GarbageCollectorMXBean;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryPoolMXBean;
+import java.lang.management.MemoryUsage;
+import java.lang.management.OperatingSystemMXBean;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.StatisticDescriptor;
+import com.gemstone.gemfire.Statistics;
+import com.gemstone.gemfire.StatisticsFactory;
+import com.gemstone.gemfire.StatisticsType;
+import com.gemstone.gemfire.StatisticsTypeFactory;
+import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.VMStatsContract;
-
-import java.lang.management.*;
-import java.lang.reflect.Method;
-import java.util.*;
+import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * Statistics related to a Java VM.
  * This version is hardcoded to use 1.5 MXBean stats from java.lang.management.
  */
 public class VMStats50 implements VMStatsContract {
+  private final static Logger logger = LogService.getLogger(VMStats50.class.getName());
+
   private final static StatisticsType vmType;
 
   private final static ClassLoadingMXBean clBean;
@@ -480,6 +503,7 @@ public class VMStats50 implements VMStatsContract {
   }
 
   private void refreshMemoryPools() {
+    boolean reInitPools = false;
     Iterator<Map.Entry<MemoryPoolMXBean,Statistics>> it = mpMap.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry<MemoryPoolMXBean,Statistics> me = it.next();
@@ -488,12 +512,21 @@ public class VMStats50 implements VMStatsContract {
       if (!mp.isValid()) {
         s.close();
         it.remove();
+        reInitPools = true;
       } else {
         MemoryUsage mu = null;
         try {
           mu = mp.getUsage();
         } catch (IllegalArgumentException ex) {
           // to workaround JRockit bug 36348 just ignore this and try the next pool
+          continue;
+        } catch (InternalError ie) {
+          // Somebody saw an InternalError once but I have no idea how to reproduce it. Was this a race between
+          // mp.isValid() and mp.getUsage()? Perhaps.
+          s.close();
+          it.remove();
+          reInitPools = true;
+          logger.warn("Accessing MemoryPool '{}' threw an Internal Error: {}", mp.getName(), ie.getMessage());
           continue;
         }
         s.setLong(mp_l_initMemoryId, mu.getInit());
@@ -530,6 +563,9 @@ public class VMStats50 implements VMStatsContract {
           }
         }
       }
+    }
+    if (reInitPools) {
+      initMemoryPools();
     }
   }
 
