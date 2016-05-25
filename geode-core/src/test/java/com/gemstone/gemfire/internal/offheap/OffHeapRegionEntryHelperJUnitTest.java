@@ -22,7 +22,9 @@ import static org.mockito.Mockito.*;
 import java.nio.ByteBuffer;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -52,6 +54,25 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 public class OffHeapRegionEntryHelperJUnitTest {
 
   private static final Long VALUE_IS_NOT_ENCODABLE = 0L;
+
+  private static Boolean assertionsEnabled;
+
+  @BeforeClass
+  public static void setUpOnce() {
+    try {
+      assert false;
+      assertionsEnabled = false;
+    } catch (AssertionError e) {
+      assertionsEnabled = true;
+    }
+    ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true);
+    System.out.println("assertionsEnabled = " + assertionsEnabled);
+  }
+
+  @AfterClass
+  public static void tearDownOnce() {
+    ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(assertionsEnabled);
+  }
 
   private MemoryAllocator ma;
 
@@ -208,31 +229,41 @@ public class OffHeapRegionEntryHelperJUnitTest {
   }
 
   @Test
-  public void decodeAddressToBytesShouldReturnActualBytes() {
+  public void decodeUncompressedAddressToBytesShouldReturnActualBytes() {
     long encodedAddress = 549755813697L;
     Integer value = Integer.MAX_VALUE;
 
-    byte[] actual = OffHeapRegionEntryHelper.decodeAddressToBytes(encodedAddress, false, false);
+    byte[] actual = OffHeapRegionEntryHelper.decodeUncompressedAddressToBytes(encodedAddress);
     byte[] expectedValue = ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt(value).array();
 
     assertThat(actual).isEqualTo(expectedValue);
   }
 
   @Test
-  public void decodeDataAsAddressShouldDecodeLongIfItsSerializedAndIfItsNotTooBig() {
+  public void decodeUncompressedAddressToBytesShouldDecodeLongIfItsSerializedAndIfItsNotTooBig() {
     Long value = 0L;
     long encodedAddress = 123L;
 
-    byte[] actual = OffHeapRegionEntryHelper.decodeAddressToBytes(encodedAddress, false, false);
+    byte[] actual = OffHeapRegionEntryHelper.decodeUncompressedAddressToBytes(encodedAddress);
     byte[] expectedValue = EntryEventImpl.serialize(value);
 
     assertThat(actual).isEqualTo(expectedValue);
   }
 
-  @Test(expected = UnsupportedOperationException.class)
-  public void decodeDataAsAddressShouldThrowExceptionIfDataIsCompressedAndItsNotOkToBeCompressed() {
+  @Test(expected = AssertionError.class)
+  public void decodeUncompressedAddressToBytesWithCompressedAddressShouldThrowException() {
     long encodedAddress = 549755813703L;
-    OffHeapRegionEntryHelper.decodeAddressToBytes(encodedAddress, true, false);
+    OffHeapRegionEntryHelper.decodeUncompressedAddressToBytes(encodedAddress);
+  }
+  
+  @Test
+  public void decodeCompressedDataAsAddressToRawBytes() {
+    long encodedAddress = 549755813703L;
+    byte[] expected = new byte[]{127, -1, -1, -1};
+
+    byte[] bytes = OffHeapRegionEntryHelper.decodeAddressToRawBytes(encodedAddress);
+
+    assertThat(bytes).isEqualTo(expected);
   }
 
   @Test
