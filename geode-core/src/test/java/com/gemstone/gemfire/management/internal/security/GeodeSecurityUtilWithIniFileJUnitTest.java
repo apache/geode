@@ -25,6 +25,7 @@ import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.GemFireSecurityException;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.apache.shiro.util.ThreadContext;
@@ -37,7 +38,7 @@ import org.junit.experimental.categories.Category;
  * this test and ShiroUtilCustomRealmJUunitTest uses the same test body, but initialize the SecurityUtils differently.
  * If you change shiro.ini, remmber to change the shiro-ini.json to match the changes as well.
  */
-@Category(UnitTest.class)
+@Category({UnitTest.class, SecurityTest.class})
 public class GeodeSecurityUtilWithIniFileJUnitTest {
   protected static Properties props = new Properties();
   @BeforeClass

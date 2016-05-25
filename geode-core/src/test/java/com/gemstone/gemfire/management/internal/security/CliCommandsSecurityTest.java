@@ -27,6 +27,7 @@ import com.gemstone.gemfire.management.MemberMXBean;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -36,7 +37,7 @@ import org.junit.experimental.categories.Category;
 /**
  */
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SecurityTest.class})
 public class CliCommandsSecurityTest {
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
