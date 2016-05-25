@@ -106,7 +106,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       result = executeOnRemote((GfshParseResult) parseResult);
     }
     catch(NotAuthorizedException e) {
-      result = ResultBuilder.createGemFireUnAuthorizedErrorResult("Unauthorized. Reason : " + e.getMessage());
+      result = ResultBuilder.createGemFireUnAuthorizedErrorResult("Unauthorized. Reason: " + e.getMessage());
     }
     catch (JMXInvocationException e) {
       Gfsh.getCurrentInstance().logWarning(e.getMessage(), e);

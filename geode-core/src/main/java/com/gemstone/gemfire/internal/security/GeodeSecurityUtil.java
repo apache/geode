@@ -105,7 +105,7 @@ public class GeodeSecurityUtil {
     UsernamePasswordToken token =
       new UsernamePasswordToken(username, password);
     try {
-      logger.info("Logging in "+username+"/"+password);
+      logger.info("Logging in "+username);
       currentUser.login(token);
     } catch (ShiroException e) {
       logger.info(e.getMessage(), e);
