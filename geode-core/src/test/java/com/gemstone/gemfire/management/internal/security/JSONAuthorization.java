@@ -16,19 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import javax.management.remote.JMXPrincipal;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.operations.OperationContext;
@@ -40,9 +29,20 @@ import com.gemstone.gemfire.security.Authenticator;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 import com.gemstone.gemfire.util.test.TestUtil;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import javax.management.remote.JMXPrincipal;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class JSONAuthorization implements AccessControl, Authenticator {
 
@@ -60,75 +60,78 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 
   private static Map<String, User> acl = null;
 
-  public static JSONAuthorization create() throws IOException, JSONException {
+  public static JSONAuthorization create() throws IOException {
     return new JSONAuthorization();
   }
 
-  public JSONAuthorization() throws IOException, JSONException {}
+  public JSONAuthorization() throws IOException {
+  }
 
-  public JSONAuthorization(String jsonFileName) throws IOException, JSONException {
+  public JSONAuthorization(String jsonFileName) throws IOException {
     setUpWithJsonFile(jsonFileName);
   }
 
-  public static void setUpWithJsonFile(String jsonFileName) throws IOException, JSONException {
+  public static void setUpWithJsonFile(String jsonFileName) throws IOException {
     String json = readFile(TestUtil.getResourcePath(JSONAuthorization.class, jsonFileName));
     readSecurityDescriptor(json);
   }
 
-  private static void readSecurityDescriptor(String json) throws IOException, JSONException {
-    JSONObject jsonBean = new JSONObject(json);
+  private static void readSecurityDescriptor(String json) throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readTree(json);
     acl = new HashMap<>();
-    Map<String, Role> roleMap = readRoles(jsonBean);
-    readUsers(acl, jsonBean, roleMap);
+    Map<String, Role> roleMap = readRoles(jsonNode);
+    readUsers(acl, jsonNode, roleMap);
   }
 
-  private static void readUsers(Map<String, User> acl, JSONObject jsonBean, Map<String, Role> roleMap)
-      throws JSONException {
-    JSONArray array = jsonBean.getJSONArray("users");
-    for (int i = 0; i < array.length(); i++) {
-      JSONObject obj = array.getJSONObject(i);
+  private static void readUsers(Map<String, User> acl, JsonNode node, Map<String, Role> roleMap) {
+    for (JsonNode u : node.get("users")) {
       User user = new User();
-      user.name = obj.getString("name");
-      if (obj.has("password")) {
-        user.pwd = obj.getString("password");
+      user.name = u.get("name").asText();
+      if (u.has("password")) {
+        user.pwd = u.get("password").asText();
       } else {
         user.pwd = user.name;
       }
 
-      JSONArray ops = obj.getJSONArray("roles");
-      for (int j = 0; j < ops.length(); j++) {
-        String roleName = ops.getString(j);
-        user.roles.add(roleMap.get(roleName));
+      for (JsonNode r : u.get("roles")) {
+        user.roles.add(roleMap.get(r.asText()));
       }
       acl.put(user.name, user);
     }
   }
 
-  private static Map<String, Role> readRoles(JSONObject jsonBean) throws JSONException {
+  private static Map<String, Role> readRoles(JsonNode jsonNode) {
     Map<String, Role> roleMap = new HashMap<>();
-    JSONArray array = jsonBean.getJSONArray("roles");
-    for (int i = 0; i < array.length(); i++) {
-      JSONObject obj = array.getJSONObject(i);
+    for (JsonNode r : jsonNode.get("roles")) {
       Role role = new Role();
-      role.name = obj.getString("name");
+      role.name = r.get("name").asText();
       String regionNames = null;
-      if(obj.has("regions")) {
-        regionNames = obj.getString("regions");
+
+      JsonNode regions = r.get("regions");
+      if (regions != null) {
+        if (regions.isArray()) {
+          regionNames = StreamSupport.stream(regions.spliterator(), false)
+              .map(JsonNode::asText)
+              .collect(Collectors.joining(","));
+        } else {
+          regionNames = regions.asText();
+        }
       }
-      JSONArray ops = obj.getJSONArray("operationsAllowed");
-      for (int j = 0; j < ops.length(); j++) {
-        String[] parts = ops.getString(j).split(":");
-        if(regionNames!=null) {
+
+      for (JsonNode op : r.get("operationsAllowed")) {
+        String[] parts = op.asText().split(":");
+        if (regionNames == null) {
+          role.permissions.add(new ResourceOperationContext(parts[0], parts[1], "*"));
+        } else {
           role.permissions.add(new ResourceOperationContext(parts[0], parts[1], regionNames));
         }
-        else
-          role.permissions.add(new ResourceOperationContext(parts[0], parts[1], "*"));
       }
 
       roleMap.put(role.name, role);
 
-      if (obj.has("serverGroup")) {
-        role.serverGroup = obj.getString("serverGroup");
+      if (r.has("serverGroup")) {
+        role.serverGroup = r.get("serverGroup").asText();
       }
     }
 
@@ -148,15 +151,13 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 
   @Override
   public boolean authorizeOperation(String region, OperationContext context) {
-    if (principal == null)
-      return false;
+    if (principal == null) return false;
 
     User user = acl.get(principal.getName());
-    if(user == null)
-      return false; // this user is not authorized to do anything
+    if (user == null) return false; // this user is not authorized to do anything
 
     // check if the user has this permission defined in the context
-    for(Role role:acl.get(user.name).roles) {
+    for (Role role : acl.get(user.name).roles) {
       for (OperationContext permitted : role.permissions) {
         if (permitted.implies(context)) {
           return true;
@@ -179,8 +180,9 @@ public class JSONAuthorization implements AccessControl, Authenticator {
     User userObj = acl.get(user);
     if (userObj == null) throw new AuthenticationFailedException("Wrong username/password");
     LogService.getLogger().info("User=" + user + " pwd=" + pwd);
-    if (user != null && !userObj.pwd.equals(pwd) && !"".equals(user))
+    if (user != null && !userObj.pwd.equals(pwd) && !"".equals(user)) {
       throw new AuthenticationFailedException("Wrong username/password");
+    }
     return new JMXPrincipal(user);
   }
 
@@ -189,7 +191,7 @@ public class JSONAuthorization implements AccessControl, Authenticator {
 
   }
 
-  private static String readFile(String name) throws IOException, JSONException {
+  private static String readFile(String name) throws IOException {
     File file = new File(name);
     FileReader reader = new FileReader(file);
     char[] buffer = new char[(int) file.length()];

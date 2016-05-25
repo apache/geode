@@ -79,7 +79,7 @@
         "DATA:READ",
         "DATA:WRITE"
       ],
-      "regions": "null,region1"
+      "regions": ["region1"]
     },
     {
       "name": "regionA-manage",
@@ -108,7 +108,7 @@
         "DATA:READ",
         "DATA:WRITE"
       ],
-      "regions": "null,region1,secureRegion"
+      "regions": ["region1", "secureRegion"]
     }
   ],
   "users": [
