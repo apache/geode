@@ -20,6 +20,7 @@
 package com.gemstone.gemfire.cache.lucene.internal.repository;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -40,6 +41,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
 import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
@@ -60,6 +62,7 @@ public class IndexRepositoryImplJUnitTest {
   private StandardAnalyzer analyzer = new StandardAnalyzer();
   private IndexWriter writer;
   private Region region;
+  private LuceneIndexStats stats;
 
   @Before
   public void setUp() throws IOException {
@@ -71,8 +74,9 @@ public class IndexRepositoryImplJUnitTest {
     String[] indexedFields= new String[] {"s", "i", "l", "d", "f", "s2", "missing"};
     mapper = new HeterogeneousLuceneSerializer(indexedFields);
     region = Mockito.mock(Region.class);
+    stats = Mockito.mock(LuceneIndexStats.class);
     Mockito.when(region.isDestroyed()).thenReturn(false);
-    repo = new IndexRepositoryImpl(region, writer, mapper);
+    repo = new IndexRepositoryImpl(region, writer, mapper, stats);
   }
   
   @Test
@@ -82,7 +86,7 @@ public class IndexRepositoryImplJUnitTest {
     repo.create("key3", new Type2("Voodoo Doll doughnut", 1, 2L, 3.0, 4.0f, "Toasted coconut doughnut"));
     repo.create("key4", new Type2("Portland Cream doughnut", 1, 2L, 3.0, 4.0f, "Captain my Captain doughnut"));
     repo.commit();
-    
+
     checkQuery("Cream", "s", "key2", "key4");
     checkQuery("NotARealWord", "s");
   }
@@ -106,6 +110,41 @@ public class IndexRepositoryImplJUnitTest {
     ByteWrapper key4 = randomKey();
     
     updateAndRemove(key1, key2, key3, key4);
+  }
+
+  @Test
+  public void createShouldUpdateStats() throws IOException {
+    repo.create("key1", new Type2("bar", 1, 2L, 3.0, 4.0f, "Grape Ape doughnut"));
+    verify(stats, times(1)).startUpdate();
+    verify(stats, times(1)).endUpdate(anyLong());
+  }
+
+  @Test
+  public void updateShouldUpdateStats() throws IOException {
+    repo.update("key1", new Type2("bacon maple bar", 1, 2L, 3.0, 4.0f, "Grape Ape doughnut"));
+    verify(stats, times(1)).startUpdate();
+    verify(stats, times(1)).endUpdate(anyLong());
+  }
+
+  @Test
+  public void deleteShouldUpdateStats() throws IOException {
+    repo.delete("key1");
+    verify(stats, times(1)).startUpdate();
+    verify(stats, times(1)).endUpdate(anyLong());
+  }
+
+  @Test
+  public void commitShouldUpdateStats() throws IOException {
+    repo.commit();
+    verify(stats, times(1)).startCommit();
+    verify(stats, times(1)).endCommit(anyLong());
+  }
+
+  @Test
+  public void queryShouldUpdateStats() throws IOException, ParseException {
+    checkQuery("NotARealWord", "s");
+    verify(stats, times(1)).startQuery();
+    verify(stats, times(1)).endQuery(anyLong());
   }
 
   private void updateAndRemove(Object key1, Object key2, Object key3,

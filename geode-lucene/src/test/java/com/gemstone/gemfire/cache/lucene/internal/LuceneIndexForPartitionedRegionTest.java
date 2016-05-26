@@ -52,7 +52,7 @@ public class LuceneIndexForPartitionedRegionTest {
   public void getIndexNameReturnsCorrectName() {
     String name = "indexName";
     String regionPath = "regionName";
-    Cache cache = null;
+    Cache cache = Fakes.cache();
     LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     assertEquals(name, index.getName());
   }
@@ -61,7 +61,7 @@ public class LuceneIndexForPartitionedRegionTest {
   public void getRegionPathReturnsPath() {
     String name = "indexName";
     String regionPath = "regionName";
-    Cache cache = null;
+    Cache cache = Fakes.cache();
     LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     assertEquals(regionPath, index.getRegionPath());
   }

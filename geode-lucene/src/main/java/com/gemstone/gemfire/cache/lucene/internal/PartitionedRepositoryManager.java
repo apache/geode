@@ -51,7 +51,8 @@ import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteHashMap;
  * index repository when the bucket returns to this node.
  */
 public class PartitionedRepositoryManager implements RepositoryManager {
-  /** map of the parent bucket region to the index repository 
+
+  /** map of the parent bucket region to the index repository
    * 
    * This is based on the BucketRegion in case a bucket is rebalanced, we don't want to 
    * return a stale index repository. If a bucket moves off of this node and
@@ -68,7 +69,8 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   private final PartitionedRegion chunkRegion;
   private final LuceneSerializer serializer;
   private final Analyzer analyzer;
-  
+  private final LuceneIndexStats stats;
+
   /**
    * 
    * @param userRegion The user partition region
@@ -76,15 +78,18 @@ public class PartitionedRepositoryManager implements RepositoryManager {
    * @param chunkRegion The partition region users for chunk metadata.
    * @param serializer The serializer that should be used for converting objects to lucene docs.
    */
-  public PartitionedRepositoryManager(PartitionedRegion userRegion, PartitionedRegion fileRegion,
-      PartitionedRegion chunkRegion,
-      LuceneSerializer serializer,
-      Analyzer analyzer) {
+  public PartitionedRepositoryManager(PartitionedRegion userRegion,
+                                      PartitionedRegion fileRegion,
+                                      PartitionedRegion chunkRegion,
+                                      LuceneSerializer serializer,
+                                      Analyzer analyzer,
+                                      LuceneIndexStats stats) {
     this.userRegion = userRegion;
     this.fileRegion = fileRegion;
     this.chunkRegion = chunkRegion;
     this.serializer = serializer;
     this.analyzer = analyzer;
+    this.stats = stats;
   }
 
   @Override
@@ -134,7 +139,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
         RegionDirectory dir = new RegionDirectory(fileBucket, chunkBucket);
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         IndexWriter writer = new IndexWriter(dir, config);
-        repo = new IndexRepositoryImpl(fileBucket, writer, serializer);
+        repo = new IndexRepositoryImpl(fileBucket, writer, serializer, stats);
         IndexRepository oldRepo = indexRepositories.putIfAbsent(bucketId, repo);
         if(oldRepo != null) {
           repo = oldRepo;

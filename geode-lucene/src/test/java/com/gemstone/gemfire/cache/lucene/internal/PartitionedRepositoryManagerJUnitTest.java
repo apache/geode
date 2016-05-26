@@ -65,6 +65,7 @@ public class PartitionedRepositoryManagerJUnitTest {
   
   private Map<Integer, BucketRegion> fileBuckets = new HashMap<Integer, BucketRegion>();
   private Map<Integer, BucketRegion> chunkBuckets= new HashMap<Integer, BucketRegion>();
+  private LuceneIndexStats stats;
 
   @Before
   public void setUp() {
@@ -79,11 +80,12 @@ public class PartitionedRepositoryManagerJUnitTest {
     chunkDataStore = Mockito.mock(PartitionedRegionDataStore.class);
     Mockito.when(chunkRegion.getDataStore()).thenReturn(chunkDataStore);
     serializer = new HeterogeneousLuceneSerializer(new String[] {"a", "b"} );
+    stats = Mockito.mock(LuceneIndexStats.class);
   }
   
   @Test
   public void getByKey() throws BucketNotFoundException, IOException {
-    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer());
+    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer(), stats);
     
     setUpMockBucket(0);
     setUpMockBucket(1);
@@ -107,7 +109,7 @@ public class PartitionedRepositoryManagerJUnitTest {
    */
   @Test
   public void destroyBucket() throws BucketNotFoundException, IOException {
-    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer());
+    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer(), stats);
     
     setUpMockBucket(0);
     
@@ -133,13 +135,13 @@ public class PartitionedRepositoryManagerJUnitTest {
    */
   @Test(expected = BucketNotFoundException.class)
   public void getMissingBucketByKey() throws BucketNotFoundException {
-    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer());
+    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer(), stats);
     repoManager.getRepository(userRegion, 0, null);
   }
   
   @Test
   public void createMissingBucket() throws BucketNotFoundException {
-    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer());
+    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer(), stats);
     setUpMockBucket(0);
     
     Mockito.when(fileDataStore.getLocalBucketById(eq(0))).thenReturn(null);
@@ -157,7 +159,7 @@ public class PartitionedRepositoryManagerJUnitTest {
   
   @Test
   public void getByRegion() throws BucketNotFoundException {
-    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer());
+    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer(), stats);
     
     setUpMockBucket(0);
     setUpMockBucket(1);
@@ -185,7 +187,7 @@ public class PartitionedRepositoryManagerJUnitTest {
    */
   @Test(expected = BucketNotFoundException.class)
   public void getMissingBucketByRegion() throws BucketNotFoundException {
-    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer());
+    PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer(), stats);
     
     setUpMockBucket(0);
 
