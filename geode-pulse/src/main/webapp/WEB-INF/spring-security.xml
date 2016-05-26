@@ -27,7 +27,6 @@
 	http://www.springframework.org/schema/context/spring-context-3.2.xsd">
 
 	<http auto-config="true" use-expressions="true">
-
 		<!-- Can be invoked w/o auth -->
 		<intercept-url pattern="/Login.html" access="permitAll"  />
 		<intercept-url pattern="/pulse/pulseVersion" access="permitAll" />
