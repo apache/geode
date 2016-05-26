@@ -57,7 +57,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * The base PartitionedRegion message type upon which other messages should be
  * based.
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 public abstract class RemoteOperationMessage extends DistributionMessage implements 
     MessageWithReply, TransactionMessage
@@ -470,7 +470,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
   /**
    * added to support old value to be written on wire.
    * @param value true or false
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void setHasOldValue(boolean value) {
     // override in subclasses which need old value to be serialized.
@@ -506,7 +506,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
    * recipient, capturing any CacheException thrown by the recipient and handle
    * it as an expected exception.
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    * @see #waitForCacheException()
    */
   public static class RemoteOperationResponse extends DirectReplyProcessor {

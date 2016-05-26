@@ -23,7 +23,7 @@ import com.gemstone.gemfire.internal.offheap.Releasable;
 /** <p>The internal implementation of the {@link TransactionEvent} interface
  * 
  *
- * @since 4.0
+ * @since GemFire 4.0
  * 
  */
 public class TXEvent implements TransactionEvent, Releasable {

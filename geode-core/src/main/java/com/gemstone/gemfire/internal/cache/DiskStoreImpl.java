@@ -122,7 +122,7 @@ import com.gemstone.gemfire.i18n.StringId;
  * persistent recoverable regions and overflow-only regions.
  * 
  * 
- * @since 3.2
+ * @since GemFire 3.2
  */
 @SuppressWarnings("synthetic-access")
 public class DiskStoreImpl implements DiskStore {
@@ -992,7 +992,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   /**
-   * @since 3.2.1
+   * @since GemFire 3.2.1
    */
   final byte getBits(DiskRegion dr, DiskId id) {
     acquireReadLock(dr);
@@ -1151,7 +1151,7 @@ public class DiskStoreImpl implements DiskStore {
    * Note that this is no longer implemented by getting a write lock but instead
    * locks the same lock that acquireReadLock does.
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    */
   private void acquireWriteLock(DiskRegion dr) {
     // @todo darrel: this is no longer a write lock need to change method name
@@ -1163,7 +1163,7 @@ public class DiskStoreImpl implements DiskStore {
    * This function is having a default visiblity as it is used in the
    * OplogJUnitTest for a bug verification of Bug # 35012
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    */
 
   private void releaseWriteLock(DiskRegion dr) {
@@ -1176,7 +1176,7 @@ public class DiskStoreImpl implements DiskStore {
    * finally block. Note that this is no longer implemented by getting a read
    * lock but instead locks the same lock that acquireWriteLock does.
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    */
   void acquireReadLock(DiskRegion dr) {
     dr.basicAcquireReadLock();
@@ -1191,7 +1191,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   /**
-   * @since 5.1
+   * @since GemFire 5.1
    */
 
   void releaseReadLock(DiskRegion dr) {
@@ -1212,7 +1212,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   /**
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public void forceRolling(DiskRegion dr) {
     if (!dr.isBackup())
@@ -1248,7 +1248,7 @@ public class DiskStoreImpl implements DiskStore {
    * Get serialized form of data off the disk
    * 
    * @param id
-   * @since gemfire5.7_hotfix
+   * @since GemFire 5.7
    */
   public Object getSerializedData(DiskRegion dr, DiskId id) {
     return convertBytesAndBitsToSerializedForm(getBytesAndBits(dr, id, true));
@@ -1367,7 +1367,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   /**
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public void scheduleAsyncWrite(AsyncDiskEntry ade) {
     DiskRegion dr = ade.region.getDiskRegion();
@@ -1388,7 +1388,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   /**
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public void unscheduleAsyncWrite(DiskId did) {
     if (did != null) {
@@ -2869,7 +2869,7 @@ public class DiskStoreImpl implements DiskStore {
   /**
    * Compacts oplogs
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    * 
    */
   class OplogCompactor implements Runnable {

@@ -22,7 +22,7 @@ import com.gemstone.gemfire.GemFireCheckedException;
  * An <code>VersionException</code> is an exception that indicates
  * a client / server version mismatch exception has occurred.
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 public abstract class VersionException extends GemFireCheckedException {
 

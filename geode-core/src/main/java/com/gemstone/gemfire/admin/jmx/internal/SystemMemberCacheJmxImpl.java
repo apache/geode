@@ -44,7 +44,7 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 /**
  * MBean representation of {@link com.gemstone.gemfire.admin.SystemMemberCache}.
  *
- * @since     3.5
+ * @since GemFire     3.5
  */
 public class SystemMemberCacheJmxImpl 
 extends com.gemstone.gemfire.admin.internal.SystemMemberCacheImpl
@@ -259,7 +259,7 @@ implements com.gemstone.gemfire.admin.jmx.internal.ManagedResource {
    * Creates a new cache server MBean and returns its
    * <code>ObjectName</code>.
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public ObjectName manageCacheServer()
     throws AdminException, MalformedObjectNameException {
@@ -295,7 +295,7 @@ implements com.gemstone.gemfire.admin.jmx.internal.ManagedResource {
    * Returns the MBean <code>ObjectName</code>s for all cache servers
    * that serve this cache to clients.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public ObjectName[] manageCacheServers()
     throws AdminException, MalformedObjectNameException {
@@ -337,7 +337,7 @@ implements com.gemstone.gemfire.admin.jmx.internal.ManagedResource {
    * Returns the MBean <code>ObjectName</code>s for all bridge servers
    * that serve this cache.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    * @deprecated as of 5.7
    */
   @Deprecated

@@ -55,7 +55,7 @@ import java.util.Properties;
  * <code>DistributedSystemConfig</code> object can be made by invoking
  * the {@link #clone} method.
  *
- * @since 3.5 
+ * @since GemFire 3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
 */
 public interface DistributedSystemConfig extends Cloneable {
@@ -109,7 +109,7 @@ public interface DistributedSystemConfig extends Cloneable {
       InetAddressUtil.toString(DistributionConfig.DEFAULT_MCAST_ADDRESS);
   
   /** The name of the "membership-port-range" property
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final String MEMBERSHIP_PORT_RANGE_NAME = 
     DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME;
@@ -117,18 +117,18 @@ public interface DistributedSystemConfig extends Cloneable {
   /**
    * The default membership-port-range.
    * <p> Actual value is <code>[1024,65535]</code>.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final int[] DEFAULT_MEMBERSHIP_PORT_RANGE = 
     DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
   
   /** settings for tcp-port
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final String TCP_PORT_NAME = DistributionConfig.TCP_PORT_NAME;
   /** The default value of the "tcpPort" property.
    * <p> Actual value is <code>0</code>.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final int DEFAULT_TCP_PORT = DistributionConfig.DEFAULT_TCP_PORT;
 
@@ -311,7 +311,7 @@ public interface DistributedSystemConfig extends Cloneable {
    * <code>DistributedSystem</code>.  The XML file must conform to a
    * <a href="doc-files/ds5_0.dtd">dtd</a>.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public String getEntityConfigXMLFile();
 
@@ -367,27 +367,27 @@ public interface DistributedSystemConfig extends Cloneable {
   /**
    * Returns the membership-port-range property of the Distributed System. This 
    * range is given as two numbers separated by a minus sign.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public String getMembershipPortRange();
   
   /**
    * Sets the membership-port-range property of the Distributed System. This 
    * range is given as two numbers separated by a minus sign.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void setMembershipPortRange(String membershipPortRange);
   
   
   /**
    * Sets the primary communication port number for the Distributed System.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void setTcpPort(int port);
 
   /**
    * Returns the primary communication port number for the Distributed System.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public int getTcpPort();
 
@@ -445,7 +445,7 @@ public interface DistributedSystemConfig extends Cloneable {
    * Returns the IP address to which the distributed system's server
    * sockets are bound.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public String getBindAddress();
 
@@ -453,7 +453,7 @@ public interface DistributedSystemConfig extends Cloneable {
    * Sets the IP address to which the distributed system's server
    * sockets are bound.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void setBindAddress(String bindAddress);
   
@@ -568,13 +568,13 @@ public interface DistributedSystemConfig extends Cloneable {
    * Returns the refreshInterval in seconds used for auto-polling and updating
    * AdminDistributedSystem constituents including SystemMember, CacheServer,
    * SystemMemberCache and StatisticResource
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public int getRefreshInterval();
 
   /**
    * Sets the refreshInterval in seconds
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public void setRefreshInterval(int timeInSecs);
 
@@ -603,19 +603,19 @@ public interface DistributedSystemConfig extends Cloneable {
   /** 
    * Returns an array of configurations for statically known
    * {@link CacheVm}s.
-   * @since 5.7
+   * @since GemFire 5.7
    */ 
   public CacheVmConfig[] getCacheVmConfigs();
 
   /** 
    * Creates the configuration for a {@link CacheVm}.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public CacheVmConfig createCacheVmConfig();
 
   /** 
    * Removes the configuration for a {@link CacheVm}
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void removeCacheVmConfig(CacheVmConfig existing);
 
@@ -663,7 +663,7 @@ public interface DistributedSystemConfig extends Cloneable {
    * {@link DistributedSystemConfig.ConfigListener ConfigListener}s
    * that are registered on this config object are not cloned.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public Object clone() throws CloneNotSupportedException;
 

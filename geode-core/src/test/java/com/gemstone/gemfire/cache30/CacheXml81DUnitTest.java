@@ -38,7 +38,7 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
  * should extend this test case where {@link #getUseSchema()} will return true.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
   private static final long serialVersionUID = 1L;
@@ -59,7 +59,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
    * Test extensions to
    * <code>cache<code> element.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public void testCacheExtension() {
     final CacheCreation cache = new CacheCreation();
@@ -91,7 +91,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
   /**
    * Test extensions to <code>region</code> element.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public void testRegionExtension() {
     final String regionName = "testRegionExtension";
@@ -129,7 +129,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
    * Test {@link Locator} is used in {@link SAXParseException}.
    * Exercises {@link XmlParser#setDocumentLocator(Locator)}
    * 
-   * @since 8.2
+   * @since GemFire 8.2
    */
   @Test
   public void testLocatorInException() {

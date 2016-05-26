@@ -63,7 +63,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppender;
  * <code>AdminDistributedSystem</code> associated with this
  * configuration object.
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class DistributedSystemConfigImpl 
   implements DistributedSystemConfig {
@@ -111,7 +111,7 @@ public class DistributedSystemConfigImpl
   /** The admin distributed system object that is configured by this
    * config object. 
    *
-   * @since 4.0 */
+   * @since GemFire 4.0 */
   private AdminDistributedSystemImpl system;
 
   /** The GemFire log writer used by the distributed system */
@@ -125,7 +125,7 @@ public class DistributedSystemConfigImpl
    * <code>DistributedSystemConfig</code> that are not present in the
    * internal <code>DistributionConfig</code>.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   private static Properties
     filterOutAdminProperties(Properties props) { 
@@ -197,7 +197,7 @@ public class DistributedSystemConfigImpl
   /**
    * Zero-argument constructor to be used only by subclasses.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   protected DistributedSystemConfigImpl() {
 
@@ -222,7 +222,7 @@ public class DistributedSystemConfigImpl
    *          whether to skip loading distributed system properties from
    *          gemfire.properties file
    *          
-   * @since 6.5
+   * @since GemFire 6.5
    */
   protected DistributedSystemConfigImpl(Properties props, 
                                         boolean ignoreGemFirePropsFile) {
@@ -258,7 +258,7 @@ public class DistributedSystemConfigImpl
    * the distributed system. Returns null if nothing has been provided via
    * <code>setInternalLogWriter</code>.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public InternalLogWriter getInternalLogWriter() {
     // LOG: used only for sharing between IDS, AdminDSImpl and AgentImpl -- to prevent multiple banners, etc.
@@ -312,7 +312,7 @@ public class DistributedSystemConfigImpl
    * config object will result in a {@link IllegalStateException}
    * being thrown.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   void setDistributedSystem(AdminDistributedSystemImpl system) {
     this.system = system;
@@ -322,7 +322,7 @@ public class DistributedSystemConfigImpl
    * Checks to see if this config object is "read only".  If it is,
    * then an {@link IllegalStateException} is thrown.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   protected void checkReadOnly() {
     if (this.system != null) {
@@ -689,7 +689,7 @@ public class DistributedSystemConfigImpl
    * Returns an array of configurations for statically known
    * CacheServers
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */ 
   public CacheServerConfig[] getCacheServerConfigs() {
     return (CacheServerConfig[]) this.cacheServerConfigs.toArray(
@@ -703,7 +703,7 @@ public class DistributedSystemConfigImpl
   /** 
    * Creates the configuration for a CacheServer
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public CacheServerConfig createCacheServerConfig() {
     CacheServerConfig config = new CacheServerConfigImpl();
@@ -717,7 +717,7 @@ public class DistributedSystemConfigImpl
   /** 
    * Adds the configuration for a CacheServer
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   private void addCacheServerConfig(CacheServerConfig managerConfig) {
     checkReadOnly();
@@ -736,7 +736,7 @@ public class DistributedSystemConfigImpl
   /** 
    * Removes the configuration for a CacheServer
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void removeCacheServerConfig(CacheServerConfig managerConfig) {
     removeCacheVmConfig((CacheVmConfig)managerConfig);
@@ -908,7 +908,7 @@ public class DistributedSystemConfigImpl
    * 
    * 
    * @return the gfSecurityProperties
-   * @since 6.6.3
+   * @since GemFire 6.6.3
    */
   public Properties getGfSecurityProperties() {
     return gfSecurityProperties;

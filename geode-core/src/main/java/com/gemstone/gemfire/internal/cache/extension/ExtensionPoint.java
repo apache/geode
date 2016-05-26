@@ -21,7 +21,7 @@ package com.gemstone.gemfire.internal.cache.extension;
  * Allows {@link Extensible} objects to add and remove {@link Extension}s.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public interface ExtensionPoint<T> {
 
@@ -30,7 +30,7 @@ public interface ExtensionPoint<T> {
    * 
    * @param extension
    *          to add.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   void addExtension(Extension<T> extension);
 
@@ -39,7 +39,7 @@ public interface ExtensionPoint<T> {
    * 
    * @param extension
    *          to remove.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   void removeExtension(Extension<T> extension);
 
@@ -47,7 +47,7 @@ public interface ExtensionPoint<T> {
    * Get {@link Iterable} of {@link Extension}s.
    * 
    * @return {@link Exception}s
-   * @since 8.1
+   * @since GemFire 8.1
    */
   Iterable<Extension<T>> getExtensions();
 
@@ -57,7 +57,7 @@ public interface ExtensionPoint<T> {
    * 
    * @return {@link Extensible} object target.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   T getTarget();
 

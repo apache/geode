@@ -29,7 +29,7 @@ import com.gemstone.gemfire.cache.DiskStoreFactory;
 /**
  * Creates an attribute object for DiskStore.
  * </p>
- * @since prPersistSprint2
+ * @since GemFire prPersistSprint2
  */
 public class DiskStoreAttributes implements Serializable, DiskStore {
   private static final long serialVersionUID = 1L;

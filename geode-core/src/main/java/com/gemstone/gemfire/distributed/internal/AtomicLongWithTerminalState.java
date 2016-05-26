@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * become the special value accidentally. For example, a long that can never go
  * negative with normal use could have a terminal state of Long.MIN_VALUE
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public class AtomicLongWithTerminalState extends AtomicLong {
   

@@ -938,7 +938,7 @@ public class PRHARedundancyProvider
   /** 
    * Get buddy data stores on the same Host as the accepted member
    * @return set of members on the same host, not including accepted member
-   * @since gemfire59poc
+   * @since GemFire 5.9
    * 
    */
   private Set <InternalDistributedMember> getBuddyMembersInZone(
@@ -957,7 +957,7 @@ public class PRHARedundancyProvider
   /**
    * Early check for resources. This code may be executed for every put operation if
    * there are no datastores present, limit excessive logging.
-   * @since gemfire5.8
+   * @since GemFire 5.8
    */
   private void earlySufficientStoresCheck(String partitionName) {
     assert Assert.assertHoldsLock(this,false);
@@ -975,7 +975,7 @@ public class PRHARedundancyProvider
    * to once per PR after which once every {@link #INSUFFICIENT_LOGGING_THROTTLE_TIME}
    * second
    * @return true if it's time to log
-   * @since gemfire5.8
+   * @since GemFire 5.8
    */
   private boolean shouldLogInsufficientStores() {
     long now = NanoTimer.getTime();
@@ -1285,7 +1285,7 @@ public class PRHARedundancyProvider
    * @param bucketId
    * @param prName
    * @return InternalDistributedMember colocated data store
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   private InternalDistributedMember getColocatedDataStore(
       Collection<InternalDistributedMember> candidates,

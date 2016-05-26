@@ -23,7 +23,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
  * Base class for Mock Extension XML Generators.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public abstract class AbstractMockExtensionXmlGenerator<T> implements XmlGenerator<T> {
   public final AbstractMockExtension<T> extension;

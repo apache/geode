@@ -26,7 +26,7 @@ import java.net.InetAddress;
  * used by the monitoring tool.
  *
  *
- * @since 4.3
+ * @since GemFire 4.3
  */
 public class IncomingGatewayStatus implements Serializable {
   private static final long serialVersionUID = -4579815367602658353L;

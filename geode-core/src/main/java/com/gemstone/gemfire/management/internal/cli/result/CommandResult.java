@@ -38,7 +38,7 @@ import com.gemstone.gemfire.management.internal.cli.result.TableBuilder.Table;
 /**
  * Wraps the Result of a command execution. 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 //Should this have info about the command String??
 public class CommandResult implements Result {

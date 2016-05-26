@@ -21,7 +21,7 @@ import com.gemstone.gemfire.CancelException;
 /**
  * Thrown when a GemFire distributed system has been terminated.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 
 public class DistributedSystemDisconnectedException extends CancelException {

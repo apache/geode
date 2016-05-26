@@ -131,7 +131,7 @@ import com.gemstone.gemfire.i18n.StringId;
  * (See BlockingHARegionQueue)
  * 
  * 
- * @since 4.3
+ * @since GemFire 4.3
  * 
  */
 public class HARegionQueue implements RegionQueue
@@ -304,13 +304,13 @@ public class HARegionQueue implements RegionQueue
   
   private final CancelCriterion stopper;
   
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   protected byte clientConflation = HandShake.CONFLATION_DEFAULT;
   
   /**
    *  Boolean to indicate whether client is a slow receiver 
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public boolean isClientSlowReciever = false;
   
@@ -322,7 +322,7 @@ public class HARegionQueue implements RegionQueue
   /**
    * Test hooks for periodic ack
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    */
   static boolean testMarkerMessageRecieved = false;
   static boolean isUsedByTest = false;
@@ -567,7 +567,7 @@ public class HARegionQueue implements RegionQueue
    * 
    * @param val
    * @throws InterruptedException
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void putInQueue(Object val) throws InterruptedException {
     if (val instanceof HAEventWrapper
@@ -584,7 +584,7 @@ public class HARegionQueue implements RegionQueue
 
   /** 
    * Check whether to conflate an event
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected boolean shouldBeConflated(Conflatable event) {
     boolean retVal = event.shouldBeConflated();
@@ -2228,7 +2228,7 @@ public class HARegionQueue implements RegionQueue
    * @throws ClassNotFoundException
    * @throws CacheException
    * @throws InterruptedException
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static HARegionQueue getHARegionQueueInstance(String regionName,
       Cache cache, HARegionQueueAttributes hrqa, final int haRgnQType,
@@ -2878,7 +2878,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
      * @throws ClassNotFoundException
      * @throws CacheException
      * @throws InterruptedException
-     * @since 5.7
+     * @since GemFire 5.7
      */
     TestOnlyHARegionQueue(String regionName, Cache cache, Map haContainer)
         throws IOException, ClassNotFoundException, CacheException,
@@ -2917,7 +2917,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
      * @throws ClassNotFoundException
      * @throws CacheException
      * @throws InterruptedException
-     * @since 5.7
+     * @since GemFire 5.7
      */
     TestOnlyHARegionQueue(String regionName, Cache cache,
         HARegionQueueAttributes hrqa) throws IOException,
@@ -3748,7 +3748,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
    * 
    * @param event
    * @param position
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void putEventInHARegion(Conflatable event, Long position) {
     if (event instanceof HAEventWrapper) {
@@ -3845,7 +3845,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
    * 
    * @param haEventWrapper
    *          An instance of <code>HAEventWrapper</code>
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void putEntryConditionallyIntoHAContainer(
       HAEventWrapper haEventWrapper) {
@@ -3907,7 +3907,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
    * HAEventWrapper instances held by this queue. Also, removes those instances
    * whose referenceCount becomes zero.
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void updateHAContainer()
   {
@@ -3981,7 +3981,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
    * 
    * @param conflatable
    * @return An instance of <code>ClientUpdateMessage</code>
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Conflatable getAndRemoveFromHAContainer(Conflatable conflatable) 
   {
@@ -4007,7 +4007,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
    * is zero and put is not in progress, removes the entry from the haContainer.
    * 
    * @param wrapper
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void decAndRemoveFromHAContainer(HAEventWrapper wrapper) 
   {
@@ -4079,7 +4079,7 @@ protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid, 
   
   /**
    * Set client conflation override 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setClientConflation(byte value) {
     if (value != HandShake.CONFLATION_OFF && 

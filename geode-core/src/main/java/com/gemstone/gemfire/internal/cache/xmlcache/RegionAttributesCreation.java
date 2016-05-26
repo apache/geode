@@ -57,7 +57,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * modified.  This class is public for testing purposes.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class RegionAttributesCreation extends UserSpecifiedRegionAttributes implements Serializable {
   private static final long serialVersionUID = 2241078661206355376L;
@@ -119,7 +119,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   private File[] diskDirs;
   private int[] diskSizes;
   /** disk store name of the region
-  * @since prPersistPrint2 
+  * @since GemFire prPersistPrint2
   * */
   private String diskStoreName;
   private boolean isDiskSynchronous = AttributesFactory.DEFAULT_DISK_SYNCHRONOUS;
@@ -131,12 +131,12 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   private boolean indexMaintenanceSynchronous;
   /** The attributes's id
    *
-   * @since 4.1 */
+   * @since GemFire 4.1 */
   private String id;
 
   /** The id of the attributes that this attributes "inherits"
    *
-   * @since 4.1 */
+   * @since GemFire 4.1 */
   private String refid;
 
   /** The partitioning attributes */
@@ -150,41 +150,41 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   /**
    * Whether to mark this region as a publisher
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    */
   private boolean publisher;
 
   /**
    * Whether to enable subscription conflation for this region
    *
-   * @since 4.2
+   * @since GemFire 4.2
    */
   private boolean enableSubscriptionConflation;
 
   /**
    * Whether to enable a async conflation for this region
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    */
   private boolean enableAsyncConflation;
   
   /**
    * The client to server Connection Pool
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private String poolName;
   
   /**
    * The region compressor.
    * 
-   * @since 8.0
+   * @since GemFire 8.0
    */
   private Compressor compressor;
   
   /**
    * True if usage of off-heap memory is enabled for this region.
-   * @since 9.0
+   * @since Geode 1.0
    */
   private boolean offHeap;
 
@@ -994,7 +994,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   /**
    * Sets the id of the region attributes being created
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public void setId(String id) {
     this.id = id;
@@ -1003,7 +1003,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   /**
    * Returns the id of the region attributes being created
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public String getId() {
     return this.id;
@@ -1012,7 +1012,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   /**
    * Sets the refid of the region attributes being created
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public void setRefid(String refid) {
     this.refid = refid;
@@ -1021,7 +1021,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
   /**
    * Returns the refid of the region attributes being created
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public String getRefid() {
     return this.refid;
@@ -1037,7 +1037,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
    * @throws IllegalStateException
    *         If no region attributes named <code>refid</code> exist.
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   void inheritAttributes(Cache cache) {
     inheritAttributes(cache, true);
@@ -1503,12 +1503,12 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     setHasMembershipAttributes(true);
   }
 
-  /** @since 5.0 */
+  /** @since GemFire 5.0 */
   public SubscriptionAttributes getSubscriptionAttributes() {
     return this.subscriptionAttributes;
   }
 
-  /** @since 5.0 */
+  /** @since GemFire 5.0 */
   public void setSubscriptionAttributes(SubscriptionAttributes pa) {
     this.subscriptionAttributes = pa;
     setHasSubscriptionAttributes(true);

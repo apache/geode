@@ -21,7 +21,7 @@ import com.gemstone.gemfire.CancelException;
 /**
  * Thrown when a GemFire pool has been cancelled.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 
 public class PoolCancelledException extends CancelException {

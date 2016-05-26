@@ -22,7 +22,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 /**
  * Tells the server we are ready to receive server-to-client events
  * from durable subscriptions.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class ReadyForEventsOp {
   /**

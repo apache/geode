@@ -30,7 +30,7 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
  * {@link Converter} for {@link GfshHelpCommands#obtainHelp(String)}
  * 
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class HelpConverter implements Converter<String> {
 

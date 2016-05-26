@@ -101,7 +101,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * DistributedSystemImpl. Wrap all delegate calls w/ e.printStackTrace() since 
  * the HttpAdaptor devours them (what to do w/ template methods then?)
  *
- * @since     3.5
+ * @since GemFire     3.5
  */
 public class AdminDistributedSystemJmxImpl 
               extends AdminDistributedSystemImpl
@@ -297,7 +297,7 @@ public class AdminDistributedSystemJmxImpl
    * @throws com.gemstone.gemfire.admin.AdminException
    *           if construction of SystemMember instance fails
    *
-   * @since 6.5
+   * @since GemFire 6.5
    */
   protected SystemMember createSystemMember(InternalDistributedMember member)
       throws com.gemstone.gemfire.admin.AdminException {
@@ -1094,7 +1094,7 @@ public class AdminDistributedSystemJmxImpl
   
   /**
    * @return the isRmiClientCountZero
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public boolean isRmiClientCountZero() {
     return isRmiClientCountZero;
@@ -1102,7 +1102,7 @@ public class AdminDistributedSystemJmxImpl
 
   /**
    * @param isRmiClientCountZero the isJmxClientCountZero to set
-   * @since 6.0
+   * @since GemFire 6.0
    */
   void setRmiClientCountZero(boolean isRmiClientCountZero) {
     this.isRmiClientCountZero = isRmiClientCountZero;
@@ -1453,7 +1453,7 @@ public class AdminDistributedSystemJmxImpl
    * 
    * @param alertDefinitionId id of a stat alert definition 
    * @return StatAlertDefinition reference to an instance of StatAlertDefinition
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private StatAlertDefinition getAlertDefinition(int alertDefinitionId) {
     synchronized(ALERT_DEFINITIONS) {
@@ -1470,7 +1470,7 @@ public class AdminDistributedSystemJmxImpl
    * 
    * @param alertDefinition StatAlertDefinition to retrieve
    * @return StatAlertDefinition 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public StatAlertDefinition getAlertDefinition(StatAlertDefinition alertDefinition) {
     return getAlertDefinition(alertDefinition.getId());
@@ -1645,7 +1645,7 @@ public class AdminDistributedSystemJmxImpl
    * A new alert definition will be created if matching one not found.
    * 
    * @param alertDefinition alertDefinition to be updated 
-   * @since 5.7
+   * @since GemFire 5.7
    */  
   public void updateAlertDefinition(StatAlertDefinition alertDefinition) {
     if (logger.isDebugEnabled()) {
@@ -1678,7 +1678,7 @@ public class AdminDistributedSystemJmxImpl
    * should notify members for the newly added alert definitions. 
    * 
    * @param defId id of the alert definition to be removed
-   * @since 5.7
+   * @since GemFire 5.7
    */  
   public void removeAlertDefinition(Integer defId) {
     if (logger.isDebugEnabled()) {
@@ -1710,7 +1710,7 @@ public class AdminDistributedSystemJmxImpl
    * @param alertDefinition alert definition to check whether already created
    * @return true if the alert definition is already created, false 
    *         otherwise 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public boolean isAlertDefinitionCreated(StatAlertDefinition alertDefinition) {
     /*
@@ -1729,7 +1729,7 @@ public class AdminDistributedSystemJmxImpl
    * Returns the refresh interval for the Stats in seconds.
    * 
    * @return refresh interval for the Stats(in seconds)
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public synchronized int getRefreshIntervalForStatAlerts() {
     /*
@@ -1743,7 +1743,7 @@ public class AdminDistributedSystemJmxImpl
    * seconds 
    * 
    * @param refreshIntervalForStatAlerts refresh interval for the Stats(in seconds)
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public synchronized void setRefreshIntervalForStatAlerts(int refreshIntervalForStatAlerts) {
     /*
@@ -1758,7 +1758,7 @@ public class AdminDistributedSystemJmxImpl
    * runs/sessions
    * 
    * @return value of canPersistStatAlertDefs.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public boolean canPersistStatAlertDefs() {
     return canPersistStatAlertDefs;
@@ -1826,7 +1826,7 @@ public class AdminDistributedSystemJmxImpl
    * member VM.
    * 
    * @param memberVM Member VM to set AlertsManager for
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public synchronized void setAlertsManager(GemFireVM memberVM) {
     /*
@@ -1869,7 +1869,7 @@ public class AdminDistributedSystemJmxImpl
    * Returns empty array if there are no stat alert definitions defined.
    * 
    * @return An array of all available StatAlertDefinition objects 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public StatAlertDefinition[] getAllStatAlertDefinitions() {
     if (logger.isDebugEnabled()) {

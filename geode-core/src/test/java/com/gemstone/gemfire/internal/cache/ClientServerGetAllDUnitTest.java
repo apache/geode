@@ -51,7 +51,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Class <code>ClientServerGetAllDUnitTest</code> test client/server getAll.
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
  public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
 

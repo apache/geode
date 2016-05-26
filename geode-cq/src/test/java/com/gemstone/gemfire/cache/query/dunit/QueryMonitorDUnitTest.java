@@ -64,7 +64,7 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests for QueryMonitoring service.
- * @since 6.0
+ * @since GemFire 6.0
  */
 public class QueryMonitorDUnitTest extends CacheTestCase {
 

@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.Version;
 /**
  * This represents the CQ key value pair for the CQ query results.
  *  
- * @since 6.5
+ * @since GemFire 6.5
  */
 
 public class CqEntry implements DataSerializableFixedID {

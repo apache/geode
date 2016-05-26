@@ -51,7 +51,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * For regions that are persistent (i.e. they can be recovered) see {@link Oplog}.
  * 
  * 
- * @since prPersistSprint2
+ * @since GemFire prPersistSprint2
  */
 class OverflowOplog implements CompactableOplog, Flushable {
   private static final Logger logger = LogService.getLogger();
@@ -309,7 +309,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
    * obatin the value This method should never get invoked for an entry which
    * has been destroyed
    * 
-   * @since 3.2.1 
+   * @since GemFire 3.2.1
    * @param id The DiskId for the entry @param offset The offset in
    *        this OpLog where the entry is present. @param faultingIn @param
    *        bitOnly boolean indicating whether to extract just the UserBit or

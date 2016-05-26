@@ -55,7 +55,8 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * @since 8.0
+ * 
+ * @since GemFire 8.0
  */
 public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 

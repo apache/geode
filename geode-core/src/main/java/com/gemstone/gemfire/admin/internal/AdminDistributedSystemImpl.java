@@ -88,7 +88,7 @@ import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
 /**
  * Represents a GemFire distributed system for remote administration/management.
  *
- * @since     3.5
+ * @since GemFire     3.5
  */
 public class AdminDistributedSystemImpl
 implements com.gemstone.gemfire.admin.AdminDistributedSystem,
@@ -950,7 +950,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    * Returns the internal admin API's agent used for administering
    * this <code>AdminDistributedSystem</code>.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public GfManagerAgent getAdminAgent() {
     return this.gfManagerAgent;
@@ -1303,7 +1303,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    * @return constructed SystemMember instance
    * @throws com.gemstone.gemfire.admin.AdminException
    *           if construction of SystemMember instance fails
-   * @since 6.5
+   * @since GemFire 6.5
    */
   protected SystemMember createSystemMember(InternalDistributedMember member)
     throws com.gemstone.gemfire.admin.AdminException {
@@ -2017,7 +2017,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
    * @return array of CacheServer(s) having the queue for the durable client
    * @throws AdminException
    * 
-   * @since 5.6
+   * @since GemFire 5.6
    */
   public CacheServer[] getCacheServers(String durableClientId)
       throws AdminException

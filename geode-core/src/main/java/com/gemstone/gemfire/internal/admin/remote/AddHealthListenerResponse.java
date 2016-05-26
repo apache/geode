@@ -29,7 +29,7 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
 
 /**
  * The response to adding a health listener.
- * @since 3.5
+ * @since GemFire 3.5
  */
 public final class AddHealthListenerResponse extends AdminResponse {
   // instance variables

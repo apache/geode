@@ -33,7 +33,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * @see AttributesMutator#addCacheListener
  * @see AttributesMutator#removeCacheListener
  * @see AttributesMutator#initCacheListeners
- * @since 5.0
+ * @since GemFire 5.0
  */
 public interface RegionMembershipListener<K,V> extends CacheListener<K,V> {
   /**

@@ -520,7 +520,7 @@ public class CacheServerTestUtil extends DistributedTestCase
   }
   /**
    * Enables the shuffling of endpoints for a client
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static void enableShufflingOfEndpoints()
   {

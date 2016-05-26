@@ -39,7 +39,7 @@ import com.gemstone.gemfire.management.internal.cli.domain.IndexDetails;
  * @see com.gemstone.gemfire.cache.execute.FunctionContext
  * @see com.gemstone.gemfire.internal.InternalEntity
  * @see com.gemstone.gemfire.management.internal.cli.domain.IndexDetails
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public class ListIndexFunction extends FunctionAdapter implements InternalEntity {

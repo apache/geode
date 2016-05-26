@@ -45,7 +45,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
  * 2.a Using newly created authenticated connection AccessControlMXBean is called to get authentication
  * levels. See @See {@link #populateAuthorities(JMXConnector)}. This sets Spring Security Authorities
  * 2.b DataBrowser end-points are required to be authorized against Spring Granted Authority
- * @since version 9.0
+ * @since GemFire version 9.0
  */
 public class GemFireAuthentication extends UsernamePasswordAuthenticationToken {
 

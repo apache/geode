@@ -19,7 +19,7 @@ package com.gemstone.gemfire.internal.offheap;
 /**
  * Implements the Slab interface using AddressableMemoryManager.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 public class SlabImpl implements Slab {
   private final long address;

@@ -22,7 +22,7 @@ package com.gemstone.gemfire.lang;
  * set on the user's classpath
  * <p/>
  * @see java.lang.RuntimeException
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public class AttachAPINotFoundException extends RuntimeException {

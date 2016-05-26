@@ -1871,7 +1871,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
   /**
    * Returns the local BucketRegion given an bucketId.
    * Returns null if no BucketRegion exists.
-   * @since 6.1.2.9
+   * @since GemFire 6.1.2.9
    */
   public BucketRegion getLocalBucketById(Integer bucketId) {
     final BucketRegion bucketRegion = this.localBucket2RegionMap.get(bucketId);
@@ -1894,7 +1894,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
   /**
    * Test hook to return the per entry overhead for a bucket region.
    * PRECONDITION: a bucket must exist and be using LRU.
-   * @since 6.1.2.9
+   * @since GemFire 6.1.2.9
    */
   public int getPerEntryLRUOverhead() {
     BucketRegion br = (localBucket2RegionMap.values().iterator().next());

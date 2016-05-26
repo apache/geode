@@ -24,7 +24,7 @@ import com.gemstone.gemfire.admin.*;
  * The implementation of <code>MemberHealthConfig</code>
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public abstract class MemberHealthConfigImpl
   implements MemberHealthConfig, java.io.Serializable {

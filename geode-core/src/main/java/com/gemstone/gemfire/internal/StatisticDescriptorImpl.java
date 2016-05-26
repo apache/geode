@@ -27,7 +27,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * @see Statistics
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public final class StatisticDescriptorImpl implements StatisticDescriptor {
 

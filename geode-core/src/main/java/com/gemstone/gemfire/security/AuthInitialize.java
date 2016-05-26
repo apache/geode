@@ -34,7 +34,7 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
  * <i>security-peer-auth-init</i> system property on peers and as the
  * <i>security-client-auth-init</i> system property on clients.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public interface AuthInitialize extends CacheCallback {
 

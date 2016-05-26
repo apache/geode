@@ -21,7 +21,7 @@ package com.gemstone.gemfire.cache.query;
  * This class provides methods to get statistical information about a registered Continuous Query (CQ)
  * represented by the CqQuery object. 
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public interface CqStatistics {
 

@@ -41,7 +41,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * Default administrative implementation of a DistributionLocator.
  *
- * @since     3.5
+ * @since GemFire     3.5
  */
 public class DistributionLocatorImpl
   implements DistributionLocator, InternalManagedEntity {
@@ -100,7 +100,7 @@ public class DistributionLocatorImpl
   /**
    * Returns the configuration object for this locator.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public DistributionLocatorConfig getConfig() {
     return this.config;

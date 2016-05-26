@@ -35,7 +35,7 @@ import com.gemstone.gemfire.cache.DataPolicy;
  * members are waiting for. See
  * {@link AdminDistributedSystem#getMissingPersistentMembers()}
  * 
- * @since 6.5
+ * @since GemFire 6.5
  *
  */
 public interface PersistentID extends DataSerializable {
@@ -52,7 +52,7 @@ public interface PersistentID extends DataSerializable {
   
   /**
    * The unique identifier for the persistent data.
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public abstract UUID getUUID();
 }

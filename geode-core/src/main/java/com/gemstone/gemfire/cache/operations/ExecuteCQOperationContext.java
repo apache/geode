@@ -23,7 +23,7 @@ import java.util.Set;
  * Encapsulates a continuous query registeration operation for both the
  * pre-operation and post-operation cases.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class ExecuteCQOperationContext extends QueryOperationContext {
 

@@ -47,7 +47,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 /**
  * A request to manage a particular bucket
  *
- * @since 5.0
+ * @since GemFire 5.0
  *
  */
 public final class ManageBackupBucketMessage extends PartitionMessage {
@@ -224,7 +224,7 @@ public final class ManageBackupBucketMessage extends PartitionMessage {
   /**
    * A class that contains the reply to a {@link ManageBackupBucketMessage} message
    * which contains the {@link Node} that has accepted to manage the bucket. 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static final class ManageBackupBucketReplyMessage extends ReplyMessage {
     
@@ -352,7 +352,7 @@ public final class ManageBackupBucketMessage extends PartitionMessage {
   
   /**
    * A processor to capture the {@link Node} returned by {@link ManageBackupBucketMessage}
-   * @since 5.0
+   * @since GemFire 5.0
    */
   static public class NodeResponse extends ReplyProcessor21 {
     /**

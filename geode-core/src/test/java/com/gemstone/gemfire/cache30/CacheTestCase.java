@@ -23,7 +23,7 @@ import com.gemstone.gemfire.test.dunit.cache.internal.JUnit3CacheTestCase;
  * The abstract superclass of tests that require the creation of a
  * {@link Cache}.
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public abstract class CacheTestCase extends JUnit3CacheTestCase {
 

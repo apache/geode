@@ -136,7 +136,7 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperation;
  * </tr>
  * </table>
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
 public interface MemberMXBean {

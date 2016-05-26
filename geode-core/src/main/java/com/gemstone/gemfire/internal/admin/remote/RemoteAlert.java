@@ -97,7 +97,7 @@ public class RemoteAlert implements Alert {
    * @return the InternalDistributedMember instance representing a member that
    *         is sending/has sent this alert
    *         
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public InternalDistributedMember getSender() {
     return sender;

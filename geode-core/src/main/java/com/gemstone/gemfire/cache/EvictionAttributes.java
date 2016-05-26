@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
  *
  * @see com.gemstone.gemfire.cache.AttributesFactory#setEvictionAttributes(EvictionAttributes)
  * @see com.gemstone.gemfire.cache.AttributesMutator
- * @since 5.0
+ * @since GemFire 5.0
  */
 @SuppressWarnings("serial")
 public abstract class EvictionAttributes implements DataSerializable {
@@ -110,7 +110,7 @@ public abstract class EvictionAttributes implements DataSerializable {
    * with default {@linkplain #DEFAULT_ENTRIES_MAXIMUM maximum}
    * and given <code>evictionAction</code>
    * @see #createLRUEntryAttributes()
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static EvictionAttributes createLRUEntryAttributes(EvictionAction evictionAction) {
     return new EvictionAttributesImpl().setAlgorithm(EvictionAlgorithm.LRU_ENTRY).setAction(evictionAction)
@@ -363,7 +363,7 @@ public abstract class EvictionAttributes implements DataSerializable {
    * given <code>sizer</code>,
    * and default {@linkplain #DEFAULT_MEMORY_MAXIMUM maximum}
    * @see #createLRUMemoryAttributes()
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static EvictionAttributes createLRUMemoryAttributes(ObjectSizer sizer) {
     return new EvictionAttributesImpl().setAlgorithm(EvictionAlgorithm.LRU_MEMORY).setAction(
@@ -388,7 +388,7 @@ public abstract class EvictionAttributes implements DataSerializable {
    * given <code>sizer</code>,
    * and default {@linkplain #DEFAULT_MEMORY_MAXIMUM maximum}
    * @see #createLRUMemoryAttributes()
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static EvictionAttributes createLRUMemoryAttributes(ObjectSizer sizer, EvictionAction evictionAction) {
     return new EvictionAttributesImpl().setAlgorithm(EvictionAlgorithm.LRU_MEMORY).setAction(evictionAction)
@@ -474,7 +474,7 @@ public abstract class EvictionAttributes implements DataSerializable {
 
   /**
    * @return an EvictionAttributes for the  LIFOCapacityController
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static EvictionAttributes createLIFOEntryAttributes(int maximumEntries, EvictionAction evictionAction) {
     return new EvictionAttributesImpl().setAlgorithm(EvictionAlgorithm.LIFO_ENTRY).setAction(evictionAction)
@@ -483,7 +483,7 @@ public abstract class EvictionAttributes implements DataSerializable {
 
   /**
    * @return an EvictionAttributes for the MemLIFOCapacityController
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static EvictionAttributes createLIFOMemoryAttributes(int maximumMegabytes, EvictionAction evictionAction) {
     return new EvictionAttributesImpl().setAlgorithm(EvictionAlgorithm.LIFO_MEMORY).setAction(evictionAction)

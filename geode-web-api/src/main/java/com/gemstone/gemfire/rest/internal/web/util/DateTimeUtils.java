@@ -27,7 +27,7 @@ import java.util.Date;
  * @see java.util.Calendar
  * @see java.text.DateFormat
  * @see java.util.Date
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public abstract class DateTimeUtils {

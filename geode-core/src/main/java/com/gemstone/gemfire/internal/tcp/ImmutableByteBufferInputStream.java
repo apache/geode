@@ -26,7 +26,7 @@ import com.gemstone.gemfire.internal.offheap.StoredObject;
  * create an instance of ByteBufferInputStream instead.
  * Note that even though this class is immutable the position on its ByteBuffer can change.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 public class ImmutableByteBufferInputStream extends ByteBufferInputStream {
 

@@ -27,7 +27,7 @@ import com.gemstone.gemfire.management.cli.Result;
 /**
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CommandStatementImpl implements CommandStatement {
   

@@ -58,7 +58,7 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
 /**
  * ClassLoader for a single JAR file.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class JarClassLoader extends ClassLoader {
   private final static Logger logger = LogService.getLogger();
@@ -669,7 +669,7 @@ public class JarClassLoader extends ClassLoader {
    * that the lock will be obtained in all cases (it's reentrant), and then the channel position will be modified by
    * both instances causing arbitrary values being returned from the read() method.
    * 
-   * @since 7.0
+   * @since GemFire 7.0
    */
   private class ChannelInputStream extends InputStream {
     private final FileChannel fileChannel;

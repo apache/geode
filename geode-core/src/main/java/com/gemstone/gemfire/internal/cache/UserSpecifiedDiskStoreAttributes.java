@@ -27,7 +27,7 @@ import com.gemstone.gemfire.internal.Assert;
  * {@link com.gemstone.gemfire.cache.DiskStoreFactory}.  Its initial usage was to validate
  * when a user set a value which should not be set (for DiskStore).
  * 
- * @since prPersistSprint2
+ * @since GemFire prPersistSprint2
  *
  */
 public class UserSpecifiedDiskStoreAttributes extends DiskStoreAttributes

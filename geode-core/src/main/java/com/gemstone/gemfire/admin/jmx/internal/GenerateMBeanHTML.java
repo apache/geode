@@ -31,7 +31,7 @@ import java.io.*;
  * Jakarta Commons Modeler and generates an HTML file that documents
  * each MBean.
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class GenerateMBeanHTML extends DefaultHandler {
 

@@ -27,7 +27,7 @@ import com.gemstone.gemfire.cache.*;
  * @see #wasInvoked
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public abstract class TestCacheWriter extends TestCacheCallback
   implements CacheWriter {

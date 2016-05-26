@@ -528,7 +528,7 @@ public class InternalDistributedMember
    * [GemStone] Returns the process id of the VM that hosts the distribution
    * manager with this address.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public int getVmPid()
   {
@@ -539,7 +539,7 @@ public class InternalDistributedMember
    * [GemStone] Sets the process id of the VM that hosts the distribution
    * manager with this address.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void setVmPid(int p)
   {

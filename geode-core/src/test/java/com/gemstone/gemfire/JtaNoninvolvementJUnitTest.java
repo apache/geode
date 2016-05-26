@@ -40,7 +40,7 @@ import org.junit.runners.MethodSorters;
 /**
  * Ensure that the ignoreJTA Region setting works
  *
- * @since 4.1.1
+ * @since GemFire 4.1.1
  */
 @SuppressWarnings("deprecation")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

@@ -31,7 +31,7 @@ import com.gemstone.gemfire.security.AuthenticationFailedException;
  * set to the fully qualified name the static {@code create} method
  * viz. {@code com.gemstone.gemfire.security.templates.UserPasswordAuthInit.create}
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class UserPasswordAuthInit implements AuthInitialize {
 

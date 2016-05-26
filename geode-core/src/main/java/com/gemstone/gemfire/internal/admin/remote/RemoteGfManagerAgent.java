@@ -93,7 +93,7 @@ public
   /** The connection to the distributed system through which this
    * admin agent communicates
    *
-   * @since 4.0 */
+   * @since GemFire 4.0 */
   protected InternalDistributedSystem system;
 
   /** Is this agent connected to the distributed system */
@@ -426,7 +426,7 @@ public
    * Returns whether or not this manager agent has created admin
    * objects for the initial members of the distributed system.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public boolean isInitialized() {
     return this.initialized;
@@ -920,7 +920,7 @@ public
    * Returns the thread group in which admin threads should run.  This
    * thread group handles uncaught exceptions nicely.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public ThreadGroup getThreadGroup() {
     return this.threadGroup;

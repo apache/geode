@@ -22,7 +22,7 @@ import java.util.Set;
 /**
  * Factory for defining and starting a {@link RebalanceOperation}.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public interface RebalanceFactory {
   
@@ -33,7 +33,7 @@ public interface RebalanceFactory {
    * 
    * @param regions
    *          A set containing the names of regions to include.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   RebalanceFactory includeRegions(Set<String> regions);
   
@@ -44,7 +44,7 @@ public interface RebalanceFactory {
    * 
    * @param regions
    *          A set containing the names of regions to exclude.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   RebalanceFactory excludeRegions(Set<String> regions);
   

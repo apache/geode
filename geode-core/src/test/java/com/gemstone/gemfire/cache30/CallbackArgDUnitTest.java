@@ -42,7 +42,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Test the getCallbackArgument in light of bug 34075.
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class CallbackArgDUnitTest extends CacheTestCase {
 

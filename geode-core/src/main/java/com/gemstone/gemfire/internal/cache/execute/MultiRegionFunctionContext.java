@@ -27,7 +27,7 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
  * {@link InternalFunctionService#onRegions(Set)}
  * 
  * 
- * @since 6.5
+ * @since GemFire 6.5
  * 
  */
 public interface MultiRegionFunctionContext extends FunctionContext {
@@ -41,7 +41,7 @@ public interface MultiRegionFunctionContext extends FunctionContext {
    * @return a boolean (true) to identify whether it is a re-execute (else
    *         false)
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    * @see Function#isHA()
    */
   public boolean isPossibleDuplicate();

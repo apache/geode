@@ -31,7 +31,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * the Attach API which is in the JDK tools.jar.  As a result ServerLauncher
  * ends up using the FileProcessController implementation.
  *
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(IntegrationTest.class)
 public class ServerLauncherLocalFileIntegrationTest extends ServerLauncherLocalIntegrationTest {

@@ -65,7 +65,7 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
  * OperationInvoker JMX Implementation
  *
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class JmxOperationInvoker implements OperationInvoker {
 
@@ -444,7 +444,7 @@ public class JmxOperationInvoker implements OperationInvoker {
  * A Connection Notification Listener. Notifies Gfsh when a connection gets
  * terminated abruptly.
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 class JMXConnectionListener implements NotificationListener {
   public static final String CHECK_PERIOD_PROP = "jmx.remote.x.client.connection.check.period";

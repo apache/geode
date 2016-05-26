@@ -23,7 +23,7 @@ import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.StatArchiveWriter;
 
 /**
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class TestStatArchiveWriter extends StatArchiveWriter {
   public static final long WRITER_PREVIOUS_TIMESTAMP_NANOS = 432662613L;

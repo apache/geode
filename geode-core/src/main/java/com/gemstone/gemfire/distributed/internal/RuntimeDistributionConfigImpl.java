@@ -36,7 +36,7 @@ import java.util.List;
  * set the attSourceMap to the correct source after these methods return.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public final class RuntimeDistributionConfigImpl
   extends DistributionConfigImpl  {

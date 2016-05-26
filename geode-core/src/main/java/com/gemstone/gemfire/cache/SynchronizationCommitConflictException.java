@@ -21,7 +21,7 @@ package com.gemstone.gemfire.cache;
  *
  *
  * @see javax.transaction.UserTransaction#commit
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class SynchronizationCommitConflictException extends CacheRuntimeException {
 private static final long serialVersionUID = 2619806460255259492L;

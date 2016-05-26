@@ -50,7 +50,7 @@ import org.junit.runners.Parameterized;
 /**
  * Tests usage of LocatorLauncher as a local API in existing JVM.
  *
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(IntegrationTest.class)
 @RunWith(Parameterized.class)

@@ -86,7 +86,7 @@ import java.io.Reader;
  * @see <A href="package-summary.html#statistics">Package introduction</A>
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public interface StatisticsTypeFactory {
 

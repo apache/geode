@@ -51,7 +51,7 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 /**
  * Test to make sure slow receiver queuing is working
  *
- * @since 4.2.1
+ * @since GemFire 4.2.1
  */
 @Category(DistributedTest.class)
 @Ignore("Test was disabled by renaming to DisabledTest")

@@ -402,7 +402,7 @@ public class SystemAdmin {
   /**
    * Tails the end of the locator's log file
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public String locatorTailLog(File directory) {
     File logFile =

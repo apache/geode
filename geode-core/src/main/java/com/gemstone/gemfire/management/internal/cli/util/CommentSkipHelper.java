@@ -22,7 +22,7 @@ import org.springframework.util.Assert;
  * Utility based on code extracted from
  * {@link org.springframework.shell.core.AbstractShell#executeCommand(String)}
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 // @original-author Ben Alex
 public class CommentSkipHelper {

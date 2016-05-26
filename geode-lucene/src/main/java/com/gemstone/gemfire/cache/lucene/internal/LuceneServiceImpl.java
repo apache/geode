@@ -58,7 +58,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * Implementation of LuceneService to create lucene index and query.
  * 
  * 
- * @since 8.5
+ * @since GemFire 8.5
  */
 public class LuceneServiceImpl implements InternalLuceneService {
   private static final Logger logger = LogService.getLogger();

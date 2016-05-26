@@ -99,37 +99,37 @@ public interface LogWriterI18n {
     /**
      * Writes both a message and exception to this writer.
      * The message level is "severe".
-     * @since 6.0 
+     * @since GemFire 6.0
      */
     public void severe(StringId msgID, Object[] params, Throwable ex);
     /**
      * Writes both a message and exception to this writer.
      * The message level is "severe".
-     * @since 6.0 
+     * @since GemFire 6.0
      */
     public void severe(StringId msgID, Object param, Throwable ex);
     /**
      * Writes both a message and exception to this writer.
      * The message level is "severe".
-     * @since 6.0 
+     * @since GemFire 6.0
      */
     public void severe(StringId msgID, Throwable ex);
     /**
      * Writes a message to this writer.
      * The message level is "severe".
-     * @since 6.0 
+     * @since GemFire 6.0
      */
     public void severe(StringId msgID, Object[] params);
     /**
      * Writes a message to this writer.
      * The message level is "severe".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void severe(StringId msgID, Object param);
     /**
      * Writes a message to this writer.
      * The message level is "severe".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void severe(StringId msgID);
     /**
@@ -144,37 +144,37 @@ public interface LogWriterI18n {
     /**
      * Writes both a message and exception to this writer.
      * The message level is "error".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void error(StringId msgID, Object[] params, Throwable ex);
     /**
      * Writes both a message and exception to this writer.
      * The message level is "error".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void error(StringId msgID, Object param, Throwable ex);
     /**
      * Writes both a message and exception to this writer.
      * The message level is "error".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void error(StringId msgID, Throwable ex);
     /**
      * Writes a message to this writer.
      * The message level is "error".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void error(StringId msgID, Object[] params);
     /**
      * Writes a message to this writer.
      * The message level is "error".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void error(StringId msgID, Object param);
     /**
      * Writes a message to this writer.
      * The message level is "error".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void error(StringId msgID);
     /**
@@ -189,37 +189,37 @@ public interface LogWriterI18n {
      /**
      * Writes both a message and exception to this writer.
      * The message level is "warning".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void warning(StringId msgID, Object[] params, Throwable ex);
     /**
      * Writes both a message and exception to this writer.
      * The message level is "warning".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void warning(StringId msgID, Object param, Throwable ex);
     /**
      * Writes both a message and exception to this writer.
      * The message level is "warning".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void warning(StringId msgID, Throwable ex);
     /**
      * Writes a message to this writer.
      * The message level is "warning".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void warning(StringId msgID, Object[] params);
     /**
      * Writes a message to this writer.
      * The message level is "warning".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void warning(StringId msgID, Object param);
     /**
      * Writes a message to this writer.
      * The message level is "warning".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void warning(StringId msgID);
     /**
@@ -234,37 +234,37 @@ public interface LogWriterI18n {
     /**
      * Writes both a message and exception to this writer.
      * The message level is "info".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void info(StringId msgID, Object[] params, Throwable ex);
     /**
      * Writes both a message and exception to this writer.
      * The message level is "info".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void info(StringId msgID, Object param, Throwable ex);
     /**
      * Writes both a message and exception to this writer.
      * The message level is "info".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void info(StringId msgID, Throwable ex);
     /**
      * Writes a message to this writer.
      * The message level is "info".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void info(StringId msgID, Object[] params);
     /**
      * Writes a message to this writer.
      * The message level is "info".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void info(StringId msgID, Object param);
     /**
      * Writes a message to this writer.
      * The message level is "info".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void info(StringId msgID);
     /**
@@ -279,37 +279,37 @@ public interface LogWriterI18n {
     /**
      * Writes both a message and exception to this writer.
      * The message level is "config".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void config(StringId msgID, Object[] params, Throwable ex);
     /**
      * Writes both a message and exception to this writer.
      * The message level is "config".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void config(StringId msgID, Object param, Throwable ex);
     /**
      * Writes both a message and exception to this writer.
      * The message level is "config".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void config(StringId msgID, Throwable ex);
     /**
      * Writes a message to this writer.
      * The message level is "config".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void config(StringId msgID, Object[] params);
     /**
      * Writes a message to this writer.
      * The message level is "config".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void config(StringId msgID, Object param);
     /**
      * Writes a message to this writer.
      * The message level is "config".
-     * @since 6.0
+     * @since GemFire 6.0
      */
     public void config(StringId msgID);
     /**

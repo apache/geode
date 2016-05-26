@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.cache.tier.MessageType;
  * the client connection is still alive.
  * 
  * 
- * @since 6.6.2.x
+ * @since GemFire 6.6.2.x
  */
 public final class ClientPingMessageImpl implements ClientMessage {
   

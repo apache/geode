@@ -79,7 +79,7 @@ import com.gemstone.gemfire.management.membership.ClientMembershipListener;
  * An implementation of the <code>CacheServer</code> interface that delegates
  * most of the heavy lifting to an {@link Acceptor}.
  * 
- * @since 4.0
+ * @since GemFire 4.0
  */
 @SuppressWarnings("deprecation")
 public class CacheServerImpl
@@ -95,14 +95,14 @@ public class CacheServerImpl
 
   /**
    * The advisor used by this cache server.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private volatile CacheServerAdvisor advisor;
 
   /**
    * The monitor used to monitor load on this
    * bridge server and distribute load to the locators
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private volatile LoadMonitor loadMonitor;
 
@@ -118,7 +118,7 @@ public class CacheServerImpl
   
   /**
    * Needed because this guy is an advisee
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private int serialNumber; // changed on each start
 
@@ -398,7 +398,7 @@ public class CacheServerImpl
   /**
    * Gets the address that this bridge server can be contacted on from external
    * processes.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public String getExternalAddress() {
     return getExternalAddress(true);
@@ -569,7 +569,7 @@ public class CacheServerImpl
    * @param overFlowDir
    * @param isDiskStore
    * @return client subscription name
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static String clientMessagesRegion(GemFireCacheImpl cache, String ePolicy,
       int capacity, int port, String overFlowDir, boolean isDiskStore) {
@@ -688,7 +688,7 @@ public class CacheServerImpl
    * 
    * @param id
    * @return String
-   * @since 5.7 
+   * @since GemFire 5.7
    */
   public static String generateNameForClientMsgsRegion(int id) {
     return ClientSubscriptionConfigImpl.CLIENT_SUBSCRIPTION + "_" + id;
@@ -789,7 +789,7 @@ public class CacheServerImpl
    * @param listener
    *                The <code>InterestRegistrationListener</code> to register
    * @throws IllegalStateException if the BridgeServer has not been started
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public void registerInterestRegistrationListener(
       InterestRegistrationListener listener) {
@@ -807,7 +807,7 @@ public class CacheServerImpl
    *                The <code>InterestRegistrationListener</code> to
    *                unregister
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public void unregisterInterestRegistrationListener(
       InterestRegistrationListener listener) {
@@ -821,7 +821,7 @@ public class CacheServerImpl
    * @return a read-only set of <code>InterestRegistrationListener</code>s
    *         registered with this notifier
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public Set getInterestRegistrationListeners() {
     return getCacheClientNotifier().getInterestRegistrationListeners(); 

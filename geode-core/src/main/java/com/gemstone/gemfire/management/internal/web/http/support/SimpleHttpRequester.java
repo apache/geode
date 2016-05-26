@@ -42,7 +42,7 @@ import org.springframework.web.client.RestTemplate;
  * <p/>
  * @see org.springframework.http.client.SimpleClientHttpRequestFactory
  * @see org.springframework.web.client.RestTemplate
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public class SimpleHttpRequester {

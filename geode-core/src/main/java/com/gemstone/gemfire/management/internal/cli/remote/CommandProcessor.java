@@ -39,7 +39,7 @@ import org.springframework.shell.event.ParseResult;
 /**
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CommandProcessor {
   protected RemoteExecutionStrategy executionStrategy;

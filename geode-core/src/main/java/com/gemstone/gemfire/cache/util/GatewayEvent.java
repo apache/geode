@@ -24,7 +24,7 @@ import com.gemstone.gemfire.cache.Region;
  * Interface <code>GatewayEvent</code> represents <code>Cache</code> events
  * delivered to <code>Gateway</code>s.
  *
- * @since 5.1
+ * @since GemFire 5.1
  * 
  * @deprecated as of GemFire 8.0. Use {@link com.gemstone.gemfire.cache.wan.GatewayQueueEvent} instead
  * 
@@ -84,7 +84,7 @@ public interface GatewayEvent {
    * Returns the creation timestamp in milliseconds.
    * @return the creation timestamp in milliseconds
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public long getCreationTime();
 }

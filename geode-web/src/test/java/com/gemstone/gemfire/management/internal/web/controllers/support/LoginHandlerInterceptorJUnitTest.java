@@ -44,7 +44,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * @see org.jmock.Mockery
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(UnitTest.class)
 public class LoginHandlerInterceptorJUnitTest {

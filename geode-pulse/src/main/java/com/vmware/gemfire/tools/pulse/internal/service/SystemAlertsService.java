@@ -38,7 +38,7 @@ import javax.servlet.http.HttpServletRequest;
  * This class contains implementations of getting system's alerts details (like
  * errors, warnings and severe errors).
  * 
- * @since version 7.5
+ * @since GemFire version 7.5
  */
 
 @Component

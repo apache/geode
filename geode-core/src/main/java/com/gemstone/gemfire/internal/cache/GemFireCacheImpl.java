@@ -277,7 +277,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
    * If true then when a delta is applied the size of the entry value will be recalculated. If false (the default) then
    * the size of the entry value is unchanged by a delta application. Not a final so that tests can change this value.
    *
-   * @since hitachi 6.1.2.9
+   * @since GemFire hitachi 6.1.2.9
    */
   public static boolean DELTAS_RECALCULATE_SIZE = Boolean.getBoolean("gemfire.DELTAS_RECALCULATE_SIZE");
 
@@ -569,7 +569,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   
   /**
    * {@link ExtensionPoint} support.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private SimpleExtensionPoint<Cache> extensionPoint = new SimpleExtensionPoint<Cache>(this, this);
   
@@ -1389,7 +1389,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * create diskstore factory with default attributes
    *
-   * @since prPersistSprint2
+   * @since GemFire prPersistSprint2
    */
   public DiskStoreFactory createDiskStoreFactory() {
     return new DiskStoreFactoryImpl(this);
@@ -1398,7 +1398,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * create diskstore factory with predefined attributes
    *
-   * @since prPersistSprint2
+   * @since GemFire prPersistSprint2
    */
   public DiskStoreFactory createDiskStoreFactory(DiskStoreAttributes attrs) {
     return new DiskStoreFactoryImpl(this, attrs);
@@ -1499,14 +1499,14 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * Set to true during a cache close if user requested durable subscriptions to be kept.
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private boolean keepAlive;
 
   /**
    * Returns true if durable subscriptions (registrations and queries) should be preserved.
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public boolean keepDurableSubscriptionsAlive() {
     return this.keepAlive;
@@ -2483,7 +2483,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * Returns the DiskStore by name
    *
-   * @since prPersistSprint2
+   * @since GemFire prPersistSprint2
    */
   public DiskStore findDiskStore(String name) {
     if (name == null) {
@@ -2495,7 +2495,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * Returns the DiskStore list
    *
-   * @since prPersistSprint2
+   * @since GemFire prPersistSprint2
    */
   public Collection<DiskStoreImpl> listDiskStores() {
     return Collections.unmodifiableCollection(this.diskStores.values());
@@ -2701,7 +2701,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * Returns the member id of my distributed system
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public InternalDistributedMember getMyId() {
     return this.system.getDistributedMember();
@@ -2839,7 +2839,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * Returns the date and time that this cache was created.
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public Date getCreationDate() {
     return this.creationDate;
@@ -2848,7 +2848,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * Returns the number of seconds that have elapsed since the Cache was created.
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public int getUpTime() {
     return (int) ((System.currentTimeMillis() - this.creationDate.getTime()) / 1000);
@@ -3215,7 +3215,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * returns a set of all current regions in the cache, including buckets
    *
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public Set<LocalRegion> getAllRegions() {
     Set<LocalRegion> result = new HashSet();
@@ -3468,7 +3468,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * Called by ccn when a client goes away
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void cleanupForClient(CacheClientNotifier ccn, ClientProxyMembershipID client) {
     try {
@@ -3623,7 +3623,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * Returns true if get should give a copy; false if a reference.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   final boolean isCopyOnRead() {
     return this.copyOnRead;
@@ -3632,7 +3632,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * Implementation of {@link com.gemstone.gemfire.cache.Cache#setCopyOnRead}
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void setCopyOnRead(boolean copyOnRead) {
     this.copyOnRead = copyOnRead;
@@ -3641,7 +3641,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * Implementation of {@link com.gemstone.gemfire.cache.Cache#getCopyOnRead}
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   final public boolean getCopyOnRead() {
     return this.copyOnRead;
@@ -3728,7 +3728,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
    *
    * @return the CacheTransactionManager instance.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public CacheTransactionManager getCacheTransactionManager() {
     return this.txMgr;
@@ -3785,7 +3785,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
    * Returns the <code>Executor</code> (thread pool) that is used to execute cache event listeners.
    * Returns <code>null</code> if no pool exists.
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   Executor getEventThreadPool() {
     return this.eventThreadPool;
@@ -4210,7 +4210,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
 
   /**
    * @return Context jndi context associated with the Cache.
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public Context getJNDIContext() {
     // if (isClient()) {
@@ -4221,7 +4221,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
 
   /**
    * @return JTA TransactionManager associated with the Cache.
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public javax.transaction.TransactionManager getJTATransactionManager() {
     // if (isClient()) {
@@ -4338,7 +4338,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * Returns this cache's ReliableMessageQueueFactory.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public ReliableMessageQueueFactory getReliableMessageQueueFactory() {
     return this.rmqFactory;
@@ -4534,7 +4534,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   
   /**
    * Returns the QueryMonitor instance based on system property MAX_QUERY_EXECUTION_TIME.
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public QueryMonitor getQueryMonitor() {
     //Check to see if monitor is required if ResourceManager critical heap percentage is set
@@ -4579,7 +4579,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   /**
    * Simple class to allow waiters for register interest. Has at most one thread that ever calls wait.
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private class SimpleWaiter {
     private boolean notified = false;
@@ -4641,7 +4641,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   }
 
   /**
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public <K, V> RegionFactory<K, V> createRegionFactory(RegionShortcut atts) {
     if (isClient()) {
@@ -4652,7 +4652,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   }
 
   /**
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public <K, V> RegionFactory<K, V> createRegionFactory() {
     if (isClient()) {
@@ -4662,7 +4662,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   }
 
   /**
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public <K, V> RegionFactory<K, V> createRegionFactory(String regionAttributesId) {
     if (isClient()) {
@@ -4672,7 +4672,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   }
 
   /**
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public <K, V> RegionFactory<K, V> createRegionFactory(RegionAttributes<K, V> regionAttributes) {
     if (isClient()) {
@@ -4682,7 +4682,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   }
 
   /**
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public <K, V> ClientRegionFactory<K, V> createClientRegionFactory(ClientRegionShortcut atts) {
     return new ClientRegionFactoryImpl<K, V>(this, atts);
@@ -4693,7 +4693,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   }
 
   /**
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public QueryService getQueryService(String poolName) {
     Pool p = PoolManager.find(poolName);
@@ -5311,7 +5311,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   
   /**
    * @see Extensible#getExtensionPoint()
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Override
   public ExtensionPoint<Cache> getExtensionPoint() {

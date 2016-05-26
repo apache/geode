@@ -51,7 +51,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * various scenarios
  * 
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public class ColocationHelper {
 
@@ -63,7 +63,7 @@ public class ColocationHelper {
     *
     * @param partitionedRegion
     * @return colocated PartitionedRegion
-    * @since cheetah
+    * @since GemFire cheetah
     */
   public static PartitionedRegion getColocatedRegionName(
       final PartitionedRegion partitionedRegion) {
@@ -124,7 +124,7 @@ public class ColocationHelper {
    * 
    * @param partitionedRegion
    * @return colocated PartitionedRegion
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public static PartitionedRegion getColocatedRegion(
       final PartitionedRegion partitionedRegion) {
@@ -339,7 +339,7 @@ public class ColocationHelper {
    * @param partitionedRegion
    * @return List of all partitioned regions (excluding self) in a colocated
    *         chain
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public static Map<String, PartitionedRegion> getAllColocationRegions(
       PartitionedRegion partitionedRegion) {
@@ -375,7 +375,7 @@ public class ColocationHelper {
    * 
    * @param partitionedRegion
    * @return map of region name to local colocated regions
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public static Map<String, Region> getAllColocatedLocalDataSets(
       PartitionedRegion partitionedRegion, InternalRegionFunctionContext context) {
@@ -432,7 +432,7 @@ public class ColocationHelper {
    * 
    * @param partitionedRegion
    * @return list of all child partitioned regions colocated with the region
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public static List<PartitionedRegion> getColocatedChildRegions(
       PartitionedRegion partitionedRegion) {

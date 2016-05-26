@@ -50,7 +50,7 @@ import com.gemstone.gemfire.internal.StatisticDescriptorImpl;
       };
     }
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * @see com.gemstone.gemfire.Statistics
  */
 public final class ValueMonitor extends StatisticsMonitor {

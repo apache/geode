@@ -1730,7 +1730,7 @@ public class PartitionedRegion extends LocalRegion implements
   // /////////////////////////////////////////////////////////////////
 
   /**
-   * @since 5.0
+   * @since GemFire 5.0
    * @throws UnsupportedOperationException
    * OVERRIDES
    */
@@ -1740,7 +1740,7 @@ public class PartitionedRegion extends LocalRegion implements
   }
 
   /**
-   * @since 5.0
+   * @since GemFire 5.0
    * @throws UnsupportedOperationException
    * OVERRIDES
    */
@@ -1752,7 +1752,7 @@ public class PartitionedRegion extends LocalRegion implements
   }
 
   /**
-   * @since 5.0
+   * @since GemFire 5.0
    * @throws UnsupportedOperationException
    * OVERRIDES
    */
@@ -1762,7 +1762,7 @@ public class PartitionedRegion extends LocalRegion implements
   }
 
   /**
-   * @since 5.0
+   * @since GemFire 5.0
    * @throws UnsupportedOperationException
    * OVERRIDES
    */
@@ -1772,7 +1772,7 @@ public class PartitionedRegion extends LocalRegion implements
   }
 
   /**
-   * @since 5.0
+   * @since GemFire 5.0
    * @throws UnsupportedOperationException
    * OVERRIDES
    */
@@ -1781,7 +1781,7 @@ public class PartitionedRegion extends LocalRegion implements
   }
 
   /**
-   * @since 5.0
+   * @since GemFire 5.0
    * @throws UnsupportedOperationException
    * OVERRIDES
    */
@@ -1792,7 +1792,7 @@ public class PartitionedRegion extends LocalRegion implements
   }
 
   /**
-   * @since 5.0
+   * @since GemFire 5.0
    * @throws UnsupportedOperationException
    * OVERRIDES
    */
@@ -1814,7 +1814,7 @@ public class PartitionedRegion extends LocalRegion implements
   }
 
   /**
-   * @since 5.0
+   * @since GemFire 5.0
    * @throws UnsupportedOperationException
    * OVERRIDES
    */
@@ -1826,7 +1826,7 @@ public class PartitionedRegion extends LocalRegion implements
   }
 
   /**
-   * @since 5.0
+   * @since GemFire 5.0
    * @throws UnsupportedOperationException
    * OVERRIDES
    */
@@ -1843,7 +1843,7 @@ public class PartitionedRegion extends LocalRegion implements
    * 
    * @see DefaultQuery#execute()
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public Object executeQuery(DefaultQuery query, Object[] parameters,
       Set buckets) throws FunctionDomainException, TypeMismatchException,
@@ -1988,7 +1988,7 @@ public class PartitionedRegion extends LocalRegion implements
   }
 
   /**
-   * @since 5.0
+   * @since GemFire 5.0
    * @throws UnsupportedOperationException
    * OVERRIDES
    */
@@ -1998,7 +1998,7 @@ public class PartitionedRegion extends LocalRegion implements
   }
 
   /**
-   * @since 5.0
+   * @since GemFire 5.0
    * @throws UnsupportedOperationException
    * OVERRIDES
    */
@@ -2008,7 +2008,7 @@ public class PartitionedRegion extends LocalRegion implements
   }
 
   /**
-   * @since 5.0
+   * @since GemFire 5.0
    * @throws UnsupportedOperationException
    * OVERRIDES
    */
@@ -3333,7 +3333,7 @@ public class PartitionedRegion extends LocalRegion implements
   /**
    * Gets the Node for reading or performing a load from a specific bucketId.
    * @return the member from which to read or load
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private InternalDistributedMember getNodeForBucketReadOrLoad(int bucketId) {
     InternalDistributedMember targetNode;
@@ -3531,7 +3531,7 @@ public class PartitionedRegion extends LocalRegion implements
    * @param function
    * @param execution
    * @param rc
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public ResultCollector executeFunction(final Function function,
       final PartitionedRegionFunctionExecutor execution, ResultCollector rc,
@@ -3739,7 +3739,7 @@ public class PartitionedRegion extends LocalRegion implements
    * 
    * @param function
    * @param execution
-   * @since 6.0
+   * @since GemFire 6.0
    */
   private ResultCollector executeOnSingleNode(final Function function,
       final PartitionedRegionFunctionExecutor execution, ResultCollector rc, 
@@ -4006,7 +4006,7 @@ public class PartitionedRegion extends LocalRegion implements
    * @param function
    * @param execution
    * @return ResultCollector
-   * @since 6.0
+   * @since GemFire 6.0
    */
   private ResultCollector executeOnAllBuckets(final Function function,
       final PartitionedRegionFunctionExecutor execution, ResultCollector rc, boolean isPRSingleHop) {
@@ -5985,7 +5985,7 @@ public class PartitionedRegion extends LocalRegion implements
    * Called after the cache close has closed all regions. This clean up static
    * pr resources.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   static void afterRegionsClosedByCacheClose(GemFireCacheImpl cache) {
     PRQueryProcessor.shutdown();
@@ -6392,7 +6392,7 @@ public class PartitionedRegion extends LocalRegion implements
    * Set view of entries. This currently extends the keySet iterator and
    * performs individual getEntry() operations using the keys
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    */
   protected class PREntriesSet extends KeysSet {
 
@@ -6633,7 +6633,7 @@ public class PartitionedRegion extends LocalRegion implements
    * Set view of values. This currently extends the keySet iterator and performs
    * individual get() operations using the keys
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    */
   protected class ValuesSet extends KeysSet  {
 
@@ -6700,7 +6700,7 @@ public class PartitionedRegion extends LocalRegion implements
   }
 
     /**
-   * @since 6.6
+   * @since GemFire 6.6
    */
   @Override
   public boolean containsValue(final Object value) {
@@ -7140,7 +7140,7 @@ public class PartitionedRegion extends LocalRegion implements
    * created the lock, typically used for locking buckets, but not restricted to
    * that usage.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   static class BucketLock {
 
@@ -8858,7 +8858,7 @@ public class PartitionedRegion extends LocalRegion implements
    * from queries like getKeysWithRegEx. The implementor creates a method,
    * receiveSet, that consumes the chunks.
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static interface SetCollector {
     public void receiveSet(Set theSet) throws IOException;
@@ -9707,7 +9707,7 @@ public class PartitionedRegion extends LocalRegion implements
    * should *only* be invoked when region is just newly created and has no data
    * or existing buckets else will have undefined behaviour.
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void setColocatedWith(String colocatedRegionFullPath) {
     ((PartitionAttributesImpl)this.partitionAttributes)
@@ -9720,7 +9720,7 @@ public class PartitionedRegion extends LocalRegion implements
    * RegionMembershipListener invocations. This is copied almost in whole from
    * DistributedRegion
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected class AdvisorListener implements MembershipListener
   {
@@ -10637,7 +10637,7 @@ public class PartitionedRegion extends LocalRegion implements
   /**
    * Returns the local BucketRegion given the key.
    * Returns null if no BucketRegion exists.
-   * @since 6.1.2.9
+   * @since GemFire 6.1.2.9
    */
   public BucketRegion getBucketRegion(Object key) {
     if (this.dataStore == null)
@@ -10665,7 +10665,7 @@ public class PartitionedRegion extends LocalRegion implements
   /**
    * Test hook to return the per entry overhead for a bucket region.
    * Returns -1 if no buckets exist in this vm. 
-   * @since 6.1.2.9
+   * @since GemFire 6.1.2.9
    */
   public int getPerEntryLRUOverhead() {
     if (this.dataStore == null) { // this is an accessor

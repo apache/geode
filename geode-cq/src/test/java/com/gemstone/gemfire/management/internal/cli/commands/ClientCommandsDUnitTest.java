@@ -78,7 +78,7 @@ import org.junit.experimental.categories.Category;
 /**
  * Dunit class for testing gemfire Client commands : list client , describe client
  *
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(DistributedTest.class)
 public class ClientCommandsDUnitTest extends CliCommandTestBase {

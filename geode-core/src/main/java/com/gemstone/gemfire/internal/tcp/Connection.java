@@ -89,7 +89,7 @@ import com.gemstone.gemfire.internal.util.concurrent.ReentrantSemaphore;
     message objects.  A Connection may be closed to preserve system
     resources and will automatically be reopened when it's needed.</p>
 
-    @since 2.0
+    @since GemFire 2.0
 
 */
 
@@ -261,7 +261,7 @@ public class Connection implements Runnable {
   /**
    * How long to wait if receiver will not accept a message before we
    * go into queue mode.
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   private int asyncDistributionTimeout = 0;
   /**
@@ -269,7 +269,7 @@ public class Connection implements Runnable {
    * with the receiver not accepting any messages,
    * before kicking the receiver out of the distributed system.
    * Ignored if asyncDistributionTimeout is zero.
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   private int asyncQueueTimeout = 0;
   /**
@@ -278,7 +278,7 @@ public class Connection implements Runnable {
    * before kicking the receiver out of the distributed system.
    * Ignored if asyncDistributionTimeout is zero.
    * Canonicalized to bytes (property file has it as megabytes
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   private long asyncMaxQueueSize = 0;
   /**
@@ -2957,7 +2957,7 @@ public class Connection implements Runnable {
 
 
   /**
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   private void disconnectSlowReceiver() {
     synchronized (this.outgoingQueue) {
@@ -4043,7 +4043,7 @@ public class Connection implements Runnable {
   /**
    * answers whether this connection was initiated in this vm
    * @return true if the connection was initiated here
-   * @since 5.1
+   * @since GemFire 5.1
    */
   protected boolean getOriginatedHere() {
     return !this.isReceiver;

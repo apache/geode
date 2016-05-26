@@ -21,7 +21,7 @@ package com.gemstone.gemfire.admin;
  * Instances of this are delivered to a {@link SystemMemberCacheListener} when a
  * a region comes or goes.
  *
- * @since 5.0
+ * @since GemFire 5.0
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface SystemMemberRegionEvent extends SystemMemberCacheEvent {

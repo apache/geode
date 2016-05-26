@@ -84,7 +84,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * common functionality like initializing proxy.
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 
 public abstract class AbstractGatewaySender implements GatewaySender,

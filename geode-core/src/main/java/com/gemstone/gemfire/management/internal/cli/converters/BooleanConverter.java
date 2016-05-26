@@ -27,7 +27,7 @@ import org.springframework.shell.core.MethodTarget;
  * SHL's BooleanConverter. Removed completion & conversion for values like 0, 1,
  * yes, no.
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class BooleanConverter implements Converter<Boolean> {
 

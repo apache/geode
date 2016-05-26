@@ -53,7 +53,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * multiuser-authentication attribute is set to true.
  * 
  * @see ProxyCache
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class ProxyQueryService implements QueryService {
   private static final Logger logger = LogService.getLogger();

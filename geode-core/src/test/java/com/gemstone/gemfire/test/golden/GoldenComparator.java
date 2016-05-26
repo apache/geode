@@ -32,7 +32,7 @@ import com.gemstone.gemfire.test.process.OutputFormatter;
 /**
  * Compares test output to golden text file.
  * 
- * @since 4.1.1
+ * @since GemFire 4.1.1
  */
 public abstract class GoldenComparator {
 

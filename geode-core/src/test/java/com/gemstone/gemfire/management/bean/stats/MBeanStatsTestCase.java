@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.NanoTimer;
 /**
  * Base test case for the management.bean.stats tests.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public abstract class MBeanStatsTestCase {
 

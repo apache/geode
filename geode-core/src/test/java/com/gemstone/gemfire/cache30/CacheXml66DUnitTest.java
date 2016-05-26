@@ -47,7 +47,7 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 /**
  * Tests 7.0 cache.xml feature : Fixed Partitioning.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 public class CacheXml66DUnitTest extends CacheXml65DUnitTest{
   

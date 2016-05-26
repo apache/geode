@@ -26,7 +26,7 @@ import com.gemstone.gemfire.cache.*;
  *
  * @see #wasInvoked
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public abstract class TestTransactionListener extends TestCacheCallback
   implements TransactionListener {

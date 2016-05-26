@@ -31,7 +31,7 @@ import com.gemstone.gemfire.cache.client.internal.ExecutablePool;
 
 /**
  * Creates a CQ on a server
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class CreateCQOp {
   /**

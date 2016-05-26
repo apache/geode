@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
  * <code>GatewaySender</code>s.
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface GatewayQueueEvent<K, V> {
   /**

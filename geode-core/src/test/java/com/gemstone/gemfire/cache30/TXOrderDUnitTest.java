@@ -59,7 +59,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Test the order of operations done on the farside of a tx.
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class TXOrderDUnitTest extends CacheTestCase {
 

@@ -102,7 +102,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * The DiskStoreCommands class encapsulates all GemFire Disk Store commands in Gfsh.
  * </p>
  * @see com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSupport
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public class DiskStoreCommands extends AbstractCommandsSupport {

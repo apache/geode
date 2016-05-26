@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
  * the currently queued task will be canceled and the new task will be submitted to the queue
  * with the new time. 
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 @SuppressWarnings("synthetic-access")
 public class OneTaskOnlyExecutor {

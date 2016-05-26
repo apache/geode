@@ -40,7 +40,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Tests marshaling of ServiceStatus to and from JSON.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(UnitTest.class)
 public class AbstractLauncherServiceStatusTest {

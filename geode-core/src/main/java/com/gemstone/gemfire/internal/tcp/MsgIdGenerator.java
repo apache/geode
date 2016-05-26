@@ -23,7 +23,7 @@ import com.gemstone.gemfire.internal.UniqueIdGenerator;
  * Failure to call release will eventually cause obtain to fail with an exception.
  * <p>Currently ids are in the range 0..32767 inclusive.
  *
- * @since 5.0.2
+ * @since GemFire 5.0.2
    
 */
 public class MsgIdGenerator {

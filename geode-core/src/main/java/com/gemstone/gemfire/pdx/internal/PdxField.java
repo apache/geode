@@ -54,7 +54,7 @@ public class PdxField implements DataSerializable, Comparable<PdxField> {
   
   /**
    * Set to true by the pdx delete-field gfsh command
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private boolean deleted;
 

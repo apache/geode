@@ -29,7 +29,7 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
  *
  * @see CacheEvent#getOperation
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public final class Operation implements java.io.Serializable {
   private static final long serialVersionUID = -7521751729852504238L;
@@ -613,7 +613,7 @@ public final class Operation implements java.io.Serializable {
   /**
    * An atomic entry creation operation
    * @see java.util.concurrent.ConcurrentMap#putIfAbsent(Object, Object)
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final Operation PUT_IF_ABSENT
     = new Operation("PUT_IF_ABSENT",
@@ -626,7 +626,7 @@ public final class Operation implements java.io.Serializable {
   /**
    * An atomic update operation 
    * @see java.util.concurrent.ConcurrentMap#replace(Object, Object, Object)
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final Operation REPLACE
     = new Operation("REPLACE",
@@ -638,7 +638,7 @@ public final class Operation implements java.io.Serializable {
   /**
    * An atomic destroy destroy operation
    * @see java.util.concurrent.ConcurrentMap#remove(Object, Object)
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final Operation REMOVE
     = new Operation("REMOVE",
@@ -662,7 +662,7 @@ public final class Operation implements java.io.Serializable {
   /**
    * An entry distributed destroy caused by a removeAll.
    * @see Region#removeAll(java.util.Collection)
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static final Operation REMOVEALL_DESTROY
     = new Operation("REMOVEALL_DESTROY",
@@ -821,7 +821,7 @@ public final class Operation implements java.io.Serializable {
   /**
    * Returns true if this operation was initiated by a removeAll.
    * @see Region#removeAll(java.util.Collection)
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public boolean isRemoveAll() {
     return (this.opDetails & OP_DETAILS_REMOVEALL) != 0;
@@ -932,7 +932,7 @@ public final class Operation implements java.io.Serializable {
    * guarantees the old value to be returned no matter what expense may
    * be incurred in doing so.
    * @return true if this operation has this guarantee
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public boolean guaranteesOldValue() {
     return (this.opDetails & OP_DETAILS_GUARANTEES_OLD_VALUE) != 0;

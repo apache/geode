@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.lang.ClassUtils;
  * <p/>
  * 
  * @see java.lang.Number
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public abstract class NumberUtils {

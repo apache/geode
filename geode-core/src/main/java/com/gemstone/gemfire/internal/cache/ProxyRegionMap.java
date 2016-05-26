@@ -50,7 +50,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Released;
  * Internal implementation of {@link RegionMap}for regions whose DataPolicy is
  * proxy. Proxy maps are always empty.
  * 
- * @since 5.0
+ * @since GemFire 5.0
  * 
  *  
  */

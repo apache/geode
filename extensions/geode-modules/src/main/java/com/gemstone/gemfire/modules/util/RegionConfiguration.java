@@ -31,7 +31,7 @@ import java.io.InputStream;
  * Class <code>RegionConfiguration</code> encapsulates the configuration attributes for a <code>Region</code> to be
  * created on the server.
  *
- * @since 6.5
+ * @since GemFire 6.5
  */
 @SuppressWarnings({"serial", "unchecked"})
 public class RegionConfiguration implements DataSerializable {

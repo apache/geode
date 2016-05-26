@@ -18,7 +18,7 @@ package com.gemstone.gemfire.management.internal.security;
 
 /**
  * Interface for AccessControlMBean
- * @since 9.0
+ * @since Geode 1.0
  */
 public interface AccessControlMXBean {
 

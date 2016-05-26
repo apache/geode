@@ -28,7 +28,7 @@ import org.apache.shiro.authz.permission.WildcardPermission;
  *
  * Implementations of this interface are <b>not</b> expected to be thread-safe.
  *
- * @since 5.5
+ * @since GemFire 5.5
  */
 public abstract class OperationContext extends WildcardPermission{
   public static String ALL_REGIONS="*";
@@ -121,7 +121,7 @@ public abstract class OperationContext extends WildcardPermission{
      *
      * @return true if this is a region removeAll operation.
      * @deprecated Use {@code getOperationCode() == REMOVEALL} instead
-     * @since 8.1
+     * @since GemFire 8.1
      */
     @Deprecated
     public boolean isRemoveAll() {
@@ -327,7 +327,7 @@ public abstract class OperationContext extends WildcardPermission{
    * <code>isInvalidate()</code>, <code>isRegionCreate()</code>, <code>isRegionClear()</code>, <code>isRegionDestroy()</code>.
    * Otherwise, returns false.
    *
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public boolean isClientUpdate() {
     if (isPostOperation()) {

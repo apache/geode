@@ -104,7 +104,7 @@ import com.gemstone.gemfire.management.internal.configuration.messages.SharedCon
  * locator.startPeerLocation();
  * locator.startDistributeSystem();
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class InternalLocator extends Locator implements ConnectListener {
 
@@ -131,7 +131,7 @@ public class InternalLocator extends Locator implements ConnectListener {
   private final TcpServer server;
 
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private final PrimaryHandler handler;
   
@@ -308,7 +308,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * @param loadSharedConfigFromDir 
    *    load the shared configuration from the shared configuration directory
    * @throws IOException 
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static InternalLocator startLocator(
       int port,
@@ -633,7 +633,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * 
    * @param withDS true if a distributed system has been or will be started
    * @throws IOException
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void startPeerLocation(boolean withDS) throws IOException {
     if(isPeerLocator()) {
@@ -708,7 +708,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * distributed system already exists, this method will have no affect.
    * 
    * @throws UnknownHostException
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void startDistributedSystem() throws UnknownHostException {
     InternalDistributedSystem existing = InternalDistributedSystem.getConnectedInstance();
@@ -822,7 +822,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * @param distributedSystem
    *                The distributed system to use for the statistics.
    *                
-   * @since 5.7
+   * @since GemFire 5.7
    * 
    * @throws UnknownHostException
    */
@@ -851,7 +851,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    *                The distributed system which the server location services
    *                should use. If null, the method will try to find an already
    *                connected distributed system.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void startServerLocation(InternalDistributedSystem distributedSystem)
     throws IOException

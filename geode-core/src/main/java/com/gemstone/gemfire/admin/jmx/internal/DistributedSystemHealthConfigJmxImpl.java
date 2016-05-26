@@ -32,7 +32,7 @@ import javax.management.modelmbean.*;
  * @see GemFireHealthJmxImpl#createDistributedSystemHealthConfig
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class DistributedSystemHealthConfigJmxImpl
   extends DistributedSystemHealthConfigImpl 

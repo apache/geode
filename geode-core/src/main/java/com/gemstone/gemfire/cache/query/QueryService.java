@@ -38,7 +38,7 @@ import com.gemstone.gemfire.cache.query.internal.Undefined;
  * using {@link Cache#getQueryService}.
  *
  * 
- * @since 4.0
+ * @since GemFire 4.0
  */
 public interface QueryService {
 
@@ -629,7 +629,7 @@ public interface QueryService {
    * Constructs a new continuous query, represented by an instance of
    * CqQuery. The CqQuery is not executed until the execute method
    * is invoked on the CqQuery.
-   * @since 5.5
+   * @since GemFire 5.5
    * @param queryString the OQL query
    * @param cqAttr the CqAttributes
    * @return the newly created CqQuery object
@@ -654,7 +654,7 @@ public interface QueryService {
    * CqQuery. The CqQuery is not executed until the execute method
    * is invoked on the CqQuery.
    *
-   * @since 5.5
+   * @since GemFire 5.5
    * @param queryString the OQL query
    * @param cqAttr the CqAttributes
    * @param isDurable true if the CQ is durable
@@ -680,7 +680,7 @@ public interface QueryService {
    * is invoked on the CqQuery. The name of the query will be used
    * to identify this query in statistics archival.
    *
-   * @since 5.5
+   * @since GemFire 5.5
    * @param name the String name for this query
    * @param queryString the OQL query
    * @param cqAttr the CqAttributes
@@ -711,7 +711,7 @@ public interface QueryService {
    * is invoked on the CqQuery. The name of the query will be used
    * to identify this query in statistics archival.
    *
-   * @since 5.5
+   * @since GemFire 5.5
    * @param name the String name for this query
    * @param queryString the OQL query
    * @param cqAttr the CqAttributes
@@ -741,7 +741,7 @@ public interface QueryService {
    * Any attempt to access closed CqQuery objects will result in the 
    * CqClosedException being thrown to the caller.
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public void closeCqs();
 
@@ -749,7 +749,7 @@ public interface QueryService {
    * Retrieve all registered Continuous Queries.
    * This is a collection of CqQuery objects.
    *
-   * @since 5.5
+   * @since GemFire 5.5
    * @return CqQuery[] list of registered CQs,
    *         null if there are no CQs.   
    */
@@ -759,7 +759,7 @@ public interface QueryService {
    * Retrieves all the registered Continuous Queries for a given region.
    * This is a collection of CqQuery objects. 
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    * @return CqQuery[] list of registered CQs on the specified region,
    *         null if there are no CQs.
    * @exception CqException
@@ -770,7 +770,7 @@ public interface QueryService {
   /**
    * Retrieves the Continuous Query specified by the name.
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    * @param  cqName - String, name of the CQ
    * @return  CqQuery object, 
    *          null if no CqQuery object is found.
@@ -782,7 +782,7 @@ public interface QueryService {
    * This is complementary to stopCqs.
    * @see QueryService#stopCqs()
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    * @throws CqException if failure to execute CQ.
    */
   public void executeCqs() throws CqException;
@@ -793,7 +793,7 @@ public interface QueryService {
    * bulk region operations.
    * @see QueryService#executeCqs()
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    * @throws CqException if failure to execute CQ.
    */
   public void stopCqs() throws CqException;
@@ -804,7 +804,7 @@ public interface QueryService {
    * This is complementary method to stopCQs().  
    * @see  QueryService#stopCqs()
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    * @throws CqException if failure to stop CQs.
    */
   public void executeCqs(String regionName) throws CqException;
@@ -816,7 +816,7 @@ public interface QueryService {
    * bulk region operations.
    * @see QueryService#executeCqs()
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    * @throws CqException if failure to execute CQs.
    */  
   public void stopCqs(String regionName) throws CqException;
@@ -824,7 +824,7 @@ public interface QueryService {
   /**
    * Retrieves all the durable CQs registered by the client calling this method. 
    *
-   * @since 7.0
+   * @since GemFire 7.0
    * @return List of names of registered durable CQs,
    *         empty list if no durable cqs.   
    */
@@ -842,7 +842,7 @@ public interface QueryService {
    *    
    * @see CqServiceStatistics
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    * @return CqServiceStatistics
    * 
    */

@@ -49,7 +49,7 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
 
 /**
  * Implementation of PoolFactory.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class PoolFactoryImpl implements PoolFactory {
   private static final Logger logger = LogService.getLogger();
@@ -310,7 +310,7 @@ public class PoolFactoryImpl implements PoolFactory {
    * @throws IllegalStateException if the connection pool name already exists
    * @throws IllegalStateException if this factory does not have any locators or servers
    * @return the newly created connection pool.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Pool create(String name) throws CacheException {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();

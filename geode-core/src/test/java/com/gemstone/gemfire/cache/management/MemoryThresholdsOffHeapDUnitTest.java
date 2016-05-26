@@ -89,7 +89,7 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 /**
  * Tests the Off-Heap Memory thresholds of {@link ResourceManager}
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   private static final long serialVersionUID = -684231183212051910L;

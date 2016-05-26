@@ -34,7 +34,7 @@ import com.gemstone.gemfire.i18n.StringId;
  *  }
  *  </pre>
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 final public class DebugLogWriter extends LogWriterImpl
 {
@@ -66,7 +66,7 @@ final public class DebugLogWriter extends LogWriterImpl
    * Handles internationalized log messages.
    * @param params each Object has toString() called and substituted into the msg
    * @see com.gemstone.gemfire.i18n.StringId
-   * @since 6.0 
+   * @since GemFire 6.0
    */
   @Override
   public void put(int msgLevel, StringId msgId, Object[] params, Throwable exception)

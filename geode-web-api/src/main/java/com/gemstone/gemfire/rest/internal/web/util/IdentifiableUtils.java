@@ -29,7 +29,7 @@ import org.springframework.util.ObjectUtils;
  * identifiers
  * <p/>
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public abstract class IdentifiableUtils {

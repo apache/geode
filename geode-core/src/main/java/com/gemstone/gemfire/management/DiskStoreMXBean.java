@@ -26,7 +26,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * MBean that provides access to information and management functionality for a
  * {@link DiskStore}.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
 @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
@@ -189,7 +189,7 @@ public interface DiskStoreMXBean {
    * disk volume.
    * 
    * @return the warning percent
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public float getDiskUsageWarningPercentage();
 
@@ -198,7 +198,7 @@ public interface DiskStoreMXBean {
    * disk volume.
    * 
    * @return the critical percent
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public float getDiskUsageCriticalPercentage();
   

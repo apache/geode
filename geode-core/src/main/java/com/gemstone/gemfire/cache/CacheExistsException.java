@@ -22,7 +22,7 @@ package com.gemstone.gemfire.cache;
  *
  *
  * @see CacheFactory#create
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class CacheExistsException extends CacheException {
 private static final long serialVersionUID = 4090002289325418100L;
@@ -57,7 +57,7 @@ private static final long serialVersionUID = 4090002289325418100L;
   /**
    * Returns the <code>Cache</code> that already exists.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public Cache getCache() {
     return this.cache;

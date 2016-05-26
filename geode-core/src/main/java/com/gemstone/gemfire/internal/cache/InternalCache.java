@@ -29,7 +29,7 @@ import com.gemstone.gemfire.internal.cache.extension.Extensible;
  * not be part of the "public" API of the implementing class.
  * </p>
  * @see com.gemstone.gemfire.cache.Cache
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface InternalCache extends Cache, Extensible<Cache> {
 

@@ -26,7 +26,7 @@ import java.util.*;
  * for modification by the transaction.
  *
  * 
- * @since 4.0
+ * @since GemFire 4.0
  * 
  */
 public class TXReservationMgr {

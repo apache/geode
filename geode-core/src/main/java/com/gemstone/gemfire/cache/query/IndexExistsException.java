@@ -26,7 +26,7 @@ package com.gemstone.gemfire.cache.query;
  * Thrown while creating the new index if there exists an Index with
  * the same definition as new index.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 
 public class IndexExistsException extends QueryException{

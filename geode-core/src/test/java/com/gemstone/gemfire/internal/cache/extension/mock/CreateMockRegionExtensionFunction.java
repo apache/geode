@@ -48,7 +48,7 @@ import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
  * </dl>
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public class CreateMockRegionExtensionFunction extends FunctionAdapter {
 
@@ -92,7 +92,7 @@ public class CreateMockRegionExtensionFunction extends FunctionAdapter {
    * @param regionName
    * @param value
    * @return
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static Object[] toArgs(final String regionName, final String value) {
     return new Object[] { regionName, value };

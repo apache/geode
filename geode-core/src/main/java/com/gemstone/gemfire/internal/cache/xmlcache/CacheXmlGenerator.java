@@ -130,7 +130,7 @@ import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
  * but it is conceivable that it could be used in the product as well.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 @SuppressWarnings("deprecation")
 public class CacheXmlGenerator extends CacheXml implements XMLReader {
@@ -177,7 +177,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    *        The version of GemFire whose DTD/schema should be used in
    *        the generated XML.  See {@link #VERSION_4_0}.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public static void generate(Cache cache, PrintWriter pw,
                               boolean useSchema, String version) {
@@ -245,7 +245,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    *        The version of GemFire whose DTD/schema should be used in
    *        the generated XML.  See {@link #VERSION_4_0}.
    *
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static void generate(ClientCache cache, PrintWriter pw,
                               boolean useSchema, String version) {
@@ -949,7 +949,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * Generates XML for the client-subscription tag
    * @param bridge instance of <code>CacheServer</code>
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   
   private void generateClientHaQueue(CacheServer bridge) throws SAXException {
@@ -978,7 +978,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   /**
    * Generates XML for the given cache server
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   private void generate(CacheServer bridge) throws SAXException {
     if (this.version.compareTo(CacheXmlVersion.GEMFIRE_4_0) < 0) {
@@ -1094,7 +1094,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   /**
    * Generates XML for the given disk store
    *
-   * @since prPersistSprint2
+   * @since GemFire prPersistSprint2
    */
   private void generate(DiskStore ds) throws SAXException {
     if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_5) < 0) {
@@ -1217,7 +1217,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   /**
    * Generates XML for the given connection pool
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void generate(Pool cp) throws SAXException {
     if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_7) < 0) {
@@ -1321,7 +1321,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   /**
    * Generates XML for a CacheTransactionManager
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   private void generate(CacheTransactionManager txMgr) throws SAXException {
     if (this.version.compareTo(CacheXmlVersion.GEMFIRE_4_0) < 0) {
@@ -1352,7 +1352,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   /**
    * Generates XML for a DynamicRegionFactory.Config
    *
-   * @since 4.3
+   * @since GemFire 4.3
    */
   private void generateDynamicRegionFactory(Cache c) throws SAXException {
     if (this.version.compareTo(CacheXmlVersion.GEMFIRE_4_1) < 0) {

@@ -66,7 +66,7 @@ import util.TestException;
  * This DUnit contains various tests to ensure new implementation of ha region
  * queues works as expected.
  * 
- * @since 5.7
+ * @since GemFire 5.7
  * 
  */
 public class HARQueueNewImplDUnitTest extends DistributedTestCase {

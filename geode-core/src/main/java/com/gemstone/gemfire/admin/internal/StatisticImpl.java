@@ -22,7 +22,7 @@ import com.gemstone.gemfire.internal.admin.Stat;
 /**
  * Implementation of a single statistic in a <code>StatisticResource</code>
  *
- * @since     3.5
+ * @since GemFire     3.5
  *
  */
 public class StatisticImpl

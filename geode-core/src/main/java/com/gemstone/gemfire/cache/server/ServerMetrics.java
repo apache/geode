@@ -21,7 +21,7 @@ package com.gemstone.gemfire.cache.server;
  * Metrics about the resource usage for a cache server.
  * These metrics are provided to the {@link ServerLoadProbe} for
  * use in calculating the load on the server.
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public interface ServerMetrics {

@@ -127,7 +127,7 @@ public class DistributionChannel  {
    * the port of the JavaGroups channel's {@link InternalDistributedMember address} is
    * returned.
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public long getId() {
     MembershipManager mgr = this.membershipManager;

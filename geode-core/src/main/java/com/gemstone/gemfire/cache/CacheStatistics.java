@@ -26,7 +26,7 @@ package com.gemstone.gemfire.cache;
  *
  * @see Region#getStatistics
  * @see Region.Entry#getStatistics
- * @since 2.0
+ * @since GemFire 2.0
  */
 
 public interface CacheStatistics

@@ -36,7 +36,7 @@ import com.gemstone.gemfire.internal.Version;
  * collection is a List; duplicates allowed unless base collection is a Set.
  * Defaults to modifiable unless set otherwise.
  * 
- * @since 4.0
+ * @since GemFire 4.0
  */
 public final class ResultsCollectionWrapper
   implements SelectResults, DataSerializableFixedID {

@@ -57,7 +57,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * Wrap all delegate calls w/ e.printStackTrace() since the HttpAdaptor devours 
  * them
  *
- * @since     3.5
+ * @since GemFire     3.5
  *
  */
 public class SystemMemberJmxImpl 
@@ -113,7 +113,7 @@ implements SystemMemberJmx, javax.management.NotificationListener,
    * @throws AdminException
    *           if construction of SystemMember fails
    *           
-   * @since 6.5
+   * @since GemFire 6.5
    */
   protected SystemMemberJmxImpl(AdminDistributedSystemJmxImpl system,
       InternalDistributedMember member) throws AdminException {

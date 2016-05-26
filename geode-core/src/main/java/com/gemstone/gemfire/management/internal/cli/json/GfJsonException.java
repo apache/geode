@@ -21,7 +21,7 @@ package com.gemstone.gemfire.management.internal.cli.json;
  * 
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class GfJsonException extends Exception {
 

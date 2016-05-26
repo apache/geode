@@ -39,7 +39,7 @@ import java.util.Set;
  * A processor for sending client black list message to all nodes from primary.
  * This adds client to the blacklist and destroy it's queue if available on node.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  *
  */
 public class ClientBlacklistProcessor extends ReplyProcessor21 {

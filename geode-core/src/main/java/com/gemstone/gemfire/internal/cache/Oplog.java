@@ -124,7 +124,7 @@ import com.gemstone.gemfire.pdx.internal.PdxWriterImpl;
  * {@link OverflowOplog}.
  * 
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 
 public final class Oplog implements CompactableOplog, Flushable {
@@ -205,7 +205,7 @@ public final class Oplog implements CompactableOplog, Flushable {
   /**
    * Set to true once compact is called on this oplog.
    * 
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private volatile boolean compacting = false;
 
@@ -240,7 +240,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * NEW_ENTRY records. 1: EndOfRecord Only needs to be written once per oplog
    * and must preceed any OPLOG_NEW_ENTRY_0ID records.
    * 
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_NEW_ENTRY_BASE_ID = 63;
   static final int OPLOG_NEW_ENTRY_BASE_REC_SIZE = 1 + 8 + 1;
@@ -250,7 +250,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_NEW_ENTRY_0ID = 64;
 
@@ -260,7 +260,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * userBits 1: OplogEntryId RegionId 4: valueLength (optional depending on
    * bits) valueLength: value bytes (optional depending on bits) 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_1ID = 65;
   /**
@@ -269,7 +269,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * userBits 2: OplogEntryId RegionId 4: valueLength (optional depending on
    * bits) valueLength: value bytes (optional depending on bits) 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_2ID = 66;
 
@@ -279,7 +279,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * userBits 3: OplogEntryId RegionId 4: valueLength (optional depending on
    * bits) valueLength: value bytes (optional depending on bits) 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_3ID = 67;
 
@@ -289,7 +289,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * userBits 4: OplogEntryId RegionId 4: valueLength (optional depending on
    * bits) valueLength: value bytes (optional depending on bits) 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_4ID = 68;
 
@@ -299,7 +299,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * userBits 5: OplogEntryId RegionId 4: valueLength (optional depending on
    * bits) valueLength: value bytes (optional depending on bits) 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_5ID = 69;
   /**
@@ -308,7 +308,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * userBits 6: OplogEntryId RegionId 4: valueLength (optional depending on
    * bits) valueLength: value bytes (optional depending on bits) 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_6ID = 70;
   /**
@@ -317,7 +317,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * userBits 7: OplogEntryId RegionId 4: valueLength (optional depending on
    * bits) valueLength: value bytes (optional depending on bits) 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_7ID = 71;
   /**
@@ -326,7 +326,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * userBits 8: OplogEntryId RegionId 4: valueLength (optional depending on
    * bits) valueLength: value bytes (optional depending on bits) 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_8ID = 72;
 
@@ -337,7 +337,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_WITH_KEY_1ID = 73;
   /**
@@ -347,7 +347,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_WITH_KEY_2ID = 74;
 
@@ -358,7 +358,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_WITH_KEY_3ID = 75;
 
@@ -369,7 +369,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_WITH_KEY_4ID = 76;
 
@@ -380,7 +380,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_WITH_KEY_5ID = 77;
   /**
@@ -390,7 +390,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_WITH_KEY_6ID = 78;
   /**
@@ -400,7 +400,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_WITH_KEY_7ID = 79;
   /**
@@ -410,7 +410,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * bits) valueLength: value bytes (optional depending on bits) 4: keyLength
    * keyLength: key bytes 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_MOD_ENTRY_WITH_KEY_8ID = 80;
 
@@ -419,7 +419,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * OplogEntryId. The signed difference is encoded in 1 byte. Byte Format: 1:
    * OplogEntryId 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_1ID = 81;
   /**
@@ -427,7 +427,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * OplogEntryId. The signed difference is encoded in 2 bytes. Byte Format: 2:
    * OplogEntryId 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_2ID = 82;
 
@@ -436,7 +436,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * OplogEntryId. The signed difference is encoded in 3 bytes. Byte Format: 3:
    * OplogEntryId 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_3ID = 83;
 
@@ -445,7 +445,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * OplogEntryId. The signed difference is encoded in 4 bytes. Byte Format: 4:
    * OplogEntryId 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_4ID = 84;
 
@@ -454,7 +454,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * OplogEntryId. The signed difference is encoded in 5 bytes. Byte Format: 5:
    * OplogEntryId 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_5ID = 85;
   /**
@@ -462,7 +462,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * OplogEntryId. The signed difference is encoded in 6 bytes. Byte Format: 6:
    * OplogEntryId 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_6ID = 86;
   /**
@@ -470,7 +470,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * OplogEntryId. The signed difference is encoded in 7 bytes. Byte Format: 7:
    * OplogEntryId 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_7ID = 87;
   /**
@@ -478,7 +478,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * OplogEntryId. The signed difference is encoded in 8 bytes. Byte Format: 8:
    * OplogEntryId 1: EndOfRecord
    *
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_8ID = 88;
 
@@ -519,7 +519,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * Each oplog type has a different magic number Followed by EndOfRecord Fix
    * for bug 43824
    * 
-   * @since 8.0
+   * @since GemFire 8.0
    */
   static final byte OPLOG_MAGIC_SEQ_ID = 92;
 
@@ -1277,7 +1277,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * the value This method should never get invoked for an entry which has been
    * destroyed
    * 
-   * @since 3.2.1
+   * @since GemFire 3.2.1
    * @param id
    *          The DiskId for the entry @param offset The offset in this OpLog
    *          where the entry is present. @param faultingIn @param bitOnly
@@ -1436,21 +1436,21 @@ public final class Oplog implements CompactableOplog, Flushable {
    * Used during recovery to calculate the OplogEntryId of the next NEW_ENTRY
    * record.
    * 
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private long recoverNewEntryId = DiskStoreImpl.INVALID_ID;
   /**
    * Used during writing to remember the last MOD_ENTRY OplogEntryId written to
    * this oplog.
    * 
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private long writeModEntryId = DiskStoreImpl.INVALID_ID;
   /**
    * Used during recovery to calculate the OplogEntryId of the next MOD_ENTRY
    * record.
    * 
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private long recoverModEntryId = DiskStoreImpl.INVALID_ID;
   /**
@@ -1465,14 +1465,14 @@ public final class Oplog implements CompactableOplog, Flushable {
    * Used during writing to remember the last DEL_ENTRY OplogEntryId written to
    * this oplog.
    * 
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private long writeDelEntryId = DiskStoreImpl.INVALID_ID;
   /**
    * Used during recovery to calculate the OplogEntryId of the next DEL_ENTRY
    * record.
    * 
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   private long recoverDelEntryId = DiskStoreImpl.INVALID_ID;
 
@@ -7885,7 +7885,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * Used in offline mode to prevent pdx deserialization of keys. The raw bytes
    * are a serialized pdx.
    * 
-   * @since 6.6
+   * @since GemFire 6.6
    */
   private static class RawByteKey implements Sendable {
     final byte[] bytes;

@@ -22,7 +22,7 @@ import com.gemstone.gemfire.internal.shared.NativeCalls;
 /**
  * Implementation of the {@link ProcessUtils} SPI that uses {@link NativeCalls}.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 final class NativeProcessUtils implements InternalProcessUtils {
   

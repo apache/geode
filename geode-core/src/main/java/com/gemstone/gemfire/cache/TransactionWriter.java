@@ -26,7 +26,7 @@ package com.gemstone.gemfire.cache;
  * This writer can be used to update a backend data source before the GemFire cache is updated during commit.
  * If the backend update fails, the implementer can throw a {@link TransactionWriterException} to veto the transaction.
  * @see CacheTransactionManager#setWriter
- * @since 6.5
+ * @since GemFire 6.5
  */
 
 public interface TransactionWriter extends CacheCallback {

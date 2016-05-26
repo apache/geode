@@ -80,7 +80,7 @@ import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMa
  * transaction logging are handled here 
  * 
  *
- * @since 4.0
+ * @since GemFire 4.0
  * 
  * @see CacheTransactionManager
  */

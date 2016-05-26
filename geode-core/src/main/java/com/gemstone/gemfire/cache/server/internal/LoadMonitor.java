@@ -41,7 +41,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * A class which monitors the load on a bridge server and 
  * periodically sends updates to the locator.
  * 
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public class LoadMonitor implements ConnectionListener {
@@ -116,7 +116,7 @@ public class LoadMonitor implements ConnectionListener {
   /**
    * Keeps track of the clients that have added a queue since the
    * last load was sent to the server-locator.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected final ArrayList clientIds = new ArrayList();
   

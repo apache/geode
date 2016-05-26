@@ -68,7 +68,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 /**
  * Handles distribution of a Region.putall operation.
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class DistributedPutAllOperation extends AbstractUpdateOperation
   {

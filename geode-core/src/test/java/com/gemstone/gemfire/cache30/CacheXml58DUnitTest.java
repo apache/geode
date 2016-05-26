@@ -49,7 +49,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.ResourceManagerCreation;
 /**
  * Tests 5.8 cache.xml features.
  * 
- * @since 5.8
+ * @since GemFire 5.8
  */
 
 public class CacheXml58DUnitTest extends CacheXml57DUnitTest

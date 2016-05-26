@@ -49,7 +49,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
  * {@link com.gemstone.gemfire.internal.StatArchiveWriter} for the currently
  * open archive file (unless archiving is disabled).
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class StatArchiveHandler implements SampleHandler {
 

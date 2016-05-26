@@ -33,7 +33,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * modified.  This class is public for testing purposes.
  *
  *
- * @since prPersistSprint2
+ * @since GemFire prPersistSprint2
  */
 public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttributes  implements Serializable {
 

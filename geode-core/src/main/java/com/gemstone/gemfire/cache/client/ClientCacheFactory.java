@@ -114,7 +114,7 @@ Now, create the data region in the client cache using this new attributes ID.
     .create();
   Region r = c.createClientRegionFactory("MYAPP_CACHING_PROXY_MEM_LRU").create("customers");
 </PRE>
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class ClientCacheFactory {
 
@@ -638,7 +638,7 @@ public class ClientCacheFactory {
    * 
    *  @param pdxReadSerialized true to prefer PdxInstance
    *  @return this ClientCacheFactory
-   *  @since 6.6
+   *  @since GemFire 6.6
    *  @see com.gemstone.gemfire.pdx.PdxInstance 
    */
   public ClientCacheFactory setPdxReadSerialized(boolean pdxReadSerialized) {
@@ -652,7 +652,7 @@ public class ClientCacheFactory {
    * added to the cache in portable data exchange format. 
    * @param serializer the serializer to use
    * @return this ClientCacheFactory
-   * @since 6.6
+   * @since GemFire 6.6
    * @see PdxSerializer
    */
   public ClientCacheFactory setPdxSerializer(PdxSerializer serializer) {
@@ -670,7 +670,7 @@ public class ClientCacheFactory {
    * @param diskStoreName the name of the disk store to use
    * for the PDX metadata.
    * @return this ClientCacheFactory
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public ClientCacheFactory setPdxDiskStore(String diskStoreName) {
     this.cacheConfig.setPdxDiskStore(diskStoreName);
@@ -685,7 +685,7 @@ public class ClientCacheFactory {
    * 
    * @param isPersistent true if the metadata should be persistent
    * @return this ClientCacheFactory
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public ClientCacheFactory setPdxPersistent(boolean isPersistent) {
     this.cacheConfig.setPdxPersistent(isPersistent);
@@ -703,7 +703,7 @@ public class ClientCacheFactory {
    * @param ignore <code>true</code> if fields not read during pdx deserialization should be ignored;
    * <code>false</code>, the default, if they should be preserved.
    * @return this ClientCacheFactory
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public ClientCacheFactory setPdxIgnoreUnreadFields(boolean ignore) {
     this.cacheConfig.setPdxIgnoreUnreadFields(ignore);

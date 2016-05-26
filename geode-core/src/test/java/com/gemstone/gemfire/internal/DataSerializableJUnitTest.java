@@ -70,7 +70,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Tests the functionality of the {@link DataSerializable} class.
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 @Category(UnitTest.class)
 public class DataSerializableJUnitTest implements Serializable {
@@ -2664,7 +2664,7 @@ public class DataSerializableJUnitTest implements Serializable {
    * Tests that subclasses of well-known data serializer classes are
    * not read back as instances of their superclass.  See bug 32391.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   @Test
   public void testSubclasses() throws Exception {
@@ -3116,7 +3116,7 @@ public class DataSerializableJUnitTest implements Serializable {
    * A non-<code>DataSerializable</code> class whose instances are
    * data serialized using a <code>Serializer</code>.
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   private static class NonDataSerializable {
 

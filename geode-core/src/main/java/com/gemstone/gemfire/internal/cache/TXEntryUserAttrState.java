@@ -25,7 +25,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * to an entry user attribute.
  *
  * 
- * @since 4.0
+ * @since GemFire 4.0
  * 
  */
 public class TXEntryUserAttrState {

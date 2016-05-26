@@ -63,7 +63,7 @@ import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
  * operation that is sent from a server to an interested client.
  *
  *
- * @since 4.2
+ * @since GemFire 4.2
  */
 public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, NewValueImporter
 {
@@ -148,7 +148,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   /**
    * Represents the changed bytes of this event's _value.
    * 
-   * @since 6.1
+   * @since GemFire 6.1
    */
   private byte[] deltaBytes = null;
 

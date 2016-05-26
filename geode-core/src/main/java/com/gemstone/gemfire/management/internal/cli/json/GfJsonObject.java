@@ -30,7 +30,7 @@ import org.json.JSONObject;
  * Wrapper over JSONObject. 
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class GfJsonObject {
   public static final Object NULL = JSONObject.NULL;

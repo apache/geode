@@ -72,7 +72,7 @@ public final class AdminConsoleDisconnectMessage extends PooledDistributionMessa
   /**
    * @param reason the reason for getting disconnected
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void setReason(String reason) {
     this.reason = reason;

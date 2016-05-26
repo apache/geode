@@ -26,7 +26,7 @@ import java.util.List;
  * implementations backed by regions.
  * 
  * 
- * @since 4.2
+ * @since GemFire 4.2
  */
 public interface RegionQueue
 {

@@ -33,7 +33,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for the StatisticsMonitor class. No disk IO.
  *   
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(UnitTest.class)
 public class StatisticsMonitorJUnitTest {
@@ -165,7 +165,7 @@ public class StatisticsMonitorJUnitTest {
   // TODO: test notifyListeners
   
   /**
-   * @since 7.0
+   * @since GemFire 7.0
    */
   static class TestStatisticsMonitor extends StatisticsMonitor {
     private volatile long timeStamp;

@@ -30,7 +30,7 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 /**
  * Test to make sure cache close is working.
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class CacheCloseDUnitTest extends CacheTestCase {
 

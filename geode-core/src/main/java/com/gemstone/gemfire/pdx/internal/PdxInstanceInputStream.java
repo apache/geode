@@ -23,7 +23,7 @@ import com.gemstone.gemfire.pdx.PdxSerializationException;
  * Fixed width fields on this implementation do not change the position
  * but instead use absolute positions.
  * 
- * @since 6.6.2
+ * @since GemFire 6.6.2
  */
 public class PdxInstanceInputStream extends PdxInputStream {
 

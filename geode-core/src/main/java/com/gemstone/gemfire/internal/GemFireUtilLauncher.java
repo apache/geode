@@ -42,7 +42,7 @@ import com.gemstone.gemfire.internal.cache.CacheServerLauncher;
  * Usage:
  * notYetWritenScript <utility> <utility arguments>
  *
- * @since 6.0
+ * @since GemFire 6.0
  */
 public class GemFireUtilLauncher {
 

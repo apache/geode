@@ -64,7 +64,7 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 /**
  * Dunit class for testing GemFire config commands : export config
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")

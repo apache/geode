@@ -42,7 +42,7 @@ import org.apache.logging.log4j.Logger;
  * Executes Function with FunctionService#onRegion(Region region) in client server mode. 
  * 
  * @see FunctionService#onRegion(Region) * 
- * @since 5.8 LA
+ * @since GemFire 5.8 LA
  *
  */
 public class ServerRegionFunctionExecutor extends AbstractExecution {

@@ -21,7 +21,7 @@ package com.gemstone.gemfire.management.internal.web.shell;
  * invocation of an MBean operation failed.
  * <p/>
  * @see java.lang.RuntimeException
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public class MBeanAccessException extends RuntimeException {

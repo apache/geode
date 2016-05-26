@@ -44,7 +44,7 @@ import java.util.Map;
  *
  * This class contains implementations of getting Cluster's regions details
  *
- * @since version 7.5
+ * @since GemFire version 7.5
  */
 
 @Component

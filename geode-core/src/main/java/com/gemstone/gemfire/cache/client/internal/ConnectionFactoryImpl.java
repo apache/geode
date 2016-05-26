@@ -45,7 +45,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
 /**
  * Creates connections, using a connection source to determine
  * which server to connect to.
- * @since 5.7
+ * @since GemFire 5.7
  * 
  */
 public class ConnectionFactoryImpl implements ConnectionFactory {
@@ -71,7 +71,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   
   /**
    * Test hook for client version support
-   * @since 5.7
+   * @since GemFire 5.7
    */
   
   public static boolean testFailedConnectionToServer = false;

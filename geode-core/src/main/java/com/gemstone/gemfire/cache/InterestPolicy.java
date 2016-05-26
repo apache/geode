@@ -28,7 +28,7 @@ import java.io.*;
  *
  * @see SubscriptionAttributes
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class InterestPolicy implements java.io.Serializable {
   private static final long serialVersionUID = 1567179436331385968L;

@@ -62,7 +62,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 /**
  * Handles distribution of a Region.removeAll operation.
  * 
- * @since 8.1
+ * @since GemFire 8.1
  */
 public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TODO extend DistributedCacheOperation instead
   {

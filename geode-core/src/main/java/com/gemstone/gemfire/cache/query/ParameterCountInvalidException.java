@@ -21,7 +21,7 @@ package com.gemstone.gemfire.cache.query;
  * Thrown when the number of bound paramters for a query does not match the
  * number of placeholders.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class ParameterCountInvalidException extends QueryException {
 private static final long serialVersionUID = -3249156440150789428L;

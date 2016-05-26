@@ -25,7 +25,7 @@ import com.gemstone.gemfire.internal.Assert;
  * Indicates that the current non-partitioned region operation failed fatally.
  * 
  * @see com.gemstone.gemfire.internal.cache.RemoteOperationMessage
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class RemoteOperationException extends
     DataLocationException

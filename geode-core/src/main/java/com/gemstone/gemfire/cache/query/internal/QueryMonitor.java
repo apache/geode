@@ -44,7 +44,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * The QueryMonitor cancels a query-execution thread if its taking more than
  * the max time. 
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public class QueryMonitor implements Runnable {
   private static final Logger logger = LogService.getLogger();

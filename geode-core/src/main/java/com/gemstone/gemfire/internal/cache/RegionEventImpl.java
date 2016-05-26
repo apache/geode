@@ -174,7 +174,7 @@ public class RegionEventImpl
    * Returns the value of the RegionEventImpl field.
    * This is for internal use only. Customers should always call
    * {@link #getCallbackArgument}
-   * @since 5.7 
+   * @since GemFire 5.7
    */
   public Object getRawCallbackArgument() {
     return this.callbackArgument;

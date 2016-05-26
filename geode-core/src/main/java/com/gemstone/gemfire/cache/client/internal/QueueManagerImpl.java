@@ -76,7 +76,7 @@ import com.gemstone.gemfire.i18n.StringId;
  * Manages Client Queues. Responsible for creating callback connections and
  * satisfying redundancy requirements.
  * 
- * @since 5.7
+ * @since GemFire 5.7
  * 
  */
 public class QueueManagerImpl implements QueueManager {

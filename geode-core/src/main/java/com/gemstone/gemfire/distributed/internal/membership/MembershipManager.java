@@ -54,7 +54,7 @@ public interface MembershipManager {
   /**
    * Returns an object that is used to sync access to the view.
    * While this lock is held the view can't change.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public ReadWriteLock getViewLock();
 
@@ -164,7 +164,7 @@ public interface MembershipManager {
    *    whether the state of the mcast messaging should be included
    * @return the current state of the communication channels between this
    *    process and the given distributed member
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public Map getMessageState(DistributedMember member, boolean includeMulticast);
 
@@ -177,7 +177,7 @@ public interface MembershipManager {
    *    The message states to wait for.  This should come from getMessageStates
    * @throws InterruptedException
    *    Thrown if the thread is interrupted
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public void waitForMessageState(DistributedMember member, Map state)
     throws InterruptedException;

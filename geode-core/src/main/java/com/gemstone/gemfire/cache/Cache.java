@@ -58,7 +58,7 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
  * <p>A cache can have multiple root regions, each with a different name.
  *
  *
- * @since 2.0
+ * @since GemFire 2.0
  */
 @SuppressWarnings("deprecation")
 public interface Cache extends GemFireCache {
@@ -109,7 +109,7 @@ public interface Cache extends GemFireCache {
    * @throws IllegalStateException If the supplied RegionAttributes violate the
    *         <a href="AttributesFactory.html#creationConstraints">region creation constraints</a>
    *         with a region of the same name in another cache in the distributed system
-   * @since 5.0
+   * @since GemFire 5.0
    * @deprecated as of 6.5 use {@link #createRegionFactory(RegionAttributes)} instead
    */
   @Deprecated
@@ -120,14 +120,14 @@ public interface Cache extends GemFireCache {
    * Creates a {@link RegionFactory} which can be used to specify additional
    * attributes for {@link Region} creation.
    * @see #createRegionFactory(RegionShortcut)
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public <K,V> RegionFactory<K,V> createRegionFactory();
   
   /**
    * Creates a {@link RegionFactory} for the most commonly used {@link Region} types
    * defined by {@link RegionShortcut}
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public <K,V> RegionFactory<K,V> createRegionFactory(RegionShortcut atts);
   
@@ -136,7 +136,7 @@ public interface Cache extends GemFireCache {
    * {@link RegionAttributes} mapped to this regionAttributesId
    * @param regionAttributesId the Id of RegionAttributes to be used
    * @see #setRegionAttributes(String, RegionAttributes)
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public <K,V> RegionFactory<K,V> createRegionFactory(String regionAttributesId);
   
@@ -145,7 +145,7 @@ public interface Cache extends GemFireCache {
    * the given regionAttributes
    * @param regionAttributes regionAttributes for the new region
    * @see #createRegionFactory(RegionShortcut)
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public <K,V> RegionFactory<K,V> createRegionFactory(RegionAttributes<K,V> regionAttributes);
   
@@ -249,7 +249,7 @@ public interface Cache extends GemFireCache {
    * 
    * @see com.gemstone.gemfire.cache.server.CacheServer
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public CacheServer addCacheServer();
 
@@ -259,7 +259,7 @@ public interface Cache extends GemFireCache {
    *
    * @see #addCacheServer
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public List<CacheServer> getCacheServers();
   
@@ -272,13 +272,13 @@ public interface Cache extends GemFireCache {
    * it is the same and the event's distributed system ID is larger than that
    * of the last event to modify the affected entry.
    * @param resolver
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public void setGatewayConflictResolver(GatewayConflictResolver resolver);
   
   /**
    * Returns the current gateway event conflict resolver
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public GatewayConflictResolver getGatewayConflictResolver();
   
@@ -290,7 +290,7 @@ public interface Cache extends GemFireCache {
    * administration API} or the <code>cacheserver</code> command line
    * utility.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void setIsServer(boolean isServer);
 
@@ -299,7 +299,7 @@ public interface Cache extends GemFireCache {
    *
    * @see #setIsServer
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public boolean isServer();
 
@@ -317,7 +317,7 @@ public interface Cache extends GemFireCache {
    *
    * @throws IllegalStateException if called by a non-durable client
    *
-   * @since 5.5
+   * @since GemFire 5.5
    * @deprecated as of 6.5 use {@link ClientCache#readyForEvents} instead.
    */
   @Deprecated
@@ -328,7 +328,7 @@ public interface Cache extends GemFireCache {
    * SerialGatewaySender
    * 
    * @return SerialGatewaySenderFactory
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public GatewaySenderFactory createGatewaySenderFactory();
 
@@ -337,7 +337,7 @@ public interface Cache extends GemFireCache {
    * AsyncEventQueue
    * 
    * @return AsyncEventQueueFactory
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public AsyncEventQueueFactory createAsyncEventQueueFactory();
   
@@ -345,7 +345,7 @@ public interface Cache extends GemFireCache {
    * Creates {@link GatewayReceiverFactory} for creating a GatewayReceiver
    * 
    * @return GatewayReceiverFactory
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public GatewayReceiverFactory createGatewayReceiverFactory();
 
@@ -353,7 +353,7 @@ public interface Cache extends GemFireCache {
    * Returns all {@link GatewaySender}s for this Cache. 
    * 
    * @return Set of GatewaySenders
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public Set<GatewaySender> getGatewaySenders();
 
@@ -361,14 +361,14 @@ public interface Cache extends GemFireCache {
    * Returns the {@link GatewaySender} with the given id added to this Cache.
    * 
    * @return GatewaySender with id
-   * @since 7.0
+   * @since GemFire 7.0
    */  
   public GatewaySender getGatewaySender(String id);
   /**
    * Returns all {@link GatewayReceiver}s for this Cache
    * 
    * @return Set of GatewaySenders
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public Set<GatewayReceiver> getGatewayReceivers();
   
@@ -376,7 +376,7 @@ public interface Cache extends GemFireCache {
    * Returns all {@link AsyncEventQueue}s for this Cache
    * 
    * @return Set of AsyncEventQueue
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public Set<AsyncEventQueue> getAsyncEventQueues(); 
   
@@ -384,19 +384,19 @@ public interface Cache extends GemFireCache {
    * Returns the {@link AsyncEventQueue} with the given id added to this Cache.
    * 
    * @return AsyncEventQueue with id
-   * @since 7.0
+   * @since GemFire 7.0
    */  
   public AsyncEventQueue getAsyncEventQueue(String id);
 
   /**
    * Returns a set of the other non-administrative members in the distributed system.
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public Set<DistributedMember> getMembers();
   
   /**
    * Returns a set of the administrative members in the distributed system.
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public Set<DistributedMember> getAdminMembers();
   
@@ -404,7 +404,7 @@ public interface Cache extends GemFireCache {
    * Returns a set of the members in the distributed system that have the
    * given region.  For regions with local scope an empty set is returned.
    * @param r a Region in the cache
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public Set<DistributedMember> getMembers(Region r);
   

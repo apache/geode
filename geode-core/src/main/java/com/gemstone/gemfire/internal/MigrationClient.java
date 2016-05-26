@@ -57,7 +57,7 @@ import java.util.Properties;
  * entries are transfered from the server to the client, they are then 
  * stored in new files in these directories.
  * 
- * @since 6.0.1
+ * @since GemFire 6.0.1
  *
  */
 public class MigrationClient {

@@ -151,7 +151,7 @@ import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
  * @see AttributesFactory
  * @see AttributesMutator
  * @see Region.Entry
- * @since 2.0
+ * @since GemFire 2.0
  */
 
 public interface Region<K,V>  extends ConcurrentMap<K, V> {
@@ -1126,7 +1126,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * Returns the <code>cache</code> associated with this region.
    *  <p>Does not throw a <code>CacheClosedException</code> if the cache is closed.
    * @return the cache
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public RegionService getRegionService();
   
@@ -1256,7 +1256,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *         If problems are encounter while writing to disk
    * @throws UnsupportedOperationException If the region is a partitioned region
    * @see AttributesFactory#setPersistBackup
-   * @since 3.2
+   * @since GemFire 3.2
    * @deprecated use {@link DiskStore#flush} instead.
    */
   @Deprecated
@@ -1282,7 +1282,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *
    * @see QueryService
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public boolean existsValue(String queryPredicate)
   throws FunctionDomainException, TypeMismatchException, NameResolutionException,
@@ -1312,7 +1312,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *
    * @see QueryService
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public <E> SelectResults<E> query(String queryPredicate)
   throws FunctionDomainException, TypeMismatchException, NameResolutionException,
@@ -1340,7 +1340,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *         If more than one element evaluates to true.
    *
    * @see QueryService
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public Object selectValue(String queryPredicate)
   throws FunctionDomainException, TypeMismatchException, NameResolutionException,
@@ -1355,7 +1355,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * thrown. If compaction is true, the application will wait for the other oplogs to be compressed and more
    * space to be created.
    *
-   * @since 5.1
+   * @since GemFire 5.1
    * @throws DiskAccessException
    * @deprecated use {@link DiskStore#forceRoll} instead.
    */
@@ -1388,7 +1388,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @throws IllegalStateException if scope is not GLOBAL
    * @throws UnsupportedOperationException If the region is a partitioned region
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void becomeLockGrantor();
 
@@ -1396,7 +1396,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * Removes all local entries from this region. This is not a distributed operation.
    * This operation is not allowed on replicated regions.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    * @throws UnsupportedOperationException  If the region is a replicated region
    * @throws UnsupportedOperationException  If the region is a partitioned region
    * @see CacheListener#afterRegionClear
@@ -1409,7 +1409,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * Removes all entries from this region. Clear will be distributed to other caches if the scope
    * is not <code>Scope.LOCAL</code>.
    * <p>
-   * @since 5.0
+   * @since GemFire 5.0
    * @see java.util.Map#clear()
    * @see CacheListener#afterRegionClear
    * @see CacheWriter#beforeRegionClear
@@ -1424,7 +1424,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * This operation is not distributed and only the current region will be
    * checked for this value.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    * @see java.util.Map#containsValue(Object)
    */
   public boolean containsValue(Object value);
@@ -1448,14 +1448,14 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *  that entry is called, it will be similar in effect as calling a put on that key.
    *
    * @return a Set of all the Region.Entry instances in this region locally
-   * @since 5.0
+   * @since GemFire 5.0
    * @see java.util.Map#entrySet()
    */
   public Set<Map.Entry<K,V>> entrySet(); //@todo darrel: should be Region.Entry
 
   /**
    * Returns true if this region contains no entries.
-   *@since 5.0
+   *@since GemFire 5.0
    * @see java.util.Map#isEmpty()
    * @return true if this region contains no entries.
    */
@@ -1468,7 +1468,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * This operation will be distributed to other caches if the scope
    * is not <code>Scope.LOCAL</code>.
    * @param map the key/value pairs to put in this region.
-   * @since 5.0
+   * @since GemFire 5.0
    * @see java.util.Map#putAll(Map map)
    * @throws LowMemoryException if a low memory condition is detected.
    */
@@ -1483,7 +1483,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @param map the key/value pairs to put in this region.
    * @param aCallbackArgument a user-defined parameter to pass to callback events
    *        triggered by this method. May be null. Must be serializable if this operation is distributed.
-   * @since 8.1
+   * @since GemFire 8.1
    * @see java.util.Map#putAll(Map map)
    * @throws LowMemoryException if a low memory condition is detected.
    */
@@ -1497,7 +1497,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * This operation will be distributed to other caches if the scope
    * is not <code>Scope.LOCAL</code>.
    * @param keys the keys to remove from this region.
-   * @since 8.1
+   * @since GemFire 8.1
    * @see Region#destroy(Object)
    */
   public void removeAll(Collection<? extends K> keys);
@@ -1511,7 +1511,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @param keys the keys to remove from this region.
    * @param aCallbackArgument a user-defined parameter to pass to callback events
    *        triggered by this method. May be null. Must be serializable if this operation is distributed.
-   * @since 8.1
+   * @since GemFire 8.1
    * @see Region#destroy(Object, Object)
    */
   public void removeAll(Collection<? extends K> keys, Object aCallbackArgument);
@@ -1527,7 +1527,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @param keys A Collection of keys
    * @return A Map of values for the input keys
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Map<K, V> getAll(Collection<?> keys);
   /**
@@ -1546,7 +1546,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * May be null. Must be serializable if this operation is distributed.
    * @return A Map of values for the input keys
    *
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public <T extends K> Map<T, V> getAll(Collection<T> keys, Object aCallbackArgument);
 
@@ -1582,7 +1582,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @see CacheWriter#beforeDestroy
    * @see java.util.Map#remove(Object)
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public V remove(Object key);
 
@@ -1595,7 +1595,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * For all other types of regions, it returns the number of entries present
    * locally, and it is not a distributed operation.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    * @see java.util.Map#size()
    * @return int the number of entries present in this region
    */
@@ -1649,7 +1649,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * 
    * @see InterestResultPolicy
    *
-   * @since 4.2
+   * @since GemFire 4.2
    *
    * @throws UnsupportedOperationException if the region is not configured with a pool name.
    * @throws SubscriptionNotEnabledException if the region's pool does not have subscriptions enabled.
@@ -1696,7 +1696,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *
    * @see InterestResultPolicy
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    */
   public void registerInterest(K key, InterestResultPolicy policy);
 
@@ -1727,7 +1727,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @see InterestResultPolicy
    * @see java.util.regex.Pattern
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    */
   public void registerInterestRegex(String regex);
 
@@ -1763,7 +1763,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @see InterestResultPolicy
    * @see java.util.regex.Pattern
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    */
   public void registerInterestRegex(String regex, InterestResultPolicy policy);
 
@@ -1778,7 +1778,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * be unregistered.
    * @throws UnsupportedOperationException if the region is not configured with a pool name.
    *
-   * @since 4.2
+   * @since GemFire 4.2
    */
   public void unregisterInterest(K key);
 
@@ -1792,7 +1792,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @param regex The regular expression on which to unregister interest.
    * @throws UnsupportedOperationException if the region is not configured with a pool name.
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    */
   public void unregisterInterestRegex(String regex);
   /**
@@ -1803,7 +1803,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @return The list of keys on which this client is interested
    * @throws UnsupportedOperationException if the region is not configured with a pool name.
    *
-   * @since 4.2
+   * @since GemFire 4.2
    */
   public List<K> getInterestList();
 
@@ -1839,7 +1839,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *
    * @see InterestResultPolicy
    *
-   * @since 5.5
+   * @since GemFire 5.5
    *
    * @throws UnsupportedOperationException if the region is not configured with a pool name.
    * @throws SubscriptionNotEnabledException if the region's pool does not have subscriptions enabled.
@@ -1881,7 +1881,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *
    * @see InterestResultPolicy
    *
-   * @since 6.0.3
+   * @since GemFire 6.0.3
    *
    * @throws UnsupportedOperationException if the region is not configured with a pool name.
    * @throws SubscriptionNotEnabledException if the region's pool does not have subscriptions enabled.
@@ -1932,7 +1932,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *
    * @see InterestResultPolicy
    *
-   * @since 6.0.3
+   * @since GemFire 6.0.3
    */
   public void registerInterest(K key, InterestResultPolicy policy,
       boolean isDurable, boolean receiveValues);
@@ -1978,7 +1978,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    *
    * @see InterestResultPolicy
    *
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public void registerInterest(K key, InterestResultPolicy policy, boolean isDurable);
   
@@ -2011,7 +2011,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @see InterestResultPolicy
    * @see java.util.regex.Pattern
    *
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public void registerInterestRegex(String regex, boolean isDurable);
 
@@ -2046,7 +2046,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @see InterestResultPolicy
    * @see java.util.regex.Pattern
    *
-   * @since 6.0.3
+   * @since GemFire 6.0.3
    */
   public void registerInterestRegex(String regex, boolean isDurable,
       boolean receiveValues);
@@ -2085,7 +2085,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @see InterestResultPolicy
    * @see java.util.regex.Pattern
    *
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public void registerInterestRegex(String regex, InterestResultPolicy policy, boolean isDurable);
 
@@ -2125,7 +2125,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @see InterestResultPolicy
    * @see java.util.regex.Pattern
    *
-   * @since 6.0.3
+   * @since GemFire 6.0.3
    */
   public void registerInterestRegex(String regex, InterestResultPolicy policy,
       boolean isDurable, boolean receiveValues);
@@ -2138,7 +2138,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
    * @return The list of regular expresssions on which this client is interested
    * @throws UnsupportedOperationException if the region is not configured with a pool name.
    *
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    */
   public List<String> getInterestListRegex();
 
@@ -2147,7 +2147,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
   * @return a Set of all the keys in the region on the server
   * @throws UnsupportedOperationException if the region is not configured with a pool name.
   *
-  * @since 5.0.2
+  * @since GemFire 5.0.2
   */
  public Set<K> keySetOnServer();
 
@@ -2159,7 +2159,7 @@ public interface Region<K,V>  extends ConcurrentMap<K, V> {
   * the server
   * @throws UnsupportedOperationException if the region is not configured with a pool name.
   *
-  * @since 5.0.2
+  * @since GemFire 5.0.2
   */
 public boolean containsKeyOnServer(Object key);
 
@@ -2198,7 +2198,7 @@ public boolean containsKeyOnServer(Object key);
    * @throws CacheWriterException if a CacheWriter aborts the operation
    * @throws PartitionedRegionStorageException if the operation could not be completed on a partitioned region.
    * @throws LowMemoryException if a low memory condition is detected.
-   * @since 6.5
+   * @since GemFire 6.5
   *
   */
  V putIfAbsent(K key, V value);
@@ -2232,7 +2232,7 @@ public boolean containsKeyOnServer(Object key);
    * @throws CacheWriterException if a CacheWriter aborts the operation
    * @throws PartitionedRegionStorageException if the operation could not be completed on a partitioned region.
    * @throws LowMemoryException if a low memory condition is detected.
-   * @since 6.5
+   * @since GemFire 6.5
   */
  boolean remove(Object key, Object value);
 
@@ -2268,7 +2268,7 @@ public boolean containsKeyOnServer(Object key);
    * @throws CacheWriterException if a CacheWriter aborts the operation
    * @throws PartitionedRegionStorageException if the operation could not be completed on a partitioned region.
    * @throws LowMemoryException if a low memory condition is detected.
-   * @since 6.5
+   * @since GemFire 6.5
   */
  boolean replace(K key, V oldValue, V newValue);
 
@@ -2304,7 +2304,7 @@ public boolean containsKeyOnServer(Object key);
    * @throws CacheWriterException if a CacheWriter aborts the operation
    * @throws PartitionedRegionStorageException if the operation could not be completed on a partitioned region.
    * @throws LowMemoryException if a low memory condition is detected.
-   * @since 6.5
+   * @since GemFire 6.5
   */
  V replace(K key, V value);
 
@@ -2395,7 +2395,7 @@ public boolean containsKeyOnServer(Object key);
      *         If the value is not currently stored in memory but is on disk
      *         and if the region does not have cqs
      *         then <code>null</code> is returned.
-     * @since 5.0
+     * @since GemFire 5.0
      * @see Region#put(Object, Object)
      */
     public V setValue(V value);

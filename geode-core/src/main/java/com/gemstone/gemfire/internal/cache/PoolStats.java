@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
  * GemFire statistics about a Pool 
  *
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class PoolStats {
 

@@ -70,7 +70,7 @@ import java.util.Set;
  * the required MBeans
  *
  *
- * @since version 7.0.Beta 2012-09-23
+ * @since GemFire version 7.0.Beta 2012-09-23
  */
 public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 

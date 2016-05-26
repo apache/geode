@@ -32,7 +32,7 @@ import java.util.Properties;
  * AttributesMutator}.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public abstract class RegionAttributesTestCase
   extends RegionTestCase {

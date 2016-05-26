@@ -24,7 +24,7 @@ import java.io.OutputStream;
  * An extension of {@link DataOutputStream} that implements
  * {@link VersionedDataStream}.
  * 
- * @since 7.1
+ * @since GemFire 7.1
  */
 public final class VersionedDataOutputStream extends DataOutputStream implements
     VersionedDataStream {

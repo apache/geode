@@ -26,7 +26,7 @@ import com.gemstone.gemfire.Statistics;
  * StatisticsType may describe one or more Statistics instances, while a 
  * StatisticDescriptor may describe one or more StatisticId instances.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class SimpleStatisticId implements StatisticId {
 

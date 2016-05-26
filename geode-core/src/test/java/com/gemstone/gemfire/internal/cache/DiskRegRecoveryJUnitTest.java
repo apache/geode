@@ -42,7 +42,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Disk region recovery tests
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 @Category(IntegrationTest.class)
 public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase

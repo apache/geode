@@ -27,7 +27,7 @@ import com.gemstone.gemfire.internal.cache.CachedDeserializable;
  * may or may not reflect modifications to the set while the iteration is in progress.
  * They will guarantee that entries will be returned in the correct order.
  * 
- * @since cedar
+ * @since GemFire cedar
  */
 public interface ResultList {
 

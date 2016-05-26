@@ -51,7 +51,7 @@ import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @since 8.1
+ * @since GemFire 8.1
  *
  */
 @Category(IntegrationTest.class)

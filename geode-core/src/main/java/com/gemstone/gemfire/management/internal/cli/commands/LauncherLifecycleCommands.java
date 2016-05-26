@@ -124,7 +124,7 @@ import org.springframework.shell.core.annotation.CliOption;
  * @see com.gemstone.gemfire.distributed.ServerLauncher
  * @see com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSupport
  * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public class LauncherLifecycleCommands extends AbstractCommandsSupport {

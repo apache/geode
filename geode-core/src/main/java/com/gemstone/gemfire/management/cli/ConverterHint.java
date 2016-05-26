@@ -22,7 +22,7 @@ import org.springframework.shell.core.annotation.CliOption;
  * Used in {@link CliOption} annotations to indicate which converter(s) should
  * or should not be used.
  *
- * @since 8.0
+ * @since GemFire 8.0
  */
 public interface ConverterHint {
   public static final String DIRS                  = "converter.hint.dirs";

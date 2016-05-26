@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.server.CacheServer;
  * A representation of <code>CacheServer</code> that is used for
  * administration. 
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public interface AdminBridgeServer extends CacheServer {
   /**

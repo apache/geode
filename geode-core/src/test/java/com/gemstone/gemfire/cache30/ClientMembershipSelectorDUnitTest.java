@@ -19,7 +19,7 @@ package com.gemstone.gemfire.cache30;
 /**
  * Same as parent but uses selector in server
  *
- * @since 5.1
+ * @since GemFire 5.1
  */
 public class ClientMembershipSelectorDUnitTest extends ClientMembershipDUnitTest {
   public ClientMembershipSelectorDUnitTest(String name) {

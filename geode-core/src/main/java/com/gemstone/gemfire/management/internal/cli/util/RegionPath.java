@@ -26,7 +26,7 @@ import com.gemstone.gemfire.management.ManagementService;
 /**
  * Class to handle Region path. 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class RegionPath {
 

@@ -20,7 +20,7 @@ package com.gemstone.gemfire.cache;
  * Indicates a failure to perform a distributed operation on a Partitioned Region 
  * after multiple attempts.
  *
- * @since 5.1
+ * @since GemFire 5.1
  */
 public class PartitionedRegionDistributionException extends
    CacheRuntimeException

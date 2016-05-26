@@ -22,7 +22,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 
 /**
  * Does a commit on a server
- * @since 6.6
+ * @since GemFire 6.6
  */
 public class CommitOp {
   /**

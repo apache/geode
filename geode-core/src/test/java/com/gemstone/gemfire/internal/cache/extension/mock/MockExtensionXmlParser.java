@@ -32,7 +32,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.XmlParser;
  * Mock Extension {@link XmlParser}.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public class MockExtensionXmlParser extends AbstractXmlParser {
   public static final String ATTRIBUTE_VALUE = "value";

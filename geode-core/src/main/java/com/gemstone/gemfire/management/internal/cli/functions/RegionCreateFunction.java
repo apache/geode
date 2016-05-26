@@ -51,7 +51,7 @@ import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 
 /**
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class RegionCreateFunction extends FunctionAdapter implements InternalEntity {
 

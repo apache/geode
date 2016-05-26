@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.wan.GatewayQueueEvent;
 /**
  * Represents <code>Cache</code> events delivered to <code>AsyncEventListener</code>.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface AsyncEvent<K, V> extends GatewayQueueEvent<K, V>{
   /**

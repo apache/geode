@@ -29,7 +29,7 @@ import java.util.*;
  * java.util.StringTokenizer}. 
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class LogFileParser  {
   private static final boolean TRIM_TIMESTAMPS = Boolean.getBoolean("mergelogs.TRIM_TIMESTAMPS");

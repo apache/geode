@@ -50,7 +50,7 @@ import joptsimple.internal.Strings;
  * Code shared by both DiskRegion and RecoveredDiskRegion.
  *
  *
- * @since prPersistSprint2
+ * @since GemFire prPersistSprint2
  */
 public abstract class AbstractDiskRegion implements DiskRegionView {
   private static final Logger logger = LogService.getLogger();
@@ -702,7 +702,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
   /**
    * gets the number of entries recovered
    * 
-   * @since 3.2.1
+   * @since GemFire 3.2.1
    */
   public int getRecoveredEntryCount() {
     return this.recoveredEntryCount;

@@ -19,7 +19,7 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
 
 /**
  * Statistics supported by cache/server Message.
- * @since 5.0.2
+ * @since GemFire 5.0.2
  */
 public interface MessageStats {
   public void incReceivedBytes(long v);

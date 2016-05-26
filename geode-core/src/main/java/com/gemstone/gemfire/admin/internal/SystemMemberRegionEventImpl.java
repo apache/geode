@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.Operation;
  * Instances of this are delivered to a {@link SystemMemberCacheListener} when a
  * a region comes or goes.
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class SystemMemberRegionEventImpl
   extends SystemMemberCacheEventImpl

@@ -29,7 +29,7 @@ package com.gemstone.gemfire;
  * {@link StatisticsFactory}.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public interface StatisticsType {
 

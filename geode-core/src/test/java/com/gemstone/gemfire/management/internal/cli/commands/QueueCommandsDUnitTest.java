@@ -53,7 +53,7 @@ import org.junit.experimental.categories.Category;
 /**
  * A distributed test suite of test cases for testing the queue commands that are part of Gfsh.
  *
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(DistributedTest.class)
 public class QueueCommandsDUnitTest extends CliCommandTestBase {

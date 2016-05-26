@@ -37,7 +37,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Tests the functionality of the {@link SortLogFile} program.
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 @Category(UnitTest.class)
 public class SortLogFileJUnitTest {

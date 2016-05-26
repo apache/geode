@@ -26,7 +26,7 @@ import java.net.Socket;
  * <p/>
  * @see java.net.ServerSocket
  * @see java.net.Socket
- * @since 7.0
+ * @since GemFire 7.0
  */
 public abstract class SocketUtils {
 

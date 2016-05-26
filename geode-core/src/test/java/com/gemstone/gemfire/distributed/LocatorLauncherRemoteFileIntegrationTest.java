@@ -44,7 +44,7 @@ import org.junit.runners.Parameterized;
  * the Attach API which is in the JDK tools.jar.  As a result LocatorLauncher
  * ends up using the FileProcessController implementation.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(IntegrationTest.class)
 @RunWith(Parameterized.class)

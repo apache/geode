@@ -23,7 +23,7 @@ import java.util.EventListener;
  * The SignalListener class...
  * </p>
  * @see java.util.EventListener
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public interface SignalListener extends EventListener {

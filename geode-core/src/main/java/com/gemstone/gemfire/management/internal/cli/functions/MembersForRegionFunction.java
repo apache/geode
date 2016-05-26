@@ -32,7 +32,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 public class MembersForRegionFunction implements Function, InternalEntity {

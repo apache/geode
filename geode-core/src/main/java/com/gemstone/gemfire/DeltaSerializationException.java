@@ -24,7 +24,7 @@ package com.gemstone.gemfire;
  * {@link Delta#fromDelta(java.io.DataInput)} or
  * {@link Delta#toDelta(java.io.DataOutput)} in GemFire.
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class DeltaSerializationException extends RuntimeException {
 

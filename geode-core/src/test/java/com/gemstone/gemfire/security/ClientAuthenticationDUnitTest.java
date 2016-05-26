@@ -31,7 +31,7 @@ import com.gemstone.gemfire.test.junit.categories.SecurityTest;
  * invalid credentials/modules. It also checks for authentication
  * success/failure in case of failover and for the notification channel.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 @Category({ DistributedTest.class, SecurityTest.class })
 public class ClientAuthenticationDUnitTest extends ClientAuthenticationTestCase {

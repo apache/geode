@@ -110,7 +110,7 @@ public class SSLConfig {
    * configuration information used by {@link
    * com.gemstone.gemfire.distributed.DistributedSystem#connect}.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void toDSProperties(Properties props) {
     props.setProperty(DistributionConfig.SSL_ENABLED_NAME,

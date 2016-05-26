@@ -19,7 +19,7 @@ package com.gemstone.gemfire.internal.process;
 /**
  * A MBeanInvocationFailedException is thrown if invocation of the mbean failed.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class MBeanInvocationFailedException extends Exception {
   private static final long serialVersionUID = 7991096466859690801L;

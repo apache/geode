@@ -28,7 +28,7 @@ import com.gemstone.gemfire.pdx.internal.AutoSerializableManager;
  * This is helper class used by CacheFactory to pass the cache configuration
  *  values to cache creation code.
  *  
- * @since 6.6
+ * @since GemFire 6.6
  */
 public class CacheConfig {
   public static boolean DEFAULT_PDX_READ_SERIALIZED = false;

@@ -46,7 +46,7 @@ import com.sun.tools.attach.VirtualMachine;
 /**
  * Attaches to a local process to control it via JMX.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * @deprecated as of 8.0 please use {@link ControllableProcess} instead
  */
 public final class LocalProcessController {

@@ -36,7 +36,7 @@ import com.gemstone.gemfire.DataSerializable;
  * {@link InternalDataSerializer#getVersionForDataStream} methods) and deal with
  * serialization with previous {@link Version}s appropriately.
  * 
- * @since 7.1
+ * @since GemFire 7.1
  */
 public interface VersionedDataStream {
 

@@ -22,7 +22,7 @@ package com.gemstone.gemfire.distributed.internal;
  * The implementation will call these methods at to proper time.
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public interface QueueStatHelper {
 

@@ -32,7 +32,7 @@ package com.gemstone.gemfire.cache;
  * @see com.gemstone.gemfire.cache.Region#invalidate(Object)
  * @see com.gemstone.gemfire.cache.Region#destroy(Object)
  * @see com.gemstone.gemfire.distributed.DistributedLockService
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class TimeoutException extends OperationAbortedException {
 private static final long serialVersionUID = -6260761691185737442L;

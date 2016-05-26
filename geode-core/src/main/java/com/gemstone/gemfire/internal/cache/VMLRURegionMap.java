@@ -24,7 +24,7 @@ import com.gemstone.gemfire.internal.cache.lru.*;
  * Internal implementation of {@link RegionMap} for regions stored
  * in normal VM memory that maintain an LRU.
  *
- * @since 3.5.1
+ * @since GemFire 3.5.1
  *
  *
  */

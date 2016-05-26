@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.Region;
  * Composite data type used to distribute metrics for the JVM running
  * a GemFire member.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  *
  */
 public class JVMMetrics {

@@ -27,7 +27,7 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
 
 /**
  * 
- * @since  8.1
+ * @since GemFire  8.1
  */
 public class SSLUtil {
   

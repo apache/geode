@@ -24,7 +24,7 @@ import com.gemstone.gemfire.GemFireCheckedException;
  * <p/>
  * Extracted from {@link com.gemstone.gemfire.internal.StatArchiveWriter}.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class IgnoreResourceException extends GemFireCheckedException {
   private static final long serialVersionUID = 3371071862581873081L;

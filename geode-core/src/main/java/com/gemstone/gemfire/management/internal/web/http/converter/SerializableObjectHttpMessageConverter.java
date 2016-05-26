@@ -41,7 +41,7 @@ import org.springframework.util.StreamUtils;
  * @see org.springframework.http.HttpOutputMessage
  * @see org.springframework.http.MediaType
  * @see org.springframework.http.converter.AbstractHttpMessageConverter
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public class SerializableObjectHttpMessageConverter extends AbstractHttpMessageConverter<Serializable> {

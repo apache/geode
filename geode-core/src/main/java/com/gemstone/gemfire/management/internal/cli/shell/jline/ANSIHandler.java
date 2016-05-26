@@ -21,7 +21,7 @@ import org.springframework.shell.core.JLineLogHandler;
 /**
  * Overrides jline.History to add History without newline characters.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class ANSIHandler {
   private static ANSIHandler instance;

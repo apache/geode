@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 /**
  * <code>ClientHandShake</code> represents a handshake from the client.
  *   
- * @since 5.7
+ * @since GemFire 5.7
  */
 public interface ClientHandShake {
   public boolean isOK();

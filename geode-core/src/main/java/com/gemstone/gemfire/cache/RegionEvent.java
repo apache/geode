@@ -26,7 +26,7 @@ package com.gemstone.gemfire.cache;
  * @see CacheListener
  * @see CacheWriter
  * @see EntryEvent
- * @since 2.0
+ * @since GemFire 2.0
  */
 public interface RegionEvent<K,V> extends CacheEvent<K,V> {
   

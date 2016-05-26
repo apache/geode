@@ -33,7 +33,7 @@ import org.junit.experimental.categories.Category;
  * @see com.gemstone.gemfire.management.internal.web.util.UriUtils
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(UnitTest.class)
 public class UriUtilsJUnitTest extends AbstractWebTestCase {

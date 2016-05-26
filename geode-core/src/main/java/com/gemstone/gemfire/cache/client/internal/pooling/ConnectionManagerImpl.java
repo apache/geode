@@ -66,7 +66,7 @@ import org.apache.logging.log4j.Logger;
  * Manages client to server connections for the connection pool. This class contains
  * all of the pooling logic to checkout/checkin connections.
  * 
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public class ConnectionManagerImpl implements ConnectionManager {

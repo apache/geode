@@ -59,7 +59,7 @@ import org.junit.experimental.categories.Category;
  *
  * @see com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase
  * @see com.gemstone.gemfire.management.internal.cli.commands.DataCommands
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 @Category(DistributedTest.class)

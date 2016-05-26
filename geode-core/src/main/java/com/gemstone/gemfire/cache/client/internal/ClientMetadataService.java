@@ -52,7 +52,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * on which the data for the client operation is residing
  * 
  * 
- * @since 6.5
+ * @since GemFire 6.5
  * 
  */
 public final class ClientMetadataService {

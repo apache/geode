@@ -25,7 +25,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * Tests UniqueIdGenerator.
- * @since 5.0.2 (cbb5x_PerfScale)
+ * @since GemFire 5.0.2 (cbb5x_PerfScale)
  */
 @Category(UnitTest.class)
 public class UniqueIdGeneratorJUnitTest {

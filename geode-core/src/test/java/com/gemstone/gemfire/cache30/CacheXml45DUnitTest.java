@@ -33,7 +33,7 @@ import java.util.*;
  * Tests the declarative caching functionality introduced in GemFire
  * 5.0 (i.e. congo1). Don't be confused by the 45 in my name :-)
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class CacheXml45DUnitTest extends CacheXml41DUnitTest {
 
@@ -177,7 +177,7 @@ public class CacheXml45DUnitTest extends CacheXml41DUnitTest {
 
   /**
    * Tests multiple cache listeners on one region
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void testMultipleCacheListener() throws CacheException {
     CacheCreation cache = new CacheCreation();
@@ -247,7 +247,7 @@ public class CacheXml45DUnitTest extends CacheXml41DUnitTest {
 
   /**
    * Tests multiple transaction listeners
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void testMultipleTXListener() throws CacheException {
     CacheCreation cache = new CacheCreation();

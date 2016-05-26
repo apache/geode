@@ -45,7 +45,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * that is passed between administration VMs and VMs that host caches
  * with bridge servers.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class RemoteBridgeServer
   extends AbstractCacheServer
@@ -253,7 +253,7 @@ public class RemoteBridgeServer
    * @param listener
    *                The <code>InterestRegistrationListener</code> to register
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public void registerInterestRegistrationListener(
       InterestRegistrationListener listener) {
@@ -271,7 +271,7 @@ public class RemoteBridgeServer
    *                The <code>InterestRegistrationListener</code> to
    *                unregister
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public void unregisterInterestRegistrationListener(
       InterestRegistrationListener listener) {
@@ -288,7 +288,7 @@ public class RemoteBridgeServer
    * @return a read-only set of <code>InterestRegistrationListener</code>s
    *         registered with this notifier
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public Set getInterestRegistrationListeners() {
     final String s = LocalizedStrings.

@@ -53,7 +53,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * new config and applying it to the current shared config.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 @Category(IntegrationTest.class)
 public class XmlUtilsAddNewNodeJUnitTest {
@@ -92,7 +92,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * 
    * @throws Exception
    * @throws XPathExpressionException 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testAddNewNodeNewNamed() throws Exception {
@@ -145,7 +145,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * <code>region</code> elements.
    * 
    * @throws Exception
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testAddNewNodeNewUnnamed() throws Exception {
@@ -182,7 +182,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * element.
    * 
    * @throws Exception
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testAddNewNodeNewUnnamedExtension() throws Exception {
@@ -222,7 +222,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * with same <code>name</code>.
    * 
    * @throws Exception
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testAddNewNodeReplaceNamed() throws Exception {
@@ -257,7 +257,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * <code>pdx</code>. It should replace <code>pdx</code> element.
    * 
    * @throws Exception
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testAddNewNodeReplaceUnnamed() throws Exception {
@@ -293,7 +293,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * <code>test:cache</code> element.
    * 
    * @throws Exception
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testAddNewNodeReplaceUnnamedExtension() throws Exception {
@@ -329,7 +329,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * with same <code>name</code>.
    * 
    * @throws Exception
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testDeleteNodeNamed() throws Exception {
@@ -358,7 +358,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * <code>pdx</code>. It should remove the existing <code>pdx</code> element.
    * 
    * @throws Exception
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testDeleteNodeUnnamed() throws Exception {
@@ -388,7 +388,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * <code>test:cache</code> element.
    * 
    * @throws Exception
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testDeleteNodeUnnamedExtension() throws Exception {

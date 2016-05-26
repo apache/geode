@@ -30,7 +30,7 @@ package com.gemstone.gemfire.cache.execute;
  * </ol>
  * </p>
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * @see Function
  * @deprecated Use {@link Function} instead. Function has default
  * methods that now mimic the behavior of FunctionAdapter.

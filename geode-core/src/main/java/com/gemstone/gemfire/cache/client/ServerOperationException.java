@@ -21,7 +21,7 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 /**
  * An exception indicating that a failure has happened on the server
  * while processing an operation that was sent to it by a client.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class ServerOperationException extends ServerConnectivityException {
 private static final long serialVersionUID = -3106323103325266219L;

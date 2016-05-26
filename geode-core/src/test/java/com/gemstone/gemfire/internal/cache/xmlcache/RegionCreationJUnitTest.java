@@ -30,7 +30,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit test for {@link RegionCreation}.
  * 
- * @since 8.1
+ * @since GemFire 8.1
  */
 @Category(UnitTest.class)
 public class RegionCreationJUnitTest {

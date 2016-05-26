@@ -42,7 +42,7 @@ import java.util.concurrent.locks.Lock;
  * com.gemstone.gemfire.distributed.DistributedLockService} and may throw
  * LockNotHeldException or LockServiceDestroyedException.
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 public final class DistributedMemberLock implements Lock {
 

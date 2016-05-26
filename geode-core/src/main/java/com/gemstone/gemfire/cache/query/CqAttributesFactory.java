@@ -45,7 +45,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  *
  * @see CqAttributes
  *
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class CqAttributesFactory {
   private static final Logger logger = LogService.getLogger();

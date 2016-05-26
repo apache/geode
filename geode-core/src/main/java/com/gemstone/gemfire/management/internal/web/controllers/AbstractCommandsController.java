@@ -74,7 +74,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.ExceptionHandler
  * @see org.springframework.web.bind.annotation.InitBinder
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public abstract class AbstractCommandsController {

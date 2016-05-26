@@ -26,7 +26,7 @@ import com.gemstone.gemfire.management.internal.cli.MultipleValueAdapter;
 
 /**
  *
- * @since 7.0
+ * @since GemFire 7.0
  * 
  * 
  */

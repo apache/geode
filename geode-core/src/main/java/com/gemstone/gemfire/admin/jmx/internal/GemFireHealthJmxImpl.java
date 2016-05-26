@@ -42,7 +42,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * @see AdminDistributedSystemJmxImpl#createGemFireHealth
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class GemFireHealthJmxImpl extends GemFireHealthImpl 
   implements ManagedResource {

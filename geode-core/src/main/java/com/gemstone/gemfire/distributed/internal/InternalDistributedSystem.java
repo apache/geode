@@ -114,7 +114,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * The concrete implementation of {@link DistributedSystem} that
  * provides internal-only functionality.
  *
- * @since 3.0
+ * @since GemFire 3.0
  *
  */
 public class InternalDistributedSystem
@@ -306,7 +306,7 @@ public class InternalDistributedSystem
    * for administration.  For administration, we are not as strict
    * when it comes to existing connections.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public static DistributedSystem connectForAdmin(Properties props) {
     return DistributedSystem.connectForAdmin(props);
@@ -318,7 +318,7 @@ public class InternalDistributedSystem
    * This method synchronizes on the existingSystems collection.
    *
    * <p>author bruce
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static InternalDistributedSystem getConnectedInstance() {
     InternalDistributedSystem result = null;
@@ -337,7 +337,7 @@ public class InternalDistributedSystem
    * Returns the current distributed system, if there is one.
    * Note: this method is no longer unsafe size existingSystems uses copy-on-write.
    * <p>author bruce
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static InternalDistributedSystem unsafeGetConnectedInstance() {
     InternalDistributedSystem result = getAnyInstance();
@@ -729,7 +729,7 @@ public class InternalDistributedSystem
   }
 
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void startInitLocator() throws InterruptedException {
     String locatorString = this.originalConfig.getStartLocator();
@@ -777,7 +777,7 @@ public class InternalDistributedSystem
   }
   
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void endInitLocator() throws IOException {
     InternalLocator loc = this.startedLocator;
@@ -1473,7 +1473,7 @@ public class InternalDistributedSystem
    * to the same distributed system as this
    * <code>InternalDistributedSystem</code> connection.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public boolean sameSystemAs(Properties props) {
     DistributionConfig other = DistributionConfigImpl.produce(props);
@@ -1504,7 +1504,7 @@ public class InternalDistributedSystem
   /**
    * Canonicalizes a locators string so that they may be compared.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   private static String canonicalizeLocators(String locators) {
     SortedSet sorted = new TreeSet();
@@ -2264,7 +2264,7 @@ public class InternalDistributedSystem
    * Fires an "informational" <code>SystemMembershipEvent</code> in
    * admin VMs.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void fireInfoEvent(Object callback) {
     throw new UnsupportedOperationException(LocalizedStrings.InternalDistributedSystem_NOT_IMPLEMENTED_YET.toLocalizedString());
@@ -2973,7 +2973,7 @@ public class InternalDistributedSystem
 
   /**
    * see {@link com.gemstone.gemfire.admin.AdminDistributedSystemFactory}
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static void setEnableAdministrationOnly(boolean adminOnly) {
     DistributedSystem.setEnableAdministrationOnly(adminOnly);

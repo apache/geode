@@ -35,7 +35,7 @@ import com.gemstone.gemfire.lang.AttachAPINotFoundException;
  * Controls a {@link ControllableProcess} using files to communicate between
  * processes.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public class FileProcessController implements ProcessController {
   private static final Logger logger = LogService.getLogger();

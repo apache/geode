@@ -70,7 +70,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Retained;
  * basis. It lives on the node where transaction data exists.
  *
  * 
- * @since 4.0
+ * @since GemFire 4.0
  * 
  * @see TXManagerImpl
  */
@@ -863,7 +863,7 @@ public class TXState implements TXStateInterface {
   /**
    * Used to keep track of the region and key associated with a TXEntryState.
    * Also used to sort the entries into the order in which they will be applied.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   static class TXEntryStateWithRegionAndKey implements Comparable {
     public final TXEntryState es;

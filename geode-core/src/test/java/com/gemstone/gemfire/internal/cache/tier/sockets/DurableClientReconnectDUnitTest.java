@@ -57,7 +57,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**      
  * Tests for durable reconnect issue
  * 
- * @since 5.2   
+ * @since GemFire 5.2
  */
 
 public class DurableClientReconnectDUnitTest extends DistributedTestCase

@@ -42,7 +42,7 @@ import com.gemstone.gemfire.internal.Assert;
  * </p>
  * 
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * @see FunctionService
  */
 public class FunctionException extends GemFireException {
@@ -54,7 +54,7 @@ public class FunctionException extends GemFireException {
   /**
    * Creates new function exception with given error message.
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public FunctionException() {
   }
@@ -63,7 +63,7 @@ public class FunctionException extends GemFireException {
    * Creates new function exception with given error message.
    * 
    * @param msg
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public FunctionException(String msg) {
     super(msg);
@@ -75,7 +75,7 @@ public class FunctionException extends GemFireException {
    * 
    * @param msg
    * @param cause
-   * @since 6.0 
+   * @since GemFire 6.0
    */
   public FunctionException(String msg, Throwable cause) {
     super(msg, cause);
@@ -86,7 +86,7 @@ public class FunctionException extends GemFireException {
    * error message.
    * 
    * @param cause
-   * @since 6.0 
+   * @since GemFire 6.0
    */
   public FunctionException(Throwable cause) {
     super(cause);
@@ -96,7 +96,7 @@ public class FunctionException extends GemFireException {
    * Adds exceptions thrown from different nodes to a ds
    * 
    * @param cause
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public final void addException(Throwable cause) {
     Assert.assertTrue(cause != null,
@@ -107,7 +107,7 @@ public class FunctionException extends GemFireException {
   /**
    * Returns the list of exceptions thrown from different nodes
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public final List<Throwable> getExceptions() {
     if (this.exceptions == null) {
@@ -119,7 +119,7 @@ public class FunctionException extends GemFireException {
   /**
    * Adds the list of exceptions provided
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public final void addExceptions(Collection<? extends Throwable> ex) {
     getExceptions().addAll(ex);

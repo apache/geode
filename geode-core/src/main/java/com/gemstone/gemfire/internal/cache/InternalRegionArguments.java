@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
  * An internal version of Region Attributes that allows for additional information
  * to be passed to the Region constructors, typically for internal purposes, for example
  * internally GemFire may need use a Region and flag it for internal use only.
- * @since 4.2.3
+ * @since GemFire 4.2.3
  */
 public final class InternalRegionArguments
 {

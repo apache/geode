@@ -25,7 +25,7 @@ import java.util.List;
  * static monitoring that will fire for all instances even ones that may not 
  * yet be created at the time this monitor is defined
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public abstract class StatisticsMonitor {
 

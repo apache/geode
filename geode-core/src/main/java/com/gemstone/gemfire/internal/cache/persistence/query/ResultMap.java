@@ -29,7 +29,7 @@ import com.gemstone.gemfire.internal.cache.CachedDeserializable;
  * 
  * The key and value are both allowed to be an object, or a CachedDeserializable.
  * 
- * @since cedar
+ * @since GemFire cedar
  */
 public interface ResultMap {
 
@@ -107,7 +107,7 @@ public interface ResultMap {
 
   /**
    * A single entry in an index
-   * @since cedar
+   * @since GemFire cedar
    */
   interface Entry {
     /**

@@ -35,7 +35,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * one of the servers
  * 
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class GetClientPRMetaDataOp {
 

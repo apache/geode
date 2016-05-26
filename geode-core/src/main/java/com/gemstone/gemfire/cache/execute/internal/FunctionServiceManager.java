@@ -66,7 +66,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * While {@link FunctionService} is a customer facing interface to this functionality, all of the work is done here. In
  * addition, internal only functionality is exposed in this class.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class FunctionServiceManager {
   private final static ConcurrentHashMap<String, Function> idToFunctionMap = new ConcurrentHashMap<String, Function>();
@@ -96,7 +96,7 @@ public final class FunctionServiceManager {
    * @return Execution
    * @throws FunctionException
    *           if the region passed in is null
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public final Execution onRegion(Region region) {
     if (region == null) {
@@ -138,7 +138,7 @@ public final class FunctionServiceManager {
    * @return Execution
    * @throws FunctionException
    *           if Pool instance passed in is null
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public final Execution onServer(Pool pool, String... groups) {
     if (pool == null) {
@@ -162,7 +162,7 @@ public final class FunctionServiceManager {
    * @return Execution
    * @throws FunctionException
    *           if Pool instance passed in is null
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public final Execution onServers(Pool pool, String... groups) {
     if (pool == null) {
@@ -188,7 +188,7 @@ public final class FunctionServiceManager {
    * @return Execution
    * @throws FunctionException
    *           if cache is null, is not on a client, or it does not have a default pool
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public final Execution onServer(RegionService regionService, String... groups) {
     if (regionService == null) {
@@ -220,7 +220,7 @@ public final class FunctionServiceManager {
    * @return Execution
    * @throws FunctionException
    *           if cache is null, is not on a client, or it does not have a default pool
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public final Execution onServers(RegionService regionService, String... groups) {
     if (regionService == null) {
@@ -254,7 +254,7 @@ public final class FunctionServiceManager {
    * @return Execution
    * @throws FunctionException
    *           if either input parameter is null
-   * @since 6.0
+   * @since GemFire 6.0
    * 
    */
   public final Execution onMember(DistributedSystem system, DistributedMember distributedMember) {
@@ -280,7 +280,7 @@ public final class FunctionServiceManager {
    * 
    * @throws FunctionException
    *           if DistributedSystem instance passed is null
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public final Execution onMembers(DistributedSystem system, String... groups) {
     if (system == null) {
@@ -312,7 +312,7 @@ public final class FunctionServiceManager {
    *          set of distributed members on which {@link Function} to be executed
    * @throws FunctionException
    *           if DistributedSystem instance passed is null
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public final Execution onMembers(DistributedSystem system, Set<DistributedMember> distributedMembers) {
     if (system == null) {
@@ -334,7 +334,7 @@ public final class FunctionServiceManager {
    * @return Function
    * @throws FunctionException
    *           if functionID passed is null
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public final Function getFunction(String functionId) {
     if (functionId == null) {
@@ -352,7 +352,7 @@ public final class FunctionServiceManager {
    * 
    * @throws FunctionException
    *           if function instance passed is null or Function.getId() returns null
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public final void registerFunction(Function function) {
     if (function == null) {
@@ -374,7 +374,7 @@ public final class FunctionServiceManager {
    * 
    * @throws FunctionException
    *           if function instance passed is null or Function.getId() returns null
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public final void unregisterFunction(String functionId) {
     if (functionId == null) {
@@ -388,7 +388,7 @@ public final class FunctionServiceManager {
    * 
    * @throws FunctionException
    *           if function instance passed is null or Function.getId() returns null
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public final boolean isRegistered(String functionId) {
     if (functionId == null) {
@@ -401,7 +401,7 @@ public final class FunctionServiceManager {
    * Returns all locally registered functions
    * 
    * @return A view of registered functions as a Map of {@link Function#getId()} to {@link Function}
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public final Map<String, Function> getRegisteredFunctions() {
     // We have to remove the internal functions before returning the map to the users
@@ -425,7 +425,7 @@ public final class FunctionServiceManager {
   /**
    * @param region
    * @return true if the method is called on a region has a {@link Pool}.
-   * @since 6.0
+   * @since GemFire 6.0
    */
   private final boolean isClientRegion(Region region) {
     LocalRegion localRegion = (LocalRegion) region;

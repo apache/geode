@@ -26,7 +26,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
  * Interface of AsyncEventQueue. 
  * This represents the channel over which the events are delivered to the <code>AsyncEventListener</code>. 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface AsyncEventQueue {
 

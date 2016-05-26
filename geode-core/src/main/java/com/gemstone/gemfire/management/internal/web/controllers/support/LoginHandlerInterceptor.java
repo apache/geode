@@ -39,7 +39,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * @see javax.servlet.http.HttpServletRequest
  * @see javax.servlet.http.HttpServletResponse
  * @see org.springframework.web.servlet.handler.HandlerInterceptorAdapter
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public class LoginHandlerInterceptor extends HandlerInterceptorAdapter {

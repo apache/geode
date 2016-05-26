@@ -53,7 +53,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Unit tests for the JarDeployer class
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class JarDeployerDUnitTest extends CacheTestCase {
   private static final long serialVersionUID = 1L;

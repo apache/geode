@@ -55,7 +55,7 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
  * that has a scope of {@link Scope#DISTRIBUTED_ACK distributed ACK}
  * and {@link PartitionAttributes partition-attributes}.
  *
- * @since 5.1
+ * @since GemFire 5.1
  */
 public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
   

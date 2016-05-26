@@ -24,7 +24,7 @@ package com.gemstone.gemfire.internal.jta;
  * </p>
  * 
  * 
- * @since 4.0
+ * @since GemFire 4.0
  */
 import java.io.Serializable;
 import javax.transaction.*;

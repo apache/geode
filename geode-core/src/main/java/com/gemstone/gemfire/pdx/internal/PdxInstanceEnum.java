@@ -36,7 +36,7 @@ import com.gemstone.gemfire.pdx.WritablePdxInstance;
 import com.gemstone.gemfire.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 /**
  * Used to represent an enum value as a PdxInstance
- * @since 6.6.2
+ * @since GemFire 6.6.2
  */
 public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToBytes, ComparableEnum {
   private static final long serialVersionUID = -7417287878052772302L;

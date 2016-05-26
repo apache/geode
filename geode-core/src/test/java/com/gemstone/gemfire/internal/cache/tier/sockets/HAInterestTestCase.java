@@ -146,7 +146,7 @@ public class HAInterestTestCase extends DistributedTestCase {
   /**
    * Return the current primary waiting for a primary to exist.
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static VM getPrimaryVM() {
     return getPrimaryVM(null);
@@ -156,7 +156,7 @@ public class HAInterestTestCase extends DistributedTestCase {
    * Return the current primary waiting for a primary to exist and for it not to
    * be the oldPrimary (if oldPrimary is NOT null).
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static VM getPrimaryVM(final VM oldPrimary) {
     WaitCriterion wc = new WaitCriterion() {
@@ -208,7 +208,7 @@ public class HAInterestTestCase extends DistributedTestCase {
   /**
    * Given a server vm (server1, server2, or server3) return its port.
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static int getServerPort(VM vm) {
     if (vm == server1) {
@@ -226,7 +226,7 @@ public class HAInterestTestCase extends DistributedTestCase {
   /**
    * Given a server port (PORT1, PORT2, or PORT3) return its vm.
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static VM getServerVM(int port) {
     if (port == PORT1) {

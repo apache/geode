@@ -21,7 +21,7 @@ import com.gemstone.gemfire.GemFireException;
 /**
  * Indicates that required dependencies were not found in the ClassPath.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class DependenciesNotFoundException extends GemFireException {
   private static final long serialVersionUID = 9082304929238159814L;

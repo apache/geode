@@ -46,7 +46,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * in chunks. This allows us to send a message without needing to
  * perserialize it completely in memory thus saving buffer memory.
 
-    @since 5.0.2
+    @since GemFire 5.0.2
    
     */
 

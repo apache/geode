@@ -41,7 +41,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  *
- * @since 6.6.1
+ * @since GemFire 6.6.1
  */
 @Category(IntegrationTest.class)
 public class NewDeclarativeIndexCreationJUnitTest {

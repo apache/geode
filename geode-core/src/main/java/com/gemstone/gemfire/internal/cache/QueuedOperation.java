@@ -28,7 +28,7 @@ import java.io.*;
  * Represents a single operation that can be queued for reliable delivery.
  * Instances are owned in the context of a region.
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class QueuedOperation
   {

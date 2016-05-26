@@ -389,7 +389,7 @@ public abstract class AbstractDistributionConfig
   }
 
 
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   @ConfigAttributeChecker(name=CLIENT_CONFLATION_PROP_NAME)
   protected String checkClientConflation(String value) {
     if (! (value.equals(CLIENT_CONFLATION_PROP_VALUE_DEFAULT) ||

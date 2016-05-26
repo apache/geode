@@ -5448,7 +5448,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests what happens when one VM attempts to read an object for
    * which it does not have a registered <code>DataSerializer</code>.
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public void testNoDataSerializer() {
     assertTrue(getRegionAttributes().getScope().isDistributed());
@@ -5600,7 +5600,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests what happens when one VM attempts to read an object for
    * which it does not have a registered <code>Instantiator</code>.
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public void testNoInstantiator() {
     assertTrue(getRegionAttributes().getScope().isDistributed());

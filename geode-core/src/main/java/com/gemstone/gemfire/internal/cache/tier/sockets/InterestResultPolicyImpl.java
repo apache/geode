@@ -28,7 +28,7 @@ import java.io.*;
  * Used to make InterestResultPolicy implement DataSerializableFixedID
  *
  *
- * @since 5.7 
+ * @since GemFire 5.7
  */
 public final class InterestResultPolicyImpl extends InterestResultPolicy
   implements DataSerializableFixedID {

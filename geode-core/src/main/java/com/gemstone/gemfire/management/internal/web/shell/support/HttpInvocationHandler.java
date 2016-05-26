@@ -31,7 +31,7 @@ import com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker;
  * @see java.lang.reflect.InvocationHandler
  * @see javax.management.ObjectName
  * @see com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public class HttpInvocationHandler implements InvocationHandler {

@@ -36,7 +36,7 @@ import com.gemstone.gemfire.internal.DistributionLocator;
 import org.junit.runners.Parameterized;
 
 /**
- * @since 8.0
+ * @since GemFire 8.0
  */
 public abstract class AbstractLocatorLauncherIntegrationTestCase extends AbstractLauncherIntegrationTestCase {
 

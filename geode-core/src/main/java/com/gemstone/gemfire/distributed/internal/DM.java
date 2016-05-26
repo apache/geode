@@ -57,7 +57,7 @@ public interface DM extends ReplySender {
 
   /**
    * Get a set of all other members (both admin ones and normal).
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Set getAllOtherMembers();
 
@@ -70,14 +70,14 @@ public interface DM extends ReplySender {
   /**
    * removes members that have older versions from the given collection, typically
    * a Set from a distribution advisor
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public void retainMembersWithSameOrNewerVersion(Collection<InternalDistributedMember> members, Version version);
 
   /**
    * removes members that have the given version or later from the given collection,
    * typically a Set from a distribution advisor
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public void removeMembersWithSameOrNewerVersion(Collection<InternalDistributedMember> members, Version version);
 
@@ -97,7 +97,7 @@ public interface DM extends ReplySender {
   /**
    * Returns an unmodifiable set containing the identities of all of
    * the known distribution managers including admin members.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Set getDistributionManagerIdsIncludingAdmin();
 
@@ -121,7 +121,7 @@ public interface DM extends ReplySender {
   /**
    * Add a membership listener for all members
    * and return other DistribtionManagerIds as an atomic operation
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Set addAllMembershipListenerAndGetAllIds(MembershipListener l);
 
@@ -134,7 +134,7 @@ public interface DM extends ReplySender {
    * Return true if no other distribution manager was in this group
    * when he joined.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public boolean isAdam();
   /**
@@ -143,13 +143,13 @@ public interface DM extends ReplySender {
    * Note that this method may return null (no valid elders exist).
    * 
    * @return the elder member, possibly null
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public InternalDistributedMember getElderId();
   /**
    * Return true if this is the oldest DM in this group.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public boolean isElder();
   
@@ -167,7 +167,7 @@ public interface DM extends ReplySender {
    * @param force if true then this DM must become the elder.
    * @param useTryLock if true then a try-lock will be used
    * @throws IllegalStateException if elder try lock fails
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public ElderState getElderState(boolean force, boolean useTryLock);
   
@@ -175,7 +175,7 @@ public interface DM extends ReplySender {
    * Returns the id of the underlying distribution channel used for
    * communication.
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public long getChannelId();
 
@@ -231,7 +231,7 @@ public interface DM extends ReplySender {
    * @throws IllegalArgumentException
    *         <code>l</code> was not registered on this distribution
    *         manager
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void removeAllMembershipListener(MembershipListener l);
 
@@ -242,7 +242,7 @@ public interface DM extends ReplySender {
   /**
    * Used to get the DistributionConfig so that Connection can
    * figure out if it is configured for async comms.
-   * @since 4.2.1
+   * @since GemFire 4.2.1
    */
   public DistributionConfig getConfig();
   
@@ -356,7 +356,7 @@ public interface DM extends ReplySender {
   /**
    * Return all members that are on the the this host 
    * @return set of {@link InternalDistributedMember} including this VM
-   * @since gemfire59poc
+   * @since GemFire 5.9
    */
   public Set <InternalDistributedMember> getMembersInThisZone();
   
@@ -403,7 +403,7 @@ public interface DM extends ReplySender {
    * locators.
    * @param isSharedConfigurationEnabled flag to determine if the locator has enabled shared configuration
    * 
-   * @since 6.6.3
+   * @since GemFire 6.6.3
    */
   public void addHostedLocators(InternalDistributedMember member, Collection<String> locators, boolean isSharedConfigurationEnabled);
   
@@ -416,7 +416,7 @@ public interface DM extends ReplySender {
    * This currently only tracks stand-alone/dedicated locators, not embedded
    * locators.
    * 
-   * @since 6.6.3
+   * @since GemFire 6.6.3
    */
   public Collection<String> getHostedLocators(InternalDistributedMember member);
   
@@ -428,7 +428,7 @@ public interface DM extends ReplySender {
    * This currently only tracks stand-alone/dedicated locators, not embedded
    * locators.
    * 
-   * @since 6.6.3
+   * @since GemFire 6.6.3
    */
   public Map<InternalDistributedMember, Collection<String>> getAllHostedLocators();
 
@@ -440,7 +440,7 @@ public interface DM extends ReplySender {
    * This currently only tracks stand-alone/dedicated locators, not embedded
    * locators.
    * 
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public Map<InternalDistributedMember, Collection<String>> getAllHostedLocatorsWithSharedConfiguration();
   

@@ -33,7 +33,7 @@ import org.springframework.security.core.GrantedAuthority;
 /**
  * Spring security AuthenticationProvider for GemFire. It connects to gemfire manager using given credentials.
  * Successful connect is treated as successful authentication and web user is authenticated
- * @since version 9.0
+ * @since GemFire version 9.0
  */
 public class GemFireAuthenticationProvider implements AuthenticationProvider {
 

@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
  * Base class for Mock Extension.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public abstract class AbstractMockExtension<T> implements Extension<T> {
   public AtomicInteger beforeCreateCounter = new AtomicInteger();

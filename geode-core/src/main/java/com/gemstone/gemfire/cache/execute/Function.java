@@ -33,7 +33,7 @@ import com.gemstone.gemfire.lang.Identifiable;
  * @see FunctionService
  *
  *
- * @since 6.0
+ * @since GemFire 6.0
  */
 @FunctionalInterface
 public interface Function extends Identifiable<String> {
@@ -52,7 +52,7 @@ public interface Function extends Identifiable<String> {
    * </p>
    * 
    * @return whether this function returns a Result back to the caller.
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public default boolean hasResult() {
     return true;
@@ -67,7 +67,7 @@ public interface Function extends Identifiable<String> {
    * provided in parameter is instance of {@link RegionFunctionContext}.
    * 
    * @param context as created by {@link Execution}
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public void execute(FunctionContext context);
 
@@ -76,7 +76,7 @@ public interface Function extends Identifiable<String> {
    * with {@link FunctionService}
    * 
    * @return string identifying this function
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public default String getId() {
     return getClass().getCanonicalName();
@@ -96,7 +96,7 @@ public interface Function extends Identifiable<String> {
    * </p>
    *
    * @return false if the function is read only, otherwise returns true
-   * @since 6.0
+   * @since GemFire 6.0
    * @see FunctionService
    */
   public default boolean optimizeForWrite() {
@@ -110,7 +110,7 @@ public interface Function extends Identifiable<String> {
    * @return whether the function is eligible for re-execution.
    * @see RegionFunctionContext#isPossibleDuplicate()
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public default boolean isHA() {
     return true;

@@ -20,7 +20,7 @@ package com.gemstone.gemfire.internal.offheap;
  * Instances that implement this interface must have release called on them
  * before the instance becomes garbage.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 public interface Releasable {
   /**

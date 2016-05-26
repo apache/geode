@@ -22,7 +22,7 @@ package com.gemstone.gemfire.internal.jta;
  * </p>
  * 
  * 
- * @since 4.0 
+ * @since GemFire 4.0
  */
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;

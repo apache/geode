@@ -29,7 +29,7 @@ public interface LRUClockNode {
   public int updateEntrySize(EnableLRU ccHelper);
   /** compute the new entry size and return the delta from the previous entry size
    * @param value then entry's value
-   * @since 6.1.2.9
+   * @since GemFire 6.1.2.9
    */
   public int updateEntrySize(EnableLRU ccHelper, Object value);
   

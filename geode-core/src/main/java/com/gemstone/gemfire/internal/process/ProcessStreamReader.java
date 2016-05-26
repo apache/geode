@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Reads the output stream of a Process.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public abstract class ProcessStreamReader implements Runnable {
   private static final Logger logger = LogService.getLogger();
@@ -208,7 +208,7 @@ public abstract class ProcessStreamReader implements Runnable {
   /**
    * Builds a ProcessStreamReader.
    * 
-   * @since 8.2
+   * @since GemFire 8.2
    */
   public static class Builder {
     protected Process process;

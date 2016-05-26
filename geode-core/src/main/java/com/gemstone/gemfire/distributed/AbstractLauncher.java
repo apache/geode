@@ -63,7 +63,7 @@ import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
  * @see java.lang.Comparable
  * @see java.lang.Runnable
  * @see com.gemstone.gemfire.lang.Identifiable
- * @since 7.0
+ * @since GemFire 7.0
  */
 public abstract class AbstractLauncher<T extends Comparable<T>> implements Runnable {
 

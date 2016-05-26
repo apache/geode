@@ -543,7 +543,7 @@ public class CachePerfStats {
 
   /**
    * Returns the current NanoTime or, if clock stats are disabled, zero.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static long getStatTime() {
     return enableClockStats? NanoTimer.getTime() : 0; 
@@ -844,7 +844,7 @@ public class CachePerfStats {
   
   /**
    * @return the timestamp that marks the start of the operation
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public long startCacheListenerCall() {
     stats.incInt(cacheListenerCallsInProgressId, 1);
@@ -852,7 +852,7 @@ public class CachePerfStats {
   }
   /**
    * @param start the timestamp taken when the operation started 
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public void endCacheListenerCall(long start) {
     if (enableClockStats) {
@@ -1101,7 +1101,7 @@ public class CachePerfStats {
    * stats are closed when the {@linkplain GemFireCacheImpl#close cache}
    * is closed.
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   void close() {
     this.stats.close();
@@ -1110,7 +1110,7 @@ public class CachePerfStats {
   /**
    * Returns whether or not these stats have been closed
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public boolean isClosed() {
     return this.stats.isClosed();
@@ -1172,7 +1172,7 @@ public class CachePerfStats {
 
   /**
    * Returns the Statistics instance that stores the cache perf stats.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public Statistics getStats() {
     return this.stats;
@@ -1181,7 +1181,7 @@ public class CachePerfStats {
 //   /**
 //    * Returns a helper object so that the event queue can record its
 //    * stats to the proper cache perf stats.
-//    * @since 3.5
+//    * @since GemFire 3.5
 //    */
 //   public ThrottledQueueStatHelper getEventQueueHelper() {
 //     return new ThrottledQueueStatHelper() {
@@ -1205,7 +1205,7 @@ public class CachePerfStats {
   /**
    * Returns a helper object so that the event pool can record its
    * stats to the proper cache perf stats.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public PoolStatHelper getEventPoolHelper() {
     return new PoolStatHelper() {

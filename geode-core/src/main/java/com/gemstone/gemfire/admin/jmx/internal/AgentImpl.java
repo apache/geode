@@ -78,7 +78,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppenders;
  * The GemFire JMX Agent provides the ability to administrate one GemFire
  * distributed system via JMX.
  *
- * @since     3.5
+ * @since GemFire     3.5
  */
 public class AgentImpl
 implements com.gemstone.gemfire.admin.jmx.Agent,
@@ -1496,7 +1496,7 @@ implements com.gemstone.gemfire.admin.jmx.Agent,
    * Distributed System.
    *
    * @see AdminDistributedSystemJmxImpl#setRmiClientCountZero(boolean)
-   * @since 6.0
+   * @since GemFire 6.0
    */
   void updateRmiClientsCount() {
     int noOfClientsConnected = 0;
@@ -1549,7 +1549,7 @@ implements com.gemstone.gemfire.admin.jmx.Agent,
  * Adapter class for NotificationListener that listens to notifications of type
  * javax.management.remote.JMXConnectionNotification
  *
- * @since 6.0
+ * @since GemFire 6.0
  */
 class ConnectionNotificationAdapter implements NotificationListener {
   private static final Logger logger = LogService.getLogger();
@@ -1587,7 +1587,7 @@ class ConnectionNotificationAdapter implements NotificationListener {
  * Filters out the notifications of the type JMXConnectionNotification.OPENED,
  * JMXConnectionNotification.CLOSED and JMXConnectionNotification.FAILED.
  *
- * @since 6.0
+ * @since GemFire 6.0
  */
 class ConnectionNotificationFilterImpl implements NotificationFilter {
 

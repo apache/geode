@@ -28,7 +28,7 @@ import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 
 /**
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class RegionDestroyFunction implements Function, InternalEntity {
   private static final long serialVersionUID = 9172773671865750685L;

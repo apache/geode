@@ -43,7 +43,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * @see org.jmock.Mockery
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(UnitTest.class)
 public class AbstractSignalNotificationHandlerJUnitTest {

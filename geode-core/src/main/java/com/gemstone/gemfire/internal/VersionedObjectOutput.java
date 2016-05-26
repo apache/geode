@@ -25,7 +25,7 @@ import java.io.ObjectOutput;
  * {@link VersionedDataStream} wrapping given {@link ObjectOutput} for a stream
  * directed to a different product version.
  * 
- * @since 7.1
+ * @since GemFire 7.1
  */
 public final class VersionedObjectOutput implements ObjectOutput,
     VersionedDataStream {

@@ -44,7 +44,7 @@ import com.gemstone.gemfire.internal.Version;
  * this class is not synchronized, so take that under advisement
  * if you decide to modify a view with add() or remove().
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class NetView implements DataSerializableFixedID {
 

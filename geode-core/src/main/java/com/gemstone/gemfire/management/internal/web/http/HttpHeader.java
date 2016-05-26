@@ -22,7 +22,7 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
  * The HttpHeader enum is an enumeration of all HTTP request/response header names.
  * <p/>
  * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html">http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html</a>
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public enum HttpHeader {

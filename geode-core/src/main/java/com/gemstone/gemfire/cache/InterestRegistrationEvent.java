@@ -25,7 +25,7 @@ import com.gemstone.gemfire.internal.cache.tier.InterestType;
  * Interface <code>InterestRegistrationEvent</code> encapsulated interest
  * event information like region and keys of interest.
  *
- * @since 6.0
+ * @since GemFire 6.0
  */
 public interface InterestRegistrationEvent {
 

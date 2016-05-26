@@ -42,7 +42,7 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 /**
  * Tests 6.0 cache.xml features.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 
 public class CacheXml60DUnitTest extends CacheXml58DUnitTest

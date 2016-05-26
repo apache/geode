@@ -56,7 +56,7 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 /**
  * Test class for Partitioned Region and CQs
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class PrCqUsingPoolDUnitTest extends CacheTestCase {
 
@@ -1850,7 +1850,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
    * deserializeValues and notifyBySubscription to serve up the
    * given region.
    *
-   * @since 5.5
+   * @since GemFire 5.5
    */
   protected void startBridgeServer(int port, boolean notifyBySubscription)
   throws IOException {

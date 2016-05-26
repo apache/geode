@@ -39,7 +39,7 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 /**
  * Tests the Collaboration Lock used internally by dlock service.
  *
- * @since 4.1.1
+ * @since GemFire 4.1.1
  */
 @Category(IntegrationTest.class)
 @Ignore("Test is broken and was named CollaborationJUnitDisabledTest")

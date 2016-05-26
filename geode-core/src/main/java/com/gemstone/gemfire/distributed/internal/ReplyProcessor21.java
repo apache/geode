@@ -79,7 +79,7 @@ import com.gemstone.gemfire.i18n.StringId;
  * @see MessageWithReply
  *
  *
- * @since 2.1
+ * @since GemFire 2.1
  */
 public class ReplyProcessor21
     implements MembershipListener {
@@ -551,7 +551,7 @@ public class ReplyProcessor21
    * Registers this processor as a membership listener and
    * returns a set of the current members.
    * @return a Set of the current members
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected Set addListenerAndGetMembers() {
     return getDistributionManager()
@@ -559,7 +559,7 @@ public class ReplyProcessor21
   }
   /**
    * Unregisters this processor as a membership listener
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void removeListener() {
     try {
@@ -572,7 +572,7 @@ public class ReplyProcessor21
   /**
    * Returns the set of members that this processor should care about.
    * @return a Set of the current members
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected Set getDistributionManagerIds() {
     return getDistributionManager().getDistributionManagerIds();
@@ -868,7 +868,7 @@ public class ReplyProcessor21
   /**
    * Used to cleanup resources allocated by the processor
    * after we are done using it.
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public void cleanup() {
     if (!this.keeperCleanedUp) {
@@ -950,7 +950,7 @@ public class ReplyProcessor21
 
   /**
    * Control of reply processor waiting behavior in the face of exceptions.
-   * @since 5.7
+   * @since GemFire 5.7
    * @return true to stop waiting when exceptions are present
    */
   protected boolean stopBecauseOfExceptions() {

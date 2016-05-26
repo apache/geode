@@ -21,7 +21,7 @@ package com.gemstone.gemfire.admin;
  * A <code>RuntimeAdminException</code> is thrown when a runtime errors occurs
  * during administration or monitoring of GemFire. 
  *
- * @since     3.5
+ * @since GemFire     3.5
  *
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */

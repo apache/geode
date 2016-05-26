@@ -35,7 +35,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Enables off-heap storage by creating a MemoryAllocator.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 public class OffHeapStorage implements OffHeapMemoryStats {
   public static final String STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY = "gemfire.offheap.stayConnectedOnOutOfOffHeapMemory";

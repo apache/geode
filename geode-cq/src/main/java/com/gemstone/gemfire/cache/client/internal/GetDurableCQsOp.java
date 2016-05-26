@@ -33,7 +33,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
 
 /**
  * Retrieves all durable cqs for a client from a server
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class GetDurableCQsOp {
   /**

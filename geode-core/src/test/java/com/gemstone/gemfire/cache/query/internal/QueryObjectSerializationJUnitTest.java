@@ -42,7 +42,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Tests the Serialization of the Query related class.
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 @Category(UnitTest.class)
 public class QueryObjectSerializationJUnitTest implements Serializable {

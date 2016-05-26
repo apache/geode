@@ -32,7 +32,7 @@ import com.gemstone.gemfire.internal.Version;
  * version of ResultSet used for order by clause If the elements are Structs,
  * then use SortedStructSet instead.
  * 
- * @since 4.0
+ * @since GemFire 4.0
  */
 public final class SortedResultSet extends TreeSet implements SelectResults, Ordered, 
     DataSerializableFixedID {

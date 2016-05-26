@@ -70,7 +70,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * 
  * This model is not threadsafe.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * 
  */
 @SuppressWarnings("synthetic-access")

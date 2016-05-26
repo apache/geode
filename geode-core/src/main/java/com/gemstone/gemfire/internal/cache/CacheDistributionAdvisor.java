@@ -256,7 +256,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
   /**
    * Same as adviseCacheOp but only includes members that are playing the
    * specified role.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public Set adviseCacheOpRole(final Role role) {
     return adviseFilter(new Filter() {
@@ -447,7 +447,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
   /**
    * returns the set of all the members in the system which requires old values
    * and are not yet finished with initialization (including GII).
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public Set adviseRequiresOldValueInCacheOp( ) {
     return adviseFilter(new Filter() {
@@ -536,7 +536,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
      * This information may be incorrect for a PartitionedRegion, but
      * may be relied upon for DistributedRegions (including BucketRegions)
      * 
-     * @since prpersist this field is now overloaded for partitioned regions with persistence.
+     * @since GemFire prpersist this field is now overloaded for partitioned regions with persistence.
      * In the case of pr persistence, this field indicates that the region has finished
      * recovery from disk.
      */
@@ -697,7 +697,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
 
     /**
      * Sets the SubscriptionAttributes for the region that this profile is on
-     * @since 5.0
+     * @since GemFire 5.0
      */
     public void setSubscriptionAttributes(SubscriptionAttributes sa) {
       this.subscriptionAttributes = sa;
@@ -998,7 +998,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
    * memberIds
    * @param oldRecipients the <code>Set</code> of memberIds that have received the message
    * @return the set of new replicate's memberIds
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public Set adviseNewReplicates(final Set oldRecipients)
   {
@@ -1023,7 +1023,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
    * Provide all the replicates including persistent replicates.
    * 
    * @return the set of replicate's memberIds
-   * @since 5.8
+   * @since GemFire 5.8
    */
   public Set<InternalDistributedMember> adviseReplicates() {
     return adviseFilter(new Filter() {
@@ -1042,7 +1042,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
    * Provide only the preloadeds given a set of existing memberIds
    * 
    * @return the set of preloaded's memberIds
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public Set advisePreloadeds() {
     return adviseFilter(new Filter() {
@@ -1062,7 +1062,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
    * memberIds
    * 
    * @return the set of replicate's memberIds
-   * @since 5.8
+   * @since GemFire 5.8
    */
   public Set adviseEmptys() {
     return adviseFilter(new Filter() {
@@ -1080,7 +1080,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
    * Provide only the normals (having DataPolicy.NORMAL) given a set of existing memberIds
    * 
    * @return the set of normal's memberIds
-   * @since 5.8
+   * @since GemFire 5.8
    */
   public Set adviseNormals() {
     return adviseFilter(new Filter() {

@@ -34,7 +34,7 @@ import com.vmware.gemfire.tools.pulse.internal.data.Repository;
  * 
  * PulseLogWriter is the implementation of LogWriter.
  * 
- * @since 7.0.1
+ * @since GemFire 7.0.1
  * 
  */
 public class PulseLogWriter implements LogWriter {

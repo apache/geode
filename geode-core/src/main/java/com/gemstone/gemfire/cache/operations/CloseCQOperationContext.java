@@ -23,7 +23,7 @@ import java.util.Set;
  * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#CLOSE_CQ} operation for the pre-operation
  * case.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class CloseCQOperationContext extends ExecuteCQOperationContext {
 

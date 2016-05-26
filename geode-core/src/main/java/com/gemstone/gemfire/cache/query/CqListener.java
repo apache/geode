@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.CacheCallback;
  * is an event satisfied by the CQ and the other called when there is an 
  * error during CQ processing. 
  *
- * @since 5.5
+ * @since GemFire 5.5
  */
 
 public interface CqListener extends CacheCallback {

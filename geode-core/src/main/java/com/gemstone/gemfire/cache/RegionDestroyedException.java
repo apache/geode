@@ -21,7 +21,7 @@ package com.gemstone.gemfire.cache;
  * on the region object are not allowed.
  *
  *
- * @since 2.0
+ * @since GemFire 2.0
  */
 public class RegionDestroyedException extends CacheRuntimeException {
 private static final long serialVersionUID = 319804842308010754L;

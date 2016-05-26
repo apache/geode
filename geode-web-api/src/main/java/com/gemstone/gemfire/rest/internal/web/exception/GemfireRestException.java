@@ -22,7 +22,7 @@ import com.gemstone.gemfire.GemFireException;
 /**
  * Indicates that error encountered while processing REST request.
  * <p/>
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 public class GemfireRestException extends GemFireException {

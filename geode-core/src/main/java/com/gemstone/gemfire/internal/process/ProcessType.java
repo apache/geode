@@ -20,7 +20,7 @@ package com.gemstone.gemfire.internal.process;
  * Enumeration of GemFire {@link ControllableProcess} types and the file names
  * associated with controlling its lifecycle.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public enum ProcessType {
   LOCATOR ("LOCATOR", "vf.gf.locator"),

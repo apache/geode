@@ -22,7 +22,7 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
 /**
  * Used to provide information on a grantor request made to the elder.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class GrantorInfo {
   private final InternalDistributedMember id;

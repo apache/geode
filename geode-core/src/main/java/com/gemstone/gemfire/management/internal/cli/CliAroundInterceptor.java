@@ -24,7 +24,7 @@ import com.gemstone.gemfire.management.internal.cli.shell.GfshExecutionStrategy;
  * intercept before & after actual command execution.
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface CliAroundInterceptor {
   

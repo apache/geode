@@ -54,7 +54,7 @@ import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 /**
  * Tests peer to peer authentication in Gemfire
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 @Category({ DistributedTest.class, SecurityTest.class })
 public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {

@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.OperationAbortedException;
 /**
  * Exception observed during GatewayReceiver operations.
  * 
- * @since 8.1
+ * @since GemFire 8.1
  */
 public class GatewayReceiverException extends OperationAbortedException {
   private static final long serialVersionUID = 7079321411869820364L;

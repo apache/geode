@@ -41,7 +41,7 @@ public interface InternalCacheEvent extends CacheEvent
   public boolean isBridgeEvent();
   /**
    * Answers true if this event is from a client
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public boolean hasClientOrigin();
   

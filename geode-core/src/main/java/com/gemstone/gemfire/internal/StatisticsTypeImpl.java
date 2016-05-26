@@ -29,7 +29,7 @@ import java.util.*;
  * @see Statistics
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class StatisticsTypeImpl implements StatisticsType {
 

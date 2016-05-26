@@ -59,7 +59,7 @@ public class RemoteTransportConfig implements TransportConfig {
    * We assume that <code>config</code> already been checked for
    * errors.
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public RemoteTransportConfig(DistributionConfig config, int vmKind) {
     if (config.getBindAddress() == null) {
@@ -259,7 +259,7 @@ public class RemoteTransportConfig implements TransportConfig {
    * appropriate to use with {@link
    * com.gemstone.gemfire.distributed.DistributedSystem#connect}.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   Properties toDSProperties() {
     Properties props = new Properties();

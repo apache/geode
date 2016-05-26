@@ -26,13 +26,13 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
  * Encapsulates a region operation that requires both key and serialized value
  * for the pre-operation and post-operation cases.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public abstract class KeyValueOperationContext extends KeyOperationContext {
 
   /**
    * The value of the create/update operation.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   private Object value;
   
@@ -52,7 +52,7 @@ public abstract class KeyValueOperationContext extends KeyOperationContext {
    * @param isObject
    *                true when the value is an object; false when it is a raw
    *                byte array
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public KeyValueOperationContext(Object key, Object value,
       boolean isObject) {
@@ -74,7 +74,7 @@ public abstract class KeyValueOperationContext extends KeyOperationContext {
    *                byte array
    * @param postOperation
    *                true if the context is at the time of sending updates
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public KeyValueOperationContext(Object key, Object value,
       boolean isObject, boolean postOperation) {
@@ -128,7 +128,7 @@ public abstract class KeyValueOperationContext extends KeyOperationContext {
    * or you can just call {@link #getDeserializedValue()}.
    * 
    * @return the value for this operation
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public Object getValue() {
     return this.value;
@@ -166,7 +166,7 @@ public abstract class KeyValueOperationContext extends KeyOperationContext {
    * @param isObject
    *                true when the value is an object (either serialized or
    *                deserialized); false when it is a raw byte array
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void setValue(Object value, boolean isObject) {
     this.value = value;

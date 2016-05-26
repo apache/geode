@@ -43,7 +43,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Tests querying of MemberMXBean which is used by MBeanProcessController to
  * control GemFire ControllableProcesses.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(IntegrationTest.class)
 public class LauncherMemberMXBeanIntegrationTest extends AbstractLauncherIntegrationTestCase {

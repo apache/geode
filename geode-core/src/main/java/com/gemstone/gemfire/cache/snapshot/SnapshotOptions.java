@@ -29,13 +29,13 @@ import java.io.Serializable;
  * @param <K> the cache entry key type
  * @param <V> the cache entry value type
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface SnapshotOptions<K, V> extends Serializable {
   /**
    * Defines the available snapshot file formats.
    * 
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public enum SnapshotFormat {
     /** an optimized binary format specific to GemFire */

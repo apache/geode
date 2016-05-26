@@ -86,7 +86,7 @@ import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMa
  * Abstract implementation of {@link RegionMap}that has all the common
  * behavior.
  *
- * @since 3.5.1
+ * @since GemFire 3.5.1
  *
  *
  */

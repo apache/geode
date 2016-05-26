@@ -180,7 +180,7 @@ public final class PrimaryRequestMessage extends PartitionMessage
 
   /**
    * A processor to capture the member who was selected as primary for the bucket requested
-   * @since 5.1
+   * @since GemFire 5.1
    */
   static public class PrimaryResponse extends ReplyProcessor21 {
     private volatile PrimaryRequestReplyMessage msg;

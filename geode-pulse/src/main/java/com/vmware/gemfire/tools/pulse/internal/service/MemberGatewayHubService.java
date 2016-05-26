@@ -41,7 +41,7 @@ import java.util.Map;
  * This class contains implementations of getting Gateway Receivers and Senders
  * details of Cluster Member.
  * 
- * @since version 7.5
+ * @since GemFire version 7.5
  */
 @Component
 @Service("MemberGatewayHub")

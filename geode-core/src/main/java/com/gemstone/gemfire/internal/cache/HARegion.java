@@ -53,7 +53,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Released;
  * This region is being implemented to suppress distribution of puts and to
  * allow localDestroys on mirrored regions.
  * 
- * @since 4.3
+ * @since GemFire 4.3
  *  
  */
 public final class HARegion extends DistributedRegion
@@ -116,7 +116,7 @@ public final class HARegion extends DistributedRegion
 
   /**
    * Updates never distributed from buckets.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   @Override
   protected void distributeUpdate(EntryEventImpl event, long lastModifiedTime, boolean ifNew, boolean ifOld, Object expectedOldValue, boolean requireOldValue) {

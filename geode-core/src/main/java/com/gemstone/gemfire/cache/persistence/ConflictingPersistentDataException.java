@@ -29,7 +29,7 @@ import com.gemstone.gemfire.admin.AdminDistributedSystem;
  * persistent files are completely different. In that case, gemfire throws this
  * exception rather than discarding one of the sets of persistent files.
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class ConflictingPersistentDataException extends GemFireException {
 

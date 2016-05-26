@@ -71,7 +71,7 @@ import com.gemstone.gemfire.test.process.ProcessWrapper;
  * @see com.gemstone.gemfire.distributed.ServerLauncher.Builder
  * @see com.gemstone.gemfire.distributed.ServerLauncher.ServerState
  * @see com.gemstone.gemfire.internal.AvailablePortHelper
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(IntegrationTest.class)
 public class ServerLauncherRemoteIntegrationTest extends AbstractServerLauncherRemoteIntegrationTestCase {

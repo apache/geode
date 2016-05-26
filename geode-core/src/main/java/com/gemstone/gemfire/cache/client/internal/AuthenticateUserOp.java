@@ -58,7 +58,7 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  * 
  * @see PutUserCredentials
  * @see ProxyCache
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class AuthenticateUserOp {
 

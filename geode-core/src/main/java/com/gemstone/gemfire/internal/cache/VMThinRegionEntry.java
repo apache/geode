@@ -22,7 +22,7 @@ package com.gemstone.gemfire.internal.cache;
  * VM -> entries stored in VM memory
  * Thin -> no extra statistics
  *
- * @since 3.5.1
+ * @since GemFire 3.5.1
  *
  *
  */

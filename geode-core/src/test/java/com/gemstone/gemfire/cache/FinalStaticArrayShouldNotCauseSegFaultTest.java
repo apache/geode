@@ -42,7 +42,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * This test and its corrections can be removed after the release of JDK
  * 1.8.0u60 if we choose to not support 1.8.0u20 - 1.8.0u45 inclusive.
  * 
- * @since 8.2
+ * @since GemFire 8.2
  */
 @Category(UnitTest.class)
 public class FinalStaticArrayShouldNotCauseSegFaultTest {

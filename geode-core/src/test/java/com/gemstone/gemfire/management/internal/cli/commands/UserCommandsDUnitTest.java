@@ -40,7 +40,7 @@ import org.junit.experimental.categories.Category;
 /**
  * Unit tests for configuring user commands.
  *
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(DistributedTest.class)
 public class UserCommandsDUnitTest extends CliCommandTestBase {

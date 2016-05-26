@@ -31,7 +31,7 @@ import com.gemstone.gemfire.i18n.StringId;
  *
  *
  * @see CacheLoader#load(LoaderHelper) load
- * @since 2.0
+ * @since GemFire 2.0
  */
 public class LoaderHelperImpl implements LoaderHelper
 {

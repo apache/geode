@@ -50,7 +50,7 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
  * @see com.gemstone.gemfire.internal.Config
  *
  *
- * @since 2.1
+ * @since GemFire 2.1
  */
 public interface DistributionConfig extends Config, LogConfig {
 
@@ -1140,7 +1140,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * com.gemstone.gemfire.i18n.LogWriterI18n} instance to log to.
    *  Set this property with put(), not with setProperty()
    *
-   * @since 4.0 */
+   * @since GemFire 4.0 */
   public static final String LOG_WRITER_NAME = "log-writer";
 
   /** The name of an internal property that specifies a 
@@ -1148,14 +1148,14 @@ public interface DistributionConfig extends Config, LogConfig {
    *  in to a ds connect.
    *  Set this property with put(), not with setProperty()
    *
-   * @since 7.0 */
+   * @since GemFire 7.0 */
   public static final String DS_CONFIG_NAME = "ds-config";
   
   /**
    * The name of an internal property that specifies whether
    * the distributed system is reconnecting after a forced-
    * disconnect.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static final String DS_RECONNECTING_NAME = "ds-reconnecting";
   
@@ -1172,7 +1172,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * com.gemstone.gemfire.LogWriter} instance to log security messages to. Set
    * this property with put(), not with setProperty()
    *
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public static final String SECURITY_LOG_WRITER_NAME = "security-log-writer";
 
@@ -1182,7 +1182,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * FileOutputStream will be closed when the distributed
    * system disconnects.  Set this property with put(), not
    * with setProperty()
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static final String LOG_OUTPUTSTREAM_NAME = "log-output-stream";
 
@@ -1192,7 +1192,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property is set, the FileOutputStream will be closed when the distributed
    * system disconnects. Set this property with put(), not with setProperty()
    *
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public static final String SECURITY_LOG_OUTPUTSTREAM_NAME = "security-log-output-stream";
 
@@ -1844,18 +1844,18 @@ public interface DistributionConfig extends Config, LogConfig {
   /** The name of the "asyncMaxQueueSize" property */
   @ConfigAttribute(type=Integer.class, min=MIN_ASYNC_MAX_QUEUE_SIZE, max=MAX_ASYNC_MAX_QUEUE_SIZE)
   public static final String ASYNC_MAX_QUEUE_SIZE_NAME = "async-max-queue-size";
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   @ConfigAttribute(type=String.class)
   public static final String CLIENT_CONFLATION_PROP_NAME = "conflate-events";
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   public static final String CLIENT_CONFLATION_PROP_VALUE_DEFAULT = "server";
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   public static final String CLIENT_CONFLATION_PROP_VALUE_ON = "true";
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   public static final String CLIENT_CONFLATION_PROP_VALUE_OFF = "false";
   
      
-  /** @since 9.0 */
+  /** @since Geode 1.0 */
   @ConfigAttribute(type=Boolean.class)
   public static final String DISTRIBUTED_TRANSACTIONS_NAME = "distributed-transactions";
   public static final boolean DEFAULT_DISTRIBUTED_TRANSACTIONS = false;
@@ -1870,7 +1870,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the <a
    * href="../DistributedSystem.html#conflate-events">"conflate-events"</a>
    * property.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   @ConfigAttributeGetter(name=CLIENT_CONFLATION_PROP_NAME)
   public String getClientConflation();
@@ -1878,7 +1878,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Sets the value of the <a
    * href="../DistributedSystem.html#conflate-events">"conflate-events"</a>
    * property.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   @ConfigAttributeSetter(name=CLIENT_CONFLATION_PROP_NAME)
   public void setClientConflation(String clientConflation);
@@ -2272,7 +2272,7 @@ public interface DistributionConfig extends Config, LogConfig {
     * Returns the value of the <a
     * href="../DistributedSystem.html#remove-unresponsive-client">"remove-unresponsive-client"</a>
     * property.
-    * @since 6.0
+    * @since GemFire 6.0
     */
    @ConfigAttributeGetter(name=REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME)
    public boolean getRemoveUnresponsiveClient();
@@ -2280,12 +2280,12 @@ public interface DistributionConfig extends Config, LogConfig {
     * Sets the value of the <a
     * href="../DistributedSystem.html#remove-unresponsive-client">"remove-unresponsive-client"</a>
     * property.
-    * @since 6.0
+    * @since GemFire 6.0
     */
    @ConfigAttributeSetter(name=REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME)
    public void setRemoveUnresponsiveClient(boolean value);
 
-   /** @since 6.3 */
+   /** @since GemFire 6.3 */
    @ConfigAttribute(type=Boolean.class)
    public static final String DELTA_PROPAGATION_PROP_NAME = "delta-propagation";
 
@@ -2294,7 +2294,7 @@ public interface DistributionConfig extends Config, LogConfig {
     * Returns the value of the <a
     * href="../DistributedSystem.html#delta-propagation">"delta-propagation"</a>
     * property.
-    * @since 6.3
+    * @since GemFire 6.3
     */
    @ConfigAttributeGetter(name=DELTA_PROPAGATION_PROP_NAME)
    public boolean getDeltaPropagation();
@@ -2303,7 +2303,7 @@ public interface DistributionConfig extends Config, LogConfig {
     * Sets the value of the <a
     * href="../DistributedSystem.html#delta-propagation">"delta-propagation"</a>
     * property.
-    * @since 6.3
+    * @since GemFire 6.3
     */
    @ConfigAttributeSetter(name=DELTA_PROPAGATION_PROP_NAME)
    public void setDeltaPropagation(boolean value);
@@ -2311,7 +2311,7 @@ public interface DistributionConfig extends Config, LogConfig {
   public static final int MIN_DISTRIBUTED_SYSTEM_ID = -1;
   public static final int MAX_DISTRIBUTED_SYSTEM_ID = 255;
    /**
-    * @since 6.6
+    * @since GemFire 6.6
     */
    @ConfigAttribute(type=Integer.class)
    public static final String DISTRIBUTED_SYSTEM_ID_NAME = "distributed-system-id";
@@ -2322,7 +2322,7 @@ public interface DistributionConfig extends Config, LogConfig {
    public static final String DEFAULT_REDUNDANCY_ZONE = "";
    
    /**
-    * @since 6.6
+    * @since GemFire 6.6
     */
    @ConfigAttributeSetter(name=DISTRIBUTED_SYSTEM_ID_NAME)
    public void setDistributedSystemId(int distributedSystemId);
@@ -2331,7 +2331,7 @@ public interface DistributionConfig extends Config, LogConfig {
    public void setRedundancyZone(String redundancyZone);
    
    /**
-    * @since 6.6
+    * @since GemFire 6.6
     */
    @ConfigAttributeGetter(name=DISTRIBUTED_SYSTEM_ID_NAME)
    public int getDistributedSystemId();
@@ -2340,23 +2340,23 @@ public interface DistributionConfig extends Config, LogConfig {
    public String getRedundancyZone();
    
    /**
-    * @since 6.6.2
+    * @since GemFire 6.6.2
     */
    public void setSSLProperty(String attName, String attValue);
    
    /**
-    * @since 6.6.2
+    * @since GemFire 6.6.2
     */
    public Properties getSSLProperties();
    
    public Properties getClusterSSLProperties();
 
    /**
-    * @since 8.0
+    * @since GemFire 8.0
     */
    public Properties getJmxSSLProperties();
    /**
-    * @since 6.6
+    * @since GemFire 6.6
     */
    @ConfigAttribute(type=Boolean.class)
    public static final String ENFORCE_UNIQUE_HOST_NAME = "enforce-unique-host";
@@ -2379,7 +2379,7 @@ public interface DistributionConfig extends Config, LogConfig {
     * href="../DistributedSystem.html#name">"groups"</a> property
     * <p> The default value is: {@link #DEFAULT_GROUPS}.
     * @return the value of the property
-    * @since 7.0
+    * @since GemFire 7.0
     */
    @ConfigAttributeGetter(name=GROUPS_NAME)
    public String getGroups();
@@ -2390,20 +2390,20 @@ public interface DistributionConfig extends Config, LogConfig {
     * @throws com.gemstone.gemfire.UnmodifiableException if this attribute can not be modified.
     * @throws com.gemstone.gemfire.GemFireIOException if the set failure is caused by an error
     *   when writing to the system's configuration file.
-    * @since 7.0
+    * @since GemFire 7.0
     */
    @ConfigAttributeSetter(name=GROUPS_NAME)
    public void setGroups(String value);
 
    /** The name of the "groups" property 
-    * @since 7.0
+    * @since GemFire 7.0
     */
    @ConfigAttribute(type=String.class)
    public static final String GROUPS_NAME = "groups";
    /**
     * The default groups.
     * <p> Actual value of this constant is <code>""</code>.
-    * @since 7.0
+    * @since GemFire 7.0
     */
    public static final String DEFAULT_GROUPS = "";
 
@@ -2492,7 +2492,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the <a 
    * href="../DistributedSystem.html#off-heap-memory-size">"off-heap-memory-size"</a> 
    * property.
-   * @since 9.0
+   * @since Geode 1.0
    */
   @ConfigAttributeGetter(name=OFF_HEAP_MEMORY_SIZE_NAME)
   public String getOffHeapMemorySize();
@@ -2500,13 +2500,13 @@ public interface DistributionConfig extends Config, LogConfig {
    * Sets the value of the <a 
    * href="../DistributedSystem.html#off-heap-memory-size">"off-heap-memory-size"</a> 
    * property.
-   * @since 9.0
+   * @since Geode 1.0
    */
   @ConfigAttributeSetter(name=OFF_HEAP_MEMORY_SIZE_NAME)
   public void setOffHeapMemorySize(String value);
   /** 
    * The name of the "off-heap-memory-size" property 
-   * @since 9.0
+   * @since Geode 1.0
    */
   @ConfigAttribute(type=String.class)
   public static final String OFF_HEAP_MEMORY_SIZE_NAME = "off-heap-memory-size";
@@ -2514,7 +2514,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The default <a 
    * href="../DistributedSystem.html#off-heap-memory-size">"off-heap-memory-size"</a>
    * value of <code>""</code>. 
-   * @since 9.0
+   * @since Geode 1.0
    */
   public static final String DEFAULT_OFF_HEAP_MEMORY_SIZE = "";
 
@@ -2810,7 +2810,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the <a
    * href="../DistributedSystem.html#memcached-port">"memcached-port"</a> property
    * @return the port on which GemFireMemcachedServer should be started
-   * @since 7.0
+   * @since GemFire 7.0
    */
   @ConfigAttributeGetter(name=MEMCACHED_PORT_NAME)
   public int getMemcachedPort();
@@ -2825,7 +2825,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the <a
    * href="../DistributedSystem.html#memcached-protocol">"memcached-protocol"</a> property
    * @return the protocol for GemFireMemcachedServer
-   * @since 7.0
+   * @since GemFire 7.0
    */
   @ConfigAttributeGetter(name=MEMCACHED_PROTOCOL_NAME)
   public String getMemcachedProtocol();
@@ -2840,7 +2840,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the <a
    * href="../DistributedSystem.html#memcached-bind-address">"memcached-bind-address"</a> property
    * @return the bind address for GemFireMemcachedServer
-   * @since 7.0
+   * @since GemFire 7.0
    */
   @ConfigAttributeGetter(name=MEMCACHED_BIND_ADDRESS_NAME)
   public String getMemcachedBindAddress();
@@ -2855,7 +2855,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the <a
    * href="../DistributedSystem.html#redis-port">"redis-port"</a> property
    * @return the port on which GemFireRedisServer should be started
-   * @since 8.0
+   * @since GemFire 8.0
    */
   @ConfigAttributeGetter(name=REDIS_PORT_NAME)
   public int getRedisPort();
@@ -2870,7 +2870,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the <a
    * href="../DistributedSystem.html#redis-bind-address">"redis-bind-address"</a> property
    * @return the bind address for GemFireRedisServer
-   * @since 8.0
+   * @since GemFire 8.0
    */
   @ConfigAttributeGetter(name=REDIS_BIND_ADDRESS_NAME)
   public String getRedisBindAddress();
@@ -2885,7 +2885,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the <a
    * href="../DistributedSystem.html#redis-password">"redis-password"</a> property
    * @return the authentication password for GemFireRedisServer
-   * @since 8.0
+   * @since GemFire 8.0
    */
   @ConfigAttributeGetter(name=REDIS_PASSWORD_NAME)
   public String getRedisPassword();
@@ -2903,7 +2903,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the <a
    * href="../DistributedSystem.html#http-service-port">"http-service-port"</a> property
    * @return the HTTP service port
-   * @since 8.0
+   * @since GemFire 8.0
    */
   @ConfigAttributeGetter(name=HTTP_SERVICE_PORT_NAME)
   public int getHttpServicePort();
@@ -2911,14 +2911,14 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Set the http-service-port for HTTP service.
    * @param value the port number for HTTP service
-   * @since 8.0               
+   * @since GemFire 8.0
    */
   @ConfigAttributeSetter(name=HTTP_SERVICE_PORT_NAME)
   public void setHttpServicePort(int value);
   
   /**
    * The name of the "http-service-port" property
-   * @since 8.0
+   * @since GemFire 8.0
    */
   @ConfigAttribute(type=Integer.class, min=0, max=65535)
   public static String HTTP_SERVICE_PORT_NAME = "http-service-port";
@@ -2926,7 +2926,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value of the "http-service-port" property.
    * Current value is a <code>7070</code>
-   * @since 8.0 
+   * @since GemFire 8.0
    */
   public static int DEFAULT_HTTP_SERVICE_PORT = 7070;
   
@@ -2934,7 +2934,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the <a
    * href="../DistributedSystem.html#http-service-bind-address">"http-service-bind-address"</a> property
    * @return the bind-address for HTTP service
-   * @since 8.0
+   * @since GemFire 8.0
    */
   @ConfigAttributeGetter(name=HTTP_SERVICE_BIND_ADDRESS_NAME)
   public String getHttpServiceBindAddress();
@@ -2942,14 +2942,14 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Set the http-service-bind-address for HTTP service.
    * @param value the bind-address for HTTP service
-   * @since 8.0               
+   * @since GemFire 8.0
    */
   @ConfigAttributeSetter(name=HTTP_SERVICE_BIND_ADDRESS_NAME)
   public void setHttpServiceBindAddress(String value);
   
   /** 
    * The name of the "http-service-bind-address" property
-   * @since 8.0
+   * @since GemFire 8.0
    */
   @ConfigAttribute(type=String.class)
   public static String HTTP_SERVICE_BIND_ADDRESS_NAME = "http-service-bind-address";
@@ -2957,7 +2957,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value of the "http-service-bind-address" property.
    * Current value is an empty string <code>""</code>
-   * @since 8.0 
+   * @since GemFire 8.0
    */
   public static String DEFAULT_HTTP_SERVICE_BIND_ADDRESS = "";
   
@@ -3194,7 +3194,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the <a
    * href="../DistributedSystem.html#start-dev-rest-api">"start-dev-rest-api"</a> property
    * @return the value of the property
-   * @since 8.0
+   * @since GemFire 8.0
    */
   @ConfigAttributeGetter(name=START_DEV_REST_API_NAME)
   public boolean getStartDevRestApi();
@@ -3202,14 +3202,14 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Set the start-dev-rest-api for HTTP service.
    * @param value for the property
-   * @since 8.0               
+   * @since GemFire 8.0
    */
   @ConfigAttributeSetter(name=START_DEV_REST_API_NAME)
   public void setStartDevRestApi(boolean value);
   
   /** 
    * The name of the "start-dev-rest-api" property
-   * @since 8.0
+   * @since GemFire 8.0
    */
   @ConfigAttribute(type=Boolean.class)
   public static String START_DEV_REST_API_NAME = "start-dev-rest-api";
@@ -3217,13 +3217,13 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value of the "start-dev-rest-api" property.
    * Current value is <code>"false"</code>
-   * @since 8.0 
+   * @since GemFire 8.0
    */
   public static boolean DEFAULT_START_DEV_REST_API = false;
   
   /**
    * The name of the "default-auto-reconnect" property
-   * @since 8.0
+   * @since GemFire 8.0
    */
   @ConfigAttribute(type=Boolean.class)
   public static final String DISABLE_AUTO_RECONNECT_NAME = "disable-auto-reconnect";
@@ -3724,21 +3724,21 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the "lock-memory" property.  Used to cause pages to be locked
    * into memory, thereby preventing them from being swapped to disk.
-   * @since 9.0
+   * @since Geode 1.0
    */
   @ConfigAttribute(type=Boolean.class)
   public static String LOCK_MEMORY_NAME = "lock-memory";
   public static final boolean DEFAULT_LOCK_MEMORY = false;
   /**
    * Gets the value of <a href="../DistributedSystem.html#lock-memory">"lock-memory"</a>
-   * @since 9.0
+   * @since Geode 1.0
    */
   @ConfigAttributeGetter(name=LOCK_MEMORY_NAME)
   public boolean getLockMemory();
   /**
    * Set the value of <a href="../DistributedSystem.html#lock-memory">"lock-memory"</a>
    * @param value the new setting
-   * @since 9.0
+   * @since Geode 1.0
    */
   @ConfigAttributeSetter(name=LOCK_MEMORY_NAME)
   public void setLockMemory(boolean value);

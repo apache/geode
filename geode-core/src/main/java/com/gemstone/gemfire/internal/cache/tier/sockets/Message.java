@@ -1038,7 +1038,7 @@ public class Message  {
   }
   /**
    * Undo any state changes done by setComms.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void unsetComms() {
     this.socket = null;

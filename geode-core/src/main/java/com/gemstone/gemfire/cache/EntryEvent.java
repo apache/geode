@@ -35,7 +35,7 @@ package com.gemstone.gemfire.cache;
  * @see CacheListener
  * @see CacheWriter
  * @see RegionEvent
- * @since 3.0
+ * @since GemFire 3.0
  */
 public interface EntryEvent<K,V> extends CacheEvent<K,V> {
 
@@ -67,7 +67,7 @@ public interface EntryEvent<K,V> extends CacheEvent<K,V> {
    * @return the serialized form of the value in the cache before this event
    * @throws IllegalStateException if off-heap and called after the method that was passed this EntryEvent returns.
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public SerializedCacheValue<V> getSerializedOldValue();
 
@@ -85,7 +85,7 @@ public interface EntryEvent<K,V> extends CacheEvent<K,V> {
    * @return the serialized form of the value in the cache after this event
    * @throws IllegalStateException if off-heap and called after the method that was passed this EntryEvent returns.
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public SerializedCacheValue<V> getSerializedNewValue();
 
@@ -134,14 +134,14 @@ public interface EntryEvent<K,V> extends CacheEvent<K,V> {
    * Gets the TransactionId for this EntryEvent.
    * @return the ID of the transaction that performed the operation that
    * generated this event; null if no transaction involved.
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public TransactionId getTransactionId();
   
   /**
    * Returns true if this event originated on a client.
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    * @return true if this event originated on a client.
    * @deprecated as of 5.7 use {@link #hasClientOrigin} instead.
    */
@@ -150,7 +150,7 @@ public interface EntryEvent<K,V> extends CacheEvent<K,V> {
   /**
    * Returns true if this event originated on a client.
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    * @return true if this event originated on a client.
    */
   public boolean hasClientOrigin();
@@ -160,7 +160,7 @@ public interface EntryEvent<K,V> extends CacheEvent<K,V> {
    * or it was deemed too expensive to obtain.
    * Note that {@link #getOldValue} will return <code>null</code> when this
    * method returns <code>false</code>.
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public boolean isOldValueAvailable();
 }

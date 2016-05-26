@@ -29,7 +29,7 @@ import com.gemstone.gemfire.management.cli.ConverterHint;
 
 /**
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class DirPathConverter implements Converter<String> {
   private final DirFilterImpl dirFilter = new DirFilterImpl();

@@ -48,7 +48,7 @@ import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.TrimmedI
  * Newly constructed JoptOptionParser must be loaded with arguments and
  * options before parsing command strings.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class JoptOptionParser implements GfshOptionParser {
 

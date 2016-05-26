@@ -28,7 +28,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 /**
  * Performs eviction stat dunit tests for off-heap regions.
- * @since 9.0
+ * @since Geode 1.0
  */
 public class OffHeapEvictionStatsDUnitTest extends EvictionStatsDUnitTest {
 

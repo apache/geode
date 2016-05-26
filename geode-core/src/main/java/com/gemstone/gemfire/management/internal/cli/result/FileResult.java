@@ -25,7 +25,7 @@ import com.gemstone.gemfire.management.internal.cli.CliUtil;
 /**
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class FileResult implements Result {
   private String[] filePaths;

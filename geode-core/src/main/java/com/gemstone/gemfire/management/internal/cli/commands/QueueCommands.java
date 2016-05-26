@@ -55,7 +55,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * The QueueCommands class encapsulates all GemFire Queue commands in Gfsh.
  * </p>
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public class QueueCommands implements CommandMarker {
   private Gfsh getGfsh() {

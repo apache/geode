@@ -34,7 +34,7 @@ import com.gemstone.gemfire.management.internal.cli.parser.Option;
 import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
 
 /**
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class HelpUtils {
   public static final String EXE_PREFIX_FOR_EXTERNAL_HELP = com.gemstone.gemfire.management.internal.cli.shell.Gfsh.GFSH_APP_NAME + " ";

@@ -24,7 +24,7 @@ import java.util.Set;
  * The ArrayUtils class is an abstract utility class for working with Object arrays.
  * <p/>
  * @see java.util.Arrays
- * @since 8.0
+ * @since GemFire 8.0
  */
 public abstract class ArrayUtils {
 

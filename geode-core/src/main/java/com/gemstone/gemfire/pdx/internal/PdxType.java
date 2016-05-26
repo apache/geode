@@ -53,7 +53,7 @@ public class PdxType implements DataSerializable {
   private boolean noDomainClass;
   /**
    * Will be set to true if any fields on this type have been deleted.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private boolean hasDeletedField;
 

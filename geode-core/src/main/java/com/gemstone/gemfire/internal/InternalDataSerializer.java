@@ -124,7 +124,7 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
  * distribution messaging (and shared memory management) needed to
  * support data serialization.
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public abstract class InternalDataSerializer extends DataSerializer implements DSCODE {
   private static final Logger logger = LogService.getLogger();
@@ -145,7 +145,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   private static final String serializationVersionTxt = System.getProperty("gemfire.serializationVersion");
   /**
    * Any time new serialization format is added then a new enum needs to be added here.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   private static enum SERIALIZATION_VERSION {
     vINVALID,
@@ -1732,7 +1732,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    *
    * @see #readSet
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public static void writeSet(Collection<?> set, DataOutput out)
       throws IOException {
@@ -1768,7 +1768,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    *
    * @see #writeSet
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public static Set readSet(DataInput in) 
     throws IOException, ClassNotFoundException {
@@ -2099,7 +2099,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    *           A problem occurs while writing to <code>out</code>
    * 
    * @see DataSerializer#readCharArray
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public static void writeCharArray(char[] array, int length, DataOutput out)
       throws IOException {
@@ -2235,7 +2235,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   
   /**
    * @throws IOException 
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   private static void writePdxEnum(Enum<?> e, DataOutput out) throws IOException {
     TypeRegistry tr =
@@ -2624,11 +2624,11 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   public static final byte NULL_ARRAY = -1; // array is null
   /**
-   * @since 5.7 
+   * @since GemFire 5.7
    */
   private static final byte SHORT_ARRAY_LEN = -2; // array len encoded as unsigned short in next 2 bytes
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte INT_ARRAY_LEN = -3; // array len encoded as int in next 4 bytes
   private static final int MAX_BYTE_ARRAY_LEN = ((byte)-4) & 0xFF; 
@@ -2759,7 +2759,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * @throws IOException
    *         A problem occurs while reading from <code>in</code>
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static String readString(DataInput in, byte header) throws IOException {
     if (header == DSCODE.STRING_BYTES) {
@@ -2818,7 +2818,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   /**
    * Just like readObject but make sure and pdx deserialized is not
    * a PdxInstance. 
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public static final <T> T readNonPdxInstanceObject(final DataInput in)
   throws IOException, ClassNotFoundException {
@@ -3338,7 +3338,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * registration message does, the deserializer will wait an amount
    * of time for the registration message to arrive.
    * Made public for unit test access.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static class GetMarker extends Marker {
     /**
@@ -3394,7 +3394,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * of being registered.
    * It is possible for getSerializer to return <code>null</code>
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   static class InitMarker extends Marker {
     /**
@@ -3793,7 +3793,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   /**
    * Used to implement serialization code for the well known classes we support
    * in DataSerializer.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected static abstract class WellKnownDS extends DataSerializer {
     @Override

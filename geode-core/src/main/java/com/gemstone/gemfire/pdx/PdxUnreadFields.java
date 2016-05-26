@@ -34,7 +34,7 @@ package com.gemstone.gemfire.pdx;
  * but to reduce the performance and memory overhead of automatic preservation it is recommended
  * that use {@link PdxReader#readUnreadFields() readUnreadFields} if possible.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  *
  */
 public interface PdxUnreadFields {

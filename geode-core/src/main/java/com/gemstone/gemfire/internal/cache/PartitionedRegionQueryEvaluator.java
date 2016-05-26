@@ -92,7 +92,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
   /**
    * An ArrayList which might be unconsumable.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public static class MemberResultsList extends ArrayList {
     private boolean isLastChunkReceived = false;
@@ -108,7 +108,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
   /**
    * Simple testing interface
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public interface TestHook {
     public void hook(final int spot) throws RuntimeException;
@@ -1024,7 +1024,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
    * in multipleThreads and results gained from buckets.
    * In future this can be used for adding for more information to final
    * query running info from pool threads.
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public static class PRQueryResultCollector {
 

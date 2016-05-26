@@ -28,7 +28,7 @@ import com.gemstone.gemfire.i18n.StringId;
  * This class wraps an existing {@link InternalLogWriter} instance to add the
  * security prefix feature mentioned above.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public final class SecurityLogWriter extends LogWriterImpl implements InternalLogWriter {
 

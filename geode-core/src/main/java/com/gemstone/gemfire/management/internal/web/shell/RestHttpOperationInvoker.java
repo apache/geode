@@ -58,7 +58,7 @@ import org.springframework.web.util.UriTemplate;
  * @see com.gemstone.gemfire.management.internal.web.shell.AbstractHttpOperationInvoker
  * @see com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker
  * @see com.gemstone.gemfire.management.internal.web.shell.SimpleHttpOperationInvoker
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public class RestHttpOperationInvoker extends AbstractHttpOperationInvoker implements Initable {

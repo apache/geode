@@ -29,7 +29,7 @@ import com.gemstone.gemfire.security.Authenticator;
  * user name and password allowing authentication depending on the format of the
  * user name.
  *
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class DummyAuthenticator implements Authenticator {
 

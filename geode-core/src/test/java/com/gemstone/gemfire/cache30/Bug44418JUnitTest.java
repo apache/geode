@@ -51,7 +51,7 @@ import static com.jayway.awaitility.Awaitility.with;
  * that is shorter than an existing one,
  * ensure the new shorter time is honored.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(IntegrationTest.class)
 @SuppressWarnings({ "unchecked", "rawtypes" })

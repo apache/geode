@@ -29,7 +29,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 /**
  * Multi-process tests for ProcessLauncher.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("serial")
 public class LocalProcessLauncherDUnitTest extends DistributedTestCase {

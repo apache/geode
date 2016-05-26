@@ -46,7 +46,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Tests the size of clientUpdateMessageImpl with the size calculated by
  * {@link com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController} for HA overFlow
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class HAOverflowMemObjectSizerDUnitTest extends DistributedTestCase {
 

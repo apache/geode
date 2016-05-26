@@ -33,7 +33,7 @@ import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.AbstractCacheServer;
 
 /**
- * @since 8.0
+ * @since GemFire 8.0
  */
 public abstract class AbstractServerLauncherIntegrationTestCase extends AbstractLauncherIntegrationTestCase {
   

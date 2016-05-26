@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface GatewaySender {
 
@@ -145,7 +145,7 @@ public interface GatewaySender {
   /**
    * The order policy. This enum is applicable only when concurrency-level is > 1.
    * 
-   * @since 6.5.1
+   * @since GemFire 6.5.1
    */
   public enum OrderPolicy {
     /**

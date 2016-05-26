@@ -71,7 +71,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Retained;
  * frequently, if they are not then it makes sense to fold the destroy and the
  * invalidate into the same message and use an extra bit to differentiate
  * 
- * @since 5.0
+ * @since GemFire 5.0
  *  
  */
 public class DestroyMessage extends PartitionMessageWithDirectReply {

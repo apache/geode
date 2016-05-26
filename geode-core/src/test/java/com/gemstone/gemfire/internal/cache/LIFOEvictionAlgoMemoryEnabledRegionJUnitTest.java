@@ -53,7 +53,7 @@ import com.gemstone.gemfire.internal.cache.lru.EnableLRU;
  * This is a test verifies region is LIFO enabled by MEMORY verifies correct
  * stats updating and faultin is not evicting another entry - not strict LIFO
  * 
- * @since 5.7
+ * @since GemFire 5.7
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Category(IntegrationTest.class)

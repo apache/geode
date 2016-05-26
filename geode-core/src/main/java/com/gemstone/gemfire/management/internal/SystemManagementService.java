@@ -62,7 +62,7 @@ import org.apache.shiro.util.ThreadContext;
  * which is the gateway to various JMX operations over a GemFire
  * System
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class SystemManagementService extends BaseManagementService {
   private static final Logger logger = LogService.getLogger();

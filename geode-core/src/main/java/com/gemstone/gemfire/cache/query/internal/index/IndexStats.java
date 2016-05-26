@@ -196,7 +196,7 @@ public class IndexStats {
    * com.gemstone.gemfire.internal.cache.GemFireCacheImpl#close cache} 
    * is closed.
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   void close() {
     this.stats.close();
@@ -205,7 +205,7 @@ public class IndexStats {
   /**
    * Returns whether or not these stats have been closed
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public boolean isClosed() {
     return this.stats.isClosed();
@@ -214,7 +214,7 @@ public class IndexStats {
 
   /**
    * Returns the Statistics instance that stores the cache perf stats.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public Statistics getStats() {
     return this.stats;

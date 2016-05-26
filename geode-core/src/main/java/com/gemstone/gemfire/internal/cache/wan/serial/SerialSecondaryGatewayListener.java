@@ -27,7 +27,7 @@ import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderEventImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
 /**
- * @since 7.0
+ * @since GemFire 7.0
  *
  */
 public class SerialSecondaryGatewayListener extends CacheListenerAdapter

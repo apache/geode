@@ -25,7 +25,7 @@ package com.gemstone.gemfire.cache;
  * @see CacheFactory#create
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class CacheXmlException extends CacheRuntimeException {
 private static final long serialVersionUID = -4343870964883131754L;

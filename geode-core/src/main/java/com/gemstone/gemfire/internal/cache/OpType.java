@@ -23,7 +23,7 @@ package com.gemstone.gemfire.internal.cache;
  * 
  * @see com.gemstone.gemfire.cache.Operation
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 public final class OpType {
 

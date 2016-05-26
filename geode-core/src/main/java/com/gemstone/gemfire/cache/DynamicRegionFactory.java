@@ -125,7 +125,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * that name and uses it to keep track of what dynamic Regions exist. Applications should
  * not directly access this Region; instead use the methods on this factory.
  * </ul>
- * @since 4.3
+ * @since GemFire 4.3
  *
  */
 @SuppressWarnings("deprecation")
@@ -669,7 +669,7 @@ public abstract class DynamicRegionFactory  {
    * <li>persistBackup: <code>true</code>
    * <li>registerInterest: <code>true</code>
    * </ul>
-   * @since 4.3
+   * @since GemFire 4.3
    */
   public static class Config  {
     private static final boolean DISABLE_REGISTER_INTEREST = Boolean.getBoolean("DynamicRegionFactory.disableRegisterInterest");

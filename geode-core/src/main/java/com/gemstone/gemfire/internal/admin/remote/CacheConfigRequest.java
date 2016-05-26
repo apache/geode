@@ -30,7 +30,7 @@ import java.io.*;
 /**
  * A message that is sent to a particular distribution manager to
  * get information on its current cache.
- * @since 3.5
+ * @since GemFire 3.5
  */
 public final class CacheConfigRequest extends AdminRequest {
   private byte attributeCode;

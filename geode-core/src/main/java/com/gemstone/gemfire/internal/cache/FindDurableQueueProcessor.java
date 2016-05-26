@@ -47,7 +47,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * A processor for helping a locator find the durable queues for a given durable client id.
  * Asks each bridge server if they have the durable id and builds a list of matching servers.
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class FindDurableQueueProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();

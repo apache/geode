@@ -27,7 +27,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * for rolling the entries. The reason for this class is to reuse the
  * underlying byte array for rolling multiple entries there by
  * reducing the garbage.
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class BytesAndBitsForCompactor {
   /**

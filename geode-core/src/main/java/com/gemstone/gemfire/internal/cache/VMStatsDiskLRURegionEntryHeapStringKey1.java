@@ -151,7 +151,7 @@ public class VMStatsDiskLRURegionEntryHeapStringKey1 extends VMStatsDiskLRURegio
   /**
    * DiskId
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    */
   protected DiskId id;//= new DiskId();
   public DiskId getDiskId() {

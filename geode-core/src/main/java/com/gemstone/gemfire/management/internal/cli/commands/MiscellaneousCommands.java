@@ -122,7 +122,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class MiscellaneousCommands implements CommandMarker {
   public static final String NETSTAT_FILE_REQUIRED_EXTENSION = ".txt";

@@ -35,7 +35,7 @@ import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
  *
  *
  *
- * @since 2.0
+ * @since GemFire 2.0
  */
 public interface CacheEvent<K,V> {
 
@@ -49,7 +49,7 @@ public interface CacheEvent<K,V> {
   /**
    * Return a description of the operation that triggered this event.
    * @return the operation that triggered this event.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public Operation getOperation();
   
@@ -69,7 +69,7 @@ public interface CacheEvent<K,V> {
    * not be obtained.
    * Note that {@link #getCallbackArgument} will return <code>null</code>
    * when this method returns <code>false</code>.
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public boolean isCallbackArgumentAvailable();
 
@@ -82,7 +82,7 @@ public interface CacheEvent<K,V> {
   /**
    * Returns the {@link DistributedMember} that this event originated in.
    * @return the member that performed the operation that originated this event.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public DistributedMember getDistributedMember();
 

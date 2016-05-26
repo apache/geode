@@ -62,7 +62,7 @@ public class LinuxProcessStats
    * Returns a <code>ProcessStats</code> that wraps Linux process
    * <code>Statistics</code>. 
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   static ProcessStats createProcessStats(final Statistics stats) {
     if (stats instanceof LocalStatisticsImpl) {

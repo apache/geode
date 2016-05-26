@@ -39,7 +39,7 @@ import org.springframework.util.Assert;
 /**
  * The JSONUtils class is a utility class for getting JSON equivalent from Java types.
  *
- * @since 8.0
+ * @since GemFire 8.0
  */
 public abstract class JSONUtils {
 

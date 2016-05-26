@@ -36,7 +36,7 @@ public class StartupStatus {
    * If a startup listener is registered,
    * the message will be written to the listener as well
    * to be reported to a user.
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static synchronized void startup(StringId msgID, Object[] params) {
     String message = msgID.toLocalizedString(params);

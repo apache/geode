@@ -39,7 +39,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * A processor for telling the old grantor that he is deposed by a new grantor. 
  * Processor waits for ack before completing.
  *
- * @since 4.0
+ * @since GemFire 4.0
  * (renamed from ExpectTransferProcessor)
  */
 public class DeposeGrantorProcessor extends ReplyProcessor21 {

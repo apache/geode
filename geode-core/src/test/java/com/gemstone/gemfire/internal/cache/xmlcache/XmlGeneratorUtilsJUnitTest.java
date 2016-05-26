@@ -35,7 +35,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit Tests for {@link XmlGeneratorUtils}.
  * 
- * @since 8.1
+ * @since GemFire 8.1
  */
 @Category(UnitTest.class)
 public class XmlGeneratorUtilsJUnitTest {

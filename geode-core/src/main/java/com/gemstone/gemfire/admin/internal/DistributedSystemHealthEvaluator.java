@@ -41,7 +41,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * system.
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  * */
 class DistributedSystemHealthEvaluator
   extends AbstractHealthEvaluator implements MembershipListener {

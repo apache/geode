@@ -32,7 +32,7 @@ import com.gemstone.gemfire.management.internal.JmxManagerAdvisor.JmxManagerProf
 
 /**
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class JmxManagerAdvisee implements DistributionAdvisee {
 

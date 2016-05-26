@@ -37,7 +37,7 @@ import com.gemstone.gemfire.i18n.StringId;
  * }
  * </code>
  *
- * @since 6.0
+ * @since GemFire 6.0
  *
  */
 public class LocalizedStrings {

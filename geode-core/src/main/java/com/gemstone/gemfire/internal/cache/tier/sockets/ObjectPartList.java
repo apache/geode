@@ -40,7 +40,7 @@ import org.apache.logging.log4j.Logger;
  * exceptions. It can optionally also hold the list of associated keys. Assumes
  * that keys are either provided for all entries or for none.
  * 
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class ObjectPartList implements DataSerializableFixedID, Releasable {
   private static final Logger logger = LogService.getLogger();

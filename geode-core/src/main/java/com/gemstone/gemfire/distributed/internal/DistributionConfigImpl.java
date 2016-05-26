@@ -54,7 +54,7 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
  * @see InternalDistributedSystem
  *
  *
- * @since 2.1
+ * @since GemFire 2.1
  */
 public class DistributionConfigImpl
   extends AbstractDistributionConfig
@@ -196,7 +196,7 @@ public class DistributionConfigImpl
   protected int asyncQueueTimeout = DEFAULT_ASYNC_QUEUE_TIMEOUT;
   protected int asyncMaxQueueSize = DEFAULT_ASYNC_MAX_QUEUE_SIZE;
 
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   private String clientConflation = CLIENT_CONFLATION_PROP_VALUE_DEFAULT;
 
   /** The id of the durable client */
@@ -623,7 +623,7 @@ public class DistributionConfigImpl
    *          whether to skip loading distributed system properties from
    *          gemfire.properties file
    *          
-   * @since 6.5
+   * @since GemFire 6.5
    */
   
   public DistributionConfigImpl(Properties nonDefault, 
@@ -647,7 +647,7 @@ public class DistributionConfigImpl
    *          properties to other ssl properties. This parameter will be used
    *          till we provide support for ssl-* properties.
    * 
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public DistributionConfigImpl(Properties nonDefault, 
                                 boolean ignoreGemFirePropsFile, boolean isConnected) {
@@ -1874,12 +1874,12 @@ public class DistributionConfigImpl
     memberTimeout = (Integer)checkAttribute(MEMBER_TIMEOUT_NAME, value);
   }
 
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   public String getClientConflation() {
     return this.clientConflation;
   }
 
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   public void setClientConflation(String value) {
     this.clientConflation = (String)checkAttribute(CLIENT_CONFLATION_PROP_NAME, value);
   }

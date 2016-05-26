@@ -35,7 +35,7 @@ import com.gemstone.gemfire.test.dunit.Wait;
  *
  * @see MultiVMRegionTestCase#testRemoteCacheLoader
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public abstract class CacheLoaderTestCase
   extends CacheWriterTestCase {

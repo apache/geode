@@ -44,7 +44,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * Tests the functionality of the {@link RequiredRoles} class.
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 

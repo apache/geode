@@ -39,7 +39,7 @@ import com.gemstone.gemfire.cache.query.QueryService;
  * Monitoring of heap utilization is enabled by setting the critical heap
  * percentage using {@link #setCriticalHeapPercentage(float)}.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public interface ResourceManager {
   
@@ -130,7 +130,7 @@ public interface ResourceManager {
    * <= 100 or when less than the current eviction heap percentage
    * @see #getCriticalHeapPercentage()
    * @see #getEvictionHeapPercentage()
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public void setCriticalHeapPercentage(float heapPercentage);
   
@@ -141,7 +141,7 @@ public interface ResourceManager {
    * @return either the current or recently used percentage of the maximum
    * tenured heap
    * @see #setCriticalHeapPercentage(float)
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public float getCriticalHeapPercentage();
   
@@ -172,7 +172,7 @@ public interface ResourceManager {
    * <= 100 or when less than the current eviction off-heap percentage
    * @see #getCriticalOffHeapPercentage()
    * @see #getEvictionOffHeapPercentage()
-   * @since 9.0
+   * @since Geode 1.0
    */
   public void setCriticalOffHeapPercentage(float offHeapPercentage);
   
@@ -183,7 +183,7 @@ public interface ResourceManager {
    * @return either the current or recently used percentage of the maximum
    * off-heap memory
    * @see #setCriticalOffHeapPercentage(float)
-   * @since 9.0
+   * @since Geode 1.0
    */
   public float getCriticalOffHeapPercentage();
 
@@ -208,7 +208,7 @@ public interface ResourceManager {
    * <= 100 or when greater than the current critical heap percentage.
    * @see #getEvictionHeapPercentage()
    * @see #getCriticalHeapPercentage()
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public void setEvictionHeapPercentage(float heapPercentage);
   
@@ -220,7 +220,7 @@ public interface ResourceManager {
    * @return either the current or recently used percentage of the maximum 
    * tenured heap
    * @see #setEvictionHeapPercentage(float)
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public float getEvictionHeapPercentage();
 
@@ -242,7 +242,7 @@ public interface ResourceManager {
    * <= 100 or when greater than the current critical off-heap percentage.
    * @see #getEvictionOffHeapPercentage()
    * @see #getCriticalOffHeapPercentage()
-   * @since 9.0
+   * @since Geode 1.0
    */
   public void setEvictionOffHeapPercentage(float offHeapPercentage);
   
@@ -254,7 +254,7 @@ public interface ResourceManager {
    * @return either the current or recently used percentage of the maximum 
    * off-heap memory
    * @see #setEvictionOffHeapPercentage(float)
-   * @since 9.0
+   * @since Geode 1.0
    */
   public float getEvictionOffHeapPercentage();
 }

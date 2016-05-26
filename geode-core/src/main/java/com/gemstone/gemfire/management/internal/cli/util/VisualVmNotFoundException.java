@@ -24,7 +24,7 @@ import com.gemstone.gemfire.GemFireException;
  * tool could not be found on the system.
  * </p>
  * @see com.gemstone.gemfire.GemFireException
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public class VisualVmNotFoundException extends GemFireException {

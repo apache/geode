@@ -57,7 +57,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 public class ClientCommands implements CommandMarker {

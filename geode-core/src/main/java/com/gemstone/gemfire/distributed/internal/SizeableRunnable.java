@@ -23,7 +23,7 @@ package com.gemstone.gemfire.distributed.internal;
     Instances/subclasses must provide the run() method to complete the
     Runnable interface.<p>
     
-    @since 5.0
+    @since GemFire 5.0
  */
 
 public abstract class SizeableRunnable implements Runnable, Sizeable {

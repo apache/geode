@@ -41,7 +41,7 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
  * its entries. Note that the value of every entry in this map will
  * implement {@link RegionEntry}.
  *
- * @since 3.5.1
+ * @since GemFire 3.5.1
  *
  *
  */

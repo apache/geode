@@ -32,7 +32,7 @@ import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
  *   <li>{@link IndexInvalidException}</li>
  *   <li>{@link UnsupportedOperationException}</li>
  * </ul>
- * @since 8.1
+ * @since GemFire 8.1
  * 
  */
 public class MultiIndexCreationException extends Exception {

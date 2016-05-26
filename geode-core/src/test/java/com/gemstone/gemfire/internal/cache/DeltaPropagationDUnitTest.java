@@ -67,7 +67,7 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
- * @since 6.1
+ * @since GemFire 6.1
  */
 public class DeltaPropagationDUnitTest extends DistributedTestCase {
   private final static Compressor compressor = SnappyCompressor.getDefaultInstance();

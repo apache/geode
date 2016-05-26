@@ -24,7 +24,7 @@ import java.util.Set;
  * system. A process becomes a member by calling {@link 
  * DistributedSystem#connect}.
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public interface DistributedMember extends Comparable<DistributedMember> {
 
@@ -32,7 +32,7 @@ public interface DistributedMember extends Comparable<DistributedMember> {
    * Returns this member's name. The member name is set using
    * the "name" gemfire property. Returns "" if the member
    * does not have a name.
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public String getName();
   

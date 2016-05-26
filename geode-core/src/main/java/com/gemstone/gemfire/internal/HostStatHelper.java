@@ -191,7 +191,7 @@ public class HostStatHelper {
    * given <code>Statistics</code>.
    *
    * @see #newProcess
-   * @since 3.5
+   * @since GemFire 3.5
    */
   static ProcessStats newProcessStats(Statistics stats) {
     switch (osCode) {

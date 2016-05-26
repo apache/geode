@@ -396,7 +396,7 @@ public final class RemoteInvalidateMessage extends RemoteDestroyMessage {
   }
   /**
    * A processor to capture the value returned by {@link RemoteInvalidateMessage}
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static class InvalidateResponse extends RemoteOperationResponse  {
     private volatile boolean returnValueReceived;

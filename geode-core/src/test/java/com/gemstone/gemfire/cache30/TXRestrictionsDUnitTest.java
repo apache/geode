@@ -20,7 +20,7 @@
  * <code>MultiVMRegionTestCase</code>.
  * 
  *
- * @since 4.0
+ * @since GemFire 4.0
  * @see MultiVMRegionTestCase
  *
  */

@@ -28,7 +28,7 @@ import com.gemstone.gemfire.cache.FixedPartitionAttributes;
 /**
  * Internal implementation of {@link FixedPartitionAttributes}.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 
 public class FixedPartitionAttributesImpl extends FixedPartitionAttributes

@@ -105,7 +105,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.command.UpdateClientNoti
 /**
  * A <code>CommandInitializer</code> maintains version specific commands map.
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 
 public class CommandInitializer {

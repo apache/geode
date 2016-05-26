@@ -38,7 +38,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * Does a region get on a server
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class GetOp {
   private static final Logger logger = LogService.getLogger();

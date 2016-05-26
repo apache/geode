@@ -78,7 +78,7 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 /**
  * Tests region reliability defined by MembershipAttributes.
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 

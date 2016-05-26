@@ -29,7 +29,7 @@ import java.io.*;
  *
  * @see RegionAttributes#getScope
  * @see AttributesFactory#setScope
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class Scope implements Serializable {
     private static final long serialVersionUID = 5534399159504301602L;

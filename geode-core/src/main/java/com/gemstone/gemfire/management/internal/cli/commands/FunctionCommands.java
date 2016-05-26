@@ -70,7 +70,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public class FunctionCommands implements CommandMarker {

@@ -52,7 +52,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * The execute  method of this class is synchronized to
  * prevent two ops from using the client to server connection
  *  at the same time.
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public class ConnectionImpl implements Connection {

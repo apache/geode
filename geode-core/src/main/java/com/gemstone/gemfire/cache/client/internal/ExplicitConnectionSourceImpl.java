@@ -34,7 +34,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
 
 /**
  * A connection source where the list of endpoints is specified explicitly. 
- * @since 5.7
+ * @since GemFire 5.7
  * 
  * TODO - the UnusedServerMonitor basically will force the pool to
  * have at least one connection to each server. Maybe we need to have it

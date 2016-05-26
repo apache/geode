@@ -184,7 +184,7 @@ public final class EventID
 
   /**
    * Returns the thread id used by the calling thread for its event ids
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static long getThreadId() {
     ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper)threadIDLocal.get();
@@ -193,7 +193,7 @@ public final class EventID
   /**
    * Returns the next reservable sequence id used by the calling thread for its event ids.
    * Note that the returned id is not yet reserved by the calling thread.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static long getSequenceId() {
     ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper)threadIDLocal.get();
@@ -202,7 +202,7 @@ public final class EventID
   /**
    * Reserves and returns a sequence id for the calling thread to be used
    * for an event id.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static long reserveSequenceId() {
     ThreadAndSequenceIDWrapper wrapper = (ThreadAndSequenceIDWrapper)threadIDLocal.get();
@@ -321,7 +321,7 @@ public final class EventID
   /**
    * Returns a byte[] whose contents are calculated by
    * calling {@link #getOptimizedByteArrayForEventID}
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public byte[] calcBytes() {
     return getOptimizedByteArrayForEventID(getThreadID(), getSequenceID());

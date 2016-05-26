@@ -29,7 +29,7 @@ import com.gemstone.gemfire.GemFireCheckedException;
  * @see com.gemstone.gemfire.cache.RegionAttributes#getStatisticsEnabled
  * @see com.gemstone.gemfire.cache.Region#getStatistics
  * @see com.gemstone.gemfire.cache.Region.Entry#getStatistics
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class InternalStatisticsDisabledException extends GemFireCheckedException {
 private static final long serialVersionUID = 4146181546364258311L;

@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.VersionedDataStream;
  * also implements {@link VersionedDataStream} for a stream coming from a
  * different product version.
  * 
- * @since 7.1
+ * @since GemFire 7.1
  */
 public class ByteArrayDataInput extends InputStream implements DataInput,
     VersionedDataStream {

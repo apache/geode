@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 /**
  * The GetAllEntries is function that will return a map as a result of its execution.
  * <p/>
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 public class GetAllEntries implements Function {

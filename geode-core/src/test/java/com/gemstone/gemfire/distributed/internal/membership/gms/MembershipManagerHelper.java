@@ -32,7 +32,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * This helper class provides access to membership manager information that
  * is not otherwise public
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class MembershipManagerHelper
 {

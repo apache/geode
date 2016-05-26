@@ -53,7 +53,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * only in this class and not in {@link PartitionAttributes} are for internal
  * use only.
  *  
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class PartitionAttributesImpl implements PartitionAttributes,
       Cloneable, DataSerializable
@@ -679,7 +679,7 @@ public class PartitionAttributesImpl implements PartitionAttributes,
    * 4. totalNumBuckets should be same for colocated regions<br>
    * 5. redundancy of colocated regions should be same<br>
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   void validateColocation() {
     if (this.colocatedRegionName == null) {
@@ -722,7 +722,7 @@ public class PartitionAttributesImpl implements PartitionAttributes,
    * Only attributes explicitly set in pa will be merged into this.
    * Any attribute set in pa will take precedence over an attribute in this.
    * @param pa the attributes to merge into this.
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public void merge(PartitionAttributesImpl pa) {
     if (pa.hasRedundancy) {

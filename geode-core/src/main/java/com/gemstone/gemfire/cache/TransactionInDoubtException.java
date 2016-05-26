@@ -19,7 +19,7 @@ package com.gemstone.gemfire.cache;
 /**
  * This Exception is thrown in presence of node failures, when GemFire cannot
  * know with certainty about the outcome of the transaction.
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class TransactionInDoubtException extends TransactionException {
   private static final long serialVersionUID = 4895453685211922512L;

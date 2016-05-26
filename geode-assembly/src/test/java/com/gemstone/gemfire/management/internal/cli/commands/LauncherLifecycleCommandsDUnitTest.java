@@ -100,7 +100,7 @@ import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
  * @see com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase
  * @see com.gemstone.gemfire.management.internal.cli.commands.LauncherLifecycleCommands
  * @see com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(DistributedTest.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

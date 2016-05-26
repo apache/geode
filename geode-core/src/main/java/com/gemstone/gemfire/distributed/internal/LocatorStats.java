@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 
 /**
  * This class maintains statistics for the locator
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class LocatorStats {
   private static StatisticsType type;

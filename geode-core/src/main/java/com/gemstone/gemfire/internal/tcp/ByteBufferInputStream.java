@@ -44,7 +44,7 @@ import com.gemstone.gemfire.internal.offheap.StoredObject;
  * if the end of the buffer is reached before we read the full amount. That
  * breaks the contract for InputStream and DataInput, but it works for our code.
  * 
- * @since 3.0
+ * @since GemFire 3.0
  */
 
 public class ByteBufferInputStream extends InputStream implements DataInput, java.io.Externalizable

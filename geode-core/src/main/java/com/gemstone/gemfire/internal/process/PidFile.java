@@ -32,7 +32,7 @@ import com.gemstone.gemfire.internal.util.StopWatch;
  * File wrapper that adds support for reading process id (pid) from a pid file
  * written to disk by GemFire processes.
  * 
- * @since 8.2
+ * @since GemFire 8.2
  */
 public class PidFile {
 

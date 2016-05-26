@@ -23,7 +23,7 @@ import com.gemstone.gemfire.i18n.StringId;
  * about the implicit static initializer for all these static final constants
  * being greater than 65535.
  *   
- * @since 7.0
+ * @since GemFire 7.0
  */
 class ParentLocalizedStrings {
   /** reserved space for commonly used strings, messageId 0-1024 **/

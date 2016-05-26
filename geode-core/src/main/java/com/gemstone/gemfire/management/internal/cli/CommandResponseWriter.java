@@ -29,7 +29,7 @@ import java.io.StringWriter;
  * NOTE: Not thread safe 
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CommandResponseWriter {
   private PrintWriter pwriter;

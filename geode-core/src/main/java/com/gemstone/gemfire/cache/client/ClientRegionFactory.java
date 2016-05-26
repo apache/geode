@@ -60,7 +60,7 @@ import com.gemstone.gemfire.compression.Compressor;
  *     myListener).create(&quot;customers&quot;);
  * </PRE>
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 
 public interface ClientRegionFactory<K,V> {
@@ -236,7 +236,7 @@ public interface ClientRegionFactory<K,V> {
 
   /**
    * Enables or disabled concurrent modification checks
-   * @since 7.0
+   * @since GemFire 7.0
    * @param concurrencyChecksEnabled whether to perform concurrency checks on operations
    */
   public void setConcurrencyChecksEnabled(boolean concurrencyChecksEnabled);
@@ -300,7 +300,7 @@ public interface ClientRegionFactory<K,V> {
    * region entry values.
    * @param compressor a compressor
    * @return a reference to this RegionFactory instance
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public ClientRegionFactory<K,V> setCompressor(Compressor compressor);
   
@@ -338,7 +338,7 @@ public interface ClientRegionFactory<K,V> {
    *           if the parent region has been closed or destroyed
    * @throws CacheClosedException
    *           if the cache is closed
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public Region<K,V> createSubregion(Region<?,?> parent, String name) throws RegionExistsException;
   

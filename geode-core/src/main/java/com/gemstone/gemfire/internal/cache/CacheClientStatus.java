@@ -26,7 +26,7 @@ import java.util.List;
  * from the server's perspective. This class is used by the monitoring tool.
  *
  *
- * @since 4.3
+ * @since GemFire 4.3
  */
 public class CacheClientStatus implements Serializable {
   private static final long serialVersionUID = -56148046466517217L;

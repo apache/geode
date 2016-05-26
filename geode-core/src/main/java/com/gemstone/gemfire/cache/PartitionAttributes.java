@@ -37,7 +37,7 @@ import com.gemstone.gemfire.cache.partition.PartitionListener;
  *
  * Also see {@link com.gemstone.gemfire.cache.DataPolicy#PARTITION}.
  * 
- * @since 5.0
+ * @since GemFire 5.0
  * 
  */
 public interface PartitionAttributes<K,V>
@@ -97,7 +97,7 @@ public interface PartitionAttributes<K,V>
   
   /**
    * Returns name of the colocated PartitionedRegion's name 
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public String getColocatedWith();
 
@@ -124,7 +124,7 @@ public interface PartitionAttributes<K,V>
   /**
    * Returns the PartitionResolver set for custom partitioning
    * @return <code>PartitionResolver</code> for the PartitionedRegion
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public PartitionResolver<K,V> getPartitionResolver();
 
@@ -135,7 +135,7 @@ public interface PartitionAttributes<K,V>
    * Default value of recoveryDelay is -1 which indicates that redundancy won't 
    * be recovered if a member crashes.
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public long getRecoveryDelay();
 
@@ -146,7 +146,7 @@ public interface PartitionAttributes<K,V>
    * Default value is 0 which is to recover redundancy immediately when a new
    * member is added. 
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public long getStartupRecoveryDelay();
   
@@ -155,7 +155,7 @@ public interface PartitionAttributes<K,V>
    * 
    * @see PartitionListener
    * @return PartitionListener configured on this partitioned region
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public PartitionListener[] getPartitionListeners();
 
@@ -163,7 +163,7 @@ public interface PartitionAttributes<K,V>
    * Returns <code>FixedPartitionAttributes</code>'s list of local partitions
    * defined on this Partitioned Region
    * 
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public List<FixedPartitionAttributes> getFixedPartitionAttributes();
   

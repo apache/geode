@@ -48,7 +48,7 @@ import java.util.*;
  *
  * @see TransactionListener
  * @see EntryEvent
- * @since 4.0
+ * @since GemFire 4.0
  */
 public interface TransactionEvent {
 
@@ -100,7 +100,7 @@ public interface TransactionEvent {
    * performed during the transaction.
    * @return an unmodifiable <code>List</code> of all the {@link CacheEvent} instances;
    * one for each operation performed by this transaction.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public List<CacheEvent<?,?>> getEvents();
   

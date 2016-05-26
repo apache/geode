@@ -23,7 +23,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * client subscription. It encapsulates eviction policy, capacity and overflowDirectory.
  * This object will get created for every <b>client-subscription</b> tag
  * 
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class ClientHaQueueCreation {
 

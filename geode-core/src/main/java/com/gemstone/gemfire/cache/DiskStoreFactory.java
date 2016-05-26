@@ -27,7 +27,7 @@ import java.io.File;
  * To use this factory configure it with the <code>set</code> methods and then
  * call {@link #create} to produce a disk store instance.
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 public interface DiskStoreFactory
 {
@@ -215,7 +215,7 @@ public interface DiskStoreFactory
    * 
    * @param warningPercent warning percent of disk usage
    * @return a reference to <code>this</code>
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public DiskStoreFactory setDiskUsageWarningPercentage(float warningPercent);
 
@@ -225,7 +225,7 @@ public interface DiskStoreFactory
    * 
    * @param criticalPercent critical percent of disk usage
    * @return a reference to <code>this</code>
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public DiskStoreFactory setDiskUsageCriticalPercentage(float criticalPercent);
 

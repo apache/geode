@@ -33,7 +33,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link SimpleExtensionPoint}.
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 @Category(UnitTest.class)
 public class SimpleExtensionPointJUnitTest {

@@ -202,7 +202,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
 
   /**
    * True if this region uses off-heap memory; otherwise false (default)
-   * @since 9.0
+   * @since Geode 1.0
    */
   protected boolean offHeap;
 
@@ -258,7 +258,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   
   /**
    * @see #getExtensionPoint()
-   * @since 8.1
+   * @since GemFire 8.1
    */
   protected ExtensionPoint<Region<?,?>> extensionPoint = new SimpleExtensionPoint<Region<?,?>>(this, this);
   
@@ -278,7 +278,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   /**
    * Unit test constructor. DO NOT USE!
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    * @deprecated For unit testing only. Use
    *             {@link #AbstractRegion(GemFireCacheImpl, RegionAttributes, String, InternalRegionArguments)}
    *             .
@@ -477,7 +477,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   /**
    * Return a cache loader if this region has one.
    * Note if region's loader is used to implement bridge then null is returned.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public CacheLoader basicGetLoader() {
     CacheLoader result = this.cacheLoader;
@@ -486,7 +486,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   /**
    * Return a cache writer if this region has one.
    * Note if region's writer is used to implement bridge then null is returned.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public CacheWriter basicGetWriter() {
     CacheWriter result = this.cacheWriter;
@@ -1601,7 +1601,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   /**
    * Returns true if this region has no storage
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected final boolean isProxy()
   {
@@ -1612,7 +1612,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
    * Returns true if this region has no storage and is only interested in what
    * it contains (which is nothing)
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected final boolean isCacheContentProxy()
   {
@@ -1624,7 +1624,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   /**
    * Returns true if region subscribes to all events or is a replicate.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   final boolean isAllEvents()
   {
@@ -1790,7 +1790,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   /**
    * Returns the pool this region is using or null if it does not have one
    * or the pool does not exist.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private PoolImpl getPool() {
     PoolImpl result = null;
@@ -1880,7 +1880,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
    * @throws RoleException
    *           if a required role was not sent the message and the LossAction is
    *           either NO_ACCESS or LIMITED_ACCESS.
-   * @since 5.0
+   * @since GemFire 5.0
    *
    */
   protected void handleReliableDistribution(ReliableDistributionData data,
@@ -1973,7 +1973,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
   }
   
   /**
-  * @since 8.1
+  * @since GemFire 8.1
   */
   @Override
   public ExtensionPoint<Region<?, ?>> getExtensionPoint() {

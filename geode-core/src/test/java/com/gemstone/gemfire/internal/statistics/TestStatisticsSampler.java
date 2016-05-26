@@ -22,7 +22,7 @@ import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.internal.StatisticsManager;
 
 /**
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class TestStatisticsSampler implements StatisticsSampler {
   

@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Retained;
  * Abstract implementation class of RegionEntry interface.
  * This is adds Disk support behavior
  *
- * @since 3.5.1
+ * @since GemFire 3.5.1
  *
  *
  */

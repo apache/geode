@@ -32,7 +32,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Tests the functionality of the {@link AttributesFactory} class.
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 @Category(UnitTest.class)
 public class AttributesFactoryJUnitTest {
@@ -318,7 +318,7 @@ public class AttributesFactoryJUnitTest {
 
   /**
    * Tests the cacheListener functionality
-   * @since 5.0
+   * @since GemFire 5.0
    */
   @Test
   public void testCacheListeners() {
@@ -389,7 +389,7 @@ public class AttributesFactoryJUnitTest {
   }
 
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   @Test
   public void testConnectionPool() {
@@ -414,7 +414,7 @@ public class AttributesFactoryJUnitTest {
   
  /**
    * Trivial cache listener impl
-   * @since 5.0
+   * @since GemFire 5.0
    */
   private static class MyCacheListener extends CacheListenerAdapter {
     // empty impl

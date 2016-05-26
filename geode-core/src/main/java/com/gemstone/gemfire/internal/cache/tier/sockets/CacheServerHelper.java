@@ -39,7 +39,7 @@ import java.util.zip.GZIPOutputStream;
  * <code>CacheServerHelper</code> is a static class that provides helper methods
  * for the CacheServer classes.
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class CacheServerHelper {
   

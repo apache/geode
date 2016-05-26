@@ -20,7 +20,7 @@ import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.distributed.internal.PoolStatHelper;
 
 /**
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class DummyCachePerfStats extends CachePerfStats {
 

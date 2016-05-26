@@ -45,7 +45,7 @@ import java.util.List;
  * as a separate part.
  * 
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 public class RegisterInterestList66 extends BaseCommand {
 

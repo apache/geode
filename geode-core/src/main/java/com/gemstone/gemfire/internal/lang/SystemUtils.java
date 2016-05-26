@@ -27,7 +27,7 @@ import java.util.StringTokenizer;
  * of the Java System class.
  * 
  * @see java.lang.System
- * @since 6.8
+ * @since GemFire 6.8
  */
 @SuppressWarnings("unused")
 public class SystemUtils {

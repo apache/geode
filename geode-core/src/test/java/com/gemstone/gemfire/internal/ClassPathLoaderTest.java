@@ -41,7 +41,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link ClassPathLoader}.
  * 
- * @since 6.5.1.4
+ * @since GemFire 6.5.1.4
  */
 @Category(UnitTest.class)
 public class ClassPathLoaderTest {

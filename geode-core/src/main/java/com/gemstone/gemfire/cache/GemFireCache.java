@@ -42,7 +42,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * <li> {@link ClientCacheFactory#create()} creates a client instance of {@link ClientCache}.
  * </ul>
  *
- * @since 6.5
+ * @since GemFire 6.5
  */
 public interface GemFireCache extends RegionService {
   /** Returns the name of this cache.
@@ -62,14 +62,14 @@ public interface GemFireCache extends RegionService {
    * resources.
    * 
    * @return <code>ResourceManager</code> for managing this cache's resources
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public ResourceManager getResourceManager();
 
   /**
    * Sets the "copy on read" feature for cache read operations.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void setCopyOnRead(boolean copyOnRead);
 
@@ -78,7 +78,7 @@ public interface GemFireCache extends RegionService {
    * 
    * @return true if "copy on read" is enabled, false otherwise.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public boolean getCopyOnRead();
 
@@ -89,7 +89,7 @@ public interface GemFireCache extends RegionService {
    *
    * @see #setRegionAttributes
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public <K,V> RegionAttributes<K,V> getRegionAttributes(String id);
 
@@ -110,7 +110,7 @@ public interface GemFireCache extends RegionService {
    *
    * @see #getRegionAttributes
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public <K,V> void setRegionAttributes(String id, RegionAttributes<K,V> attrs);
 
@@ -119,7 +119,7 @@ public interface GemFireCache extends RegionService {
    * keys of the map are {@link String}s and the values of the map are
    * {@link RegionAttributes}.
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public <K,V> Map<String, RegionAttributes<K,V>> listRegionAttributes();
 
@@ -143,7 +143,7 @@ public interface GemFireCache extends RegionService {
    *         the dtd or if an <code>IOException</code> occurs while
    *         reading the XML.
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public void loadCacheXml(InputStream is) 
     throws TimeoutException, CacheWriterException,
@@ -170,14 +170,14 @@ public interface GemFireCache extends RegionService {
    * Returns the DiskStore by name or <code>null</code> if no disk store is found.
    * @param name the name of the disk store to find. If <code>null</code> then the
    * default disk store, if it exists, is returned.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public DiskStore findDiskStore(String name);
   
   /**
    * create diskstore factory 
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public DiskStoreFactory createDiskStoreFactory();
   
@@ -188,7 +188,7 @@ public interface GemFireCache extends RegionService {
    * @see com.gemstone.gemfire.cache.CacheFactory#setPdxReadSerialized(boolean)
    * @see com.gemstone.gemfire.cache.client.ClientCacheFactory#setPdxReadSerialized(boolean)
    * 
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public boolean getPdxReadSerialized();
   
@@ -196,7 +196,7 @@ public interface GemFireCache extends RegionService {
    * Returns the PdxSerializer used by this cache, or null
    * if no PDX serializer is defined.
    * 
-   * @since 6.6
+   * @since GemFire 6.6
    * @see CacheFactory#setPdxSerializer(PdxSerializer)
    * @see ClientCacheFactory#setPdxSerializer(PdxSerializer)
    */
@@ -204,7 +204,7 @@ public interface GemFireCache extends RegionService {
   
   /**
    * Returns the disk store used for PDX meta data
-   * @since 6.6
+   * @since GemFire 6.6
    * @see CacheFactory#setPdxDiskStore(String)
    * @see ClientCacheFactory#setPdxDiskStore(String)
    */
@@ -213,7 +213,7 @@ public interface GemFireCache extends RegionService {
   /**
    * Returns true if the PDX metadata for this
    * cache is persistent
-   * @since 6.6
+   * @since GemFire 6.6
    * @see CacheFactory#setPdxPersistent(boolean)
    * @see ClientCacheFactory#setPdxPersistent(boolean)
    */
@@ -221,7 +221,7 @@ public interface GemFireCache extends RegionService {
   /**
    * Returns true if fields that are not read during PDX deserialization
    * should be ignored during the PDX serialization.
-   * @since 6.6
+   * @since GemFire 6.6
    * @see CacheFactory#setPdxIgnoreUnreadFields(boolean)
    * @see ClientCacheFactory#setPdxIgnoreUnreadFields(boolean)
    */
@@ -233,7 +233,7 @@ public interface GemFireCache extends RegionService {
    *
    * @throws CacheClosedException if the cache is closed.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public CacheTransactionManager getCacheTransactionManager();
   /**
@@ -241,21 +241,21 @@ public interface GemFireCache extends RegionService {
    * @return javax.naming.Context
    * Added as part of providing JTA implementation in Gemfire.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public Context getJNDIContext();
 
   /**
    * Returns the Declarable used to initialize this cache or <code>null</code>
    * if it does not have an initializer.
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public Declarable getInitializer();
 
   /**
    * Returns the Properties used to initialize the cache initializer or
    * <code>null</code> if no initializer properties exist.
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public Properties getInitializerProps();
 }

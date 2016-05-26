@@ -31,7 +31,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * 
  * For all the latency related attributes e.g. PutRemoteLatency ,DiskWritesAverageLatency etc..
  * "enable-time-statistics" should be set to true. 
- * @since 7.0
+ * @since GemFire 7.0
  *
  */
 @ResourceOperation(resource = Resource.CLUSTER, operation = OperationContext.OperationCode.READ)

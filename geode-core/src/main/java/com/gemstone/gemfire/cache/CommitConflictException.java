@@ -21,7 +21,7 @@ package com.gemstone.gemfire.cache;
  *
  *
  * @see CacheTransactionManager#commit
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class CommitConflictException extends TransactionException {
   private static final long serialVersionUID = -1491184174802596675L;
@@ -47,7 +47,7 @@ public class CommitConflictException extends TransactionException {
   /**
    * Constructs an instance of <code>CommitConflictException</code> with the specified cause.
    * @param cause the causal Throwable
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public CommitConflictException(Throwable cause) {
     super(cause);

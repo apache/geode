@@ -125,7 +125,7 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
  * public for testing purposes.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class CacheCreation implements InternalCache {
 
@@ -207,7 +207,7 @@ public class CacheCreation implements InternalCache {
   
   /**
    * {@link ExtensionPoint} support.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private SimpleExtensionPoint<Cache> extensionPoint = new SimpleExtensionPoint<Cache>(this, this);
 
@@ -228,7 +228,7 @@ public class CacheCreation implements InternalCache {
   /**
    * @param forParsing if true then this creation is used for parsing xml;
    *   if false then it is used for generating xml.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public CacheCreation(boolean forParsing) {
     initializeRegionShortcuts();
@@ -237,7 +237,7 @@ public class CacheCreation implements InternalCache {
     }
   }
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void startingGenerate() {
     createInProgress.set(null);
@@ -344,7 +344,7 @@ public class CacheCreation implements InternalCache {
   /**
    * create diskstore factory
    * 
-   * @since prPersistSprint2
+   * @since GemFire prPersistSprint2
    */
   public DiskStoreFactory createDiskStoreFactory() {
     return new DiskStoreFactoryImpl(this);
@@ -353,7 +353,7 @@ public class CacheCreation implements InternalCache {
   /**
    * Store the current CacheCreation that is doing a create.
    * Used from PoolManager to defer to CacheCreation as a manager of pools.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private static ThreadLocal createInProgress = new ThreadLocal();
 
@@ -361,7 +361,7 @@ public class CacheCreation implements InternalCache {
    * Returns null if the current thread is not doing a CacheCreation create.
    * Otherwise returns the PoolManagerImpl of the CacheCreation of the
    * create being invoked.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final PoolManagerImpl getCurrentPoolManager() {
     return (PoolManagerImpl)createInProgress.get();
@@ -948,25 +948,25 @@ public class CacheCreation implements InternalCache {
   }
     
   /**
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public <K,V> RegionFactory<K,V> createRegionFactory(RegionShortcut atts) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
   /**
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public <K,V> RegionFactory<K,V> createRegionFactory() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
   /**
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public <K,V> RegionFactory<K,V> createRegionFactory(String regionAttributesId) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
   /**
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public <K,V> RegionFactory<K,V> createRegionFactory(RegionAttributes<K,V> regionAttributes) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
@@ -1111,7 +1111,7 @@ public class CacheCreation implements InternalCache {
 
   /**
    * Implementation of {@link Cache#setCopyOnRead}
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void setCopyOnRead(boolean copyOnRead) {
     this.copyOnRead = copyOnRead;
@@ -1120,7 +1120,7 @@ public class CacheCreation implements InternalCache {
 
   /**
    * Implementation of {@link Cache#getCopyOnRead}
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public boolean getCopyOnRead() {
     return this.copyOnRead;
@@ -1133,7 +1133,7 @@ public class CacheCreation implements InternalCache {
   /**
    * Adds a CacheTransactionManagerCreation for this Cache (really just a
    * placeholder since a CacheTransactionManager is really a Cache singleton)
-   * @since 4.0
+   * @since GemFire 4.0
    * @see GemFireCacheImpl
    */
   public void
@@ -1163,7 +1163,7 @@ public class CacheCreation implements InternalCache {
   /**
    * Returns the DiskStore list
    *
-   * @since prPersistSprint2
+   * @since GemFire prPersistSprint2
    */
   public Collection<DiskStoreImpl> listDiskStores() {
     return this.diskStores.values();
@@ -1297,7 +1297,7 @@ public class CacheCreation implements InternalCache {
    * Returns whether PdxInstance is preferred for PDX types instead of Java object.
    * @see com.gemstone.gemfire.cache.CacheFactory#setPdxReadSerialized(boolean)
    *
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public boolean getPdxReadSerialized() {
      return cacheConfig.isPdxReadSerialized();
@@ -1389,7 +1389,7 @@ public class CacheCreation implements InternalCache {
 
   /**
    * @see Extensible#getExtensionPoint()
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Override
   public ExtensionPoint<Cache> getExtensionPoint() {

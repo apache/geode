@@ -26,7 +26,7 @@ import com.gemstone.gemfire.cache.execute.ResultSender;
  * {@link InternalFunctionService#onRegions(Set)}
  * 
  * 
- * @since 6.5
+ * @since GemFire 6.5
  * 
  */
 public class MultiRegionFunctionContextImpl extends FunctionContextImpl

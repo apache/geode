@@ -21,7 +21,7 @@ package com.gemstone.gemfire;
  * {@link DataSerializable#toData} throws an exception or if
  * {@link DataSerializer#toData} is called and returns false.
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class ToDataException extends SerializationException {
   private static final long serialVersionUID = -2329606027453879918L;

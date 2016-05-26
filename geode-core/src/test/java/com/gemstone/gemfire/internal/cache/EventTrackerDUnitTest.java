@@ -51,7 +51,7 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * Tests <code>EventTracker</code> management.
  *
  *
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class EventTrackerDUnitTest extends CacheTestCase {
 

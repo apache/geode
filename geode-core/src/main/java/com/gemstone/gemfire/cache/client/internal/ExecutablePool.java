@@ -23,7 +23,7 @@ import com.gemstone.gemfire.distributed.internal.ServerLocation;
 
 /**
  * Provides methods to execute AbstractOp instances on a client pool.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public interface ExecutablePool {
   /**
@@ -32,7 +32,7 @@ public interface ExecutablePool {
    * It will only execute it once and on one server.
    * @param op the operation to execute
    * @return the result of execution if any; null if not
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Object execute(Op op);
   
@@ -42,7 +42,7 @@ public interface ExecutablePool {
    * It will only execute it once and on one server.
    * @param op the operation to execute
    * @return the result of execution if any; null if not
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Object execute(Op op, int retryAttempts);
   
@@ -67,7 +67,7 @@ public interface ExecutablePool {
    * @return The result from the primary server.
    * @throws NoSubscriptionServersAvailableException if we have no queue server
    * @throws SubscriptionNotEnabledException If the pool does not have queues enabled
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Object executeOnQueuesAndReturnPrimaryResult(Op op)  throws NoSubscriptionServersAvailableException, SubscriptionNotEnabledException;
   /**
@@ -120,21 +120,21 @@ public interface ExecutablePool {
    * @param allowFailover true if we want to failover to another
    * server when the first server is unreachable. Affinity to the
    * new server will be maintained
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public void setupServerAffinity(boolean allowFailover);
   
   /**
    * Release the server affinity established
    * by {@link #setupServerAffinity(boolean)}
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public void releaseServerAffinity();
   
   /**
    * When server affinity is enabled by this thread, returns the server against which all ops in this thread are performed 
    * @return location of the affinity server
-   * @since 6.6
+   * @since GemFire 6.6
    * @see ExecutablePool#setupServerAffinity(boolean) 
    */
   public ServerLocation getServerAffinityLocation();
@@ -143,7 +143,7 @@ public interface ExecutablePool {
    * All subsequent operations by this thread will be performed on
    * the given ServerLocation. Used for resuming suspended transactions.
    * @param serverLocation
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public void setServerAffinityLocation(ServerLocation serverLocation);
 }

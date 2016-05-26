@@ -55,7 +55,7 @@ import com.gemstone.gemfire.internal.security.AuthorizeRequest;
  * If the hasResult byte is 1, then this command send back the result after the
  * execution to the client else do not send the reply back to the client
  * 
- * @since 5.8LA
+ * @since GemFire 5.8LA
  */
 public class ExecuteRegionFunction extends BaseCommand {
 

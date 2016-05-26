@@ -20,7 +20,7 @@ package com.gemstone.gemfire.internal;
  * Allows tests to expect certain exceptions without the SystemFailure watchdog getting upset.
  * See bug 46988.
  * 
- * @since 7.0.1
+ * @since GemFire 7.0.1
  */
 public class SystemFailureTestHook {
 

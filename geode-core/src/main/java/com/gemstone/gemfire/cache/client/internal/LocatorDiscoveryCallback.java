@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * A callback to receive notifications about locator discovery. Currently 
  * only used internally.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public interface LocatorDiscoveryCallback {
   

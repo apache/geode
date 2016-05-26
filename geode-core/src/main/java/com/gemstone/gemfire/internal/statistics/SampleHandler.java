@@ -22,7 +22,7 @@ import java.util.List;
  * Defines the operations required to handle statistics samples and receive
  * notifications of ResourceTypes and ResourceInstances.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface SampleHandler {
 

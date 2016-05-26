@@ -98,7 +98,7 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Tests the Heap Memory thresholds of {@link ResourceManager}
- * @since 6.0
+ * @since GemFire 6.0
  */
 public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   

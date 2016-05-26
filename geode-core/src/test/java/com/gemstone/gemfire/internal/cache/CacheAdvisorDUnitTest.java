@@ -261,14 +261,14 @@ public class CacheAdvisorDUnitTest extends CacheTestCase {
   }
   
   /** coverage for bug 34255
-   * @since 5.0
+   * @since GemFire 5.0
    */
  public void testRegionClose() throws Exception {
     basicTestClose(Operation.REGION_CLOSE);
   }
 
   /** coverage for bug 34255
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void testRegionLocalDestroy() throws Exception {
     basicTestClose(Operation.REGION_LOCAL_DESTROY);

@@ -49,7 +49,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * compact their disk stores.
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 // NOTE: This is copied from com/gemstone/gemfire/internal/admin/remote/CompactRequest.java
 // and modified as per requirements. (original-author Dan Smith)

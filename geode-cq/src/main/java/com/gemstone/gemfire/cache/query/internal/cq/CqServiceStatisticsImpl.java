@@ -25,7 +25,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 /**
  * Provides statistical information about CqService.
  *
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class CqServiceStatisticsImpl implements CqServiceStatistics {
   private CqServiceImpl cqService;

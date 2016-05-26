@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.DynamicRegionFactory;
 /** This class provides non-published methods that allow the cache
     to initialize and close the factory.
 
-    @since 4.3
+    @since GemFire 4.3
  */
 public class DynamicRegionFactoryImpl extends DynamicRegionFactory {
   /** create an instance of the factory.  This is normally only done

@@ -43,7 +43,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  *      Number of CQs closed
  *      Number of CQs on a client 
  * 
- * @since 5.5 
+ * @since GemFire 5.5
  */
 public class CqServiceVsdStats
 {

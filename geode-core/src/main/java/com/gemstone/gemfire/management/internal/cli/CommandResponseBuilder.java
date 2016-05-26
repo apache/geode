@@ -23,7 +23,7 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 
 /**
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CommandResponseBuilder {
   // Command Response Constants

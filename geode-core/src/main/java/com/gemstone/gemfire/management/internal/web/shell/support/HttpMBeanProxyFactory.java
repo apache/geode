@@ -26,7 +26,7 @@ import com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker;
  * <p/>
  * @see java.lang.reflect.Proxy
  * @see com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public class HttpMBeanProxyFactory {

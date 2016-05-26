@@ -23,7 +23,7 @@ import java.io.IOException;
  *
  *
  *
- * @since 3.2
+ * @since GemFire 3.2
  */
 public class DiskAccessException extends CacheRuntimeException {
   private static final long serialVersionUID = 5799100281147167888L;
@@ -52,7 +52,7 @@ public class DiskAccessException extends CacheRuntimeException {
    *
    * @param msg a message string
    * @param regionName The name of the Region for which the disk operation failed
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public DiskAccessException(String msg, String regionName) {
     this(msg, null, regionName);
@@ -63,7 +63,7 @@ public class DiskAccessException extends CacheRuntimeException {
    *
    * @param msg a message string
    * @param ds The disk store for which the disk operation failed
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public DiskAccessException(String msg, DiskStore ds) {
     this(msg, null, ds);
@@ -76,7 +76,7 @@ public class DiskAccessException extends CacheRuntimeException {
    * @param msg the message string
    * @param cause a causal Throwable
    * @param regionName The name of the Region for which the disk operation failed
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public DiskAccessException(String msg, Throwable cause, String regionName) {
     super((regionName!=null ? "For Region: " + regionName + ": " : "") + msg, cause);
@@ -89,7 +89,7 @@ public class DiskAccessException extends CacheRuntimeException {
    * @param msg the message string
    * @param cause a causal Throwable
    * @param ds The disk store for which the disk operation failed
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public DiskAccessException(String msg, Throwable cause, DiskStore ds) {
     super((ds!=null ? "For DiskStore: " + ds.getName() + ": " : "") + msg, cause);
@@ -110,7 +110,7 @@ public class DiskAccessException extends CacheRuntimeException {
    *
    * @param msg the message string
    * @param cause a causal Throwable
-   * @since gemfire 8.0
+   * @since GemFire 8.0
    */
   public DiskAccessException(String msg, Throwable cause) {
     super(msg, cause);

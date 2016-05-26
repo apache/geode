@@ -23,7 +23,7 @@ import com.gemstone.gemfire.Statistics;
  * This is necessary for monitoring the health of GemFire components.
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  * */
 public abstract class ProcessStats {
 

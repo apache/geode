@@ -556,7 +556,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor
     /**
      * requiresNotification determines whether a member needs to be notified of cache
      * operations so that cache listeners and other hooks can be engaged
-     * @since 5.1
+     * @since GemFire 5.1
      */
     public boolean requiresNotification = false;
 
@@ -1033,7 +1033,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor
   
   /**
    * return the set of all members who must receive operation notifications
-   * @since 5.1
+   * @since GemFire 5.1
    * */
   public Set adviseRequiresNotification(final EntryEventImpl event) {
     return adviseFilter(new Filter() {
@@ -1816,7 +1816,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor
    * A real bucket profile is one that for a bucket that actually has storage
    * in this vm.
    * @return a list of BucketProfileAndId instances; may be null
-   * @since 5.5 
+   * @since GemFire 5.5
    */
   public ArrayList getBucketRegionProfiles() {
     final ProxyBucketRegion[] bucs = this.buckets;
@@ -1842,7 +1842,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor
   /**
    * Takes a list of BucketProfileAndId and adds them to thsi advisors
    * proxy buckets.
-   * @since 5.5 
+   * @since GemFire 5.5
    */
   public void putBucketRegionProfiles(ArrayList l) {
     int size = l.size();

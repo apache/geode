@@ -59,7 +59,7 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
  *
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class LonerDistributionManager implements DM {
   private final InternalDistributedSystem system;
@@ -911,7 +911,7 @@ public class LonerDistributionManager implements DM {
 
   /* (non-Javadoc)
    * @see com.gemstone.gemfire.distributed.internal.DM#getMembersOnThisHost()
-   * @since gemfire59poc
+   * @since GemFire 5.9
    */
   public Set<InternalDistributedMember> getMembersInThisZone() {
     return this.allIds;

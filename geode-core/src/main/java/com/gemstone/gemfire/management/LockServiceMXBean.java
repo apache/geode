@@ -29,7 +29,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * {@link DLockService}.  Since any number of DLockService objects can be created
  * by a member there may be 0 or more instances of this MBean available.
  *
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
 @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)

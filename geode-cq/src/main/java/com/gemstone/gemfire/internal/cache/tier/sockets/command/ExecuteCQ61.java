@@ -50,7 +50,7 @@ import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 
 
 /**
- * @since 6.1
+ * @since GemFire 6.1
  */
 
 public class ExecuteCQ61 extends BaseCQCommand {

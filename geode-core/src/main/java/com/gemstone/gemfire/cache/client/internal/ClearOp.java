@@ -22,7 +22,7 @@ import com.gemstone.gemfire.internal.cache.EventID;
 
 /**
  * Does a region clear (or create) on a server
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class ClearOp {
   /**

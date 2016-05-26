@@ -31,7 +31,7 @@ import java.util.Arrays;
  * A properties object used to create persistent/overflow regions for
  * testing objects
  *  
- * @since 5.1
+ * @since GemFire 5.1
  *
  */
 public class DiskRegionProperties

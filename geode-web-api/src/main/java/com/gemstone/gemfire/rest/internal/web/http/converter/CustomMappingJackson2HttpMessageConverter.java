@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
  * The CustomMappingJackson2HttpMessageConverter class...
  * 
  * @see org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
- * @since 0.0.1
+ * @since GemFire 0.0.1
  */
 @SuppressWarnings("unused")
 public class CustomMappingJackson2HttpMessageConverter extends

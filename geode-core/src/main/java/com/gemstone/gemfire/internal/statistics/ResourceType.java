@@ -26,7 +26,7 @@ import com.gemstone.gemfire.StatisticsType;
  * <p/>
  * Extracted from {@link com.gemstone.gemfire.internal.StatArchiveWriter}.
  *  
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class ResourceType {
   

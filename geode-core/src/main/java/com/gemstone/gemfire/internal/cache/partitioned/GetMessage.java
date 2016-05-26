@@ -75,7 +75,7 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
  * Since the {@link com.gemstone.gemfire.cache.Region#get(Object)}operation is
  * used <bold>very </bold> frequently the performance of this class is critical.
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public final class GetMessage extends PartitionMessageWithDirectReply
   {
@@ -327,7 +327,7 @@ public final class GetMessage extends PartitionMessageWithDirectReply
    * is used <bold>very </bold> frequently the performance of this class is
    * critical.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static final class GetReplyMessage extends ReplyMessage
    {
@@ -534,7 +534,7 @@ public final class GetMessage extends PartitionMessageWithDirectReply
    * A processor to capture the value returned by {@link 
    * com.gemstone.gemfire.internal.cache.partitioned.GetMessage.GetReplyMessage}
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static class GetResponse extends PartitionResponse {
     private volatile GetReplyMessage getReply;

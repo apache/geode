@@ -827,7 +827,7 @@ public class DLockStats implements DistributedLockStats {
   /**
    * Returns a helper object so that the serial queue can record its
    * stats to the proper distribution stats.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public QueueStatHelper getSerialQueueHelper() {
     return new QueueStatHelper() {
@@ -846,7 +846,7 @@ public class DLockStats implements DistributedLockStats {
   /**
    * Returns a helper object so that the waiting pool can record its
    * stats to the proper distribution stats.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public PoolStatHelper getWaitingPoolHelper() {
     return new PoolStatHelper() {
@@ -862,7 +862,7 @@ public class DLockStats implements DistributedLockStats {
   /**
    * Returns a helper object so that the waiting queue can record its
    * stats to the proper distribution stats.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public QueueStatHelper getWaitingQueueHelper() {
     return new QueueStatHelper() {

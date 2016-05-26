@@ -57,7 +57,7 @@ import java.util.Set;
  * public for testing purposes.
  *
  *
- * @since 6.5
+ * @since GemFire 6.5
  */
 @SuppressWarnings("deprecation")
 public class ClientCacheCreation extends CacheCreation implements ClientCache {
@@ -74,7 +74,7 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
   /**
    * @param forParsing if true then this creation is used for parsing xml;
    *   if false then it is used for generating xml.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public ClientCacheCreation(boolean forParsing) {
     super(forParsing);
@@ -108,14 +108,14 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
   /**
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public <K,V> ClientRegionFactory<K,V> createClientRegionFactory(ClientRegionShortcut atts) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   /**
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public <K,V> ClientRegionFactory<K,V> createClientRegionFactory(String regionAttributesId) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());

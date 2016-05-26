@@ -61,7 +61,7 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 /**
  * Tests the UniversalMembershipListenerAdapter.
  *
- * @since 4.2.1
+ * @since GemFire 4.2.1
  */
 public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTestCase {
   protected static final boolean CLIENT = true;

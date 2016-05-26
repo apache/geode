@@ -29,7 +29,7 @@ import java.util.Map.Entry;
  * 
  * @see SnapshotReader
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface SnapshotIterator<K, V> {
   /**

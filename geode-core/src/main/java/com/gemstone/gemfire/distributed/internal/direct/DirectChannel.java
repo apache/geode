@@ -663,7 +663,7 @@ public class DirectChannel {
   
   /**
    * Returns null if no config is available.
-   * @since 4.2.2
+   * @since GemFire 4.2.2
    */
   public DistributionConfig getDMConfig() {
     DM dm = getDM();
@@ -827,7 +827,7 @@ public class DirectChannel {
   /**
    * Returns the conduit over which this channel sends messages
    *
-   * @since 2.1
+   * @since GemFire 2.1
    */
   public TCPConduit getConduit() {
     return this.conduit;
@@ -877,7 +877,7 @@ public class DirectChannel {
    *    the member whose state is to be captured
    * @param result
    *    the map to add the state to
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public void getChannelStates(DistributedMember member, Map result)
   {

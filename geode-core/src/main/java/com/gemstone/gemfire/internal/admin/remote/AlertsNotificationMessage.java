@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.admin.StatAlert;
  * Distribution message to be sent to alert aggregator
  * {@link StatAlertsAggregator} It wraps alert objects{@link StatAlert}
  * 
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class AlertsNotificationMessage extends PooledDistributionMessage {
 

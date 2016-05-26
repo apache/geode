@@ -23,7 +23,7 @@ package com.gemstone.gemfire.cache;
  * 
  * 
  * @see PartitionResolver  
- * @since 6.0 
+ * @since GemFire 6.0
  */
 public interface EntryOperation<K,V> {
 
@@ -40,7 +40,7 @@ public interface EntryOperation<K,V> {
    * It may return null and should not be used to generate routing object
    * in {@link PartitionResolver#getRoutingObject(EntryOperation)}
    * @return the operation that triggered this event.
-   * @since 6.0
+   * @since GemFire 6.0
    * @deprecated
    */
   public Operation getOperation();
@@ -69,7 +69,7 @@ public interface EntryOperation<K,V> {
    * not be obtained.
    * Note that {@link #getCallbackArgument} will return <code>null</code>
    * when this method returns <code>false</code>.
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public boolean isCallbackArgumentAvailable();
   

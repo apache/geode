@@ -24,7 +24,7 @@ import com.gemstone.gemfire.internal.cache.lru.LRUEntry;
  * Abstract implementation class of RegionEntry interface.
  * This adds LRU support behavior to entries that already have Disk support.
  *
- * @since 3.5.1
+ * @since GemFire 3.5.1
  *
  *
  */

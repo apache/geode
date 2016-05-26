@@ -65,7 +65,7 @@ import org.springframework.shell.core.annotation.CliOption;
  * <li>describe region
  * </ul>
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class RegionCommands implements CommandMarker {
   private Gfsh getGfsh() {

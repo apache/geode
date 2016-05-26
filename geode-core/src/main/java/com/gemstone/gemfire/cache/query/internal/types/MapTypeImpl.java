@@ -24,7 +24,7 @@ import com.gemstone.gemfire.DataSerializer;
 
 /**
  * Implementation of CollectionType
- * @since 4.0
+ * @since GemFire 4.0
  */
 public final class MapTypeImpl extends CollectionTypeImpl
 implements MapType {

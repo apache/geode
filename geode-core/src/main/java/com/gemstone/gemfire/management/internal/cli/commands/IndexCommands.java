@@ -70,7 +70,7 @@ import org.springframework.shell.core.annotation.CliOption;
  * @see com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSupport
  * @see com.gemstone.gemfire.management.internal.cli.domain.IndexDetails
  * @see com.gemstone.gemfire.management.internal.cli.functions.ListIndexFunction
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public class IndexCommands extends AbstractCommandsSupport {

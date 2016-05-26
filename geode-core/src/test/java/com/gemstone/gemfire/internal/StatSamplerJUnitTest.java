@@ -44,7 +44,7 @@ import com.gemstone.gemfire.internal.util.StopWatch;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(IntegrationTest.class)
 public class StatSamplerJUnitTest {

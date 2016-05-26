@@ -35,7 +35,7 @@ import java.util.*;
  * <code>AdminDistributedSystem</code>.  This class is used mainly for
  * testing.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class ManagedEntityConfigXmlGenerator
   extends ManagedEntityConfigXml implements XMLReader {

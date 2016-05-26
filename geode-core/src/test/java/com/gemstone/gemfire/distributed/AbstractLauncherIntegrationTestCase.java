@@ -48,7 +48,7 @@ import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.internal.util.StopWatch;
 
 /**
- * @since 8.0
+ * @since GemFire 8.0
  */
 public abstract class AbstractLauncherIntegrationTestCase {
   protected static final Logger logger = LogService.getLogger();

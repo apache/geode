@@ -28,7 +28,7 @@ import com.gemstone.gemfire.cache.LowMemoryException;
  * <p>This interface is implemented by GemFire. To obtain an instance of it use {@link FunctionService}.
  * 
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * 
  * @see FunctionService
  * @see Function
@@ -50,7 +50,7 @@ public interface Execution {
    * @throws UnsupportedOperationException
    *           if not called after
    *           {@link FunctionService#onRegion(com.gemstone.gemfire.cache.Region)}
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public Execution withFilter(Set<?> filter);
 
@@ -60,7 +60,7 @@ public interface Execution {
    * @param args user data passed to the function execution
    * @return an Execution with args 
    * @throws IllegalArgumentException if the input parameter is null
-   * @since 6.0
+   * @since GemFire 6.0
    *                 
    */
   public Execution withArgs(Object args);
@@ -72,7 +72,7 @@ public interface Execution {
    * @return an Execution with a collector
    * @throws IllegalArgumentException if {@link ResultCollector} is null
    * @see ResultCollector
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public Execution withCollector(
       ResultCollector<?, ?> rc);
@@ -94,7 +94,7 @@ public interface Execution {
    *         {@link Execution#withCollector(ResultCollector)}. User has to use
    *         this reference to retrieve results.
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public ResultCollector<?, ?> execute(
       String functionId) throws FunctionException;
@@ -115,7 +115,7 @@ public interface Execution {
    *         {@link Execution#withCollector(ResultCollector)}. User has to use
    *         this reference to retrieve results.
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public ResultCollector<?, ?> execute(
       Function function) throws FunctionException;
@@ -143,7 +143,7 @@ public interface Execution {
    *         {@link Execution#withCollector(ResultCollector)}. User has to use
    *         this reference to retrieve results.
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    * @deprecated as of 6.6, use {@link #execute(String)} instead
    */
   @Deprecated
@@ -176,7 +176,7 @@ public interface Execution {
    *         {@link Execution#withCollector(ResultCollector)}. User has to use
    *         this reference to retrieve results.
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    * @deprecated as of 6.6, use {@link #execute(String)} instead
    */
   @Deprecated
@@ -212,7 +212,7 @@ public interface Execution {
    *         {@link Execution#withCollector(ResultCollector)}. User has to use
    *         this reference to retrieve results.
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    * @deprecated as of 6.6, use {@link #execute(String)} instead
    */
   @Deprecated

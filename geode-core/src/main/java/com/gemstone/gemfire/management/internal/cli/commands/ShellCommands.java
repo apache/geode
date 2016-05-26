@@ -86,7 +86,8 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 /**
- * @since 7.0
+ *
+ * @since GemFire 7.0
  */
 public class ShellCommands implements CommandMarker {
 

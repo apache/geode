@@ -28,7 +28,7 @@ package com.gemstone.gemfire.cache.execute;
  * in to {@link Function#execute(FunctionContext)}.
  * 
  *
- * @since 6.0
+ * @since GemFire 6.0
  *
  * @see RegionFunctionContext
  *
@@ -40,7 +40,7 @@ public interface FunctionContext {
    * {@link Execution#withArgs(Object)}
    * 
    * @return the arguments or null if there are no arguments
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public Object getArguments();
 
@@ -49,7 +49,7 @@ public interface FunctionContext {
    *  
    * @return a unique identifier
    * @see Function#getId()
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public String getFunctionId();
   
@@ -59,7 +59,7 @@ public interface FunctionContext {
    * pieces and send each piece back to the calling thread's ResultCollector.
    * 
    * @return ResultSender
-   * @since 6.0
+   * @since GemFire 6.0
    */
   
   public <T> ResultSender<T> getResultSender();
@@ -71,7 +71,7 @@ public interface FunctionContext {
    * @return a boolean (true) to identify whether it is a re-execute (else
    *         false)
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    * @see Function#isHA()
    */
   public boolean isPossibleDuplicate();

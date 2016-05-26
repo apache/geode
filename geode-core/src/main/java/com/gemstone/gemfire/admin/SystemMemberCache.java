@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.RegionAttributes;
  * Administrative interface that represent's the {@link SystemMember}'s view
  * of its {@link com.gemstone.gemfire.cache.Cache}.
  *
- * @since     3.5
+ * @since GemFire     3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface SystemMemberCache {
@@ -136,7 +136,7 @@ public interface SystemMemberCache {
    * @throws AdminException
    *         If the region cannot be created
    *
-   * @since 4.0
+   * @since GemFire 4.0
    * @deprecated as of GemFire 5.0, use {@link #createRegion} instead
    */
   @Deprecated
@@ -155,7 +155,7 @@ public interface SystemMemberCache {
    * @throws AdminException
    *         If the region cannot be created
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public SystemMemberRegion createRegion(String name,
                                          RegionAttributes attrs)
@@ -173,7 +173,7 @@ public interface SystemMemberCache {
    *
    * @see com.gemstone.gemfire.cache.Cache#addCacheServer
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public SystemMemberCacheServer addCacheServer()
     throws AdminException;
@@ -185,7 +185,7 @@ public interface SystemMemberCache {
    *
    * @see com.gemstone.gemfire.cache.Cache#getCacheServers
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public SystemMemberCacheServer[] getCacheServers()
     throws AdminException;
@@ -197,7 +197,7 @@ public interface SystemMemberCache {
    * CacheServer}.  Note that this value will not be updated until
    * {@link #refresh} is invoked.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public boolean isServer() throws AdminException;
 }

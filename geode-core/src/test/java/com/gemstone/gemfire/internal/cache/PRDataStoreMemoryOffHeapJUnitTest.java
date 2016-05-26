@@ -28,7 +28,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Tests PartitionedRegion DataStore currentAllocatedMemory operation.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 @Category(IntegrationTest.class)
 public class PRDataStoreMemoryOffHeapJUnitTest extends PRDataStoreMemoryJUnitTest {

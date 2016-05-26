@@ -62,7 +62,7 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
  *
  * @see com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase
  * @see com.gemstone.gemfire.management.internal.cli.commands.IndexCommands
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 @Category(DistributedTest.class)

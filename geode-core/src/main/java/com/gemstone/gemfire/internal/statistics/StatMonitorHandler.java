@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 
 /**
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class StatMonitorHandler implements SampleHandler {
 
@@ -157,7 +157,7 @@ public class StatMonitorHandler implements SampleHandler {
   }
   
   /**
-   * @since 7.0
+   * @since GemFire 7.0
    */
   class StatMonitorNotifier implements Runnable {
     
@@ -311,7 +311,7 @@ public class StatMonitorHandler implements SampleHandler {
   }
   
   /**
-   * @since 7.0
+   * @since GemFire 7.0
    */
   static class MonitorTask {
     private final long sampleTimeMillis; 

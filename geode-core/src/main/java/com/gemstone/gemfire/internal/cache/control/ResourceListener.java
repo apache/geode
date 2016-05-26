@@ -21,7 +21,7 @@ package com.gemstone.gemfire.internal.cache.control;
  * Provides notification of {@link com.gemstone.gemfire.cache.Cache}
  * resource management events.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public interface ResourceListener<T extends ResourceEvent> {
   /**

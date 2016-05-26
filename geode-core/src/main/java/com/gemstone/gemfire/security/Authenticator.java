@@ -40,7 +40,7 @@ import java.util.Properties;
  * <code>public static Authenticator [method-name]();</code> i.e. it should be
  * a zero argument function.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public interface Authenticator extends CacheCallback {
 

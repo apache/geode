@@ -43,7 +43,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * concurrency control enabled so that region-version-vectors must be used to
  * execute these operations.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class RemoteRegionOperation extends RemoteOperationMessageWithDirectReply
   {

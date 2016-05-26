@@ -46,7 +46,7 @@ import org.junit.experimental.categories.Category;
  *
  * @see com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase
  * @see com.gemstone.gemfire.management.internal.cli.commands.DiskStoreCommands
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(DistributedTest.class)
 public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBase {

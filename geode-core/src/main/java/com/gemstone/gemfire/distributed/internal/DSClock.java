@@ -102,7 +102,7 @@ public class DSClock {
 
   /**
    * @return Offset for system time, calculated by distributed system coordinator.
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public long getCacheTimeOffset() {
     return this.cacheTimeDelta;
@@ -112,7 +112,7 @@ public class DSClock {
    * Sets the deviation of this process's local time from the rest of the GemFire
    * distributed system.
    *
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public void setCacheTimeOffset(DistributedMember coord, long offset, boolean isJoin) {
     if (Boolean.getBoolean("gemfire.disable-distributed-clock")) {

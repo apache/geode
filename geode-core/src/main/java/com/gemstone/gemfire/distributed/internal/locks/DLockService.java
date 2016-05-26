@@ -2496,7 +2496,7 @@ public class DLockService extends DistributedLockService {
     
   /**
    * Destroys an existing service and removes it from the map
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public void destroyAndRemove() {
     // isLockGrantor determines if we need to tell elder of destroy
@@ -3179,7 +3179,7 @@ public class DLockService extends DistributedLockService {
   
   /**
    * Return a timestamp that represents the current time for locking purposes.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   static long getLockTimeStamp(DM dm) {
     return dm.cacheTimeMillis();

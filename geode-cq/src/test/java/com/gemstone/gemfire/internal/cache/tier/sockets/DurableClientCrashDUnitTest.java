@@ -24,7 +24,7 @@ import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
  * functionality when clients crash.
  * 
  * 
- * @since 5.2
+ * @since GemFire 5.2
  */
 public class DurableClientCrashDUnitTest extends DurableClientTestCase {
 

@@ -71,7 +71,7 @@ import com.gemstone.gemfire.internal.sequencelog.EntryLogger;
  * The base PartitionedRegion message type upon which other messages should be
  * based.
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public abstract class PartitionMessage extends DistributionMessage implements 
     MessageWithReply, TransactionMessage
@@ -644,7 +644,7 @@ public abstract class PartitionMessage extends DistributionMessage implements
   /**
    * added to support old value to be written on wire.
    * @param value true or false
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public void setHasOldValue(boolean value) {
     // override in subclasses which need old value to be serialized.
@@ -700,7 +700,7 @@ public abstract class PartitionMessage extends DistributionMessage implements
    * recipient, capturing any CacheException thrown by the recipient and handle
    * it as an expected exception.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    * @see #waitForCacheException()
    */
   public static class PartitionResponse extends DirectReplyProcessor {

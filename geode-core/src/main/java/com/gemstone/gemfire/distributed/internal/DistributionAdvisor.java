@@ -72,7 +72,7 @@ import com.gemstone.gemfire.internal.util.ArrayUtils;
  * of members in the distributed system.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class DistributionAdvisor  {
 
@@ -154,7 +154,7 @@ public class DistributionAdvisor  {
   
   /**
    * the version of the profile set
-   * @since 5.1
+   * @since GemFire 5.1
    */
   private long membershipVersion;
   
@@ -388,7 +388,7 @@ public class DistributionAdvisor  {
 
   /**
    * Free up resources used by this advisor once it is no longer being used.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public void close() {
     try {
@@ -482,7 +482,7 @@ public class DistributionAdvisor  {
    * Polls the isInitialized state. Unlike {@link #isInitialized} it will
    * not wait for it to become initialized if it is in the middle of being
    * initialized.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public final boolean pollIsInitialized() {
     return this.initialized;
@@ -542,7 +542,7 @@ public class DistributionAdvisor  {
   /**
    * Return true if the memberId on the specified Profile is a current
    * member of the distributed system.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected boolean isCurrentMember(Profile p) {
     return getDistributionManager().isCurrentMember(p.getDistributedMember());
@@ -721,7 +721,7 @@ public class DistributionAdvisor  {
    * Create a new version of the membership profile set.  This is
    * used in flushing state out of the VM for previous versions of
    * the set.
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public synchronized void forceNewMembershipVersion() {
     if (!membershipClosed) {
@@ -746,7 +746,7 @@ public class DistributionAdvisor  {
    * messages for the operation have been put in the DistributionManager's
    * outgoing "queue".
    * @return the current membership version for this advisor
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public final synchronized long startOperation() {
     if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_STATE_FLUSH_OP)) {
@@ -766,7 +766,7 @@ public class DistributionAdvisor  {
    * been put in the DistributionManager's outgoing queue.
    * @param version
    *    The membership version returned by startOperation
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public final synchronized long endOperation(long version) {
     synchronized(this.opCountLock) {
@@ -795,7 +795,7 @@ public class DistributionAdvisor  {
   /**
    * wait for the current operations being sent on views prior to the joining
    * of the given member to be placed on communication channels before returning
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public void waitForCurrentOperations(long timeout)
   {
@@ -908,7 +908,7 @@ public class DistributionAdvisor  {
   /**
    * Removes the specified profile if it is registered with this advisor.
    * @return true if it was registered; false if not.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public boolean removeProfile(Profile profile, boolean destroyed) {
     return removeId(profile.getId(), false, destroyed, false/*fromMembershipListener*/);
@@ -1094,7 +1094,7 @@ public class DistributionAdvisor  {
   
 //  /**
 //   * get the profile for a specific member
-//   * @since 5.1
+//   * @since GemFire 5.1
 //   * @return the Profile or null
 //   */
 //  synchronized public Profile getProfile(InternalDistributedMember memberId) {
@@ -1194,7 +1194,7 @@ public class DistributionAdvisor  {
 
   /**
    * Returns a set of the members this advisor should distribute to by default
-   * @since 5.7
+   * @since GemFire 5.7
    */
   @SuppressWarnings("unchecked")
   protected final Set<InternalDistributedMember> getDefaultDistributionMembers() {
@@ -1377,7 +1377,7 @@ public class DistributionAdvisor  {
 
   /** Get an unmodifiable list of the <code>Profile</code>s
    * that match the given <code>Filter</code>.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected List/*<Profile>*/ fetchProfiles(Filter f) {
     initializationGate();
@@ -1407,7 +1407,7 @@ public class DistributionAdvisor  {
 
   /**
    * Provide recipients for profile remove.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Set adviseProfileRemove() {
     return adviseGeneric();
@@ -1530,7 +1530,7 @@ public class DistributionAdvisor  {
     /**
      * The DistributionAdvisor's membership version where this member
      * was added
-     * @since 5.1
+     * @since GemFire 5.1
      */
     public transient long initialMembershipVersion;
 
@@ -1548,7 +1548,7 @@ public class DistributionAdvisor  {
 
     /**
      * Return object that uniquely identifies this profile.
-     * @since 5.7
+     * @since GemFire 5.7
      */
     public ProfileId getId() {
       return this.peerMemberId;
@@ -1575,7 +1575,7 @@ public class DistributionAdvisor  {
     }
 
     /** Return the DistributedMember associated with this profile
-     * @since 5.0
+     * @since GemFire 5.0
      */
     public final InternalDistributedMember getDistributedMember() {
       return this.peerMemberId;

@@ -37,7 +37,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * {@link Command} for {@link GetClientPRMetadataCommand}
  * 
  * 
- * @since 6.5 
+ * @since GemFire 6.5
  */
 public class GetClientPRMetadataCommand extends BaseCommand {
 

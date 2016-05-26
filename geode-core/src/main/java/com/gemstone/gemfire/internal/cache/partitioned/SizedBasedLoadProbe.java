@@ -29,7 +29,7 @@ import java.io.IOException;
  * A load probe which calculates the load of a pr using
  * the size of the buckets in bytes.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public class SizedBasedLoadProbe implements LoadProbe, DataSerializableFixedID {
   private static final long serialVersionUID = 7040814060882774875L;

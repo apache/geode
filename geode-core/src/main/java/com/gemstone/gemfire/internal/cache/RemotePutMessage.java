@@ -72,7 +72,7 @@ import static com.gemstone.gemfire.internal.cache.DistributedCacheOperation.VALU
  * A Replicate Region update message.  Meant to be sent only to
  * the peer who hosts transactional data.
  *
- * @since 6.5
+ * @since GemFire 6.5
  */
 public final class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   implements NewValueImporter, OldValueImporter {
@@ -1087,7 +1087,7 @@ public final class RemotePutMessage extends RemoteOperationMessageWithDirectRepl
 
   /**
    * A processor to capture the value returned by {@link RemotePutMessage}
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static class RemotePutResponse extends RemoteOperationResponse  {
     private volatile boolean returnValue;

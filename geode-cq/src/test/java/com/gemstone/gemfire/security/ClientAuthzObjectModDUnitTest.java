@@ -56,7 +56,7 @@ import com.gemstone.gemfire.test.junit.categories.SecurityTest;
  * This enables testing of object and callback modification both in
  * pre-processing and post-processing phases.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 @Category({ DistributedTest.class, SecurityTest.class })
 public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestCase {

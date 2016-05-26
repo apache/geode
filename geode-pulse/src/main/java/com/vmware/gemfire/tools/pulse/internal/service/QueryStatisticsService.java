@@ -38,7 +38,7 @@ import com.vmware.gemfire.tools.pulse.internal.data.Repository;
  * This class returns top N queries based on pagination and filtering criteria
  * if any
  * 
- * @since version 7.5
+ * @since GemFire version 7.5
  */
 @Component
 @Service("QueryStatistics")

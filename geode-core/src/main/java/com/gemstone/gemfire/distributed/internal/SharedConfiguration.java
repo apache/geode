@@ -881,7 +881,7 @@ public class SharedConfiguration {
    *
    * @param xmlContent XML content to load and upgrade.
    * @return {@link Document} from xmlContent.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   // UnitTest SharedConfigurationJUnitTest.testCreateAndUpgradeDocumentFromXml
   static Document createAndUpgradeDocumentFromXml(final String xmlContent) throws SAXException, ParserConfigurationException, IOException, XPathExpressionException {

@@ -22,7 +22,7 @@ import com.gemstone.gemfire.pdx.internal.PdxType;
 
 /**
  * Add a PdxType to a server.
- * @since 6.6
+ * @since GemFire 6.6
  */
 public class AddPDXTypeOp {
   /**

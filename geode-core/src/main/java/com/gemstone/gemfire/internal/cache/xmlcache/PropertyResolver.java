@@ -23,7 +23,7 @@ import java.util.IllegalFormatException;
 import java.util.Properties;
 
 /**
- * @since 6.6
+ * @since GemFire 6.6
  */
 public interface PropertyResolver {
 

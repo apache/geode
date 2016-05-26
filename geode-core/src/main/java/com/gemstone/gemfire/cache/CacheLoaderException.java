@@ -25,7 +25,7 @@ package com.gemstone.gemfire.cache;
  *
  * @see com.gemstone.gemfire.cache.Region#get(Object)
  * @see CacheLoader#load
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class CacheLoaderException extends OperationAbortedException {
 private static final long serialVersionUID = -3383072059406642140L;

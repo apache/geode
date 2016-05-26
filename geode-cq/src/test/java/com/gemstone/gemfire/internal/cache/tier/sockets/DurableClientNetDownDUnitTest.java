@@ -22,7 +22,7 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
  * functionality when clients are disconnected from servers.
  * 
  * 
- * @since 5.2
+ * @since GemFire 5.2
  */
 public class DurableClientNetDownDUnitTest extends DurableClientCrashDUnitTest {
 

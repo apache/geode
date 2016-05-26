@@ -25,7 +25,7 @@ import com.gemstone.gemfire.pdx.PdxUnreadFields;
 
 /**
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 public class PdxUnreadData implements PdxUnreadFields {
 

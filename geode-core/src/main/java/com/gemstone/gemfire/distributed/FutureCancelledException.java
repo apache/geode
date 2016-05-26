@@ -22,7 +22,7 @@ import com.gemstone.gemfire.CancelException;
 /**
  * Thrown when a {@link Future} has been cancelled.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 
 public class FutureCancelledException extends CancelException {

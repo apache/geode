@@ -32,7 +32,7 @@ import java.nio.channels.*;
  *
  * @see Message
  *
- * @since 2.0.2
+ * @since GemFire 2.0.2
  */
 public class Part {
   private static final byte BYTE_CODE = 0;
@@ -41,7 +41,7 @@ public class Part {
   private Version version;
   /**
    * Used to represent and empty byte array for bug 36279
-   * @since 5.1
+   * @since GemFire 5.1
    */
   private static final byte EMPTY_BYTEARRAY_CODE = 2;
   private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
@@ -188,7 +188,7 @@ public class Part {
   }
 
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static void encodeInt(int v, byte[] bytes) {
     encodeInt(v, bytes, 0);

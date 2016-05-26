@@ -38,7 +38,7 @@ import com.gemstone.gemfire.management.internal.cli.CliUtil;
  * Utility class to scan class-path & load classes.
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class ClasspathScanLoadHelper {
   private static final String CLASSFILE_EXTENSION = ".class";
@@ -242,7 +242,7 @@ public class ClasspathScanLoadHelper {
   /**
    * FileFilter to filter out GemFire Test Code.
    * 
-   * @since 7.0
+   * @since GemFire 7.0
    */
   static class TestClassFilter implements FileFilter {
     private static final String TESTS_CODE_INDICATOR = "Test";

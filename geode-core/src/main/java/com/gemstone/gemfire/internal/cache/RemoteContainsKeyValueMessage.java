@@ -45,7 +45,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 /**
  * This message is used be a replicate region to send a contains key/value request
  * to another peer.
- * @since 6.5
+ * @since GemFire 6.5
  */
 public final class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDirectReply
   {
@@ -275,7 +275,7 @@ public final class RemoteContainsKeyValueMessage extends RemoteOperationMessageW
    * A processor to capture the value returned by {@link 
    * com.gemstone.gemfire.internal.cache.RemoteContainsKeyValueMessage.RemoteContainsKeyValueReplyMessage}
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static class RemoteContainsKeyValueResponse extends RemoteOperationResponse
    {

@@ -41,7 +41,7 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
  * Tests that the Matris defined in <code>ServerResponseMatrix</code> is
  * applied or not
  * 
- * @since 5.1
+ * @since GemFire 5.1
  * 
  */
 public class DurableResponseMatrixDUnitTest extends DistributedTestCase

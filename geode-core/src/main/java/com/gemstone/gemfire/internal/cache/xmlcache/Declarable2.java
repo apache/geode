@@ -26,7 +26,7 @@ import java.util.Properties;
  * into XML.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public interface Declarable2 extends Declarable {
 

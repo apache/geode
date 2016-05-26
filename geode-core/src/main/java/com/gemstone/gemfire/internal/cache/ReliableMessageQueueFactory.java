@@ -21,7 +21,7 @@ package com.gemstone.gemfire.internal.cache;
  * The Cache will have an instance of the factory that can be obtained
  * from {@link GemFireCacheImpl#getReliableMessageQueueFactory}.
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public interface ReliableMessageQueueFactory {
   /**

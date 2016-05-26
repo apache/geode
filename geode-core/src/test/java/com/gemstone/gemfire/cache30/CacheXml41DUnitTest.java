@@ -48,7 +48,7 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 /**
  * Tests the declarative caching functionality introduced in GemFire 4.1.
  * 
- * @since 4.1
+ * @since GemFire 4.1
  */
 
 public class CacheXml41DUnitTest extends CacheXml40DUnitTest
@@ -532,7 +532,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
   //}
   /**
    * Test Publisher region attribute
-   * @since 4.2.3
+   * @since GemFire 4.2.3
    * @deprecated as of GemFire 6.5.
    */
   public void testPublisherAttribute() throws CacheException {
@@ -547,7 +547,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
 
   /**
    * Test EnableBridgeConflation region attribute
-   * @since 4.2
+   * @since GemFire 4.2
    */
   public void testEnableBridgeConflationAttribute() throws CacheException {
 
@@ -561,7 +561,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
 
   /**
    * Test EnableAsyncConflation region attribute
-   * @since 4.2
+   * @since GemFire 4.2
    */
   public void testEnableAsyncConflationAttribute() throws CacheException {
 
@@ -573,7 +573,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
     assertEquals(true, cache.getRegion("root").getAttributes().getEnableAsyncConflation());
   }
   /**
-   * @since 4.3
+   * @since GemFire 4.3
    */
   public void testDynamicRegionFactoryDefault() throws CacheException {
     CacheCreation cache = new CacheCreation();
@@ -613,7 +613,7 @@ public class CacheXml41DUnitTest extends CacheXml40DUnitTest
   }
 
   /**
-   * @since 4.3
+   * @since GemFire 4.3
    */
   public void testDynamicRegionFactoryDiskDir() throws CacheException {
     CacheCreation cache = new CacheCreation();

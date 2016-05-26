@@ -48,7 +48,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * Abstract implementation of InternalExecution interface.
  *  
- * @since 5.8LA
+ * @since GemFire 5.8LA
  *
  */
 public abstract class AbstractExecution implements InternalExecution {
@@ -496,7 +496,7 @@ public abstract class AbstractExecution implements InternalExecution {
    * @return byte[]
    * @throws FunctionException
    *                 if functionID passed is null
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public byte[] getFunctionAttributes(String functionId) {
     if (functionId == null) {

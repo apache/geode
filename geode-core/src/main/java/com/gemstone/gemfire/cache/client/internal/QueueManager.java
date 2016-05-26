@@ -23,7 +23,7 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 
 /**
- * @since 5.7
+ * @since GemFire 5.7
  * 
  */
 public interface QueueManager {

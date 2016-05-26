@@ -42,7 +42,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
 public class GatewaySenderFactoryImpl implements

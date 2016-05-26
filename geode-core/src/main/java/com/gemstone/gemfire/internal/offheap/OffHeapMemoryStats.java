@@ -21,7 +21,7 @@ import com.gemstone.gemfire.Statistics;
 /**
  * Statistics for off-heap memory storage.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 public interface OffHeapMemoryStats {
 

@@ -22,7 +22,7 @@ package com.gemstone.gemfire.internal.lang;
  * <p/>
  * @see java.lang.Class
  * @see java.lang.Object
- * @since 7.0
+ * @since GemFire 7.0
  */
 public abstract class ClassUtils {
 

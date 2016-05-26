@@ -18,7 +18,7 @@
  * The LoaderHelperFactory inspiration came 
  * from a need to allow Partitioned Regions to generate a LoaderHelper that was
  * outside the context of the Region the loader invoked from.
- * @since 5.0
+ * @since GemFire 5.0
  */
 package com.gemstone.gemfire.internal.cache;
 
@@ -28,7 +28,7 @@ import com.gemstone.gemfire.cache.LoaderHelper;
  * The LoaderHelperFactory creates a LoaderHelper class which is used by a 
  * {@link com.gemstone.gemfire.cache.CacheLoader}.
  *  
- * @since 5.0
+ * @since GemFire 5.0
  */
 public interface LoaderHelperFactory
 {

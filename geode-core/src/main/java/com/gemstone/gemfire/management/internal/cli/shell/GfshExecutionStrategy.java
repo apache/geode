@@ -49,7 +49,7 @@ import org.springframework.util.ReflectionUtils;
  * GemFire SHell (gfsh).
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class GfshExecutionStrategy implements ExecutionStrategy {
   private Class<?>   mutex = GfshExecutionStrategy.class;

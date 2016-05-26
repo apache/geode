@@ -54,7 +54,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 
 /**
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class ExecuteFunction65 extends BaseCommand {
 

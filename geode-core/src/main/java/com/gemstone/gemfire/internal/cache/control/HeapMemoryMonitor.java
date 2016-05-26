@@ -61,7 +61,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * the MemoryMXBean, by polling the JVM and as a listener on GemFire Statistics
  * output in order to accommodate differences in the various JVMs.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 public class HeapMemoryMonitor implements NotificationListener, ResourceMonitor {
   private static final Logger logger = LogService.getLogger();

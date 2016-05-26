@@ -66,7 +66,7 @@ package com.gemstone.gemfire.cache;
  * 
  * 
  * @see com.gemstone.gemfire.cache.PartitionAttributesFactory
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class PartitionedRegionStorageException extends CacheRuntimeException  {
 private static final long serialVersionUID = 5905463619475329732L;

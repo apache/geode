@@ -19,7 +19,7 @@ package com.gemstone.gemfire.internal.io;
 import java.io.PrintStream;
 
 /**
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class TeePrintStream extends PrintStream {
 

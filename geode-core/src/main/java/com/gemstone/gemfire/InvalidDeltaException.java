@@ -25,7 +25,7 @@ import java.io.DataInput;
  * {@link Delta#fromDelta(DataInput in)}. GemFire, on encountering this
  * exception distributes the full application object.
  * 
- * @since 6.1
+ * @since GemFire 6.1
  */
 public class InvalidDeltaException extends GemFireException {
 

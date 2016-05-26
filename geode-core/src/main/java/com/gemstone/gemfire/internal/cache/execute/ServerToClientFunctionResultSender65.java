@@ -36,7 +36,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * 
- * @since 6.5
+ * @since GemFire 6.5
  *
  */
 public class ServerToClientFunctionResultSender65 extends

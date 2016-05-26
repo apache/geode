@@ -38,7 +38,7 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 
 /**
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class UserFunctionExecution implements Function, InternalEntity {
   public static final String ID = UserFunctionExecution.class.getName();

@@ -27,7 +27,7 @@ package com.gemstone.gemfire.cache;
  * @see RegionAttributes#getStatisticsEnabled
  * @see Region#getStatistics
  * @see Region.Entry#getStatistics
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class StatisticsDisabledException extends CacheRuntimeException {
 private static final long serialVersionUID = -2987721454129719551L;

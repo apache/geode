@@ -21,7 +21,7 @@ package com.gemstone.gemfire.internal;
  * would typically be stored. For example, registering functions for internal use. When determining what to do, or how
  * to display these objects, other classes may use this interface as a filter to eliminate internal objects.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
 public interface InternalEntity {

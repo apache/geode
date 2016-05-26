@@ -53,7 +53,7 @@ import com.gemstone.gemfire.test.dunit.VM;
  * Test to verify correct propagation of operations eventID's for put all
  *
  *
- * @since 5.1
+ * @since GemFire 5.1
  */
 
 public class PutAllDUnitTest extends DistributedTestCase

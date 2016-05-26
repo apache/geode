@@ -49,7 +49,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link BlobHelper} with Thread Context ClassLoader.
  *
- * @since 2.0.2
+ * @since GemFire 2.0.2
  */
 @Category(UnitTest.class)
 public class BlobHelperWithThreadContextClassLoaderTest {

@@ -40,7 +40,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for the SampleCollector class. No disk IO.
  *   
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(UnitTest.class)
 public class SampleCollectorJUnitTest {

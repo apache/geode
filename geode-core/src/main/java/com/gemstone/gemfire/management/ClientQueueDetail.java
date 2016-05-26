@@ -18,7 +18,7 @@ package com.gemstone.gemfire.management;
 
 /**
  * 
- * @since  8.0
+ * @since GemFire  8.0
  */
 public class ClientQueueDetail {
 

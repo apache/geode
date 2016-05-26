@@ -46,7 +46,7 @@ import org.springframework.web.client.ResourceAccessException;
  * @see org.junit.After
  * @see org.junit.Before
  * @see org.junit.Test
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(UnitTest.class)
 public class SimpleHttpOperationInvokerJUnitTest extends AbstractWebTestCase {

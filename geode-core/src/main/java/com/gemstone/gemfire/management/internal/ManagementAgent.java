@@ -75,7 +75,7 @@ import org.eclipse.jetty.server.ServerConnector;
  * control JMX server end points for the Platform MBeanServer and the GemFire
  * MBeans hosted within it.
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class ManagementAgent {
   private static final Logger logger = LogService.getLogger();

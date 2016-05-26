@@ -22,7 +22,7 @@ package com.gemstone.gemfire.internal.cache;
  * <code>PartitionedRegion</code>s. This class is used by the monitoring tool.
  *
  *
- * @since 5.1
+ * @since GemFire 5.1
  */
 public class PartitionedRegionStatus extends RegionStatus {
   private static final long serialVersionUID = -6755318987122602065L;

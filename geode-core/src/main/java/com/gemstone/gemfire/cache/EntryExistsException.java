@@ -22,7 +22,7 @@ package com.gemstone.gemfire.cache;
  *
  * @see com.gemstone.gemfire.cache.Region#create(Object, Object)
  * @see Region.Entry
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class EntryExistsException extends CacheException {
 
@@ -33,7 +33,7 @@ public class EntryExistsException extends CacheException {
   /**
    * Constructs an instance of <code>EntryExistsException</code> with the specified detail message.
    * @param msg the detail message
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public EntryExistsException(String msg, Object oldValue) {
     super(msg);

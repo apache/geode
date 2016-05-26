@@ -21,7 +21,7 @@ package com.gemstone.gemfire.cache.query;
  * This interface gives information on the state of a CqQuery. 
  * It is provided by the getState method of the CqQuery instance. 
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 
 public interface CqState {

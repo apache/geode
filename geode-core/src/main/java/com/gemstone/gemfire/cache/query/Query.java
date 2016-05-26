@@ -27,7 +27,7 @@ import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
  * Interface for query objects. Supports execution of queries with optional
  * parameters.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 
 public interface Query {
@@ -188,7 +188,7 @@ public interface Query {
    *    Select * from /partitionRegion1 p1, /PartitionRegion2 p2 where
    *    p1.field = p2.field [AND .....]
    *    
-   * @since 6.2.2
+   * @since GemFire 6.2.2
    * @param context RegionFunctionContext which will target the query on subset
    *          of data if executed on PartitionedRegion.
    *
@@ -257,7 +257,7 @@ public interface Query {
    *    Select * from /partitionRegion1 p1, /PartitionRegion2 p2 where
    *    p1.field = p2.field [AND .....]
    *    
-   * @since 6.2.2        
+   * @since GemFire 6.2.2
    * @param context RegionFunctionContext which will target the query on subset
    *          of data if executed on PartitionedRegion.
    * @param params Values that are bound to parameters (such as <code>$1</code>)

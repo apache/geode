@@ -65,7 +65,7 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
    * will be regarded as an error by all who see it.
    * 
    * @return list of addresses for this host
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static Set getMyAddresses(DistributionManager dm) {
     try {
@@ -107,7 +107,7 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   
   /**
    * Sets the mcastEnabled flag for this message
-   * @since 5.0
+   * @since GemFire 5.0
    */
   void setMcastEnabled(boolean flag) {
     isMcastEnabled = flag;
@@ -142,7 +142,7 @@ public final class StartupMessage extends HighPriorityDistributionMessage implem
   
   /**
    * Sets the tcpDisabled flag for this message
-   * @since 5.0
+   * @since GemFire 5.0
    */
   void setTcpDisabled(boolean flag) {
     isTcpDisabled = flag;

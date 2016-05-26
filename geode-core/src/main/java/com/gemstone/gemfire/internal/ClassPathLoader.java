@@ -62,7 +62,7 @@ import com.gemstone.gemfire.internal.util.CollectionUtils;
  * in either a {@link java.lang.SecurityException SecurityException} or a null, then that class loader is quietly
  * skipped. Duplicate class loaders will be skipped.
  * 
- * @since 6.5.1.4
+ * @since GemFire 6.5.1.4
  */
 public final class ClassPathLoader {
   /*
@@ -680,7 +680,7 @@ public final class ClassPathLoader {
    * Wrap this {@link ClassPathLoader} with a {@link ClassLoader} facade.
    * 
    * @return {@link ClassLoader} facade.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public ClassLoader asClassLoader() {
     return new ClassLoader() {
@@ -720,7 +720,7 @@ public final class ClassPathLoader {
    * <code>ClassPathLoader.getLatest().asClassLoader();</code>.
    * 
    * @return {@link ClassLoader} for current {@link ClassPathLoader}.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static final ClassLoader getLatestAsClassLoader() {
     return latest.get().asClassLoader();

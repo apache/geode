@@ -51,7 +51,7 @@ import java.util.logging.Level;
  * This class is used for checking the application running mode i.e. Embedded or
  * not
  * 
- * @since version 7.0.Beta 2012-09-23
+ * @since GemFire version 7.0.Beta 2012-09-23
  * 
  */
 // @WebListener

@@ -20,7 +20,7 @@ package com.gemstone.gemfire.distributed.internal.unsafe;
 /**
  * The RegisterSignalHandlerSupport class is an ugly hack!
  * </p>
- * @since 7.0
+ * @since GemFire 7.0
  */
 public abstract class RegisterSignalHandlerSupport {
 
