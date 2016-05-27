@@ -25,9 +25,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.nio.file.Files;
 import java.util.UUID;
 
 import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
 
@@ -150,6 +152,19 @@ public class File implements DataSerializableFixedID {
     long low = in.readLong();
     id = new UUID(high, low);
   }
-  
-  
+
+
+  /**
+   * Export this to a {@link java.io.File}
+   */
+  public void export(final java.io.File exportLocation)
+  {
+    java.io.File targetFile = new java.io.File(exportLocation, getName());
+    try {
+      Files.copy(getInputStream(), targetFile.toPath());
+    }
+    catch (IOException e) {
+      throw new InternalGemFireError("Could not export file " + getName(), e);
+    }
+  }
 }

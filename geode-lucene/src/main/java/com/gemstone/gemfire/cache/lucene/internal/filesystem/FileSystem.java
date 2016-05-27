@@ -167,4 +167,21 @@ public class FileSystem {
   public ConcurrentMap<ChunkKey, byte[]> getChunkRegion() {
     return chunkRegion;
   }
+
+  /**
+   * Export all of the files in the filesystem to the provided directory
+   */
+  public void export(final java.io.File exportLocation) {
+
+    listFileNames().stream().forEach(fileName-> {
+      try {
+        getFile(fileName).export(exportLocation);
+      }
+      catch (FileNotFoundException e) {
+        //ignore this, it was concurrently removed
+      }
+
+    });
+  }
+
 }

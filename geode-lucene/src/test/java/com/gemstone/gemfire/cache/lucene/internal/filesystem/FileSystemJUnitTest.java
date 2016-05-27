@@ -20,18 +20,23 @@ package com.gemstone.gemfire.cache.lucene.internal.filesystem;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
@@ -40,6 +45,7 @@ import org.mockito.stubbing.Answer;
 
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import com.gemstone.gemfire.test.junit.rules.DiskDirRule;
 
 @Category(UnitTest.class)
 public class FileSystemJUnitTest {
@@ -51,6 +57,9 @@ public class FileSystemJUnitTest {
   private Random rand = new Random();
   private ConcurrentHashMap<String, File> fileRegion;
   private ConcurrentHashMap<ChunkKey, byte[]> chunkRegion;
+
+  @Rule
+  public DiskDirRule dirRule = new DiskDirRule();
 
   @Before
   public void setUp() {
@@ -463,6 +472,29 @@ public class FileSystemJUnitTest {
       file2 = system.getFile(name2);
       assertContents(expected.toByteArray(), file2);
     }
+  }
+
+  @Test
+  public void testExport() throws IOException {
+    String name1 = "testFile1";
+    File file1= system.createFile(name1);
+    byte[] file1Data = writeRandomBytes(file1);
+
+    String name2 = "testFile2";
+    File file2= system.createFile(name2);
+    byte[] file2Data = writeRandomBytes(file2);
+
+    java.io.File parentDir = dirRule.get();
+    system.export(dirRule.get());
+    assertArrayEquals(new String[] {"testFile1", "testFile2"}, parentDir.list());
+
+    assertExportedFileContents(file1Data, new java.io.File(parentDir, "testFile1"));
+    assertExportedFileContents(file2Data, new java.io.File(parentDir, "testFile2"));
+  }
+
+  private void assertExportedFileContents(final byte[] expected, final java.io.File exportedFile) throws IOException {
+    byte[] actual = Files.readAllBytes(exportedFile.toPath());
+    assertArrayEquals(expected, actual);
   }
 
   private void assertContents(byte[] data, File file) throws IOException {
