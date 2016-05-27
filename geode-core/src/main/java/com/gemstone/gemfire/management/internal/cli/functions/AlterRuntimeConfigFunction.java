@@ -16,10 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.functions;
 
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -31,6 +27,10 @@ import com.gemstone.gemfire.internal.InternalEntity;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
+
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /****
  * 

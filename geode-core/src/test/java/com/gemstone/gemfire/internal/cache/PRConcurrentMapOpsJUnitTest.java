@@ -16,29 +16,18 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Properties;
-
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * Tests ConcurrentMap operations on a PartitionedRegion on a single node.
@@ -88,7 +77,7 @@ public class PRConcurrentMapOpsJUnitTest {
   public void setUp() {
     if (cache == null) {
       Properties dsProps = new Properties();
-      dsProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+      dsProps.setProperty(MCAST_PORT, "0");
       
       //  Connect to a DS and create a Cache.
       sys = DistributedSystem.connect(dsProps);

@@ -16,20 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.SerializationException;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
@@ -41,6 +29,18 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.internal.util.BlobHelper;
+import org.apache.logging.log4j.Logger;
+
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class encapsulates the wire protocol. It provides accessors to
@@ -85,7 +85,7 @@ public class Message  {
   /**
    * maximum size of an outgoing message.  See GEODE-478
    */
-  public static int MAX_MESSAGE_SIZE = Integer.getInteger("gemfire.client.max-message-size", DEFAULT_MAX_MESSAGE_SIZE).intValue();
+  public static int MAX_MESSAGE_SIZE = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "client.max-message-size", DEFAULT_MAX_MESSAGE_SIZE).intValue();
 
   private static final Logger logger = LogService.getLogger();
   

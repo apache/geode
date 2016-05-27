@@ -16,18 +16,19 @@
  */
 package com.gemstone.gemfire.internal;
 
-import static org.junit.Assert.fail;
-
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
 
 /**
  * See bug 52093.
@@ -39,8 +40,8 @@ public class RegionOperationsEqualityShouldUseArrayEqualsIntegrationTest {
 
   private GemFireCacheImpl createCache() {
     Properties props = new Properties();
-    props.setProperty("locators", "");
-    props.setProperty("mcast-port", "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(MCAST_PORT, "0");
     GemFireCacheImpl result = (GemFireCacheImpl) new CacheFactory(props).create();
     return result;
   }

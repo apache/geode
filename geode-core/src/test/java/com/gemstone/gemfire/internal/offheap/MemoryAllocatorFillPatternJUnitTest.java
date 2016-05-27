@@ -16,15 +16,17 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import static com.googlecode.catchexception.CatchException.*;
-import static org.junit.Assert.*;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import static com.googlecode.catchexception.CatchException.catchException;
+import static com.googlecode.catchexception.CatchException.caughtException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests fill pattern validation for the {@link MemoryAllocatorImpl}.
@@ -61,7 +63,7 @@ public class MemoryAllocatorFillPatternJUnitTest {
    */
   @Before
   public void setUp() throws Exception {
-    System.setProperty("gemfire.validateOffHeapWithFill", "true");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "validateOffHeapWithFill", "true");
     this.slab = new SlabImpl(SLAB_SIZE);
     this.allocator = MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(), new NullOffHeapMemoryStats(), new SlabImpl[]{this.slab});
   }
@@ -72,7 +74,7 @@ public class MemoryAllocatorFillPatternJUnitTest {
   @After
   public void tearDown() throws Exception {
     MemoryAllocatorImpl.freeOffHeapMemory();
-    System.clearProperty("gemfire.validateOffHeapWithFill");
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "validateOffHeapWithFill");
   }
 
   /**

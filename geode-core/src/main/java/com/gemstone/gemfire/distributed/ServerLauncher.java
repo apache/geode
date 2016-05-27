@@ -17,31 +17,8 @@
 
 package com.gemstone.gemfire.distributed;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.ServiceLoader;
-import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.internal.DefaultServerLauncherCacheProvider;
@@ -49,30 +26,13 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.cache.AbstractCacheServer;
-import com.gemstone.gemfire.internal.cache.CacheConfig;
-import com.gemstone.gemfire.internal.cache.CacheServerLauncher;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerHelper;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.ObjectUtils;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.gemfire.internal.process.ClusterConfigurationNotAvailableException;
-import com.gemstone.gemfire.internal.process.ConnectionFailedException;
-import com.gemstone.gemfire.internal.process.ControlNotificationHandler;
-import com.gemstone.gemfire.internal.process.ControllableProcess;
-import com.gemstone.gemfire.internal.process.FileAlreadyExistsException;
-import com.gemstone.gemfire.internal.process.MBeanInvocationFailedException;
-import com.gemstone.gemfire.internal.process.PidUnavailableException;
-import com.gemstone.gemfire.internal.process.ProcessController;
-import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
-import com.gemstone.gemfire.internal.process.ProcessControllerParameters;
-import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
-import com.gemstone.gemfire.internal.process.ProcessType;
-import com.gemstone.gemfire.internal.process.StartupStatusListener;
-import com.gemstone.gemfire.internal.process.UnableToControlProcessException;
+import com.gemstone.gemfire.internal.process.*;
 import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.lang.AttachAPINotFoundException;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
@@ -80,10 +40,25 @@ import com.gemstone.gemfire.management.internal.cli.json.GfJsonArray;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
 import com.gemstone.gemfire.pdx.PdxSerializer;
-
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.SERVER_BIND_ADDRESS;
 
 /**
  * The ServerLauncher class is a launcher class with main method to start a GemFire Server (implying a GemFire Cache
@@ -119,7 +94,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     helpMap.put("pid", LocalizedStrings.ServerLauncher_SERVER_PID_HELP.toLocalizedString());
     helpMap.put("rebalance", LocalizedStrings.ServerLauncher_SERVER_REBALANCE_HELP.toLocalizedString());
     helpMap.put("redirect-output", LocalizedStrings.ServerLauncher_SERVER_REDIRECT_OUTPUT_HELP.toLocalizedString());
-    helpMap.put("server-bind-address", LocalizedStrings.ServerLauncher_SERVER_BIND_ADDRESS_HELP.toLocalizedString());
+    helpMap.put(SERVER_BIND_ADDRESS, LocalizedStrings.ServerLauncher_SERVER_BIND_ADDRESS_HELP.toLocalizedString());
     helpMap.put("hostname-for-clients", LocalizedStrings.ServerLauncher_SERVER_HOSTNAME_FOR_CLIENT_HELP.toLocalizedString());
     helpMap.put("server-port", LocalizedStrings.ServerLauncher_SERVER_PORT_HELP.toLocalizedString(String.valueOf(getDefaultServerPort())));
   }
@@ -1438,7 +1413,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       parser.accepts("pid").withRequiredArg().ofType(Integer.class);
       parser.accepts("rebalance");
       parser.accepts("redirect-output");
-      parser.accepts("server-bind-address").withRequiredArg().ofType(String.class);
+      parser.accepts(SERVER_BIND_ADDRESS).withRequiredArg().ofType(String.class);
       parser.accepts("server-port").withRequiredArg().ofType(Integer.class);
       parser.accepts("spring-xml-location").withRequiredArg().ofType(String.class);
       parser.accepts("version");
@@ -1522,8 +1497,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
             setPid((Integer) options.valueOf("pid"));
           }
 
-          if (options.has("server-bind-address")) {
-            setServerBindAddress(ObjectUtils.toString(options.valueOf("server-bind-address")));
+          if (options.has(SERVER_BIND_ADDRESS)) {
+            setServerBindAddress(ObjectUtils.toString(options.valueOf(SERVER_BIND_ADDRESS)));
           }
 
           if (options.has("server-port")) {
@@ -2287,9 +2262,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
     protected void validateOnStart() {
       if (Command.START.equals(getCommand())) {
         if (StringUtils.isBlank(getMemberName())
-          && !isSet(System.getProperties(), DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.NAME_NAME)
-          && !isSet(getDistributedSystemProperties(), DistributionConfig.NAME_NAME)
-          && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), DistributionConfig.NAME_NAME))
+            && !isSet(System.getProperties(), DistributionConfig.GEMFIRE_PREFIX + SystemConfigurationProperties.NAME)
+            && !isSet(getDistributedSystemProperties(), SystemConfigurationProperties.NAME)
+            && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), SystemConfigurationProperties.NAME))
         {
           throw new IllegalStateException(LocalizedStrings.Launcher_Builder_MEMBER_NAME_VALIDATION_ERROR_MESSAGE
             .toLocalizedString("Server"));
@@ -2342,7 +2317,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * An enumerated type representing valid commands to the Server launcher.
    */
   public static enum Command {
-    START("start", "assign-buckets", "disable-default-server", "rebalance", "server-bind-address", "server-port", "force", "debug", "help"),
+    START("start", "assign-buckets", "disable-default-server", "rebalance", SERVER_BIND_ADDRESS, "server-port", "force", "debug", "help"),
     STATUS("status", "member", "pid", "dir", "debug", "help"),
     STOP("stop", "member", "pid", "dir", "debug", "help"),
     UNSPECIFIED("unspecified"),

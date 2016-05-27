@@ -16,35 +16,12 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
-import static com.gemstone.gemfire.test.dunit.Wait.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.query.data.PortfolioPdx;
 import com.gemstone.gemfire.compression.SnappyCompressor;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
@@ -60,17 +37,21 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
 
 /**
  * The DiskStoreCommandsDUnitTest class is a distributed test suite of test cases for testing the disk store commands
@@ -102,7 +83,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     vm1.invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.NAME_NAME, vm1Name);
+        localProps.setProperty(SystemConfigurationProperties.NAME, vm1Name);
         getSystem(localProps);
         Cache cache = getCache();
       }
@@ -298,8 +279,8 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testOfflineDiskStorePdxCommands() {
     final Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("start-locator", "localhost[" + AvailablePortHelper.getRandomAvailableTCPPort() + "]");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(START_LOCATOR, "localhost[" + AvailablePortHelper.getRandomAvailableTCPPort() + "]");
 
     final File diskStoreDir = new File(new File(".").getAbsolutePath(), "DiskStoreCommandDUnitDiskStores");
     diskStoreDir.mkdir();
@@ -460,8 +441,8 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
         final File locatorLogFile = new File("locator-" + locatorPort + ".log");
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(DistributionConfig.NAME_NAME, "Locator");
-        locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+        locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator");
+        locatorProps.setProperty(MCAST_PORT, "0");
         locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
         locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
         try {
@@ -488,8 +469,8 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     // Start the default manager
     Properties managerProps = new Properties();
-    managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+    managerProps.setProperty(MCAST_PORT, "0");
+    managerProps.setProperty(LOCATORS, "localhost:" + locatorPort);
     setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
@@ -502,8 +483,8 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         diskStoreDir.mkdirs();
 
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+        localProps.setProperty(MCAST_PORT, "0");
+        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
         localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
         getSystem(localProps);
         assertNotNull(getCache());
@@ -540,8 +521,8 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
       public Object call() {
         getCache().close();
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+        localProps.setProperty(MCAST_PORT, "0");
+        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
         localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
         localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
         getSystem(localProps);
@@ -592,8 +573,8 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
       public Object call() {
         getCache().close();
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+        localProps.setProperty(MCAST_PORT, "0");
+        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
         localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
         localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
         getSystem(localProps);
@@ -766,7 +747,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     filesToBeDeleted.add(fullBackupDirPath);
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.NAME_NAME, controllerName);
+    props.setProperty(SystemConfigurationProperties.NAME, controllerName);
 
     getSystem(props);
 
@@ -781,7 +762,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     vm1.invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.NAME_NAME, vm1Name);
+        localProps.setProperty(SystemConfigurationProperties.NAME, vm1Name);
         getSystem(localProps);
 
         Cache cache = getCache();
@@ -859,7 +840,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         diskStore1Dir2.mkdirs();
 
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.NAME_NAME, vm1Name);
+        localProps.setProperty(SystemConfigurationProperties.NAME, vm1Name);
         localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
         getSystem(localProps);
         getCache();
@@ -875,7 +856,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         diskStore2Dir.mkdirs();
 
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.NAME_NAME, vm2Name);
+        localProps.setProperty(SystemConfigurationProperties.NAME, vm2Name);
         localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group2");
         getSystem(localProps);
         getCache();
@@ -978,7 +959,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         diskStore2Dir1.mkdirs();
 
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.NAME_NAME, vm1Name);
+        localProps.setProperty(SystemConfigurationProperties.NAME, vm1Name);
         localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1,Group2");
         getSystem(localProps);
         Cache cache = getCache();
@@ -1004,7 +985,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         diskStore2Dir2.mkdirs();
 
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.NAME_NAME, vm2Name);
+        localProps.setProperty(SystemConfigurationProperties.NAME, vm2Name);
         localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group2");
         getSystem(localProps);
         Cache cache = getCache();

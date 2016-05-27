@@ -16,11 +16,13 @@
  */
 package com.main;
 
+import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
 import java.io.IOException;
 import java.util.Properties;
 
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * This is a stand alone locator with a distributed-system-id = -1
@@ -37,14 +39,14 @@ public class WANBootStrapping_Site1_Remove {
   public static void main(String[] args) {
     
     //On this locator, I am not expecting a listener to take any action, so a empty listener is a passed
-    System.setProperty("gemfire.DistributedSystemListener",
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener",
     "");
     
     System.out.println("Starting a locator with negative ds id -1");
     
     //start a stand alone locator with distributed-system-is = -1
     Properties properties = new Properties();
-    properties.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
+    properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+ (-1));
     properties.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + 20202 + "]");
     properties.setProperty(DistributionConfig.LOG_LEVEL_NAME, "warning");

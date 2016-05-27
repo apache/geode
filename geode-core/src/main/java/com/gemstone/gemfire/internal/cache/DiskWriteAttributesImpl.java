@@ -16,12 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.DiskWriteAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
@@ -66,7 +62,8 @@ public final class DiskWriteAttributesImpl implements DiskWriteAttributes
   private final long maxOplogSize;
 
   /** default max in bytes **/
-  private static final long DEFAULT_MAX_OPLOG_SIZE = Long.getLong("gemfire.DEFAULT_MAX_OPLOG_SIZE", 1024L).longValue() * (1024 * 1024); // 1 GB
+  private static final long DEFAULT_MAX_OPLOG_SIZE =
+      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE", 1024L).longValue() * (1024 * 1024); // 1 GB
 
   /** default max limit in bytes **/
   private static final long DEFAULT_MAX_OPLOG_SIZE_LIMIT = (long)Integer.MAX_VALUE * (1024*1024);

@@ -16,33 +16,27 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import javax.management.remote.JMXPrincipal;
-
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
 import com.gemstone.gemfire.security.NotAuthorizedException;
-
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import javax.management.remote.JMXPrincipal;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.security.Principal;
+import java.util.*;
 
 public class ExampleJSONAuthorization implements AccessControl, Authenticator {
 
@@ -100,7 +94,7 @@ public class ExampleJSONAuthorization implements AccessControl, Authenticator {
         user.pwd = user.name;
       }
 
-      JSONArray ops = obj.getJSONArray("roles");
+      JSONArray ops = obj.getJSONArray(DistributionConfig.ROLES_NAME);
       for (int j = 0; j < ops.length(); j++) {
         String roleName = ops.getString(j);
         user.roles.add(roleMap.get(roleName));
@@ -111,7 +105,7 @@ public class ExampleJSONAuthorization implements AccessControl, Authenticator {
 
   private static Map<String, Role> readRoles(JSONObject jsonBean) throws JSONException {
     Map<String, Role> roleMap = new HashMap<>();
-    JSONArray array = jsonBean.getJSONArray("roles");
+    JSONArray array = jsonBean.getJSONArray(DistributionConfig.ROLES_NAME);
     for (int i = 0; i < array.length(); i++) {
       JSONObject obj = array.getJSONObject(i);
       Role role = new Role();

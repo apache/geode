@@ -16,24 +16,16 @@
  */
 package com.gemstone.gemfire.internal.jta;
 
-import static org.junit.Assert.*;
-
-import java.util.Properties;
-
-import junit.framework.TestCase;
-
-import javax.transaction.*;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.*;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import javax.transaction.*;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
 
 /**
  * Check if the correct expectations are being thrown when they are supposed to.
@@ -50,7 +42,7 @@ public class ExceptionJUnitTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.setProperty(MCAST_PORT, "0");
     ds = DistributedSystem.connect(props);
     tm = TransactionManagerImpl.getTransactionManager();
   }

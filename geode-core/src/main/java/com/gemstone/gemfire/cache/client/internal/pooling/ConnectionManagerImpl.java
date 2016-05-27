@@ -20,20 +20,13 @@ import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.GatewayConfigurationException;
-import com.gemstone.gemfire.cache.client.AllConnectionsInUseException;
-import com.gemstone.gemfire.cache.client.NoAvailableServersException;
-import com.gemstone.gemfire.cache.client.ServerConnectivityException;
-import com.gemstone.gemfire.cache.client.ServerOperationException;
-import com.gemstone.gemfire.cache.client.ServerRefusedConnectionException;
-import com.gemstone.gemfire.cache.client.internal.Connection;
-import com.gemstone.gemfire.cache.client.internal.ConnectionFactory;
-import com.gemstone.gemfire.cache.client.internal.Endpoint;
-import com.gemstone.gemfire.cache.client.internal.EndpointManager;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.cache.client.*;
+import com.gemstone.gemfire.cache.client.internal.*;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl.PoolTask;
-import com.gemstone.gemfire.cache.client.internal.QueueConnectionImpl;
 import com.gemstone.gemfire.distributed.PoolCancelledException;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
 import com.gemstone.gemfire.internal.cache.PoolStats;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -41,26 +34,13 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.logging.log4j.Logger;
 
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.apache.logging.log4j.Logger;
 
 /**
  * Manages client to server connections for the connection pool. This class contains
@@ -71,8 +51,8 @@ import org.apache.logging.log4j.Logger;
  */
 public class ConnectionManagerImpl implements ConnectionManager {
   private static final Logger logger = LogService.getLogger();
-  
-  static long AQUIRE_TIMEOUT = Long.getLong("gemfire.ConnectionManager.AQUIRE_TIMEOUT", 10 * 1000).longValue();
+
+  static long AQUIRE_TIMEOUT = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "ConnectionManager.AQUIRE_TIMEOUT", 10 * 1000).longValue();
   private final String poolName;
   private final PoolStats poolStats;
   protected final long prefillRetry; // ms // make this an int

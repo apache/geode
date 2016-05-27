@@ -17,6 +17,8 @@
 
 package com.gemstone.gemfire.internal.offheap;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -27,9 +29,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * To enable free operation tracking set: -Dgemfire.trackOffHeapFreedRefCounts=true.
  */
 public class ReferenceCountHelper {
-  
-  public static final String TRACK_OFFHEAP_REFERENCES = "gemfire.trackOffHeapRefCounts";
-  public static final String TRACK_OFFHEAP_FREES = "gemfire.trackOffHeapFreedRefCounts";
+
+  public static final String TRACK_OFFHEAP_REFERENCES = DistributionConfig.GEMFIRE_PREFIX + "trackOffHeapRefCounts";
+  public static final String TRACK_OFFHEAP_FREES = DistributionConfig.GEMFIRE_PREFIX + "trackOffHeapFreedRefCounts";
 
   private static final ReferenceCountHelperImpl inst = new ReferenceCountHelperImpl(Boolean.getBoolean(TRACK_OFFHEAP_REFERENCES), Boolean.getBoolean(TRACK_OFFHEAP_FREES));
 

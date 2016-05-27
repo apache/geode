@@ -16,19 +16,18 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms;
 
-import java.net.InetAddress;
-
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
+
+import java.net.InetAddress;
 
 public class ServiceConfig {
 
   /** stall time to wait for concurrent join/leave/remove requests to be received */
-  public static final long MEMBER_REQUEST_COLLECTION_INTERVAL = Long.getLong("gemfire.member-request-collection-interval", 300);
+  public static final long MEMBER_REQUEST_COLLECTION_INTERVAL = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "member-request-collection-interval", 300);
 
   /** various settings from Geode configuration */
   private long joinTimeout;
@@ -190,13 +189,13 @@ public class ServiceConfig {
     } else if (ackCollectionTimeout > 12437) {
       ackCollectionTimeout = 12437;
     }
-    ackCollectionTimeout = Integer.getInteger("gemfire.VIEW_ACK_TIMEOUT", ackCollectionTimeout).intValue();
+    ackCollectionTimeout = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "VIEW_ACK_TIMEOUT", ackCollectionTimeout).intValue();
 
-    lossThreshold = Integer.getInteger("gemfire.network-partition-threshold", 51);
+    lossThreshold = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "network-partition-threshold", 51);
     if (lossThreshold < 51) lossThreshold = 51;
     if (lossThreshold > 100) lossThreshold = 100;
-    
-    memberWeight = Integer.getInteger("gemfire.member-weight", 0);
+
+    memberWeight = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "member-weight", 0);
     locatorWaitTime = theConfig.getLocatorWaitTime();
     
     networkPartitionDetectionEnabled = theConfig.getEnableNetworkPartitionDetection();

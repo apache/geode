@@ -17,13 +17,14 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.FixedPartitionAttributes;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * Internal implementation of {@link FixedPartitionAttributes}.
@@ -146,7 +147,7 @@ public class FixedPartitionAttributesImpl extends FixedPartitionAttributes
     s.append("FixedPartitionAttributes@").append("[partitionName=").append(
         this.partitionName).append(";isPrimary=").append(this.isPrimary)
         .append(";numBuckets=").append(this.numBuckets);
-    if (Boolean.getBoolean("gemfire.PRDebug")) {
+    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
       s.append(";startingBucketID= ").append(this.startingBucketID);
     }
     s.append("]");

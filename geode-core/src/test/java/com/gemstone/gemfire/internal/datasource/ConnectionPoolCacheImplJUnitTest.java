@@ -21,26 +21,26 @@
  */
 package com.gemstone.gemfire.internal.datasource;
 
-import static org.junit.Assert.fail;
-
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import javax.naming.Context;
-import javax.sql.PooledConnection;
-
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import javax.naming.Context;
+import javax.sql.PooledConnection;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
 
 /*
  * this is a Multithreaded test for datasource connection pool.
@@ -63,9 +63,9 @@ public class ConnectionPoolCacheImplJUnitTest {
   public void setUp() {
     try {
       props = new Properties();
-      props.setProperty("mcast-port", "0");
+      props.setProperty(MCAST_PORT, "0");
       String path = TestUtil.getResourcePath(ConnectionPoolCacheImplJUnitTest.class, "/jta/cachejta.xml");
-      props.setProperty("cache-xml-file", path);
+      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
       ds1 = DistributedSystem.connect(props);
       cache = CacheFactory.create(ds1);
     }

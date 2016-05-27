@@ -16,16 +16,14 @@
  */
 package com.gemstone.gemfire.management.internal.configuration.utils;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
-
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
+import com.gemstone.gemfire.internal.cache.extension.Extension;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
+import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
+import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils.XPathContext;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -37,14 +35,15 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
-import com.gemstone.gemfire.internal.cache.extension.Extension;
-import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
-import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
-import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils.XPathContext;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Unit tests for {@link XmlUtils#addNewNode(Document, XmlEntity)} and
@@ -68,7 +67,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
 
   @BeforeClass
   public static void beforeClass() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     xPathContext.addNamespace(CacheXml.PREFIX, CacheXml.GEODE_NAMESPACE);
     xPathContext.addNamespace(TEST_PREFIX, TEST_NAMESPACE);
   }

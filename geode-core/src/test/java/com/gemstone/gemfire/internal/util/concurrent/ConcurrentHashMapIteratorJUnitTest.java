@@ -16,19 +16,15 @@
  */
 package com.gemstone.gemfire.internal.util.concurrent;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.concurrent.ConcurrentMap;
-
-import org.junit.experimental.categories.Category;
-
-import junit.framework.TestCase;
-
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentMap;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @Category(IntegrationTest.class)
@@ -39,7 +35,7 @@ public class ConcurrentHashMapIteratorJUnitTest extends TestCase {
     //Apparently, we need a distributed system to create
     //this CHM, because it's locks use DS properties.
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
+    props.setProperty(MCAST_PORT, "0");
     DistributedSystem.connect(props);
     java.util.concurrent.ConcurrentHashMap baselineMap = new java.util.concurrent.ConcurrentHashMap();
     CustomEntryConcurrentHashMap testMap = new CustomEntryConcurrentHashMap();

@@ -16,23 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.control;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.cache.Cache;
@@ -42,6 +25,7 @@ import com.gemstone.gemfire.cache.control.RebalanceOperation;
 import com.gemstone.gemfire.cache.control.ResourceManager;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.Profile;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.OverflowQueueWithDMStats;
 import com.gemstone.gemfire.distributed.internal.SerialQueuedExecutorWithDMStats;
 import com.gemstone.gemfire.internal.ClassPathLoader;
@@ -54,6 +38,11 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implementation of ResourceManager with additional internal-only methods.
@@ -63,7 +52,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 public class InternalResourceManager implements ResourceManager {
   private static final Logger logger = LogService.getLogger();
 
-  final int MAX_RESOURCE_MANAGER_EXE_THREADS = Integer.getInteger("gemfire.resource.manager.threads", 1);
+  final int MAX_RESOURCE_MANAGER_EXE_THREADS = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "resource.manager.threads", 1);
   
   public enum ResourceType {
     HEAP_MEMORY(0x1), OFFHEAP_MEMORY(0x2), MEMORY(0x3), ALL(0xFFFFFFFF);
@@ -96,7 +85,7 @@ public class InternalResourceManager implements ResourceManager {
   private static ResourceObserver observer = new ResourceObserverAdapter();
   
   private static String PR_LOAD_PROBE_CLASS = System.getProperty(
-      "gemfire.ResourceManager.PR_LOAD_PROBE_CLASS", SizedBasedLoadProbe.class
+      DistributionConfig.GEMFIRE_PREFIX + "ResourceManager.PR_LOAD_PROBE_CLASS", SizedBasedLoadProbe.class
           .getName());
   
   public static InternalResourceManager getInternalResourceManager(Cache cache) {
@@ -350,7 +339,7 @@ public class InternalResourceManager implements ResourceManager {
       return;
     }
     executor.shutdown();
-    final int secToWait = Integer.getInteger("gemfire.prrecovery-close-timeout", 120).intValue();
+    final int secToWait = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "prrecovery-close-timeout", 120).intValue();
     try {
       executor.awaitTermination(secToWait, TimeUnit.SECONDS);
     }

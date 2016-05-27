@@ -16,22 +16,18 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl.PoolTask;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.ServerLocation;
+import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.cache.client.internal.PoolImpl.PoolTask;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * This class is designed to prevent the client from spinning
@@ -60,7 +56,7 @@ public class ServerBlackList {
   protected final ListenerBroadcaster broadcaster = new ListenerBroadcaster();
   
   //not final for tests.
-  static int THRESHOLD = Integer.getInteger("gemfire.ServerBlackList.THRESHOLD", 3).intValue();
+  static int THRESHOLD = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "ServerBlackList.THRESHOLD", 3).intValue();
   protected final long pingInterval;
   
   public ServerBlackList(long pingInterval) {

@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.i18n.StringId;
 
 /**
@@ -32,7 +33,7 @@ import com.gemstone.gemfire.i18n.StringId;
  */
 public final class SecurityLogWriter extends LogWriterImpl implements InternalLogWriter {
 
-  public static final String SECURITY_PREFIX = "security-";
+  public static final String SECURITY_PREFIX = DistributionConfig.SECURITY_PREFIX_NAME;
   
   private final int logLevel;
 

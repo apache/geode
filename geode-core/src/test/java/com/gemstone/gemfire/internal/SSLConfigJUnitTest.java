@@ -16,21 +16,20 @@
  */
 package com.gemstone.gemfire.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import junit.framework.AssertionFailedError;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import junit.framework.AssertionFailedError;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Test that DistributionConfigImpl handles SSL options correctly.
@@ -59,48 +58,48 @@ public class SSLConfigJUnitTest {
     SSL_PROPS_MAP.put("javax.net.ssl.trustStorePassword", "gemfire-trust-password");
     
     // SSL Properties for GemFire in-cluster connections
-    CLUSTER_SSL_PROPS_MAP.put("cluster-ssl-keystore-type", "jks");
-    CLUSTER_SSL_PROPS_MAP.put("cluster-ssl-keystore", "/export/gemfire-configs/gemfire.keystore");
-    CLUSTER_SSL_PROPS_MAP.put("cluster-ssl-keystore-password", "gemfire-key-password");
-    CLUSTER_SSL_PROPS_MAP.put("cluster-ssl-truststore", "/export/gemfire-configs/gemfire.truststore");
-    CLUSTER_SSL_PROPS_MAP.put("cluster-ssl-truststore-password", "gemfire-trust-password");
+    CLUSTER_SSL_PROPS_MAP.put(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME, "jks");
+    CLUSTER_SSL_PROPS_MAP.put(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME, "/export/gemfire-configs/gemfire.keystore");
+    CLUSTER_SSL_PROPS_MAP.put(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME, "gemfire-key-password");
+    CLUSTER_SSL_PROPS_MAP.put(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME, "/export/gemfire-configs/gemfire.truststore");
+    CLUSTER_SSL_PROPS_MAP.put(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME, "gemfire-trust-password");
 
      // Partially over-ridden SSL Properties for cluster
-    CLUSTER_SSL_PROPS_SUBSET_MAP.put("cluster-ssl-keystore", "/export/gemfire-configs/gemfire.keystore");
-    CLUSTER_SSL_PROPS_SUBSET_MAP.put("cluster-ssl-truststore", "/export/gemfire-configs/gemfire.truststore");
+    CLUSTER_SSL_PROPS_SUBSET_MAP.put(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME, "/export/gemfire-configs/gemfire.keystore");
+    CLUSTER_SSL_PROPS_SUBSET_MAP.put(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME, "/export/gemfire-configs/gemfire.truststore");
     
     // SSL Properties for GemFire JMX Manager connections
-    JMX_SSL_PROPS_MAP.put("jmx-manager-ssl-keystore-type", "jks");
-    JMX_SSL_PROPS_MAP.put("jmx-manager-ssl-keystore", "/export/gemfire-configs/manager.keystore");
-    JMX_SSL_PROPS_MAP.put("jmx-manager-ssl-keystore-password", "manager-key-password");
-    JMX_SSL_PROPS_MAP.put("jmx-manager-ssl-truststore", "/export/gemfire-configs/manager.truststore");
-    JMX_SSL_PROPS_MAP.put("jmx-manager-ssl-truststore-password", "manager-trust-password");
+    JMX_SSL_PROPS_MAP.put(DistributionConfig.JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME, "jks");
+    JMX_SSL_PROPS_MAP.put(DistributionConfig.JMX_MANAGER_SSL_KEYSTORE_NAME, "/export/gemfire-configs/manager.keystore");
+    JMX_SSL_PROPS_MAP.put(DistributionConfig.JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME, "manager-key-password");
+    JMX_SSL_PROPS_MAP.put(DistributionConfig.JMX_MANAGER_SSL_TRUSTSTORE_NAME, "/export/gemfire-configs/manager.truststore");
+    JMX_SSL_PROPS_MAP.put(DistributionConfig.JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME, "manager-trust-password");
     
     // SSL Properties for GemFire CacheServer connections
-    SERVER_SSL_PROPS_MAP.put("server-ssl-keystore-type", "jks");
-    SERVER_SSL_PROPS_MAP.put("server-ssl-keystore", "/export/gemfire-configs/cacheserver.keystore");
-    SERVER_SSL_PROPS_MAP.put("server-ssl-keystore-password", "cacheserver-key-password");
-    SERVER_SSL_PROPS_MAP.put("server-ssl-truststore", "/export/gemfire-configs/cacheserver.truststore");
-    SERVER_SSL_PROPS_MAP.put("server-ssl-truststore-password", "cacheserver-trust-password");
+    SERVER_SSL_PROPS_MAP.put(DistributionConfig.SERVER_SSL_KEYSTORE_TYPE_NAME, "jks");
+    SERVER_SSL_PROPS_MAP.put(DistributionConfig.SERVER_SSL_KEYSTORE_NAME, "/export/gemfire-configs/cacheserver.keystore");
+    SERVER_SSL_PROPS_MAP.put(DistributionConfig.SERVER_SSL_KEYSTORE_PASSWORD_NAME, "cacheserver-key-password");
+    SERVER_SSL_PROPS_MAP.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_NAME, "/export/gemfire-configs/cacheserver.truststore");
+    SERVER_SSL_PROPS_MAP.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_PASSWORD_NAME, "cacheserver-trust-password");
     
    // SSL Properties for GemFire gateway connections
-    GATEWAY_SSL_PROPS_MAP.put("gateway-ssl-keystore-type", "jks");
-    GATEWAY_SSL_PROPS_MAP.put("gateway-ssl-keystore", "/export/gemfire-configs/gateway.keystore");
-    GATEWAY_SSL_PROPS_MAP.put("gateway-ssl-keystore-password", "gateway-key-password");
-    GATEWAY_SSL_PROPS_MAP.put("gateway-ssl-truststore", "/export/gemfire-configs/gateway.truststore");
-    GATEWAY_SSL_PROPS_MAP.put("gateway-ssl-truststore-password", "gateway-trust-password");
+    GATEWAY_SSL_PROPS_MAP.put(DistributionConfig.GATEWAY_SSL_KEYSTORE_TYPE_NAME, "jks");
+    GATEWAY_SSL_PROPS_MAP.put(DistributionConfig.GATEWAY_SSL_KEYSTORE_NAME, "/export/gemfire-configs/gateway.keystore");
+    GATEWAY_SSL_PROPS_MAP.put(DistributionConfig.GATEWAY_SSL_KEYSTORE_PASSWORD_NAME, "gateway-key-password");
+    GATEWAY_SSL_PROPS_MAP.put(DistributionConfig.GATEWAY_SSL_TRUSTSTORE_NAME, "/export/gemfire-configs/gateway.truststore");
+    GATEWAY_SSL_PROPS_MAP.put(DistributionConfig.GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME, "gateway-trust-password");
 
     // Partially over-ridden SSL Properties for GemFire JMX Manager connections
-    JMX_SSL_PROPS_SUBSET_MAP.put("jmx-manager-ssl-keystore", "/export/gemfire-configs/manager.keystore");
-    JMX_SSL_PROPS_SUBSET_MAP.put("jmx-manager-ssl-truststore", "/export/gemfire-configs/manager.truststore");
+    JMX_SSL_PROPS_SUBSET_MAP.put(DistributionConfig.JMX_MANAGER_SSL_KEYSTORE_NAME, "/export/gemfire-configs/manager.keystore");
+    JMX_SSL_PROPS_SUBSET_MAP.put(DistributionConfig.JMX_MANAGER_SSL_TRUSTSTORE_NAME, "/export/gemfire-configs/manager.truststore");
     
     // Partially over-ridden SSL Properties for GemFire JMX Manager connections
-    SERVER_PROPS_SUBSET_MAP.put("server-ssl-keystore", "/export/gemfire-configs/cacheserver.keystore");
-    SERVER_PROPS_SUBSET_MAP.put("server-ssl-truststore", "/export/gemfire-configs/cacheserver.truststore");
+    SERVER_PROPS_SUBSET_MAP.put(DistributionConfig.SERVER_SSL_KEYSTORE_NAME, "/export/gemfire-configs/cacheserver.keystore");
+    SERVER_PROPS_SUBSET_MAP.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_NAME, "/export/gemfire-configs/cacheserver.truststore");
     
     // Partially over-ridden SSL Properties for GemFire JMX Manager connections
-    GATEWAY_PROPS_SUBSET_MAP.put("gateway-ssl-keystore", "/export/gemfire-configs/gateway.keystore");
-    GATEWAY_PROPS_SUBSET_MAP.put("gateway-ssl-truststore", "/export/gemfire-configs/gateway.truststore");
+    GATEWAY_PROPS_SUBSET_MAP.put(DistributionConfig.GATEWAY_SSL_KEYSTORE_NAME, "/export/gemfire-configs/gateway.keystore");
+    GATEWAY_PROPS_SUBSET_MAP.put(DistributionConfig.GATEWAY_SSL_TRUSTSTORE_NAME, "/export/gemfire-configs/gateway.truststore");
 
   }
   
@@ -110,7 +109,7 @@ public class SSLConfigJUnitTest {
   public void testMCastPortWithSSL() throws Exception {
     Properties props = new Properties( );
     // default mcast-port is not 0.
-    props.setProperty( "ssl-enabled", "true" );
+    props.setProperty(DistributionConfig.SSL_ENABLED_NAME, "true");
     
     try {
       new DistributionConfigImpl( props );
@@ -119,8 +118,8 @@ public class SSLConfigJUnitTest {
         throw new Exception( "did not get expected exception, got this instead...", e );
       }
     }
-    
-    props.setProperty( "mcast-port", "0" );
+
+    props.setProperty(MCAST_PORT, "0");
     new DistributionConfigImpl( props );
   }
   
@@ -128,7 +127,7 @@ public class SSLConfigJUnitTest {
   public void testMCastPortWithClusterSSL() throws Exception {
     Properties props = new Properties( );
     // default mcast-port is not 0.
-    props.setProperty( "cluster-ssl-enabled", "true" );
+    props.setProperty(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
     
     try {
       new DistributionConfigImpl( props );
@@ -137,8 +136,8 @@ public class SSLConfigJUnitTest {
         throw new Exception( "did not get expected exception, got this instead...", e );
       }
     }
-    
-    props.setProperty( "mcast-port", "0" );
+
+    props.setProperty(MCAST_PORT, "0");
     new DistributionConfigImpl( props );
   }
   
@@ -157,7 +156,7 @@ public class SSLConfigJUnitTest {
     
     Properties props = new Properties();
     sslciphers = "RSA_WITH_GARBAGE";
-    props.setProperty("ssl-ciphers", sslciphers );
+    props.setProperty(DistributionConfig.SSL_CIPHERS_NAME, sslciphers);
 
     config = new DistributionConfigImpl( props );
     isEqual( config.getSSLEnabled(), sslenabled );
@@ -166,7 +165,7 @@ public class SSLConfigJUnitTest {
     isEqual( config.getSSLRequireAuthentication(), requireAuth );
     
     sslprotocols = "SSLv7";
-    props.setProperty("ssl-protocols", sslprotocols );
+    props.setProperty(DistributionConfig.SSL_PROTOCOLS_NAME, sslprotocols);
 
     config = new DistributionConfigImpl( props );
     isEqual( config.getSSLEnabled(), sslenabled );
@@ -175,7 +174,7 @@ public class SSLConfigJUnitTest {
     isEqual( config.getSSLRequireAuthentication(), requireAuth );
 
     requireAuth = false;
-    props.setProperty("ssl-require-authentication", String.valueOf( requireAuth ) );
+    props.setProperty(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME, String.valueOf(requireAuth));
 
     config = new DistributionConfigImpl( props );
     isEqual( config.getSSLEnabled(), sslenabled );
@@ -184,8 +183,8 @@ public class SSLConfigJUnitTest {
     isEqual( config.getSSLRequireAuthentication(), requireAuth );
 
     sslenabled = true;
-    props.setProperty("ssl-enabled", String.valueOf( sslenabled ) );
-    props.setProperty("mcast-port", "0" );
+    props.setProperty(DistributionConfig.SSL_ENABLED_NAME, String.valueOf(sslenabled));
+    props.setProperty(MCAST_PORT, "0");
 
     config = new DistributionConfigImpl( props );
     isEqual( config.getSSLEnabled(), sslenabled );
@@ -215,7 +214,7 @@ public class SSLConfigJUnitTest {
     
     Properties props = new Properties();
     sslciphers = "RSA_WITH_GARBAGE";
-    props.setProperty("cluster-ssl-ciphers", sslciphers );
+    props.setProperty(DistributionConfig.CLUSTER_SSL_CIPHERS_NAME, sslciphers);
 
     config = new DistributionConfigImpl( props );
     isEqual( config.getClusterSSLEnabled(), sslenabled );
@@ -224,7 +223,7 @@ public class SSLConfigJUnitTest {
     isEqual( config.getClusterSSLRequireAuthentication(), requireAuth );
     
     sslprotocols = "SSLv7";
-    props.setProperty("cluster-ssl-protocols", sslprotocols );
+    props.setProperty(DistributionConfig.CLUSTER_SSL_PROTOCOLS_NAME, sslprotocols);
 
     config = new DistributionConfigImpl( props );
     isEqual( config.getClusterSSLEnabled(), sslenabled );
@@ -233,7 +232,7 @@ public class SSLConfigJUnitTest {
     isEqual( config.getClusterSSLRequireAuthentication(), requireAuth );
 
     requireAuth = false;
-    props.setProperty("cluster-ssl-require-authentication", String.valueOf( requireAuth ) );
+    props.setProperty(DistributionConfig.CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME, String.valueOf(requireAuth));
 
     config = new DistributionConfigImpl( props );
     isEqual( config.getClusterSSLEnabled(), sslenabled );
@@ -242,8 +241,8 @@ public class SSLConfigJUnitTest {
     isEqual( config.getClusterSSLRequireAuthentication(), requireAuth );
 
     sslenabled = true;
-    props.setProperty("cluster-ssl-enabled", String.valueOf( sslenabled ) );
-    props.setProperty("mcast-port", "0" );
+    props.setProperty(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, String.valueOf(sslenabled));
+    props.setProperty(MCAST_PORT, "0");
 
     config = new DistributionConfigImpl( props );
     isEqual( config.getClusterSSLEnabled(), sslenabled );
@@ -469,7 +468,7 @@ public class SSLConfigJUnitTest {
     
     //sslEnabled and clusterSSLEnabled set at the same time
     Properties gemFireProps = new Properties();
-    gemFireProps.setProperty( "mcast-port", "0" );
+    gemFireProps.setProperty(MCAST_PORT, "0");
     gemFireProps.put(DistributionConfig.SSL_ENABLED_NAME, "true");
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "false");
     DistributionConfigImpl config = null;
@@ -484,7 +483,7 @@ public class SSLConfigJUnitTest {
     
     //ssl-protocol and cluster-ssl-protocol set at the same time
     gemFireProps = new Properties();
-    gemFireProps.setProperty( "mcast-port", "0" );
+    gemFireProps.setProperty(MCAST_PORT, "0");
     gemFireProps.put(DistributionConfig.SSL_ENABLED_NAME, "true");
     gemFireProps.put(DistributionConfig.SSL_PROTOCOLS_NAME, sslprotocols);
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
@@ -500,7 +499,7 @@ public class SSLConfigJUnitTest {
     
     //ssl-protocol and cluster-ssl-protocol set at the same time with same value
     gemFireProps = new Properties();
-    gemFireProps.setProperty( "mcast-port", "0" );
+    gemFireProps.setProperty(MCAST_PORT, "0");
     gemFireProps.put(DistributionConfig.SSL_ENABLED_NAME, "true");
     gemFireProps.put(DistributionConfig.SSL_PROTOCOLS_NAME, sslprotocols);
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
@@ -513,7 +512,7 @@ public class SSLConfigJUnitTest {
     
     //ssl-cipher and cluster-ssl-cipher set at the same time
     gemFireProps = new Properties();
-    gemFireProps.setProperty( "mcast-port", "0" );
+    gemFireProps.setProperty(MCAST_PORT, "0");
     gemFireProps.put(DistributionConfig.SSL_ENABLED_NAME, "true");
     gemFireProps.put(DistributionConfig.SSL_CIPHERS_NAME, sslciphers);
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
@@ -529,7 +528,7 @@ public class SSLConfigJUnitTest {
     
     //ssl-cipher and cluster-ssl-cipher set at the same time with same value
     gemFireProps = new Properties();
-    gemFireProps.setProperty( "mcast-port", "0" );
+    gemFireProps.setProperty(MCAST_PORT, "0");
     gemFireProps.put(DistributionConfig.SSL_ENABLED_NAME, "true");
     gemFireProps.put(DistributionConfig.SSL_CIPHERS_NAME, sslciphers);
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
@@ -542,7 +541,7 @@ public class SSLConfigJUnitTest {
     
     //ssl-require-authentication and cluster-ssl-require-authentication set at the same time
     gemFireProps = new Properties();
-    gemFireProps.setProperty( "mcast-port", "0" );
+    gemFireProps.setProperty(MCAST_PORT, "0");
     gemFireProps.put(DistributionConfig.SSL_ENABLED_NAME, "true");
     gemFireProps.put(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME, "true");
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
@@ -558,7 +557,7 @@ public class SSLConfigJUnitTest {
     
     //ssl-require-authentication and cluster-ssl-require-authentication set at the same time and have the same value
     gemFireProps = new Properties();
-    gemFireProps.setProperty( "mcast-port", "0" );
+    gemFireProps.setProperty(MCAST_PORT, "0");
     gemFireProps.put(DistributionConfig.SSL_ENABLED_NAME, "true");
     gemFireProps.put(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME, "true");
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
@@ -571,7 +570,7 @@ public class SSLConfigJUnitTest {
     
     // only ssl-* properties provided. same should reflect in cluster-ssl properties
     gemFireProps = new Properties();
-    gemFireProps.setProperty("mcast-port", "0");
+    gemFireProps.setProperty(MCAST_PORT, "0");
     gemFireProps.put(DistributionConfig.SSL_ENABLED_NAME, String.valueOf(sslenabled));
     gemFireProps.put(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME, String.valueOf(requireAuth));
     gemFireProps.put(DistributionConfig.SSL_CIPHERS_NAME, sslciphers);
@@ -599,7 +598,7 @@ public class SSLConfigJUnitTest {
     
     //only clutser-ssl-properties provided.
     gemFireProps = new Properties();
-    gemFireProps.setProperty("mcast-port", "0");
+    gemFireProps.setProperty(MCAST_PORT, "0");
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, String.valueOf(clusterSslenabled));
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME, String.valueOf(clusterSslRequireAuth));
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_CIPHERS_NAME, clusterSslciphers);
@@ -613,12 +612,12 @@ public class SSLConfigJUnitTest {
     isEqual(clusterSslprotocols, config.getClusterSSLProtocols());
     isEqual(clusterSslciphers, config.getClusterSSLCiphers());
     isEqual(clusterSslRequireAuth, config.getClusterSSLRequireAuthentication());
-    
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore"), config.getClusterSSLKeyStore() );
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getClusterSSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getClusterSSLKeyStorePassword());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore"), config.getClusterSSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"), config.getClusterSSLTrustStorePassword());
+
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME), config.getClusterSSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getClusterSSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getClusterSSLKeyStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME), config.getClusterSSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getClusterSSLTrustStorePassword());
     
     clusterSSLProperties = config.getClusterSSLProperties();
     isEqual( SSL_PROPS_MAP, clusterSSLProperties );
@@ -661,11 +660,11 @@ public class SSLConfigJUnitTest {
     isEqual( config.getJmxManagerSSLCiphers(), jmxManagerSslciphers );
     isEqual( config.getJmxManagerSSLRequireAuthentication(), jmxManagerSslRequireAuth );
 
-    isEqual( JMX_SSL_PROPS_MAP.get("jmx-manager-ssl-keystore") , config.getJmxManagerSSLKeyStore());
-    isEqual( JMX_SSL_PROPS_MAP.get("jmx-manager-ssl-keystore-type"), config.getJmxManagerSSLKeyStoreType());
-    isEqual( JMX_SSL_PROPS_MAP.get("jmx-manager-ssl-keystore-password"), config.getJmxManagerSSLKeyStorePassword());
-    isEqual( JMX_SSL_PROPS_MAP.get("jmx-manager-ssl-truststore"), config.getJmxManagerSSLTrustStore());
-    isEqual( JMX_SSL_PROPS_MAP.get("jmx-manager-ssl-truststore-password"),config.getJmxManagerSSLTrustStorePassword());
+    isEqual(JMX_SSL_PROPS_MAP.get(DistributionConfig.JMX_MANAGER_SSL_KEYSTORE_NAME), config.getJmxManagerSSLKeyStore());
+    isEqual(JMX_SSL_PROPS_MAP.get(DistributionConfig.JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME), config.getJmxManagerSSLKeyStoreType());
+    isEqual(JMX_SSL_PROPS_MAP.get(DistributionConfig.JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME), config.getJmxManagerSSLKeyStorePassword());
+    isEqual(JMX_SSL_PROPS_MAP.get(DistributionConfig.JMX_MANAGER_SSL_TRUSTSTORE_NAME), config.getJmxManagerSSLTrustStore());
+    isEqual(JMX_SSL_PROPS_MAP.get(DistributionConfig.JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getJmxManagerSSLTrustStorePassword());
   }
   
   @Test
@@ -704,11 +703,11 @@ public class SSLConfigJUnitTest {
     isEqual( config.getServerSSLCiphers(), cacheServerSslciphers );
     isEqual( config.getServerSSLRequireAuthentication(), cacheServerSslRequireAuth );
 
-    isEqual( SERVER_SSL_PROPS_MAP.get("server-ssl-keystore") , config.getServerSSLKeyStore());
-    isEqual( SERVER_SSL_PROPS_MAP.get("server-ssl-keystore-type"), config.getServerSSLKeyStoreType());
-    isEqual( SERVER_SSL_PROPS_MAP.get("server-ssl-keystore-password"), config.getServerSSLKeyStorePassword());
-    isEqual( SERVER_SSL_PROPS_MAP.get("server-ssl-truststore"), config.getServerSSLTrustStore());
-    isEqual( SERVER_SSL_PROPS_MAP.get("server-ssl-truststore-password"),config.getServerSSLTrustStorePassword());
+    isEqual(SERVER_SSL_PROPS_MAP.get(DistributionConfig.SERVER_SSL_KEYSTORE_NAME), config.getServerSSLKeyStore());
+    isEqual(SERVER_SSL_PROPS_MAP.get(DistributionConfig.SERVER_SSL_KEYSTORE_TYPE_NAME), config.getServerSSLKeyStoreType());
+    isEqual(SERVER_SSL_PROPS_MAP.get(DistributionConfig.SERVER_SSL_KEYSTORE_PASSWORD_NAME), config.getServerSSLKeyStorePassword());
+    isEqual(SERVER_SSL_PROPS_MAP.get(DistributionConfig.SERVER_SSL_TRUSTSTORE_NAME), config.getServerSSLTrustStore());
+    isEqual(SERVER_SSL_PROPS_MAP.get(DistributionConfig.SERVER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getServerSSLTrustStorePassword());
   }
 
   @Test
@@ -747,11 +746,11 @@ public class SSLConfigJUnitTest {
     isEqual( config.getGatewaySSLCiphers(), gatewaySslciphers );
     isEqual( config.getGatewaySSLRequireAuthentication(), gatewaySslRequireAuth );
 
-    isEqual( GATEWAY_SSL_PROPS_MAP.get("gateway-ssl-keystore") , config.getGatewaySSLKeyStore());
-    isEqual( GATEWAY_SSL_PROPS_MAP.get("gateway-ssl-keystore-type"), config.getGatewaySSLKeyStoreType());
-    isEqual( GATEWAY_SSL_PROPS_MAP.get("gateway-ssl-keystore-password"), config.getGatewaySSLKeyStorePassword());
-    isEqual( GATEWAY_SSL_PROPS_MAP.get("gateway-ssl-truststore"), config.getGatewaySSLTrustStore());
-    isEqual( GATEWAY_SSL_PROPS_MAP.get("gateway-ssl-truststore-password"),config.getGatewaySSLTrustStorePassword());
+    isEqual(GATEWAY_SSL_PROPS_MAP.get(DistributionConfig.GATEWAY_SSL_KEYSTORE_NAME), config.getGatewaySSLKeyStore());
+    isEqual(GATEWAY_SSL_PROPS_MAP.get(DistributionConfig.GATEWAY_SSL_KEYSTORE_TYPE_NAME), config.getGatewaySSLKeyStoreType());
+    isEqual(GATEWAY_SSL_PROPS_MAP.get(DistributionConfig.GATEWAY_SSL_KEYSTORE_PASSWORD_NAME), config.getGatewaySSLKeyStorePassword());
+    isEqual(GATEWAY_SSL_PROPS_MAP.get(DistributionConfig.GATEWAY_SSL_TRUSTSTORE_NAME), config.getGatewaySSLTrustStore());
+    isEqual(GATEWAY_SSL_PROPS_MAP.get(DistributionConfig.GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME), config.getGatewaySSLTrustStorePassword());
     
   }
   
@@ -791,17 +790,17 @@ public class SSLConfigJUnitTest {
     isEqual( config.getJmxManagerSSLCiphers(), jmxManagerSslciphers );
     isEqual( config.getJmxManagerSSLRequireAuthentication(), jmxManagerSslRequireAuth );
 
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore"), config.getClusterSSLKeyStore() );
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getClusterSSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getClusterSSLKeyStorePassword());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore"), config.getClusterSSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"), config.getClusterSSLTrustStorePassword());
-    
-    isEqual( JMX_SSL_PROPS_SUBSET_MAP.get("jmx-manager-ssl-keystore") , config.getJmxManagerSSLKeyStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getJmxManagerSSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getJmxManagerSSLKeyStorePassword());
-    isEqual( JMX_SSL_PROPS_SUBSET_MAP.get("jmx-manager-ssl-truststore"), config.getJmxManagerSSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"),config.getJmxManagerSSLTrustStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME), config.getClusterSSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getClusterSSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getClusterSSLKeyStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME), config.getClusterSSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getClusterSSLTrustStorePassword());
+
+    isEqual(JMX_SSL_PROPS_SUBSET_MAP.get(DistributionConfig.JMX_MANAGER_SSL_KEYSTORE_NAME), config.getJmxManagerSSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getJmxManagerSSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getJmxManagerSSLKeyStorePassword());
+    isEqual(JMX_SSL_PROPS_SUBSET_MAP.get(DistributionConfig.JMX_MANAGER_SSL_TRUSTSTORE_NAME), config.getJmxManagerSSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getJmxManagerSSLTrustStorePassword());
   }
   
   
@@ -841,17 +840,17 @@ public class SSLConfigJUnitTest {
     isEqual( config.getServerSSLCiphers(), cacheServerSslciphers );
     isEqual( config.getServerSSLRequireAuthentication(), cacheServerSslRequireAuth );
 
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore"), config.getClusterSSLKeyStore() );
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getClusterSSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getClusterSSLKeyStorePassword());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore"), config.getClusterSSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"), config.getClusterSSLTrustStorePassword());
-    
-    isEqual( SERVER_PROPS_SUBSET_MAP.get("server-ssl-keystore") , config.getServerSSLKeyStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getServerSSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getServerSSLKeyStorePassword());
-    isEqual( SERVER_PROPS_SUBSET_MAP.get("server-ssl-truststore"), config.getServerSSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"),config.getServerSSLTrustStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME), config.getClusterSSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getClusterSSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getClusterSSLKeyStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME), config.getClusterSSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getClusterSSLTrustStorePassword());
+
+    isEqual(SERVER_PROPS_SUBSET_MAP.get(DistributionConfig.SERVER_SSL_KEYSTORE_NAME), config.getServerSSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getServerSSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getServerSSLKeyStorePassword());
+    isEqual(SERVER_PROPS_SUBSET_MAP.get(DistributionConfig.SERVER_SSL_TRUSTSTORE_NAME), config.getServerSSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getServerSSLTrustStorePassword());
   }
   
   @Test
@@ -889,18 +888,18 @@ public class SSLConfigJUnitTest {
     isEqual( config.getGatewaySSLProtocols(), gatewaySslprotocols );
     isEqual( config.getGatewaySSLCiphers(), gatewaySslciphers );
     isEqual( config.getGatewaySSLRequireAuthentication(), gatewaySslRequireAuth );
-    
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore"), config.getClusterSSLKeyStore() );
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getClusterSSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getClusterSSLKeyStorePassword());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore"), config.getClusterSSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"), config.getClusterSSLTrustStorePassword());
-    
-    isEqual( GATEWAY_PROPS_SUBSET_MAP.get("gateway-ssl-keystore") , config.getGatewaySSLKeyStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getGatewaySSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getGatewaySSLKeyStorePassword());
-    isEqual( GATEWAY_PROPS_SUBSET_MAP.get("gateway-ssl-truststore"), config.getGatewaySSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"),config.getGatewaySSLTrustStorePassword());
+
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME), config.getClusterSSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getClusterSSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getClusterSSLKeyStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME), config.getClusterSSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getClusterSSLTrustStorePassword());
+
+    isEqual(GATEWAY_PROPS_SUBSET_MAP.get(DistributionConfig.GATEWAY_SSL_KEYSTORE_NAME), config.getGatewaySSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getGatewaySSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getGatewaySSLKeyStorePassword());
+    isEqual(GATEWAY_PROPS_SUBSET_MAP.get(DistributionConfig.GATEWAY_SSL_TRUSTSTORE_NAME), config.getGatewaySSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getGatewaySSLTrustStorePassword());
 
   }
   
@@ -917,7 +916,7 @@ public class SSLConfigJUnitTest {
     boolean cacheServerSslRequireAuth = false;
 
     Properties gemFireProps = new Properties();
-    gemFireProps.put(DistributionConfig.MCAST_PORT_NAME,"0");
+    gemFireProps.put(MCAST_PORT, "0");
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, String.valueOf(sslenabled));
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_PROTOCOLS_NAME, sslprotocols);
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_CIPHERS_NAME, sslciphers);
@@ -943,17 +942,17 @@ public class SSLConfigJUnitTest {
     
     System.out.println(config.toLoggerString());
 
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore"), config.getClusterSSLKeyStore() );
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getClusterSSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getClusterSSLKeyStorePassword());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore"), config.getClusterSSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"), config.getClusterSSLTrustStorePassword());
-    
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore") , config.getServerSSLKeyStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getServerSSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getServerSSLKeyStorePassword());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore"), config.getServerSSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"),config.getServerSSLTrustStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME), config.getClusterSSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getClusterSSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getClusterSSLKeyStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME), config.getClusterSSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getClusterSSLTrustStorePassword());
+
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME), config.getServerSSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getServerSSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getServerSSLKeyStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME), config.getServerSSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getServerSSLTrustStorePassword());
     
   }
   
@@ -970,7 +969,7 @@ public class SSLConfigJUnitTest {
     boolean cacheServerSslRequireAuth = false;
 
     Properties gemFireProps = new Properties();
-    gemFireProps.put(DistributionConfig.MCAST_PORT_NAME,"0");
+    gemFireProps.put(MCAST_PORT, "0");
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, String.valueOf(sslenabled));
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_PROTOCOLS_NAME, sslprotocols);
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_CIPHERS_NAME, sslciphers);
@@ -1001,17 +1000,17 @@ public class SSLConfigJUnitTest {
     
     System.out.println(config.toLoggerString());
 
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore"), config.getClusterSSLKeyStore() );
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getClusterSSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getClusterSSLKeyStorePassword());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore"), config.getClusterSSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"), config.getClusterSSLTrustStorePassword());
-    
-    isEqual( SERVER_PROPS_SUBSET_MAP.get("server-ssl-keystore") , config.getServerSSLKeyStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getServerSSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getServerSSLKeyStorePassword());
-    isEqual( SERVER_PROPS_SUBSET_MAP.get("server-ssl-truststore"), config.getServerSSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"),config.getServerSSLTrustStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME), config.getClusterSSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getClusterSSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getClusterSSLKeyStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME), config.getClusterSSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getClusterSSLTrustStorePassword());
+
+    isEqual(SERVER_PROPS_SUBSET_MAP.get(DistributionConfig.SERVER_SSL_KEYSTORE_NAME), config.getServerSSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getServerSSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getServerSSLKeyStorePassword());
+    isEqual(SERVER_PROPS_SUBSET_MAP.get(DistributionConfig.SERVER_SSL_TRUSTSTORE_NAME), config.getServerSSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getServerSSLTrustStorePassword());
   }
   
   @Test
@@ -1027,7 +1026,7 @@ public class SSLConfigJUnitTest {
     boolean gatewayServerSslRequireAuth = false;
 
     Properties gemFireProps = new Properties();
-    gemFireProps.put(DistributionConfig.MCAST_PORT_NAME,"0");
+    gemFireProps.put(MCAST_PORT, "0");
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, String.valueOf(sslenabled));
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_PROTOCOLS_NAME, sslprotocols);
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_CIPHERS_NAME, sslciphers);
@@ -1053,17 +1052,17 @@ public class SSLConfigJUnitTest {
     
     System.out.println(config.toLoggerString());
 
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore"), config.getClusterSSLKeyStore() );
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getClusterSSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getClusterSSLKeyStorePassword());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore"), config.getClusterSSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"), config.getClusterSSLTrustStorePassword());
-    
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore") , config.getGatewaySSLKeyStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getGatewaySSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getGatewaySSLKeyStorePassword());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore"), config.getGatewaySSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"),config.getGatewaySSLTrustStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME), config.getClusterSSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getClusterSSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getClusterSSLKeyStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME), config.getClusterSSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getClusterSSLTrustStorePassword());
+
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME), config.getGatewaySSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getGatewaySSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getGatewaySSLKeyStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME), config.getGatewaySSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getGatewaySSLTrustStorePassword());
     
   }
   
@@ -1080,7 +1079,7 @@ public class SSLConfigJUnitTest {
     boolean gatewayServerSslRequireAuth = false;
 
     Properties gemFireProps = new Properties();
-    gemFireProps.put(DistributionConfig.MCAST_PORT_NAME,"0");
+    gemFireProps.put(MCAST_PORT, "0");
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, String.valueOf(sslenabled));
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_PROTOCOLS_NAME, sslprotocols);
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_CIPHERS_NAME, sslciphers);
@@ -1106,17 +1105,17 @@ public class SSLConfigJUnitTest {
     
     System.out.println(config.toLoggerString());
 
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore"), config.getClusterSSLKeyStore() );
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getClusterSSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getClusterSSLKeyStorePassword());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore"), config.getClusterSSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"), config.getClusterSSLTrustStorePassword());
-    
-    isEqual( GATEWAY_PROPS_SUBSET_MAP.get("gateway-ssl-keystore") , config.getGatewaySSLKeyStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getGatewaySSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getGatewaySSLKeyStorePassword());
-    isEqual( GATEWAY_PROPS_SUBSET_MAP.get("gateway-ssl-truststore"), config.getGatewaySSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"),config.getGatewaySSLTrustStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME), config.getClusterSSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getClusterSSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getClusterSSLKeyStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME), config.getClusterSSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getClusterSSLTrustStorePassword());
+
+    isEqual(GATEWAY_PROPS_SUBSET_MAP.get(DistributionConfig.GATEWAY_SSL_KEYSTORE_NAME), config.getGatewaySSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getGatewaySSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getGatewaySSLKeyStorePassword());
+    isEqual(GATEWAY_PROPS_SUBSET_MAP.get(DistributionConfig.GATEWAY_SSL_TRUSTSTORE_NAME), config.getGatewaySSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getGatewaySSLTrustStorePassword());
     
   }
   
@@ -1133,7 +1132,7 @@ public class SSLConfigJUnitTest {
     boolean jmxManagerSslRequireAuth = false;
 
     Properties gemFireProps = new Properties();
-    gemFireProps.put(DistributionConfig.MCAST_PORT_NAME,"0");
+    gemFireProps.put(MCAST_PORT, "0");
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, String.valueOf(sslenabled));
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_PROTOCOLS_NAME, sslprotocols);
     gemFireProps.put(DistributionConfig.CLUSTER_SSL_CIPHERS_NAME, sslciphers);
@@ -1159,17 +1158,17 @@ public class SSLConfigJUnitTest {
     
     System.out.println(config.toLoggerString());
 
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore"), config.getClusterSSLKeyStore() );
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getClusterSSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getClusterSSLKeyStorePassword());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore"), config.getClusterSSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"), config.getClusterSSLTrustStorePassword());
-    
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore") , config.getJmxManagerSSLKeyStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-type"), config.getJmxManagerSSLKeyStoreType());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-keystore-password"), config.getJmxManagerSSLKeyStorePassword());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore"), config.getJmxManagerSSLTrustStore());
-    isEqual( CLUSTER_SSL_PROPS_MAP.get("cluster-ssl-truststore-password"),config.getJmxManagerSSLTrustStorePassword()); 
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME), config.getClusterSSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getClusterSSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getClusterSSLKeyStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME), config.getClusterSSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getClusterSSLTrustStorePassword());
+
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME), config.getJmxManagerSSLKeyStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME), config.getJmxManagerSSLKeyStoreType());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME), config.getJmxManagerSSLKeyStorePassword());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME), config.getJmxManagerSSLTrustStore());
+    isEqual(CLUSTER_SSL_PROPS_MAP.get(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME), config.getJmxManagerSSLTrustStorePassword());
     
   }
   

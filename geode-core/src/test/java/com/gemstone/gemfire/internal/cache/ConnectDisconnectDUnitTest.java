@@ -16,35 +16,14 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.List;
+import com.gemstone.gemfire.cache30.CacheTestCase;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.dunit.*;
+
 import java.util.Properties;
 
-import org.jgroups.protocols.UDP;
-
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
-import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.START_LOCATOR;
 
 /** A test of 46438 - missing response to an update attributes message */
 public class ConnectDisconnectDUnitTest extends CacheTestCase {
@@ -172,11 +151,11 @@ public class ConnectDisconnectDUnitTest extends CacheTestCase {
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
-    props.setProperty("log-level", "info");
-    props.setProperty("conserve-sockets", "false");
+    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
+    props.setProperty(DistributionConfig.CONSERVE_SOCKETS_NAME, "false");
     if (LOCATOR_PORT > 0) {
-      props.setProperty("start-locator", "localhost["+LOCATOR_PORT+"]");
-      props.setProperty("locators", LOCATORS_STRING);
+      props.setProperty(START_LOCATOR, "localhost[" + LOCATOR_PORT + "]");
+      props.setProperty(LOCATORS, LOCATORS_STRING);
     }
     return props;
   }

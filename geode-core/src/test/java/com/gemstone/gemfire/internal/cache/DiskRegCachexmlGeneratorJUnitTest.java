@@ -16,24 +16,26 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.util.Properties;
-
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.Properties;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.xmlcache.*;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
 
 /**
  * This test is for testing Disk attributes set programmatically
@@ -241,10 +243,10 @@ public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase
     ds.disconnect();
     // Connect to the GemFire distributed system
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.NAME_NAME, "DiskRegCachexmlGeneratorJUnitTest");
-    props.setProperty("mcast-port", "0");
+    props.setProperty(SystemConfigurationProperties.NAME, "DiskRegCachexmlGeneratorJUnitTest");
+    props.setProperty(MCAST_PORT, "0");
     String path = "DiskRegCachexmlGeneratorJUnitTest.xml";
-    props.setProperty("cache-xml-file", path);
+    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
     ds = DistributedSystem.connect(props);
     // Create the cache which causes the cache-xml-file to be parsed
     cache = CacheFactory.create(ds);

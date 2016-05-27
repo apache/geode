@@ -16,17 +16,17 @@
  */
 package com.gemstone.gemfire.cache.asyncqueue.internal;
 
-import static org.junit.Assert.*;
-
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.internal.cache.wan.GatewaySenderAttributes;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.internal.cache.wan.GatewaySenderAttributes;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
 
 @Category(IntegrationTest.class)
 public class SerialAsyncEventQueueImplJUnitTest {
@@ -34,7 +34,7 @@ public class SerialAsyncEventQueueImplJUnitTest {
   private Cache cache;
   @Before
   public void setUp() {
-    CacheFactory cf = new CacheFactory().set("mcast-port", "0");
+    CacheFactory cf = new CacheFactory().set(MCAST_PORT, "0");
     cache = cf.create();
   }
   

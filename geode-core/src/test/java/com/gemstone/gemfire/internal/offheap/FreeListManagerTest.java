@@ -16,22 +16,23 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import static com.googlecode.catchexception.CatchException.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReferenceArray;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReferenceArray;
+
+import static com.googlecode.catchexception.CatchException.catchException;
+import static com.googlecode.catchexception.CatchException.caughtException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 
 @Category(UnitTest.class)
 public class FreeListManagerTest {
@@ -528,7 +529,7 @@ public class FreeListManagerTest {
       FreeListManager.verifyOffHeapFreeListCount(-1);
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
-      assertThat(expected.getMessage()).contains("gemfire.OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
+      assertThat(expected.getMessage()).contains(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
     }
   }
   @Test
@@ -537,7 +538,7 @@ public class FreeListManagerTest {
       FreeListManager.verifyOffHeapFreeListCount(0);
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
-      assertThat(expected.getMessage()).contains("gemfire.OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
+      assertThat(expected.getMessage()).contains(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
     }
   }
   @Test
@@ -550,7 +551,7 @@ public class FreeListManagerTest {
       FreeListManager.verifyOffHeapAlignment(-1);
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
-      assertThat(expected.getMessage()).contains("gemfire.OFF_HEAP_ALIGNMENT must be a multiple of 8");
+      assertThat(expected.getMessage()).contains(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be a multiple of 8");
     }
   }
   @Test
@@ -559,7 +560,7 @@ public class FreeListManagerTest {
       FreeListManager.verifyOffHeapAlignment(9);
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
-      assertThat(expected.getMessage()).contains("gemfire.OFF_HEAP_ALIGNMENT must be a multiple of 8");
+      assertThat(expected.getMessage()).contains(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be a multiple of 8");
     }
   }
   @Test
@@ -568,7 +569,7 @@ public class FreeListManagerTest {
       FreeListManager.verifyOffHeapAlignment(256+8);
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
-      assertThat(expected.getMessage()).contains("gemfire.OFF_HEAP_ALIGNMENT must be <= 256");
+      assertThat(expected.getMessage()).contains(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be <= 256");
     }
   }
   @Test

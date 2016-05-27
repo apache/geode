@@ -16,19 +16,16 @@
  */
 package com.gemstone.gemfire.rest.internal.web.swagger.config;
 
-import javax.servlet.ServletContext;
-
-import com.gemstone.gemfire.admin.internal.InetAddressUtil;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.mangofactory.swagger.core.SwaggerPathProvider;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.servlet.ServletContext;
 import java.net.UnknownHostException;
 
 @SuppressWarnings("unused")

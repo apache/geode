@@ -16,40 +16,27 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Properties;
-
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 public class Bug48571DUnitTest extends DistributedTestCase {
 
@@ -143,12 +130,12 @@ public class Bug48571DUnitTest extends DistributedTestCase {
 
   public static int createServerCache() throws Exception {
     Properties props = new Properties();
-    props.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-    props.setProperty("log-file", "server_" + OSProcess.getId() + ".log");
-    props.setProperty("log-level", "info");
-    props.setProperty("statistic-archive-file", "server_" + OSProcess.getId()
+    props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+    props.setProperty(DistributionConfig.LOG_FILE_NAME, "server_" + OSProcess.getId() + ".log");
+    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
+    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "server_" + OSProcess.getId()
         + ".gfs");
-    props.setProperty("statistic-sampling-enabled", "true");
+    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
     CacheFactory cf = new CacheFactory(props);
 
     DistributedSystem ds = new Bug48571DUnitTest("Bug48571DUnitTest").getSystem(props);
@@ -173,16 +160,16 @@ public class Bug48571DUnitTest extends DistributedTestCase {
   public static void createClientCache(Host host, Integer port) throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     props.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME, "durable-48571");
     props.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, "300000");
 
-    props.setProperty("log-file", "client_" + OSProcess.getId() + ".log");
-    props.setProperty("log-level", "info");
-    props.setProperty("statistic-archive-file", "client_" + OSProcess.getId()
+    props.setProperty(DistributionConfig.LOG_FILE_NAME, "client_" + OSProcess.getId() + ".log");
+    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
+    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "client_" + OSProcess.getId()
         + ".gfs");
-    props.setProperty("statistic-sampling-enabled", "true");
+    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
 
     ClientCacheFactory ccf = new ClientCacheFactory(props);
     ccf.setPoolSubscriptionEnabled(true);

@@ -18,6 +18,8 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.auth;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
@@ -35,22 +37,14 @@ import java.security.Principal;
 import java.util.Properties;
 import java.util.Set;
 
+import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.*;
 
 // static messages
-import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.HandShake_AUTHENTICATOR_INSTANCE_COULD_NOT_BE_OBTAINED;
-import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHENTICATOR_OBJECT;
-import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHINITIALIZE_METHOD_0;
-import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.AUTH_PEER_AUTHENTICATION_FAILED_WITH_EXCEPTION;
-import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.AUTH_PEER_AUTHENTICATION_FAILED;
-import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.AUTH_PEER_AUTHENTICATION_MISSING_CREDENTIALS;
-import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.AUTH_FAILED_TO_ACQUIRE_AUTHINITIALIZE_INSTANCE;
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME;
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.SECURITY_PEER_AUTHENTICATOR_NAME;
 
 public class GMSAuthenticator implements Authenticator {
 
-  private final static String secPrefix =  "gemfire.sys.security-";
-  private final static int gemfireSysPrefixLen = "gemfire.sys.".length();
+  private final static String secPrefix = DistributionConfig.GEMFIRE_PREFIX + "sys.security-";
+  private final static int gemfireSysPrefixLen = (DistributionConfig.GEMFIRE_PREFIX + "sys.").length();
 
   private Services services;
   private Properties securityProps = getSecurityProps();
@@ -119,7 +113,7 @@ public class GMSAuthenticator implements Authenticator {
    */
   String authenticate(DistributedMember member, Object credentials, Properties secProps, DistributedMember localMember) throws AuthenticationFailedException {
 
-    String authMethod = secProps.getProperty(SECURITY_PEER_AUTHENTICATOR_NAME);
+    String authMethod = secProps.getProperty(SystemConfigurationProperties.SECURITY_PEER_AUTHENTICATOR);
     if (authMethod == null || authMethod.length() == 0) {
       return null;
     }
@@ -186,7 +180,7 @@ public class GMSAuthenticator implements Authenticator {
       return getCredentials(member, securityProps);
 
     } catch (Exception e) {
-      String authMethod = securityProps.getProperty(SECURITY_PEER_AUTH_INIT_NAME);
+      String authMethod = securityProps.getProperty(SystemConfigurationProperties.SECURITY_PEER_AUTH_INIT);
       services.getSecurityLogWriter().warning(LocalizedStrings.AUTH_FAILED_TO_OBTAIN_CREDENTIALS_IN_0_USING_AUTHINITIALIZE_1_2, new Object[] { authMethod, e.getLocalizedMessage() });
       return null;
     }
@@ -197,7 +191,7 @@ public class GMSAuthenticator implements Authenticator {
    */
   Properties getCredentials(DistributedMember member, Properties secProps) {
     Properties credentials = null;
-    String authMethod = secProps.getProperty(SECURITY_PEER_AUTH_INIT_NAME);
+    String authMethod = secProps.getProperty(SystemConfigurationProperties.SECURITY_PEER_AUTH_INIT);
 
     try {
       if (authMethod != null && authMethod.length() > 0) {

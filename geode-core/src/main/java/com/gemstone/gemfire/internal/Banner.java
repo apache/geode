@@ -21,7 +21,8 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.internal.logging.LogService;
 
-import java.io.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.*;
@@ -132,7 +133,7 @@ public class Banner {
     prettyPrintPath((String)sp.get("java.library.path"), out);
     sp.remove("java.library.path");
 
-    if (Boolean.getBoolean("gemfire.disableSystemPropertyLogging")) {
+    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableSystemPropertyLogging")) {
       out.println("System property logging disabled.");
     } else {
       out.println("System Properties:");

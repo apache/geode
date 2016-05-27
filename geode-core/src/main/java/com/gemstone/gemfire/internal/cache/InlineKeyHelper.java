@@ -16,12 +16,14 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
 /**
  * No instances of this class. Just some static method having to do with inline keys.
  *
  */
 public class InlineKeyHelper {
-  public static boolean INLINE_REGION_KEYS = !Boolean.getBoolean("gemfire.DISABLE_INLINE_REGION_KEYS");
+  public static boolean INLINE_REGION_KEYS = !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_INLINE_REGION_KEYS");
 
   /**
    * The maximum number of longs any of region entry subclasses use

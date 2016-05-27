@@ -16,10 +16,14 @@
  */
 package com.gemstone.gemfire.pdx;
 
-import static org.junit.Assert.fail;
-
-import java.text.SimpleDateFormat;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
@@ -27,19 +31,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.text.SimpleDateFormat;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
 
 @Category(IntegrationTest.class)
 public class JSONFormatterJUnitTest {
@@ -53,7 +48,7 @@ public class JSONFormatterJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    this.c = (GemFireCacheImpl) new CacheFactory().set("mcast-port", "0").setPdxReadSerialized(true).create();
+    this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxReadSerialized(true).create();
     
     //start cache-server
     CacheServer server = c.addCacheServer();

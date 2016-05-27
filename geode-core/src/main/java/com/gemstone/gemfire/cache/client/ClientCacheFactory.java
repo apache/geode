@@ -17,8 +17,6 @@
 
 package com.gemstone.gemfire.cache.client;
 
-import java.util.Properties;
-
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -27,9 +25,13 @@ import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.cache.CacheConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.jndi.JNDIInvoker;
-import com.gemstone.gemfire.pdx.PdxSerializer;
 import com.gemstone.gemfire.pdx.PdxInstance;
+import com.gemstone.gemfire.pdx.PdxSerializer;
+
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
 Factory class used to create the singleton {@link ClientCache client cache} and connect to one or more GemFire Cache Servers. If the application wants to connect to GemFire as a peer it should use {@link com.gemstone.gemfire.cache.CacheFactory} instead.
@@ -194,7 +196,7 @@ public class ClientCacheFactory {
     GemFireCacheImpl instance = GemFireCacheImpl.getInstance();
 
     {
-      String propValue = this.dsProps.getProperty("mcast-port");
+      String propValue = this.dsProps.getProperty(MCAST_PORT);
       if (propValue != null) {
         int mcastPort = Integer.parseInt(propValue);
         if (mcastPort != 0) {
@@ -203,13 +205,13 @@ public class ClientCacheFactory {
       }
     }
     {
-      String propValue = this.dsProps.getProperty("locators");
+      String propValue = this.dsProps.getProperty(LOCATORS);
       if (propValue != null && !propValue.equals("")) {
         throw new IllegalStateException("On a client cache the locators property must be set to an empty string or not set. It was set to \"" + propValue + "\".");
       }
     }
-    this.dsProps.setProperty("mcast-port", "0");
-    this.dsProps.setProperty("locators", "");
+      this.dsProps.setProperty(MCAST_PORT, "0");
+      this.dsProps.setProperty(LOCATORS, "");
     DistributedSystem system = DistributedSystem.connect(this.dsProps);
 
     if (instance != null && !instance.isClosed()) {

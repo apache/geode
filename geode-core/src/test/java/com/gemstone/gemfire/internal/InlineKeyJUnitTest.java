@@ -16,35 +16,29 @@
  */
 package com.gemstone.gemfire.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Properties;
-import java.util.UUID;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.VMThinRegionEntryHeapIntKey;
-import com.gemstone.gemfire.internal.cache.VMThinRegionEntryHeapLongKey;
-import com.gemstone.gemfire.internal.cache.VMThinRegionEntryHeapObjectKey;
-import com.gemstone.gemfire.internal.cache.VMThinRegionEntryHeapStringKey1;
-import com.gemstone.gemfire.internal.cache.VMThinRegionEntryHeapStringKey2;
-import com.gemstone.gemfire.internal.cache.VMThinRegionEntryHeapUUIDKey;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+import java.util.UUID;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @Category(IntegrationTest.class)
 public class InlineKeyJUnitTest {
   private GemFireCacheImpl createCache() {
     Properties props = new Properties();
-    props.setProperty("locators", "");
-    props.setProperty("mcast-port", "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(MCAST_PORT, "0");
     GemFireCacheImpl result = (GemFireCacheImpl) new CacheFactory(props).create();
     return result;
   }

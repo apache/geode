@@ -18,22 +18,21 @@
  */
 package com.gemstone.gemfire.cache.lucene;
 
-import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
-import static org.junit.Assert.assertEquals;
-
-import java.util.function.Consumer;
-
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.util.function.Consumer;
+
+import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.createIndex;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests of lucene index creation that use off heap memory
@@ -50,7 +49,7 @@ public class LuceneIndexCreationOffHeapIntegrationTest extends LuceneIntegration
   @Override
   protected CacheFactory getCacheFactory() {
     CacheFactory factory = super.getCacheFactory();
-    factory.set("off-heap-memory-size", "100m");
+    factory.set(SystemConfigurationProperties.OFF_HEAP_MEMORY_SIZE, "100m");
     return factory;
   }
 

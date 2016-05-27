@@ -16,24 +16,20 @@
  */
 package com.gemstone.gemfire.internal;
 
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UTFDataFormatException;
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.cache.BytesAndBitsForCompactor;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.LinkedList;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.internal.cache.BytesAndBitsForCompactor;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
 
 /** HeapDataOutputStream is an OutputStream that also implements DataOutput
  * and stores all data written to it in heap memory.
@@ -1108,7 +1104,7 @@ public class HeapDataOutputStream extends OutputStream implements
    * Use -Dgemfire.ASCII_STRINGS=true if all String instances contain
    * ASCII characters. Setting this to true gives a performance improvement.
    */
-  private static final boolean ASCII_STRINGS = Boolean.getBoolean("gemfire.ASCII_STRINGS");
+  private static final boolean ASCII_STRINGS = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ASCII_STRINGS");
   
   /**
      * Writes two bytes of length information

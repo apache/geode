@@ -20,24 +20,25 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import java.util.Collection;
-import java.util.Properties;
-
-import junit.framework.Assert;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.query.CacheUtils;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.util.test.TestUtil;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.test.TestUtil;
+import junit.framework.Assert;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Collection;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * 
@@ -53,8 +54,8 @@ public class DeclarativeIndexCreationJUnitTest {
   @Before
   public void setUp() throws Exception {
     Properties props = new Properties();
-    props.setProperty("cache-xml-file", TestUtil.getResourcePath(getClass(), "cachequeryindex.xml"));
-    props.setProperty("mcast-port", "0");
+    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, TestUtil.getResourcePath(getClass(), "cachequeryindex.xml"));
+    props.setProperty(MCAST_PORT, "0");
     ds = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds);
   }

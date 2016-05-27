@@ -16,28 +16,22 @@
  */
 package com.gemstone.gemfire.cache.mapInterface;
 
-import static org.junit.Assert.*;
-
-import java.util.Properties;
-import java.util.TreeMap;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import junit.framework.TestCase;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+import java.util.TreeMap;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @Category(IntegrationTest.class)
 public class PutAllGlobalLockJUnitTest {
@@ -54,8 +48,8 @@ public class PutAllGlobalLockJUnitTest {
     public void setUp() throws Exception {
         try {
             Properties properties = new Properties();
-            properties.setProperty("mcast-port", "0");
-            properties.setProperty("locators", "");
+            properties.setProperty(MCAST_PORT, "0");
+            properties.setProperty(LOCATORS, "");
             DistributedSystem distributedSystem = DistributedSystem
                     .connect(properties);
             Cache cache = CacheFactory.create(distributedSystem);

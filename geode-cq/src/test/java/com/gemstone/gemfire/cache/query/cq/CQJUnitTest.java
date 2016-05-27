@@ -16,23 +16,23 @@
  */
 package com.gemstone.gemfire.cache.query.cq;
 
-import java.util.Properties;
-
-import org.junit.experimental.categories.Category;
-
-import junit.framework.TestCase;
-
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.query.CacheUtils;
 import com.gemstone.gemfire.cache.query.CqAttributes;
 import com.gemstone.gemfire.cache.query.CqAttributesFactory;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 @Category(IntegrationTest.class)
 public class CQJUnitTest extends TestCase {
@@ -50,8 +50,8 @@ public class CQJUnitTest extends TestCase {
   
   public void setUp() throws Exception {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("log-level", "config");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "config");
     this.ds = DistributedSystem.connect(props);
     this.cache = CacheFactory.create(ds);
     this.qs = cache.getQueryService();

@@ -16,16 +16,18 @@
  */
 package com.gemstone.gemfire.test.golden;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.process.ProcessWrapper;
+import org.apache.logging.log4j.core.config.ConfigurationFactory;
+import org.junit.After;
+import org.junit.Before;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.logging.log4j.core.config.ConfigurationFactory;
-import org.junit.After;
-import org.junit.Before;
-
-import com.gemstone.gemfire.test.process.ProcessWrapper;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * Test framework for launching processes and comparing output to expected golden output.
@@ -121,8 +123,8 @@ public abstract class GoldenTestCase {
 
   protected final Properties createProperties() {
     Properties properties = new Properties();
-    properties.setProperty("gemfire.mcast-port", "0");
-    properties.setProperty("gemfire.log-level", "warning");
+    properties.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
+    properties.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.LOG_LEVEL_NAME, "warning");
     properties.setProperty("file.encoding", "UTF-8");
     return editProperties(properties);
   }

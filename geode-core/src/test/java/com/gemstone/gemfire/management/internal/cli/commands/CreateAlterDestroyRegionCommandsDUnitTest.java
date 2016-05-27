@@ -16,37 +16,13 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
-import static com.jayway.awaitility.Awaitility.*;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.text.MessageFormat;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.compression.SnappyCompressor;
 import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
@@ -68,8 +44,27 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.MessageFormat;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.jayway.awaitility.Awaitility.waitAtMost;
 
 @Category(DistributedTest.class)
 public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBase {
@@ -407,7 +402,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     this.alterVm1Name = "VM" + this.alterVm1.getPid();
     this.alterVm1.invoke(() -> {
       Properties localProps = new Properties();
-      localProps.setProperty(DistributionConfig.NAME_NAME, alterVm1Name);
+      localProps.setProperty(SystemConfigurationProperties.NAME, alterVm1Name);
       localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
       getSystem(localProps);
       Cache cache = getCache();
@@ -440,7 +435,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     this.alterVm2Name = "VM" + this.alterVm2.getPid();
     this.alterVm2.invoke(() -> {
       Properties localProps = new Properties();
-      localProps.setProperty(DistributionConfig.NAME_NAME, alterVm2Name);
+      localProps.setProperty(SystemConfigurationProperties.NAME, alterVm2Name);
       localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1,Group2");
       getSystem(localProps);
       Cache cache = getCache();
@@ -776,8 +771,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     Host.getHost(0).getVM(3).invoke(() -> {
       final File locatorLogFile = new File("locator-" + locatorPort + ".log");
       final Properties locatorProps = new Properties();
-      locatorProps.setProperty(DistributionConfig.NAME_NAME, "Locator");
-      locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+      locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator");
+      locatorProps.setProperty(MCAST_PORT, "0");
       locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
       locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
       try {
@@ -792,16 +787,16 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
     // Start the default manager
     Properties managerProps = new Properties();
-    managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+    managerProps.setProperty(MCAST_PORT, "0");
+    managerProps.setProperty(LOCATORS, "localhost:" + locatorPort);
     setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);
     vm.invoke(() -> {
       Properties localProps = new Properties();
-      localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+      localProps.setProperty(MCAST_PORT, "0");
+      localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
       localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
       getSystem(localProps);
       assertNotNull(getCache());
@@ -838,8 +833,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
       assertTrue(cache.isClosed());
 
       Properties localProps = new Properties();
-      localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+      localProps.setProperty(MCAST_PORT, "0");
+      localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
       localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
       localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
       getSystem(localProps);
@@ -880,8 +875,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
         assertTrue(cache.isClosed());
 
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+        localProps.setProperty(MCAST_PORT, "0");
+        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
         localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
         localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
         getSystem(localProps);
@@ -910,8 +905,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     Host.getHost(0).getVM(3).invoke(() -> {
       final File locatorLogFile = new File("locator-" + locatorPort + ".log");
       final Properties locatorProps = new Properties();
-      locatorProps.setProperty(DistributionConfig.NAME_NAME, "Locator");
-      locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+      locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator");
+      locatorProps.setProperty(MCAST_PORT, "0");
       locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
       locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
       try {
@@ -926,16 +921,16 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
     // Start the default manager
     Properties managerProps = new Properties();
-    managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+    managerProps.setProperty(MCAST_PORT, "0");
+    managerProps.setProperty(LOCATORS, "localhost:" + locatorPort);
     setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);
     vm.invoke(() -> {
       Properties localProps = new Properties();
-      localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+      localProps.setProperty(MCAST_PORT, "0");
+      localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
       localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
       getSystem(localProps);
       assertNotNull(getCache());
@@ -990,8 +985,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
       assertTrue(cache.isClosed());
 
       Properties localProps = new Properties();
-      localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+      localProps.setProperty(MCAST_PORT, "0");
+      localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
       localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
       localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
       getSystem(localProps);

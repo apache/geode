@@ -16,19 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
 import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.NoAvailableServersException;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
@@ -41,19 +30,18 @@ import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * Tests client server corner cases between Region and Pool
@@ -578,8 +566,8 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     // start server first
     PORT1 = initServerCache(false);
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     new ClientServerMiscDUnitTest("temp").createCache(props);
     String host = NetworkUtils.getServerHostName(server1.getHost());
     PoolImpl p = (PoolImpl)PoolManager.createFactory()
@@ -677,8 +665,8 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
   public void testProxyCreationBeforeCacheCreation() throws Exception
   {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     DistributedSystem ds = getSystem(props);
     assertNotNull(ds);
     ds.disconnect();
@@ -729,8 +717,8 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     //work around GEODE-477
     IgnoredException.addIgnoredException("Connection reset");
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     DistributedSystem ds = getSystem(props);
     assertNotNull(ds);
     
@@ -759,8 +747,8 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
     
     ds.disconnect();
     Properties prop = new Properties();
-    prop.setProperty("mcast-port", "0");
-    prop.setProperty("locators", "");
+    prop.setProperty(MCAST_PORT, "0");
+    prop.setProperty(LOCATORS, "");
     ds = getSystem(prop);
     
     cache = getCache();
@@ -815,8 +803,8 @@ public class ClientServerMiscDUnitTest extends CacheTestCase
   public static Pool _createClientCache(String h, int port, boolean empty)
   throws Exception  {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     Cache cache = new ClientServerMiscDUnitTest("temp").createCacheV(props);
     ClientServerMiscDUnitTest.static_cache = cache;
     PoolImpl p = (PoolImpl)PoolManager.createFactory()

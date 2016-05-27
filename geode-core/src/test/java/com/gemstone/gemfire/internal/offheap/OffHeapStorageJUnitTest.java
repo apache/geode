@@ -16,22 +16,23 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.OutOfOffHeapMemoryException;
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.LocalStatisticsFactory;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.experimental.categories.Category;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @Category(UnitTest.class)
 public class OffHeapStorageJUnitTest {
@@ -90,28 +91,28 @@ public class OffHeapStorageJUnitTest {
     assertEquals(100, OffHeapStorage.calcMaxSlabSize(100L));
     assertEquals(Integer.MAX_VALUE, OffHeapStorage.calcMaxSlabSize(Long.MAX_VALUE));
     try {
-      System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "99");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "99");
       assertEquals(99 * 1024 * 1024, OffHeapStorage.calcMaxSlabSize(100L * 1024 * 1024));
       assertEquals(88, OffHeapStorage.calcMaxSlabSize(88));
-      System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "88m");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "88m");
       assertEquals(88 * 1024 * 1024, OffHeapStorage.calcMaxSlabSize(100L * 1024 * 1024));
-      System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "77M");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "77M");
       assertEquals(77 * 1024 * 1024, OffHeapStorage.calcMaxSlabSize(100L * 1024 * 1024));
-      System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "1g");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "1g");
       assertEquals(1 * 1024 * 1024 * 1024, OffHeapStorage.calcMaxSlabSize(2L * 1024 * 1024 * 1024));
-      System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "1G");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "1G");
       assertEquals(1L * 1024 * 1024 * 1024, OffHeapStorage.calcMaxSlabSize(2L * 1024 * 1024 * 1024 + 1));
-      System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "foobarG");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "foobarG");
       try {
         OffHeapStorage.calcMaxSlabSize(100);
         fail("expected IllegalArgumentException");
       } catch (IllegalArgumentException expected) {
       }
-      System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "");
       assertEquals(100, OffHeapStorage.calcMaxSlabSize(100L));
       assertEquals(Integer.MAX_VALUE, OffHeapStorage.calcMaxSlabSize(Long.MAX_VALUE));
     } finally {
-      System.clearProperty("gemfire.OFF_HEAP_SLAB_SIZE");
+      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE");
     }
   }
 

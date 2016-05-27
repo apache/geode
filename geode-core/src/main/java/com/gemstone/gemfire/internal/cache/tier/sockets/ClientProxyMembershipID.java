@@ -16,35 +16,21 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.Serializable;
-import java.util.Arrays;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.DurableClientAttributes;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.VersionedDataInputStream;
+import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.util.Arrays;
 
 /**
  * This class represents a ConnectionProxy of the CacheClient
@@ -215,8 +201,8 @@ public final class ClientProxyMembershipID
   }
 
   private ClientProxyMembershipID(int id, byte[] clientSideIdentity) {
-    Boolean specialCase=Boolean.getBoolean("gemfire.SPECIAL_DURABLE");
-    String durableID = this.system.getProperties().getProperty("durable-client-id"); 
+    Boolean specialCase = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE");
+    String durableID = this.system.getProperties().getProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME);
     if (specialCase.booleanValue() && durableID != null && (!durableID.equals(""))) {
         this.uniqueId = durable_synch_counter;
     } else {

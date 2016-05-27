@@ -16,16 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,15 +26,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.TransactionId;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * junit test for suspend and resume methods
@@ -62,8 +53,8 @@ public class TXManagerImplJUnitTest {
   
   protected void createCache() {
     Properties props = new Properties();
-    props.put("mcast-port", "0");
-    props.put("locators", "");
+    props.put(MCAST_PORT, "0");
+    props.put(LOCATORS, "");
     cache = new CacheFactory(props).create();
     region = cache.createRegionFactory(RegionShortcut.REPLICATE).create("testRegion");
   }
@@ -314,7 +305,7 @@ public class TXManagerImplJUnitTest {
   @Test
   public void testSuspendTimeout() throws Exception {
     cache.close();
-    System.setProperty("gemfire.suspendedTxTimeout", "1");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "suspendedTxTimeout", "1");
     createCache();
     TXManagerImpl mgr = (TXManagerImpl) cache.getCacheTransactionManager();
     assertEquals(1, mgr.getSuspendedTransactionTimeout());
@@ -328,7 +319,7 @@ public class TXManagerImplJUnitTest {
     } catch (IllegalStateException expected) {
     }
     assertNull(region.get("key"));
-    System.setProperty("gemfire.suspendedTxTimeout", "");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "suspendedTxTimeout", "");
   }
 
   @Test

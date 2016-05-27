@@ -16,12 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
-import java.io.IOException;
-import java.util.Properties;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
@@ -38,6 +34,11 @@ import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+
+import java.io.IOException;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class WANLocatorServerDUnitTest extends WANTestBase {
 
@@ -95,11 +96,11 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
       Integer startingPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.setProperty(MCAST_PORT, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "" + 1);
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port1
+    props.setProperty(LOCATORS, "localhost[" + port1
         + "],localhost[" + port2 + "],localhost[" + port3 + "]");
-    props.setProperty(DistributionConfig.START_LOCATOR_NAME, "localhost["
+    props.setProperty(START_LOCATOR, "localhost["
         + startingPort
         + "],server=true,peer=true,hostname-for-clients=localhost");
     test.getSystem(props);
@@ -108,8 +109,8 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
   public static void createReceiver(Integer port1, Integer port2, Integer port3) {
     WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port1
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + port1
         + "],localhost[" + port2 + "],localhost[" + port3 + "]");
 
     InternalDistributedSystem ds = test.getSystem(props);
@@ -133,8 +134,8 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
   public static void createServer(Integer port1, Integer port2, Integer port3) {
     WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = test.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port1
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + port1
         + "],localhost[" + port2 + "],localhost[" + port3 + "]");
 
     InternalDistributedSystem ds = test.getSystem(props);

@@ -16,6 +16,11 @@
  */
 package com.gemstone.gemfire.internal;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.util.CollectionUtils;
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,21 +28,8 @@ import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.util.CollectionUtils;
 
 /**
  * The delegating <tt>ClassLoader</tt> used by GemFire to load classes and other resources. This <tt>ClassLoader</tt>
@@ -71,14 +63,14 @@ public final class ClassPathLoader {
    * 
    * See also http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-5.html
    */
-  
-  public static final String ENABLE_TRACE_PROPERTY = "gemfire.ClassPathLoader.enableTrace";
+
+  public static final String ENABLE_TRACE_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "ClassPathLoader.enableTrace";
   public static final String ENABLE_TRACE_DEFAULT_VALUE = "false";
   private final boolean ENABLE_TRACE = false;
 
   private static final Logger logger = LogService.getLogger();
-  
-  public static final String EXCLUDE_TCCL_PROPERTY = "gemfire.excludeThreadContextClassLoader";
+
+  public static final String EXCLUDE_TCCL_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "excludeThreadContextClassLoader";
   public static final boolean EXCLUDE_TCCL_DEFAULT_VALUE = false;
   private boolean excludeTCCL;
   
@@ -87,7 +79,7 @@ public final class ClassPathLoader {
   // class is found in a directory instead of a JAR file (as when testing),
   // then it will be relative to the location of the root of the package and
   // class.
-  public static final String EXT_LIB_DIR_PARENT_PROPERTY = "gemfire.ClassPathLoader.EXT_LIB_DIR";
+  public static final String EXT_LIB_DIR_PARENT_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "ClassPathLoader.EXT_LIB_DIR";
   public static final String EXT_LIB_DIR_PARENT_DEFAULT = ClassPathLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath();
   static final File defineEXT_LIB_DIR() {
     return new File((new File(System.getProperty(EXT_LIB_DIR_PARENT_PROPERTY, EXT_LIB_DIR_PARENT_DEFAULT))).getParent(), "ext");

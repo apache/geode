@@ -16,14 +16,6 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-
-import junit.framework.Assert;
-
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -33,6 +25,9 @@ import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
 import com.gemstone.gemfire.internal.util.LogFileUtils;
+import junit.framework.Assert;
+
+import java.io.*;
 
 /**
  * Creates LogWriter instances for testing.

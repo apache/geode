@@ -16,26 +16,25 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
-import static com.gemstone.gemfire.management.internal.cli.i18n.CliStrings.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.util.test.TestUtil.*;
-
-import java.io.File;
-import java.util.Properties;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSession;
-
 import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
-
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
+import java.io.File;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.management.internal.cli.i18n.CliStrings.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.util.test.TestUtil.getResourcePath;
 
 /**
  * @since GemFire  8.1
@@ -67,14 +66,14 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
   @Test
   public void testMutualAuthentication() throws Exception {
     Properties serverProps = new Properties();
-    serverProps.setProperty(HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME, "JKS");
-    serverProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS_NAME, "SSL");
-    serverProps.setProperty(HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME, "true");
-    serverProps.setProperty(HTTP_SERVICE_SSL_TRUSTSTORE_NAME, jks.getCanonicalPath());
-    serverProps.setProperty(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME, "password");
+    serverProps.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_TYPE, "JKS");
+    serverProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "SSL");
+    serverProps.setProperty(HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION, "true");
+    serverProps.setProperty(HTTP_SERVICE_SSL_TRUSTSTORE, jks.getCanonicalPath());
+    serverProps.setProperty(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD, "password");
 
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__KEY_STORE, jks.getCanonicalPath());
@@ -90,10 +89,10 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
   @Test
   public void testSimpleSSL() throws Exception {
     Properties serverProps = new Properties();
-    serverProps.setProperty(HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME, "JKS");
+    serverProps.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    serverProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_TYPE, "JKS");
 
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
@@ -106,9 +105,9 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
   @Test
   public void testSSLWithoutKeyStoreType() throws Exception {
     Properties localProps = new Properties();
-    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
+    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
   
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
@@ -121,10 +120,10 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
   @Test
   public void testSSLWithSSLProtocol() throws Exception {
     Properties localProps = new Properties();
-    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS_NAME,"SSL");
+    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "SSL");
     
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
@@ -137,10 +136,10 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
   @Test
   public void testSSLWithTLSProtocol() throws Exception {
     Properties localProps = new Properties();
-    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS_NAME,"TLS");
+    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLS");
     
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
@@ -153,10 +152,10 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
   @Test
   public void testSSLWithTLSv11Protocol() throws Exception {
     Properties localProps = new Properties();
-    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS_NAME,"TLSv1.1");
+    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.1");
     
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
@@ -169,10 +168,10 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
   @Test
   public void testSSLWithTLSv12Protocol() throws Exception {
     Properties localProps = new Properties();
-    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS_NAME,"TLSv1.2");
+    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.2");
     
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
@@ -185,10 +184,10 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
   @Test
   public void testWithMultipleProtocol() throws Exception {
     Properties localProps = new Properties();
-    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS_NAME,"SSL,TLSv1.2");
+    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "SSL,TLSv1.2");
     
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
@@ -202,10 +201,10 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
   @Test
   public void testSSLWithCipherSuite() throws Exception {
     Properties localProps = new Properties();
-    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS_NAME, "TLSv1.2");
+    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.2");
 
     //Its bad to hard code here. But using SocketFactory.getDefaultCiphers() somehow is not working with the option 
     //"https.cipherSuites" which is required to restrict cipher suite with HttpsURLConnection
@@ -215,8 +214,8 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
     
     sslContext.init(null, null, new java.security.SecureRandom());
     String[] cipherSuites = sslContext.getSocketFactory().getSupportedCipherSuites();*/
-    
-    localProps.setProperty(HTTP_SERVICE_SSL_CIPHERS_NAME,"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256");
+
+    localProps.setProperty(HTTP_SERVICE_SSL_CIPHERS, "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256");
 
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());
@@ -234,11 +233,11 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
     System.setProperty("javax.net.debug", "ssl,handshake,failure");
     
     Properties localProps = new Properties();
-    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS_NAME,"TLSv1.2");
-    localProps.setProperty(HTTP_SERVICE_SSL_CIPHERS_NAME,"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_EMPTY_RENEGOTIATION_INFO_SCSV");
+    localProps.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    localProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    localProps.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.2");
+    localProps.setProperty(HTTP_SERVICE_SSL_CIPHERS, "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_EMPTY_RENEGOTIATION_INFO_SCSV");
     
     Properties clientProps = new Properties();
     clientProps.setProperty(CONNECT__TRUST_STORE, jks.getCanonicalPath());

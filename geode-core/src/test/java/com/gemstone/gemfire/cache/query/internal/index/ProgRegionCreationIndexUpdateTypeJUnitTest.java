@@ -20,22 +20,19 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import static org.junit.Assert.fail;
-
-import java.util.Properties;
-
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -61,8 +58,8 @@ public class ProgRegionCreationIndexUpdateTypeJUnitTest{
   @Test
   public void testProgrammaticIndexUpdateType() throws Exception  {
   	Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("log-level", "config");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "config");
     DistributedSystem  ds = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds);
     //Create a Region with index maintenance type as explicit synchronous

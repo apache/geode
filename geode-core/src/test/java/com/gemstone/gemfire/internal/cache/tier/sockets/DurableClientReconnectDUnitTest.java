@@ -16,23 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
@@ -43,15 +27,13 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.net.SocketException;
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 
 /**      
@@ -113,7 +95,7 @@ public class DurableClientReconnectDUnitTest extends DistributedTestCase
     SERVER4 = NetworkUtils.getServerHostName(host)+PORT4;
     
     //CacheServerTestUtil.disableShufflingOfEndpoints();
-    System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "false");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "false");
   }
 
   public void testDurableReconnectSingleServer() throws Exception
@@ -721,8 +703,8 @@ public class DurableClientReconnectDUnitTest extends DistributedTestCase
   private Properties getClientDistributedSystemProperties(
       String durableClientId, int durableClientTimeout) {
     Properties properties = new Properties();
-    properties.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    properties.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    properties.setProperty(MCAST_PORT, "0");
+    properties.setProperty(LOCATORS, "");
     properties.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME, durableClientId);
     properties.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, String.valueOf(durableClientTimeout));
     return properties;

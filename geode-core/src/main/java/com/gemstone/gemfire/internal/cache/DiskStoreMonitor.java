@@ -16,19 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.File;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.cache.DiskAccessException;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -37,15 +24,23 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.*;
 
 public class DiskStoreMonitor {
   private static final Logger logger = LogService.getLogger();
-  
-  private static final boolean DISABLE_MONITOR = Boolean.getBoolean("gemfire.DISK_USAGE_DISABLE_MONITORING");
+
+  private static final boolean DISABLE_MONITOR = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISK_USAGE_DISABLE_MONITORING");
 //  private static final boolean AUTO_RECONNECT = Boolean.getBoolean("gemfire.DISK_USAGE_ENABLE_AUTO_RECONNECT");
-  
-  private static final int USAGE_CHECK_INTERVAL = Integer.getInteger("gemfire.DISK_USAGE_POLLING_INTERVAL_MILLIS", 10000);
-  private static final float LOG_WARNING_THRESHOLD_PCT = Integer.getInteger("gemfire.DISK_USAGE_LOG_WARNING_PERCENT", 99);
+
+  private static final int USAGE_CHECK_INTERVAL = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "DISK_USAGE_POLLING_INTERVAL_MILLIS", 10000);
+  private static final float LOG_WARNING_THRESHOLD_PCT = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "DISK_USAGE_LOG_WARNING_PERCENT", 99);
 
   enum DiskState {
     NORMAL, 

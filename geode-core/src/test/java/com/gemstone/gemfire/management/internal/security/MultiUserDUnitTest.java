@@ -17,13 +17,7 @@
 
 package com.gemstone.gemfire.management.internal.security;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.cli.Result.Status;
@@ -39,10 +33,17 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.jayway.awaitility.Awaitility;
-
 import org.json.JSONException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.*;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class MultiUserDUnitTest extends CliCommandTestBase {
@@ -50,7 +51,7 @@ public class MultiUserDUnitTest extends CliCommandTestBase {
   @Test
   public void testMultiUser() throws IOException, JSONException, InterruptedException {
     Properties properties = new Properties();
-    properties.put(DistributionConfig.NAME_NAME, MultiUserDUnitTest.class.getSimpleName());
+    properties.put(NAME, MultiUserDUnitTest.class.getSimpleName());
     properties.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
     properties.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
 

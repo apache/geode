@@ -16,13 +16,9 @@
  */
 package com.gemstone.gemfire.internal;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
+import java.io.*;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -39,8 +35,8 @@ import java.util.List;
  * 
  */
 public class FileUtil {
-  public static final long MAX_TRANSFER_SIZE = Long.getLong("gemfire.FileUtil.MAX_TRANSFER_SIZE", 1024 * 1024).longValue();
-  public static final boolean USE_NIO = !Boolean.getBoolean("gemfire.FileUtil.USE_OLD_IO");
+  public static final long MAX_TRANSFER_SIZE = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "FileUtil.MAX_TRANSFER_SIZE", 1024 * 1024).longValue();
+  public static final boolean USE_NIO = !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "FileUtil.USE_OLD_IO");
   public static final String extSeparator = ".";
 
   /**

@@ -16,17 +16,16 @@
  */
 package com.gemstone.gemfire.admin.jmx.internal;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.Properties;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.admin.DistributedSystemConfig;
 import com.gemstone.gemfire.admin.internal.InetAddressUtil;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.util.Properties;
 
 /**
  * Creates <code>ServerSockets</code> for JMX adaptors.

@@ -16,17 +16,6 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
-import static org.junit.Assert.*;
-
-import java.net.InetSocketAddress;
-import java.net.SocketTimeoutException;
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.client.Pool;
@@ -39,6 +28,18 @@ import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.net.InetSocketAddress;
+import java.net.SocketTimeoutException;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -55,8 +56,8 @@ public class ConnectionPoolImplJUnitTest {
   @Before
   public void setUp() {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     cache = CacheFactory.create(DistributedSystem.connect(props));
     port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
   }

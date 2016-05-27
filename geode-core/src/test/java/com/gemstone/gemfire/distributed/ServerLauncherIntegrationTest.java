@@ -16,16 +16,11 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static com.googlecode.catchexception.apis.BDDCatchException.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.BDDAssertions.then;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.net.InetAddress;
-import java.util.Properties;
-
+import com.gemstone.gemfire.distributed.ServerLauncher.Builder;
+import com.gemstone.gemfire.distributed.ServerLauncher.Command;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -33,11 +28,16 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.distributed.ServerLauncher.Builder;
-import com.gemstone.gemfire.distributed.ServerLauncher.Command;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.net.InetAddress;
+import java.util.Properties;
+
+import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
+import static com.googlecode.catchexception.apis.BDDCatchException.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.BDDAssertions.then;
 
 /**
  * Integration tests for ServerLauncher class. These tests may require file system and/or network I/O.
@@ -183,8 +183,8 @@ public class ServerLauncherIntegrationTest {
   public void testBuildWithMemberNameSetInGemFirePropertiesOnStart() throws Exception {
     // given: gemfire.properties with a name
     Properties gemfireProperties = new Properties();
-    gemfireProperties.setProperty(DistributionConfig.NAME_NAME, "server123");
-    useGemFirePropertiesFileInTemporaryFolder("gemfire.properties", gemfireProperties);
+    gemfireProperties.setProperty(SystemConfigurationProperties.NAME, "server123");
+    useGemFirePropertiesFileInTemporaryFolder(DistributionConfig.GEMFIRE_PREFIX + "properties", gemfireProperties);
 
     // when: starting with null MemberName
     ServerLauncher launcher = new Builder()
@@ -201,7 +201,7 @@ public class ServerLauncherIntegrationTest {
   @Test
   public void testBuildWithNoMemberNameOnStart() throws Exception {
     // given: gemfire.properties with no name
-    useGemFirePropertiesFileInTemporaryFolder("gemfire.properties", new Properties());
+    useGemFirePropertiesFileInTemporaryFolder(DistributionConfig.GEMFIRE_PREFIX + "properties", new Properties());
 
     // when: no MemberName is specified
     when(new Builder()

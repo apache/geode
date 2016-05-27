@@ -16,44 +16,10 @@
  */
 package com.gemstone.gemfire.pdx;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.Externalizable;
-import java.io.File;
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.ObjectStreamException;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.SerializationException;
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.PdxSerializerObject;
 import com.gemstone.gemfire.internal.Version;
@@ -62,6 +28,23 @@ import com.gemstone.gemfire.pdx.internal.AutoSerializableManager;
 import com.gemstone.gemfire.pdx.internal.PdxField;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.*;
+import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * TODO: fails (on Windows 7?)
@@ -92,7 +75,7 @@ public class AutoSerializableJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty("gemfire.auto.serialization.no.hardcoded.excludes", "true");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "true");
   }
 
   @After
@@ -114,7 +97,7 @@ public class AutoSerializableJUnitTest {
     this.serializer = s;
     this.manager = (AutoSerializableManager) s.getManager();
     this.c = (GemFireCacheImpl) new CacheFactory().
-    set("mcast-port", "0").
+        set(MCAST_PORT, "0").
     setPdxReadSerialized(readSerialized).
     setPdxSerializer(s).
     create();

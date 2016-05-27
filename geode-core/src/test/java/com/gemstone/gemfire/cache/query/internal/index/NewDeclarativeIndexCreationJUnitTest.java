@@ -19,25 +19,23 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.Properties;
-
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheXmlException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Collection;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  *
@@ -52,8 +50,8 @@ public class NewDeclarativeIndexCreationJUnitTest {
   public void setUp() throws Exception {
     //Read the Cache.xml placed in test.lib folder
     Properties props = new Properties();
-    props.setProperty("cache-xml-file", TestUtil.getResourcePath(getClass(), "cachequeryindex.xml"));
-    props.setProperty("mcast-port", "0");
+    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, TestUtil.getResourcePath(getClass(), "cachequeryindex.xml"));
+    props.setProperty(MCAST_PORT, "0");
     DistributedSystem ds = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds);
   }
@@ -156,8 +154,8 @@ public class NewDeclarativeIndexCreationJUnitTest {
   public void testIndexCreationExceptionOnRegionWithNewDTD() throws IOException, URISyntaxException {
     if (cache != null && !cache.isClosed()) cache.close();
     Properties props = new Properties();
-    props.setProperty("cache-xml-file", TestUtil.getResourcePath(getClass(), "cachequeryindexwitherror.xml"));
-    props.setProperty("mcast-port", "0");
+    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, TestUtil.getResourcePath(getClass(), "cachequeryindexwitherror.xml"));
+    props.setProperty(MCAST_PORT, "0");
     DistributedSystem ds = DistributedSystem.connect(props);
     try {
       Cache cache = CacheFactory.create(ds);

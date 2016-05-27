@@ -17,29 +17,23 @@
 
 package com.gemstone.gemfire.distributed.internal;
 
+import com.gemstone.gemfire.GemFireConfigException;
+import com.gemstone.gemfire.GemFireIOException;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
+import com.gemstone.gemfire.internal.ConfigSource;
+import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
+import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.ConfigSource;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
+import java.util.*;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that
@@ -1146,8 +1140,8 @@ public class DistributionConfigImpl
   private void computeMcastPortDefault() {
     // a no-op since multicast discovery has been removed
     // and the default mcast port is now zero
-    
-//    ConfigSource cs = getAttSourceMap().get(MCAST_PORT_NAME);
+
+    //    ConfigSource cs = getAttSourceMap().get(SystemConfigurationProperties.MCAST_PORT);
 //    if (cs == null) {
 //      String locators = getLocators();
 //      if (locators != null && !locators.isEmpty()) {
@@ -1578,16 +1572,16 @@ public class DistributionConfigImpl
     if (value == null) {
       value = DEFAULT_NAME;
     }
-    this.name = (String)checkAttribute(NAME_NAME, value);
+    this.name = (String) checkAttribute(SystemConfigurationProperties.NAME, value);
   }
   public void setTcpPort(int value) {
-    this.tcpPort = (Integer)checkAttribute(TCP_PORT_NAME, value);
+    this.tcpPort = (Integer) checkAttribute(TCP_PORT, value);
   }
   public void setMcastPort(int value) {
-    this.mcastPort = (Integer)checkAttribute(MCAST_PORT_NAME, value);
+    this.mcastPort = (Integer) checkAttribute(MCAST_PORT, value);
   }
   public void setMcastTtl(int value) {
-    this.mcastTtl = (Integer)checkAttribute(MCAST_TTL_NAME, value);
+    this.mcastTtl = (Integer) checkAttribute(MCAST_TTL, value);
   }
   public void setSocketLeaseTime(int value) {
     this.socketLeaseTime = (Integer)checkAttribute(SOCKET_LEASE_TIME_NAME, value);
@@ -1611,19 +1605,19 @@ public class DistributionConfigImpl
   }
 
   public void setMcastAddress(InetAddress value) {
-    this.mcastAddress = (InetAddress)checkAttribute(MCAST_ADDRESS_NAME, value);
+    this.mcastAddress = (InetAddress) checkAttribute(MCAST_ADDRESS, value);
   }
   public void setBindAddress(String value) {
-    this.bindAddress = (String)checkAttribute(BIND_ADDRESS_NAME, value);
+    this.bindAddress = (String) checkAttribute(BIND_ADDRESS, value);
   }
   public void setServerBindAddress(String value) {
-    this.serverBindAddress = (String)checkAttribute(SERVER_BIND_ADDRESS_NAME, value);
+    this.serverBindAddress = (String) checkAttribute(SERVER_BIND_ADDRESS, value);
   }
   public void setLocators(String value) {
     if (value == null) {
       value = DEFAULT_LOCATORS;
     }
-    this.locators = (String)checkAttribute(LOCATORS_NAME, value);
+    this.locators = (String) checkAttribute(LOCATORS, value);
   }
   
   public void setLocatorWaitTime(int value) {
@@ -1680,7 +1674,7 @@ public class DistributionConfigImpl
         }
       }
       else {
-        value = (String)checkAttribute(START_LOCATOR_NAME, value);
+        value = (String) checkAttribute(START_LOCATOR, value);
       }
     }
     this.startLocator = value;
@@ -3074,7 +3068,7 @@ public class DistributionConfigImpl
    */
   public static void main(String args[]) throws IOException {
     DistributionConfigImpl cfg = new DistributionConfigImpl();
-    String fileName = "gemfire.properties";
+    String fileName = DistributionConfig.GEMFIRE_PREFIX + "properties";
     if (args != null && args.length > 0) {
       String temp = args[0].trim();
       fileName = "".equals(temp) ? fileName : temp;
@@ -3089,12 +3083,12 @@ public class DistributionConfigImpl
    * to obtain a free port for your test.
    */
   public void checkForDisallowedDefaults() {
-    if (Boolean.getBoolean("gemfire.disallowMcastDefaults")) {
+    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disallowMcastDefaults")) {
       if (getMcastPort() != 0) { // it is not disabled
       if (getMcastAddress().equals(DistributionConfig.DEFAULT_MCAST_ADDRESS)
           && getMcastPort() == DistributionConfig.DEFAULT_MCAST_PORT) {
         throw new IllegalStateException(
-          "gemfire.disallowMcastDefaults set and default address and port are being used");
+            DistributionConfig.GEMFIRE_PREFIX + "disallowMcastDefaults set and default address and port are being used");
       }
       }
     }

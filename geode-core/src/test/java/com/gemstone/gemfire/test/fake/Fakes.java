@@ -16,13 +16,6 @@
  */
 package com.gemstone.gemfire.test.fake;
 
-import static org.mockito.Mockito.*;
-
-import java.io.File;
-import java.net.UnknownHostException;
-
-import org.junit.Assert;
-
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.Statistics;
@@ -36,6 +29,11 @@ import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+
+import java.io.File;
+import java.net.UnknownHostException;
+
+import static org.mockito.Mockito.*;
 
 /**
  * Factory methods for fake objects for use in test.

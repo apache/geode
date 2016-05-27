@@ -16,12 +16,12 @@
  */
 package com.gemstone.gemfire.internal;
 
-import java.io.*;
-import java.net.*;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.Random;
 
@@ -47,10 +47,10 @@ public class AvailablePort {
     String name = null;
     try {
       if (protocol == SOCKET) {
-        name = System.getProperty("gemfire.bind-address");
+        name = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "bind-address");
       }
       else if (protocol == MULTICAST) {
-        name = System.getProperty("gemfire.mcast-address");
+        name = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "mcast-address");
       }
       if (name != null) {
         return InetAddress.getByName(name);

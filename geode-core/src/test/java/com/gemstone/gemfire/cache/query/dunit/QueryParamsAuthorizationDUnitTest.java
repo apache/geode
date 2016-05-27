@@ -28,6 +28,7 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheTestCase;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.security.templates.DummyAuthenticator;
 import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
@@ -36,6 +37,8 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 import org.junit.Ignore;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * Test for accessing query bind parameters from authorization callbacks
@@ -64,10 +67,10 @@ public class QueryParamsAuthorizationDUnitTest extends CacheTestCase {
       @Override
       public Object call() throws Exception {
         CacheFactory cf = new CacheFactory()
-            .set("mcast-port", "0")
-            .set("security-client-accessor",
+            .set(MCAST_PORT, "0")
+            .set(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME,
                 "com.gemstone.gemfire.cache.query.dunit.QueryAuthorization.create")
-            .set("security-client-authenticator", DummyAuthenticator.class.getName() + ".create");
+            .set(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, DummyAuthenticator.class.getName() + ".create");
         Cache cache = getCache(cf);
         cache.createRegionFactory(RegionShortcut.REPLICATE).create(regName);
         CacheServer server = cache.addCacheServer();
@@ -84,7 +87,7 @@ public class QueryParamsAuthorizationDUnitTest extends CacheTestCase {
       public Object call() throws Exception {
         ClientCacheFactory ccf = new ClientCacheFactory()
             .addPoolServer(NetworkUtils.getServerHostName(server1.getHost()), port)
-            .set("security-client-auth-init", UserPasswordAuthInit.class.getName() + ".create")
+            .set(DistributionConfig.SECURITY_CLIENT_AUTH_INIT_NAME, UserPasswordAuthInit.class.getName() + ".create")
             .set("security-username", "root")
             .set("security-password", "root");
 

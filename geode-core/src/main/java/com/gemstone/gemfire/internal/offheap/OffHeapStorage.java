@@ -16,15 +16,10 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import java.lang.reflect.Method;
-
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.StatisticsTypeFactory;
+import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
@@ -32,13 +27,15 @@ import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
+import java.lang.reflect.Method;
+
 /**
  * Enables off-heap storage by creating a MemoryAllocator.
  * 
  * @since Geode 1.0
  */
 public class OffHeapStorage implements OffHeapMemoryStats {
-  public static final String STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY = "gemfire.offheap.stayConnectedOnOutOfOffHeapMemory";
+  public static final String STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "offheap.stayConnectedOnOutOfOffHeapMemory";
   
   // statistics type
   private static final StatisticsType statsType;
@@ -125,7 +122,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   }
   
   public static long calcMaxSlabSize(long offHeapMemorySize) {
-    final String offHeapSlabConfig = System.getProperty("gemfire.OFF_HEAP_SLAB_SIZE");
+    final String offHeapSlabConfig = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE");
     long result = 0;
     if (offHeapSlabConfig != null && !offHeapSlabConfig.equals("")) {
       result = parseLongWithUnits(offHeapSlabConfig, MAX_SLAB_SIZE, 1024*1024);

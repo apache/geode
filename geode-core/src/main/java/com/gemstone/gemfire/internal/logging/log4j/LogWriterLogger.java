@@ -16,8 +16,14 @@
  */
 package com.gemstone.gemfire.internal.logging.log4j;
 
-import java.util.logging.Handler;
-
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.i18n.LogWriterI18n;
+import com.gemstone.gemfire.i18n.StringId;
+import com.gemstone.gemfire.internal.logging.GemFireHandler;
+import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,13 +32,7 @@ import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.spi.AbstractLogger;
 import org.apache.logging.log4j.spi.ExtendedLoggerWrapper;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.internal.logging.GemFireHandler;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
+import java.util.logging.Handler;
 
 /**
  * Implements GemFireLogger with custom levels while also bridging LogWriter 
@@ -47,7 +47,7 @@ implements InternalLogWriter, GemFireLogger {
   private static final long serialVersionUID = 446081244292135L;
   
   // TODO:LOG:SECURITY: need to use this either here if isSecure==true or in the security LogWriterAppender's PatternLayout but not both places
-  public static final String SECURITY_PREFIX = "security-";
+  public static final String SECURITY_PREFIX = DistributionConfig.SECURITY_PREFIX_NAME;
   
   private final ExtendedLoggerWrapper logWrapper;
   private final String connectionName;

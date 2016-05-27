@@ -20,9 +20,18 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.FileUtil;
+import com.gemstone.gemfire.internal.cache.LocalRegion.NonTXEntry;
+import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,24 +39,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestName;
-
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.cache.LocalRegion.NonTXEntry;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * All disk region unit tests extend this base class , common method to be used in
@@ -81,12 +75,12 @@ public class DiskRegionTestingBase
   @Before
   public void setUp() throws Exception
   {
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.setProperty("log-level", "config"); // to keep diskPerf logs smaller
-    props.setProperty("statistic-sampling-enabled", "true");
-    props.setProperty("enable-time-statistics", "true");
-    props.setProperty("statistic-archive-file", "stats.gfs");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "config"); // to keep diskPerf logs smaller
+    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
+    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
+    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "stats.gfs");
 
     File testingDirectory = new File("testingDirectory");
     testingDirectory.mkdir();

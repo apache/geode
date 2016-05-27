@@ -16,30 +16,12 @@
  */
 package com.gemstone.gemfire.management.internal.configuration;
 
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
-import static com.gemstone.gemfire.internal.AvailablePortHelper.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.Host.*;
-import static com.gemstone.gemfire.test.dunit.Wait.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
@@ -57,6 +39,19 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.Host.getHost;
+import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
 
 /**
  * Tests the starting up of shared configuration, installation of {@link ConfigurationRequestHandler}
@@ -99,10 +94,10 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
         final File locatorLogFile = new File(testName + "-locator-" + locator1Port + ".log");
 
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(NAME_NAME, locator1Name);
-        locatorProps.setProperty(MCAST_PORT_NAME, "0");
-        locatorProps.setProperty(LOG_LEVEL_NAME, "fine");
-        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+        locatorProps.setProperty(SystemConfigurationProperties.NAME, locator1Name);
+        locatorProps.setProperty(MCAST_PORT, "0");
+        locatorProps.setProperty(LOG_LEVEL, "fine");
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
 
         try {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile, null, locatorProps);
@@ -148,11 +143,11 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
         final File locatorLogFile = new File(testName + "-locator-" + locator2Port + ".log");
 
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(NAME_NAME, locator2Name);
-        locatorProps.setProperty(MCAST_PORT_NAME, "0");
-        locatorProps.setProperty(LOG_LEVEL_NAME, "fine");
-        locatorProps.setProperty(LOCATORS_NAME, "localhost:" + locator1Port);
-        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+        locatorProps.setProperty(SystemConfigurationProperties.NAME, locator2Name);
+        locatorProps.setProperty(MCAST_PORT, "0");
+        locatorProps.setProperty(LOG_LEVEL, "fine");
+        locatorProps.setProperty(LOCATORS, "localhost:" + locator1Port);
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
         final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator2Port, locatorLogFile, null, locatorProps);
 
@@ -234,10 +229,10 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
         final File locatorLogFile = new File(testName + "-locator-" + locator1Port + ".log");
 
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(NAME_NAME, "Locator1");
-        locatorProps.setProperty(MCAST_PORT_NAME, "0");
-        locatorProps.setProperty(LOG_LEVEL_NAME, "info");
-        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+        locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator1");
+        locatorProps.setProperty(MCAST_PORT, "0");
+        locatorProps.setProperty(LOG_LEVEL, "info");
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
 
         try {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile, null, locatorProps);
@@ -266,9 +261,9 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() {
         Properties localProps = new Properties();
-        localProps.setProperty(MCAST_PORT_NAME, "0");
-        localProps.setProperty(LOCATORS_NAME, "localhost:" + locator1Port);
-        localProps.setProperty(GROUPS_NAME, testGroup);
+        localProps.setProperty(MCAST_PORT, "0");
+        localProps.setProperty(LOCATORS, "localhost:" + locator1Port);
+        localProps.setProperty(GROUPS, testGroup);
 
         getSystem(localProps);
         Cache cache = getCache();
@@ -293,7 +288,7 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
         assertTrue(scw.addXmlEntity(xmlEntity, new String[] {testGroup}));
         //Modify property and cache attributes
         Properties clusterProperties = new Properties();
-        clusterProperties.setProperty(LOG_LEVEL_NAME, clusterLogLevel);
+        clusterProperties.setProperty(LOG_LEVEL, clusterLogLevel);
         XmlEntity cacheEntity = XmlEntity.builder().withType(CacheXml.CACHE).build();
         Map<String, String> cacheAttributes = new HashMap<String, String>();
         cacheAttributes.put(CacheXml.COPY_ON_READ, "true");
@@ -301,7 +296,7 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
         //assertTrue(scw.modifyProperties(clusterProperties, null)); // TODO: why is this commented out?
         assertTrue(scw.modifyPropertiesAndCacheAttributes(clusterProperties, cacheEntity, null));
 
-        clusterProperties.setProperty(LOG_LEVEL_NAME, groupLogLevel);
+        clusterProperties.setProperty(LOG_LEVEL, groupLogLevel);
         assertTrue(scw.modifyPropertiesAndCacheAttributes(clusterProperties, cacheEntity, new String[]{testGroup}));
 
         //Add a jar
@@ -326,11 +321,11 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
         final File locatorLogFile = new File(testName + "-locator-" + locator2Port + ".log");
 
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(NAME_NAME, "Locator2");
-        locatorProps.setProperty(MCAST_PORT_NAME, "0");
-        locatorProps.setProperty(LOG_LEVEL_NAME, "info");
-        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
-        locatorProps.setProperty(LOCATORS_NAME, "localhost:" + locator1Port);
+        locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator2");
+        locatorProps.setProperty(MCAST_PORT, "0");
+        locatorProps.setProperty(LOG_LEVEL, "info");
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
+        locatorProps.setProperty(LOCATORS, "localhost:" + locator1Port);
 
         try {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator2Port, locatorLogFile, null, locatorProps);
@@ -358,14 +353,14 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
         assertNotNull(clusterConfig);
         assertNotNull(clusterConfig.getJarNames());
         assertTrue(clusterConfig.getJarNames().contains("foo.jar"));
-        assertTrue(clusterConfig.getGemfireProperties().getProperty(LOG_LEVEL_NAME).equals(clusterLogLevel));
+        assertTrue(clusterConfig.getGemfireProperties().getProperty(LOG_LEVEL).equals(clusterLogLevel));
         assertNotNull(clusterConfig.getCacheXmlContent());
         
         Configuration testGroupConfiguration = entireConfiguration.get(testGroup);
         assertNotNull(testGroupConfiguration);
         assertNotNull(testGroupConfiguration.getJarNames());
         assertTrue(testGroupConfiguration.getJarNames().contains("bar.jar"));
-        assertTrue(testGroupConfiguration.getGemfireProperties().getProperty(LOG_LEVEL_NAME).equals(groupLogLevel));
+        assertTrue(testGroupConfiguration.getGemfireProperties().getProperty(LOG_LEVEL).equals(groupLogLevel));
         assertNotNull(testGroupConfiguration.getCacheXmlContent());
         assertTrue(testGroupConfiguration.getCacheXmlContent().contains(REGION1));
         
@@ -400,13 +395,13 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
         assertNull(configResponse.getJarNames());
         assertNull(configResponse.getJars());
         assertTrue(clusterConfiguration.getJarNames().isEmpty());
-        assertTrue(clusterConfiguration.getGemfireProperties().getProperty(LOG_LEVEL_NAME).equals(clusterLogLevel));
+        assertTrue(clusterConfiguration.getGemfireProperties().getProperty(LOG_LEVEL).equals(clusterLogLevel));
         
         Configuration testGroupConfiguration = requestedConfiguration.get(testGroup);
         assertNotNull(testGroupConfiguration);
         assertFalse(testGroupConfiguration.getCacheXmlContent().contains(REGION1));
         assertTrue(testGroupConfiguration.getJarNames().isEmpty());
-        assertTrue(testGroupConfiguration.getGemfireProperties().getProperty(LOG_LEVEL_NAME).equals(groupLogLevel));
+        assertTrue(testGroupConfiguration.getGemfireProperties().getProperty(LOG_LEVEL).equals(groupLogLevel));
         
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         Map<InternalDistributedMember, Collection<String>> locatorsWithSharedConfiguration = cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration();

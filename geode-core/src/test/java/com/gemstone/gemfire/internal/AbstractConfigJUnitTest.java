@@ -16,15 +16,16 @@
  */
 package com.gemstone.gemfire.internal;
 
-import static org.junit.Assert.*;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @Category(UnitTest.class)
 public class AbstractConfigJUnitTest {
@@ -35,12 +36,12 @@ public class AbstractConfigJUnitTest {
 		Method method = actc.getClass().getSuperclass().getDeclaredMethod("okToDisplayPropertyValue", String.class);
 		method.setAccessible(true);
 		assertFalse((Boolean) method.invoke(actc, "password"));
-		assertFalse((Boolean) method.invoke(actc, "cluster-ssl-truststore-password"));
-		assertTrue((Boolean) method.invoke(actc, "cluster-ssl-enabled"));
-		assertFalse((Boolean) method.invoke(actc, "gateway-ssl-truststore-password"));
-		assertFalse((Boolean) method.invoke(actc, "server-ssl-keystore-password"));
-		assertTrue((Boolean) method.invoke(actc, "ssl-enabled"));
-		assertTrue((Boolean) method.invoke(actc, "conserve-sockets"));
+		assertFalse((Boolean) method.invoke(actc, DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME));
+		assertTrue((Boolean) method.invoke(actc, DistributionConfig.CLUSTER_SSL_ENABLED_NAME));
+		assertFalse((Boolean) method.invoke(actc, DistributionConfig.GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME));
+		assertFalse((Boolean) method.invoke(actc, DistributionConfig.SERVER_SSL_KEYSTORE_PASSWORD_NAME));
+		assertTrue((Boolean) method.invoke(actc, DistributionConfig.SSL_ENABLED_NAME));
+		assertTrue((Boolean) method.invoke(actc, DistributionConfig.CONSERVE_SOCKETS_NAME));
 		assertFalse((Boolean) method.invoke(actc, "javax.net.ssl.keyStorePassword"));
 		assertFalse((Boolean) method.invoke(actc, "javax.net.ssl.keyStoreType"));
 		assertFalse((Boolean) method.invoke(actc, "sysprop-value"));

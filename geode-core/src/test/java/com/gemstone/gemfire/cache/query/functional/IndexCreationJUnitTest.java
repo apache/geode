@@ -26,41 +26,8 @@
  */
 package com.gemstone.gemfire.cache.query.functional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
-import junit.framework.Assert;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexStatistics;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryInvalidException;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.Utils;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.query.*;
 import com.gemstone.gemfire.cache.query.data.ComparableWrapper;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
@@ -75,12 +42,23 @@ import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.cache.query.types.StructType;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import junit.framework.Assert;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
 public class IndexCreationJUnitTest{
@@ -869,9 +847,9 @@ public class IndexCreationJUnitTest{
     
     {
       Properties props = new Properties();
-      props.setProperty(DistributionConfig.NAME_NAME, "test");
-      props.setProperty("mcast-port", "0");
-      props.setProperty("cache-xml-file", IndexCreationJUnitTest.class.getResource("index-creation-with-eviction.xml").toURI().getPath());
+      props.setProperty(SystemConfigurationProperties.NAME, "test");
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, IndexCreationJUnitTest.class.getResource("index-creation-with-eviction.xml").toURI().getPath());
       DistributedSystem ds = DistributedSystem.connect(props);
 
       // Create the cache which causes the cache-xml-file to be parsed
@@ -893,11 +871,12 @@ public class IndexCreationJUnitTest{
 
     {
       Properties props = new Properties();
-      props.setProperty(DistributionConfig.NAME_NAME, "test");
-      props.setProperty("mcast-port", "0");
+      props.setProperty(SystemConfigurationProperties.NAME, "test");
+      props.setProperty(MCAST_PORT, "0");
       //Using a different cache.xml that changes some region properties
       //That will force the disk code to copy the region entries.
-      props.setProperty("cache-xml-file", IndexCreationJUnitTest.class.getResource("index-creation-without-eviction.xml").toURI().getPath());
+      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME,
+          IndexCreationJUnitTest.class.getResource("index-creation-without-eviction.xml").toURI().getPath());
       DistributedSystem ds = DistributedSystem.connect(props);
       Cache cache = CacheFactory.create(ds);
       QueryService qs = cache.getQueryService();
@@ -918,9 +897,10 @@ public class IndexCreationJUnitTest{
     file.mkdir();
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.NAME_NAME, "test");
-    props.setProperty("mcast-port", "0");
-    props.setProperty("cache-xml-file", IndexCreationJUnitTest.class.getResource("index-creation-without-eviction.xml").toURI().getPath());
+    props.setProperty(SystemConfigurationProperties.NAME, "test");
+    props.setProperty(MCAST_PORT, "0");
+    props
+        .setProperty(DistributionConfig.CACHE_XML_FILE_NAME, IndexCreationJUnitTest.class.getResource("index-creation-without-eviction.xml").toURI().getPath());
     DistributedSystem ds = DistributedSystem.connect(props);
     Cache cache = CacheFactory.create(ds);
     Region localRegion = cache.getRegion("localRegion");
@@ -945,9 +925,10 @@ public class IndexCreationJUnitTest{
     file.mkdir();
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.NAME_NAME, "test");
-    props.setProperty("mcast-port", "0");
-    props.setProperty("cache-xml-file", IndexCreationJUnitTest.class.getResource("index-creation-without-eviction.xml").toURI().getPath());
+    props.setProperty(SystemConfigurationProperties.NAME, "test");
+    props.setProperty(MCAST_PORT, "0");
+    props
+        .setProperty(DistributionConfig.CACHE_XML_FILE_NAME, IndexCreationJUnitTest.class.getResource("index-creation-without-eviction.xml").toURI().getPath());
     DistributedSystem ds = DistributedSystem.connect(props);
     Cache cache = CacheFactory.create(ds);
     Region localDiskRegion = cache.getRegion("localDiskRegion");
@@ -973,11 +954,11 @@ public class IndexCreationJUnitTest{
     
     {
       Properties props = new Properties();
-      props.setProperty(DistributionConfig.NAME_NAME, "test");
-      props.setProperty("mcast-port", "0");
-      props.setProperty("statistic-sampling-enabled", "true");
-      props.setProperty("enable-time-statistics", "true");
-      props.setProperty("cache-xml-file", IndexCreationJUnitTest.class.getResource("index-recovery-overflow.xml").toURI().getPath());
+      props.setProperty(SystemConfigurationProperties.NAME, "test");
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
+      props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
+      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, IndexCreationJUnitTest.class.getResource("index-recovery-overflow.xml").toURI().getPath());
       DistributedSystem ds = DistributedSystem.connect(props);
 
       // Create the cache which causes the cache-xml-file to be parsed
@@ -1007,11 +988,11 @@ public class IndexCreationJUnitTest{
 
     {
       Properties props = new Properties();
-      props.setProperty(DistributionConfig.NAME_NAME, "test");
-      props.setProperty("mcast-port", "0");
-      props.setProperty("statistic-sampling-enabled", "true");
-      props.setProperty("enable-time-statistics", "true");
-      props.setProperty("cache-xml-file", IndexCreationJUnitTest.class.getResource("index-recovery-overflow.xml").toURI().getPath());
+      props.setProperty(SystemConfigurationProperties.NAME, "test");
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
+      props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
+      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, IndexCreationJUnitTest.class.getResource("index-recovery-overflow.xml").toURI().getPath());
       DistributedSystem ds = DistributedSystem.connect(props);
       Cache cache = CacheFactory.create(ds);
       QueryService qs = cache.getQueryService();

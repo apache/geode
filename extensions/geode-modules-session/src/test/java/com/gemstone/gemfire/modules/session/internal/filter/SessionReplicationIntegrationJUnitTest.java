@@ -16,15 +16,24 @@
 */
 package com.gemstone.gemfire.modules.session.internal.filter;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.StringTokenizer;
-import java.util.concurrent.TimeUnit;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.modules.session.filter.SessionCachingFilter;
+import com.gemstone.gemfire.modules.session.junit.PerTestClassLoaderRunner;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.jasper.servlet.JspServlet;
+import org.eclipse.jetty.http.HttpTester;
+import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+
 import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -32,25 +41,11 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.modules.session.junit.PerTestClassLoaderRunner;
-import com.gemstone.gemfire.modules.session.filter.SessionCachingFilter;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import org.apache.jasper.servlet.JspServlet;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.http.HttpTester;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -85,8 +80,8 @@ public class SessionReplicationIntegrationJUnitTest {
     tester.setContextPath("/test");
 
     filterHolder = tester.addFilter(SessionCachingFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
-    filterHolder.setInitParameter("gemfire.property.mcast-port", "0");
-    filterHolder.setInitParameter("gemfire.property.log-file", gemfireLogFile.getAbsolutePath());
+    filterHolder.setInitParameter(DistributionConfig.GEMFIRE_PREFIX + "property.mcast-port", "0");
+    filterHolder.setInitParameter(DistributionConfig.GEMFIRE_PREFIX + "property.log-file", gemfireLogFile.getAbsolutePath());
     filterHolder.setInitParameter("cache-type", "peer-to-peer");
 
     servletHolder = tester.addServlet(BasicServlet.class, "/hello");

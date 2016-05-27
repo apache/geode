@@ -16,28 +16,18 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.types.ObjectType;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import org.junit.Assert;
+
 import java.io.Serializable;
 import java.util.Properties;
 
-import org.junit.Assert;
-
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheExistsException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.PartitionResolver;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 
 /**
@@ -214,8 +204,8 @@ public class PartitionedRegionTestHelper
   {
     if (cache == null) {
       Properties dsp = new Properties();
-      dsp.setProperty("mcast-port", "0");
-      dsp.setProperty("locators", "");
+      dsp.setProperty(MCAST_PORT, "0");
+      dsp.setProperty(LOCATORS, "");
       DistributedSystem sys = DistributedSystem.connect(dsp);
       try {
         cache = CacheFactory.create(sys);

@@ -16,39 +16,25 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import java.util.Iterator;
-import java.util.Properties;
-
-import javax.naming.InitialContext;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.query.CqAttributes;
 import com.gemstone.gemfire.cache.query.CqAttributesFactory;
-import com.gemstone.gemfire.cache.query.CqClosedException;
-import com.gemstone.gemfire.cache.query.CqException;
 import com.gemstone.gemfire.cache.query.CqQuery;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.util.Iterator;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 /**
  * This tests the flag setting for region ( DataPolicy as Empty ) for
  * Delta propogation for a client while registering CQ
@@ -468,8 +454,8 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
   public static void createClientCache(String host, Integer port)
       throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     new DeltaToRegionRelationCQRegistrationDUnitTest("temp").createCache(props);
     Pool p = PoolManager.createFactory().addServer(host, port.intValue())
         .setThreadLocalConnections(true).setMinConnections(3)
@@ -504,8 +490,8 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
   public static void createClientCacheWithNoRegion(String host, Integer port)
       throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     new DeltaToRegionRelationCQRegistrationDUnitTest("temp").createCache(props);
     p = (PoolImpl)PoolManager.createFactory().addServer(host, port.intValue())
         .setThreadLocalConnections(true).setMinConnections(3)
@@ -521,8 +507,8 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
   public static Integer createClientCache2(String host1, String host2,
       Integer port1, Integer port2) throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     new DeltaToRegionRelationCQRegistrationDUnitTest("temp").createCache(props);
     PoolImpl p = (PoolImpl)PoolManager.createFactory().addServer(host1,
         port1.intValue()).addServer(host2, port2.intValue())
@@ -557,8 +543,8 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
   public static Integer createClientCache3(String host1, String host2,
       Integer port1, Integer port2) throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     new DeltaToRegionRelationCQRegistrationDUnitTest("temp").createCache(props);
     p = (PoolImpl)PoolManager.createFactory().addServer(host1,
         port1.intValue()).addServer(host2, port2.intValue())

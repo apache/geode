@@ -21,6 +21,7 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -40,6 +41,8 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * This class is the base class for all distributed tests using JUnit 4 that
@@ -89,11 +92,11 @@ public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements Ca
   private final void createCache(final boolean client, final CacheFactory factory) {
     synchronized(JUnit4CacheTestCase.class) {
       try {
-        System.setProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
         Cache newCache;
         if (client) {
-          System.setProperty("gemfire.locators", "");
-          System.setProperty("gemfire.mcast-port", "0");
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "locators", "");
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
           newCache = (Cache)new ClientCacheFactory(getSystem().getProperties()).create();
         } else {
           if(factory == null) {
@@ -116,9 +119,9 @@ public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements Ca
       } catch (Exception ex) {
         Assert.fail("Checked exception while initializing cache??", ex);
       } finally {
-        System.clearProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
-        System.clearProperty("gemfire.locators");
-        System.clearProperty("gemfire.mcast-port");
+        System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
+        System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "locators");
+        System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT);
       }
     }
   }
@@ -130,7 +133,7 @@ public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements Ca
   public final Cache createLonerCache() {
     synchronized(JUnit4CacheTestCase.class) {
       try {
-        System.setProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
         Cache newCache = CacheFactory.create(getLonerSystem());
         cache = newCache;
       } catch (CacheExistsException e) {
@@ -142,7 +145,7 @@ public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements Ca
       } catch (Exception ex) {
         Assert.fail("Checked exception while initializing cache??", ex);
       } finally {
-        System.clearProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
+        System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
       }
       return cache;
     }

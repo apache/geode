@@ -16,31 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
-import static com.gemstone.gemfire.test.dunit.NetworkUtils.*;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-import javax.management.ObjectName;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.client.*;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.query.CqAttributesFactory;
 import com.gemstone.gemfire.cache.query.QueryService;
@@ -70,10 +47,24 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.jayway.awaitility.Awaitility;
-
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import javax.management.ObjectName;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.test.dunit.NetworkUtils.getServerHostName;
 
 /**
  * Dunit class for testing gemfire Client commands : list client , describe client
@@ -734,10 +725,10 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
       if (cache == null) {
 
         Properties props = getNonDurableClientProps();
-        props.setProperty("log-file", "client_" + OSProcess.getId() + ".log");
-        props.setProperty("log-level", "fine");
-        props.setProperty("statistic-archive-file", "client_" + OSProcess.getId() + ".gfs");
-        props.setProperty("statistic-sampling-enabled", "true");
+        props.setProperty(DistributionConfig.LOG_FILE_NAME, "client_" + OSProcess.getId() + ".log");
+        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+        props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "client_" + OSProcess.getId() + ".gfs");
+        props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
 
         getSystem(props);
 
@@ -798,14 +789,14 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
 
   protected Properties getNonDurableClientProps() {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    p.setProperty(MCAST_PORT, "0");
+    p.setProperty(LOCATORS, "");
     return p;
   }
 
   protected Properties getServerProperties() {
     Properties p = new Properties();
-    p.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + getDUnitLocatorPort() + "]");
+    p.setProperty(LOCATORS, "localhost[" + getDUnitLocatorPort() + "]");
     return p;
   }
 
@@ -1072,10 +1063,10 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
       if (cache == null) {
 
         Properties props = getNonDurableClientProps();
-        props.setProperty("log-file", "client_" + OSProcess.getId() + ".log");
-        props.setProperty("log-level", "fine");
-        props.setProperty("statistic-archive-file", "client_" + OSProcess.getId() + ".gfs");
-        props.setProperty("statistic-sampling-enabled", "true");
+        props.setProperty(DistributionConfig.LOG_FILE_NAME, "client_" + OSProcess.getId() + ".log");
+        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+        props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "client_" + OSProcess.getId() + ".gfs");
+        props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
 
         getSystem(props);
 

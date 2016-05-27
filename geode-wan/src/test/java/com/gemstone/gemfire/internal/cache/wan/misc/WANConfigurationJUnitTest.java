@@ -16,36 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
-import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
+import com.gemstone.gemfire.cache.wan.*;
 import com.gemstone.gemfire.cache30.MyGatewayEventFilter1;
 import com.gemstone.gemfire.cache30.MyGatewayTransportFilter1;
 import com.gemstone.gemfire.cache30.MyGatewayTransportFilter2;
-import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.wan.GatewayReceiverException;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderException;
@@ -53,6 +30,16 @@ import com.gemstone.gemfire.internal.cache.wan.InternalGatewaySenderFactory;
 import com.gemstone.gemfire.internal.cache.wan.MyGatewaySenderEventListener;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
 public class WANConfigurationJUnitTest {
@@ -69,7 +56,7 @@ public class WANConfigurationJUnitTest {
   @Test
   public void test_GatewaySender_without_Locator() throws IOException {
     try {
-      cache = new CacheFactory().set("mcast-port", "0").create();
+      cache = new CacheFactory().set(MCAST_PORT, "0").create();
       GatewaySenderFactory fact = cache.createGatewaySenderFactory();
       fact.setParallel(true);
       GatewaySender sender1 = fact.create("NYSender", 2);
@@ -94,7 +81,7 @@ public class WANConfigurationJUnitTest {
    */
   @Test
   public void test_SameGatewaySenderCreatedTwice() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     try {
       GatewaySenderFactory fact = cache.createGatewaySenderFactory();
       fact.setParallel(true);
@@ -120,7 +107,7 @@ public class WANConfigurationJUnitTest {
   @Test
   public void test_SameGatewaySenderIdAddedTwice() {
     try {
-      cache = new CacheFactory().set("mcast-port", "0").create();
+      cache = new CacheFactory().set(MCAST_PORT, "0").create();
       GatewaySenderFactory fact = cache.createGatewaySenderFactory();
       fact.setParallel(true);
       fact.setManualStart(true);
@@ -143,7 +130,7 @@ public class WANConfigurationJUnitTest {
   
   @Test
   public void test_GatewaySenderIdAndAsyncEventId() {
-      cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
       AttributesFactory factory = new AttributesFactory();
       factory.addGatewaySenderId("ln");
       factory.addGatewaySenderId("ny");
@@ -165,7 +152,7 @@ public class WANConfigurationJUnitTest {
    * 
    */
   public void DIABLEB_DUE_TO_BUG51491_test_GatewaySender_Parallel_DistributedRegion() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewaySenderFactory fact = cache.createGatewaySenderFactory();
     fact.setParallel(true);
     fact.setManualStart(true);
@@ -186,7 +173,7 @@ public class WANConfigurationJUnitTest {
   
   @Test
   public void test_GatewaySender_Parallel_MultipleDispatherThread() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewaySenderFactory fact = cache.createGatewaySenderFactory();
     fact.setParallel(true);
     fact.setManualStart(true);
@@ -201,7 +188,7 @@ public class WANConfigurationJUnitTest {
   
   @Test
   public void test_GatewaySender_Serial_ZERO_DispatherThread() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewaySenderFactory fact = cache.createGatewaySenderFactory();
     fact.setManualStart(true);
     fact.setDispatcherThreads(0);
@@ -223,7 +210,7 @@ public class WANConfigurationJUnitTest {
    */
   @Test
   public void test_ValidateGatewayReceiverAttributes() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     int port1 = randomAvailableTCPPorts[0];
     int port2 = randomAvailableTCPPorts[1];
@@ -265,7 +252,7 @@ public class WANConfigurationJUnitTest {
 
   @Test
   public void test_ValidateGatewayReceiverStatus() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     int port1 = randomAvailableTCPPorts[0];
     int port2 = randomAvailableTCPPorts[1];
@@ -294,7 +281,7 @@ public class WANConfigurationJUnitTest {
    */
   @Test
   public void test_ValidateSerialGatewaySenderAttributes() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewaySenderFactory fact = cache.createGatewaySenderFactory();
     fact.setManualStart(true);
     fact.setBatchConflationEnabled(true);
@@ -348,7 +335,7 @@ public class WANConfigurationJUnitTest {
    */
   @Test
   public void test_ValidateParallelGatewaySenderAttributes() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewaySenderFactory fact = cache.createGatewaySenderFactory();
     fact.setParallel(true);
     fact.setManualStart(true);
@@ -400,7 +387,7 @@ public class WANConfigurationJUnitTest {
   
   @Test
   public void test_GatewaySenderWithGatewaySenderEventListener1() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     InternalGatewaySenderFactory fact = (InternalGatewaySenderFactory)cache.createGatewaySenderFactory();
     AsyncEventListener listener = new MyGatewaySenderEventListener();
     ((InternalGatewaySenderFactory)fact).addAsyncEventListener(listener);
@@ -421,7 +408,7 @@ public class WANConfigurationJUnitTest {
   
   @Test
   public void test_GatewaySenderWithGatewaySenderEventListener2() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewaySenderFactory fact = cache.createGatewaySenderFactory();
     AsyncEventListener listener = new MyGatewaySenderEventListener();
     ((InternalGatewaySenderFactory)fact).addAsyncEventListener(listener);
@@ -434,7 +421,7 @@ public class WANConfigurationJUnitTest {
   
   @Test
   public void test_ValidateGatwayReceiverAttributes() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     fact.setStartPort(50504);
     fact.setMaximumTimeBetweenPings(1000);
@@ -471,7 +458,7 @@ public class WANConfigurationJUnitTest {
     if (System.getProperty("os.name").equals("Mac OS X")) {
      fail("Failing to avoid known hang on Mac OS X.");
     }
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     fact.setStartPort(50504);
     fact.setMaximumTimeBetweenPings(1000);
@@ -498,7 +485,7 @@ public class WANConfigurationJUnitTest {
   
   @Test
   public void test_ValidateGatwayReceiverDefaultStartPortAndDefaultEndPort() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     fact.setMaximumTimeBetweenPings(1000);
     fact.setSocketBufferSize(4000);
@@ -522,7 +509,7 @@ public class WANConfigurationJUnitTest {
   
   @Test
   public void test_ValidateGatwayReceiverDefaultStartPortAndEndPortProvided() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     fact.setMaximumTimeBetweenPings(1000);
     fact.setSocketBufferSize(4000);
@@ -546,7 +533,7 @@ public class WANConfigurationJUnitTest {
   
   @Test
   public void test_ValidateGatwayReceiverWithManualStartFALSE() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     fact.setMaximumTimeBetweenPings(1000);
     fact.setSocketBufferSize(4000);
@@ -563,7 +550,7 @@ public class WANConfigurationJUnitTest {
   
   @Test
   public void test_ValidateGatwayReceiverWithStartPortAndDefaultEndPort() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     fact.setMaximumTimeBetweenPings(1000);
     fact.setSocketBufferSize(4000);
@@ -587,7 +574,7 @@ public class WANConfigurationJUnitTest {
   
   @Test
   public void test_ValidateGatwayReceiverWithWrongEndPortProvided() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     try {
       GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
       fact.setMaximumTimeBetweenPings(1000);

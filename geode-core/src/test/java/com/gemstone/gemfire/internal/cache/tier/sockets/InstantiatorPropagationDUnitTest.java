@@ -16,7 +16,22 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.*;
+import com.gemstone.gemfire.DataSerializable;
+import com.gemstone.gemfire.Instantiator;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.InternalInstantiator;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
+import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.test.dunit.*;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -24,37 +39,9 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.Random;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.MirrorType;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.InternalInstantiator;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
-import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.unregisterInstantiatorsInThisVM;
 
 public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
   private static Cache cache = null;
@@ -112,8 +99,8 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
   public static void createClientCache(String host, Integer port1)
       throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     new InstantiatorPropagationDUnitTest("temp").createCache(props);
     Pool p = PoolManager.createFactory().addServer(host, port1.intValue())
         .setMinConnections(1).setSubscriptionEnabled(true).setPingInterval(200)
@@ -746,8 +733,8 @@ public class InstantiatorPropagationDUnitTest extends DistributedTestCase {
   public static void createClientCache_EventId(String host, Integer port1) throws Exception
   {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     new InstantiatorPropagationDUnitTest("temp").createCache(props);
     Pool p = PoolManager.createFactory()
       .addServer(host, port1.intValue())

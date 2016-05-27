@@ -16,39 +16,8 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.mgr;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.Timer;
-
-import org.jgroups.util.UUID;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.HighPriorityAckedMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.MembershipListener;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.direct.DirectChannel;
 import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -67,6 +36,20 @@ import com.gemstone.gemfire.internal.admin.remote.AlertListenerMessage;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.tcp.ConnectExceptions;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.jgroups.util.UUID;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.*;
 
 @Category(UnitTest.class)
 public class GMSMembershipManagerJUnitTest {
@@ -95,12 +78,12 @@ public class GMSMembershipManagerJUnitTest {
     nonDefault.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, "1");
     nonDefault.put(DistributionConfig.ACK_SEVERE_ALERT_THRESHOLD_NAME, "10");
     nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
-    nonDefault.put(DistributionConfig.MCAST_PORT_NAME, "0");
-    nonDefault.put(DistributionConfig.MCAST_TTL_NAME, "0");
+    nonDefault.put(MCAST_PORT, "0");
+    nonDefault.put(MCAST_TTL, "0");
     nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
     nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
     nonDefault.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
-    nonDefault.put(DistributionConfig.LOCATORS_NAME, "localhost[10344]");
+    nonDefault.put(LOCATORS, "localhost[10344]");
     distConfig = new DistributionConfigImpl(nonDefault);
     distProperties = nonDefault;
     RemoteTransportConfig tconfig = new RemoteTransportConfig(distConfig, DistributionManager.NORMAL_DM_TYPE);

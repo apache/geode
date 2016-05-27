@@ -16,22 +16,18 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.*;
-
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import junit.framework.TestCase;
 
 /**
  * Tests notifications of CacheLifecycleListener from GemFireCacheImpl.
@@ -69,8 +65,8 @@ public class CacheLifecycleListenerJUnitTest  {
       assertTrue(cacheClosedCallbacks.isEmpty());
       
       final Properties props = new Properties();
-      props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, "");
       
       final GemFireCacheImpl cache = (GemFireCacheImpl) new CacheFactory(props).create();
       try {
@@ -113,8 +109,8 @@ public class CacheLifecycleListenerJUnitTest  {
       assertTrue(cacheClosedCallbacks.isEmpty());
       
       final Properties props = new Properties();
-      props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, "");
       
       final GemFireCacheImpl cache = (GemFireCacheImpl) new CacheFactory(props).create();
       try {
@@ -150,8 +146,8 @@ public class CacheLifecycleListenerJUnitTest  {
       assertTrue(cacheClosedCallbacks.isEmpty());
       
       final Properties props = new Properties();
-      props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, "");
       
       final GemFireCacheImpl cache = (GemFireCacheImpl) new CacheFactory(props).create();
       try {
@@ -192,8 +188,8 @@ public class CacheLifecycleListenerJUnitTest  {
       assertTrue(cacheClosedCallbacks.isEmpty());
       
       final Properties props = new Properties();
-      props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, "");
       
       final GemFireCacheImpl cache1 = (GemFireCacheImpl) new CacheFactory(props).create();
       try {
@@ -258,8 +254,8 @@ public class CacheLifecycleListenerJUnitTest  {
     assertTrue(cacheClosedCallbacks.isEmpty());
     
     final Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     
     final GemFireCacheImpl cache = (GemFireCacheImpl) new CacheFactory(props).create();
     try {

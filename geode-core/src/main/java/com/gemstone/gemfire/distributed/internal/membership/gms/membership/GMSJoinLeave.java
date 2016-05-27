@@ -35,7 +35,6 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoor
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.*;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
-import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
@@ -47,6 +46,8 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.START_LOCATOR;
 import static com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.*;
 
@@ -57,32 +58,32 @@ import static com.gemstone.gemfire.internal.DataSerializableFixedID.*;
  */
 public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
-  public static final String BYPASS_DISCOVERY_PROPERTY = "gemfire.bypass-discovery";
+  public static final String BYPASS_DISCOVERY_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "bypass-discovery";
 
   /**
    * amount of time to wait for responses to FindCoordinatorRequests
    */
-  private static final int DISCOVERY_TIMEOUT = Integer.getInteger("gemfire.discovery-timeout", 3000);
+  private static final int DISCOVERY_TIMEOUT = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "discovery-timeout", 3000);
 
   /**
    * amount of time to sleep before trying to join after a failed attempt
    */
-  private static final int JOIN_RETRY_SLEEP = Integer.getInteger("gemfire.join-retry-sleep", 1000);
+  private static final int JOIN_RETRY_SLEEP = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "join-retry-sleep", 1000);
 
   /**
    * time to wait for a broadcast message to be transmitted by jgroups
    */
-  private static final long BROADCAST_MESSAGE_SLEEP_TIME = Long.getLong("gemfire.broadcast-message-sleep-time", 1000);
+  private static final long BROADCAST_MESSAGE_SLEEP_TIME = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "broadcast-message-sleep-time", 1000);
 
   /**
    * if the locators don't know who the coordinator is we send find-coord requests to this many nodes
    */
-  private static final int MAX_DISCOVERY_NODES = Integer.getInteger("gemfire.max-discovery-nodes", 30);
+  private static final int MAX_DISCOVERY_NODES = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "max-discovery-nodes", 30);
 
   /**
    * interval for broadcasting the current view to members in case they didn't get it the first time
    */
-  private static final long VIEW_BROADCAST_INTERVAL = Long.getLong("gemfire.view-broadcast-interval", 60000);
+  private static final long VIEW_BROADCAST_INTERVAL = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "view-broadcast-interval", 60000);
 
   /**
    * membership logger
@@ -1491,7 +1492,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     if (dc.getMcastPort() != 0 && dc.getLocators().trim().isEmpty() && dc.getStartLocator().trim().isEmpty()) {
       throw new GemFireConfigException(
           "Multicast cannot be configured for a non-distributed cache." + "  Please configure the locator services for this cache using "
-              + DistributionConfig.LOCATORS_NAME + " or " + DistributionConfig.START_LOCATOR_NAME + ".");
+              + LOCATORS + " or " + START_LOCATOR + ".");
     }
 
     services.getMessenger().addHandler(JoinRequestMessage.class, this);
@@ -1512,7 +1513,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     } else if (ackCollectionTimeout > 12437) {
       ackCollectionTimeout = 12437;
     }
-    ackCollectionTimeout = Integer.getInteger("gemfire.VIEW_ACK_TIMEOUT", ackCollectionTimeout).intValue();
+    ackCollectionTimeout = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "VIEW_ACK_TIMEOUT", ackCollectionTimeout).intValue();
     this.viewAckTimeout = ackCollectionTimeout;
 
     this.quorumRequired = services.getConfig().getDistributionConfig().getEnableNetworkPartitionDetection();

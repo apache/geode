@@ -16,6 +16,13 @@
  */
 package com.gemstone.gemfire.internal.process;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.process.ControlFileWatchdog.ControlRequestHandler;
+import com.gemstone.gemfire.lang.AttachAPINotFoundException;
+import org.apache.logging.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -23,13 +30,6 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.process.ControlFileWatchdog.ControlRequestHandler;
-import com.gemstone.gemfire.lang.AttachAPINotFoundException;
 
 /**
  * Controls a {@link ControllableProcess} using files to communicate between
@@ -40,7 +40,7 @@ import com.gemstone.gemfire.lang.AttachAPINotFoundException;
 public class FileProcessController implements ProcessController {
   private static final Logger logger = LogService.getLogger();
 
-  public static final String STATUS_TIMEOUT_PROPERTY = "gemfire.FileProcessController.STATUS_TIMEOUT";
+  public static final String STATUS_TIMEOUT_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "FileProcessController.STATUS_TIMEOUT";
   
   private final long statusTimeoutMillis;
   private final FileControllerParameters arguments;

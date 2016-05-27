@@ -16,29 +16,29 @@
  */
 package com.gemstone.gemfire.internal.jta;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Properties;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-import javax.transaction.UserTransaction;
-
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.jta.CacheUtils;
-import com.gemstone.gemfire.internal.jta.JTAUtils;
-import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import javax.transaction.UserTransaction;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * This test case is to test the following test scenarios: 1) Get Simple DS
@@ -93,7 +93,7 @@ public class DataSourceJTAJUnitTest {
     try {
       Properties props = new Properties();
       String path= TestUtil.getResourcePath(CacheUtils.class, "cachejta.xml");
-      props.setProperty("cache-xml-file", path);
+      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
       ds = connect(props);
       tableName = CacheUtils.init(ds, "JTATest");
       // System.out.println ("Table name: " + tableName);
@@ -274,7 +274,7 @@ public class DataSourceJTAJUnitTest {
     try {
       Properties props = new Properties();
       String path= TestUtil.getResourcePath(CacheUtils.class, "cachejta.xml");
-      props.setProperty("cache-xml-file", path);
+      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
       ds = connect(props);
       tableName = CacheUtils.init(ds, "JTATest");
       System.out.println("Table name: " + tableName);
@@ -585,7 +585,7 @@ public class DataSourceJTAJUnitTest {
     try {
       Properties props = new Properties();
       String path= TestUtil.getResourcePath(CacheUtils.class, "cachejta.xml");
-      props.setProperty("cache-xml-file", path);
+      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
       ds = connect(props);
       tableName = CacheUtils.init(ds, "JTATest");
       // System.out.println ("Table name: " + tableName);
@@ -749,7 +749,7 @@ public class DataSourceJTAJUnitTest {
     try {
       Properties props = new Properties();
       String path= TestUtil.getResourcePath(CacheUtils.class, "cachejta.xml");
-      props.setProperty("cache-xml-file", path);
+      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
       ds = connect(props);
       tableName = CacheUtils.init(ds, "JTATest");
       // System.out.println ("Table name: " + tableName);
@@ -1008,8 +1008,8 @@ public class DataSourceJTAJUnitTest {
    */
 
   private static DistributedSystem connect(Properties props) {
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     return DistributedSystem.connect(props);
   }
 

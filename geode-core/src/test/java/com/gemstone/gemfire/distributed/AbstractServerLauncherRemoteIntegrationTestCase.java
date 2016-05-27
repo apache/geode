@@ -16,16 +16,17 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static org.junit.Assert.*;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.process.ProcessStreamReader;
+import org.junit.After;
+import org.junit.Before;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import org.junit.After;
-import org.junit.Before;
-
-import com.gemstone.gemfire.internal.process.ProcessStreamReader;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 public abstract class AbstractServerLauncherRemoteIntegrationTestCase extends AbstractServerLauncherIntegrationTestCase {
 
@@ -56,7 +57,7 @@ public abstract class AbstractServerLauncherRemoteIntegrationTestCase extends Ab
    */
   protected List<String> getJvmArguments() {
     final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-Dgemfire.log-level=config");
+    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "log-level=config");
     return jvmArguments;
   }
 
@@ -81,10 +82,9 @@ public abstract class AbstractServerLauncherRemoteIntegrationTestCase extends Ab
           }
           final ServerLauncher.ServerState serverState = launcher.status();
           assertNotNull(serverState);
-          logger.info("serverState: "+serverState);
+          logger.info("serverState: " + serverState);
           return AbstractLauncher.Status.ONLINE.equals(serverState.getStatus());
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
           logger.error(e, e);
           return false;
         }

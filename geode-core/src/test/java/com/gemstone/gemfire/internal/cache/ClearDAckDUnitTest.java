@@ -21,27 +21,13 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.Properties;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.util.Properties;
 
 /**
  *
@@ -101,7 +87,7 @@ public class ClearDAckDUnitTest extends DistributedTestCase {
 
     public static DistributedMember createCacheVM0() {
         try{
-            //            props.setProperty("mcast-port", "1234");
+          //            props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "1234");
             //            ds = DistributedSystem.connect(props);
             LogWriterUtils.getLogWriter().info("I am vm0");
             ds = (new ClearDAckDUnitTest("temp")).getSystem(props);
@@ -126,7 +112,7 @@ public class ClearDAckDUnitTest extends DistributedTestCase {
     } //end of create cache for VM0
     public static DistributedMember createCacheVM1(){
         try{
-            //   props.setProperty("mcast-port", "1234");
+          //   props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "1234");
             //   ds = DistributedSystem.connect(props);
             LogWriterUtils.getLogWriter().info("I am vm1");
             ds = (new ClearDAckDUnitTest("temp")).getSystem(props);
@@ -155,7 +141,7 @@ public class ClearDAckDUnitTest extends DistributedTestCase {
     
     public static void createCacheVM2AndLocalClear(){
       try{
-          //   props.setProperty("mcast-port", "1234");
+        //   props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "1234");
           //   ds = DistributedSystem.connect(props);
           LogWriterUtils.getLogWriter().info("I am vm2");
           ds = (new ClearDAckDUnitTest("temp")).getSystem(props);

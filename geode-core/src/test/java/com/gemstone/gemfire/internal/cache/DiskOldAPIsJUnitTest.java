@@ -16,22 +16,23 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.*;
-import java.util.*;
-
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
+import java.io.File;
+import java.util.Properties;
+import java.util.Set;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.distributed.*;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import junit.framework.TestCase;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the old disk apis to make sure they do the correct thing.
@@ -49,12 +50,12 @@ public class DiskOldAPIsJUnitTest
   protected static Properties props = new Properties();
 
   static {
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.setProperty("log-level", "config"); // to keep diskPerf logs smaller
-    props.setProperty("statistic-sampling-enabled", "true");
-    props.setProperty("enable-time-statistics", "true");
-    props.setProperty("statistic-archive-file", "stats.gfs");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "config"); // to keep diskPerf logs smaller
+    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
+    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
+    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "stats.gfs");
   }
 
   @Before

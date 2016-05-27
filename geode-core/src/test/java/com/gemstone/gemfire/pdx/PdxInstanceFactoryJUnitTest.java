@@ -16,34 +16,6 @@
  */
 package com.gemstone.gemfire.pdx;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.LinkedHashSet;
-import java.util.Vector;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -53,12 +25,18 @@ import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
-import com.gemstone.gemfire.pdx.internal.PdxField;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceEnum;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
-import com.gemstone.gemfire.pdx.internal.PdxType;
+import com.gemstone.gemfire.pdx.internal.*;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.*;
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
 public class PdxInstanceFactoryJUnitTest {
@@ -68,7 +46,7 @@ public class PdxInstanceFactoryJUnitTest {
   public void setUp() {
     // make it a loner
     this.cache = (GemFireCacheImpl) new CacheFactory()
-        .set("mcast-port", "0")
+        .set(MCAST_PORT, "0")
         .setPdxReadSerialized(true)
         .create();
   }

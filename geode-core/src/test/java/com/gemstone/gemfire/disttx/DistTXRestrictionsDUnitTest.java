@@ -16,14 +16,10 @@
  */
 package com.gemstone.gemfire.disttx;
 
-import java.util.Properties;
-
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache30.TXRestrictionsDUnitTest;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.test.junit.categories.DistributedTransactionsTest;
 
+import java.util.Properties;
 
 /**
  * Same tests as that of {@link TXRestrictionsDUnitTest} after setting

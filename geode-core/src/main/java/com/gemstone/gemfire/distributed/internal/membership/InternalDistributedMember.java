@@ -16,22 +16,6 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.EOFException;
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.cache.UnsupportedVersionException;
@@ -39,15 +23,17 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DurableClientAttributes;
 import com.gemstone.gemfire.distributed.Role;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor.ProfileId;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+import java.io.*;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
 
 /**
  * This is the fundamental representation of a member of a GemFire distributed
@@ -61,7 +47,7 @@ public class InternalDistributedMember
   private final static long serialVersionUID = -2785249969777296507L;
   
   // whether to show NetMember components in toString()
-  private final boolean SHOW_NETMEMBER = Boolean.getBoolean("gemfire.show_netmembers");
+  private final boolean SHOW_NETMEMBER = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "show_netmembers");
   
   protected NetMember netMbr; // the underlying member object, e.g. from JGroups
 

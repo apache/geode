@@ -22,25 +22,12 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.dunit.*;
+
 import java.util.Properties;
 import java.util.Set;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.VM;
 
 public class CacheMapTxnDUnitTest extends DistributedTestCase{
     
@@ -80,7 +67,7 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
     
     public static void createCache(){
         try{
-            //            props.setProperty("mcast-port", "1234");
+            //            props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "1234");
             //            ds = DistributedSystem.connect(props);
             ds = (new CacheMapTxnDUnitTest("temp")).getSystem(props);
             cache = CacheFactory.create(ds);

@@ -16,9 +16,9 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
-import java.io.File;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
+import java.io.File;
 
 /**
  * LogConfig implementation for Security logging configuration that delegates 

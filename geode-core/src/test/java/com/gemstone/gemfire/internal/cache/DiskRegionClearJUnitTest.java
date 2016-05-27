@@ -16,36 +16,24 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.Iterator;
-import java.util.Properties;
-
+import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
+import java.util.Iterator;
+import java.util.Properties;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
-
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.cache.versions.VersionStamp;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 // @TODO: use DiskRegionTestingBase and DiskRegionHelperFactory
 /**
@@ -74,8 +62,8 @@ public class DiskRegionClearJUnitTest {
   @Before
   public void setUp() throws Exception {
     Properties properties = new Properties();
-    properties.setProperty("mcast-port", "0");
-    properties.setProperty("locators", "");
+    properties.setProperty(MCAST_PORT, "0");
+    properties.setProperty(LOCATORS, "");
     distributedSystem = DistributedSystem
     .connect(properties);
     cache = CacheFactory.create(distributedSystem);
@@ -202,8 +190,8 @@ public class DiskRegionClearJUnitTest {
       cache.close();
       distributedSystem.disconnect();
       Properties properties = new Properties();
-      properties.setProperty("mcast-port", "0");
-      properties.setProperty("locators", "");
+      properties.setProperty(MCAST_PORT, "0");
+      properties.setProperty(LOCATORS, "");
       distributedSystem = DistributedSystem.connect(properties);
       cache = CacheFactory.create(distributedSystem);
       AttributesFactory factory = new AttributesFactory();
@@ -235,8 +223,8 @@ public class DiskRegionClearJUnitTest {
       cache.close();
       distributedSystem.disconnect();
       Properties properties = new Properties();
-      properties.setProperty("mcast-port", "0");
-      properties.setProperty("locators", "");
+    properties.setProperty(MCAST_PORT, "0");
+    properties.setProperty(LOCATORS, "");
       distributedSystem = DistributedSystem.connect(properties);
       cache = CacheFactory.create(distributedSystem);
       AttributesFactory factory = new AttributesFactory();

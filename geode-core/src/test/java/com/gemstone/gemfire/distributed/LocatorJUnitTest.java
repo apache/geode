@@ -16,22 +16,23 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
-import static com.gemstone.gemfire.internal.AvailablePort.*;
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.function.IntSupplier;
-
+import com.gemstone.gemfire.SystemConnectException;
+import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionRequest;
+import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionResponse;
+import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
+import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionResponse;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.ServerLocation;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
+import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.OSProcess;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
+import com.gemstone.gemfire.management.internal.JmxManagerAdvisor.JmxManagerProfile;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -39,24 +40,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
-
-import com.gemstone.gemfire.SystemConnectException;
-import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionResponse;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.management.internal.JmxManagerAdvisor.JmxManagerProfile;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.*;
+import java.util.function.IntSupplier;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.internal.AvailablePort.SOCKET;
+import static com.gemstone.gemfire.internal.AvailablePort.getRandomAvailablePort;
+import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
 @RunWith(Parameterized.class)
@@ -108,19 +104,19 @@ public class LocatorJUnitTest {
   public void testGfshConnectShouldSucceedIfJmxManagerStartIsTrueInLocator() throws Exception {
     Properties dsprops = new Properties();
     int jmxPort = getRandomAvailablePort(SOCKET);
-    dsprops.setProperty("mcast-port", "0");
-    dsprops.setProperty("jmx-manager-port", ""+jmxPort);
-    dsprops.setProperty("jmx-manager-start", "true");
-    dsprops.setProperty("jmx-manager-http-port", "0");
-    dsprops.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-    System.setProperty("gemfire.disableManagement", "false"); // not needed
+    dsprops.setProperty(MCAST_PORT, "0");
+    dsprops.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "" + jmxPort);
+    dsprops.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
+    dsprops.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
+    dsprops.setProperty(SystemConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "disableManagement", "false"); // not needed
     try {
       locator = Locator.startLocatorAndDS(port, new File("testJmxManager.log"), dsprops);
       List<JmxManagerProfile> alreadyManaging = GemFireCacheImpl.getInstance().getJmxManagerAdvisor().adviseAlreadyManaging();
       assertEquals(1, alreadyManaging.size());
       assertEquals(GemFireCacheImpl.getInstance().getMyId(), alreadyManaging.get(0).getDistributedMember());
     } finally {
-      System.clearProperty("gemfire.enabledManagement");
+      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "enabledManagement");
     }
   }
 
@@ -138,9 +134,9 @@ public class LocatorJUnitTest {
   @Test
   public void testNoThreadLeftBehind() throws Exception {
     Properties dsprops = new Properties();
-    dsprops.setProperty("mcast-port", "0");
-    dsprops.setProperty("jmx-manager-start", "false");
-    dsprops.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    dsprops.setProperty(MCAST_PORT, "0");
+    dsprops.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "false");
+    dsprops.setProperty(SystemConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
 
     JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK = true;
     int threadCount = Thread.activeCount();
@@ -166,8 +162,8 @@ public class LocatorJUnitTest {
   @Test
   public void testServerOnly() throws Exception {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(SystemConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
     locator = Locator.startLocatorAndDS(port, tmpFile, null, props, false, true, null);
    assertFalse(locator.isPeerLocator());
    assertTrue(locator.isServerLocator());
@@ -178,8 +174,8 @@ public class LocatorJUnitTest {
   @Test
   public void testBothPeerAndServer() throws Exception {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(SystemConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
 
     locator = Locator.startLocatorAndDS(port, tmpFile, null, props);
     assertTrue(locator.isPeerLocator());

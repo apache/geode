@@ -16,21 +16,10 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
-import static com.gemstone.gemfire.test.dunit.Wait.*;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
@@ -46,9 +35,22 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
 
 /**
  * A distributed test suite of test cases for testing the queue commands that are part of Gfsh.
@@ -90,7 +92,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
         diskStoreDir.mkdirs();
 
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.NAME_NAME, vm1Name);
+        localProps.setProperty(SystemConfigurationProperties.NAME, vm1Name);
         localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
         getSystem(localProps);
         getCache();
@@ -102,7 +104,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
     vm2.invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.NAME_NAME, vm2Name);
+        localProps.setProperty(SystemConfigurationProperties.NAME, vm2Name);
         localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group2");
         getSystem(localProps);
         getCache();
@@ -257,8 +259,8 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
 
         final File locatorLogFile = new File("locator-" + locatorPort + ".log");
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(DistributionConfig.NAME_NAME, "Locator");
-        locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+        locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator");
+        locatorProps.setProperty(MCAST_PORT, "0");
         locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
         locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
         try {
@@ -285,8 +287,8 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
 
     // Start the default manager
     Properties managerProps = new Properties();
-    managerProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    managerProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+    managerProps.setProperty(MCAST_PORT, "0");
+    managerProps.setProperty(LOCATORS, "localhost:" + locatorPort);
     setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
@@ -295,8 +297,8 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
       @Override
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+        localProps.setProperty(MCAST_PORT, "0");
+        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
         localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
         getSystem(localProps);
         assertNotNull(getCache());
@@ -360,8 +362,8 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
         assertTrue(cache.isClosed());
 
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        localProps.setProperty(DistributionConfig.LOCATORS_NAME, "localhost:" + locatorPort);
+        localProps.setProperty(MCAST_PORT, "0");
+        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
         localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
         localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
         getSystem(localProps);

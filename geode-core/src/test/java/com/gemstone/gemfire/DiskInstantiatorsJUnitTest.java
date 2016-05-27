@@ -16,21 +16,25 @@
  */
 package com.gemstone.gemfire;
 
-import static org.junit.Assert.*;
-
-import com.gemstone.gemfire.distributed.*;
-import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import java.util.Properties;
-import java.io.*;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
 
 /**
  * This class makes sure that instantatiors are persisted to disk
@@ -71,9 +75,9 @@ public class DiskInstantiatorsJUnitTest {
   
   private void connect() throws CacheException {
     Properties cfg = new Properties();
-    cfg.setProperty("mcast-port", "0");
-    cfg.setProperty("locators", "");
-    cfg.setProperty("statistic-sampling-enabled", "false");
+    cfg.setProperty(MCAST_PORT, "0");
+    cfg.setProperty(LOCATORS, "");
+    cfg.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "false");
 
     this.ds = DistributedSystem.connect(cfg);
     this.c = CacheFactory.create(ds);

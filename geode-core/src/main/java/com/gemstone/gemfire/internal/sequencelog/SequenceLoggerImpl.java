@@ -16,15 +16,15 @@
  */
 package com.gemstone.gemfire.internal.sequencelog;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.OSProcess;
+import com.gemstone.gemfire.internal.sequencelog.io.OutputStreamAppender;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.EnumSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.sequencelog.io.OutputStreamAppender;
 
 /**
  *
@@ -32,9 +32,9 @@ import com.gemstone.gemfire.internal.sequencelog.io.OutputStreamAppender;
 public class SequenceLoggerImpl implements SequenceLogger {
 
   private static final SequenceLoggerImpl INSTANCE;
-  
-  public static final String ENABLED_TYPES_PROPERTY = "gemfire.SequenceLoggerImpl.ENABLED_TYPES";
-  
+
+  public static final String ENABLED_TYPES_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "GraphLoggerImpl.ENABLED_TYPES";
+
   private final EnumSet<GraphType> enabledTypes;
   
   static {

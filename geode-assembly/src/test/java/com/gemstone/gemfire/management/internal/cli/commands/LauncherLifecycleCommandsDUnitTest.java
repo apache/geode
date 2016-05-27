@@ -16,51 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.Wait.*;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.nio.charset.Charset;
-import java.text.DateFormat;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.TimeUnit;
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.Query;
-import javax.management.QueryExp;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-
-import org.junit.FixMethodOrder;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runners.MethodSorters;
-
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.*;
 import com.gemstone.gemfire.distributed.AbstractLauncher.ServiceState;
 import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
 import com.gemstone.gemfire.distributed.LocatorLauncher;
@@ -82,7 +39,32 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runners.MethodSorters;
 
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.Query;
+import javax.management.QueryExp;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.TimeUnit;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.START_LOCATOR;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
 
@@ -324,9 +306,9 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     command.addOption(CliStrings.START_LOCATOR__DIR, pathname);
     command.addOption(CliStrings.START_LOCATOR__PORT, String.valueOf(locatorPort));
     command.addOption(CliStrings.START_LOCATOR__ENABLE__SHARED__CONFIGURATION, Boolean.FALSE.toString());
-    command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.http-service-port=0");
+    command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "http-service-port=0");
     command.addOption(CliStrings.START_LOCATOR__J,
-        "-Dgemfire.jmx-manager-port=" + AvailablePortHelper.getRandomAvailableTCPPort());
+        "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-port=" + AvailablePortHelper.getRandomAvailableTCPPort());
 
     CommandResult result = executeCommand(command.toString());
 
@@ -370,10 +352,10 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     command.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, getClass().getSimpleName().concat("_").concat(getTestMethodName()));
     command.addOption(CliStrings.START_LOCATOR__PORT, "0");
     command.addOption(CliStrings.START_LOCATOR__PROPERTIES, gemfirePropertiesPathname);
-    command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.http-service-port=0");
-    command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.jmx-manager=false");
-    command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.jmx-manager-port=0");
-    command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.jmx-manager-start=false");
+    command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "http-service-port=0");
+    command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager=false");
+    command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-port=0");
+    command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-start=false");
 
     CommandResult result = executeCommand(command.toString());
 
@@ -396,10 +378,10 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     command.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, getClass().getSimpleName().concat("_").concat(getTestMethodName()));
     command.addOption(CliStrings.START_LOCATOR__PORT, "0");
     command.addOption(CliStrings.START_LOCATOR__SECURITY_PROPERTIES, gemfireSecurityPropertiesPathname);
-    command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.http-service-port=0");
-    command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.jmx-manager=false");
-    command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.jmx-manager-port=0");
-    command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.jmx-manager-start=false");
+    command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "http-service-port=0");
+    command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager=false");
+    command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-port=0");
+    command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-start=false");
 
     CommandResult result = executeCommand(command.toString());
 
@@ -492,9 +474,9 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
       command.addOption(CliStrings.START_LOCATOR__DIR, pathname);
       command.addOption(CliStrings.START_LOCATOR__PORT, String.valueOf(locatorPort));
       command.addOption(CliStrings.START_LOCATOR__ENABLE__SHARED__CONFIGURATION, Boolean.FALSE.toString());
-      command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.http-service-port=0");
+      command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "http-service-port=0");
       command.addOption(CliStrings.START_LOCATOR__J,
-          "-Dgemfire.jmx-manager-port=" + AvailablePortHelper.getRandomAvailableTCPPort());
+          "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-port=" + AvailablePortHelper.getRandomAvailableTCPPort());
 
       CommandResult result = executeCommand(command.toString());
 
@@ -542,8 +524,8 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
       command.addOption(CliStrings.START_LOCATOR__PORT, String.valueOf(locatorPort));
       command.addOption(CliStrings.START_LOCATOR__ENABLE__SHARED__CONFIGURATION, Boolean.FALSE.toString());
       command.addOption(CliStrings.START_LOCATOR__FORCE, Boolean.TRUE.toString());
-      command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.http-service-port=0");
-      command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.jmx-manager-port=" + jmxManagerPort);
+      command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "http-service-port=0");
+      command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-port=" + jmxManagerPort);
 
       CommandResult result = executeCommand(command.toString());
 
@@ -605,8 +587,8 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
       command.addOption(CliStrings.START_LOCATOR__PORT, String.valueOf(locatorPort));
       command.addOption(CliStrings.START_LOCATOR__ENABLE__SHARED__CONFIGURATION, Boolean.FALSE.toString());
       command.addOption(CliStrings.START_LOCATOR__FORCE, Boolean.TRUE.toString());
-      command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.http-service-port=0");
-      command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.jmx-manager-port=" + jmxManagerPort);
+      command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "http-service-port=0");
+      command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-port=" + jmxManagerPort);
 
       CommandResult result = executeCommand(command.toString());
 
@@ -671,8 +653,8 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     command.addOption(CliStrings.START_LOCATOR__PORT, String.valueOf(locatorPort));
     command.addOption(CliStrings.START_LOCATOR__ENABLE__SHARED__CONFIGURATION, Boolean.FALSE.toString());
     command.addOption(CliStrings.START_LOCATOR__FORCE, Boolean.TRUE.toString());
-    command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.http-service-port=0");
-    command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.jmx-manager-port=" + jmxManagerPort);
+    command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "http-service-port=0");
+    command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-port=" + jmxManagerPort);
 
     CommandResult result = executeCommand(command.toString());
 
@@ -759,8 +741,8 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     command.addOption(CliStrings.START_LOCATOR__PORT, String.valueOf(locatorPort));
     command.addOption(CliStrings.START_LOCATOR__ENABLE__SHARED__CONFIGURATION, Boolean.FALSE.toString());
     command.addOption(CliStrings.START_LOCATOR__FORCE, Boolean.TRUE.toString());
-    command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.http-service-port=0");
-    command.addOption(CliStrings.START_LOCATOR__J, "-Dgemfire.jmx-manager-port=" + jmxManagerPort);
+    command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "http-service-port=0");
+    command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-port=" + jmxManagerPort);
 
     CommandResult result = executeCommand(command.toString());
 
@@ -839,7 +821,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
         IOUtils.tryGetCanonicalPathElseGetAbsolutePath(writeAndGetCacheXmlFile(workingDirectory)));
     command.addOption(CliStrings.START_SERVER__INCLUDE_SYSTEM_CLASSPATH);
     command.addOption(CliStrings.START_SERVER__J,
-        "-Dgemfire." + DistributionConfig.START_LOCATOR_NAME + "=localhost[" + locatorPort + "]");
+        "-D" + DistributionConfig.GEMFIRE_PREFIX + "" + START_LOCATOR + "=localhost[" + locatorPort + "]");
 
 
     CommandResult result = executeCommand(command.toString());
@@ -935,7 +917,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
   }
 
   private ClientCache setupClientCache(final String durableClientId, final int serverPort) {
-    ClientCache clientCache = new ClientCacheFactory().set("durable-client-id", durableClientId).create();
+    ClientCache clientCache = new ClientCacheFactory().set(DistributionConfig.DURABLE_CLIENT_ID_NAME, durableClientId).create();
 
     PoolFactory poolFactory = PoolManager.createFactory();
 

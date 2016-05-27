@@ -16,20 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.net.InetAddress;
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -37,6 +24,17 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
+
+import java.net.InetAddress;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 @Category(IntegrationTest.class)
 public class TombstoneCreationJUnitTest {
@@ -55,8 +53,8 @@ public class TombstoneCreationJUnitTest {
   public void testDestroyCreatesTombstone() throws Exception {
     String name = nameRule.getMethodName();
     Properties props = new Properties();
-    props.put(DistributionConfig.LOCATORS_NAME, "");
-    props.put(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.put(LOCATORS, "");
+    props.put(MCAST_PORT, "0");
     props.put(DistributionConfig.LOG_LEVEL_NAME, "config");
     GemFireCacheImpl cache = (GemFireCacheImpl)CacheFactory.create(DistributedSystem.connect(props));
     RegionFactory f = cache.createRegionFactory(RegionShortcut.REPLICATE);
@@ -92,8 +90,8 @@ public class TombstoneCreationJUnitTest {
   public void testConcurrentCreateAndDestroy() throws Exception {
     String name = nameRule.getMethodName();
     Properties props = new Properties();
-    props.put(DistributionConfig.LOCATORS_NAME, "");
-    props.put(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.put(LOCATORS, "");
+    props.put(MCAST_PORT, "0");
     props.put(DistributionConfig.LOG_LEVEL_NAME, "config");
     final GemFireCacheImpl cache = (GemFireCacheImpl)CacheFactory.create(DistributedSystem.connect(props));
     RegionFactory f = cache.createRegionFactory(RegionShortcut.REPLICATE);
@@ -167,8 +165,8 @@ public class TombstoneCreationJUnitTest {
   public void testOlderEventIgnoredEvenIfTombstoneHasExpired()  throws Exception {
     String name = nameRule.getMethodName();
     Properties props = new Properties();
-    props.put(DistributionConfig.LOCATORS_NAME, "");
-    props.put(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.put(LOCATORS, "");
+    props.put(MCAST_PORT, "0");
     props.put(DistributionConfig.LOG_LEVEL_NAME, "config");
     final GemFireCacheImpl cache = (GemFireCacheImpl)CacheFactory.create(DistributedSystem.connect(props));
     RegionFactory f = cache.createRegionFactory(RegionShortcut.REPLICATE);

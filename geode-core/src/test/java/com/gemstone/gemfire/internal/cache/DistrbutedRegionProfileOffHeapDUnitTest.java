@@ -16,14 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.Properties;
-
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -31,6 +24,8 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+
+import java.util.Properties;
 
 public class DistrbutedRegionProfileOffHeapDUnitTest extends CacheTestCase {
   private static final long serialVersionUID = 1L;

@@ -17,14 +17,15 @@
 
 package com.gemstone.gemfire.internal.concurrent;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsType;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.LocalStatisticsImpl;
 import com.gemstone.gemfire.internal.StatisticsManager;
 import com.gemstone.gemfire.internal.StatisticsTypeImpl;
 import com.gemstone.gemfire.internal.stats50.Atomic50StatisticsImpl;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Atomics {
   private Atomics() { }
@@ -33,7 +34,7 @@ public class Atomics {
    * Whether per-thread stats are used.  Striping is disabled for the
    * IBM JVM due to bug 38226
    */
-  private static final boolean STRIPED_STATS_DISABLED = Boolean.getBoolean("gemfire.STRIPED_STATS_DISABLED")
+  private static final boolean STRIPED_STATS_DISABLED = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "STRIPED_STATS_DISABLED")
     || "IBM Corporation".equals(System.getProperty("java.vm.vendor", "unknown"));
 
   

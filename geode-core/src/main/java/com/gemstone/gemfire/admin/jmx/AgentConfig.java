@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.admin.jmx;
 
 import com.gemstone.gemfire.admin.DistributedSystemConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 //import com.gemstone.gemfire.admin.internal.InetAddressUtil;
 
 /**
@@ -278,8 +279,7 @@ import com.gemstone.gemfire.admin.DistributedSystemConfig;
 public interface AgentConfig extends DistributedSystemConfig {
 
   /** The prefix for JMX Agent configuration system properties */
-  public static final String SYSTEM_PROPERTY_PREFIX =
-    "gemfire.agent.";
+  public static final String SYSTEM_PROPERTY_PREFIX = DistributionConfig.GEMFIRE_PREFIX + "agent.";
 
   /** The default "propertyFile" value */
   public static final String DEFAULT_PROPERTY_FILE = "agent.properties";

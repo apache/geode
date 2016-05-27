@@ -16,32 +16,18 @@
  */
 package com.gemstone.gemfire.internal.logging.log4j;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.config.AppenderRef;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogConfig;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.ManagerLogWriter;
-import com.gemstone.gemfire.internal.logging.SecurityManagerLogWriter;
+import com.gemstone.gemfire.internal.logging.*;
 import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
 import com.gemstone.gemfire.internal.util.LogFileUtils;
+
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Holds on to one or many instances of LogWriterAppender and provides
@@ -49,7 +35,7 @@ import com.gemstone.gemfire.internal.util.LogFileUtils;
  * 
  */
 public class LogWriterAppenders {
-  public final static String APPEND_TO_LOG_FILE = "gemfire.append-log";
+  public final static String APPEND_TO_LOG_FILE = DistributionConfig.GEMFIRE_PREFIX + "append-log";
   private static final boolean ALLOW_REDIRECT = true;
   
   public enum Identifier {

@@ -16,20 +16,10 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.InvalidValueException;
 import com.gemstone.gemfire.UnmodifiableException;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.internal.AbstractConfig;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.SocketCreator;
@@ -37,6 +27,11 @@ import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
+
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that
@@ -101,8 +96,7 @@ public abstract class AbstractDistributionConfig
     }
   }
 
-
-  @ConfigAttributeChecker(name=START_LOCATOR_NAME)
+  @ConfigAttributeChecker(name = START_LOCATOR)
   protected String checkStartLocator(String value) {
     if (value != null && value.trim().length() > 0) {
       // throws IllegalArgumentException if string is malformed
@@ -111,39 +105,42 @@ public abstract class AbstractDistributionConfig
     return value;
   }
 
-
-  @ConfigAttributeChecker(name=TCP_PORT_NAME)
+  @ConfigAttributeChecker(name = TCP_PORT)
   protected int checkTcpPort(int value) {
     if ( getSSLEnabled() && value != 0 ) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE.toLocalizedString(new Object[] {TCP_PORT_NAME, Integer.valueOf(value), SSL_ENABLED_NAME}));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE
+          .toLocalizedString(new Object[] { TCP_PORT, Integer.valueOf(value), SSL_ENABLED_NAME }));
     }
     if ( getClusterSSLEnabled() && value != 0 ) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE.toLocalizedString(new Object[] {TCP_PORT_NAME, Integer.valueOf(value), CLUSTER_SSL_ENABLED_NAME}));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE
+          .toLocalizedString(new Object[] { TCP_PORT, Integer.valueOf(value), CLUSTER_SSL_ENABLED_NAME }));
     }
     return value;
   }
 
-  @ConfigAttributeChecker(name=MCAST_PORT_NAME)
+  @ConfigAttributeChecker(name = MCAST_PORT)
   protected int checkMcastPort(int value) {
     if ( getSSLEnabled() && value != 0 ) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE.toLocalizedString(new Object[] {MCAST_PORT_NAME, Integer.valueOf(value), SSL_ENABLED_NAME}));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE
+          .toLocalizedString(new Object[] { MCAST_PORT, Integer.valueOf(value), SSL_ENABLED_NAME }));
     }
     if ( getClusterSSLEnabled() && value != 0 ) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE.toLocalizedString(new Object[] {MCAST_PORT_NAME, Integer.valueOf(value), CLUSTER_SSL_ENABLED_NAME}));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE
+          .toLocalizedString(new Object[] { MCAST_PORT, Integer.valueOf(value), CLUSTER_SSL_ENABLED_NAME }));
     }
     return value;
   }
 
-
-  @ConfigAttributeChecker(name=MCAST_ADDRESS_NAME)
+  @ConfigAttributeChecker(name = MCAST_ADDRESS)
   protected InetAddress checkMcastAddress(InetAddress value) {
     if (!value.isMulticastAddress()) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_IT_WAS_NOT_A_MULTICAST_ADDRESS.toLocalizedString(new Object[] {MCAST_ADDRESS_NAME, value}));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_IT_WAS_NOT_A_MULTICAST_ADDRESS
+          .toLocalizedString(new Object[] { MCAST_ADDRESS, value }));
     }
     return value;
   }
 
-  @ConfigAttributeChecker(name=BIND_ADDRESS_NAME)
+  @ConfigAttributeChecker(name = BIND_ADDRESS)
   protected String checkBindAddress(String value) {
     if (value != null && value.length() > 0 &&
         !SocketCreator.isLocalHost(value)) {
@@ -155,8 +152,7 @@ public abstract class AbstractDistributionConfig
     return value;
   }
 
-
-  @ConfigAttributeChecker(name=SERVER_BIND_ADDRESS_NAME)
+  @ConfigAttributeChecker(name = SERVER_BIND_ADDRESS)
   protected String checkServerBindAddress(String value) {
     if (value != null && value.length() > 0 &&
         !SocketCreator.isLocalHost(value)) {
@@ -171,7 +167,8 @@ public abstract class AbstractDistributionConfig
   @ConfigAttributeChecker(name=SSL_ENABLED_NAME)
   protected Boolean checkSSLEnabled(Boolean value) {
     if ( value.booleanValue() && (getMcastPort() != 0) ) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_FALSE_WHEN_2_IS_NOT_0.toLocalizedString(new Object[] {SSL_ENABLED_NAME, value, MCAST_PORT_NAME}));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_FALSE_WHEN_2_IS_NOT_0
+          .toLocalizedString(new Object[] { SSL_ENABLED_NAME, value, MCAST_PORT }));
     }
     return value;
   }
@@ -179,7 +176,8 @@ public abstract class AbstractDistributionConfig
   @ConfigAttributeChecker(name=CLUSTER_SSL_ENABLED_NAME)
   protected Boolean checkClusterSSLEnabled(Boolean value) {
     if ( value.booleanValue() && (getMcastPort() != 0) ) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_FALSE_WHEN_2_IS_NOT_0.toLocalizedString(new Object[] {CLUSTER_SSL_ENABLED_NAME, value, MCAST_PORT_NAME}));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_FALSE_WHEN_2_IS_NOT_0
+          .toLocalizedString(new Object[] { CLUSTER_SSL_ENABLED_NAME, value, MCAST_PORT }));
     }
     return value;
   }
@@ -200,7 +198,7 @@ public abstract class AbstractDistributionConfig
   @ConfigAttributeChecker(name=DISTRIBUTED_SYSTEM_ID_NAME)
   protected int checkDistributedSystemId(int value) {
     String distributedSystemListener = System
-    .getProperty("gemfire.DistributedSystemListener");
+        .getProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener");
     //this check is specific for Jayesh's use case of WAN BootStraping
     if(distributedSystemListener == null){
       if (value < MIN_DISTRIBUTED_SYSTEM_ID) {
@@ -235,7 +233,7 @@ public abstract class AbstractDistributionConfig
    *         If <code>value</code> is not a valid locator
    *         configuration
    */
-  @ConfigAttributeChecker(name=LOCATORS_NAME)
+  @ConfigAttributeChecker(name = LOCATORS)
   protected String checkLocators(String value) {
     // validate locators value
     StringBuffer sb = new StringBuffer();
@@ -403,7 +401,7 @@ public abstract class AbstractDistributionConfig
   @ConfigAttributeChecker(name=SECURITY_PEER_AUTH_INIT_NAME)
   protected String checkSecurityPeerAuthInit(String value) {
     if (value != null && value.length() > 0 && getMcastPort() != 0) {
-      String mcastInfo = MCAST_PORT_NAME + "[" + getMcastPort() + "]";
+      String mcastInfo = MCAST_PORT + "[" + getMcastPort() + "]";
       throw new IllegalArgumentException(
         LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_2_MUST_BE_0_WHEN_SECURITY_IS_ENABLED
           .toLocalizedString(new Object[] {
@@ -416,7 +414,7 @@ public abstract class AbstractDistributionConfig
   @ConfigAttributeChecker(name=SECURITY_PEER_AUTHENTICATOR_NAME)
   protected String checkSecurityPeerAuthenticator(String value) {
     if (value != null && value.length() > 0 && getMcastPort() != 0) {
-       String mcastInfo = MCAST_PORT_NAME + "[" + getMcastPort() + "]";
+      String mcastInfo = MCAST_PORT + "[" + getMcastPort() + "]";
       throw new IllegalArgumentException(
         LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_2_MUST_BE_0_WHEN_SECURITY_IS_ENABLED
         .toLocalizedString(
@@ -710,35 +708,35 @@ public abstract class AbstractDistributionConfig
       LocalizedStrings.AbstractDistributionConfig_LOG_DISK_SPACE_LIMIT_NAME
         .toLocalizedString());
 
-    m.put(LOCATORS_NAME, 
+    m.put(LOCATORS,
       LocalizedStrings.AbstractDistributionConfig_LOCATORS_NAME_0
         .toLocalizedString(DEFAULT_LOCATORS));
-    
-    m.put(LOCATOR_WAIT_TIME_NAME,
+
+    m.put(LOCATOR_WAIT_TIME,
       LocalizedStrings.AbstractDistributionConfig_LOCATOR_WAIT_TIME_NAME_0
         .toLocalizedString(Integer.valueOf(DEFAULT_LOCATOR_WAIT_TIME)));
 
-    m.put(TCP_PORT_NAME, 
+    m.put(TCP_PORT,
       LocalizedStrings.AbstractDistributionConfig_TCP_PORT_NAME_0_1_2
         .toLocalizedString( new Object[] {
           Integer.valueOf(DEFAULT_TCP_PORT),
           Integer.valueOf(MIN_TCP_PORT),
           Integer.valueOf(MAX_TCP_PORT)}));
 
-    m.put(MCAST_PORT_NAME, 
+    m.put(MCAST_PORT,
       LocalizedStrings.AbstractDistributionConfig_MCAST_PORT_NAME_0_1_2
        .toLocalizedString(new Object[] {
           Integer.valueOf(DEFAULT_MCAST_PORT),
           Integer.valueOf(MIN_MCAST_PORT), 
           Integer.valueOf(MAX_MCAST_PORT)}));
 
-    m.put(MCAST_ADDRESS_NAME, 
+    m.put(MCAST_ADDRESS,
       LocalizedStrings.AbstractDistributionConfig_MCAST_ADDRESS_NAME_0_1
        .toLocalizedString(new Object[] {
           Integer.valueOf(DEFAULT_MCAST_PORT),
           DEFAULT_MCAST_ADDRESS}));
 
-    m.put(MCAST_TTL_NAME, 
+    m.put(MCAST_TTL,
       LocalizedStrings.AbstractDistributionConfig_MCAST_TTL_NAME_0_1_2
        .toLocalizedString(new Object[] {
           Integer.valueOf(DEFAULT_MCAST_TTL),
@@ -803,15 +801,15 @@ public abstract class AbstractDistributionConfig
       LocalizedStrings.AbstractDistributionConfig_ROLES_NAME_0
         .toLocalizedString(DEFAULT_ROLES));
 
-    m.put(BIND_ADDRESS_NAME, 
+    m.put(BIND_ADDRESS,
       LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_NAME_0
         .toLocalizedString(DEFAULT_BIND_ADDRESS));
 
-    m.put(SERVER_BIND_ADDRESS_NAME, 
+    m.put(SERVER_BIND_ADDRESS,
       LocalizedStrings.AbstractDistributionConfig_SERVER_BIND_ADDRESS_NAME_0
         .toLocalizedString(DEFAULT_BIND_ADDRESS));
 
-    m.put(NAME_NAME, "A name that uniquely identifies a member in its distributed system." +
+    m.put(SystemConfigurationProperties.NAME, "A name that uniquely identifies a member in its distributed system." +
         " Multiple members in the same distributed system can not have the same name." +
         " Defaults to \"\".");
 
@@ -904,9 +902,9 @@ public abstract class AbstractDistributionConfig
         .toLocalizedString( new Object[] {
           Integer.valueOf(DEFAULT_ASYNC_MAX_QUEUE_SIZE),
           Integer.valueOf(MIN_ASYNC_MAX_QUEUE_SIZE),
-          Integer.valueOf(MAX_ASYNC_MAX_QUEUE_SIZE)}));       
+            Integer.valueOf(MAX_ASYNC_MAX_QUEUE_SIZE) }));
 
-    m.put(START_LOCATOR_NAME, 
+    m.put(START_LOCATOR,
       LocalizedStrings.AbstractDistributionConfig_START_LOCATOR_NAME
         .toLocalizedString());
 
@@ -1148,7 +1146,7 @@ public abstract class AbstractDistributionConfig
     return dcAttDescriptions;
   }
 
-  static final InetAddress _getDefaultMcastAddress() {
+  public static final InetAddress _getDefaultMcastAddress() {
     String ipLiteral;
     if ( SocketCreator.preferIPv6Addresses() ) {
       ipLiteral = "FF38::1234"; // fix for bug 30014

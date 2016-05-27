@@ -16,21 +16,21 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-import org.jgroups.util.UUID;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.distributed.DurableClientAttributes;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
 import com.gemstone.gemfire.distributed.internal.membership.NetMember;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.jgroups.util.UUID;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * This is the fundamental representation of a member of a GemFire distributed system.
@@ -46,7 +46,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  */
 public class GMSMember implements NetMember, DataSerializableFixedID {
   // whether to show UUID info in toString()
-  private final static boolean SHOW_UUIDS = Boolean.getBoolean("gemfire.show_UUIDs");
+  private final static boolean SHOW_UUIDS = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "show_UUIDs");
   
   private int udpPort=0;
   private boolean preferredForCoordinator;

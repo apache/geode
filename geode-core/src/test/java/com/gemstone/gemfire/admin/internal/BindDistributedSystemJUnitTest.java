@@ -16,27 +16,18 @@
  */
 package com.gemstone.gemfire.admin.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.net.InetAddress;
-import java.net.Socket;
-import java.util.Properties;
-
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.admin.AdminDistributedSystem;
-import com.gemstone.gemfire.admin.AdminDistributedSystemFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.util.StopWatch;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.BIND_ADDRESS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.START_LOCATOR;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests {@link com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl}.
@@ -78,8 +69,8 @@ public class BindDistributedSystemJUnitTest {
     assertEquals(true, InetAddressUtil.isLoopback(bindTo));
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.BIND_ADDRESS_NAME, bindTo);
-    props.setProperty(DistributionConfig.START_LOCATOR_NAME,
+    props.setProperty(BIND_ADDRESS, bindTo);
+    props.setProperty(START_LOCATOR,
         "localhost["+AvailablePortHelper.getRandomAvailableTCPPort()+"]");
     this.system = com.gemstone.gemfire.distributed.DistributedSystem.connect(
         props);

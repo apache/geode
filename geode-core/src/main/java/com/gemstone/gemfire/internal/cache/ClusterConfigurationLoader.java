@@ -16,21 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.UnmodifiableException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -47,6 +32,14 @@ import com.gemstone.gemfire.internal.process.ClusterConfigurationNotAvailableExc
 import com.gemstone.gemfire.management.internal.configuration.domain.Configuration;
 import com.gemstone.gemfire.management.internal.configuration.messages.ConfigurationRequest;
 import com.gemstone.gemfire.management.internal.configuration.messages.ConfigurationResponse;
+import org.apache.logging.log4j.Logger;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
 
 public class ClusterConfigurationLoader {
   

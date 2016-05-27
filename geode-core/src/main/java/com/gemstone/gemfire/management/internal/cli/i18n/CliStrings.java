@@ -16,14 +16,17 @@
  */
 package com.gemstone.gemfire.management.internal.cli.i18n;
 
-import java.text.MessageFormat;
-
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+
+import java.text.MessageFormat;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**-*
  * Contains 'String' constants used as key to the Localized strings to be used
@@ -270,26 +273,26 @@ public class CliStrings {
   public static final String ALTER_RUNTIME_CONFIG__MEMBER__HELP = "Name/Id of the member in whose configuration will be altered.";
   public static final String ALTER_RUNTIME_CONFIG__GROUP = "group";
   public static final String ALTER_RUNTIME_CONFIG__GROUP__HELP = "Group of members whose configuration will be altered.";
-  public static final String ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT = DistributionConfig.ARCHIVE_FILE_SIZE_LIMIT_NAME;
+  public static final String ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT = ARCHIVE_FILE_SIZE_LIMIT;
   public static final String ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT__HELP = "Archive file size limit. Valid values are (in megabytes): "
       + DistributionConfig.MIN_ARCHIVE_FILE_SIZE_LIMIT + " - " + DistributionConfig.MAX_ARCHIVE_FILE_SIZE_LIMIT + ".";
-  public static final String ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT = DistributionConfig.ARCHIVE_DISK_SPACE_LIMIT_NAME;
+  public static final String ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT = ARCHIVE_DISK_SPACE_LIMIT;
   public static final String ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT__HELP = "Archive disk space limit. Valid values are (in megabytes): "
       + DistributionConfig.MIN_ARCHIVE_DISK_SPACE_LIMIT + " - " + DistributionConfig.MAX_ARCHIVE_DISK_SPACE_LIMIT + ".";
-  public static final String ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT = DistributionConfig.LOG_FILE_SIZE_LIMIT_NAME;
+  public static final String ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT = LOG_FILE_SIZE_LIMIT;
   public static final String ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT__HELP = "Log file size limit. Valid values are (in megabytes): "
       + DistributionConfig.MIN_LOG_FILE_SIZE_LIMIT + " - " + DistributionConfig.MAX_LOG_FILE_SIZE_LIMIT + ".";
-  public static final String ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT = DistributionConfig.LOG_DISK_SPACE_LIMIT_NAME;
+  public static final String ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT = LOG_DISK_SPACE_LIMIT;
   public static final String ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT__HELP = "Log disk space limit. Valid values are (in megabytes): "
       + DistributionConfig.MIN_LOG_DISK_SPACE_LIMIT + " - " + DistributionConfig.MAX_LOG_DISK_SPACE_LIMIT + ".";
-  public static final String ALTER_RUNTIME_CONFIG__LOG__LEVEL = DistributionConfig.LOG_LEVEL_NAME;
+  public static final String ALTER_RUNTIME_CONFIG__LOG__LEVEL = LOG_LEVEL;
   public static final String ALTER_RUNTIME_CONFIG__LOG__LEVEL__HELP = "Log level. Valid values are: none, error, info, config , warning, severe, fine, finer and finest.";
   public static final String ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLING__ENABLED = "enable-statistics";
   public static final String ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLING__ENABLED__HELP = "Whether statistic sampling should be enabled. Valid values are: true and false.";
-  public static final String ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE = DistributionConfig.STATISTIC_SAMPLE_RATE_NAME;
+  public static final String ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE = STATISTIC_SAMPLE_RATE;
   public static final String ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE__HELP = "Statistic sampling rate. Valid values are (in milliseconds): "
       + DistributionConfig.MIN_STATISTIC_SAMPLE_RATE + " - " + DistributionConfig.MAX_STATISTIC_SAMPLE_RATE + ".";
-  public static final String ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE = DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME;
+  public static final String ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE = STATISTIC_ARCHIVE_FILE;
   public static final String ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE__HELP = "File to which the statistics will be written.";
   
   public static final String ALTER_RUNTIME_CONFIG__COPY__ON__READ = CacheXml.COPY_ON_READ;
@@ -360,7 +363,7 @@ public class CliStrings {
   /* connect command */
   public static final String CONNECT = "connect";
   public static final String CONNECT__HELP = "Connect to a jmx-manager either directly or via a Locator. If connecting via a Locator, and a jmx-manager doesn't already exist, the Locator will start one.";
-  public static final String CONNECT__JMX_MANAGER = "jmx-manager";
+  public static final String CONNECT__JMX_MANAGER = JMX_MANAGER;
   public static final String CONNECT__JMX_MANAGER__HELP = "Network address of the jmx-manager in the form: host[port].";
   public static final String CONNECT__LOCATOR = "locator";
   public static final String CONNECT__LOCATOR__HELP = "Network address of the Locator in the form: host[port].";
@@ -941,7 +944,7 @@ public class CliStrings {
   public static final String EXPORT_LOGS__GROUP = "group";
   public static final String EXPORT_LOGS__GROUP__HELP = "Group of members whose log files will be exported.";
   public static final String EXPORT_LOGS__MSG__CANNOT_EXECUTE = "Cannot execute";
-  public static final String EXPORT_LOGS__LOGLEVEL = "log-level";
+  public static final String EXPORT_LOGS__LOGLEVEL = DistributionConfig.LOG_LEVEL_NAME;
   public static final String EXPORT_LOGS__LOGLEVEL__HELP = "Minimum level of log entries to export. Valid values are: none, error, info, config , fine, finer and finest.  The default is \"info\".";
   public static final String EXPORT_LOGS__UPTO_LOGLEVEL = "only-log-level";
   public static final String EXPORT_LOGS__UPTO_LOGLEVEL__HELP = "Whether to only include those entries that exactly match the --log-level specified.";
@@ -1490,7 +1493,7 @@ public class CliStrings {
   public static final String CREATE_GATEWAYRECEIVER__BINDADDRESS__HELP = "The IP address or host name that the receiver's socket will listen on for client connections.";
   public static final String CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS = "maximum-time-between-pings";
   public static final String CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS__HELP = "The maximum amount of time between client pings.";
-  public static final String CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE = "socket-buffer-size";
+  public static final String CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE = SOCKET_BUFFER_SIZE;
   public static final String CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE__HELP = "The buffer size in bytes of the socket connection for this GatewayReceiver.";
   public static final String CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER = "gateway-transport-filter";
   public static final String CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER__HELP = "The fully qualified class names of GatewayTransportFilters (separated by comma) to be added to the GatewayReceiver. e.g. gateway-transport-filter=com.user.filters.MyFilter1,com.user.filters.MyFilters2";
@@ -1522,7 +1525,7 @@ public class CliStrings {
   public static final String CREATE_GATEWAYSENDER__PARALLEL__HELP = "Whether this is Parallel GatewaySender.";
   public static final String CREATE_GATEWAYSENDER__MANUALSTART = "manual-start";
   public static final String CREATE_GATEWAYSENDER__MANUALSTART__HELP = "Whether manual start is to be enabled or the sender will start automatically after creation.";
-  public static final String CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE = "socket-buffer-size";
+  public static final String CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE = SOCKET_BUFFER_SIZE;
   public static final String CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE__HELP = "The buffer size of the socket connection between this GatewaySender and its receiving GatewayReceiver.";
   public static final String CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT = "socket-read-timeout";
   public static final String CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT__HELP = "The amount of time in milliseconds that a socket read between a sending GatewaySender and its receiving GatewayReceiver will block.";
@@ -1621,13 +1624,13 @@ public class CliStrings {
   public static final String START_LOCATOR__HOSTNAME_FOR_CLIENTS__HELP = "Hostname or IP address that will be sent to clients so they can connect to this Locator. The default is the bind-address of the Locator.";
   public static final String START_LOCATOR__INCLUDE_SYSTEM_CLASSPATH = "include-system-classpath";
   public static final String START_LOCATOR__INCLUDE_SYSTEM_CLASSPATH__HELP = "Includes the System CLASSPATH on the Locator's CLASSPATH. The System CLASSPATH is not included by default.";
-  public static final String START_LOCATOR__LOCATORS = "locators";
+  public static final String START_LOCATOR__LOCATORS = LOCATORS;
   public static final String START_LOCATOR__LOCATORS__HELP = "Sets the list of Locators used by this Locator to join the appropriate GemFire cluster.";
-  public static final String START_LOCATOR__LOG_LEVEL = "log-level";
+  public static final String START_LOCATOR__LOG_LEVEL = LOG_LEVEL;
   public static final String START_LOCATOR__LOG_LEVEL__HELP = "Sets the level of output logged to the Locator log file.  Possible values for log-level include: finest, finer, fine, config, info, warning, severe, none.";
-  public static final String START_LOCATOR__MCAST_ADDRESS = "mcast-address";
+  public static final String START_LOCATOR__MCAST_ADDRESS = MCAST_ADDRESS;
   public static final String START_LOCATOR__MCAST_ADDRESS__HELP = "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Locator can communicate other members in the GemFire cluster using a common multicast address and port.  If mcast-port is zero, then mcast-address is ignored.";
-  public static final String START_LOCATOR__MCAST_PORT = "mcast-port";
+  public static final String START_LOCATOR__MCAST_PORT = MCAST_PORT;
   public static final String START_LOCATOR__MCAST_PORT__HELP = "Sets the port used for multi-cast networking so the Locator can communicate with other members of the GemFire cluster.  A zero value disables mcast.";
   public static final String START_LOCATOR__MEMBER_NAME = "name";
   public static final String START_LOCATOR__MEMBER_NAME__HELP = "The member name to give this Locator in the GemFire cluster.";
@@ -1650,7 +1653,7 @@ public class CliStrings {
   public static final String START_LOCATOR__CONNECT = "connect";
   public static final String START_LOCATOR__CONNECT__HELP = "When connect is set to false , Gfsh does not automatically connect to the locator which is started using this command.";
   public static final String START_LOCATOR__USE__0__TO__CONNECT = "Please use \"{0}\" to connect Gfsh to the locator.";
-  public static final String START_LOCATOR__ENABLE__SHARED__CONFIGURATION = "enable-cluster-configuration";
+  public static final String START_LOCATOR__ENABLE__SHARED__CONFIGURATION = ENABLE_CLUSTER_CONFIGURATION;
   public static final String START_LOCATOR__ENABLE__SHARED__CONFIGURATION__HELP = "When " + START_LOCATOR__ENABLE__SHARED__CONFIGURATION + " is set to true, locator hosts and serves cluster configuration.";
   public static final String START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM = "load-cluster-configuration-from-dir";
   public static final String START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM__HELP = "When \" " + START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM + " \" is set to true, the locator loads the cluster configuration from the \""+ SharedConfiguration.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME + "\" directory.";  
@@ -1688,7 +1691,7 @@ public class CliStrings {
   public static final String START_SERVER__ASSIGN_BUCKETS__HELP = "Whether to assign buckets to the partitioned regions of the cache on server start.";
   public static final String START_SERVER__BIND_ADDRESS = "bind-address";
   public static final String START_SERVER__BIND_ADDRESS__HELP = "The IP address on which the Server will be bound.  By default, the Server is bound to all local addresses.";
-  public static final String START_SERVER__CACHE_XML_FILE = "cache-xml-file";
+  public static final String START_SERVER__CACHE_XML_FILE = CACHE_XML_FILE;
   public static final String START_SERVER__CACHE_XML_FILE__HELP = "Specifies the name of the XML file or resource to initialize the cache with when it is created.";
   public static final String START_SERVER__CLASSPATH = "classpath";
   public static final String START_SERVER__CLASSPATH__HELP = "Location of user application classes required by the Server. The user classpath is prepended to the Server's classpath.";
@@ -1698,7 +1701,7 @@ public class CliStrings {
   public static final String START_SERVER__DISABLE_DEFAULT_SERVER__HELP = "Whether the Cache Server will be started by default.";
   public static final String START_SERVER__DISABLE_EXIT_WHEN_OUT_OF_MEMORY = "disable-exit-when-out-of-memory";
   public static final String START_SERVER__DISABLE_EXIT_WHEN_OUT_OF_MEMORY_HELP = "Prevents the JVM from exiting when an OutOfMemoryError occurs.";
-  public static final String START_SERVER__ENABLE_TIME_STATISTICS = "enable-time-statistics";
+  public static final String START_SERVER__ENABLE_TIME_STATISTICS = ENABLE_TIME_STATISTICS;
   public static final String START_SERVER__ENABLE_TIME_STATISTICS__HELP = "Causes additional time-based statistics to be gathered for GemFire operations.";
   public static final String START_SERVER__FORCE = "force";
   public static final String START_SERVER__FORCE__HELP = "Whether to allow the PID file from a previous Cache Server run to be overwritten.";
@@ -1710,55 +1713,55 @@ public class CliStrings {
   public static final String START_SERVER__INITIAL_HEAP__HELP = "Initial size of the heap in the same format as the JVM -Xms parameter.";
   public static final String START_SERVER__J = "J";
   public static final String START_SERVER__J__HELP = "Argument passed to the JVM on which the server will run. For example, --J=-Dfoo.bar=true will set the system property \"foo.bar\" to \"true\".";
-  public static final String START_SERVER__LOCATORS = "locators";
+  public static final String START_SERVER__LOCATORS = LOCATORS;
   public static final String START_SERVER__LOCATORS__HELP = "Sets the list of Locators used by the Cache Server to join the appropriate GemFire cluster.";
-  public static final String START_SERVER__LOCK_MEMORY = "lock-memory";
+  public static final String START_SERVER__LOCK_MEMORY = SystemConfigurationProperties.LOCK_MEMORY;
   public static final String START_SERVER__LOCK_MEMORY__HELP = "Causes GemFire to lock heap and off-heap memory pages into RAM. This prevents the operating system from swapping the pages out to disk, which can cause severe performance degradation. When you use this option, also configure the operating system limits for locked memory.";
   public static final String START_SERVER__LOCATOR_WAIT_TIME = "locator-wait-time";
   public static final String START_SERVER__LOCATOR_WAIT_TIME_HELP = "Sets the number of seconds the server will wait for a locator to become available during startup before giving up.";
-  public static final String START_SERVER__LOG_LEVEL = "log-level";
+  public static final String START_SERVER__LOG_LEVEL = LOG_LEVEL;
   public static final String START_SERVER__LOG_LEVEL__HELP = "Sets the level of output logged to the Cache Server log file.  Possible values for log-level include: finest, finer, fine, config, info, warning, severe, none.";
   public static final String START_SERVER__MAXHEAP = "max-heap";
   public static final String START_SERVER__MAXHEAP__HELP = "Maximum size of the heap in the same format as the JVM -Xmx parameter.";
-  public static final String START_SERVER__MCAST_ADDRESS = "mcast-address";
+  public static final String START_SERVER__MCAST_ADDRESS = MCAST_ADDRESS;
   public static final String START_SERVER__MCAST_ADDRESS__HELP = "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Cache Server can communicate with other members in the GemFire cluster.  If mcast-port is zero, then mcast-address is ignored.";
-  public static final String START_SERVER__MCAST_PORT = "mcast-port";
+  public static final String START_SERVER__MCAST_PORT = MCAST_PORT;
   public static final String START_SERVER__MCAST_PORT__HELP = "Sets the port used for multi-cast networking so the Cache Server can communicate with other members of the GemFire cluster.  A zero value disables mcast.";
   public static final String START_SERVER__NAME = "name";
   public static final String START_SERVER__NAME__HELP = "The member name to give this Cache Server in the GemFire cluster.";
-  public static final String START_SERVER__MEMCACHED_PORT = "memcached-port";
+  public static final String START_SERVER__MEMCACHED_PORT = MEMCACHED_PORT;
   public static final String START_SERVER__MEMCACHED_PORT__HELP = "Sets the port that the GemFire memcached service listens on for memcached clients.";
-  public static final String START_SERVER__MEMCACHED_PROTOCOL = "memcached-protocol";
+  public static final String START_SERVER__MEMCACHED_PROTOCOL = MEMCACHED_PROTOCOL;
   public static final String START_SERVER__MEMCACHED_PROTOCOL__HELP = "Sets the protocol that the GemFire memcached service uses (ASCII or BINARY).";
-  public static final String START_SERVER__MEMCACHED_BIND_ADDRESS = "memcached-bind-address";
+  public static final String START_SERVER__MEMCACHED_BIND_ADDRESS = MEMCACHED_BIND_ADDRESS;
   public static final String START_SERVER__MEMCACHED_BIND_ADDRESS__HELP = "Sets the IP address the GemFire memcached service listens on for memcached clients. The default is to bind to the first non-loopback address for this machine.";
-  public static final String START_SERVER__OFF_HEAP_MEMORY_SIZE = "off-heap-memory-size";
+  public static final String START_SERVER__OFF_HEAP_MEMORY_SIZE = SystemConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
   public static final String START_SERVER__OFF_HEAP_MEMORY_SIZE__HELP = "The total size of off-heap memory specified as off-heap-memory-size=<n>[g|m]. <n> is the size. [g|m] indicates whether the size should be interpreted as gigabytes or megabytes. A non-zero size causes that much memory to be allocated from the operating system and reserved for off-heap use.";
   public static final String START_SERVER__PROPERTIES = "properties-file";
   public static final String START_SERVER__PROPERTIES__HELP = "The gemfire.properties file for configuring the Cache Server's distributed system. The file's path can be absolute or relative to the gfsh working directory.";
-  public static final String START_SERVER__REDIS_PORT = "redis-port";
+  public static final String START_SERVER__REDIS_PORT = SystemConfigurationProperties.REDIS_PORT;
   public static final String START_SERVER__REDIS_PORT__HELP = "Sets the port that the GemFire Redis service listens on for Redis clients.";
-  public static final String START_SERVER__REDIS_BIND_ADDRESS = "redis-bind-address";
+  public static final String START_SERVER__REDIS_BIND_ADDRESS = SystemConfigurationProperties.REDIS_BIND_ADDRESS;
   public static final String START_SERVER__REDIS_BIND_ADDRESS__HELP = "Sets the IP address the GemFire Redis service listens on for Redis clients. The default is to bind to the first non-loopback address for this machine.";
-  public static final String START_SERVER__REDIS_PASSWORD = "redis-password";
+  public static final String START_SERVER__REDIS_PASSWORD = SystemConfigurationProperties.REDIS_PASSWORD;
   public static final String START_SERVER__REDIS_PASSWORD__HELP = "Sets the authentication password for GemFireRedisServer";
   public static final String START_SERVER__SECURITY_PROPERTIES = "security-properties-file";
   public static final String START_SERVER__SECURITY_PROPERTIES__HELP = "The gfsecurity.properties file for configuring the Server's security configuration in the distributed system. The file's path can be absolute or relative to gfsh directory.";
   public static final String START_SERVER__REBALANCE = "rebalance";
   public static final String START_SERVER__REBALANCE__HELP = "Whether to initiate rebalancing across the GemFire cluster.";
-  public static final String START_SERVER__SERVER_BIND_ADDRESS = "server-bind-address";
+  public static final String START_SERVER__SERVER_BIND_ADDRESS = SERVER_BIND_ADDRESS;
   public static final String START_SERVER__SERVER_BIND_ADDRESS__HELP = "The IP address that this distributed system's server sockets in a client-server topology will be bound. If set to an empty string then all of the local machine's addresses will be listened on.";
   public static final String START_SERVER__SERVER_PORT = "server-port";
   public static final String START_SERVER__SERVER_PORT__HELP = "The port that the distributed system's server sockets in a client-server topology will listen on.  The default server-port is "
       + CacheServer.DEFAULT_PORT + ".";
   public static final String START_SERVER__SPRING_XML_LOCATION = "spring-xml-location";
   public static final String START_SERVER__SPRING_XML_LOCATION_HELP = "Specifies the location of a Spring XML configuration file(s) for bootstrapping and configuring a GemFire Server.";
-  public static final String START_SERVER__STATISTIC_ARCHIVE_FILE = "statistic-archive-file";
+  public static final String START_SERVER__STATISTIC_ARCHIVE_FILE = STATISTIC_ARCHIVE_FILE;
   public static final String START_SERVER__STATISTIC_ARCHIVE_FILE__HELP = "The file that statistic samples are written to.  An empty string (default) disables statistic archival.";
   // public static final String START_SERVER__START_LOCATOR = "start-locator";
   // public static final String START_SERVER__START_LOCATOR__HELP =
   // "To start embedded Locator with given endpoints in the format: host[port]. If no endpoints are given defaults (localhost[10334]) are assumed.";
-  public static final String START_SERVER__USE_CLUSTER_CONFIGURATION = "use-cluster-configuration";
+  public static final String START_SERVER__USE_CLUSTER_CONFIGURATION = USE_CLUSTER_CONFIGURATION;
   public static final String START_SERVER__USE_CLUSTER_CONFIGURATION__HELP = "When set to true, the server requests the configuration from locator's cluster configuration service.";
   public static final String START_SERVER__GENERAL_ERROR_MESSAGE = "An error occurred while attempting to start a GemFire Cache Server: %1$s";
   public static final String START_SERVER__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE = "The Cache Server process terminated unexpectedly with exit status %1$d. Please refer to the log file in %2$s for full details.%n%n%3$s";
@@ -1809,9 +1812,8 @@ public class CliStrings {
   
   public static final String START_SERVER__MESSAGE__TIME__TO__LIVE = "message-time-to-live";
   public static final String START_SERVER__MESSAGE__TIME__TO__LIVE__HELP = "Sets the time (in seconds ) after which a message in the client queue will expire";
-  
-  
-  public static final String START_SERVER__SOCKET__BUFFER__SIZE = "socket-buffer-size";
+
+  public static final String START_SERVER__SOCKET__BUFFER__SIZE = SOCKET_BUFFER_SIZE;
   public static final String START_SERVER__SOCKET__BUFFER__SIZE__HELP = "Sets the buffer size in bytes of the socket connection for this CacheServer. The default is 32768 bytes.";
   
   public static final String START_SERVER__TCP__NO__DELAY = "tcp-no-delay";
@@ -2048,7 +2050,7 @@ public class CliStrings {
   //List durable cqs
 
   public static final String LIST_DURABLE_CQS = "list durable-cqs";
-  public static final String LIST_DURABLE_CQS__DURABLECLIENTID = "durable-client-id";
+  public static final String LIST_DURABLE_CQS__DURABLECLIENTID = DURABLE_CLIENT_ID;
   public static final String LIST_DURABLE_CQS__DURABLECLIENTID__HELP = "The id used to identify the durable client";
   public static final String LIST_DURABLE_CQS__HELP = "List durable client cqs associated with the specified durable client id.";
   public static final String LIST_DURABLE_CQS__MEMBER = "member";
@@ -2068,7 +2070,7 @@ public class CliStrings {
   public static final String CLOSE_DURABLE_CQS__HELP = "Closes the durable cq registered by the durable client and drains events held for the durable cq from the subscription queue.";
   public static final String CLOSE_DURABLE_CQS__NAME = "durable-cq-name";
   public static final String CLOSE_DURABLE_CQS__NAME__HELP = "Name of the cq to be closed.";
-  public static final String CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID = "durable-client-id";
+  public static final String CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID = DURABLE_CLIENT_ID;
   public static final String CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID__HELP = "The id of the durable client";
   public static final String CLOSE_DURABLE_CQS__MEMBER = "member";
   public static final String CLOSE_DURABLE_CQS__MEMBER__HELP = "Name/Id of the member for which the durable client is registered and the cq to be closed.";
@@ -2081,7 +2083,7 @@ public class CliStrings {
   //Close Durable Clients
   public static final String CLOSE_DURABLE_CLIENTS = "close durable-client";
   public static final String CLOSE_DURABLE_CLIENTS__HELP = "Attempts to close the durable client, the client must be disconnected.";
-  public static final String CLOSE_DURABLE_CLIENTS__CLIENT__ID = "durable-client-id";
+  public static final String CLOSE_DURABLE_CLIENTS__CLIENT__ID = DURABLE_CLIENT_ID;
   public static final String CLOSE_DURABLE_CLIENTS__CLIENT__ID__HELP = "The id used to identify the durable client.";
   public static final String CLOSE_DURABLE_CLIENTS__MEMBER = "member";
   public static final String CLOSE_DURABLE_CLIENTS__MEMBER__HELP = "Name/Id of the member for which the durable client is to be closed.";
@@ -2092,7 +2094,7 @@ public class CliStrings {
 
   public static final String COUNT_DURABLE_CQ_EVENTS = "show subscription-queue-size";
   public static final String COUNT_DURABLE_CQ_EVENTS__HELP = "Shows the number of events in the subscription queue.  If a cq name is provided, counts the number of events in the subscription queue for the specified cq.";
-  public static final String COUNT_DURABLE_CQ_EVENTS__DURABLE__CLIENT__ID = "durable-client-id";
+  public static final String COUNT_DURABLE_CQ_EVENTS__DURABLE__CLIENT__ID = DURABLE_CLIENT_ID;
   public static final String COUNT_DURABLE_CQ_EVENTS__DURABLE__CLIENT__ID__HELP = "The id used to identify the durable client.";
   public static final String COUNT_DURABLE_CQ_EVENTS__DURABLE__CQ__NAME = "durable-cq-name";
   public static final String COUNT_DURABLE_CQ_EVENTS__DURABLE__CQ__NAME__HELP = "The name that identifies the cq.";

@@ -16,22 +16,20 @@
  */
 package com.gemstone.gemfire.cache;
 
-import java.io.IOException;
-import java.util.Properties;
-
-import junit.framework.Assert;
-
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.*;
+import junit.framework.Assert;
+
+import java.io.IOException;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * This tests cases where we have both 
@@ -409,8 +407,8 @@ public class ConnectionPoolAndLoaderDUnitTest  extends CacheTestCase {
   public Properties getDistributedSystemProperties() {
     Properties p = new Properties();
     if(!useLocator) {
-      p.setProperty("locators", "");
-      p.setProperty("mcast-port", "0");
+      p.setProperty(LOCATORS, "");
+      p.setProperty(MCAST_PORT, "0");
     }
     return p;
   }

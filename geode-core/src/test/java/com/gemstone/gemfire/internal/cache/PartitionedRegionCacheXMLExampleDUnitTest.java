@@ -16,15 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.Properties;
-
+import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.util.test.TestUtil;
+
+import java.util.Properties;
 
 /**
  * This class tests regions created by xml files
@@ -49,8 +50,8 @@ public class PartitionedRegionCacheXMLExampleDUnitTest extends
 
 				Properties props = new Properties();
 				String xmlfilepath = TestUtil.getResourcePath(getClass(), "PartitionRegionCacheExample1.xml");
-				props.setProperty("cache-xml-file", xmlfilepath);
-                                
+				props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, xmlfilepath);
+
 				getSystem(props);
 				cache = getCache();
 			}
@@ -104,7 +105,7 @@ public class PartitionedRegionCacheXMLExampleDUnitTest extends
 
 				Properties props = new Properties();
 				String xmlfilepath = TestUtil.getResourcePath(getClass(), "PartitionRegionCacheExample2.xml");
-				props.setProperty("cache-xml-file", xmlfilepath);
+				props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, xmlfilepath);
 				getSystem(props);
 				cache = getCache();
 			}

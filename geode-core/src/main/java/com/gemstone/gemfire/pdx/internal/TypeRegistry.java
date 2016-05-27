@@ -16,15 +16,11 @@
  */
 package com.gemstone.gemfire.pdx.internal;
 
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -35,13 +31,17 @@ import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteWeakHashMap;
 import com.gemstone.gemfire.pdx.PdxSerializationException;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class TypeRegistry {
   private static final Logger logger = LogService.getLogger();
-  
-  private static final boolean DISABLE_TYPE_REGISTRY 
-      = Boolean.getBoolean("gemfire.TypeRegistry.DISABLE_PDX_REGISTRY"); 
+
+  private static final boolean DISABLE_TYPE_REGISTRY
+      = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "TypeRegistry.DISABLE_PDX_REGISTRY");
 
   private final Map<Integer, PdxType> idToType = new CopyOnWriteHashMap<Integer, PdxType>();
   private final Map<PdxType, Integer> typeToId = new CopyOnWriteHashMap<PdxType, Integer>();

@@ -16,20 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.*;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @Category(IntegrationTest.class)
 public class RegionListenerJUnitTest {
@@ -52,8 +48,8 @@ public class RegionListenerJUnitTest {
         afterCreateInvoked.set(true);
       }
     };
-    
-    GemFireCacheImpl cache = (GemFireCacheImpl) new CacheFactory().set("mcast-port", "0").create();
+
+    GemFireCacheImpl cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
     cache.addRegionListener(listener);
     Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create("region");
     assertEquals(DataPolicy.EMPTY, region.getAttributes().getDataPolicy());

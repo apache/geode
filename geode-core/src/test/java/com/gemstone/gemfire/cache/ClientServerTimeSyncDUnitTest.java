@@ -16,11 +16,6 @@
  */
 package com.gemstone.gemfire.cache;
 
-import java.io.IOException;
-import java.util.Properties;
-
-import org.junit.Ignore;
-
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
@@ -29,14 +24,13 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.internal.DSClock;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
+import org.junit.Ignore;
+
+import java.io.IOException;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
 
 public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
 
@@ -87,7 +81,7 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
         
       disconnectFromDS();
       Properties props = new Properties();
-      props.setProperty("locators", "");
+      props.setProperty(LOCATORS, "");
       props = getSystem(props).getProperties();
       cache = new ClientCacheFactory(props).setPoolSubscriptionEnabled(true)
           .addPoolServer(hostName, serverPort)
@@ -166,7 +160,7 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
         
       disconnectFromDS();
       Properties props = new Properties();
-      props.setProperty("locators", "");
+      props.setProperty(LOCATORS, "");
       props = getSystem(props).getProperties();
       cache = new ClientCacheFactory(props).setPoolSubscriptionEnabled(true)
           .addPoolServer(hostName, serverPort)

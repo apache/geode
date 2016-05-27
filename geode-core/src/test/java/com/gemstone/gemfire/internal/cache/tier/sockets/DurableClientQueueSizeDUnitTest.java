@@ -16,29 +16,23 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import java.util.Iterator;
-import java.util.Properties;
-
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.*;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.util.Iterator;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
 
 /**
  *
@@ -258,8 +252,8 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
   public static Integer createCacheServer(Integer serverPort)
       throws Exception {
     Properties props = new Properties();
-    props.setProperty("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-//    props.setProperty("log-level", "fine");
+    props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+    //    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
 //    props.setProperty("log-file", "server_" + OSProcess.getId() + ".log");
 //    props.setProperty("statistic-archive-file", "server_" + OSProcess.getId()
 //        + ".gfs");
@@ -300,14 +294,14 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
   }
 
   public static void setSpecialDurable(Boolean bool) {
-    System.setProperty("gemfire.SPECIAL_DURABLE", bool.toString());
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE", bool.toString());
   }
 
   @SuppressWarnings("deprecation")
   public static void createClientCache(Host host, Integer[] ports,
       String timeoutSeconds, Boolean durable, Boolean multiPool) throws Exception {
     if (multiPool) {
-      System.setProperty("gemfire.SPECIAL_DURABLE", "true");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE", "true");
     }
     Properties props = new Properties();
     if (durable) {
@@ -317,7 +311,7 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
           timeoutSeconds);
     }
     //    props.setProperty("log-file", "client_" + OSProcess.getId() + ".log");
-//    props.setProperty("log-level", "fine");
+    //    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
 //    props.setProperty("statistic-archive-file", "client_" + OSProcess.getId()
 //        + ".gfs");
 //    props.setProperty("statistic-sampling-enabled", "true");

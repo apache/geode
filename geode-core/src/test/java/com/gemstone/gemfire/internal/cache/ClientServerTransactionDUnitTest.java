@@ -16,68 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import javax.naming.Context;
-import javax.transaction.UserTransaction;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.InterestPolicy;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.SubscriptionAttributes;
-import com.gemstone.gemfire.cache.TransactionDataNodeHasDepartedException;
-import com.gemstone.gemfire.cache.TransactionDataNotColocatedException;
-import com.gemstone.gemfire.cache.TransactionEvent;
-import com.gemstone.gemfire.cache.TransactionException;
-import com.gemstone.gemfire.cache.TransactionId;
-import com.gemstone.gemfire.cache.TransactionInDoubtException;
-import com.gemstone.gemfire.cache.TransactionWriter;
-import com.gemstone.gemfire.cache.TransactionWriterException;
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.FunctionAdapter;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.execute.FunctionException;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
+import com.gemstone.gemfire.cache.client.*;
+import com.gemstone.gemfire.cache.execute.*;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache.util.TransactionListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.AvailablePort;
@@ -86,13 +34,18 @@ import com.gemstone.gemfire.internal.cache.execute.data.Customer;
 import com.gemstone.gemfire.internal.cache.execute.data.Order;
 import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
 import com.gemstone.gemfire.internal.cache.tx.ClientTXStateStub;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
+
+import javax.naming.Context;
+import javax.transaction.UserTransaction;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getDUnitLogLevel;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 
 /**
  * Tests the basic client-server transaction functionality
@@ -151,8 +104,8 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         af.setScope(Scope.DISTRIBUTED_ACK);
         af.setDataPolicy(DataPolicy.REPLICATE);
         Properties props = getDistributedSystemProperties();
-        props.put("mcast-port", "0");
-        props.remove("locators");
+        props.put(MCAST_PORT, "0");
+        props.remove(LOCATORS);
         InternalDistributedSystem system = getSystem(props);
         Cache cache = CacheFactory.create(system);
         cache.createRegion(OTHER_REGION,af.create());
@@ -194,7 +147,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set("log-level", getDUnitLogLevel());
+        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
         // these settings were used to manually check that tx operation stats were being updated
         //ccf.set(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
         //ccf.set(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "clientStats.gfs");
@@ -249,12 +202,12 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     disconnectAllFromDS(); // some other VMs seem to be hanging around and have the region this tests uses
 
     final int port1 = createRegionsAndStartServer(datastore1, false);
-    System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "true");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
     ClientCacheFactory ccf = new ClientCacheFactory();
     ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
     ccf.setPoolSubscriptionEnabled(false);
 
-    ccf.set("log-level", getDUnitLogLevel());
+    ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
 
     ClientCache cCache = getClientCache(ccf);
     
@@ -321,11 +274,11 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final int port1 = createRegionsAndStartServer(accessor, true);
     createRegionOnServer(datastore, false, false);
 
-    System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "true");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
     ClientCacheFactory ccf = new ClientCacheFactory();
     ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
     ccf.setPoolSubscriptionEnabled(false);
-    ccf.set("log-level", getDUnitLogLevel());
+    ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
     ClientCache cCache = getClientCache(ccf);
     ClientRegionFactory<CustId, Customer> custrf = cCache
       .createClientRegionFactory(cachingProxy ? ClientRegionShortcut.CACHING_PROXY : ClientRegionShortcut.PROXY);
@@ -1380,7 +1333,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set("log-level", getDUnitLogLevel());
+        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<CustId, Customer> custrf = cCache
             .createClientRegionFactory(ClientRegionShortcut.PROXY);
@@ -1476,7 +1429,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         ccf.addPoolServer("localhost", port2);
         ccf.setPoolLoadConditioningInterval(1);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set("log-level", getDUnitLogLevel());
+        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<CustId, Customer> custrf = cCache
             .createClientRegionFactory(ClientRegionShortcut.PROXY);
@@ -1587,13 +1540,13 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     
     /*final TXId txid = (TXId) */client.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
         if (port2 != 0) ccf.addPoolServer("localhost", port2);
         if (port3 != 0) ccf.addPoolServer("localhost", port3);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set("log-level", getDUnitLogLevel());
+        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<CustId, Customer> custrf = cCache
             .createClientRegionFactory(cachingProxy ? ClientRegionShortcut.CACHING_PROXY : ClientRegionShortcut.PROXY);
@@ -2105,7 +2058,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         ccf.addPoolServer("localhost", port2);
         ccf.setPoolSubscriptionEnabled(false);
         ccf.setPoolLoadConditioningInterval(1);
-        ccf.set("log-level", getDUnitLogLevel());
+        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<CustId, Customer> custrf = cCache
             .createClientRegionFactory(ClientRegionShortcut.PROXY);
@@ -2491,14 +2444,14 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     client.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         disconnectFromDS();
-        System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
         ccf.addPoolServer("localhost", port2);
         ccf.setPoolMinConnections(5);
         ccf.setPoolLoadConditioningInterval(-1);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set("log-level", getDUnitLogLevel());
+        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         Region r1 = cCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("r1");
         Region r2 = cCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("r2");
@@ -2541,12 +2494,12 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         txState.setAfterSend(new Runnable() {
           public void run() {
             getCache().getLogger().info("SWAP:closing cache");
-            System.setProperty("gemfire.no-flush-on-close", "true");
+            System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close", "true");
             try {
               mgr.removeHostedTXState((TXId) txState.getTransactionId());
               getCache().close();
             } finally {
-              System.getProperties().remove("gemfire.no-flush-on-close");
+              System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close");
             }
           }
         });
@@ -2726,12 +2679,12 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     try {
       client.invoke(new SerializableCallable() {
         public Object call() throws Exception {
-          System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "true");
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
           ClientCacheFactory ccf = new ClientCacheFactory();
           ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port);
           ccf.addPoolServer("localhost", port2);
           ccf.setPoolSubscriptionEnabled(false);
-          ccf.set("log-level", getDUnitLogLevel());
+          ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
           // these settings were used to manually check that tx operation stats were being updated
           //ccf.set(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
           //ccf.set(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "clientStats.gfs");
@@ -3028,12 +2981,12 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     final TXId txid = (TXId) client.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
         if (port2 != 0) ccf.addPoolServer("localhost", port2);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set("log-level", getDUnitLogLevel());
+        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<CustId, Customer> custrf = cCache
             .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
@@ -3168,13 +3121,13 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
 
     /*final TXId txid = (TXId) */client.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
         ccf.addPoolServer("localhost", port2);
         ccf.setPoolMinConnections(0);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set("log-level", getDUnitLogLevel());
+        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<CustId, Customer> custrf = cCache
             .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
@@ -3257,12 +3210,12 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
 
     /*final TXId txid = (TXId) */client.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
         ccf.setPoolMinConnections(0);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set("log-level", getDUnitLogLevel());
+        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<CustId, Customer> custrf = cCache
             .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
@@ -3346,13 +3299,13 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     client2.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port2);
         ccf.setPoolMinConnections(0);
         ccf.setPoolSubscriptionEnabled(true);
         ccf.setPoolSubscriptionRedundancy(0);
-        ccf.set("log-level", getDUnitLogLevel());
+        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         Region r = cCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).addCacheListener(new ClientListener()).create(regionName);
         r.registerInterestRegex(".*");
@@ -3363,12 +3316,12 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     client1.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        System.setProperty("gemfire.bridge.disableShufflingOfEndpoints", "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
         ccf.setPoolMinConnections(0);
         ccf.setPoolSubscriptionEnabled(true);
-        ccf.set("log-level", getDUnitLogLevel());
+        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         Region r = cCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);
         getCache().getCacheTransactionManager().begin();

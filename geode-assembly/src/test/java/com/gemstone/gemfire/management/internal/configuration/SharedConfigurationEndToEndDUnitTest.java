@@ -16,31 +16,12 @@
  */
 package com.gemstone.gemfire.management.internal.configuration;
 
-import static com.gemstone.gemfire.cache.RegionShortcut.*;
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
-import static com.gemstone.gemfire.internal.AvailablePortHelper.*;
-import static com.gemstone.gemfire.internal.FileUtil.*;
-import static com.gemstone.gemfire.internal.lang.StringUtils.*;
-import static com.gemstone.gemfire.management.internal.cli.CliUtil.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.Host.*;
-import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
-import static com.gemstone.gemfire.test.dunit.Wait.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.ClassBuilder;
 import com.gemstone.gemfire.internal.JarDeployer;
@@ -56,10 +37,31 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+
+import static com.gemstone.gemfire.cache.RegionShortcut.PARTITION;
+import static com.gemstone.gemfire.cache.RegionShortcut.REPLICATE;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static com.gemstone.gemfire.internal.FileUtil.delete;
+import static com.gemstone.gemfire.internal.FileUtil.deleteMatching;
+import static com.gemstone.gemfire.internal.lang.StringUtils.isBlank;
+import static com.gemstone.gemfire.management.internal.cli.CliUtil.getAllNormalMembers;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.Host.getHost;
+import static com.gemstone.gemfire.test.dunit.IgnoredException.addIgnoredException;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
 
 @Category(DistributedTest.class)
 public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
@@ -343,15 +345,15 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
         final File locatorLogFile = new File(locatorLogPath);
 
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(NAME_NAME, locator1Name);
-        locatorProps.setProperty(MCAST_PORT_NAME, "0");
-        locatorProps.setProperty(LOG_LEVEL_NAME, "config");
-        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
-        locatorProps.setProperty(JMX_MANAGER_NAME, "true");
-        locatorProps.setProperty(JMX_MANAGER_START_NAME, "true");
-        locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS_NAME, String.valueOf(jmxHost));
-        locatorProps.setProperty(JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
-        locatorProps.setProperty(HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
+        locatorProps.setProperty(SystemConfigurationProperties.NAME, locator1Name);
+        locatorProps.setProperty(MCAST_PORT, "0");
+        locatorProps.setProperty(SystemConfigurationProperties.LOG_LEVEL, "config");
+        locatorProps.setProperty(SystemConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "true");
+        locatorProps.setProperty(SystemConfigurationProperties.JMX_MANAGER, "true");
+        locatorProps.setProperty(SystemConfigurationProperties.JMX_MANAGER_START, "true");
+        locatorProps.setProperty(SystemConfigurationProperties.JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
+        locatorProps.setProperty(SystemConfigurationProperties.JMX_MANAGER_PORT, String.valueOf(jmxPort));
+        locatorProps.setProperty(SystemConfigurationProperties.HTTP_SERVICE_PORT, String.valueOf(httpPort));
 
         final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile, null, locatorProps);
 
@@ -389,9 +391,9 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() {
         Properties localProps = new Properties();
-        localProps.setProperty(MCAST_PORT_NAME, "0");
-        localProps.setProperty(LOCATORS_NAME, "localhost:" + locator1Port);
-        localProps.setProperty(NAME_NAME, "DataMember");
+        localProps.setProperty(MCAST_PORT, "0");
+        localProps.setProperty(SystemConfigurationProperties.LOCATORS, "localhost:" + locator1Port);
+        localProps.setProperty(SystemConfigurationProperties.NAME, "DataMember");
         getSystem(localProps);
         Cache cache = getCache();
         assertNotNull(cache);

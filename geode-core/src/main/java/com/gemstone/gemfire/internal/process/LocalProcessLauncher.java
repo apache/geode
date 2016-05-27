@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.process;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -36,7 +38,7 @@ import java.io.IOException;
  */
 public final class LocalProcessLauncher {
 
-  public static final String PROPERTY_IGNORE_IS_PID_ALIVE = "gemfire.test.LocalProcessLauncher.ignoreIsPidAlive";
+  public static final String PROPERTY_IGNORE_IS_PID_ALIVE = DistributionConfig.GEMFIRE_PREFIX + "test.LocalProcessLauncher.ignoreIsPidAlive";
   
   private final int pid;
   private final File pidFile;

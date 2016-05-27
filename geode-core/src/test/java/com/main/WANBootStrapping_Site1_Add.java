@@ -16,14 +16,15 @@
  */
 package com.main;
 
-import java.util.List;
-import java.util.Set;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
+import java.util.Set;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * This is a member representing site 1 who wants to send data to site 2
@@ -55,15 +56,15 @@ public class WANBootStrapping_Site1_Add {
 
   public static void main(String[] args) {
 
-    System.setProperty("gemfire.DistributedSystemListener",
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener",
         "com.main.MyDistributedSystemListener");
 
     // Create a locator and a cache
     System.out.println("Creating cache ...It will take some time..");
-    Cache cache = new CacheFactory().set(DistributionConfig.MCAST_PORT_NAME,
+    Cache cache = new CacheFactory().set(MCAST_PORT,
         "0").set(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "" + 1).set(
-        DistributionConfig.LOCATORS_NAME, "localhost[" + 10101 + "]").set(
-        DistributionConfig.START_LOCATOR_NAME,
+        LOCATORS, "localhost[" + 10101 + "]").set(
+        START_LOCATOR,
         "localhost[" + 10101
             + "],server=true,peer=true,hostname-for-clients=localhost").set(
         DistributionConfig.LOG_LEVEL_NAME, "warning").create();

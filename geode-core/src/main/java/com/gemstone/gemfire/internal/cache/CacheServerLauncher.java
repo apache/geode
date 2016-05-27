@@ -17,30 +17,13 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.PrintStream;
-import java.io.Serializable;
-import java.net.URL;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -55,6 +38,13 @@ import com.gemstone.gemfire.internal.process.StartupStatusListener;
 import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.internal.util.JavaCommandBuilder;
 
+import java.io.*;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.SERVER_BIND_ADDRESS;
+
 /**
  * Launcher program to start a cache server.
  *
@@ -64,23 +54,23 @@ import com.gemstone.gemfire.internal.util.JavaCommandBuilder;
 public class CacheServerLauncher  {
 
   /** Is this VM a dedicated Cache Server?  This value is used mainly by the admin API. */
-  public static boolean isDedicatedCacheServer = Boolean.getBoolean("gemfire.isDedicatedServer");
+  public static boolean isDedicatedCacheServer = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "isDedicatedServer");
 
-  public static boolean ASSIGN_BUCKETS = Boolean.getBoolean("gemfire.CacheServerLauncher.assignBucketsToPartitions");
+  public static boolean ASSIGN_BUCKETS = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "CacheServerLauncher.assignBucketsToPartitions");
 
   //default is to exit if property not defined
-  public static boolean DONT_EXIT_AFTER_LAUNCH = Boolean.getBoolean("gemfire.CacheServerLauncher.dontExitAfterLaunch");
+  public static boolean DONT_EXIT_AFTER_LAUNCH = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "CacheServerLauncher.dontExitAfterLaunch");
 
   /** Should the launch command be printed? */
   public static final boolean PRINT_LAUNCH_COMMAND = Boolean.getBoolean(
     CacheServerLauncher.class.getSimpleName() + ".PRINT_LAUNCH_COMMAND");
-  
-  private static final long STATUS_WAIT_TIME 
-    = Long.getLong("gemfire.CacheServerLauncher.STATUS_WAIT_TIME_MS", 15000);
+
+  private static final long STATUS_WAIT_TIME
+      = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "CacheServerLauncher.STATUS_WAIT_TIME_MS", 15000);
   
   /** How long to wait for a cache server to stop */
-  private static final long SHUTDOWN_WAIT_TIME 
-    = Long.getLong("gemfire.CacheServerLauncher.SHUTDOWN_WAIT_TIME_MS", 20000);
+  private static final long SHUTDOWN_WAIT_TIME
+      = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "CacheServerLauncher.SHUTDOWN_WAIT_TIME_MS", 20000);
 
   protected final String baseName;
   protected final String defaultLogFileName;
@@ -262,7 +252,7 @@ public class CacheServerLauncher  {
   protected static final String CLASSPATH = "classpath";
   protected static final String REBALANCE = "rebalance";
   protected static final String SERVER_PORT = "server-port";
-  protected static final String SERVER_BIND_ADDRESS = "server-bind-address";
+  protected static final String SERVER_BIND_ADDRESS_NAME = SERVER_BIND_ADDRESS;
   protected static final String DISABLE_DEFAULT_SERVER = "disable-default-server";
   public static final String CRITICAL_HEAP_PERCENTAGE =
     "critical-heap-percentage";
@@ -272,7 +262,7 @@ public class CacheServerLauncher  {
       "critical-off-heap-percentage";
   public static final String EVICTION_OFF_HEAP_PERCENTAGE =
       "eviction-off-heap-percentage";
-  protected static final String LOCK_MEMORY = "lock-memory";
+  protected static final String LOCK_MEMORY = SystemConfigurationProperties.LOCK_MEMORY;
 
   protected final File processDirOption(final Map<String, Object> options, final String dirValue) throws FileNotFoundException {
     final File inputWorkingDirectory = new File(dirValue);
@@ -318,7 +308,7 @@ public class CacheServerLauncher  {
         if (System.getProperty("os.name").indexOf("Windows") >= 0) {
           throw new IllegalArgumentException("Unable to lock memory on this operating system");
         }
-        props.put(DistributionConfig.LOCK_MEMORY_NAME, "true");
+        props.put(LOCK_MEMORY, "true");
       }
       else if (arg.startsWith("-rebalance")) {
         options.put(REBALANCE, Boolean.TRUE);
@@ -339,7 +329,7 @@ public class CacheServerLauncher  {
         options.put(EVICTION_OFF_HEAP_PERCENTAGE, arg);
       }
       else if (arg.startsWith("-server-bind-address")) {
-        options.put(SERVER_BIND_ADDRESS, arg);
+        options.put(SERVER_BIND_ADDRESS_NAME, arg);
       }
       else if (arg.startsWith("-J")) {
         String vmArg = arg.substring(2);
@@ -450,7 +440,7 @@ public class CacheServerLauncher  {
         options.put(SERVER_PORT, arg.substring(arg.indexOf("=") + 1));
       }
       else if (arg.startsWith("-server-bind-address")) {
-        options.put(SERVER_BIND_ADDRESS, arg.substring(arg.indexOf("=") + 1));
+        options.put(SERVER_BIND_ADDRESS_NAME, arg.substring(arg.indexOf("=") + 1));
       }
       else if (arg.startsWith("-" + CRITICAL_HEAP_PERCENTAGE)) {
         options.put(CRITICAL_HEAP_PERCENTAGE, arg.substring(arg.indexOf("=") + 1));
@@ -655,7 +645,7 @@ public class CacheServerLauncher  {
       serverPort.set(Integer.parseInt(serverPortString));
     }
 
-    serverBindAddress.set((String) options.get(SERVER_BIND_ADDRESS));
+    serverBindAddress.set((String) options.get(SERVER_BIND_ADDRESS_NAME));
     disableDefaultServer.set((Boolean) options.get(DISABLE_DEFAULT_SERVER));
     workingDir = new File(System.getProperty("user.dir"));
 
@@ -1244,7 +1234,7 @@ public class CacheServerLauncher  {
 
     commandLineWrapper.add((String) options.get(DISABLE_DEFAULT_SERVER));
     commandLineWrapper.add((String) options.get(SERVER_PORT));
-    commandLineWrapper.add((String) options.get(SERVER_BIND_ADDRESS));
+    commandLineWrapper.add((String) options.get(SERVER_BIND_ADDRESS_NAME));
 
     String criticalHeapThreshold = (String)options.get(CRITICAL_HEAP_PERCENTAGE);
     if (criticalHeapThreshold != null) {

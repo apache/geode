@@ -16,30 +16,25 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.stream.IntStream;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.QueryTestUtils;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.*;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.util.test.TestUtil;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.stream.IntStream;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
 
 @Category(DistributedTest.class)
 public class PartitionedRegionCompactRangeIndexDUnitTest extends DistributedTestCase {
@@ -50,8 +45,8 @@ public class PartitionedRegionCompactRangeIndexDUnitTest extends DistributedTest
 
   private Properties getSystemProperties(String cacheXML) {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-    props.setProperty("cache-xml-file", TestUtil.getResourcePath(getClass(), cacheXML));
+    props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, TestUtil.getResourcePath(getClass(), cacheXML));
     return props;
   }
   

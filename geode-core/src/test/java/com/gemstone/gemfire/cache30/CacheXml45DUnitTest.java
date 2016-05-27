@@ -19,15 +19,19 @@ package com.gemstone.gemfire.cache30;
 import com.company.app.DBLoader;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
-import com.gemstone.gemfire.internal.cache.xmlcache.*;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheTransactionManagerCreation;
+import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
+import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 
-import java.io.*;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Tests the declarative caching functionality introduced in GemFire
@@ -159,7 +163,7 @@ public class CacheXml45DUnitTest extends CacheXml41DUnitTest {
       // make our system play the roles used by this test so the create regions
       // will not think the a required role is missing
       Properties config = new Properties();
-      config.setProperty("roles", MY_ROLES);
+      config.setProperty(DistributionConfig.ROLES_NAME, MY_ROLES);
       this.xmlProps = config;
     }
     DistributedRegion.ignoreReconnect = true;

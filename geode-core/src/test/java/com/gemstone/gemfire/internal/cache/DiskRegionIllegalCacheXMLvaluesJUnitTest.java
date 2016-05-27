@@ -16,24 +16,20 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.File;
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
-
-import junit.framework.TestCase;
-
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.CacheXmlException;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.util.test.TestUtil;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.test.TestUtil;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
 
 /**
  * This test tests Illegal arguements being passed to 
@@ -55,8 +51,8 @@ public class DiskRegionIllegalCacheXMLvaluesJUnitTest
       dir.mkdir();
       dir.deleteOnExit();
       Properties props = new Properties();
-      props.setProperty("mcast-port", "0");
-      props.setProperty("cache-xml-file", TestUtil.getResourcePath(getClass(), path));
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, TestUtil.getResourcePath(getClass(), path));
       ds = DistributedSystem.connect(props);
       try {
        

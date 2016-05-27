@@ -19,11 +19,12 @@ package com.gemstone.gemfire.admin.internal;
 import com.gemstone.gemfire.admin.DistributionLocator;
 import com.gemstone.gemfire.admin.DistributionLocatorConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 import java.net.InetAddress;
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * Provides an implementation of
@@ -104,7 +105,7 @@ public class DistributionLocatorConfigImpl
     this.bindAddress = null;
     this.locator = null;
     this.dsProperties = new java.util.Properties();
-    this.dsProperties.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    this.dsProperties.setProperty(MCAST_PORT, "0");
   }
 
   /////////////////////  Instance Methods  /////////////////////

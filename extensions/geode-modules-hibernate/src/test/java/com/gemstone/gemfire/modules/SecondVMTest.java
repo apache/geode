@@ -16,26 +16,27 @@
 */
 package com.gemstone.gemfire.modules;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.logging.Level;
-
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Region.Entry;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import junit.framework.TestCase;
-
 import org.hibernate.Session;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.logging.Level;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 @Ignore("Can this test be deleted?")
 @Category(IntegrationTest.class)
@@ -48,8 +49,8 @@ public class SecondVMTest extends TestCase {
   }
   public void _testStartEmptyVM() throws IOException {
     Properties gemfireProperties = new Properties();
-    gemfireProperties.setProperty("mcast-port", "5555");
-    gemfireProperties.setProperty("log-level", "fine");
+    gemfireProperties.setProperty(MCAST_PORT, "5555");
+    gemfireProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
     Cache cache = new CacheFactory(gemfireProperties).create();
     System.in.read();
     Iterator it = cache.rootRegions().iterator();

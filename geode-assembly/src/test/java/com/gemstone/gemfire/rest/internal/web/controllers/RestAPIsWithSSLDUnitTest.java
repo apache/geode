@@ -29,7 +29,6 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.management.ManagementException;
-import com.gemstone.gemfire.management.ManagementTestBase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
@@ -53,6 +52,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * 
@@ -94,8 +96,8 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
       final Properties sslProperties, boolean clusterLevel) {
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, locators);
     props.setProperty(DistributionConfig.START_DEV_REST_API_NAME, "true");
     props.setProperty(DistributionConfig.HTTP_SERVICE_BIND_ADDRESS_NAME, hostName);
     props.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(restServicePort));
@@ -273,18 +275,18 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     IgnoredException.addIgnoredException("com.gemstone.gemfire.management.ManagementException");
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
-    props.setProperty("jmx-manager", "true");
-    props.setProperty("jmx-manager-start", "true");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, locators);
+    props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
+    props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
 
     Cache cache = null;
     configureSSL(props, sslProperties, false);
     while (true) {
       try {
         DistributedSystem ds = getSystem(props);
-        System.out.println("Creating cache with http-service-port " + props.getProperty("http-service-port", "7070")
-            + " and jmx-manager-port " + props.getProperty("jmx-manager-port", "1099"));
+        System.out.println("Creating cache with http-service-port " + props.getProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, "7070")
+            + " and jmx-manager-port " + props.getProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "1099"));
         cache = CacheFactory.create(ds);
         System.out.println("Successfully created cache.");
         break;
@@ -304,8 +306,8 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
           //try a different port
           int httpServicePort = AvailablePortHelper.getRandomAvailableTCPPort();
           int jmxManagerPort = AvailablePortHelper.getRandomAvailableTCPPort();
-          props.setProperty("http-service-port", Integer.toString(httpServicePort));
-          props.setProperty("jmx-manager-port", Integer.toString(jmxManagerPort));
+          props.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, Integer.toString(httpServicePort));
+          props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, Integer.toString(jmxManagerPort));
           System.out.println("Try a different http-service-port " + httpServicePort);
           System.out.println("Try a different jmx-manager-port " + jmxManagerPort);
         } else {

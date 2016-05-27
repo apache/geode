@@ -16,30 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.configuration;
 
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
-import static com.gemstone.gemfire.internal.AvailablePortHelper.*;
-import static com.gemstone.gemfire.internal.FileUtil.*;
-import static com.gemstone.gemfire.internal.lang.StringUtils.*;
-import static com.gemstone.gemfire.management.internal.cli.CliUtil.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.Host.*;
-import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
-import static com.gemstone.gemfire.test.dunit.Wait.*;
-import static org.apache.commons.io.FileUtils.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -75,10 +51,28 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.Map.Entry;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static com.gemstone.gemfire.internal.FileUtil.delete;
+import static com.gemstone.gemfire.internal.FileUtil.deleteMatching;
+import static com.gemstone.gemfire.internal.lang.StringUtils.isBlank;
+import static com.gemstone.gemfire.management.internal.cli.CliUtil.getAllNormalMembers;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.Host.getHost;
+import static com.gemstone.gemfire.test.dunit.IgnoredException.addIgnoredException;
+import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
+import static org.apache.commons.io.FileUtils.*;
 
 @Category(DistributedTest.class)
 public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
@@ -186,10 +180,10 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         File workingDir = new File(newMemberWorkingDir);
         workingDir.mkdirs();
 
-        localProps.setProperty(MCAST_PORT_NAME, "0");
-        localProps.setProperty(LOCATORS_NAME, "localhost:" + locatorPort);
-        localProps.setProperty(NAME_NAME, ClusterConfigurationDUnitTest.newMember);
-        localProps.setProperty(USE_CLUSTER_CONFIGURATION_NAME, "true");
+        localProps.setProperty(MCAST_PORT, "0");
+        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(NAME, ClusterConfigurationDUnitTest.newMember);
+        localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
 
         getSystem(localProps);
@@ -293,10 +287,10 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         File workingDir = new File(newMemberWorkDir);
         workingDir.mkdirs();
 
-        localProps.setProperty(MCAST_PORT_NAME, "0");
-        localProps.setProperty(LOCATORS_NAME, "localhost:" + locatorPort);
-        localProps.setProperty(NAME_NAME, ClusterConfigurationDUnitTest.newMember);
-        localProps.setProperty(USE_CLUSTER_CONFIGURATION_NAME, "true");
+        localProps.setProperty(MCAST_PORT, "0");
+        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(NAME, ClusterConfigurationDUnitTest.newMember);
+        localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
 
         getSystem(localProps);
@@ -363,10 +357,10 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         File workingDir = new File(newMemberWorkingDir);
         workingDir.mkdirs();
 
-        localProps.setProperty(MCAST_PORT_NAME, "0");
-        localProps.setProperty(LOCATORS_NAME, "localhost:" + locatorPort);
-        localProps.setProperty(NAME_NAME, ClusterConfigurationDUnitTest.newMember);
-        localProps.setProperty(USE_CLUSTER_CONFIGURATION_NAME, "true");
+        localProps.setProperty(MCAST_PORT, "0");
+        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(NAME, ClusterConfigurationDUnitTest.newMember);
+        localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
 
         getSystem(localProps);
@@ -469,10 +463,10 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         File workingDir = new File(newMemberWorkingDir);
         workingDir.mkdirs();
 
-        localProps.setProperty(MCAST_PORT_NAME, "0");
-        localProps.setProperty(LOCATORS_NAME, "localhost:" + locatorPort);
-        localProps.setProperty(NAME_NAME, ClusterConfigurationDUnitTest.newMember);
-        localProps.setProperty(USE_CLUSTER_CONFIGURATION_NAME, "true");
+        localProps.setProperty(MCAST_PORT, "0");
+        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(NAME, ClusterConfigurationDUnitTest.newMember);
+        localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
 
         getSystem(localProps);
@@ -558,20 +552,20 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         final File locatorLogFile = new File(locatorLogPath);
 
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(NAME_NAME, locator1Name);
-        locatorProps.setProperty(MCAST_PORT_NAME, "0");
-        locatorProps.setProperty(LOG_LEVEL_NAME, "config");
-        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
-        locatorProps.setProperty(JMX_MANAGER_NAME, "true");
-        locatorProps.setProperty(JMX_MANAGER_START_NAME, "true");
-        locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS_NAME, String.valueOf(jmxHost));
-        locatorProps.setProperty(JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
+        locatorProps.setProperty(NAME, locator1Name);
+        locatorProps.setProperty(MCAST_PORT, "0");
+        locatorProps.setProperty(LOG_LEVEL, "config");
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
+        locatorProps.setProperty(JMX_MANAGER, "true");
+        locatorProps.setProperty(JMX_MANAGER_START, "true");
+        locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
+        locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
         
         File clusterConfigDir = new File(clusterConfigPath);
         assertTrue(clusterConfigDir.mkdir());
         
         locatorProps.setProperty(CLUSTER_CONFIGURATION_DIR, clusterConfigDir.getCanonicalPath());
-        locatorProps.setProperty(HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
+        locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
 
         final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile, null, locatorProps);
 
@@ -627,15 +621,15 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         final File locatorLogFile = new File(locatorLogPath);
 
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(NAME_NAME, locator1Name);
-        locatorProps.setProperty(MCAST_PORT_NAME, "0");
-        locatorProps.setProperty(LOG_LEVEL_NAME, "config");
-        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
-        locatorProps.setProperty(JMX_MANAGER_NAME, "true");
-        locatorProps.setProperty(JMX_MANAGER_START_NAME, "true");
-        locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS_NAME, String.valueOf(jmxHost));
-        locatorProps.setProperty(JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
-        locatorProps.setProperty(HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
+        locatorProps.setProperty(NAME, locator1Name);
+        locatorProps.setProperty(MCAST_PORT, "0");
+        locatorProps.setProperty(LOG_LEVEL, "config");
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
+        locatorProps.setProperty(JMX_MANAGER, "true");
+        locatorProps.setProperty(JMX_MANAGER_START, "true");
+        locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
+        locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
+        locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
 
         final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile, null, locatorProps);
 
@@ -678,10 +672,10 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         File workingDir = new File(dataMemberWorkingDir);
         workingDir.mkdirs();
 
-        localProps.setProperty(MCAST_PORT_NAME, "0");
-        localProps.setProperty(LOCATORS_NAME, "localhost:" + locator1Port);
-        localProps.setProperty(NAME_NAME, ClusterConfigurationDUnitTest.dataMember);
-        localProps.setProperty(USE_CLUSTER_CONFIGURATION_NAME, "true");
+        localProps.setProperty(MCAST_PORT, "0");
+        localProps.setProperty(LOCATORS, "localhost:" + locator1Port);
+        localProps.setProperty(NAME, ClusterConfigurationDUnitTest.dataMember);
+        localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
 
         getSystem(localProps);

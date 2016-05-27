@@ -18,59 +18,8 @@
  */
 package com.gemstone.gemfire.security;
 
-import static com.gemstone.gemfire.cache30.ClientServerTestCase.*;
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
-import static com.gemstone.gemfire.internal.AvailablePort.*;
-import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
-import static com.gemstone.gemfire.test.dunit.Assert.assertFalse;
-import static com.gemstone.gemfire.test.dunit.Assert.assertNotNull;
-import static com.gemstone.gemfire.test.dunit.Assert.assertNull;
-import static com.gemstone.gemfire.test.dunit.Assert.assertTrue;
-import static com.gemstone.gemfire.test.dunit.Assert.fail;
-import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
-import static com.gemstone.gemfire.test.dunit.NetworkUtils.*;
-import static com.gemstone.gemfire.test.dunit.Wait.*;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLContextSpi;
-import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DynamicRegionFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.NoAvailableServersException;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.ServerConnectivityException;
-import com.gemstone.gemfire.cache.client.ServerOperationException;
-import com.gemstone.gemfire.cache.client.ServerRefusedConnectionException;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.client.*;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.ProxyCache;
 import com.gemstone.gemfire.cache.execute.Execution;
@@ -83,12 +32,35 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.pdx.PdxReader;
 import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxWriter;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+import javax.net.ssl.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.concurrent.Callable;
+
+import static com.gemstone.gemfire.cache30.ClientServerTestCase.configureConnectionPoolWithNameAndFactory;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.internal.AvailablePort.SOCKET;
+import static com.gemstone.gemfire.internal.AvailablePort.getRandomAvailablePort;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.test.dunit.NetworkUtils.getIPLiteral;
+import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
 
 /**
  * Contains utility methods for setting up servers/clients for authentication
@@ -213,14 +185,14 @@ public final class SecurityTestUtils {
     if (authProps == null) {
       authProps = new Properties();
     }
-    authProps.setProperty(MCAST_PORT_NAME, "0");
+    authProps.setProperty(MCAST_PORT, "0");
     if (locatorString != null && locatorString.length() > 0) {
-      authProps.setProperty(LOCATORS_NAME, locatorString);
-      authProps.setProperty(START_LOCATOR_NAME, getIPLiteral() + "[" + locatorPort + ']');
+      authProps.setProperty(LOCATORS, locatorString);
+      authProps.setProperty(START_LOCATOR, getIPLiteral() + "[" + locatorPort + ']');
     } else {
-      authProps.setProperty("locators", "localhost["+getDUnitLocatorPort()+"]");
+      authProps.setProperty(LOCATORS, "localhost[" + getDUnitLocatorPort() + "]");
     }
-    authProps.setProperty(SECURITY_LOG_LEVEL_NAME, "finest");
+    authProps.setProperty(SECURITY_LOG_LEVEL, "finest");
 
     getLogWriter().info("Set the server properties to: " + authProps);
     getLogWriter().info("Set the java properties to: " + javaProps);
@@ -308,12 +280,12 @@ public final class SecurityTestUtils {
     if (authProps == null) {
       authProps = new Properties();
     }
-    authProps.setProperty(MCAST_PORT_NAME, "0");
-    authProps.setProperty(LOCATORS_NAME, "");
-    authProps.setProperty(SECURITY_LOG_LEVEL_NAME, "finest");
+    authProps.setProperty(MCAST_PORT, "0");
+    authProps.setProperty(LOCATORS, "");
+    authProps.setProperty(SECURITY_LOG_LEVEL, "finest");
     // TODO (ashetkar) Add " && (!multiUserAuthMode)" below.
     if (authInitModule != null) {
-      authProps.setProperty(SECURITY_CLIENT_AUTH_INIT_NAME, authInitModule);
+      authProps.setProperty(SECURITY_CLIENT_AUTH_INIT, authInitModule);
     }
 
     SecurityTestUtils tmpInstance = new SecurityTestUtils("temp");
@@ -418,20 +390,20 @@ public final class SecurityTestUtils {
     if (authProps[0] == null) {
       authProps[0] = new Properties();
     }
-    authProps[0].setProperty(MCAST_PORT_NAME, "0");
-    authProps[0].setProperty(LOCATORS_NAME, "");
-    authProps[0].setProperty(SECURITY_LOG_LEVEL_NAME, "finest");
+    authProps[0].setProperty(MCAST_PORT, "0");
+    authProps[0].setProperty(LOCATORS, "");
+    authProps[0].setProperty(SECURITY_LOG_LEVEL, "finest");
 
     Properties props = new Properties();
 
     if (authInitModule != null) {
-      authProps[0].setProperty(SECURITY_CLIENT_AUTH_INIT_NAME, authInitModule);
-      props.setProperty(SECURITY_CLIENT_AUTH_INIT_NAME, authInitModule);
+      authProps[0].setProperty(SECURITY_CLIENT_AUTH_INIT, authInitModule);
+      props.setProperty(SECURITY_CLIENT_AUTH_INIT, authInitModule);
     }
 
     if (durableClientId != null) {
-      props.setProperty(DURABLE_CLIENT_ID_NAME, durableClientId);
-      props.setProperty(DURABLE_CLIENT_TIMEOUT_NAME, String.valueOf(DEFAULT_DURABLE_CLIENT_TIMEOUT));
+      props.setProperty(DURABLE_CLIENT_ID, durableClientId);
+      props.setProperty(DURABLE_CLIENT_TIMEOUT, String.valueOf(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT));
     }
 
     SecurityTestUtils tmpInstance = new SecurityTestUtils("temp");
@@ -516,9 +488,9 @@ public final class SecurityTestUtils {
       if (extraProps != null) {
         authProps.putAll(extraProps);
       }
-      authProps.setProperty(MCAST_PORT_NAME, "0");
-      authProps.setProperty(LOCATORS_NAME, getIPLiteral() + "[" + port + "]");
-      authProps.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+      authProps.setProperty(MCAST_PORT, "0");
+      authProps.setProperty(LOCATORS, getIPLiteral() + "[" + port + "]");
+      authProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
       clearStaticSSLContext();
 

@@ -17,23 +17,6 @@
 
 package com.gemstone.gemfire.distributed.internal;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -47,11 +30,19 @@ import com.gemstone.gemfire.internal.cache.UpdateAttributesProcessor;
 import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Provides advice on sending distribution messages. For a given operation,
@@ -83,13 +74,13 @@ public class DistributionAdvisor  {
    * profileVersionSequencer.
    */
   public static final int START_VERSION_NUMBER = Integer.getInteger(
-      "gemfire.DistributionAdvisor.startVersionNumber", 1).intValue();
+      DistributionConfig.GEMFIRE_PREFIX + "DistributionAdvisor.startVersionNumber", 1).intValue();
   
   /**
    * Specifies the starting serial number for the serialNumberSequencer.
    */
   public static final int START_SERIAL_NUMBER = Integer.getInteger(
-      "gemfire.Cache.startSerialNumber",
+      DistributionConfig.GEMFIRE_PREFIX + "Cache.startSerialNumber",
       1 // Integer.MAX_VALUE-10
       ).intValue();
 
@@ -109,7 +100,7 @@ public class DistributionAdvisor  {
    * if a rollover has occurred.
    */
   public static final int ROLLOVER_THRESHOLD = Integer.getInteger(
-      "gemfire.CacheDistributionAdvisor.rolloverThreshold", 
+      DistributionConfig.GEMFIRE_PREFIX + "CacheDistributionAdvisor.rolloverThreshold",
       1000).intValue();
   
   /**

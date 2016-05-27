@@ -16,22 +16,9 @@
  */
 package com.gemstone.gemfire.pdx;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.util.Properties;
-
 import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.client.*;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -41,13 +28,14 @@ import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.PdxSerializerObject;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.pdx.internal.AutoSerializableManager;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  *
@@ -187,10 +175,10 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    System.setProperty("gemfire.auto.serialization.no.hardcoded.excludes", "true");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "true");
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       public void run() {
-        System.setProperty("gemfire.auto.serialization.no.hardcoded.excludes", "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "true");
       }
     });
     try {
@@ -254,11 +242,11 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
         return null;
       }
     });
-    } finally { 
-      System.setProperty("gemfire.auto.serialization.no.hardcoded.excludes", "false");
+    } finally {
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "false");
       Invoke.invokeInEveryVM(new SerializableRunnable() {
         public void run() {
-          System.setProperty("gemfire.auto.serialization.no.hardcoded.excludes", "false");
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "false");
         }
       });
     }
@@ -404,8 +392,8 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         Properties props = new Properties();
-        props.setProperty("mcast-port", "0");
-        props.setProperty("locators", "");
+        props.setProperty(MCAST_PORT, "0");
+        props.setProperty(LOCATORS, "");
         getSystem(props);
         Cache cache = getCache();
         PoolFactory pf = PoolManager.createFactory();
@@ -509,8 +497,8 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         Properties props = new Properties();
-        props.setProperty("mcast-port", "0");
-        props.setProperty("locators", "");
+        props.setProperty(MCAST_PORT, "0");
+        props.setProperty(LOCATORS, "");
         getSystem(props);
         Cache cache = getCache();
         PoolFactory pf = PoolManager.createFactory();
@@ -560,8 +548,8 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         Properties props = new Properties();
-        props.setProperty("mcast-port", "0");
-        props.setProperty("locators", "");
+        props.setProperty(MCAST_PORT, "0");
+        props.setProperty(LOCATORS, "");
         getSystem(props);
         Cache cache = getCache();
         HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
@@ -683,7 +671,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         Properties props = new Properties();
-        props.setProperty("locators", "");
+        props.setProperty(LOCATORS, "");
         props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, dsId);
         getSystem(props);
         AttributesFactory af = new AttributesFactory();

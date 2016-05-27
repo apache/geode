@@ -17,33 +17,10 @@
 
 package com.gemstone.gemfire.distributed.internal.locks;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.distributed.DistributedLockService;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.LeaseExpiredException;
-import com.gemstone.gemfire.distributed.LockNotHeldException;
-import com.gemstone.gemfire.distributed.LockServiceDestroyedException;
+import com.gemstone.gemfire.*;
+import com.gemstone.gemfire.distributed.*;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ResourceEvent;
 import com.gemstone.gemfire.distributed.internal.deadlock.UnsafeThreadLocal;
@@ -60,6 +37,13 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.util.StopWatch;
 import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.util.*;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implements the distributed locking service with distributed lock grantors.
@@ -70,28 +54,28 @@ public class DLockService extends DistributedLockService {
   private static final Logger logger = LogService.getLogger();
 
   public static final long NOT_GRANTOR_SLEEP = Long.getLong(
-      "gemfire.DLockService.notGrantorSleep", 100).longValue();
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.notGrantorSleep", 100).longValue();
   
   public static final boolean DEBUG_DISALLOW_NOT_HOLDER = Boolean.getBoolean(
-      "gemfire.DLockService.debug.disallowNotHolder");
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.debug.disallowNotHolder");
 
   public static final boolean DEBUG_LOCK_REQUEST_LOOP = Boolean.getBoolean(
-      "gemfire.DLockService.debug.disallowLockRequestLoop");
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.debug.disallowLockRequestLoop");
 
   public static final int DEBUG_LOCK_REQUEST_LOOP_COUNT = Integer.getInteger(
-      "gemfire.DLockService.debug.disallowLockRequestLoopCount", 20).intValue();
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.debug.disallowLockRequestLoopCount", 20).intValue();
 
   public static final boolean DEBUG_NONGRANTOR_DESTROY_LOOP = Boolean.getBoolean(
-      "gemfire.DLockService.debug.nonGrantorDestroyLoop");
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.debug.nonGrantorDestroyLoop");
 
   public static final int DEBUG_NONGRANTOR_DESTROY_LOOP_COUNT = Integer.getInteger(
-      "gemfire.DLockService.debug.nonGrantorDestroyLoopCount", 20).intValue();
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.debug.nonGrantorDestroyLoopCount", 20).intValue();
 
   public static final boolean DEBUG_ENFORCE_SAFE_EXIT = Boolean.getBoolean(
-      "gemfire.DLockService.debug.enforceSafeExit");
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.debug.enforceSafeExit");
   
   public static final boolean AUTOMATE_FREE_RESOURCES = Boolean.getBoolean(
-      "gemfire.DLockService.automateFreeResources");
+      DistributionConfig.GEMFIRE_PREFIX + "DLockService.automateFreeResources");
   
   public static final int INVALID_LEASE_ID = -1;
   
@@ -2904,7 +2888,7 @@ public class DLockService extends DistributedLockService {
    * Specifies the starting serial number for the serialNumberSequencer
    */
   public static final int START_SERIAL_NUMBER = Integer.getInteger(
-      "gemfire.DistributedLockService.startSerialNumber", 1).intValue();
+      DistributionConfig.GEMFIRE_PREFIX + "DistributedLockService.startSerialNumber", 1).intValue();
   
   /**
    * Incrementing serial number used to identify order of DLS creation

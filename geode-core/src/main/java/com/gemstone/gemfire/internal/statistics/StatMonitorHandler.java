@@ -16,16 +16,16 @@
  */
 package com.gemstone.gemfire.internal.statistics;
 
+import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.SynchronousQueue;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 
 /**
  * @since GemFire 7.0
@@ -33,8 +33,8 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 public class StatMonitorHandler implements SampleHandler {
 
   private static final Logger logger = LogService.getLogger();
-  
-  static final String ENABLE_MONITOR_THREAD = "gemfire.stats.enableMonitorThread";
+
+  static final String ENABLE_MONITOR_THREAD = DistributionConfig.GEMFIRE_PREFIX + "stats.enableMonitorThread";
   static final boolean enableMonitorThread = Boolean.getBoolean(ENABLE_MONITOR_THREAD);
   
   /** The registered monitors */

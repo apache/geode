@@ -19,18 +19,11 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.ClientMetadataService;
 import com.gemstone.gemfire.cache.client.internal.ClientPartitionAdvisor;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -41,25 +34,17 @@ import com.gemstone.gemfire.internal.cache.execute.data.CustId;
 import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
 import com.gemstone.gemfire.internal.cache.execute.data.ShipmentId;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  *
@@ -802,9 +787,9 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
 
     Properties props = new Properties();
     props = new Properties();
-    props.setProperty("locators", locator);
-    
-    System.setProperty("gemfire.PoolImpl.honourServerGroupsInPRSingleHop", "true");
+    props.setProperty(LOCATORS, locator);
+
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop", "true");
     CacheTestCase test = new PartitionedRegionSingleHopWithServerGroupDUnitTest(
         "PartitionedRegionSingleHopWithServerGroupDUnitTest");
     DistributedSystem ds = test.getSystem(props);
@@ -888,9 +873,9 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
 
     Properties props = new Properties();
     props = new Properties();
-    props.setProperty("locators", locator);
-    
-    System.setProperty("gemfire.PoolImpl.honourServerGroupsInPRSingleHop", "true");
+    props.setProperty(LOCATORS, locator);
+
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop", "true");
     CacheTestCase test = new PartitionedRegionSingleHopWithServerGroupDUnitTest(
         "PartitionedRegionSingleHopWithServerGroupDUnitTest");
     DistributedSystem ds = test.getSystem(props);
@@ -1025,8 +1010,8 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
   public static void createClientWithLocator(String host, int port0, String group) {
     Properties props = new Properties();
     props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     props.setProperty(DistributionConfig.LOG_FILE_NAME, "");
     CacheTestCase test = new PartitionedRegionSingleHopWithServerGroupDUnitTest(
         "PartitionedRegionSingleHopWithServerGroupDUnitTest");
@@ -1051,8 +1036,8 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
   public static void create2ClientWithLocator(String host, int port0, String group1, String group2) {
     Properties props = new Properties();
     props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     CacheTestCase test = new PartitionedRegionSingleHopWithServerGroupDUnitTest(
         "PartitionedRegionSingleHopWithServerGroupDUnitTest");
     DistributedSystem ds = test.getSystem(props);
@@ -1080,8 +1065,8 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
   public static void createClientWith3PoolLocator(String host, int port0, String group1, String group2,String group3) {
     Properties props = new Properties();
     props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     CacheTestCase test = new PartitionedRegionSingleHopWithServerGroupDUnitTest(
         "PartitionedRegionSingleHopWithServerGroupDUnitTest");
     DistributedSystem ds = test.getSystem(props);
@@ -1339,8 +1324,8 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
   public static void createClientWithLocatorWithoutSystemProperty(String host, int port0, String group) {
     Properties props = new Properties();
     props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     CacheTestCase test = new PartitionedRegionSingleHopWithServerGroupDUnitTest(
         "PartitionedRegionSingleHopWithServerGroupDUnitTest");
     DistributedSystem ds = test.getSystem(props);
@@ -1636,7 +1621,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
   public static void startLocatorInVM(final int locatorPort) {
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.setProperty(MCAST_PORT, "0");
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     props.setProperty(DistributionConfig.LOG_FILE_NAME, "");
 
@@ -1654,10 +1639,10 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
   }
   
   public static void resetHonourServerGroupsInPRSingleHop() {
-    System.setProperty("gemfire.PoolImpl.honourServerGroupsInPRSingleHop", "False");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop", "False");
   }
   
   public static void setHonourServerGroupsInPRSingleHop() {
-    System.setProperty("gemfire.PoolImpl.honourServerGroupsInPRSingleHop", "True");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop", "True");
   }
 }

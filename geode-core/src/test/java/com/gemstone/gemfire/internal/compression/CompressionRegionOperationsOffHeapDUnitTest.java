@@ -16,14 +16,14 @@
  */
 package com.gemstone.gemfire.internal.compression;
 
-import java.util.Properties;
-
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.compression.SnappyCompressor;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+
+import java.util.Properties;
 
 public class CompressionRegionOperationsOffHeapDUnitTest extends
     CompressionRegionOperationsDUnitTest {

@@ -17,15 +17,6 @@
 
 package com.gemstone.gemfire.distributed.internal;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.cache.TimeoutException;
@@ -33,6 +24,7 @@ import com.gemstone.gemfire.cache.UnsupportedVersionException;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.deadlock.MessageDependencyMonitor;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.DSFIDNotFoundException;
 import com.gemstone.gemfire.internal.Version;
@@ -42,7 +34,9 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
 
 /**
  * This class processes responses to {@link DistributionMessage}s. It
@@ -181,7 +175,7 @@ public class ReplyProcessor21
   //////////////////////  Static Methods  /////////////////////
 
   static {
-    String str = System.getProperty("gemfire.ack-severe-alert-reduction-ratio", ".80");
+    String str = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "ack-severe-alert-reduction-ratio", ".80");
     double ratio;
     try {
       ratio = Double.parseDouble(str);

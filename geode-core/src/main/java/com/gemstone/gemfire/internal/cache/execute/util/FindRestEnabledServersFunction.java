@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.execute.util;
 
-
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.FunctionAdapter;

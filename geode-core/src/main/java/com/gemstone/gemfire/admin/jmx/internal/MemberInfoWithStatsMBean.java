@@ -16,51 +16,7 @@
  */
 package com.gemstone.gemfire.admin.jmx.internal;
 
-import java.net.InetAddress;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.management.InstanceNotFoundException;
-import javax.management.ListenerNotFoundException;
-import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanException;
-import javax.management.MBeanNotificationInfo;
-import javax.management.MBeanOperationInfo;
-import javax.management.MBeanParameterInfo;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.Notification;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.NotificationEmitter;
-import javax.management.NotificationFilter;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-import javax.management.OperationsException;
-import javax.management.ReflectionException;
-
-import org.apache.logging.log4j.Logger;
-
-import mx4j.AbstractDynamicMBean;
-
-import com.gemstone.gemfire.admin.AdminDistributedSystem;
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.CacheVm;
-import com.gemstone.gemfire.admin.ConfigurationParameter;
-import com.gemstone.gemfire.admin.GemFireMemberStatus;
-import com.gemstone.gemfire.admin.RegionSubRegionSnapshot;
-import com.gemstone.gemfire.admin.StatisticResource;
-import com.gemstone.gemfire.admin.SystemMember;
-import com.gemstone.gemfire.admin.SystemMemberCacheServer;
+import com.gemstone.gemfire.admin.*;
 import com.gemstone.gemfire.admin.jmx.Agent;
 import com.gemstone.gemfire.cache.InterestPolicy;
 import com.gemstone.gemfire.cache.SubscriptionAttributes;
@@ -70,6 +26,14 @@ import com.gemstone.gemfire.internal.admin.remote.ClientHealthStats;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import mx4j.AbstractDynamicMBean;
+import org.apache.logging.log4j.Logger;
+
+import javax.management.*;
+import java.net.InetAddress;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This class uses the JMX Attributes/Operations that use (return/throw) 
@@ -591,48 +555,48 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean
 //  private static final String GATEWAYHUB_COUNT = "gemfire.gatewayhubcount.int";
 //  private static final String CLIENT_COUNT     = "gemfire.clientcount.int";
 
-  private static final String MEMBER_ID       = "gemfire.member.id.string";
-  private static final String MEMBER_NAME     = "gemfire.member.name.string";
-  private static final String MEMBER_HOST     = "gemfire.member.host.string";
-  private static final String MEMBER_PORT     = "gemfire.member.port.int";
-  private static final String MEMBER_UPTIME   = "gemfire.member.uptime.long";
-  private static final String MEMBER_CLIENTS  = "gemfire.member.clients.map";
-  private static final String MEMBER_REGIONS  = "gemfire.member.regions.map";
-  private static final String MEMBER_TYPE     = "gemfire.member.type.string";
-  private static final String IS_SERVER       = "gemfire.member.isserver.boolean";
-  private static final String IS_GATEWAY      = "gemfire.member.isgateway.boolean";
+  private static final String MEMBER_ID = DistributionConfig.GEMFIRE_PREFIX + "member.id.string";
+  private static final String MEMBER_NAME = DistributionConfig.GEMFIRE_PREFIX + "member.name.string";
+  private static final String MEMBER_HOST = DistributionConfig.GEMFIRE_PREFIX + "member.host.string";
+  private static final String MEMBER_PORT = DistributionConfig.GEMFIRE_PREFIX + "member.port.int";
+  private static final String MEMBER_UPTIME = DistributionConfig.GEMFIRE_PREFIX + "member.uptime.long";
+  private static final String MEMBER_CLIENTS = DistributionConfig.GEMFIRE_PREFIX + "member.clients.map";
+  private static final String MEMBER_REGIONS = DistributionConfig.GEMFIRE_PREFIX + "member.regions.map";
+  private static final String MEMBER_TYPE = DistributionConfig.GEMFIRE_PREFIX + "member.type.string";
+  private static final String IS_SERVER = DistributionConfig.GEMFIRE_PREFIX + "member.isserver.boolean";
+  private static final String IS_GATEWAY = DistributionConfig.GEMFIRE_PREFIX + "member.isgateway.boolean";
 
-  private static final String MEMBER_STATSAMPLING_ENABLED = "gemfire.member.config.statsamplingenabled.boolean";
-  private static final String MEMBER_TIME_STATS_ENABLED   = "gemfire.member.config.timestatsenabled.boolean";
-  
-  private static final String STATS_PROCESSCPUTIME = "gemfire.member.stat.processcputime.long";
-  private static final String STATS_CPUS           = "gemfire.member.stat.cpus.int";
-  private static final String STATS_USEDMEMORY     = "gemfire.member.stat.usedmemory.long";
-  private static final String STATS_MAXMEMORY      = "gemfire.member.stat.maxmemory.long";
-  private static final String STATS_GETS           = "gemfire.member.stat.gets.int";
-  private static final String STATS_GETTIME        = "gemfire.member.stat.gettime.long";
-  private static final String STATS_PUTS           = "gemfire.member.stat.puts.int";
-  private static final String STATS_PUTTIME        = "gemfire.member.stat.puttime.long";
-  
-  private static final String REGION_NAME           = "gemfire.region.name.string";
-  private static final String REGION_PATH           = "gemfire.region.path.string";
-  private static final String REGION_SCOPE          = "gemfire.region.scope.string";
-  private static final String REGION_DATAPOLICY     = "gemfire.region.datapolicy.string";
-  private static final String REGION_INTERESTPOLICY = "gemfire.region.interestpolicy.string";
-  private static final String REGION_ENTRYCOUNT     = "gemfire.region.entrycount.int";
-  private static final String REGION_DISKATTRS      = "gemfire.region.diskattrs.string";
+  private static final String MEMBER_STATSAMPLING_ENABLED = DistributionConfig.GEMFIRE_PREFIX + "member.config.statsamplingenabled.boolean";
+  private static final String MEMBER_TIME_STATS_ENABLED = DistributionConfig.GEMFIRE_PREFIX + "member.config.timestatsenabled.boolean";
 
-  private static final String CLIENT_ID                = "gemfire.client.id.string";
-  private static final String CLIENT_NAME              = "gemfire.client.name.string";
-  private static final String CLIENT_HOST              = "gemfire.client.host.string";
-  private static final String CLIENT_QUEUESIZE         = "gemfire.client.queuesize.int";
-  private static final String CLIENT_STATS_GETS        = "gemfire.client.stats.gets.int";
-  private static final String CLIENT_STATS_PUTS        = "gemfire.client.stats.puts.int";
-  private static final String CLIENT_STATS_CACHEMISSES = "gemfire.client.stats.cachemisses.int";
-  private static final String CLIENT_STATS_CPUUSAGE    = "gemfire.client.stats.cpuusage.long";
-  private static final String CLIENT_STATS_CPUS        = "gemfire.client.stats.cpus.int";
-  private static final String CLIENT_STATS_UPDATETIME  = "gemfire.client.stats.updatetime.long";
-  private static final String CLIENT_STATS_THREADS     = "gemfire.client.stats.threads.int";
+  private static final String STATS_PROCESSCPUTIME = DistributionConfig.GEMFIRE_PREFIX + "member.stat.processcputime.long";
+  private static final String STATS_CPUS = DistributionConfig.GEMFIRE_PREFIX + "member.stat.cpus.int";
+  private static final String STATS_USEDMEMORY = DistributionConfig.GEMFIRE_PREFIX + "member.stat.usedmemory.long";
+  private static final String STATS_MAXMEMORY = DistributionConfig.GEMFIRE_PREFIX + "member.stat.maxmemory.long";
+  private static final String STATS_GETS = DistributionConfig.GEMFIRE_PREFIX + "member.stat.gets.int";
+  private static final String STATS_GETTIME = DistributionConfig.GEMFIRE_PREFIX + "member.stat.gettime.long";
+  private static final String STATS_PUTS = DistributionConfig.GEMFIRE_PREFIX + "member.stat.puts.int";
+  private static final String STATS_PUTTIME = DistributionConfig.GEMFIRE_PREFIX + "member.stat.puttime.long";
+
+  private static final String REGION_NAME = DistributionConfig.GEMFIRE_PREFIX + "region.name.string";
+  private static final String REGION_PATH = DistributionConfig.GEMFIRE_PREFIX + "region.path.string";
+  private static final String REGION_SCOPE = DistributionConfig.GEMFIRE_PREFIX + "region.scope.string";
+  private static final String REGION_DATAPOLICY = DistributionConfig.GEMFIRE_PREFIX + "region.datapolicy.string";
+  private static final String REGION_INTERESTPOLICY = DistributionConfig.GEMFIRE_PREFIX + "region.interestpolicy.string";
+  private static final String REGION_ENTRYCOUNT = DistributionConfig.GEMFIRE_PREFIX + "region.entrycount.int";
+  private static final String REGION_DISKATTRS = DistributionConfig.GEMFIRE_PREFIX + "region.diskattrs.string";
+
+  private static final String CLIENT_ID = DistributionConfig.GEMFIRE_PREFIX + "client.id.string";
+  private static final String CLIENT_NAME = DistributionConfig.GEMFIRE_PREFIX + "client.name.string";
+  private static final String CLIENT_HOST = DistributionConfig.GEMFIRE_PREFIX + "client.host.string";
+  private static final String CLIENT_QUEUESIZE = DistributionConfig.GEMFIRE_PREFIX + "client.queuesize.int";
+  private static final String CLIENT_STATS_GETS = DistributionConfig.GEMFIRE_PREFIX + "client.stats.gets.int";
+  private static final String CLIENT_STATS_PUTS = DistributionConfig.GEMFIRE_PREFIX + "client.stats.puts.int";
+  private static final String CLIENT_STATS_CACHEMISSES = DistributionConfig.GEMFIRE_PREFIX + "client.stats.cachemisses.int";
+  private static final String CLIENT_STATS_CPUUSAGE = DistributionConfig.GEMFIRE_PREFIX + "client.stats.cpuusage.long";
+  private static final String CLIENT_STATS_CPUS = DistributionConfig.GEMFIRE_PREFIX + "client.stats.cpus.int";
+  private static final String CLIENT_STATS_UPDATETIME = DistributionConfig.GEMFIRE_PREFIX + "client.stats.updatetime.long";
+  private static final String CLIENT_STATS_THREADS = DistributionConfig.GEMFIRE_PREFIX + "client.stats.threads.int";
   
   /**
    * 

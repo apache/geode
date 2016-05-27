@@ -16,21 +16,13 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms;
 
-import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionException;
 import com.gemstone.gemfire.distributed.internal.LocatorStats;
-import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
-import com.gemstone.gemfire.distributed.internal.membership.MemberAttributes;
-import com.gemstone.gemfire.distributed.internal.membership.MemberServices;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.NetMember;
+import com.gemstone.gemfire.distributed.internal.membership.*;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.GMSLocator;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
@@ -39,6 +31,10 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.tcp.ConnectionException;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
+
+import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * Create a new Member based on the given inputs.

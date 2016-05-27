@@ -16,14 +16,12 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.Properties;
-
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 /**
  * Tests PartitionedRegion DataStore currentAllocatedMemory operation.

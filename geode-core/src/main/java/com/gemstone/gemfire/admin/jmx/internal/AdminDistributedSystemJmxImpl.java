@@ -16,83 +16,35 @@
  */
 package com.gemstone.gemfire.admin.jmx.internal;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TimerTask;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.management.MBeanException;
-import javax.management.MalformedObjectNameException;
-import javax.management.Notification;
-import javax.management.ObjectName;
-import javax.management.RuntimeMBeanException;
-import javax.management.RuntimeOperationsException;
-import javax.management.modelmbean.ModelMBean;
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.CompositeDataSupport;
-import javax.management.openmbean.CompositeType;
-import javax.management.openmbean.OpenDataException;
-import javax.management.openmbean.OpenType;
-import javax.management.openmbean.SimpleType;
-import javax.management.openmbean.TabularData;
-import javax.management.openmbean.TabularDataSupport;
-import javax.management.openmbean.TabularType;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.AdminException;
-import com.gemstone.gemfire.admin.CacheServer;
-import com.gemstone.gemfire.admin.CacheServerConfig;
-import com.gemstone.gemfire.admin.CacheVm;
-import com.gemstone.gemfire.admin.CacheVmConfig;
-import com.gemstone.gemfire.admin.DistributedSystemConfig;
-import com.gemstone.gemfire.admin.DistributionLocator;
-import com.gemstone.gemfire.admin.DistributionLocatorConfig;
-import com.gemstone.gemfire.admin.GemFireHealth;
-import com.gemstone.gemfire.admin.SystemMember;
-import com.gemstone.gemfire.admin.SystemMemberCacheEvent;
-import com.gemstone.gemfire.admin.SystemMemberCacheListener;
-import com.gemstone.gemfire.admin.SystemMemberRegionEvent;
-import com.gemstone.gemfire.admin.SystemMemberType;
+import com.gemstone.gemfire.admin.*;
 import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
 import com.gemstone.gemfire.admin.internal.CacheServerConfigImpl;
 import com.gemstone.gemfire.admin.internal.DistributionLocatorImpl;
 import com.gemstone.gemfire.cache.persistence.PersistentID;
 import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.admin.Alert;
-import com.gemstone.gemfire.internal.admin.ApplicationVM;
-import com.gemstone.gemfire.internal.admin.ClientMembershipMessage;
-import com.gemstone.gemfire.internal.admin.GemFireVM;
-import com.gemstone.gemfire.internal.admin.GfManagerAgent;
-import com.gemstone.gemfire.internal.admin.StatAlert;
-import com.gemstone.gemfire.internal.admin.StatAlertDefinition;
+import com.gemstone.gemfire.internal.admin.*;
 import com.gemstone.gemfire.internal.admin.remote.UpdateAlertDefinitionMessage;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
+import javax.management.*;
+import javax.management.modelmbean.ModelMBean;
+import javax.management.openmbean.*;
+import java.io.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Provides MBean support for managing a GemFire distributed system.
@@ -341,23 +293,23 @@ public class AdminDistributedSystemJmxImpl
   // -------------------------------------------------------------------------
   
   /** Notification type for indicating system member joined */
-  public static final String NOTIF_MEMBER_JOINED = 
-                             "gemfire.distributedsystem.member.joined";
+  public static final String NOTIF_MEMBER_JOINED =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.member.joined";
   /** Notification type for indicating system member left */
-  public static final String NOTIF_MEMBER_LEFT = 
-                             "gemfire.distributedsystem.member.left";
+  public static final String NOTIF_MEMBER_LEFT =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.member.left";
   /** Notification type for indicating system member crashed */
-  public static final String NOTIF_MEMBER_CRASHED = 
-                             "gemfire.distributedsystem.member.crashed";
+  public static final String NOTIF_MEMBER_CRASHED =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.member.crashed";
   /** Notification type for sending GemFire alerts as JMX notifications */
-  public static final String NOTIF_ALERT = 
-                             "gemfire.distributedsystem.alert";
+  public static final String NOTIF_ALERT =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.alert";
   /** Notification type for sending GemFire StatAlerts as JMX notifications */
-  public static final String NOTIF_STAT_ALERT = 
-    "gemfire.distributedsystem.statalert";
+  public static final String NOTIF_STAT_ALERT =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.statalert";
   /** Notification type for indicating abnormal disconnection from the distributed system */
-  public static final String NOTIF_ADMIN_SYSTEM_DISCONNECT = 
-    "gemfire.distributedsystem.disconnect";
+  public static final String NOTIF_ADMIN_SYSTEM_DISCONNECT =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.disconnect";
   
   
   private static final String EML_SUBJ_PRFX_GFE_ALERT = "[GemFire Alert] ";

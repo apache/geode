@@ -17,6 +17,7 @@
 
 package com.gemstone.gemfire.modules.session.filter;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.modules.session.internal.filter.GemfireHttpSession;
 import com.gemstone.gemfire.modules.session.internal.filter.GemfireSessionManager;
 import com.gemstone.gemfire.modules.session.internal.filter.SessionManager;
@@ -24,18 +25,8 @@ import com.gemstone.gemfire.modules.session.internal.filter.util.ThreadLocalSess
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
-import javax.servlet.http.HttpSession;
+import javax.servlet.*;
+import javax.servlet.http.*;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -73,10 +64,10 @@ public class SessionCachingFilter implements Filter {
    */
   private static AtomicInteger started =
       new AtomicInteger(
-          Integer.getInteger("gemfire.override.session.manager.count", 1));
+          Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "override.session.manager.count", 1));
 
   private static int percentInactiveTimeTriggerRebuild =
-      Integer.getInteger("gemfire.session.inactive.trigger.rebuild", 80);
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "session.inactive.trigger.rebuild", 80);
 
   /**
    * This latch ensures that at least one thread/instance has fired up the

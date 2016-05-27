@@ -16,22 +16,8 @@
  */
 package com.gemstone.gemfire.internal.jndi;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
-import javax.naming.NoInitialContextException;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
-
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.datasource.AbstractDataSource;
@@ -42,6 +28,15 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.jta.TransactionManagerImpl;
 import com.gemstone.gemfire.internal.jta.TransactionUtils;
 import com.gemstone.gemfire.internal.jta.UserTransactionImpl;
+
+import javax.naming.*;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -111,7 +106,7 @@ public class JNDIInvoker  {
    * as a JTA transaction manager. Also region operations will <b>not</b> participate in
    * an ongoing JTA transaction. 
    */
-  private static Boolean IGNORE_JTA = Boolean.getBoolean("gemfire.ignoreJTA");
+  private static Boolean IGNORE_JTA = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA");
 
   /**
    * Bind the transaction resources. Bind UserTransaction and
@@ -221,7 +216,7 @@ public class JNDIInvoker  {
       }
     }
     dataSourceList.clear();
-    IGNORE_JTA = Boolean.getBoolean("gemfire.ignoreJTA");
+    IGNORE_JTA = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA");
   }
 
   /*

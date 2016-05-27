@@ -16,11 +16,11 @@
  */
 package com.gemstone.gemfire.disttx;
 
-import java.util.Properties;
-
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache30.TXOrderDUnitTest;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
+import java.util.Properties;
 
 
 /**

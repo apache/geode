@@ -16,29 +16,19 @@
  */
 package com.gemstone.gemfire.test.dunit.standalone;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.URISyntaxException;
-import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
-import java.rmi.AccessException;
-import java.rmi.AlreadyBoundException;
-import java.rmi.NotBoundException;
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.List;
-import java.util.Properties;
-
+import batterytest.greplogs.ExpectedStrings;
+import batterytest.greplogs.LogConsumer;
+import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.test.dunit.DUnitEnv;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.VM;
+import hydra.MethExecutorResult;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -47,19 +37,21 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.Assert;
 
-import batterytest.greplogs.ExpectedStrings;
-import batterytest.greplogs.LogConsumer;
-import hydra.MethExecutorResult;
+import java.io.*;
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.URISyntaxException;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.rmi.*;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
+import java.util.Properties;
 
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.dunit.DUnitEnv;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.VM;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * A class to build a fake test configuration and launch some DUnit VMS.
@@ -92,10 +84,10 @@ public class DUnitLauncher {
   public static final boolean LOCATOR_LOG_TO_DISK = Boolean.getBoolean("locatorLogToDisk");
 
   static final String MASTER_PARAM = "DUNIT_MASTER";
-  public static final String RMI_PORT_PARAM = "gemfire.DUnitLauncher.RMI_PORT";
-  static final String VM_NUM_PARAM = "gemfire.DUnitLauncher.VM_NUM";
+  public static final String RMI_PORT_PARAM = DistributionConfig.GEMFIRE_PREFIX + "DUnitLauncher.RMI_PORT";
+  static final String VM_NUM_PARAM = DistributionConfig.GEMFIRE_PREFIX + "DUnitLauncher.VM_NUM";
 
-  private static final String LAUNCHED_PROPERTY = "gemfire.DUnitLauncher.LAUNCHED";
+  private static final String LAUNCHED_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "DUnitLauncher.LAUNCHED";
 
   private static Master master;
 
@@ -218,11 +210,11 @@ public class DUnitLauncher {
   
   public static Properties getDistributedSystemProperties() {
     Properties p = new Properties();
-    p.setProperty("locators", getLocatorString());
-    p.setProperty("mcast-port", "0");
-    p.setProperty("enable-cluster-configuration", "false");
-    p.setProperty("use-cluster-configuration", "false");
-    p.setProperty("log-level", LOG_LEVEL);
+    p.setProperty(LOCATORS, getLocatorString());
+    p.setProperty(MCAST_PORT, "0");
+    p.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    p.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
+    p.setProperty(DistributionConfig.LOG_LEVEL_NAME, LOG_LEVEL);
     return p;
   }
 
@@ -259,10 +251,10 @@ public class DUnitLauncher {
         Properties p = getDistributedSystemProperties();
         // I never want this locator to end up starting a jmx manager
         // since it is part of the unit test framework
-        p.setProperty("jmx-manager", "false");
+        p.setProperty(DistributionConfig.JMX_MANAGER_NAME, "false");
         //Disable the shared configuration on this locator.
         //Shared configuration tests create their own locator
-        p.setProperty("enable-cluster-configuration", "false");
+        p.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
         //Tell the locator it's the first in the system for
         //faster boot-up
         System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
@@ -295,7 +287,7 @@ public class DUnitLauncher {
     addSuspectFileAppender(workspaceDir);
     
     //Free off heap memory when disconnecting from the distributed system
-    System.setProperty("gemfire.free-off-heap-memory", "true");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "free-off-heap-memory", "true");
     
     //indicate that this CM is controlled by the eclipse dunit.
     System.setProperty(LAUNCHED_PROPERTY, "true");

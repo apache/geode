@@ -16,12 +16,7 @@
  */
 package com.gemstone.gemfire.cache.client.internal.locator.wan;
 
-import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.WanLocatorDiscoverer;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
@@ -29,7 +24,10 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.tcp.ConnectionException;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListener;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class represent a runnable task which exchange the locator information
@@ -79,13 +77,13 @@ public class LocatorDiscovery{
    * practice.
    */
   private static final int FAILURE_MAP_MAXSIZE = Integer.getInteger(
-      "gemfire.GatewaySender.FAILURE_MAP_MAXSIZE", 1000000);
+      DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.FAILURE_MAP_MAXSIZE", 1000000);
 
   /**
    * The maximum interval for logging failures of the same event in millis.
    */
   private static final int FAILURE_LOG_MAX_INTERVAL = Integer.getInteger(
-      "gemfire.LocatorDiscovery.FAILURE_LOG_MAX_INTERVAL", 300000);
+      DistributionConfig.GEMFIRE_PREFIX + "LocatorDiscovery.FAILURE_LOG_MAX_INTERVAL", 300000);
 
   public final boolean skipFailureLogging(DistributionLocatorId locatorId) {
     boolean skipLogging = false;

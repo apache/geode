@@ -16,25 +16,18 @@
  */
 package com.gemstone.gemfire.cache.client.internal.locator.wan;
 
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorDiscovery;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListener;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorJoinRequest;
 import com.gemstone.gemfire.distributed.internal.WanLocatorDiscoverer;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
+import org.apache.logging.log4j.Logger;
+
+import java.util.StringTokenizer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer{
 

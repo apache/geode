@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache.wan;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
 import java.util.List;
 
 /**
@@ -47,7 +49,7 @@ public interface GatewaySender {
    * block.
    */
   public static final int DEFAULT_SOCKET_READ_TIMEOUT = Integer.getInteger(
-      "gemfire.cache.gatewaySender.default-socket-read-timeout", 0).intValue();
+      DistributionConfig.GEMFIRE_PREFIX + "cache.gatewaySender.default-socket-read-timeout", 0).intValue();
 
   /**
    * The default minimum socket read timeout.
@@ -58,7 +60,7 @@ public interface GatewaySender {
    * Size of the oplog file used for the persistent queue in bytes
    */
   static public final int QUEUE_OPLOG_SIZE
-  = Integer.getInteger("gemfire.cache.gatewaySender.queueOpLogSize", 1024*1024*100).intValue();
+      = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "cache.gatewaySender.queueOpLogSize", 1024 * 1024 * 100).intValue();
 
   
   /**
@@ -89,7 +91,7 @@ public interface GatewaySender {
 
   public static final int DEFAULT_PARALLELISM_REPLICATED_REGION = Integer
       .getInteger(
-          "gemfire.cache.gatewaySender.defaultParallelismForReplicatedRegion",
+          DistributionConfig.GEMFIRE_PREFIX + "cache.gatewaySender.defaultParallelismForReplicatedRegion",
           113).intValue();  
   
   public static final int DEFAULT_DISTRIBUTED_SYSTEM_ID = -1;
@@ -110,26 +112,27 @@ public interface GatewaySender {
    * dead and should be aborted
    */
   public static final long GATEWAY_SENDER_TIMEOUT
-  = Integer.getInteger("gemfire.GATEWAY_SENDER_TIMEOUT", 30).intValue();
+      = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "GATEWAY_SENDER_TIMEOUT", 30).intValue();
 
   
   /**
    * The obsolete socket read timeout java system property. Since customers have
    * been given this property, it is used to log a warning.
    */
-  public static final String GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY = "gemfire.GatewaySender.GATEWAY_CONNECTION_READ_TIMEOUT";
-  
-  public static final int GATEWAY_CONNECTION_IDLE_TIMEOUT = Integer.getInteger("gemfire.GatewaySender.GATEWAY_CONNECTION_IDLE_TIMEOUT", -1).intValue();
+  public static final String GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.GATEWAY_CONNECTION_READ_TIMEOUT";
+
+  public static final int GATEWAY_CONNECTION_IDLE_TIMEOUT = Integer
+      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.GATEWAY_CONNECTION_IDLE_TIMEOUT", -1).intValue();
   
   /**
    * If the System property is set, use it. Otherwise, set default to 'true'.
    */
-  public static final boolean REMOVE_FROM_QUEUE_ON_EXCEPTION = 
-    (System.getProperty("gemfire.GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION") != null) 
-      ? Boolean.getBoolean("gemfire.GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION")
+  public static final boolean REMOVE_FROM_QUEUE_ON_EXCEPTION =
+      (System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION") != null)
+          ? Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION")
       : true;
-  
-  public static final boolean EARLY_ACK = Boolean.getBoolean("gemfire.GatewaySender.EARLY_ACK");
+
+  public static final boolean EARLY_ACK = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.EARLY_ACK");
 
   public static final boolean DEFAULT_IS_PARALLEL = false;
   
@@ -140,7 +143,7 @@ public interface GatewaySender {
    * in case receiver is not up and running. Default is set to 1000 milliseconds i.e. 1 second.
    */
   public static final int CONNECTION_RETRY_INTERVAL = Integer.getInteger(
-      "gemfire.gateway-connection-retry-interval", 1000).intValue();
+      DistributionConfig.GEMFIRE_PREFIX + "gateway-connection-retry-interval", 1000).intValue();
   
   /**
    * The order policy. This enum is applicable only when concurrency-level is > 1.

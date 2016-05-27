@@ -19,23 +19,23 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -54,8 +54,8 @@ public class HARegionQueueStartStopJUnitTest
   private Cache createCache() throws CacheException
   {
     final Properties props = new Properties();
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(MCAST_PORT, "0");
     return CacheFactory.create(DistributedSystem.connect(props));
   }
 

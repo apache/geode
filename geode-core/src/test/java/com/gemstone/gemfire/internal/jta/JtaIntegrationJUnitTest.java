@@ -16,27 +16,20 @@
  */
 package com.gemstone.gemfire.internal.jta;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * Moved some non-DUnit tests over from com/gemstone/gemfire/internal/jta/dunit/JTADUnitTest
@@ -58,7 +51,7 @@ public class JtaIntegrationJUnitTest {
   @Test
   public void testBug43987() {
     //InternalDistributedSystem ds = getSystem(); // ties us in to the DS owned by DistributedTestCase.
-    CacheFactory cf = new CacheFactory().set("mcast-port", "0");//(ds.getProperties());
+    CacheFactory cf = new CacheFactory().set(MCAST_PORT, "0");//(ds.getProperties());
     Cache cache = cf.create(); // should just reuse the singleton DS owned by DistributedTestCase.
     RegionFactory<String, String> rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
     Region<String, String> r = rf.create("JTA_reg");

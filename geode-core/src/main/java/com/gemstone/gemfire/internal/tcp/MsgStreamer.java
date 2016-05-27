@@ -16,9 +16,17 @@
  */
 package com.gemstone.gemfire.internal.tcp;
 
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.distributed.internal.DMStats;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionMessage;
+import com.gemstone.gemfire.internal.*;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -27,20 +35,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.ByteBufferWriter;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.ObjToByteArraySerializer;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
 
 /** <p>MsgStreamer supports streaming a message to a tcp Connection
  * in chunks. This allows us to send a message without needing to
@@ -752,7 +746,7 @@ public class MsgStreamer extends OutputStream implements
    * Use -Dgemfire.ASCII_STRINGS=true if all String instances contain
    * ASCII characters. Setting this to true gives a performance improvement.
    */
-  private static final boolean ASCII_STRINGS = Boolean.getBoolean("gemfire.ASCII_STRINGS");
+  private static final boolean ASCII_STRINGS = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ASCII_STRINGS");
   
   /**
      * Writes two bytes of length information

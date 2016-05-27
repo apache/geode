@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.disttx;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
@@ -34,7 +35,7 @@ public class DistTXWANDUnitTest extends WANTestBase {
     Invoke.invokeInEveryVM(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        System.setProperty("gemfire.log-level", LogWriterUtils.getDUnitLogLevel());
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
         return null;
       }
     }); 

@@ -16,26 +16,18 @@
  */
 package com.gemstone.gemfire.cache.mapInterface;
 
-import static org.junit.Assert.fail;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.*;
+import org.junit.experimental.categories.Category;
 
 import java.util.HashMap;
 import java.util.Properties;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
 
 @Category(IntegrationTest.class)
 public class MapFunctionalJUnitTest {
@@ -48,8 +40,8 @@ public class MapFunctionalJUnitTest {
   @BeforeClass
   public static void caseSetUp() throws Exception {
     Properties properties = new Properties();
-    properties.setProperty("mcast-port", "0");
-    properties.setProperty("locators", "");
+    properties.setProperty(MCAST_PORT, "0");
+    properties.setProperty(LOCATORS, "");
     distributedSystem = DistributedSystem.connect(properties);
     Cache cache = CacheFactory.create(distributedSystem);
     AttributesFactory factory = new AttributesFactory();

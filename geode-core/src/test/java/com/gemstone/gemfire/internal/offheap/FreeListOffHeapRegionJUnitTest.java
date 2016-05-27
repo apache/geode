@@ -16,9 +16,9 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import org.junit.experimental.categories.Category;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.experimental.categories.Category;
 
 @Category(IntegrationTest.class)
 public class FreeListOffHeapRegionJUnitTest extends OffHeapRegionBase {
@@ -30,12 +30,12 @@ public class FreeListOffHeapRegionJUnitTest extends OffHeapRegionBase {
   
   @Override
   public void configureOffHeapStorage() {
-    System.setProperty("gemfire.OFF_HEAP_SLAB_SIZE", "1m");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "1m");
   }
 
   @Override
   public void unconfigureOffHeapStorage() {
-    System.clearProperty("gemfire.OFF_HEAP_SLAB_SIZE");
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE");
   }
 
   @Override

@@ -16,21 +16,19 @@
  */
 package com.gemstone.gemfire.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.execute.Function;
+import com.gemstone.gemfire.cache.execute.FunctionContext;
+import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.cache.execute.ResultSender;
+import com.gemstone.gemfire.internal.cache.InternalCache;
+import com.gemstone.gemfire.internal.cache.execute.FunctionContextImpl;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -44,19 +42,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.ResultSender;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.cache.InternalCache;
-import com.gemstone.gemfire.internal.cache.execute.FunctionContextImpl;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * TODO: Need to fix this testDeclarableFunctionsWithParms and testClassOnClasspath on Windows:
@@ -258,7 +245,7 @@ public class JarClassLoaderJUnitTest {
     final File jarFile1 = new File(JAR_PREFIX + "JarClassLoaderJUnit.jar#1");
 
     Properties properties = new Properties();
-    properties.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    properties.setProperty(MCAST_PORT, "0");
     CacheFactory cacheFactory = new CacheFactory(properties);
     this.cache = (InternalCache) cacheFactory.create();
 
@@ -330,7 +317,7 @@ public class JarClassLoaderJUnitTest {
     final File jarFile2 = new File(JAR_PREFIX + "JarClassLoaderJUnit.jar#2");
 
     Properties properties = new Properties();
-    properties.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    properties.setProperty(MCAST_PORT, "0");
     CacheFactory cacheFactory = new CacheFactory(properties);
     this.cache = (InternalCache) cacheFactory.create();
 
@@ -406,7 +393,7 @@ public class JarClassLoaderJUnitTest {
     final File jarFile2 = new File(JAR_PREFIX + "JarClassLoaderJUnit.jar#2");
 
     Properties properties = new Properties();
-    properties.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    properties.setProperty(MCAST_PORT, "0");
     CacheFactory cacheFactory = new CacheFactory(properties);
     this.cache = (InternalCache) cacheFactory.create();
 

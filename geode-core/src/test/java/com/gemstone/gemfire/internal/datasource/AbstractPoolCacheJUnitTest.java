@@ -22,32 +22,28 @@
  */
 package com.gemstone.gemfire.internal.datasource;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import junit.framework.TestCase;
-
-import javax.naming.Context;
-import javax.sql.PooledConnection;
-import javax.sql.XAConnection;
-import javax.transaction.xa.XAResource;
-
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
+import javax.naming.Context;
+import javax.sql.PooledConnection;
+import javax.sql.XAConnection;
+import javax.transaction.xa.XAResource;
+import java.sql.Connection;
+import java.util.*;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  */
@@ -61,11 +57,11 @@ public class AbstractPoolCacheJUnitTest {
   @Before
   public void setUp() throws Exception {
     props = new Properties();
-    props.setProperty("log-level", "info");
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     String path = TestUtil.getResourcePath(AbstractPoolCacheJUnitTest.class, "/jta/cachejta.xml");
-    props.setProperty("cache-xml-file", path);
+    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
     ds1 = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds1);
   }

@@ -16,26 +16,20 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.File;
-import java.util.Properties;
-
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.FileUtil;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
 
 @Category(IntegrationTest.class)
 public class PersistentPartitionedRegionJUnitTest {
@@ -201,8 +195,8 @@ public class PersistentPartitionedRegionJUnitTest {
 
   private Region createRegion(int ttl) {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("log-level", "info");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
 //    props.setProperty("log-file", "junit.log");
     cache = new CacheFactory(props).create();
     cache.createDiskStoreFactory()

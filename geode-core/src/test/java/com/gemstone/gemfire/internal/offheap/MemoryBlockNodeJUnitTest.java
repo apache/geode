@@ -16,13 +16,12 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.nio.ByteBuffer;
-
+import com.gemstone.gemfire.cache.CacheClosedException;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.DSCODE;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl;
+import com.gemstone.gemfire.internal.offheap.MemoryBlock.State;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.junit.After;
 import org.junit.Before;
@@ -33,11 +32,12 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.internal.DSCODE;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.offheap.MemoryBlock.State;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.nio.ByteBuffer;
+
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 
 @Category(UnitTest.class)
 public class MemoryBlockNodeJUnitTest {
@@ -52,7 +52,8 @@ public class MemoryBlockNodeJUnitTest {
   private StoredObject storedObject = null;
 
   @Rule
-  public final ProvideSystemProperty myPropertyHasMyValue = new ProvideSystemProperty("gemfire.OFF_HEAP_DO_EXPENSIVE_VALIDATION", "true");
+  public final ProvideSystemProperty myPropertyHasMyValue = new ProvideSystemProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_DO_EXPENSIVE_VALIDATION",
+      "true");
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();

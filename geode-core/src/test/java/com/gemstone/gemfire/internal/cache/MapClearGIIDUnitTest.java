@@ -21,26 +21,12 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.Properties;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.util.Properties;
 
 /**
  * 
@@ -76,7 +62,7 @@ public class MapClearGIIDUnitTest extends CacheTestCase {
 /*  public static void createCacheVM0() throws Exception {
     InitialImageOperation.slowImageProcessing = 200;
     Properties mprops = new Properties();
-    // mprops.setProperty("mcast-port", "7777");
+    // mprops.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "7777");
     
     ds = (new MapClearGIIDUnitTest("Clear")).getSystem(mprops);
     //ds = DistributedSystem.connect(props);
@@ -88,7 +74,7 @@ public class MapClearGIIDUnitTest extends CacheTestCase {
 
   public static void createCacheVM1() throws Exception {
     Properties mprops = new Properties();
-    // mprops.setProperty("mcast-port", "7777");
+    // mprops.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "7777");
     ds = (new MapClearGIIDUnitTest("Clear")).getSystem(mprops);
     // ds = DistributedSystem.connect(null);
     cache = CacheFactory.create(ds);
@@ -187,7 +173,7 @@ public class MapClearGIIDUnitTest extends CacheTestCase {
         InitialImageOperation.slowImageProcessing = 10;
         InitialImageOperation.slowImageSleeps = 0;
         Properties mprops = new Properties();
-        // mprops.setProperty("mcast-port", "7777");
+        // mprops.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "7777");
         
         getSystem(mprops);
         //ds = DistributedSystem.connect(props);
@@ -201,7 +187,7 @@ public class MapClearGIIDUnitTest extends CacheTestCase {
       public void run2() throws CacheException
       {
         Properties mprops = new Properties();
-        // mprops.setProperty("mcast-port", "7777");
+        // mprops.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "7777");
         getSystem(mprops);
         // ds = DistributedSystem.connect(null);
         getCache();

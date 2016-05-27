@@ -19,23 +19,17 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager.IndexUpdaterThread;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * Test create a region (Replicated OR Partitioned) and sets index maintenance
@@ -53,7 +47,7 @@ public class AsyncIndexUpdaterThreadShutdownJUnitTest {
 
   @Test
   public void testAsyncIndexUpdaterThreadShutdownForRR() {
-    Cache cache = new CacheFactory().set("mcast-port", "0").create();
+    Cache cache = new CacheFactory().set(MCAST_PORT, "0").create();
 
     RegionFactory rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
     rf.setIndexMaintenanceSynchronous(false);
@@ -88,7 +82,7 @@ public class AsyncIndexUpdaterThreadShutdownJUnitTest {
 
   @Test
   public void testAsyncIndexUpdaterThreadShutdownForPR() {
-    Cache cache = new CacheFactory().set("mcast-port", "0").create();
+    Cache cache = new CacheFactory().set(MCAST_PORT, "0").create();
 
     RegionFactory rf = cache.createRegionFactory(RegionShortcut.PARTITION);
     rf.setIndexMaintenanceSynchronous(false);

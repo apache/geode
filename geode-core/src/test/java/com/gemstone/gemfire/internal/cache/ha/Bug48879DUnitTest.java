@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
-import java.util.Properties;
-
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
@@ -27,6 +25,7 @@ import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -35,6 +34,8 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
+
+import java.util.Properties;
 
 @SuppressWarnings("serial")
 public class Bug48879DUnitTest extends DistributedTestCase {
@@ -75,7 +76,7 @@ public class Bug48879DUnitTest extends DistributedTestCase {
 
   public static void closeCache() throws Exception {
     HARegionQueue.threadIdExpiryTime = 300;
-    System.setProperty("gemfire.MessageTimeToLive", "180");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "MessageTimeToLive", "180");
     if (cache != null) {
       cache.close();
     }
@@ -85,7 +86,7 @@ public class Bug48879DUnitTest extends DistributedTestCase {
   public static Integer createCacheServer()
       throws Exception {
     Bug48879DUnitTest test = new Bug48879DUnitTest("Bug48879DUnitTest");
-    System.setProperty("gemfire.MessageTimeToLive", "30");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "MessageTimeToLive", "30");
     cache = (GemFireCacheImpl)CacheFactory.create(test.getSystem());
     HARegionQueue.threadIdExpiryTime = (SLEEP_TIME/1000) - 10;
     cache.setMessageSyncInterval(SLEEP_TIME/500);
@@ -106,9 +107,9 @@ public class Bug48879DUnitTest extends DistributedTestCase {
       throws Exception {
 
     Properties props = new Properties();
-    props.setProperty("statistic-archive-file", "client_" + OSProcess.getId()
+    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "client_" + OSProcess.getId()
         + ".gfs");
-    props.setProperty("statistic-sampling-enabled", "true");
+    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
 
     DistributedSystem ds = new Bug48879DUnitTest("Bug48879DUnitTest").getSystem(props);
     ds.disconnect();

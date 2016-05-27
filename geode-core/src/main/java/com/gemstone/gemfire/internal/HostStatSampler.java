@@ -16,16 +16,11 @@
  */
 package com.gemstone.gemfire.internal;
 
-import java.io.File;
-import java.net.UnknownHostException;
-import java.util.List;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
@@ -35,6 +30,11 @@ import com.gemstone.gemfire.internal.statistics.SampleCollector;
 import com.gemstone.gemfire.internal.statistics.StatArchiveHandlerConfig;
 import com.gemstone.gemfire.internal.statistics.StatisticsSampler;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.net.UnknownHostException;
+import java.util.List;
 
 /**
  * HostStatSampler implements a thread which will monitor, sample, and archive
@@ -45,11 +45,11 @@ public abstract class HostStatSampler
     implements Runnable, StatisticsSampler, StatArchiveHandlerConfig {
 
   private static final Logger logger = LogService.getLogger();
-  
-  public static final String TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY = "gemfire.stats.test.fileSizeLimitInKB";
+
+  public static final String TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "stats.test.fileSizeLimitInKB";
   public static final String OS_STATS_DISABLED_PROPERTY = "osStatsDisabled";
 
-  protected static final String INITIALIZATION_TIMEOUT_PROPERTY = "gemfire.statSamplerInitializationTimeout";
+  protected static final String INITIALIZATION_TIMEOUT_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "statSamplerInitializationTimeout";
   protected static final int INITIALIZATION_TIMEOUT_DEFAULT = 3000;
   protected static final long INITIALIZATION_TIMEOUT_MILLIS = 
       Long.getLong(INITIALIZATION_TIMEOUT_PROPERTY, INITIALIZATION_TIMEOUT_DEFAULT);
@@ -58,7 +58,7 @@ public abstract class HostStatSampler
    * Used to check if the sampler thread wake-up is delayed, and log a warning if it is delayed by longer than 
    * the amount of milliseconds specified by this property. The value of 0 disables the check. 
    */
-  private static final long STAT_SAMPLER_DELAY_THRESHOLD = Long.getLong("gemfire.statSamplerDelayThreshold", 3000);
+  private static final long STAT_SAMPLER_DELAY_THRESHOLD = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "statSamplerDelayThreshold", 3000);
   private static final long STAT_SAMPLER_DELAY_THRESHOLD_NANOS = NanoTimer.millisToNanos(STAT_SAMPLER_DELAY_THRESHOLD);
   
   private static final int MIN_MS_SLEEP = 1;

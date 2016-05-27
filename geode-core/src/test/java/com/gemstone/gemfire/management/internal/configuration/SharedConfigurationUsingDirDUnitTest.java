@@ -16,12 +16,18 @@
  */
 package com.gemstone.gemfire.management.internal.configuration;
 
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
-import static com.gemstone.gemfire.internal.AvailablePortHelper.*;
-import static com.gemstone.gemfire.test.dunit.Host.*;
-import static com.jayway.awaitility.Awaitility.*;
-import static java.util.stream.Collectors.*;
-import static org.junit.Assert.*;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
+import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import com.gemstone.gemfire.util.test.TestUtil;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,18 +39,13 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import com.gemstone.gemfire.util.test.TestUtil;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static com.gemstone.gemfire.test.dunit.Host.getHost;
+import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static java.util.stream.Collectors.joining;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 @Category(DistributedTest.class)
 public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
@@ -268,14 +269,14 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
       final String locatorName = "locator" + i;
       final File logFile = new File("locator-" + i + ".log");
       final Properties props = new Properties();
-      props.setProperty(NAME_NAME, locatorName);
-      props.setProperty(MCAST_PORT_NAME, "0");
-      props.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
-      props.setProperty(LOAD_CLUSTER_CONFIG_FROM_DIR_NAME, "true");
+      props.setProperty(NAME, locatorName);
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
+      props.setProperty(LOAD_CLUSTER_CONFIGURATION_FROM_DIR, "true");
 
       if (locatorPorts.length > 1) {
         int otherLocatorPort = locatorPorts[(i + 1) % locatorPorts.length];
-        props.setProperty(LOCATORS_NAME, "localhost[" + otherLocatorPort + "]");
+        props.setProperty(LOCATORS, "localhost[" + otherLocatorPort + "]");
       }
 
       Locator.startLocatorAndDS(locatorPorts[i], logFile, props);
@@ -305,12 +306,12 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
       disconnectFromDS();
 
       final Properties props = new Properties();
-      props.setProperty(NAME_NAME, "member" + i);
-      props.setProperty(MCAST_PORT_NAME, "0");
-      props.setProperty(LOCATORS_NAME, getLocatorStr(locatorPorts));
-      props.setProperty(LOG_FILE_NAME, "server-" + i + ".log");
-      props.setProperty(USE_CLUSTER_CONFIGURATION_NAME, "true");
-      props.setProperty(ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+      props.setProperty(SystemConfigurationProperties.NAME, "member" + i);
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, getLocatorStr(locatorPorts));
+      props.setProperty(LOG_FILE, "server-" + i + ".log");
+      props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
+      props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
 
       getSystem(props);
       getCache();

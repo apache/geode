@@ -15,26 +15,22 @@
  * limitations under the License.
  */
 /**
- * 
+ *
  */
 package com.gemstone.gemfire.internal.cache.wan.asyncqueue;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.internal.cache.wan.AsyncEventQueueConfigurationException;
-import com.gemstone.gemfire.internal.cache.wan.MyAsyncEventListener;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-import junit.framework.TestCase;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -43,10 +39,10 @@ import junit.framework.TestCase;
 public class AsyncEventQueueValidationsJUnitTest {
 
   private Cache cache;
-  
+
   @Test
   public void testConcurrentParallelAsyncEventQueueAttributesWrongDispatcherThreads() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     try {
       AsyncEventQueueFactory fact = cache.createAsyncEventQueueFactory();
       fact.setParallel(true);
@@ -55,15 +51,14 @@ public class AsyncEventQueueValidationsJUnitTest {
       fact.create("id", new com.gemstone.gemfire.internal.cache.wan.MyAsyncEventListener());
       fail("Expected AsyncEventQueueConfigurationException.");
     } catch (AsyncEventQueueConfigurationException e) {
-        assertTrue(e.getMessage()
-            .contains(" can not be created with dispatcher threads less than 1"));
+      assertTrue(e.getMessage()
+          .contains(" can not be created with dispatcher threads less than 1"));
     }
   }
-  
-  
+
   @Test
   public void testConcurrentParallelAsyncEventQueueAttributesOrderPolicyThread() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     try {
       AsyncEventQueueFactory fact = cache.createAsyncEventQueueFactory();
       fact.setParallel(true);
@@ -72,10 +67,9 @@ public class AsyncEventQueueValidationsJUnitTest {
       fact.create("id", new com.gemstone.gemfire.internal.cache.wan.MyAsyncEventListener());
       fail("Expected AsyncEventQueueConfigurationException.");
     } catch (AsyncEventQueueConfigurationException e) {
-        assertTrue(e.getMessage()
-            .contains("can not be created with OrderPolicy"));
+      assertTrue(e.getMessage()
+          .contains("can not be created with OrderPolicy"));
     }
   }
-  
-  
+
 }

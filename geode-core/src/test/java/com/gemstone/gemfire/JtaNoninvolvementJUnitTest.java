@@ -16,26 +16,24 @@
  */
 package com.gemstone.gemfire;
 
-import static org.junit.Assert.*;
-
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.*;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.jndi.JNDIInvoker;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.naming.NamingException;
-import javax.transaction.UserTransaction;
-
 import org.junit.After;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
+
+import javax.transaction.UserTransaction;
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * Ensure that the ignoreJTA Region setting works
@@ -53,7 +51,7 @@ public class JtaNoninvolvementJUnitTest {
 
   private void createCache(boolean copyOnRead) throws CacheException {
     Properties p = new Properties();
-    p.setProperty("mcast-port", "0"); // loner
+    p.setProperty(MCAST_PORT, "0"); // loner
     this.cache = CacheFactory.create(DistributedSystem.connect(p));
 
     AttributesFactory af = new AttributesFactory();
@@ -161,7 +159,7 @@ public class JtaNoninvolvementJUnitTest {
   public void test002IgnoreJTASysProp() throws Exception {
     javax.transaction.UserTransaction ut = null;
     try {
-      System.setProperty("gemfire.ignoreJTA", "true");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA", "true");
       createCache(false);
       ut = 
           (UserTransaction) cache.getJNDIContext().lookup("java:/UserTransaction");
@@ -173,7 +171,7 @@ public class JtaNoninvolvementJUnitTest {
     } finally {
       closeCache();
       cache = null;
-      System.setProperty("gemfire.ignoreJTA", "false");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA", "false");
     }
   }
 }

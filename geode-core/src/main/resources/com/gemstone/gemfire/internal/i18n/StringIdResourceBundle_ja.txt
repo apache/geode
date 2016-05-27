@@ -2763,7 +2763,7 @@
 3958   = <vmarg> 起動したCacheServer VMに渡されるVMオプション。例: -J-Xmx1024M（1 GBのヒープの場合）
 3959   = <dir> キャッシュ・サーバーが実行されるディレクトリ。デフォルトは現在のディレクトリ
 3960   = <classpath> キャッシュ・サーバーで必要なユーザー・クラスの場所。このパスは、現在のclasspathに追加されます。
-3961   = <attName> "mcast-port"や"cache-xml-file"などの分散システム属性。
+3961   = <attName> DistributionConfig.MCAST_PORT_NAMEや"cache-xml-file"などの分散システム属性。
 3962   = GemFire CacheServer VMを停止します
 3963   = GemFire CacheServer VMのステータスおよびプロセスIDを通知します
 3964   = サーバー・プロセス起動中のエラー。 

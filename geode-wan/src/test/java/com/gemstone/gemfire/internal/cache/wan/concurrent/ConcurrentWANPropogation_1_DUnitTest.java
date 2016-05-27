@@ -21,6 +21,7 @@ import com.gemstone.gemfire.cache.EntryExistsException;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.wan.BatchException70;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
@@ -530,18 +531,18 @@ public class ConcurrentWANPropogation_1_DUnitTest extends WANTestBase {
           getTestMethodName() + "_RR_1", 1000 ));
     } finally {
       System.setProperty(
-          "gemfire.GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
+          DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
       vm4.invoke(new CacheSerializableRunnable("UnSetting system property ") {
         public void run2() throws CacheException {
           System.setProperty(
-              "gemfire.GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
+              DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
         }
       });
 
       vm5.invoke(new CacheSerializableRunnable("UnSetting system property ") {
         public void run2() throws CacheException {
           System.setProperty(
-              "gemfire.GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
+              DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
         }
       });
     }

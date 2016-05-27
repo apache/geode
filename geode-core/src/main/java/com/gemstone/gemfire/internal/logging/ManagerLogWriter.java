@@ -16,27 +16,20 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.regex.Pattern;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
-import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
 import com.gemstone.gemfire.internal.util.LogFileUtils;
+
+import java.io.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.regex.Pattern;
 
 /**
   * Implementation of {@link LogWriterI18n} for distributed system members.
@@ -47,7 +40,7 @@ import com.gemstone.gemfire.internal.util.LogFileUtils;
   */
 public class ManagerLogWriter extends LocalLogWriter  {
 
-  public static final String TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY = "gemfire.logging.test.fileSizeLimitInKB";
+  public static final String TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "logging.test.fileSizeLimitInKB";
 
   private final boolean fileSizeLimitInKB;
   

@@ -17,18 +17,6 @@
 
 package com.gemstone.gemfire.distributed;
 
-import java.io.File;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.StatisticsFactory;
@@ -47,6 +35,13 @@ import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
 import com.gemstone.gemfire.redis.GemFireRedisServer;
 import com.gemstone.gemfire.security.GemFireSecurityException;
+
+import java.io.File;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A "connection" to a GemFire distributed system.  A
@@ -1974,7 +1969,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * @see #getPropertiesFile()
    * @since Geode 1.0
    */
-  public static final String PROPERTIES_FILE_DEFAULT = "gemfire.properties";
+  public static final String PROPERTIES_FILE_DEFAULT = DistributionConfig.GEMFIRE_PREFIX + "properties";
 
   /**
    * Returns the current value of {@link #PROPERTIES_FILE_PROPERTY} system 

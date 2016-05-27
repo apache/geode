@@ -16,31 +16,24 @@
  */
 package com.gemstone.gemfire.internal.jta;
 
-import junit.framework.TestCase;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Properties;
-
-import javax.naming.Context;
-import javax.transaction.RollbackException;
-import javax.transaction.Synchronization;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
-import javax.transaction.Status;
-
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.datasource.GemFireBasicDataSource;
 import com.gemstone.gemfire.internal.datasource.GemFireTransactionDataSource;
-import com.gemstone.gemfire.internal.datasource.RestartJUnitTest;
-import com.gemstone.gemfire.util.test.TestUtil;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.test.TestUtil;
+import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+
+import javax.naming.Context;
+import javax.transaction.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 @Category(IntegrationTest.class)
 public class GlobalTransactionJUnitTest extends TestCase {
@@ -54,9 +47,9 @@ public class GlobalTransactionJUnitTest extends TestCase {
   @Override
   protected void setUp() throws Exception {
     props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.setProperty(MCAST_PORT, "0");
     String path = TestUtil.getResourcePath(GlobalTransactionJUnitTest.class, "/jta/cachejta.xml");
-    props.setProperty("cache-xml-file", path);
+    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
     ds1 = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds1);
     utx = new UserTransactionImpl();

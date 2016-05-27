@@ -17,11 +17,15 @@
 package com.gemstone.gemfire.admin;
 
 import com.gemstone.gemfire.admin.internal.InetAddressUtil;
-//import com.gemstone.gemfire.admin.jmx.AgentConfig;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 
-//import java.net.InetAddress;
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
+//import com.gemstone.gemfire.admin.jmx.AgentConfig;
+//import java.net.InetAddress;
 
 /**
  * Configuration for defining a GemFire distributed system to
@@ -64,54 +68,53 @@ public interface DistributedSystemConfig extends Cloneable {
    * {@linkplain ManagedEntity managed entities} administered by the
    * <code>DistributedSystem</code>.  The XML file must conform to a
    * <a href="doc-files/ds5_0.dtd">dtd</a>. */
-  public static final String ENTITY_CONFIG_XML_FILE_NAME =
+  String ENTITY_CONFIG_XML_FILE_NAME =
     "entity-config-xml-file";
 
   /** The default value of the "entity-config-xml-file" property
    * ("distributed-system.xml"). */
-  public static final String DEFAULT_ENTITY_CONFIG_XML_FILE =
+  String DEFAULT_ENTITY_CONFIG_XML_FILE =
     "distributed-system.xml";
 
   /** The name of the "system-id" property */
-  public static final String SYSTEM_ID_NAME = "system-id";
+  String SYSTEM_ID_NAME = "system-id";
 
   /** The default value of the "system-id" property ("") */
-  public static final String DEFAULT_SYSTEM_ID = "Default System";
+  String DEFAULT_SYSTEM_ID = "Default System";
 
   /** The name of the "name" property. See {@link #getSystemName()}. */
-  public static final String NAME_NAME = DistributionConfig.NAME_NAME;
+  String NAME_NAME = SystemConfigurationProperties.NAME;
 
   /** The default value of the "name" property (""). See {@link #getSystemName()}. */
-  public static final String DEFAULT_NAME = "";
+  String DEFAULT_NAME = "";
 
   /** The name of the "mcastPort" property */
-  public static final String MCAST_PORT_NAME = 
-    DistributionConfig.MCAST_PORT_NAME;
+  String MCAST_PORT_NAME =
+      MCAST_PORT;
 
   /** The default value of the "mcastPort" property (10334) */
-  public static final int DEFAULT_MCAST_PORT =
+  int DEFAULT_MCAST_PORT =
     DistributionConfig.DEFAULT_MCAST_PORT;
 
   /** The minimum mcastPort (0) */
-  public static final int MIN_MCAST_PORT =
+  int MIN_MCAST_PORT =
     DistributionConfig.MIN_MCAST_PORT;
 
   /** The maximum mcastPort (65535) */
-  public static final int MAX_MCAST_PORT =
+  int MAX_MCAST_PORT =
     DistributionConfig.MAX_MCAST_PORT;
   
   /** The name of the "mcastAddress" property */
-  public static final String MCAST_ADDRESS_NAME = 
-    DistributionConfig.MCAST_ADDRESS_NAME;
+  String MCAST_ADDRESS_NAME = MCAST_ADDRESS;
 
   /** The default value of the "mcastAddress" property (239.192.81.1). */
-  public static final String DEFAULT_MCAST_ADDRESS = 
+  String DEFAULT_MCAST_ADDRESS = 
       InetAddressUtil.toString(DistributionConfig.DEFAULT_MCAST_ADDRESS);
   
   /** The name of the "membership-port-range" property
    * @since GemFire 6.5
    */
-  public static final String MEMBERSHIP_PORT_RANGE_NAME = 
+  String MEMBERSHIP_PORT_RANGE_NAME = 
     DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME;
 
   /**
@@ -119,36 +122,36 @@ public interface DistributedSystemConfig extends Cloneable {
    * <p> Actual value is <code>[1024,65535]</code>.
    * @since GemFire 6.5
    */
-  public static final int[] DEFAULT_MEMBERSHIP_PORT_RANGE = 
+  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = 
     DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
   
   /** settings for tcp-port
    * @since GemFire 6.5
    */
-  public static final String TCP_PORT_NAME = DistributionConfig.TCP_PORT_NAME;
+  String TCP_PORT_NAME = TCP_PORT;
   /** The default value of the "tcpPort" property.
    * <p> Actual value is <code>0</code>.
    * @since GemFire 6.5
    */
-  public static final int DEFAULT_TCP_PORT = DistributionConfig.DEFAULT_TCP_PORT;
+  int DEFAULT_TCP_PORT = DistributionConfig.DEFAULT_TCP_PORT;
 
   /**
    * The default AckWaitThreshold.
    * <p> Actual value of this constant is <code>15</code> seconds.
    */
-  public static final int DEFAULT_ACK_WAIT_THRESHOLD =
+  int DEFAULT_ACK_WAIT_THRESHOLD =
     DistributionConfig.DEFAULT_ACK_WAIT_THRESHOLD;
   /**
    * The minimum AckWaitThreshold.
    * <p> Actual value of this constant is <code>1</code> second.
    */
-  public static final int MIN_ACK_WAIT_THRESHOLD =
+  int MIN_ACK_WAIT_THRESHOLD =
     DistributionConfig.MIN_ACK_WAIT_THRESHOLD;
   /**
    * The maximum AckWaitThreshold.
    * <p> Actual value of this constant is <code>MAX_INT</code> seconds.
    */
-  public static final int MAX_ACK_WAIT_THRESHOLD =
+  int MAX_ACK_WAIT_THRESHOLD =
     DistributionConfig.MIN_ACK_WAIT_THRESHOLD;
   
   /**
@@ -156,132 +159,130 @@ public interface DistributedSystemConfig extends Cloneable {
    * <p> Actual value of this constant is <code>0</code> seconds, which
    * turns off forced disconnects based on ack wait periods.
    */
-  public static final int DEFAULT_ACK_SEVERE_ALERT_THRESHOLD =
+  int DEFAULT_ACK_SEVERE_ALERT_THRESHOLD =
     DistributionConfig.DEFAULT_ACK_SEVERE_ALERT_THRESHOLD;
   /**
    * The minimum ackSevereAlertThreshold.
    * <p> Actual value of this constant is <code>0</code> second,
    * which turns off forced disconnects based on ack wait periods.
    */
-  public static final int MIN_ACK_SEVERE_ALERT_THRESHOLD =
+  int MIN_ACK_SEVERE_ALERT_THRESHOLD =
     DistributionConfig.MIN_ACK_SEVERE_ALERT_THRESHOLD;
   /**
    * The maximum ackSevereAlertThreshold.
    * <p> Actual value of this constant is <code>MAX_INT</code> seconds.
    */
-  public static final int MAX_ACK_SEVERE_ALERT_THRESHOLD =
+  int MAX_ACK_SEVERE_ALERT_THRESHOLD =
     DistributionConfig.MAX_ACK_SEVERE_ALERT_THRESHOLD;
 
   /** The name of the "locators" property (comma-delimited host[port] list) */
-  public static final String LOCATORS_NAME = 
-    DistributionConfig.LOCATORS_NAME;
+  String LOCATORS_NAME = LOCATORS;
 
   /** The default value of the "locators" property ("") */
-  public static final String DEFAULT_LOCATORS =
+  String DEFAULT_LOCATORS =
     DistributionConfig.DEFAULT_LOCATORS;
 
   /** The name of the "bindAddress" property */
-  public static final String BIND_ADDRESS_NAME =
-    DistributionConfig.BIND_ADDRESS_NAME;
+  String BIND_ADDRESS_NAME = BIND_ADDRESS;
 
   /** The default value of the "bindAddress" property */
-  public static final String DEFAULT_BIND_ADDRESS =
+  String DEFAULT_BIND_ADDRESS =
     DistributionConfig.DEFAULT_BIND_ADDRESS;
 
   /** The name of the remote-command property */
-  public static final String REMOTE_COMMAND_NAME = "remote-command";
+  String REMOTE_COMMAND_NAME = "remote-command";
 
   /** The default value of the remote-command property */
-  public static final String DEFAULT_REMOTE_COMMAND =
+  String DEFAULT_REMOTE_COMMAND =
     "rsh -n {HOST} {CMD}";
 
   /** The name of the "SSLEnabled" property */
-  public static final String SSL_ENABLED_NAME = 
+  String SSL_ENABLED_NAME = 
     DistributionConfig.SSL_ENABLED_NAME;
 
   /** The default ssl-enabled state (<code>false</code>) */
-  public static final boolean DEFAULT_SSL_ENABLED =
+  boolean DEFAULT_SSL_ENABLED =
     DistributionConfig.DEFAULT_SSL_ENABLED;
  
   /** The name of the "SSLProtocols" property */
-  public static final String SSL_PROTOCOLS_NAME =
+  String SSL_PROTOCOLS_NAME =
     DistributionConfig.SSL_PROTOCOLS_NAME;
 
   /** The default ssl-protocols value (<code>any</code>) */
-  public static final String DEFAULT_SSL_PROTOCOLS =
+  String DEFAULT_SSL_PROTOCOLS =
     DistributionConfig.DEFAULT_SSL_PROTOCOLS;
    
   /** The name of the "SSLCiphers" property */
-  public static final String SSL_CIPHERS_NAME = 
+  String SSL_CIPHERS_NAME = 
     DistributionConfig.SSL_CIPHERS_NAME;
 
   /** The default ssl-ciphers value. (<code>any</code>) */
-  public static final String DEFAULT_SSL_CIPHERS =
+  String DEFAULT_SSL_CIPHERS =
     DistributionConfig.DEFAULT_SSL_CIPHERS; 
   
   /** The name of the "SSLRequireAuthentication" property */
-  public static final String SSL_REQUIRE_AUTHENTICATION_NAME =
+  String SSL_REQUIRE_AUTHENTICATION_NAME =
     DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME;
 
   /** The default ssl-require-authentication value (<code>true</code>) */
-  public static final boolean DEFAULT_SSL_REQUIRE_AUTHENTICATION =
+  boolean DEFAULT_SSL_REQUIRE_AUTHENTICATION =
     DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION; 
 
   /** The default disable-tcp value (<code>false</code>) */
-  public static final boolean DEFAULT_DISABLE_TCP = DistributionConfig.DEFAULT_DISABLE_TCP;
+  boolean DEFAULT_DISABLE_TCP = DistributionConfig.DEFAULT_DISABLE_TCP;
   
   /** The default enable-network-partition-detection setting (<code>false</code>) */
-  public static final boolean DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION = DistributionConfig.DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION;
+  boolean DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION = DistributionConfig.DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION;
   
   /** The default disable-auto-reconnect setting (<code>false</code>) */
-  public static final boolean DEFAULT_DISABLE_AUTO_RECONNECT = DistributionConfig.DEFAULT_DISABLE_AUTO_RECONNECT;
+  boolean DEFAULT_DISABLE_AUTO_RECONNECT = DistributionConfig.DEFAULT_DISABLE_AUTO_RECONNECT;
 
   /** The default failure-detection timeout period for member heart-beat responses */
-  public static final int DEFAULT_MEMBER_TIMEOUT = DistributionConfig.DEFAULT_MEMBER_TIMEOUT;
+  int DEFAULT_MEMBER_TIMEOUT = DistributionConfig.DEFAULT_MEMBER_TIMEOUT;
   
   /** The name of the "logFile" property */
-  public static final String LOG_FILE_NAME = "log-file";
+  String LOG_FILE_NAME = DistributionConfig.LOG_FILE_NAME;
 
   /** The default log-file value ("" which directs logging to standard
    * output) */
-  public static final String DEFAULT_LOG_FILE = "";
+  String DEFAULT_LOG_FILE = "";
 
   /** The name of the "logLevel" property */
-  public static final String LOG_LEVEL_NAME = "log-level";
+  String LOG_LEVEL_NAME = DistributionConfig.LOG_LEVEL_NAME;
 
   /** The default log level ("config") */
-  public static final String DEFAULT_LOG_LEVEL = "config";
+  String DEFAULT_LOG_LEVEL = "config";
 
   /** The name of the "LogDiskSpaceLimit" property */
-  public static final String LOG_DISK_SPACE_LIMIT_NAME =
-    "log-disk-space-limit";
+  String LOG_DISK_SPACE_LIMIT_NAME =
+      DistributionConfig.LOG_DISK_SPACE_LIMIT_NAME;
 
   /** The default log disk space limit in megabytes (0) */
-  public static final int DEFAULT_LOG_DISK_SPACE_LIMIT =
+  int DEFAULT_LOG_DISK_SPACE_LIMIT =
     DistributionConfig.DEFAULT_LOG_DISK_SPACE_LIMIT;
 
   /** The minimum log disk space limit in megabytes (0) */
-  public static final int MIN_LOG_DISK_SPACE_LIMIT = 
+  int MIN_LOG_DISK_SPACE_LIMIT = 
     DistributionConfig.MIN_LOG_DISK_SPACE_LIMIT;
 
   /** The minimum log disk space limit in megabytes (1000000) */
-  public static final int MAX_LOG_DISK_SPACE_LIMIT =
+  int MAX_LOG_DISK_SPACE_LIMIT =
     DistributionConfig.MAX_LOG_DISK_SPACE_LIMIT;
     
   /** The name of the "LogFileSizeLimit" property */
-  public static final String LOG_FILE_SIZE_LIMIT_NAME =
-    "log-file-size-limit";
+  String LOG_FILE_SIZE_LIMIT_NAME =
+      DistributionConfig.LOG_FILE_SIZE_LIMIT_NAME;
 
   /** The default log file size limit in megabytes (0) */
-  public static final int DEFAULT_LOG_FILE_SIZE_LIMIT =
+  int DEFAULT_LOG_FILE_SIZE_LIMIT =
     DistributionConfig.DEFAULT_LOG_FILE_SIZE_LIMIT;
 
   /** The minimum log file size limit in megabytes (0) */
-  public static final int MIN_LOG_FILE_SIZE_LIMIT =
+  int MIN_LOG_FILE_SIZE_LIMIT =
     DistributionConfig.MIN_LOG_FILE_SIZE_LIMIT;
 
   /** The minimum log file size limit in megabytes (1000000) */
-  public static final int MAX_LOG_FILE_SIZE_LIMIT =
+  int MAX_LOG_FILE_SIZE_LIMIT =
     DistributionConfig.MAX_LOG_FILE_SIZE_LIMIT;
 
   /**
@@ -293,14 +294,14 @@ public interface DistributedSystemConfig extends Cloneable {
    * when the config is created. Note that the resource MBeans actually refresh
    * and hit the DS only if there is an RMI client connected
    * */
-  public static final String REFRESH_INTERVAL_NAME =
+  String REFRESH_INTERVAL_NAME =
     "refresh-interval";
 
   /**
    * The default "refreshInterval" in seconds which will apply to
    * REFRESH_INTERVAL_NAME property. The default value is 15 secs
    * */
-  public static final int DEFAULT_REFRESH_INTERVAL = 15;
+  int DEFAULT_REFRESH_INTERVAL = 15;
 
   //////////////////////  Instance Methods  //////////////////////
 

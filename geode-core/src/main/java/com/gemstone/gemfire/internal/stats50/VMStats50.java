@@ -16,32 +16,15 @@
  */
 package com.gemstone.gemfire.internal.stats50;
 
-import java.lang.management.ClassLoadingMXBean;
-import java.lang.management.GarbageCollectorMXBean;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryPoolMXBean;
-import java.lang.management.MemoryUsage;
-import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.StatisticsTypeFactory;
-import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.*;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.VMStatsContract;
+
+import java.lang.management.*;
+import java.lang.reflect.Method;
+import java.util.*;
 
 /**
  * Statistics related to a Java VM.
@@ -109,7 +92,7 @@ public class VMStats50 implements VMStatsContract {
 
   private long threadStartCount = 0;
   private long[] allThreadIds = null;
-  private final static boolean THREAD_STATS_ENABLED = Boolean.getBoolean("gemfire.enableThreadStats");
+  private final static boolean THREAD_STATS_ENABLED = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enableThreadStats");
   private final Map<Long,ThreadStatInfo> threadMap = THREAD_STATS_ENABLED ? new HashMap<Long,ThreadStatInfo>() : null;
   private final static StatisticsType threadType;
   private final static int thread_blockedId;
@@ -175,14 +158,14 @@ public class VMStats50 implements VMStatsContract {
     if (THREAD_STATS_ENABLED) {
       if (threadBean.isThreadCpuTimeSupported()) {
         if (!threadBean.isThreadCpuTimeEnabled()) {
-          if (Boolean.getBoolean("gemfire.enableCpuTime")) {
+          if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enableCpuTime")) {
             threadBean.setThreadCpuTimeEnabled(true);
           }
         }
       }
       if (threadBean.isThreadContentionMonitoringSupported()) {
         if (!threadBean.isThreadContentionMonitoringEnabled()) {
-          if (Boolean.getBoolean("gemfire.enableContentionTime")) {
+          if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enableContentionTime")) {
             threadBean.setThreadContentionMonitoringEnabled(true);
           }
         }

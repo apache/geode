@@ -16,44 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.control;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
@@ -70,26 +33,19 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.BucketRegion;
-import com.gemstone.gemfire.internal.cache.ColocationHelper;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.PRHARedundancyProvider;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import com.gemstone.gemfire.internal.cache.partitioned.BucketCountLoadProbe;
 import com.gemstone.gemfire.internal.cache.partitioned.LoadProbe;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.TimeoutException;
+
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 /**
  *
@@ -104,11 +60,11 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       public void run() {
         InternalResourceManager.setResourceObserver(null);
-        System.clearProperty("gemfire.resource.manager.threads");
+        System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "resource.manager.threads");
       }
     });
     InternalResourceManager.setResourceObserver(null);
-    System.clearProperty("gemfire.resource.manager.threads");
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "resource.manager.threads");
   }
 
   /**
@@ -796,7 +752,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
   private DistributedMember setRedundancyZone(VM vm, final String zone) {
     return (DistributedMember) vm.invoke(new SerializableCallable("set redundancy zone") {
       public Object call() {
-        System.setProperty("gemfire.resource.manager.threads", "2");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "resource.manager.threads", "2");
         Properties props = new Properties();
         props.setProperty(DistributionConfig.REDUNDANCY_ZONE_NAME, zone);
         DistributedSystem system = getSystem(props);
@@ -1247,13 +1203,13 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
 
       @Override
       public void run () {
-        System.setProperty("gemfire.LOG_REBALANCE", "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "LOG_REBALANCE", "true");
       }
     });
     try {
       recoverRedundancyParallelAsyncEventQueue(true);
     } finally {
-      System.setProperty("gemfire.LOG_REBALANCE", "false");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "LOG_REBALANCE", "false");
     }
   }
   

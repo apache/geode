@@ -16,49 +16,10 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import org.apache.commons.lang.SerializationException;
-import org.jgroups.Address;
-import org.jgroups.Event;
-import org.jgroups.JChannel;
-import org.jgroups.Message;
-import org.jgroups.Message.Flag;
-import org.jgroups.conf.ClassConfigurator;
-import org.jgroups.protocols.UNICAST3;
-import org.jgroups.protocols.pbcast.NAKACK2;
-import org.jgroups.util.Digest;
-import org.jgroups.util.UUID;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.ForcedDisconnectException;
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.SerialAckedMessage;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
@@ -73,17 +34,36 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinReq
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messages.LeaveRequestMessage;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger.JGroupsReceiver;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
 import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
 import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.commons.lang.SerializationException;
+import org.jgroups.Address;
+import org.jgroups.Event;
+import org.jgroups.JChannel;
+import org.jgroups.Message;
+import org.jgroups.conf.ClassConfigurator;
+import org.jgroups.protocols.UNICAST3;
+import org.jgroups.protocols.pbcast.NAKACK2;
+import org.jgroups.util.Digest;
+import org.jgroups.util.UUID;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-import junit.framework.Assert;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.*;
 
 @Category(IntegrationTest.class)
 public class JGroupsMessengerJUnitTest {
@@ -106,11 +86,11 @@ public class JGroupsMessengerJUnitTest {
     }
     Properties nonDefault = new Properties();
     nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
-    nonDefault.put(DistributionConfig.MCAST_PORT_NAME, enableMcast? ""+AvailablePortHelper.getRandomAvailableUDPPort() : "0");
-    nonDefault.put(DistributionConfig.MCAST_TTL_NAME, "0");
+    nonDefault.put(MCAST_PORT, enableMcast ? "" + AvailablePortHelper.getRandomAvailableUDPPort() : "0");
+    nonDefault.put(MCAST_TTL, "0");
     nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
     nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
-    nonDefault.put(DistributionConfig.LOCATORS_NAME, "localhost[10344]");
+    nonDefault.put(LOCATORS, "localhost[10344]");
     nonDefault.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, "1");
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig tconfig = new RemoteTransportConfig(config,

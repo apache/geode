@@ -16,18 +16,6 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
 import com.gemstone.gemfire.IncompatibleSystemException;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -41,6 +29,14 @@ import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
 
 /**
  * Tests the functionality of the {@link DistributedMember} class.
@@ -65,11 +61,11 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testDefaults() {
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0"); 
-    config.setProperty(DistributionConfig.LOCATORS_NAME, ""); 
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
     config.setProperty(DistributionConfig.ROLES_NAME, "");
     config.setProperty(DistributionConfig.GROUPS_NAME, "");
-    config.setProperty(DistributionConfig.NAME_NAME, "");
+    config.setProperty(SystemConfigurationProperties.NAME, "");
 
     InternalDistributedSystem system = getSystem(config);
     try {
@@ -96,9 +92,9 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testNonDefaultName() {
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0"); 
-    config.setProperty(DistributionConfig.LOCATORS_NAME, ""); 
-    config.setProperty(DistributionConfig.NAME_NAME, "nondefault");
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
+    config.setProperty(SystemConfigurationProperties.NAME, "nondefault");
 
     InternalDistributedSystem system = getSystem(config);
     try {
@@ -125,8 +121,8 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     final List bothList = Arrays.asList(new String[] {"A","B","C","D","E","F","G"});
     
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0"); 
-    config.setProperty(DistributionConfig.LOCATORS_NAME, ""); 
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
     config.setProperty(DistributionConfig.ROLES_NAME, rolesProp);
     config.setProperty(DistributionConfig.GROUPS_NAME, groupsProp);
 
@@ -159,21 +155,21 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       public void run() {
         Properties config = new Properties();
-        config.setProperty(DistributionConfig.NAME_NAME, "name0");
+        config.setProperty(SystemConfigurationProperties.NAME, "name0");
         getSystem(config);
       }
     });
     Host.getHost(0).getVM(1).invoke(new SerializableRunnable() {
       public void run() {
         Properties config = new Properties();
-        config.setProperty(DistributionConfig.NAME_NAME, "name1");
+        config.setProperty(SystemConfigurationProperties.NAME, "name1");
         getSystem(config);
       }
     });
     Host.getHost(0).getVM(2).invoke(new SerializableRunnable() {
       public void run() {
         Properties config = new Properties();
-        config.setProperty(DistributionConfig.NAME_NAME, "name0");
+        config.setProperty(SystemConfigurationProperties.NAME, "name0");
         try {
           getSystem(config);
           fail("expected IncompatibleSystemException");
@@ -366,9 +362,9 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testGetId() {
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    config.setProperty(DistributionConfig.LOCATORS_NAME, "");
-    config.setProperty(DistributionConfig.NAME_NAME, "foobar");
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
+    config.setProperty(SystemConfigurationProperties.NAME, "foobar");
 
     InternalDistributedSystem system = getSystem(config);
     try {
@@ -426,7 +422,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
       @Override
       public Object call() throws Exception {
         Properties config = new Properties();
-        config.setProperty(DistributionConfig.NAME_NAME, name);
+        config.setProperty(SystemConfigurationProperties.NAME, name);
         DistributedSystem ds = getSystem(config);
         return ds.getDistributedMember();
       }

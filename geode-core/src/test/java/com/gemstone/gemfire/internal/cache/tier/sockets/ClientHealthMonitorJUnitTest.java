@@ -16,15 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -44,6 +35,16 @@ import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * This is a functional-test for <code>ClientHealthMonitor</code>.
@@ -123,8 +124,8 @@ public class ClientHealthMonitorJUnitTest
     try {
       Properties p = new Properties();
       // make it a loner
-      p.put("mcast-port", "0");
-      p.put("locators", "");
+      p.put(MCAST_PORT, "0");
+      p.put(LOCATORS, "");
       
       this.system = DistributedSystem.connect(p);
       this.cache = CacheFactory.create(system);

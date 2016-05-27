@@ -16,14 +16,14 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.distributed.ServerLauncher.Builder;
+import com.gemstone.gemfire.distributed.ServerLauncher.Command;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.support.DistributedSystemAdapter;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
 import org.jmock.Expectations;
@@ -38,14 +38,13 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.ServerLauncher.Builder;
-import com.gemstone.gemfire.distributed.ServerLauncher.Command;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.support.DistributedSystemAdapter;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.junit.Assert.*;
 
 /**
  * The ServerLauncherTest class is a test suite of unit tests testing the contract, functionality and invariants
@@ -501,18 +500,18 @@ public class ServerLauncherTest {
     ServerLauncher launcher = new Builder()
       .setCommand(ServerLauncher.Command.START)
       .setMemberName(null)
-      .set(DistributionConfig.NAME_NAME, "serverABC")
+        .set(SystemConfigurationProperties.NAME, "serverABC")
       .build();
 
     assertNotNull(launcher);
     assertEquals(ServerLauncher.Command.START, launcher.getCommand());
     assertNull(launcher.getMemberName());
-    assertEquals("serverABC", launcher.getProperties().getProperty(DistributionConfig.NAME_NAME));
+    assertEquals("serverABC", launcher.getProperties().getProperty(SystemConfigurationProperties.NAME));
   }
 
   @Test
   public void testBuildWithMemberNameSetInSystemPropertiesOnStart() {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.NAME_NAME, "serverXYZ");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + SystemConfigurationProperties.NAME, "serverXYZ");
 
     ServerLauncher launcher = new Builder()
       .setCommand(ServerLauncher.Command.START)

@@ -16,7 +16,21 @@
  */
 package com.gemstone.gemfire.internal.cache.snapshot;
 
-import static com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.getLoggerI18n;
+import com.gemstone.gemfire.cache.EntryDestroyedException;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.execute.*;
+import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
+import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.execute.InternalExecution;
+import com.gemstone.gemfire.internal.cache.execute.LocalResultCollector;
+import com.gemstone.gemfire.internal.cache.snapshot.FlowController.Window;
+import com.gemstone.gemfire.internal.cache.snapshot.RegionSnapshotServiceImpl.ExportSink;
+import com.gemstone.gemfire.internal.cache.snapshot.RegionSnapshotServiceImpl.Exporter;
+import com.gemstone.gemfire.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -32,26 +46,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.gemstone.gemfire.cache.EntryDestroyedException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.execute.FunctionException;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache.execute.ResultSender;
-import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.execute.InternalExecution;
-import com.gemstone.gemfire.internal.cache.execute.LocalResultCollector;
-import com.gemstone.gemfire.internal.cache.snapshot.FlowController.Window;
-import com.gemstone.gemfire.internal.cache.snapshot.RegionSnapshotServiceImpl.ExportSink;
-import com.gemstone.gemfire.internal.cache.snapshot.RegionSnapshotServiceImpl.Exporter;
-import com.gemstone.gemfire.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
+import static com.gemstone.gemfire.distributed.internal.InternalDistributedSystem.getLoggerI18n;
 
 /**
  * Exports snapshot data using a sliding window to prevent the nodes in a 
@@ -65,7 +60,7 @@ import com.gemstone.gemfire.internal.cache.snapshot.SnapshotPacket.SnapshotRecor
  * @param <V> the value type
  */
 public class WindowedExporter<K, V> implements Exporter<K, V> {
-  private static final int WINDOW_SIZE = Integer.getInteger("gemfire.WindowedExporter.WINDOW_SIZE", 10);
+  private static final int WINDOW_SIZE = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "WindowedExporter.WINDOW_SIZE", 10);
 
   @Override
   public long export(Region<K, V> region, ExportSink sink, SnapshotOptions<K, V> options) throws IOException {

@@ -16,42 +16,17 @@
  */
 package com.gemstone.gemfire.rest.internal.web;
 
-import static org.junit.Assert.*;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Resource;
-
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionService;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.management.internal.AgentUtil;
-import com.gemstone.gemfire.pdx.PdxInstance;
-import com.gemstone.gemfire.pdx.PdxReader;
-import com.gemstone.gemfire.pdx.PdxSerializable;
-import com.gemstone.gemfire.pdx.PdxWriter;
-import com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer;
+import com.gemstone.gemfire.pdx.*;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,6 +42,16 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
+
+import javax.annotation.Resource;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * The GemFireRestInterfaceTest class is a test suite of test cases testing the contract and functionality of the
@@ -124,12 +109,12 @@ public class RestInterfaceJUnitTest {
         .setPdxReadSerialized(true)
         .setPdxIgnoreUnreadFields(false)
         .set("name", getClass().getSimpleName())
-        .set("mcast-port", "0")
-        .set("log-level", "config")
-        .set("http-service-bind-address", "localhost")
-        .set("http-service-port", String.valueOf(getHttpServicePort()))
+          .set(MCAST_PORT, "0")
+          .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+          .set(DistributionConfig.HTTP_SERVICE_BIND_ADDRESS_NAME, "localhost")
+          .set(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(getHttpServicePort()))
         //.set("http-service-ssl-enabled", "false")
-        .set("start-dev-rest-api", "true")
+          .set(DistributionConfig.START_DEV_REST_API_NAME, "true")
         .create();
 
       RegionFactory<String, Object> peopleRegionFactory = gemfireCache.createRegionFactory();
@@ -149,11 +134,11 @@ public class RestInterfaceJUnitTest {
 
   protected synchronized int getHttpServicePort() {
     try {
-      return Integer.parseInt(StringUtils.trimWhitespace(gemfireProperties.getProperty("http-service-port")));
+      return Integer.parseInt(StringUtils.trimWhitespace(gemfireProperties.getProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME)));
     }
     catch (NumberFormatException ignore) {
       int httpServicePort = getHttpServicePort(DEFAULT_HTTP_SERVICE_PORT);
-      gemfireProperties.setProperty("http-service-port", String.valueOf(httpServicePort));
+      gemfireProperties.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(httpServicePort));
       return httpServicePort;
     }
   }

@@ -85,6 +85,21 @@ import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.*;
+import java.net.ConnectException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.KeyStore;
+import java.util.*;
+import java.util.Map.Entry;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+
 /**
  *
  * @since GemFire 7.0
@@ -310,8 +325,8 @@ public class ShellCommands implements CommandMarker {
           if (!sslConfigProps.containsKey(DistributionConfig.CLUSTER_SSL_ENABLED_NAME)) {
             sslConfigProps.put(DistributionConfig.SSL_ENABLED_NAME, String.valueOf(true));
           }
-          sslConfigProps.put(DistributionConfig.MCAST_PORT_NAME, String.valueOf(0));
-          sslConfigProps.put(DistributionConfig.LOCATORS_NAME, "");
+          sslConfigProps.put(MCAST_PORT, String.valueOf(0));
+          sslConfigProps.put(LOCATORS, "");
 
           String sslInfoLogMsg = "Connecting to Locator via SSL.";
           if (useSsl) {

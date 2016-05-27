@@ -16,30 +16,21 @@
  */
 package com.gemstone.gemfire.cache.query;
 
-import static org.junit.Assert.*;
-
-import java.util.Properties;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.query.data.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.cache.query.data.Address;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.cache.query.data.Data;
-import com.gemstone.gemfire.cache.query.data.Employee;
-import com.gemstone.gemfire.cache.query.data.Manager;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import java.util.HashSet;
-import java.util.Set;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
 
 /**
  * Junit test for checking the value constraint region attributes.
@@ -53,7 +44,7 @@ public class Bug32947ValueConstraintJUnitTest {
   @Before
   public void setUp() throws java.lang.Exception {
     Properties properties = new Properties();
-    properties.setProperty("mcast-port", "0");
+    properties.setProperty(MCAST_PORT, "0");
     distributedSystem = DistributedSystem.connect(properties);
     cache = CacheFactory.create(distributedSystem);
   }

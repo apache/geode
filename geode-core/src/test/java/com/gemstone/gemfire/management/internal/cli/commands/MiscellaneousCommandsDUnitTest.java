@@ -16,22 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
-import static com.gemstone.gemfire.test.dunit.Invoke.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
-import static com.gemstone.gemfire.test.dunit.Wait.*;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.lang.ThreadUtils;
@@ -39,23 +25,24 @@ import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
-import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
+import com.gemstone.gemfire.management.internal.cli.result.*;
 import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData.SectionResultData;
-import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
-import com.gemstone.gemfire.management.internal.cli.result.ResultData;
-import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.IgnoredException.addIgnoredException;
+import static com.gemstone.gemfire.test.dunit.Invoke.invokeInEveryVM;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
 
 /**
  * Dunit class for testing gemfire function commands : GC, Shutdown
@@ -71,7 +58,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     invokeInEveryVM(new SerializableRunnable("reset log level") {
       public void run() {
         if (cachedLogLevel != null) {
-          System.setProperty("gemfire.log-level", cachedLogLevel);
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.LOG_LEVEL_NAME, cachedLogLevel);
           cachedLogLevel = null;
         }
       }
@@ -82,7 +69,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testGCForGroup() {
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
+    localProps.setProperty(SystemConfigurationProperties.NAME, "Manager");
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
     setUpJmxManagerOnVm0ThenConnect(localProps);
     String command = "gc --group=Group1";
@@ -137,7 +124,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   public void testShowLogDefault() throws IOException {
     Properties props = new Properties();
     try {
-      props.setProperty("log-file", "testShowLogDefault.log");
+      props.setProperty(DistributionConfig.LOG_FILE_NAME, "testShowLogDefault.log");
       setUpJmxManagerOnVm0ThenConnect(props);
       final VM vm1 = Host.getHost(0).getVM(0);
       final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
@@ -159,7 +146,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testShowLogNumLines() {
     Properties props = new Properties();
-    props.setProperty("log-file", "testShowLogNumLines.log");
+    props.setProperty(DistributionConfig.LOG_FILE_NAME, "testShowLogNumLines.log");
     try {
       setUpJmxManagerOnVm0ThenConnect(props);
       final VM vm1 = Host.getHost(0).getVM(0);
@@ -414,7 +401,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     String serverName1 = (String) vm0.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        cachedLogLevel = System.getProperty("gemfire.log-level");
+        cachedLogLevel = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "log-level");
         return GemFireCacheImpl.getInstance().getDistributedSystem().getDistributedMember().getId();
       }
     });
@@ -422,7 +409,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     String serverName2 = (String) vm1.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        cachedLogLevel = System.getProperty("gemfire.log-level");
+        cachedLogLevel = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "log-level");
         return GemFireCacheImpl.getInstance().getDistributedSystem().getDistributedMember().getId();
       }
     });
@@ -452,7 +439,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testChangeLogLevelForGrps() {
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
+    localProps.setProperty(SystemConfigurationProperties.NAME, "Manager");
     localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group0");
 
     final VM vm1 = Host.getHost(0).getVM(1);

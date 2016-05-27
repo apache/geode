@@ -16,13 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
 import com.gemstone.gemfire.cache.server.ServerLoadProbe;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.admin.ClientMembershipMessage;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
@@ -42,7 +42,7 @@ import java.util.Set;
  */
 public abstract class AbstractCacheServer implements CacheServer {
 
-  public static final String TEST_OVERRIDE_DEFAULT_PORT_PROPERTY = "gemfire.test.CacheServer.OVERRIDE_DEFAULT_PORT";
+  public static final String TEST_OVERRIDE_DEFAULT_PORT_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "test.CacheServer.OVERRIDE_DEFAULT_PORT";
 
   /** The cache that is served by this bridge server */
   protected final InternalCache cache;
@@ -149,7 +149,7 @@ public abstract class AbstractCacheServer implements CacheServer {
     this.maximumMessageCount = CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT;
     this.messageTimeToLive = CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE;
     // TODO this should be configurable in CacheServer
-    this.transactionTimeToLive = Integer.getInteger("gemfire.cacheServer.transactionTimeToLive", 180);
+    this.transactionTimeToLive = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "cacheServer.transactionTimeToLive", 180);
     this.groups = CacheServer.DEFAULT_GROUPS;
     this.bindAddress = CacheServer.DEFAULT_BIND_ADDRESS;
     this.hostnameForClients = CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS;

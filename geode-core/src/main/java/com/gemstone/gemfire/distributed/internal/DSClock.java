@@ -16,11 +16,6 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.SystemTimer;
 import com.gemstone.gemfire.internal.SystemTimer.SystemTimerTask;
@@ -29,6 +24,10 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.DateFormatter;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * DSClock tracks the system time.  The most useful method is 
@@ -115,7 +114,7 @@ public class DSClock {
    * @since GemFire 8.0
    */
   public void setCacheTimeOffset(DistributedMember coord, long offset, boolean isJoin) {
-    if (Boolean.getBoolean("gemfire.disable-distributed-clock")) {
+    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disable-distributed-clock")) {
       return;
     }
     if (isLoner) {

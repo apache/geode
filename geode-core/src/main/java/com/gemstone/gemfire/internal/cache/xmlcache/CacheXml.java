@@ -16,21 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
+import com.gemstone.gemfire.cache.CacheXmlException;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.ClassPathLoader;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import org.xml.sax.*;
+import org.xml.sax.ext.EntityResolver2;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ServiceLoader;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.ext.EntityResolver2;
-
-import com.gemstone.gemfire.cache.CacheXmlException;
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * The abstract superclass of classes that convert XML into a {@link
@@ -696,7 +691,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   /** The name of the <code>overflow-directory</code> attribute */
   protected static final String OVERFLOW_DIRECTORY = "overflow-directory";
   /** The name of the <code>socket-buffer-size</code> attribute */
-  protected static final String SOCKET_BUFFER_SIZE = "socket-buffer-size";
+  protected static final String SOCKET_BUFFER_SIZE = DistributionConfig.SOCKET_BUFFER_SIZE_NAME;
   /** The name of the <code>socket-read-timeout</code> attribute */
   protected static final String SOCKET_READ_TIMEOUT = "socket-read-timeout";
   /** The name of the <code>maximum-queue-memory</code> attribute */

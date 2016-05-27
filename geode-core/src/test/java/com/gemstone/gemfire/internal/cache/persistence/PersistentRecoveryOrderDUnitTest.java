@@ -16,37 +16,12 @@
  */
 package com.gemstone.gemfire.internal.cache.persistence;
 
-import static com.gemstone.gemfire.internal.lang.ThrowableUtils.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.junit.Ignore;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.admin.AdminDistributedSystem;
 import com.gemstone.gemfire.admin.AdminDistributedSystemFactory;
 import com.gemstone.gemfire.admin.AdminException;
 import com.gemstone.gemfire.admin.DistributedSystemConfig;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStore;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.persistence.ConflictingPersistentDataException;
 import com.gemstone.gemfire.cache.persistence.PersistentID;
 import com.gemstone.gemfire.cache.persistence.PersistentReplicatesOfflineException;
@@ -62,26 +37,22 @@ import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.AbstractUpdateOperation.AbstractUpdateMessage;
 import com.gemstone.gemfire.internal.cache.DestroyRegionOperation.DestroyRegionMessage;
-import com.gemstone.gemfire.internal.cache.DiskRegion;
-import com.gemstone.gemfire.internal.cache.DiskRegionStats;
-import com.gemstone.gemfire.internal.cache.DistributedRegion;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation.RequestImageMessage;
-import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionHolder;
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
+import org.junit.Ignore;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.gemstone.gemfire.internal.lang.ThrowableUtils.getRootCause;
 
 /**
  * This is a test of how persistent distributed
@@ -98,7 +69,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
   public static void resetAckWaitThreshold() {
     if (SAVED_ACK_WAIT_THRESHOLD != null) {
-      System.setProperty("gemfire.ack_wait_threshold", SAVED_ACK_WAIT_THRESHOLD);
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "ack_wait_threshold", SAVED_ACK_WAIT_THRESHOLD);
     }
   }
   
@@ -1782,11 +1753,11 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
   @Override
   public Properties getDistributedSystemProperties() {
     LogWriterUtils.getLogWriter().info("Looking for ack-wait-threshold");
-    String s = System.getProperty("gemfire.ack-wait-threshold");
+    String s = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "ack-wait-threshold");
     if (s != null) {
       SAVED_ACK_WAIT_THRESHOLD = s;
       LogWriterUtils.getLogWriter().info("removing system property gemfire.ack-wait-threshold");
-      System.getProperties().remove("gemfire.ack-wait-threshold");
+      System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + "ack-wait-threshold");
     }
     Properties props = super.getDistributedSystemProperties();
     props.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, "5");

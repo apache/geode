@@ -16,19 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.management.ManagementService;
@@ -42,9 +31,20 @@ import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 
 /**
  * Base class for all the CLI/gfsh command dunit tests.
@@ -134,8 +134,8 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
         jmxHost = "localhost";
       }
 
-      if (!localProps.containsKey(DistributionConfig.NAME_NAME)) {
-        localProps.setProperty(DistributionConfig.NAME_NAME, "Manager");
+      if (!localProps.containsKey(SystemConfigurationProperties.NAME)) {
+        localProps.setProperty(SystemConfigurationProperties.NAME, "Manager");
       }
 
       final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);

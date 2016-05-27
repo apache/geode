@@ -16,14 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.functions;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -39,6 +31,13 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.domain.CacheServerInfo;
 import com.gemstone.gemfire.management.internal.cli.domain.MemberInformation;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /***
  * 
@@ -86,7 +85,7 @@ public class GetMemberInformationFunction extends FunctionAdapter implements Int
        */
 
       InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
-      DistributionConfig 	config = system.getConfig();
+      DistributionConfig config = system.getConfig();
       String 	serverBindAddress     = config.getServerBindAddress();
       MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
 

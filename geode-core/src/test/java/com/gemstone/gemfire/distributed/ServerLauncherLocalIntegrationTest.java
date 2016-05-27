@@ -16,22 +16,6 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.lang.management.ManagementFactory;
-import java.net.BindException;
-import java.net.InetAddress;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Scope;
@@ -51,6 +35,23 @@ import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
 import com.gemstone.gemfire.internal.process.ProcessType;
 import com.gemstone.gemfire.internal.process.ProcessUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.lang.management.ManagementFactory;
+import java.net.BindException;
+import java.net.InetAddress;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
 
 /**
  * Integration tests for ServerLauncher as a local API in the local JVM.
@@ -91,7 +92,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true")
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0")
+        .set(MCAST_PORT, "0")
         .build();
 
     assertNotNull(this.launcher);
@@ -109,8 +110,8 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
       assertNotNull(distributedSystem);
       assertEquals("true", distributedSystem.getProperties().getProperty(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME));
       assertEquals("config", distributedSystem.getProperties().getProperty(DistributionConfig.LOG_LEVEL_NAME));
-      assertEquals("0", distributedSystem.getProperties().getProperty(DistributionConfig.MCAST_PORT_NAME));
-      assertEquals(getUniqueName(), distributedSystem.getProperties().getProperty(DistributionConfig.NAME_NAME));
+      assertEquals("0", distributedSystem.getProperties().getProperty(MCAST_PORT));
+      assertEquals(getUniqueName(), distributedSystem.getProperties().getProperty(SystemConfigurationProperties.NAME));
 
     } catch (Throwable e) {
       this.errorCollector.addError(e);
@@ -141,7 +142,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setRedirectOutput(true)
         .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+        .set(MCAST_PORT, "0");
 
     this.launcher = builder.build();
     assertNotNull(this.launcher);
@@ -197,7 +198,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setRedirectOutput(true)
         .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+        .set(MCAST_PORT, "0");
 
     assertFalse(builder.getForce());
     this.launcher = builder.build();
@@ -252,7 +253,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setRedirectOutput(true)
         .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+        .set(MCAST_PORT, "0");
 
     assertFalse(builder.getForce());
     this.launcher = builder.build();
@@ -301,7 +302,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setRedirectOutput(true)
         .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+        .set(MCAST_PORT, "0");
     
     this.launcher = builder.build();
 
@@ -357,7 +358,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setRedirectOutput(true)
         .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+        .set(MCAST_PORT, "0");
 
     this.launcher = builder.build();
 
@@ -414,7 +415,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+        .set(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "0");
 
     assertTrue(builder.getForce());
     this.launcher = builder.build();
@@ -497,7 +498,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setServerPort(freeTCPPorts[1])
         .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+        .set(MCAST_PORT, "0");
 
     this.launcher = builder.build();
     this.launcher.start();
@@ -566,7 +567,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setServerPort(this.serverPort)
         .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+        .set(MCAST_PORT, "0");
 
     this.launcher = builder.build();
     this.launcher.start();
@@ -616,7 +617,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setRedirectOutput(true)
         .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+        .set(MCAST_PORT, "0");
 
     this.launcher = builder.build();
     
@@ -695,7 +696,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+        .set(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "0");
 
     assertFalse(builder.getForce());
     this.launcher = builder.build();
@@ -777,7 +778,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setServerPort(freeTCPPort)
         .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+        .set(MCAST_PORT, "0");
 
     this.launcher = builder.build();
     
@@ -837,7 +838,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setRedirectOutput(true)
         .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+        .set(MCAST_PORT, "0");
     
     assertFalse(builder.getForce());
     this.launcher = builder.build();
@@ -903,7 +904,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setRedirectOutput(true)
         .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+        .set(MCAST_PORT, "0");
     
     assertFalse(builder.getForce());
     this.launcher = builder.build();
@@ -969,7 +970,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setRedirectOutput(true)
         .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+        .set(MCAST_PORT, "0");
 
     assertFalse(builder.getForce());
     this.launcher = builder.build();
@@ -1026,7 +1027,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setRedirectOutput(true)
         .setWorkingDirectory(rootFolder)
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0");
+        .set(MCAST_PORT, "0");
 
     assertFalse(builder.getForce());
     this.launcher = builder.build();

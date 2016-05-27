@@ -16,14 +16,6 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.OutOfOffHeapMemoryException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
@@ -43,10 +35,15 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import org.apache.logging.log4j.Logger;
 
+import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 import static com.jayway.awaitility.Awaitility.with;
 import static org.hamcrest.CoreMatchers.equalTo;
 
@@ -118,7 +115,7 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
   @Override
   public Properties getDistributedSystemProperties() {
     final Properties props = new Properties();
-    props.put(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.put(MCAST_PORT, "0");
     props.put(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
     if (isSmallerVM.get()) {
       props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, getSmallerOffHeapMemorySize());

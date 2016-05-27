@@ -16,23 +16,17 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.NavigableSet;
+import com.gemstone.gemfire.OutOfOffHeapMemoryException;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReferenceArray;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.OutOfOffHeapMemoryException;
-import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * Manages the free lists and slabs for a MemoryAllocator
@@ -273,7 +267,7 @@ public class FreeListManager {
    * Set this to "true" to perform data integrity checks on allocated and reused Chunks.  This may clobber 
    * performance so turn on only when necessary.
    */
-  final boolean validateMemoryWithFill = Boolean.getBoolean("gemfire.validateOffHeapWithFill");
+  final boolean validateMemoryWithFill = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "validateOffHeapWithFill");
   /**
    * Every allocated chunk smaller than TINY_MULTIPLE*TINY_FREE_LIST_COUNT will allocate a chunk of memory that is a multiple of this value.
    * Sizes are always rounded up to the next multiple of this constant
@@ -282,14 +276,14 @@ public class FreeListManager {
    * This does not account for the additional internal fragmentation caused by the off-heap header
    * which currently is always 8 bytes.
    */
-  public final static int TINY_MULTIPLE = Integer.getInteger("gemfire.OFF_HEAP_ALIGNMENT", 8);
+  public final static int TINY_MULTIPLE = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT", 8);
   static {
     verifyOffHeapAlignment(TINY_MULTIPLE);
   }
   /**
    * Number of free lists to keep for tiny allocations.
    */
-  public final static int TINY_FREE_LIST_COUNT = Integer.getInteger("gemfire.OFF_HEAP_FREE_LIST_COUNT", 16384);
+  public final static int TINY_FREE_LIST_COUNT = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT", 16384);
   static {
     verifyOffHeapFreeListCount(TINY_FREE_LIST_COUNT);
   }
@@ -507,16 +501,16 @@ public class FreeListManager {
   
   static void verifyOffHeapAlignment(int tinyMultiple) {
     if (tinyMultiple <= 0 || (tinyMultiple & 3) != 0) {
-      throw new IllegalStateException("gemfire.OFF_HEAP_ALIGNMENT must be a multiple of 8.");
+      throw new IllegalStateException(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be a multiple of 8.");
     }
     if (tinyMultiple > 256) {
       // this restriction exists because of the dataSize field in the object header.
-      throw new IllegalStateException("gemfire.OFF_HEAP_ALIGNMENT must be <= 256 and a multiple of 8.");
+      throw new IllegalStateException(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be <= 256 and a multiple of 8.");
     }
   }
   static void verifyOffHeapFreeListCount(int tinyFreeListCount) {
     if (tinyFreeListCount <= 0) {
-      throw new IllegalStateException("gemfire.OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
+      throw new IllegalStateException(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
     }
   }
   static void verifyHugeMultiple(int hugeMultiple) {

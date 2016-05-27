@@ -16,26 +16,17 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.Properties;
-
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import junit.framework.TestCase;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 @Category(IntegrationTest.class)
 public class ConcurrentMapLocalJUnitTest {
@@ -44,7 +35,7 @@ public class ConcurrentMapLocalJUnitTest {
 
     @Before
   public void setUp() throws Exception {
-      this.cache = new CacheFactory().set("mcast-port", "0").set("locators", "").create();
+      this.cache = new CacheFactory().set(MCAST_PORT, "0").set(LOCATORS, "").create();
     }
 
     @After

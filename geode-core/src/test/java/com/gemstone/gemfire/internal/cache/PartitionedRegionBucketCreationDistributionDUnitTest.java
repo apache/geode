@@ -16,38 +16,17 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Properties;
-import java.util.Set;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheExistsException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.MirrorType;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.PartitionedRegionStorageException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore.BucketVisitor;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * 
@@ -501,7 +480,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
   private final Cache createLonerCacheWithEnforceUniqueHost() {
     Cache myCache = null;
     try {
-      System.setProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
       myCache = CacheFactory.create(getLonerSystemWithEnforceUniqueHost());
     } catch (CacheExistsException e) {
       Assert.fail("the cache already exists", e);
@@ -512,7 +491,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
     } catch (Exception ex) {
       Assert.fail("Checked exception while initializing cache??", ex);
     } finally {
-      System.clearProperty("gemfire.DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
+      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
     }
     return myCache;
   }
@@ -528,8 +507,8 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
    */
   private final InternalDistributedSystem getLonerSystemWithEnforceUniqueHost() {
     Properties props = getDistributedSystemProperties();
-    props.put(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.put(DistributionConfig.LOCATORS_NAME, "");
+    props.put(MCAST_PORT, "0");
+    props.put(LOCATORS, "");
     props.put(DistributionConfig.ENFORCE_UNIQUE_HOST_NAME, "true");
     props.put(DistributionConfig.REDUNDANCY_ZONE_NAME, "zone1");
     return getSystem(props);

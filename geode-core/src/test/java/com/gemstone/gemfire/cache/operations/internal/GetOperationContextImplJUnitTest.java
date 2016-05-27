@@ -16,20 +16,22 @@
  */
 package com.gemstone.gemfire.cache.operations.internal;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.operations.PutOperationContextJUnitTest;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 @Category(IntegrationTest.class)
 public class GetOperationContextImplJUnitTest {
@@ -72,7 +74,8 @@ public class GetOperationContextImplJUnitTest {
 
     {
       // create a loner cache so that pdx serialization will work
-      Cache c = (new CacheFactory()).set("locators", "").set("mcast-port", "0").setPdxReadSerialized(true).create();
+      Cache c = (new CacheFactory()).set(LOCATORS, "")
+          .set(MCAST_PORT, "0").setPdxReadSerialized(true).create();
       try {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
@@ -127,7 +130,7 @@ public class GetOperationContextImplJUnitTest {
 
     {
       // create a loner cache so that pdx serialization will work
-      Cache c = (new CacheFactory()).set("locators", "").set("mcast-port", "0").setPdxReadSerialized(true).create();
+      Cache c = (new CacheFactory()).set(LOCATORS, "").set(MCAST_PORT, "0").setPdxReadSerialized(true).create();
       try {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
@@ -183,7 +186,7 @@ public class GetOperationContextImplJUnitTest {
 
     {
       // create a loner cache so that pdx serialization will work
-      Cache c = (new CacheFactory()).set("locators", "").set("mcast-port", "0").setPdxReadSerialized(true).create();
+      Cache c = (new CacheFactory()).set(LOCATORS, "").set(MCAST_PORT, "0").setPdxReadSerialized(true).create();
       try {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
@@ -238,7 +241,7 @@ public class GetOperationContextImplJUnitTest {
 
     {
       // create a loner cache so that pdx serialization will work
-      Cache c = (new CacheFactory()).set("locators", "").set("mcast-port", "0").setPdxReadSerialized(true).create();
+      Cache c = (new CacheFactory()).set(LOCATORS, "").set(MCAST_PORT, "0").setPdxReadSerialized(true).create();
       try {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);

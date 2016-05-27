@@ -261,7 +261,7 @@ public abstract class AbstractCache {
         logFile = new File("servers" + separator + weblogicName + separator +
             "logs" + separator + logFileName);
       } else {
-        logFile = new File(System.getProperty("gemfire.logdir"), logFileName);
+        logFile = new File(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "logdir"), logFileName);
       }
     }
     return logFile;
@@ -283,7 +283,7 @@ public abstract class AbstractCache {
           statisticsArchiveFile = new File("servers" + separator + weblogicName + separator +
               "logs" + separator + statisticsArchiveFileName);
         } else {
-          statisticsArchiveFile = new File(System.getProperty("gemfire.statisticsdir"), statisticsArchiveFileName);
+          statisticsArchiveFile = new File(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "statisticsdir"), statisticsArchiveFileName);
         }
       }
     }

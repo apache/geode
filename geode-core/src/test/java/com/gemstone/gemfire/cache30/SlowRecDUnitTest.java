@@ -16,37 +16,24 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.Region.Entry;
+import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DMStats;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.tcp.Connection;
+import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Set;
-
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.internal.tcp.Connection;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Test to make sure slow receiver queuing is working
@@ -263,7 +250,7 @@ public class SlowRecDUnitTest extends CacheTestCase {
 
     // create receiver in vm0 with queuing enabled
     Properties p = new Properties();
-    p.setProperty("async-distribution-timeout", "1");
+    p.setProperty(DistributionConfig.ASYNC_DISTRIBUTION_TIMEOUT_NAME, "1");
     doCreateOtherVm(p, false);
 
     int repeatCount = 2;
@@ -339,7 +326,7 @@ public class SlowRecDUnitTest extends CacheTestCase {
 
     // create receiver in vm0 with queuing enabled
     Properties p = new Properties();
-    p.setProperty("async-distribution-timeout", "1");
+    p.setProperty(DistributionConfig.ASYNC_DISTRIBUTION_TIMEOUT_NAME, "1");
     doCreateOtherVm(p, false);
 
     forceQueuing(r);
@@ -409,7 +396,7 @@ public class SlowRecDUnitTest extends CacheTestCase {
 
     // create receiver in vm0 with queuing enabled
     Properties p = new Properties();
-    p.setProperty("async-distribution-timeout", "2");
+    p.setProperty(DistributionConfig.ASYNC_DISTRIBUTION_TIMEOUT_NAME, "2");
     doCreateOtherVm(p, false);
 
     forceQueuing(r);
@@ -461,7 +448,7 @@ public class SlowRecDUnitTest extends CacheTestCase {
 
     // create receiver in vm0 with queuing enabled
     Properties p = new Properties();
-    p.setProperty("async-distribution-timeout", "1");
+    p.setProperty(DistributionConfig.ASYNC_DISTRIBUTION_TIMEOUT_NAME, "1");
     doCreateOtherVm(p, false);
     {
       VM vm = getOtherVm();
@@ -658,8 +645,8 @@ public class SlowRecDUnitTest extends CacheTestCase {
 
     // create receiver in vm0 with queuing enabled
     Properties p = new Properties();
-    p.setProperty("async-distribution-timeout", "5");
-    p.setProperty("async-max-queue-size", "1"); // 1 meg
+    p.setProperty(DistributionConfig.ASYNC_DISTRIBUTION_TIMEOUT_NAME, "5");
+    p.setProperty(DistributionConfig.ASYNC_MAX_QUEUE_SIZE_NAME, "1"); // 1 meg
     doCreateOtherVm(p, false);
 
     
@@ -730,8 +717,8 @@ public class SlowRecDUnitTest extends CacheTestCase {
 
     // create receiver in vm0 with queuing enabled
     Properties p = new Properties();
-    p.setProperty("async-distribution-timeout", "5");
-    p.setProperty("async-queue-timeout", "500"); // 500 ms
+    p.setProperty(DistributionConfig.ASYNC_DISTRIBUTION_TIMEOUT_NAME, "5");
+    p.setProperty(DistributionConfig.ASYNC_QUEUE_TIMEOUT_NAME, "500"); // 500 ms
     doCreateOtherVm(p, true);
 
     
@@ -959,9 +946,9 @@ public class SlowRecDUnitTest extends CacheTestCase {
 
     // create receiver in vm0 with queuing enabled
     final Properties p = new Properties();
-    p.setProperty("async-distribution-timeout", "5");
-    p.setProperty("async-queue-timeout", "86400000"); // max value
-    p.setProperty("async-max-queue-size", "1024"); // max value
+    p.setProperty(DistributionConfig.ASYNC_DISTRIBUTION_TIMEOUT_NAME, "5");
+    p.setProperty(DistributionConfig.ASYNC_QUEUE_TIMEOUT_NAME, "86400000"); // max value
+    p.setProperty(DistributionConfig.ASYNC_MAX_QUEUE_SIZE_NAME, "1024"); // max value
 
     getOtherVm().invoke(new CacheSerializableRunnable("Create other vm") {
       public void run2() throws CacheException {
@@ -1166,9 +1153,9 @@ public class SlowRecDUnitTest extends CacheTestCase {
 
     // create receiver in vm0 with queuing enabled
     final Properties p = new Properties();
-    p.setProperty("async-distribution-timeout", "5");
-    p.setProperty("async-queue-timeout", "86400000"); // max value
-    p.setProperty("async-max-queue-size", "1024"); // max value
+    p.setProperty(DistributionConfig.ASYNC_DISTRIBUTION_TIMEOUT_NAME, "5");
+    p.setProperty(DistributionConfig.ASYNC_QUEUE_TIMEOUT_NAME, "86400000"); // max value
+    p.setProperty(DistributionConfig.ASYNC_MAX_QUEUE_SIZE_NAME, "1024"); // max value
     
     getOtherVm().invoke(new CacheSerializableRunnable("Create other vm") {
       public void run2() throws CacheException {
@@ -1322,9 +1309,9 @@ public class SlowRecDUnitTest extends CacheTestCase {
 
     // create receiver in vm0 with queuing enabled
     final Properties p = new Properties();
-    p.setProperty("async-distribution-timeout", String.valueOf(1000*4)); // 4 sec
-    p.setProperty("async-queue-timeout", "86400000"); // max value
-    p.setProperty("async-max-queue-size", "1024"); // max value
+    p.setProperty(DistributionConfig.ASYNC_DISTRIBUTION_TIMEOUT_NAME, String.valueOf(1000 * 4)); // 4 sec
+    p.setProperty(DistributionConfig.ASYNC_QUEUE_TIMEOUT_NAME, "86400000"); // max value
+    p.setProperty(DistributionConfig.ASYNC_MAX_QUEUE_SIZE_NAME, "1024"); // max value
     
     getOtherVm().invoke(new CacheSerializableRunnable("Create other vm") {
       public void run2() throws CacheException {

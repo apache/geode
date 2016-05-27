@@ -19,8 +19,6 @@
 
 package com.gemstone.gemfire.cache.lucene.internal;
 
-import static org.junit.Assert.*;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.client.ClientCache;
@@ -31,12 +29,15 @@ import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 @Category(IntegrationTest.class)
 public class LuceneServiceImplIntegrationTest {
@@ -89,7 +90,7 @@ public class LuceneServiceImplIntegrationTest {
 
   private ClientCache getClientCache() {
     if (null == clientCache) {
-      clientCache = new ClientCacheFactory().set("mcast-port", "0").create();
+      clientCache = new ClientCacheFactory().set(MCAST_PORT, "0").create();
     }
     else {
       return clientCache;
@@ -99,7 +100,7 @@ public class LuceneServiceImplIntegrationTest {
 
   private Cache getCache() {
     if (null == cache) {
-      cache = new CacheFactory().set("mcast-port", "0").create();
+      cache = new CacheFactory().set(MCAST_PORT, "0").create();
     }
     return cache;
   }

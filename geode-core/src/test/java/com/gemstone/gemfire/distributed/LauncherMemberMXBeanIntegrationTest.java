@@ -16,28 +16,25 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static org.junit.Assert.*;
-
-import java.lang.management.ManagementFactory;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerInvocationHandler;
-import javax.management.ObjectName;
-import javax.management.Query;
-import javax.management.QueryExp;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.process.ProcessUtils;
 import com.gemstone.gemfire.management.MemberMXBean;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import javax.management.*;
+import java.lang.management.ManagementFactory;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.Callable;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * Tests querying of MemberMXBean which is used by MBeanProcessController to
@@ -63,8 +60,8 @@ public class LauncherMemberMXBeanIntegrationTest extends AbstractLauncherIntegra
   @Test
   public void testQueryForMemberMXBean() throws Exception {
     final Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     props.setProperty("name", getUniqueName());
     new CacheFactory(props).create();
     
@@ -90,8 +87,8 @@ public class LauncherMemberMXBeanIntegrationTest extends AbstractLauncherIntegra
   @Test
   public void testQueryForMemberMXBeanWithProcessId() throws Exception {
     final Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     props.setProperty("name", getUniqueName());
     new CacheFactory(props).create();
     
@@ -117,8 +114,8 @@ public class LauncherMemberMXBeanIntegrationTest extends AbstractLauncherIntegra
   @Test
   public void testQueryForMemberMXBeanWithMemberName() throws Exception {
     final Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     props.setProperty("name", getUniqueName());
     new CacheFactory(props).create();
     

@@ -16,40 +16,21 @@
  */
 package com.gemstone.gemfire.cache.client.internal.locator.wan;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
+import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
+import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListener;
-import com.gemstone.gemfire.distributed.internal.WanLocatorDiscoverer;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorJoinMessage;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorJoinRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorJoinResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorPingRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorPingResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.wan.RemoteLocatorResponse;
-import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
-import com.gemstone.gemfire.internal.DSFIDFactory;
-import com.gemstone.gemfire.internal.DataSerializableFixedID;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
-import com.gemstone.gemfire.internal.cache.tier.Command;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CommandInitializer;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 
 /**
  * An implementation of

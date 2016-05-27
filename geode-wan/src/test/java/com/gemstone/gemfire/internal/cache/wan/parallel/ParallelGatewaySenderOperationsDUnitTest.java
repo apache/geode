@@ -16,23 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
-import java.util.concurrent.TimeUnit;
-
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.GemFireIOException;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.MessageTooLargeException;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderException;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.RMIException;
-import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.*;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import com.jayway.awaitility.Awaitility;
+import org.junit.experimental.categories.Category;
 
 /**
  * DUnit test for operations on ParallelGatewaySender
@@ -589,7 +582,8 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
   private void setMaximumMessageSize(int maximumMessageSizeBytes) {
     Message.MAX_MESSAGE_SIZE = maximumMessageSizeBytes;
-    LogWriterUtils.getLogWriter().info("Set gemfire.client.max-message-size: " + System.getProperty("gemfire.client.max-message-size"));
+    LogWriterUtils.getLogWriter()
+        .info("Set gemfire.client.max-message-size: " + System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "client.max-message-size"));
   }
 
   private void createSendersReceiversAndPartitionedRegion(Integer lnPort, Integer nyPort, boolean createAccessors,

@@ -16,12 +16,10 @@
  */
 package com.gemstone.gemfire.disttx;
 
-import java.util.Properties;
-
-import org.junit.Ignore;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.partitioned.PersistentPartitionedRegionWithTransactionDUnitTest;
+
+import java.util.Properties;
 
 
 /**

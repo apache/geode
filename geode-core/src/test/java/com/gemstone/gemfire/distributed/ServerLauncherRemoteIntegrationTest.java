@@ -16,28 +16,6 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
@@ -54,14 +32,23 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
-import com.gemstone.gemfire.internal.process.PidUnavailableException;
-import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
-import com.gemstone.gemfire.internal.process.ProcessStreamReader;
-import com.gemstone.gemfire.internal.process.ProcessType;
-import com.gemstone.gemfire.internal.process.ProcessUtils;
+import com.gemstone.gemfire.internal.process.*;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.process.ProcessWrapper;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 /**
  * Integration tests for launching a Server in a forked process.
@@ -656,7 +643,7 @@ public class ServerLauncherRemoteIntegrationTest extends AbstractServerLauncherR
     
     // launch server and specify a different port
     final List<String> jvmArguments = getJvmArguments();
-    jvmArguments.add("-Dgemfire."+DistributionConfig.CACHE_XML_FILE_NAME+"="+cacheXmlFile.getCanonicalPath());
+    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "" + DistributionConfig.CACHE_XML_FILE_NAME + "=" + cacheXmlFile.getCanonicalPath());
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -741,7 +728,7 @@ public class ServerLauncherRemoteIntegrationTest extends AbstractServerLauncherR
   
     // launch server and specify a different port
     final List<String> jvmArguments = getJvmArguments();
-    jvmArguments.add("-Dgemfire."+DistributionConfig.CACHE_XML_FILE_NAME+"="+cacheXmlFile.getCanonicalPath());
+    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "" + DistributionConfig.CACHE_XML_FILE_NAME + "=" + cacheXmlFile.getCanonicalPath());
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -1311,8 +1298,8 @@ public class ServerLauncherRemoteIntegrationTest extends AbstractServerLauncherR
   @Override
   protected List<String> getJvmArguments() {
     final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-Dgemfire.log-level=config");
-    jvmArguments.add("-Dgemfire.mcast-port=0");
+    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "log-level=config");
+    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "mcast-port=0");
     return jvmArguments;
   }
   

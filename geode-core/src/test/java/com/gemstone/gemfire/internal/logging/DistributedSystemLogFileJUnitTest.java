@@ -16,17 +16,14 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.Properties;
-import java.util.Scanner;
-
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.logging.log4j.FastLogger;
+import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,14 +35,15 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.logging.log4j.FastLogger;
-import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.Properties;
+import java.util.Scanner;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * Connects DistributedSystem and tests logging behavior at a high level.
@@ -83,13 +81,13 @@ public class DistributedSystemLogFileJUnitTest {
     final String logFileName = name.getMethodName() + "-system-0.log";
 
     final Properties properties = new Properties();
-    properties.put("log-file", logFileName);
-    properties.put("log-level", "config");
-    properties.put("mcast-port", "0");
-    properties.put("locators", "");
-    properties.put("enable-network-partition-detection", "false");
-    properties.put("disable-auto-reconnect", "true");
-    properties.put("member-timeout", "2000");
+    properties.put(DistributionConfig.LOG_FILE_NAME, logFileName);
+    properties.put(DistributionConfig.LOG_LEVEL_NAME, "config");
+    properties.put(MCAST_PORT, "0");
+    properties.put(LOCATORS, "");
+    properties.put(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "false");
+    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
     properties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     
     final File logFile = new File(logFileName);
@@ -471,13 +469,13 @@ public class DistributedSystemLogFileJUnitTest {
     final String logFileName = name.getMethodName() + "-system-"+ System.currentTimeMillis()+".log";
 
     final Properties properties = new Properties();
-    properties.put("log-file", logFileName);
-    properties.put("log-level", "fine");
-    properties.put("mcast-port", "0");
-    properties.put("locators", "");
-    properties.put("enable-network-partition-detection", "false");
-    properties.put("disable-auto-reconnect", "true");
-    properties.put("member-timeout", "2000");
+    properties.put(DistributionConfig.LOG_FILE_NAME, logFileName);
+    properties.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    properties.put(MCAST_PORT, "0");
+    properties.put(LOCATORS, "");
+    properties.put(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "false");
+    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
     properties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     
     final File logFile = new File(logFileName);
@@ -687,13 +685,13 @@ public class DistributedSystemLogFileJUnitTest {
     final String logFileName = name.getMethodName() + "-system-"+ System.currentTimeMillis()+".log";
 
     final Properties properties = new Properties();
-    properties.put("log-file", logFileName);
-    properties.put("log-level", "debug");
-    properties.put("mcast-port", "0");
-    properties.put("locators", "");
-    properties.put("enable-network-partition-detection", "false");
-    properties.put("disable-auto-reconnect", "true");
-    properties.put("member-timeout", "2000");
+    properties.put(DistributionConfig.LOG_FILE_NAME, logFileName);
+    properties.put(DistributionConfig.LOG_LEVEL_NAME, "debug");
+    properties.put(MCAST_PORT, "0");
+    properties.put(LOCATORS, "");
+    properties.put(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "false");
+    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
     properties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     
     final File logFile = new File(logFileName);
@@ -904,14 +902,14 @@ public class DistributedSystemLogFileJUnitTest {
     final String securityLogFileName = "security" + name.getMethodName() + "-system-"+ System.currentTimeMillis()+".log";
 
     final Properties properties = new Properties();
-    properties.put("log-file", logFileName);
-    properties.put("log-level", "fine");
-    properties.put("security-log-file", securityLogFileName);
-    properties.put("mcast-port", "0");
-    properties.put("locators", "");
-    properties.put("enable-network-partition-detection", "false");
-    properties.put("disable-auto-reconnect", "true");
-    properties.put("member-timeout", "2000");
+    properties.put(DistributionConfig.LOG_FILE_NAME, logFileName);
+    properties.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    properties.put(DistributionConfig.SECURITY_LOG_FILE_NAME, securityLogFileName);
+    properties.put(MCAST_PORT, "0");
+    properties.put(LOCATORS, "");
+    properties.put(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "false");
+    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
     properties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     
     final File securityLogFile = new File(securityLogFileName);
@@ -1022,15 +1020,15 @@ public class DistributedSystemLogFileJUnitTest {
     final String securityLogFileName = "security" + name.getMethodName() + "-system-"+ System.currentTimeMillis()+".log";
 
     final Properties properties = new Properties();
-    properties.put("log-file", logFileName);
-    properties.put("log-level", "fine");
-    properties.put("security-log-file", securityLogFileName);
-    properties.put("security-log-level", "fine");
-    properties.put("mcast-port", "0");
-    properties.put("locators", "");
-    properties.put("enable-network-partition-detection", "false");
-    properties.put("disable-auto-reconnect", "true");
-    properties.put("member-timeout", "2000");
+    properties.put(DistributionConfig.LOG_FILE_NAME, logFileName);
+    properties.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    properties.put(DistributionConfig.SECURITY_LOG_FILE_NAME, securityLogFileName);
+    properties.put(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "fine");
+    properties.put(MCAST_PORT, "0");
+    properties.put(LOCATORS, "");
+    properties.put(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "false");
+    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
     properties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     
     final File securityLogFile = new File(securityLogFileName);
@@ -1201,14 +1199,14 @@ public class DistributedSystemLogFileJUnitTest {
     final String logFileName = name.getMethodName() + "-system-"+ System.currentTimeMillis()+".log";
 
     final Properties properties = new Properties();
-    properties.put("log-file", logFileName);
-    properties.put("log-level", "fine");
-    properties.put("security-log-level", "info");
-    properties.put("mcast-port", "0");
-    properties.put("locators", "");
-    properties.put("enable-network-partition-detection", "false");
-    properties.put("disable-auto-reconnect", "true");
-    properties.put("member-timeout", "2000");
+    properties.put(DistributionConfig.LOG_FILE_NAME, logFileName);
+    properties.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    properties.put(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "info");
+    properties.put(MCAST_PORT, "0");
+    properties.put(LOCATORS, "");
+    properties.put(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "false");
+    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
     properties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     
     final File logFile = new File(logFileName);
@@ -1350,14 +1348,14 @@ public class DistributedSystemLogFileJUnitTest {
     final String logFileName = name.getMethodName() + "-system-"+ System.currentTimeMillis()+".log";
 
     final Properties properties = new Properties();
-    properties.put("log-file", logFileName);
-    properties.put("log-level", "info");
-    properties.put("security-log-level", "fine");
-    properties.put("mcast-port", "0");
-    properties.put("locators", "");
-    properties.put("enable-network-partition-detection", "false");
-    properties.put("disable-auto-reconnect", "true");
-    properties.put("member-timeout", "2000");
+    properties.put(DistributionConfig.LOG_FILE_NAME, logFileName);
+    properties.put(DistributionConfig.LOG_LEVEL_NAME, "info");
+    properties.put(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "fine");
+    properties.put(MCAST_PORT, "0");
+    properties.put(LOCATORS, "");
+    properties.put(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "false");
+    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
     properties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     
     final File logFile = new File(logFileName);

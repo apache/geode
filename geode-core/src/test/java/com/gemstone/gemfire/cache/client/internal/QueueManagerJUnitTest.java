@@ -16,35 +16,12 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
-import static org.junit.Assert.*;
-
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.NoSubscriptionServersAvailableException;
+import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.client.SubscriptionNotEnabledException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.PoolStats;
@@ -54,6 +31,23 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.internal.util.StopWatch;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -78,8 +72,8 @@ public class QueueManagerJUnitTest {
   public void setUp() {
     this.logger = new LocalLogWriter(InternalLogWriter.FINEST_LEVEL, System.out);
     Properties properties = new Properties();
-    properties.put(DistributionConfig.MCAST_PORT_NAME, "0");
-    properties.put(DistributionConfig.LOCATORS_NAME, "");
+    properties.put(MCAST_PORT, "0");
+    properties.put(LOCATORS, "");
     ds = DistributedSystem.connect(properties);
     stats = new PoolStats(ds, "QueueManagerJUnitTest");
     pool = new DummyPool();

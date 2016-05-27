@@ -16,36 +16,32 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.lang.management.ManagementFactory;
-import java.net.BindException;
-import java.net.InetAddress;
-
+import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
+import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
+import com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.internal.*;
+import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
+import com.gemstone.gemfire.internal.process.ProcessType;
+import com.gemstone.gemfire.internal.process.ProcessUtils;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
-import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
-import com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.DistributionLocator;
-import com.gemstone.gemfire.internal.GemFireVersion;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
-import com.gemstone.gemfire.internal.process.ProcessType;
-import com.gemstone.gemfire.internal.process.ProcessUtils;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.net.BindException;
+import java.net.InetAddress;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * Tests usage of LocatorLauncher as a local API in existing JVM.
@@ -78,7 +74,7 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
         .set(DistributionConfig.CLUSTER_CONFIGURATION_DIR, this.clusterConfigDirectory)
         .set(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true")
         .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.MCAST_PORT_NAME, "0")
+        .set(MCAST_PORT, "0")
         .build();
 
     try {
@@ -92,9 +88,9 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
   
       assertNotNull(distributedSystem);
       assertEquals("true", distributedSystem.getProperties().getProperty(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME));
-      assertEquals("0", distributedSystem.getProperties().getProperty(DistributionConfig.MCAST_PORT_NAME));
+      assertEquals("0", distributedSystem.getProperties().getProperty(MCAST_PORT));
       assertEquals("config", distributedSystem.getProperties().getProperty(DistributionConfig.LOG_LEVEL_NAME));
-      assertEquals(getUniqueName(), distributedSystem.getProperties().getProperty(DistributionConfig.NAME_NAME));
+      assertEquals(getUniqueName(), distributedSystem.getProperties().getProperty(SystemConfigurationProperties.NAME));
     } catch (Throwable e) {
       this.errorCollector.addError(e);
     }

@@ -16,67 +16,16 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.ForcedDisconnectException;
-import com.gemstone.gemfire.IncompatibleSystemException;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.InvalidDeltaException;
-import com.gemstone.gemfire.SystemConnectException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.ToDataException;
+import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.admin.GemFireHealthConfig;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.Role;
 import com.gemstone.gemfire.distributed.internal.locks.ElderState;
-import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MemberFactory;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.NetView;
+import com.gemstone.gemfire.distributed.internal.membership.*;
 import com.gemstone.gemfire.i18n.StringId;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.NanoTimer;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.SetUtils;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.admin.remote.AdminConsoleDisconnectMessage;
 import com.gemstone.gemfire.internal.admin.remote.RemoteGfManagerAgent;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
@@ -92,6 +41,13 @@ import com.gemstone.gemfire.internal.tcp.Connection;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 import com.gemstone.gemfire.internal.tcp.ReenteredConnectException;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * The <code>DistributionManager</code> uses a {@link
@@ -208,8 +164,8 @@ public class DistributionManager
    * 
    * Added for normura issue 7033 - they have duplicate link local addresses on different boxes
    */
-  public static volatile boolean INCLUDE_LINK_LOCAL_ADDRESSES = 
-    Boolean.getBoolean("gemfire.IncludeLinkLocalAddresses");
+  public static volatile boolean INCLUDE_LINK_LOCAL_ADDRESSES =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "IncludeLinkLocalAddresses");
   
   /** The DM type for regular distribution managers */
   public static final int NORMAL_DM_TYPE = 10;

@@ -17,29 +17,6 @@
 
 package com.gemstone.gemfire.distributed;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.net.ConnectException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
 import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusResponse;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
@@ -50,20 +27,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.ObjectUtils;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.lang.SystemUtils;
-import com.gemstone.gemfire.internal.process.ConnectionFailedException;
-import com.gemstone.gemfire.internal.process.ControlNotificationHandler;
-import com.gemstone.gemfire.internal.process.ControllableProcess;
-import com.gemstone.gemfire.internal.process.FileAlreadyExistsException;
-import com.gemstone.gemfire.internal.process.MBeanInvocationFailedException;
-import com.gemstone.gemfire.internal.process.PidUnavailableException;
-import com.gemstone.gemfire.internal.process.ProcessController;
-import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
-import com.gemstone.gemfire.internal.process.ProcessControllerParameters;
-import com.gemstone.gemfire.internal.process.ProcessLauncherContext;
-import com.gemstone.gemfire.internal.process.ProcessType;
-import com.gemstone.gemfire.internal.process.ProcessUtils;
-import com.gemstone.gemfire.internal.process.StartupStatusListener;
-import com.gemstone.gemfire.internal.process.UnableToControlProcessException;
+import com.gemstone.gemfire.internal.process.*;
 import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.lang.AttachAPINotFoundException;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonArray;
@@ -72,6 +36,22 @@ import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.net.ConnectException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 
 /**
  * The LocatorLauncher class is a launcher for a GemFire Locator.
@@ -1729,9 +1709,9 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
     protected void validateOnStart() {
       if (Command.START.equals(getCommand())) {
         if (StringUtils.isBlank(getMemberName())
-          && !isSet(System.getProperties(), DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.NAME_NAME)
-          && !isSet(getDistributedSystemProperties(), DistributionConfig.NAME_NAME)
-          && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), DistributionConfig.NAME_NAME))
+            && !isSet(System.getProperties(), DistributionConfig.GEMFIRE_PREFIX + SystemConfigurationProperties.NAME)
+            && !isSet(getDistributedSystemProperties(), SystemConfigurationProperties.NAME)
+            && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), SystemConfigurationProperties.NAME))
         {
           throw new IllegalStateException(LocalizedStrings.Launcher_Builder_MEMBER_NAME_VALIDATION_ERROR_MESSAGE
             .toLocalizedString("Locator"));

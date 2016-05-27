@@ -19,24 +19,16 @@
 
 package com.gemstone.gemfire.cache.lucene;
 
-import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
-
-import java.io.File;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
-import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
-import com.gemstone.gemfire.test.junit.rules.DiskDirRule;
-
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestName;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+
 
 public class LuceneIntegrationTest {
 
@@ -60,9 +52,9 @@ public class LuceneIntegrationTest {
 
   protected CacheFactory getCacheFactory() {
     CacheFactory cf = new CacheFactory();
-    cf.set("mcast-port", "0");
-    cf.set("log-level", System.getProperty("logLevel", "info"));
-    cf.set("locators", "");
+    cf.set(MCAST_PORT, "0");
+    cf.set(SystemConfigurationProperties.LOCATORS, "");
+    cf.set(SystemConfigurationProperties.LOG_LEVEL, System.getProperty("logLevel", "info"));
     return cf;
   }
 

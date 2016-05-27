@@ -17,42 +17,7 @@
 
 package com.gemstone.gemfire.distributed.internal;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.ForcedDisconnectException;
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.StatisticsTypeFactory;
-import com.gemstone.gemfire.SystemConnectException;
-import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.admin.AlertLevel;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -69,21 +34,7 @@ import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.DSFIDFactory;
-import com.gemstone.gemfire.internal.DummyStatisticsImpl;
-import com.gemstone.gemfire.internal.GemFireStatSampler;
-import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.InternalInstantiator;
-import com.gemstone.gemfire.internal.LinuxProcFsStatistics;
-import com.gemstone.gemfire.internal.LocalStatisticsImpl;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.OsStatisticsFactory;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.internal.StatisticsImpl;
-import com.gemstone.gemfire.internal.StatisticsManager;
-import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
-import com.gemstone.gemfire.internal.SystemTimer;
+import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
 import com.gemstone.gemfire.internal.cache.CacheConfig;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
@@ -109,6 +60,21 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableCondition;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
 import com.gemstone.gemfire.management.ManagementException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.Array;
+import java.net.InetAddress;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * The concrete implementation of {@link DistributedSystem} that
@@ -122,8 +88,8 @@ public class InternalDistributedSystem
   implements OsStatisticsFactory, StatisticsManager
 {
   private static final Logger logger = LogService.getLogger();
-  
-  public static final String DISABLE_MANAGEMENT_PROPERTY = "gemfire.disableManagement";
+
+  public static final String DISABLE_MANAGEMENT_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "disableManagement";
   
   /**
    * If auto-reconnect is going on this will hold a reference to it
@@ -232,12 +198,12 @@ public class InternalDistributedSystem
    * A property to prevent shutdown hooks from being registered with the VM.
    * This is regarding bug 38407
    */
-  public final static String DISABLE_SHUTDOWN_HOOK_PROPERTY = "gemfire.disableShutdownHook";
+  public final static String DISABLE_SHUTDOWN_HOOK_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "disableShutdownHook";
 
   /**
    * A property to append to existing log-file instead of truncating it.
    */
-  public final static String APPEND_TO_LOG_FILE = "gemfire.append-log";
+  public final static String APPEND_TO_LOG_FILE = DistributionConfig.GEMFIRE_PREFIX + "append-log";
 
   ////////////////////  Configuration Fields  ////////////////////
 
@@ -247,7 +213,7 @@ public class InternalDistributedSystem
   /** The config object to which most configuration work is delegated */
   private DistributionConfig config;
 
-  private final boolean statsDisabled = Boolean.getBoolean("gemfire.statsDisabled");
+  private final boolean statsDisabled = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled");
 
   private volatile boolean shareSockets = DistributionConfig.DEFAULT_CONSERVE_SOCKETS;
 
@@ -534,9 +500,9 @@ public class InternalDistributedSystem
     if (this.originalConfig.getLocators().equals("")) {
       if (this.originalConfig.getMcastPort() != 0) {
         throw new GemFireConfigException("The "
-                                          + DistributionConfig.LOCATORS_NAME
+            + LOCATORS
                                           + " attribute can not be empty when the "
-                                          + DistributionConfig.MCAST_PORT_NAME
+            + MCAST_PORT
                                           + " attribute is non-zero.");
       } else {
         // no distribution

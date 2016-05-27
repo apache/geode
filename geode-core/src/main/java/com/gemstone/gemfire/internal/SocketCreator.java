@@ -16,57 +16,6 @@
  */
 package com.gemstone.gemfire.internal;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.BindException;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.nio.channels.ServerSocketChannel;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.Vector;
-
-import javax.naming.Context;
-import javax.naming.NamingEnumeration;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLPeerUnverifiedException;
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
-
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.SystemFailure;
@@ -84,12 +33,27 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.util.PasswordUtil;
-
-import java.util.*;
-
-import javax.net.ssl.*;
-
 import org.apache.logging.log4j.Logger;
+
+import javax.naming.Context;
+import javax.naming.NamingEnumeration;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+import javax.net.ssl.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.*;
+import java.nio.channels.ServerSocketChannel;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.*;
 
 /**
  * Analyze configuration data (gemfire.properties) and configure sockets
@@ -117,8 +81,8 @@ public class SocketCreator {
   private static final Logger logger = LogService.getLogger();
   
   /** Optional system property to enable GemFire usage of link-local addresses */
-  public static final String USE_LINK_LOCAL_ADDRESSES_PROPERTY = 
-      "gemfire.net.useLinkLocalAddresses";
+  public static final String USE_LINK_LOCAL_ADDRESSES_PROPERTY =
+      DistributionConfig.GEMFIRE_PREFIX + "net.useLinkLocalAddresses";
   
   /** True if GemFire should use link-local addresses */
   private static final boolean useLinkLocalAddresses = 
@@ -134,7 +98,7 @@ public class SocketCreator {
   private static final Map<InetAddress, String> hostNames = new HashMap<>();
   
   /** flag to force always using DNS (regardless of the fact that these lookups can hang) */
-  public static final boolean FORCE_DNS_USE = Boolean.getBoolean("gemfire.forceDnsUse");
+  public static final boolean FORCE_DNS_USE = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "forceDnsUse");
   
   /** set this to false to inhibit host name lookup */
   public static volatile boolean resolve_dns = true;
@@ -241,9 +205,9 @@ public class SocketCreator {
     // bug #49484 - customers want tcp/ip keep-alive turned on by default
     // to avoid dropped connections.  It can be turned off by setting this
     // property to false
-    String str = System.getProperty("gemfire.setTcpKeepAlive");
+    String str = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "setTcpKeepAlive");
     if (str != null) {
-      ENABLE_TCP_KEEP_ALIVE = Boolean.getBoolean("gemfire.setTcpKeepAlive");
+      ENABLE_TCP_KEEP_ALIVE = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "setTcpKeepAlive");
     } else {
       ENABLE_TCP_KEEP_ALIVE = true;
     }
@@ -264,8 +228,8 @@ public class SocketCreator {
    * Returns the default instance for use in GemFire socket creation. 
    * <p>
    * If not already initialized, the default instance of SocketCreator will be 
-   * initialized using defaults in {@link 
-   * com.gemstone.gemfire.distributed.internal.DistributionConfig}. If any 
+   * initialized using defaults in {@link
+   * DistributionConfig}. If any
    * values are specified in System properties, those values will be used to 
    * override the defaults.
    * <p>
@@ -297,8 +261,8 @@ public class SocketCreator {
   
   /**
    * Returns the default instance for use in GemFire socket creation after
-   * initializing it using defaults in {@link 
-   * com.gemstone.gemfire.distributed.internal.DistributionConfig}. If any 
+   * initializing it using defaults in {@link
+   * DistributionConfig}. If any
    * values are specified in the provided properties or in System properties,
    * those values will be used to override the defaults.
    * <p>
@@ -720,8 +684,8 @@ public class SocketCreator {
   }
   
   /**
-   * Perform initialization using defaults in {@link 
-   * com.gemstone.gemfire.distributed.internal.DistributionConfig}.  If any
+   * Perform initialization using defaults in {@link
+   * DistributionConfig}.  If any
    * values are specified in System properties, those values will be used to 
    * override the defaults.
    * <p>
@@ -1168,7 +1132,7 @@ public class SocketCreator {
   
   protected void initializeClientSocketFactory() {
     this.clientSocketFactory = null;
-    String className = System.getProperty("gemfire.clientSocketFactory");
+    String className = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "clientSocketFactory");
     if (className != null) {
       Object o;
       try {

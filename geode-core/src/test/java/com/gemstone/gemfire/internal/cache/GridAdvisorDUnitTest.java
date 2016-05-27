@@ -16,12 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -33,13 +27,16 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.AvailablePort.Keeper;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * Tests the GridAdvisor
@@ -85,9 +82,9 @@ public class GridAdvisorDUnitTest extends DistributedTestCase {
                             + host0 + "[" + port2 + "]";
 
     final Properties dsProps = new Properties();
-    dsProps.setProperty("locators", locators);
-    dsProps.setProperty("mcast-port", "0");
-    dsProps.setProperty("log-level", LogWriterUtils.getDUnitLogLevel());
+    dsProps.setProperty(LOCATORS, locators);
+    dsProps.setProperty(MCAST_PORT, "0");
+    dsProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
     dsProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     
     keeper1.release();
@@ -123,9 +120,9 @@ public class GridAdvisorDUnitTest extends DistributedTestCase {
       new SerializableRunnable("Connect to " + locators) {
           public void run() {
             Properties props = new Properties();
-            props.setProperty("mcast-port", "0");
-            props.setProperty("locators", locators);
-            dsProps.setProperty("log-level", LogWriterUtils.getDUnitLogLevel());
+            props.setProperty(MCAST_PORT, "0");
+            props.setProperty(LOCATORS, locators);
+            dsProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
             CacheFactory.create(DistributedSystem.connect(props));
           }
         };
@@ -419,8 +416,8 @@ public class GridAdvisorDUnitTest extends DistributedTestCase {
       new SerializableRunnable("Disconnect from " + locators) {
           public void run() {
             Properties props = new Properties();
-            props.setProperty("mcast-port", "0");
-            props.setProperty("locators", locators);
+            props.setProperty(MCAST_PORT, "0");
+            props.setProperty(LOCATORS, locators);
             DistributedSystem.connect(props).disconnect();
           }
         };
@@ -594,9 +591,9 @@ public class GridAdvisorDUnitTest extends DistributedTestCase {
                             + host0 + "[" + port2 + "]";
 
     final Properties dsProps = new Properties();
-    dsProps.setProperty("locators", locators);
-    dsProps.setProperty("mcast-port", "0");
-    dsProps.setProperty("log-level", LogWriterUtils.getDUnitLogLevel());
+    dsProps.setProperty(LOCATORS, locators);
+    dsProps.setProperty(MCAST_PORT, "0");
+    dsProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
     dsProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     
     keeper1.release();
@@ -631,20 +628,20 @@ public class GridAdvisorDUnitTest extends DistributedTestCase {
     vm1.invoke(new SerializableRunnable("Connect to " + locators) {
       public void run() {
         Properties props = new Properties();
-        props.setProperty("mcast-port", "0");
-        props.setProperty("locators", locators);
-        props.setProperty("groups", "bs1Group1, bs1Group2");
-        props.setProperty("log-level", LogWriterUtils.getDUnitLogLevel());
+        props.setProperty(MCAST_PORT, "0");
+        props.setProperty(LOCATORS, locators);
+        props.setProperty(DistributionConfig.GROUPS_NAME, "bs1Group1, bs1Group2");
+        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
         CacheFactory.create(DistributedSystem.connect(props));
       }
     });
     vm2.invoke(new SerializableRunnable("Connect to " + locators) {
       public void run() {
         Properties props = new Properties();
-        props.setProperty("mcast-port", "0");
-        props.setProperty("locators", locators);
-        props.setProperty("groups", "bs2Group1, bs2Group2");
-        props.setProperty("log-level", LogWriterUtils.getDUnitLogLevel());
+        props.setProperty(MCAST_PORT, "0");
+        props.setProperty(LOCATORS, locators);
+        props.setProperty(DistributionConfig.GROUPS_NAME, "bs2Group1, bs2Group2");
+        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
         CacheFactory.create(DistributedSystem.connect(props));
       }
     });

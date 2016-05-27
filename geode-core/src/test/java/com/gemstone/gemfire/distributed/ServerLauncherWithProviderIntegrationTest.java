@@ -16,20 +16,19 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static org.junit.Assert.*;
-
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
+import com.gemstone.gemfire.distributed.ServerLauncher.Builder;
+import com.gemstone.gemfire.internal.process.ProcessType;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
-import com.gemstone.gemfire.distributed.ServerLauncher.Builder;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.process.ProcessType;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * Extracted from ServerLauncherLocalIntegrationTest.
@@ -60,7 +59,7 @@ public class ServerLauncherWithProviderIntegrationTest extends AbstractServerLau
       .setForce(true)
       .setMemberName(getUniqueName())
       .setSpringXmlLocation("spring/spring-gemfire-context.xml")
-      .set(DistributionConfig.MCAST_PORT_NAME, "0")
+        .set(MCAST_PORT, "0")
       .build();
 
     assertNotNull(this.launcher);

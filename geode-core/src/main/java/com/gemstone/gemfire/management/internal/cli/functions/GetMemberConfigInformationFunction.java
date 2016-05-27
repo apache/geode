@@ -16,19 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.cli.functions;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Declarable;
 import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -41,6 +30,10 @@ import com.gemstone.gemfire.internal.cache.CacheConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
 import com.gemstone.gemfire.management.internal.cli.domain.MemberConfigurationInfo;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.util.*;
 
 /****
  * 
@@ -61,7 +54,7 @@ public class GetMemberConfigInformationFunction extends FunctionAdapter implemen
     
     Cache cache = CacheFactory.getAnyInstance();
     InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
-    DistributionConfig  config = system.getConfig();
+    DistributionConfig config = system.getConfig();
     
     DistributionConfigImpl distConfigImpl = ((DistributionConfigImpl) config);
     MemberConfigurationInfo memberConfigInfo = new MemberConfigurationInfo();
@@ -117,7 +110,7 @@ public class GetMemberConfigInformationFunction extends FunctionAdapter implemen
         cacheServerAttributes.put("message-time-to-live", Integer.toString(cacheServer.getMessageTimeToLive()));
         cacheServerAttributes.put("notify-by-subscription", Boolean.toString(cacheServer.getNotifyBySubscription()));
         cacheServerAttributes.put("port", Integer.toString(cacheServer.getPort()));
-        cacheServerAttributes.put("socket-buffer-size", Integer.toString(cacheServer.getSocketBufferSize()));
+        cacheServerAttributes.put(DistributionConfig.SOCKET_BUFFER_SIZE_NAME, Integer.toString(cacheServer.getSocketBufferSize()));
         cacheServerAttributes.put("load-poll-interval", Long.toString(cacheServer.getLoadPollInterval()));
         cacheServerAttributes.put("tcp-no-delay", Boolean.toString(cacheServer.getTcpNoDelay()));
 
@@ -167,7 +160,7 @@ public class GetMemberConfigInformationFunction extends FunctionAdapter implemen
     csAttributesDefault.put("message-time-to-live", Integer.toString(CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE));
     csAttributesDefault.put("notify-by-subscription", Boolean.toString(CacheServer.DEFAULT_NOTIFY_BY_SUBSCRIPTION));
     csAttributesDefault.put("port", Integer.toString(CacheServer.DEFAULT_PORT));
-    csAttributesDefault.put("socket-buffer-size", Integer.toString(CacheServer.DEFAULT_SOCKET_BUFFER_SIZE));
+    csAttributesDefault.put(DistributionConfig.SOCKET_BUFFER_SIZE_NAME, Integer.toString(CacheServer.DEFAULT_SOCKET_BUFFER_SIZE));
     csAttributesDefault.put("load-poll-interval", Long.toString(CacheServer.DEFAULT_LOAD_POLL_INTERVAL));
     return csAttributesDefault;
 

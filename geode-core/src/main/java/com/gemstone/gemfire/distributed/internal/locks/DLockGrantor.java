@@ -17,27 +17,13 @@
 
 package com.gemstone.gemfire.distributed.internal.locks;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.cache.CommitConflictException;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.LockServiceDestroyedException;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.MembershipListener;
 import com.gemstone.gemfire.distributed.internal.locks.DLockQueryProcessor.DLockQueryMessage;
 import com.gemstone.gemfire.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage;
@@ -51,6 +37,11 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Provides lock grantor authority to a distributed lock service. This is
@@ -66,7 +57,7 @@ public class DLockGrantor {
   
   public static final boolean DEBUG_SUSPEND_LOCK = // TODO:LOG:CONVERT: REMOVE THIS
       Boolean.getBoolean(
-          "gemfire.DLockService.DLockGrantor.debugSuspendLock"); 
+          DistributionConfig.GEMFIRE_PREFIX + "DLockService.DLockGrantor.debugSuspendLock");
   
   /** 
    * Default wait before grantor thread will reawaken to check for expirations

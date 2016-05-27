@@ -16,8 +16,24 @@
  */
 package com.gemstone.gemfire.internal;
 
-import static org.junit.Assert.*;
-import static org.junit.Assume.*;
+import com.gemstone.gemfire.Statistics;
+import com.gemstone.gemfire.StatisticsType;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.GemFireStatSampler.LocalStatListenerImpl;
+import com.gemstone.gemfire.internal.cache.control.HeapMemoryMonitor;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.statistics.SampleCollector;
+import com.gemstone.gemfire.internal.statistics.StatArchiveHandler;
+import com.gemstone.gemfire.internal.statistics.StatArchiveHandlerConfig;
+import com.gemstone.gemfire.internal.stats50.VMStats50;
+import com.gemstone.gemfire.internal.util.StopWatch;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.logging.log4j.Logger;
+import org.junit.*;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -27,29 +43,10 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-
-import com.gemstone.gemfire.Statistics;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.GemFireStatSampler.LocalStatListenerImpl;
-import com.gemstone.gemfire.internal.cache.control.HeapMemoryMonitor;
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.statistics.SampleCollector;
-import com.gemstone.gemfire.internal.statistics.StatArchiveHandler;
-import com.gemstone.gemfire.internal.statistics.StatArchiveHandlerConfig;
-import com.gemstone.gemfire.internal.stats50.VMStats50;
-import com.gemstone.gemfire.internal.util.StopWatch;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 /**
  * Integration tests for GemFireStatSampler.
@@ -184,7 +181,7 @@ public class GemFireStatSamplerJUnitTest extends StatSamplerTestCase {
     final File archiveFile1 = new File(dir + File.separator + this.testName + ".gfs");
     
     Properties props = createGemFireProperties();
-    props.setProperty("statistic-archive-file", archiveFileName);
+    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, archiveFileName);
     connect(props);
 
     GemFireStatSampler statSampler = getGemFireStatSampler();
@@ -363,9 +360,9 @@ public class GemFireStatSamplerJUnitTest extends StatSamplerTestCase {
     // set the system property to use KB instead of MB for file size
     System.setProperty(HostStatSampler.TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY, "true");
     Properties props = createGemFireProperties();
-    props.setProperty("archive-file-size-limit", "1");
-    props.setProperty("archive-disk-space-limit", "0");
-    props.setProperty("statistic-archive-file", archiveFileName);
+    props.setProperty(DistributionConfig.ARCHIVE_FILE_SIZE_LIMIT_NAME, "1");
+    props.setProperty(DistributionConfig.ARCHIVE_DISK_SPACE_LIMIT_NAME, "0");
+    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, archiveFileName);
     connect(props);
 
     assertTrue(getGemFireStatSampler().waitForInitialization(5000));
@@ -411,10 +408,10 @@ public class GemFireStatSamplerJUnitTest extends StatSamplerTestCase {
     // set the system property to use KB instead of MB for file size
     System.setProperty(HostStatSampler.TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY, "true");
     Properties props = createGemFireProperties();
-    props.setProperty("statistic-archive-file", archiveFileName);
-    props.setProperty("archive-file-size-limit", "1");
-    props.setProperty("archive-disk-space-limit", "12");
-    props.setProperty("statistic-sample-rate", String.valueOf(sampleRate));
+    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, archiveFileName);
+    props.setProperty(DistributionConfig.ARCHIVE_FILE_SIZE_LIMIT_NAME, "1");
+    props.setProperty(DistributionConfig.ARCHIVE_DISK_SPACE_LIMIT_NAME, "12");
+    props.setProperty(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME, String.valueOf(sampleRate));
     connect(props);
 
     assertTrue(getGemFireStatSampler().waitForInitialization(5000));
@@ -537,13 +534,13 @@ public class GemFireStatSamplerJUnitTest extends StatSamplerTestCase {
 
   private Properties createGemFireProperties() {
     Properties props = new Properties();
-    props.setProperty("statistic-sampling-enabled", "true"); // TODO: test true/false
-    props.setProperty("enable-time-statistics", "true"); // TODO: test true/false
-    props.setProperty("statistic-sample-rate", String.valueOf(STAT_SAMPLE_RATE));
-    props.setProperty("archive-file-size-limit", "0");
-    props.setProperty("archive-disk-space-limit", "0");
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true"); // TODO: test true/false
+    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true"); // TODO: test true/false
+    props.setProperty(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME, String.valueOf(STAT_SAMPLE_RATE));
+    props.setProperty(DistributionConfig.ARCHIVE_FILE_SIZE_LIMIT_NAME, "0");
+    props.setProperty(DistributionConfig.ARCHIVE_DISK_SPACE_LIMIT_NAME, "0");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     return props;
   }
 

@@ -16,19 +16,19 @@
  */
 package com.gemstone.gemfire.test.dunit;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.InternalInstantiator;
+
+import java.io.File;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * <code>DistributedTestUtils</code> provides static utility methods that 

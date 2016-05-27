@@ -16,16 +16,6 @@
  */
 package com.gemstone.gemfire.management.bean.stats;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -38,6 +28,16 @@ import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.internal.SystemManagementService;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * 
@@ -58,10 +58,10 @@ public class DistributedSystemStatsJUnitTest {
   public void setUp() throws Exception {
 
     final Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("enable-time-statistics", "true");
-    props.setProperty("statistic-sampling-enabled", "false");
-    props.setProperty("statistic-sample-rate", "60000");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
+    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "false");
+    props.setProperty(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME, "60000");
     props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
     props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
     // set JMX_MANAGER_UPDATE_RATE to practically an infinite value, so that

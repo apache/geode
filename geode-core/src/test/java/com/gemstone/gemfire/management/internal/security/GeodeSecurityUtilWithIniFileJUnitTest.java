@@ -17,22 +17,21 @@
 
 package com.gemstone.gemfire.management.internal.security;
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.util.Properties;
-
 import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
 import org.apache.shiro.util.ThreadContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * this test and ShiroUtilCustomRealmJUunitTest uses the same test body, but initialize the SecurityUtils differently.

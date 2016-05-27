@@ -16,35 +16,21 @@
  */
 package com.gemstone.gemfire.management.internal.cli;
 
-import java.util.Properties;
-import java.util.Set;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.cache.execute.FunctionAdapter;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.execute.*;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.management.DistributedRegionMXBean;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.RegionMXBean;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResultException;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * 
@@ -217,7 +203,7 @@ public class CliUtilDUnitTest extends CacheTestCase {
   
   public void createCacheWithMemberIdAndGroup(String memberName, String groupName){
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.NAME_NAME, memberName);
+    localProps.setProperty(SystemConfigurationProperties.NAME, memberName);
     localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
     localProps.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
     localProps.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "false");    

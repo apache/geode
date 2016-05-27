@@ -16,27 +16,6 @@
 */
 package com.gemstone.gemfire.modules.hibernate;
 
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import org.hibernate.cache.CacheDataDescription;
-import org.hibernate.cache.CacheException;
-import org.hibernate.cache.CollectionRegion;
-import org.hibernate.cache.EntityRegion;
-import org.hibernate.cache.QueryResultsRegion;
-import org.hibernate.cache.RegionFactory;
-import org.hibernate.cache.Timestamper;
-import org.hibernate.cache.TimestampsRegion;
-import org.hibernate.cache.access.AccessType;
-import org.hibernate.cfg.Settings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
@@ -45,20 +24,27 @@ import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.modules.hibernate.internal.ClientServerRegionFactoryDelegate;
-import com.gemstone.gemfire.modules.hibernate.internal.EntityWrapper;
-import com.gemstone.gemfire.modules.hibernate.internal.GemFireCollectionRegion;
-import com.gemstone.gemfire.modules.hibernate.internal.GemFireEntityRegion;
-import com.gemstone.gemfire.modules.hibernate.internal.GemFireQueryResultsRegion;
-import com.gemstone.gemfire.modules.hibernate.internal.RegionFactoryDelegate;
+import com.gemstone.gemfire.modules.hibernate.internal.*;
 import com.gemstone.gemfire.modules.util.Banner;
+import org.hibernate.cache.*;
+import org.hibernate.cache.access.AccessType;
+import org.hibernate.cfg.Settings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class GemFireRegionFactory implements RegionFactory {
 
-    
-  private static final String GEMFIRE_QUERY_RESULTS_REGION_NAME = "gemfire.hibernateQueryResults";
+  private static final String GEMFIRE_QUERY_RESULTS_REGION_NAME = DistributionConfig.GEMFIRE_PREFIX + "hibernateQueryResults";
 
-  private static final String GEMFIRE_TIMESTAMPS_REGION_NAME = "gemfire.hibernateTimestamps";
+  private static final String GEMFIRE_TIMESTAMPS_REGION_NAME = DistributionConfig.GEMFIRE_PREFIX + "hibernateTimestamps";
 
   private GemFireCache _cache;
 
@@ -102,15 +88,13 @@ public class GemFireRegionFactory implements RegionFactory {
       String key = (String)keyObj;
       if (key.contains("region-attributes")) {
         regionProperties.put(key, properties.get(key));
-      }
-      else if (key.equals("gemfire.cache-topology")) {
+      } else if (key.equals(DistributionConfig.GEMFIRE_PREFIX + "cache-topology")) {
         if (properties.getProperty(key).trim()
             .equalsIgnoreCase("client-server")) {
           isClient = true;
         }
-      }
-      else if (key.startsWith("gemfire.") && isGemFireAttribute(key)) {
-        gemfireProperties.setProperty(key.replace("gemfire.", ""),
+      } else if (key.startsWith(DistributionConfig.GEMFIRE_PREFIX) && isGemFireAttribute(key)) {
+        gemfireProperties.setProperty(key.replace(DistributionConfig.GEMFIRE_PREFIX, ""),
             properties.getProperty(key));
       }
     }
@@ -122,7 +106,7 @@ public class GemFireRegionFactory implements RegionFactory {
   }
 
   private boolean isGemFireAttribute(String key) {
-    String gfKey = key.replace("gemfire.", "");
+    String gfKey = key.replace(DistributionConfig.GEMFIRE_PREFIX, "");
     Set<String> gemfireAttributes = getGemFireAttributesNames();
     return gemfireAttributes.contains(gfKey);
   }

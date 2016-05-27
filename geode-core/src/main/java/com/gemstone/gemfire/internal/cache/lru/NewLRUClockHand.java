@@ -17,21 +17,16 @@
 
 package com.gemstone.gemfire.internal.cache.lru;
 
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.cache.*;
+import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.cache.AbstractRegionEntry;
-import com.gemstone.gemfire.internal.cache.BucketRegion;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.PlaceHolderDiskRegion;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
+import org.apache.logging.log4j.Logger;
 
 /**
  *  AbstractLRUClockHand holds the lrulist, and the behavior for
@@ -56,13 +51,13 @@ public class NewLRUClockHand  {
   final private LRUStatistics stats;
   /** Counter for the size of the LRU list */
   protected int size = 0;
-  
-public static final boolean debug = Boolean.getBoolean("gemfire.verbose-lru-clock");
+
+  public static final boolean debug = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "verbose-lru-clock");
 
 static private final int maxEntries;
 
 static {
-  String squelch = System.getProperty("gemfire.lru.maxSearchEntries");
+  String squelch = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "lru.maxSearchEntries");
   if (squelch == null)
     maxEntries = -1;
   else

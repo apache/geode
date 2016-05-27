@@ -16,21 +16,21 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.util.Properties;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.gemstone.gemfire.util.test.TestUtil;
+import java.io.File;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @since GemFire 8.1
@@ -48,10 +48,10 @@ public class HTTPServiceSSLSupportJUnitTest {
 
   @After
   public void tearDown() throws Exception {
-    System.clearProperty("gemfire.javax.net.ssl.keyStore");
-    System.clearProperty("gemfire.javax.net.ssl.keyStorePassword");
-    System.clearProperty("gemfire.javax.net.ssl.trustStore");
-    System.clearProperty("gemfire.javax.net.ssl.trustStorePassword");
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStore");
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStorePassword");
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStore");
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStorePassword");
     System.clearProperty("gemfireSecurityPropertyFile");
   }
 
@@ -73,7 +73,7 @@ public class HTTPServiceSSLSupportJUnitTest {
   public void testSSLWithClusterSSL() throws Exception {
 
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    localProps.setProperty(MCAST_PORT, "0");
     localProps.setProperty(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
     localProps.setProperty(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
     localProps.setProperty(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME, "password");
@@ -100,15 +100,15 @@ public class HTTPServiceSSLSupportJUnitTest {
   public void testSSLWithDeprecatedClusterSSL_HTTPService() throws Exception {
 
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    localProps.setProperty(MCAST_PORT, "0");
     localProps.setProperty(DistributionConfig.SSL_ENABLED_NAME, "true");
-    System.setProperty("gemfire.javax.net.ssl.keyStore", jks.getCanonicalPath());
-    System.setProperty("gemfire.javax.net.ssl.keyStorePassword", "password");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStore", jks.getCanonicalPath());
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStorePassword", "password");
 
     localProps.setProperty(DistributionConfig.SSL_PROTOCOLS_NAME, "SSL");
     localProps.setProperty(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME, "true");
-    System.setProperty("gemfire.javax.net.ssl.trustStore", jks.getCanonicalPath());
-    System.setProperty("gemfire.javax.net.ssl.trustStorePassword", "password");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStore", jks.getCanonicalPath());
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStorePassword", "password");
 
     DistributionConfigImpl config = new DistributionConfigImpl(localProps);
 
@@ -128,7 +128,7 @@ public class HTTPServiceSSLSupportJUnitTest {
   public void testSSLWithDeprecatedClusterSSL_HTTPService_WithSSL_Properties() throws Exception {
 
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    localProps.setProperty(MCAST_PORT, "0");
     localProps.setProperty(DistributionConfig.SSL_ENABLED_NAME, "true");
 
     localProps.setProperty(DistributionConfig.SSL_PROTOCOLS_NAME, "SSL");

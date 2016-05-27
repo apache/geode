@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-
 import java.io.File;
 
 public interface LogConfig {
@@ -27,7 +25,7 @@ public interface LogConfig {
    *
    * @see com.gemstone.gemfire.internal.logging.LogWriterImpl
    */
-  public int getLogLevel();
+  int getLogLevel();
   /**
    * Returns the value of the <a
    * href="../DistributedSystem.html#log-file">"log-file"</a> property
@@ -35,19 +33,19 @@ public interface LogConfig {
    * @return <code>null</code> if logging information goes to standard
    *         out
    */
-  public File getLogFile();
+  File getLogFile();
   /**
    * Returns the value of the <a
    * href="../DistributedSystem.html#log-file-size-limit">"log-file-size-limit"</a>
    * property
    */
-  public int getLogFileSizeLimit();
+  int getLogFileSizeLimit();
   /**
    * Returns the value of the <a
    * href="../DistributedSystem.html#log-disk-space-limit">"log-disk-space-limit"</a>
    * property
    */
-  public int getLogDiskSpaceLimit();
+  int getLogDiskSpaceLimit();
 
   /**
    * Returns the value of the <a
@@ -59,7 +57,7 @@ public interface LogConfig {
    * <p> The default value is: {@link DistributionConfig#DEFAULT_NAME}.
    * @return the system's name.
    */
-  public String getName();
-  
-  public String toLoggerString();
+  String getName();
+
+  String toLoggerString();
 }

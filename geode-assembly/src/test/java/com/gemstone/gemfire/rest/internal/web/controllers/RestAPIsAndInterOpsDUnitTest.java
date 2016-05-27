@@ -50,6 +50,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+
 /**
  * Dunit Test containing inter - operations between REST Client and Gemfire cache client
  *
@@ -178,8 +181,8 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
       final ServerLoadProbe probe) {
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, String.valueOf(0));
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
+    props.setProperty(MCAST_PORT, String.valueOf(0));
+    props.setProperty(LOCATORS, locators);
     props.setProperty(DistributionConfig.START_DEV_REST_API_NAME, "true");
     props.setProperty(DistributionConfig.HTTP_SERVICE_BIND_ADDRESS_NAME, hostName);
     props.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(restServicerPort));
@@ -829,11 +832,11 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
       , final ServerLoadProbe probe) throws IOException {
     Properties props = new Properties();
     props
-        .setProperty(DistributionConfig.MCAST_PORT_NAME, String.valueOf(0));
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
+        .setProperty(MCAST_PORT, String.valueOf(0));
+    props.setProperty(LOCATORS, locators);
 
-    props.setProperty("jmx-manager", "true");
-    props.setProperty("jmx-manager-start", "true");
+    props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
+    props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
     props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "0");
 
     final int httpPort = AvailablePortHelper.getRandomAvailableTCPPort();

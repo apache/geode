@@ -352,7 +352,10 @@ public class CacheClientNotifier {
             .getProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_PP_NAME);
         if (postAuthzFactoryName != null && postAuthzFactoryName.length() > 0) {
           if (principal == null) {
-            securityLogWriter.warning(LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_POST_PROCESS_AUTHORIZATION_CALLBACK_ENABLED_BUT_AUTHENTICATION_CALLBACK_0_RETURNED_WITH_NULL_CREDENTIALS_FOR_PROXYID_1, new Object[] {DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, proxyID});
+            securityLogWriter.warning(
+                LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_POST_PROCESS_AUTHORIZATION_CALLBACK_ENABLED_BUT_AUTHENTICATION_CALLBACK_0_RETURNED_WITH_NULL_CREDENTIALS_FOR_PROXYID_1,
+                new Object[] {
+                    DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, proxyID });
           }
           Method authzMethod = ClassLoadUtil
               .methodFromName(postAuthzFactoryName);
@@ -2575,11 +2578,11 @@ public class CacheClientNotifier {
    * System property name for indicating how much frequently the "Queue full"
    * message should be logged.
    */
-  public static final String MAX_QUEUE_LOG_FREQUENCY = "gemfire.logFrequency.clientQueueReachedMaxLimit";
+  public static final String MAX_QUEUE_LOG_FREQUENCY = DistributionConfig.GEMFIRE_PREFIX + "logFrequency.clientQueueReachedMaxLimit";
 
   public static final long DEFAULT_LOG_FREQUENCY = 1000;
 
-  public static final String EVENT_ENQUEUE_WAIT_TIME_NAME = "gemfire.subscription.EVENT_ENQUEUE_WAIT_TIME";
+  public static final String EVENT_ENQUEUE_WAIT_TIME_NAME = DistributionConfig.GEMFIRE_PREFIX + "subscription.EVENT_ENQUEUE_WAIT_TIME";
 
   public static final int DEFAULT_EVENT_ENQUEUE_WAIT_TIME = 100;
 
@@ -2607,10 +2610,10 @@ public class CacheClientNotifier {
   private final SocketCloser socketCloser;
   
   private static final long CLIENT_PING_TASK_PERIOD =
-    Long.getLong("gemfire.serverToClientPingPeriod", 60000);
+      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "serverToClientPingPeriod", 60000);
 
   private static final long CLIENT_PING_TASK_COUNTER =
-    Long.getLong("gemfire.serverToClientPingCounter", 3);
+      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "serverToClientPingCounter", 3);
 
   public long getLogFrequency() {
     return this.logFrequency;

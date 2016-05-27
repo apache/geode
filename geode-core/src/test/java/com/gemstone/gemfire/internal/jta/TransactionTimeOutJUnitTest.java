@@ -16,36 +16,31 @@
  */
 package com.gemstone.gemfire.internal.jta;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.sql.Connection;
-import java.sql.ResultSet;
-//import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Properties;
-import java.util.Random;
-
-import javax.naming.Context;
-import javax.sql.DataSource;
-import javax.transaction.UserTransaction;
-
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.datasource.GemFireTransactionDataSource;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 import junit.framework.TestCase;
-
 import org.junit.FixMethodOrder;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.datasource.GemFireTransactionDataSource;
-import com.gemstone.gemfire.util.test.TestUtil;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import javax.naming.Context;
+import javax.sql.DataSource;
+import javax.transaction.UserTransaction;
+import java.io.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Properties;
+import java.util.Random;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+
+//import java.sql.SQLException;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Category(IntegrationTest.class)
@@ -58,7 +53,7 @@ public class TransactionTimeOutJUnitTest extends TestCase {
   protected void setUp() throws Exception {
     super.setUp();
     props = new Properties();
-    props.setProperty("mcast-port", "0");
+    props.setProperty(MCAST_PORT, "0");
     int pid = new Random().nextInt();
     File tmpFile = File.createTempFile("dunit-cachejta_", ".xml");
     tmpFile.deleteOnExit();
@@ -70,8 +65,8 @@ public class TransactionTimeOutJUnitTest extends TestCase {
     wr.write(modified_file_str);
     wr.flush();
     wr.close();
-    props.setProperty("cache-xml-file", path);
-    // props.setProperty("cache-xml-file","D:\\projects\\JTA\\cachejta.xml");
+    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
+    // props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME,"D:\\projects\\JTA\\cachejta.xml");
     ds1 = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds1);
     cache.getLogger().fine("SWAP:running test:"+getName());

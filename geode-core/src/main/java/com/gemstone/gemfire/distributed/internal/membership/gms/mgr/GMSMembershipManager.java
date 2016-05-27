@@ -16,63 +16,17 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.mgr;
 
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.ForcedDisconnectException;
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.SystemConnectException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.ToDataException;
+import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.AdminMessageType;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DSClock;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionException;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.distributed.internal.OverflowQueueWithDMStats;
-import com.gemstone.gemfire.distributed.internal.SizeableRunnable;
-import com.gemstone.gemfire.distributed.internal.StartupMessage;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.direct.DirectChannel;
 import com.gemstone.gemfire.distributed.internal.direct.DirectChannelListener;
 import com.gemstone.gemfire.distributed.internal.direct.ShunnedMemberException;
-import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipTestHook;
-import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.distributed.internal.membership.QuorumChecker;
+import com.gemstone.gemfire.distributed.internal.membership.*;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.membership.gms.SuspectMember;
@@ -97,6 +51,17 @@ import com.gemstone.gemfire.internal.shared.StringPrintWriter;
 import com.gemstone.gemfire.internal.tcp.ConnectExceptions;
 import com.gemstone.gemfire.internal.tcp.MemberShunnedException;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class GMSMembershipManager implements MembershipManager, Manager
 {
@@ -352,7 +317,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
    * @see #shunnedMembers
    */
   static private final int SHUNNED_SUNSET = Integer.getInteger(
-      "gemfire.shunned-member-timeout", 300).intValue();
+      DistributionConfig.GEMFIRE_PREFIX + "shunned-member-timeout", 300).intValue();
   
   /**
    * Set to true when the service should stop.
@@ -736,7 +701,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     
     surpriseMemberTimeout = Math.max(20 * DistributionConfig.DEFAULT_MEMBER_TIMEOUT,
         20 * config.getMemberTimeout());
-    surpriseMemberTimeout = Integer.getInteger("gemfire.surprise-member-timeout", surpriseMemberTimeout).intValue();
+    surpriseMemberTimeout = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "surprise-member-timeout", surpriseMemberTimeout).intValue();
     
   }
   
@@ -1604,7 +1569,7 @@ public class GMSMembershipManager implements MembershipManager, Manager
     // first save the current cache description so reconnect can rebuild the cache
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     if (cache != null && (cache instanceof Cache)) {
-      if (!Boolean.getBoolean("gemfire.autoReconnect-useCacheXMLFile")
+      if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile")
           && !sharedConfigEnabled) {
         try {
           logger.info("generating XML to rebuild the cache after reconnect completes");

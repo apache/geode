@@ -16,9 +16,9 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.Properties;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+
+import java.util.Properties;
 
 /**
  * Test all the PartitionedRegion api calls when ConserveSockets is set to false

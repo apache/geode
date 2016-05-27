@@ -47,6 +47,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+
 /**
  * Tests remote (client/server) query execution.
  *
@@ -526,7 +528,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
 
   private int createAndStartBridgeServer() {
     Properties config = new Properties();
-    config.setProperty("locators", "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+    config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
     getSystem(config);
     try {
       return startBridgeServer(0, false);

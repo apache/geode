@@ -16,6 +16,10 @@
  */
 package com.gemstone.gemfire.internal.size;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.ClassPathLoader;
+import com.gemstone.gemfire.internal.size.ObjectTraverser.Visitor;
+
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -23,12 +27,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.gemstone.gemfire.internal.ClassPathLoader;
-import com.gemstone.gemfire.internal.size.ObjectTraverser.Visitor;
-
 
 public class ObjectGraphSizer {
-  private static final String SIZE_OF_CLASS_NAME = System.getProperty("gemfire.ObjectSizer.SIZE_OF_CLASS", ReflectionSingleObjectSizer.class.getName());
+  private static final String SIZE_OF_CLASS_NAME = System
+      .getProperty(DistributionConfig.GEMFIRE_PREFIX + "ObjectSizer.SIZE_OF_CLASS", ReflectionSingleObjectSizer.class.getName());
   static final SingleObjectSizer SIZE_OF_UTIL;
   private static ObjectFilter NULL_FILTER = new ObjectFilter() {
     @Override

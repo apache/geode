@@ -16,12 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.cli.functions;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.management.internal.cli.domain.DataCommandResult;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.AfterClass;
@@ -31,6 +26,7 @@ import org.junit.experimental.categories.Category;
 
 import java.util.List;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -87,7 +83,7 @@ public class DataCommandFunctionJUnitTest {
   @BeforeClass
   public static void setUp() throws Exception {
     cache = new CacheFactory().
-        set(DistributionConfig.MCAST_PORT_NAME, "0").
+        set(MCAST_PORT, "0").
         create();
     RegionFactory factory = cache.createRegionFactory(RegionShortcut.PARTITION);
     region1 = factory.create(PARTITIONED_REGION);

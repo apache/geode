@@ -16,22 +16,19 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import java.io.IOException;
-import java.util.Properties;
-
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.cache.client.SubscriptionNotEnabledException;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.io.IOException;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * Tests the client register interest
@@ -90,8 +87,8 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
     
     LogWriterUtils.getLogWriter().info("[testBug35381] create bridge client");
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    config.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
     getSystem(config);
     getCache();
     
@@ -222,8 +219,8 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
     // create the bridge client
     LogWriterUtils.getLogWriter().info("[testBug35654] create bridge client");
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    config.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
     getSystem(config);
     getCache();
     

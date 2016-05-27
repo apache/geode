@@ -16,30 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
-import java.util.AbstractSet;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -68,6 +44,17 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.util.StopWatch;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Specialized {@link CacheDistributionAdvisor} for {@link BucketRegion 
@@ -921,7 +908,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor  {
     // failure detection period
     long timeout = config.getMemberTimeout() * 3;
     // plus time for a new member to become primary
-    timeout += Long.getLong("gemfire.BucketAdvisor.getPrimaryTimeout",
+    timeout += Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "BucketAdvisor.getPrimaryTimeout",
                             15 * 1000);
     InternalDistributedMember newPrimary = waitForPrimaryMember(timeout);
     return newPrimary;
@@ -1612,7 +1599,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor  {
     }
   }
 
-  private final static long BUCKET_STORAGE_WAIT = Long.getLong("gemfire.BUCKET_STORAGE_WAIT", 15000).longValue(); // 15 seconds
+  private final static long BUCKET_STORAGE_WAIT = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "BUCKET_STORAGE_WAIT", 15000).longValue(); // 15 seconds
   
   public boolean waitForStorage() {
     synchronized (this) {

@@ -16,11 +16,11 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static org.junit.Assert.*;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
+import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
+import com.gemstone.gemfire.distributed.LocatorLauncher.Command;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import joptsimple.OptionException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,11 +28,10 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
-import com.gemstone.gemfire.distributed.LocatorLauncher.Command;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+import static org.junit.Assert.*;
 
 /**
  * The LocatorLauncherTest class is a test suite of test cases for testing the contract and functionality of
@@ -315,18 +314,18 @@ public class LocatorLauncherTest {
     LocatorLauncher launcher = new Builder()
       .setCommand(LocatorLauncher.Command.START)
       .setMemberName(null)
-      .set(DistributionConfig.NAME_NAME, "locatorABC")
+        .set(SystemConfigurationProperties.NAME, "locatorABC")
       .build();
 
     assertNotNull(launcher);
     assertEquals(LocatorLauncher.Command.START, launcher.getCommand());
     assertNull(launcher.getMemberName());
-    assertEquals("locatorABC", launcher.getProperties().getProperty(DistributionConfig.NAME_NAME));
+    assertEquals("locatorABC", launcher.getProperties().getProperty(SystemConfigurationProperties.NAME));
   }
 
   @Test
   public void testBuildWithMemberNameSetInSystemPropertiesOnStart() {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.NAME_NAME, "locatorXYZ");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + SystemConfigurationProperties.NAME, "locatorXYZ");
 
     LocatorLauncher launcher = new Builder()
       .setCommand(LocatorLauncher.Command.START)

@@ -16,10 +16,19 @@
  */
 package com.gemstone.gemfire.pdx;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.HeapDataOutputStream;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
+import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -27,27 +36,10 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.pdx.PdxInstanceFactory;
-import com.gemstone.gemfire.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceEnum;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -62,8 +54,8 @@ public class PdxInstanceJUnitTest {
   public void setUp() {
     // make it a loner
     this.c = (GemFireCacheImpl) new CacheFactory()
-        .set("mcast-port", "0")
-        .set("distributed-system-id", "255")
+        .set(MCAST_PORT, "0")
+        .set(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "255")
         .setPdxReadSerialized(true)
         .create();
   }

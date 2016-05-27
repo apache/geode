@@ -16,29 +16,11 @@
  */
 package com.gemstone.gemfire.internal.cache.control;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryPoolMXBean;
-import java.lang.management.MemoryType;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-
-import javax.management.ListenerNotFoundException;
-import javax.management.Notification;
-import javax.management.NotificationEmitter;
-import javax.management.NotificationListener;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.GemFireStatSampler;
 import com.gemstone.gemfire.internal.LocalStatListener;
@@ -52,6 +34,19 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
+import javax.management.ListenerNotFoundException;
+import javax.management.Notification;
+import javax.management.NotificationEmitter;
+import javax.management.NotificationListener;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryPoolMXBean;
+import java.lang.management.MemoryType;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.*;
 
 /**
  * Allows for the setting of eviction and critical thresholds. These thresholds
@@ -67,10 +62,10 @@ public class HeapMemoryMonitor implements NotificationListener, ResourceMonitor 
   private static final Logger logger = LogService.getLogger();
   
   // Allow for an unknown heap pool for VMs we may support in the future.
-  private static final String HEAP_POOL = System.getProperty("gemfire.ResourceManager.HEAP_POOL");
+  private static final String HEAP_POOL = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "ResourceManager.HEAP_POOL");
   
   // Property for setting the JVM polling interval (below)
-  public static final String POLLER_INTERVAL_PROP = "gemfire.heapPollerInterval";
+  public static final String POLLER_INTERVAL_PROP = DistributionConfig.GEMFIRE_PREFIX + "heapPollerInterval";
   
    // Internal for polling the JVM for changes in heap memory usage.
   private static final int POLLER_INTERVAL = Integer.getInteger(POLLER_INTERVAL_PROP, 500).intValue();
@@ -82,29 +77,6 @@ public class HeapMemoryMonitor implements NotificationListener, ResourceMonitor 
   
   // Listener for heap memory usage as reported by the Cache stats.
   private final LocalStatListener statListener = new LocalHeapStatListener();
-  
-  private volatile MemoryThresholds thresholds = new MemoryThresholds(tenuredPoolMaxMemory);
-  private volatile MemoryEvent mostRecentEvent = new MemoryEvent(ResourceType.HEAP_MEMORY, MemoryState.DISABLED,
-      MemoryState.DISABLED, null, 0L, true, this.thresholds);
-  private volatile MemoryState currentState = MemoryState.DISABLED;
-
-  //Set when startMonitoring() and stopMonitoring() are called
-  private Boolean started = false;
-  
-  // Set to true when setEvictionThreshold(...) is called.
-  private boolean hasEvictionThreshold = false;
-  
-   // Only change state when these counters exceed {@link HeapMemoryMonitor#memoryStateChangeTolerance}
-  private int criticalToleranceCounter;
-  private int evictionToleranceCounter;
-  
-  private final InternalResourceManager resourceManager;
-  private final ResourceAdvisor resourceAdvisor;
-  private final GemFireCacheImpl cache;
-  private final ResourceManagerStats stats;
-  
-  private static boolean testDisableMemoryUpdates = false;
-  private static long testBytesUsedForThresholdSet = -1;
 
   /*
    * Number of eviction or critical state changes that have to occur before the
@@ -115,9 +87,9 @@ public class HeapMemoryMonitor implements NotificationListener, ResourceMonitor 
   static {
     String vendor = System.getProperty("java.vendor");
     if (vendor.contains("Sun") || vendor.contains("Oracle")) {
-      memoryStateChangeTolerance = Integer.getInteger("gemfire.memoryEventTolerance",1);
+      memoryStateChangeTolerance = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance", 1);
     } else {
-      memoryStateChangeTolerance = Integer.getInteger("gemfire.memoryEventTolerance",5);
+      memoryStateChangeTolerance = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance", 5);
     }
   }
 
@@ -131,36 +103,63 @@ public class HeapMemoryMonitor implements NotificationListener, ResourceMonitor 
         break;
       }
     }
-    
+
     tenuredMemoryPoolMXBean = matchingMemoryPoolMXBean;
 
     if (tenuredMemoryPoolMXBean == null) {
       logger.error(LocalizedMessage.create(LocalizedStrings.HeapMemoryMonitor_NO_POOL_FOUND_POOLS_0, getAllMemoryPoolNames()));
     }
   }
-  
 
- // Calculated value for the amount of JVM tenured heap memory available.
- private static final long tenuredPoolMaxMemory;
+  // Calculated value for the amount of JVM tenured heap memory available.
+  private static final long tenuredPoolMaxMemory;
   /*
    * Calculates the max memory for the tenured pool. Works around JDK bug:
    * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7078465 by getting max
    * memory from runtime and subtracting all other heap pools from it.
    */
- static {
-   if (tenuredMemoryPoolMXBean != null && tenuredMemoryPoolMXBean.getUsage().getMax() != -1) {
-     tenuredPoolMaxMemory = tenuredMemoryPoolMXBean.getUsage().getMax();
-   } else {
-     long calculatedMaxMemory = Runtime.getRuntime().maxMemory();
-     List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
-     for (MemoryPoolMXBean p : pools) {
-       if (p.getType() == MemoryType.HEAP && p.getUsage().getMax() != -1) {
-         calculatedMaxMemory -= p.getUsage().getMax();
-       }
-     }
-     tenuredPoolMaxMemory = calculatedMaxMemory;
-   }
- }
+  static {
+    if (tenuredMemoryPoolMXBean != null && tenuredMemoryPoolMXBean.getUsage().getMax() != -1) {
+      tenuredPoolMaxMemory = tenuredMemoryPoolMXBean.getUsage().getMax();
+    } else {
+      long calculatedMaxMemory = Runtime.getRuntime().maxMemory();
+      List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
+      for (MemoryPoolMXBean p : pools) {
+        if (p.getType() == MemoryType.HEAP && p.getUsage().getMax() != -1) {
+          calculatedMaxMemory -= p.getUsage().getMax();
+        }
+      }
+      tenuredPoolMaxMemory = calculatedMaxMemory;
+    }
+  }
+
+  private volatile MemoryThresholds thresholds = new MemoryThresholds(tenuredPoolMaxMemory);
+  private volatile MemoryEvent mostRecentEvent = new MemoryEvent(ResourceType.HEAP_MEMORY, MemoryState.DISABLED,
+      MemoryState.DISABLED, null, 0L, true, this.thresholds);
+  private volatile MemoryState currentState = MemoryState.DISABLED;
+
+  //Set when startMonitoring() and stopMonitoring() are called
+  private Boolean started = false;
+
+  // Set to true when setEvictionThreshold(...) is called.
+  private boolean hasEvictionThreshold = false;
+
+  // Only change state when these counters exceed {@link HeapMemoryMonitor#memoryStateChangeTolerance}
+  private int criticalToleranceCounter;
+  private int evictionToleranceCounter;
+
+  private final InternalResourceManager resourceManager;
+  private final ResourceAdvisor resourceAdvisor;
+  private final GemFireCacheImpl cache;
+  private final ResourceManagerStats stats;
+
+  private static boolean testDisableMemoryUpdates = false;
+  private static long testBytesUsedForThresholdSet = -1;
+
+
+
+
+
  
   /**
    * Determines if the name of the memory pool MXBean provided matches a list of

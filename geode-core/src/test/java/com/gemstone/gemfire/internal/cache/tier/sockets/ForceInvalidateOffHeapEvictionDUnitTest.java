@@ -16,12 +16,12 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import java.util.Properties;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+
+import java.util.Properties;
 
 /**
  * Runs force invalidate eviction tests with off-heap regions.
@@ -51,8 +51,8 @@ public class ForceInvalidateOffHeapEvictionDUnitTest extends
 
   @Override
   public Properties getDistributedSystemProperties() {
-    Properties properties = super.getDistributedSystemProperties();    
-    properties.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "100m");    
+    Properties properties = super.getDistributedSystemProperties();
+    properties.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "100m");
     
     return properties;
   }

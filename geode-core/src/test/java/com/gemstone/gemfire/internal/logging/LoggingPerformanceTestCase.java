@@ -16,12 +16,12 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.util.StopWatch;
+import junit.framework.TestCase;
+
 import java.io.File;
 import java.io.IOException;
-
-import com.gemstone.gemfire.internal.util.StopWatch;
-
-import junit.framework.TestCase;
 
 /**
  * Tests performance of logging when level is OFF.
@@ -29,7 +29,7 @@ import junit.framework.TestCase;
  */
 public abstract class LoggingPerformanceTestCase extends TestCase {
 
-  protected static final boolean TIME_BASED = Boolean.getBoolean("gemfire.test.LoggingPerformanceTestCase.TIME_BASED");
+  protected static final boolean TIME_BASED = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "test.LoggingPerformanceTestCase.TIME_BASED");
   protected static final long TIME_TO_RUN = 1000 * 60 * 10; // ten minutes
   protected static final int LOG_SETS = 1000;
   protected static final int LOG_REPETITIONS_PER_SET = 1000;

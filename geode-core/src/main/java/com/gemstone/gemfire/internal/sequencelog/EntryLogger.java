@@ -16,15 +16,10 @@
  */
 package com.gemstone.gemfire.internal.sequencelog;
 
-import java.util.UUID;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.cache.CachedDeserializable;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.DiskEntry.RecoveredEntry;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PlaceHolderDiskRegion;
-import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
@@ -41,8 +36,8 @@ public class EntryLogger {
   private static final SequenceLogger GRAPH_LOGGER = SequenceLoggerImpl.getInstance();
   private static ThreadLocal<String> SOURCE = new ThreadLocal<String>();
   private static ThreadLocal<String> SOURCE_TYPE = new ThreadLocal<String>();
-  
-  public static final String TRACK_VALUES_PROPERTY = "gemfire.EntryLogger.TRACK_VALUES";
+
+  public static final String TRACK_VALUES_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "EntryLogger.TRACK_VALUES";
   private static final boolean TRACK_VALUES = Boolean.getBoolean(TRACK_VALUES_PROPERTY);
   
   public static void clearSource() {

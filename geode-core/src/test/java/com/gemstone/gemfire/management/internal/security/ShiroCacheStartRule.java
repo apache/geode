@@ -16,12 +16,16 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import java.util.Properties;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import org.junit.rules.ExternalResource;
+
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 public class ShiroCacheStartRule extends ExternalResource {
   private Cache cache;
@@ -36,9 +40,9 @@ public class ShiroCacheStartRule extends ExternalResource {
 
   protected void before() throws Throwable {
     Properties properties = new Properties();
-    properties.put(DistributionConfig.NAME_NAME, ShiroCacheStartRule.class.getSimpleName());
-    properties.put(DistributionConfig.LOCATORS_NAME, "");
-    properties.put(DistributionConfig.MCAST_PORT_NAME, "0");
+    properties.put(SystemConfigurationProperties.NAME, ShiroCacheStartRule.class.getSimpleName());
+    properties.put(LOCATORS, "");
+    properties.put(MCAST_PORT, "0");
     properties.put(DistributionConfig.JMX_MANAGER_NAME, "true");
     properties.put(DistributionConfig.JMX_MANAGER_START_NAME, "true");
     properties.put(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxManagerPort));

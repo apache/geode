@@ -16,23 +16,20 @@
  */
 package com.gemstone.gemfire.redis;
 
-import java.util.Random;
-
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import java.util.Random;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 public class RedisDistDUnitTest extends DistributedTestCase {
 
@@ -84,11 +81,11 @@ public class RedisDistDUnitTest extends DistributedTestCase {
         int port = ports[VM.getCurrentVMNum()];
         CacheFactory cF = new CacheFactory();
         String locator = SocketCreator.getLocalHost().getHostName() + "[" + locatorPort + "]";
-        cF.set("log-level", LogWriterUtils.getDUnitLogLevel());
-        cF.set("redis-bind-address", localHost);
-        cF.set("redis-port", ""+port);
-        cF.set("mcast-port", "0");
-        cF.set("locators", locator);
+        cF.set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+        cF.set(SystemConfigurationProperties.REDIS_BIND_ADDRESS, localHost);
+        cF.set(SystemConfigurationProperties.REDIS_PORT, "" + port);
+        cF.set(MCAST_PORT, "0");
+        cF.set(LOCATORS, locator);
         cF.create();
         return Integer.valueOf(port);
       }

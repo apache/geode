@@ -16,64 +16,20 @@
  */
 package com.gemstone.gemfire.admin.internal;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-
-import com.gemstone.gemfire.distributed.internal.*;
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.admin.AdminException;
+import com.gemstone.gemfire.admin.*;
 import com.gemstone.gemfire.admin.Alert;
-import com.gemstone.gemfire.admin.AlertLevel;
 import com.gemstone.gemfire.admin.AlertListener;
-import com.gemstone.gemfire.admin.BackupStatus;
-import com.gemstone.gemfire.admin.CacheServer;
-import com.gemstone.gemfire.admin.CacheServerConfig;
-import com.gemstone.gemfire.admin.CacheVm;
-import com.gemstone.gemfire.admin.ConfigurationParameter;
-import com.gemstone.gemfire.admin.DistributedSystemConfig;
-import com.gemstone.gemfire.admin.DistributionLocator;
-import com.gemstone.gemfire.admin.DistributionLocatorConfig;
-import com.gemstone.gemfire.admin.GemFireHealth;
-import com.gemstone.gemfire.admin.ManagedEntity;
-import com.gemstone.gemfire.admin.ManagedEntityConfig;
-import com.gemstone.gemfire.admin.OperationCancelledException;
-import com.gemstone.gemfire.admin.RuntimeAdminException;
-import com.gemstone.gemfire.admin.SystemMember;
-import com.gemstone.gemfire.admin.SystemMemberCacheListener;
-import com.gemstone.gemfire.admin.SystemMembershipEvent;
-import com.gemstone.gemfire.admin.SystemMembershipListener;
 import com.gemstone.gemfire.cache.persistence.PersistentID;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.FutureCancelledException;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.Banner;
-import com.gemstone.gemfire.internal.admin.ApplicationVM;
-import com.gemstone.gemfire.internal.admin.GemFireVM;
-import com.gemstone.gemfire.internal.admin.GfManagerAgent;
-import com.gemstone.gemfire.internal.admin.GfManagerAgentConfig;
-import com.gemstone.gemfire.internal.admin.GfManagerAgentFactory;
-import com.gemstone.gemfire.internal.admin.SSLConfig;
-import com.gemstone.gemfire.internal.admin.remote.CompactRequest;
-import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
-import com.gemstone.gemfire.internal.admin.remote.MissingPersistentIDsRequest;
-import com.gemstone.gemfire.internal.admin.remote.PrepareRevokePersistentIDRequest;
-import com.gemstone.gemfire.internal.admin.remote.RemoteApplicationVM;
-import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
-import com.gemstone.gemfire.internal.admin.remote.RevokePersistentIDRequest;
-import com.gemstone.gemfire.internal.admin.remote.ShutdownAllRequest;
+import com.gemstone.gemfire.internal.admin.*;
+import com.gemstone.gemfire.internal.admin.remote.*;
 import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberPattern;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
@@ -84,6 +40,16 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterAppenders;
 import com.gemstone.gemfire.internal.util.concurrent.FutureResult;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.*;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Represents a GemFire distributed system for remote administration/management.
@@ -598,13 +564,13 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
     // set some config parms to match this system...
     ConfigurationParameter[] configParms = new ConfigurationParameter[] {
         new ConfigurationParameterImpl(
-            DistributionConfig.MCAST_PORT_NAME, 
+            MCAST_PORT,
             Integer.valueOf(this.config.getMcastPort())),
         new ConfigurationParameterImpl(
-            DistributionConfig.LOCATORS_NAME, 
+            LOCATORS,
             this.config.getLocators()),
         new ConfigurationParameterImpl(
-            DistributionConfig.MCAST_ADDRESS_NAME, 
+            MCAST_ADDRESS,
             InetAddressUtil.toInetAddress(this.config.getMcastAddress())),
         new ConfigurationParameterImpl(
             DistributionConfig.DISABLE_TCP_NAME,

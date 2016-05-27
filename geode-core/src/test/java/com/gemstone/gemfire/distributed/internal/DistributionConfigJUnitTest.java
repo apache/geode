@@ -16,28 +16,23 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
-
-import java.io.File;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.UnmodifiableException;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.lang.reflect.Method;
+import java.util.*;
+
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Category(UnitTest.class)
 public class DistributionConfigJUnitTest {
@@ -54,7 +49,7 @@ public class DistributionConfigJUnitTest {
 
   @Before
   public void before() {
-    classMap = new HashMap<Class<?>, Class<?>>();
+    classMap = new HashMap<>();
     classMap.put(boolean.class, Boolean.class);
     classMap.put(byte.class, Byte.class);
     classMap.put(short.class, Short.class);
@@ -126,7 +121,6 @@ public class DistributionConfigJUnitTest {
       if(!attList.contains(attName)){
         System.out.println("Has unused description for "+attName.toString());
       }
-      //assertTrue("Has unused description for "+attName.toString(), attList.contains(attName));
     }
   }
 
@@ -239,8 +233,8 @@ public class DistributionConfigJUnitTest {
       }
     }
     assertEquals(modifiables.size(), 2);
-    assertEquals(modifiables.get(0), "http-service-port");
-    assertEquals(modifiables.get(1), "jmx-manager-http-port");
+    assertEquals(modifiables.get(0), DistributionConfig.HTTP_SERVICE_PORT_NAME);
+    assertEquals(modifiables.get(1), DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME);
   }
 
   @Test
@@ -256,16 +250,16 @@ public class DistributionConfigJUnitTest {
     }
 
     assertEquals(modifiables.size(), 10);
-    assertEquals(modifiables.get(0), "archive-disk-space-limit");
-    assertEquals(modifiables.get(1), "archive-file-size-limit");
-    assertEquals(modifiables.get(2), "http-service-port");
-    assertEquals(modifiables.get(3), "jmx-manager-http-port");
-    assertEquals(modifiables.get(4), "log-disk-space-limit");
-    assertEquals(modifiables.get(5), "log-file-size-limit");
-    assertEquals(modifiables.get(6), "log-level");
-    assertEquals(modifiables.get(7), "statistic-archive-file");
-    assertEquals(modifiables.get(8), "statistic-sample-rate");
-    assertEquals(modifiables.get(9), "statistic-sampling-enabled");
+    assertEquals(modifiables.get(0), DistributionConfig.ARCHIVE_DISK_SPACE_LIMIT_NAME);
+    assertEquals(modifiables.get(1), DistributionConfig.ARCHIVE_FILE_SIZE_LIMIT_NAME);
+    assertEquals(modifiables.get(2), DistributionConfig.HTTP_SERVICE_PORT_NAME);
+    assertEquals(modifiables.get(3), DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME);
+    assertEquals(modifiables.get(4), DistributionConfig.LOG_DISK_SPACE_LIMIT_NAME);
+    assertEquals(modifiables.get(5), DistributionConfig.LOG_FILE_SIZE_LIMIT_NAME);
+    assertEquals(modifiables.get(6), DistributionConfig.LOG_LEVEL_NAME);
+    assertEquals(modifiables.get(7), DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME);
+    assertEquals(modifiables.get(8), DistributionConfig.STATISTIC_SAMPLE_RATE_NAME);
+    assertEquals(modifiables.get(9), DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -275,18 +269,18 @@ public class DistributionConfigJUnitTest {
 
   @Test(expected = UnmodifiableException.class)
   public void testSetUnmodifiableAttributeObject() {
-    config.setAttributeObject("archive-disk-space-limit", 0, ConfigSource.api());
+    config.setAttributeObject(DistributionConfig.ARCHIVE_DISK_SPACE_LIMIT_NAME, 0, ConfigSource.api());
   }
 
   @Test
   public void testValidAttributeObject() {
-    config.setAttributeObject("http-service-port", 8080, ConfigSource.api());
+    config.setAttributeObject(DistributionConfig.HTTP_SERVICE_PORT_NAME, 8080, ConfigSource.api());
     assertEquals(config.getHttpServicePort(), 8080);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testOutOfRangeAttributeObject() {
-    config.setAttributeObject("http-service-port", -1, ConfigSource.api());
+    config.setAttributeObject(DistributionConfig.HTTP_SERVICE_PORT_NAME, -1, ConfigSource.api());
   }
 
   @Test
@@ -318,11 +312,11 @@ public class DistributionConfigJUnitTest {
   public void testAttributesAlwaysModifiable() {
     config.modifiable = false;
     assertTrue(config.isAttributeModifiable(DistributionConfig.HTTP_SERVICE_PORT_NAME));
-    assertTrue(config.isAttributeModifiable("jmx-manager-http-port"));
+    assertTrue(config.isAttributeModifiable(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME));
 
     config.modifiable = true;
     assertTrue(config.isAttributeModifiable(DistributionConfig.HTTP_SERVICE_PORT_NAME));
-    assertTrue(config.isAttributeModifiable("jmx-manager-http-port"));
+    assertTrue(config.isAttributeModifiable(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME));
   }
 
 

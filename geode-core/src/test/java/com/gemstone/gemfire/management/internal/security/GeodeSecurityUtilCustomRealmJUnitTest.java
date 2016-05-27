@@ -20,7 +20,6 @@ package com.gemstone.gemfire.management.internal.security;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 

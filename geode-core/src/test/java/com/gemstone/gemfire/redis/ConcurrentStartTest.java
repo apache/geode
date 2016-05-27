@@ -16,8 +16,12 @@
  */
 package com.gemstone.gemfire.redis;
 
-import static org.junit.Assert.assertFalse;
-
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,12 +29,9 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertFalse;
 
 @Category(IntegrationTest.class)
 public class ConcurrentStartTest {
@@ -63,8 +64,8 @@ public class ConcurrentStartTest {
   @Test
   public void testCachefulStart() throws InterruptedException {
     CacheFactory cf = new CacheFactory();
-    cf.set("mcast-port", "0");
-    cf.set("locators", "");
+    cf.set(MCAST_PORT, "0");
+    cf.set(LOCATORS, "");
     this.cache = cf.create();
     
     runNServers(numServers);

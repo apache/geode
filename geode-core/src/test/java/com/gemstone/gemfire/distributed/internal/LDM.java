@@ -16,14 +16,14 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
-import java.util.Properties;
-
-import org.apache.logging.log4j.Logger;
-
-import util.TestException;
-
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
+import util.TestException;
+
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
 
 /**
  * A little class for testing the local DistributionManager
@@ -34,7 +34,7 @@ public class LDM {
   
   public static void main(String[] args) throws Exception {
     Properties props = new Properties();
-    props.setProperty("locators", "localhost[31576]");
+    props.setProperty(LOCATORS, "localhost[31576]");
     props.setProperty("mcastPort", "0");
     props.setProperty("logLevel", "config");
     InternalDistributedSystem system = (InternalDistributedSystem)

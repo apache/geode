@@ -16,9 +16,17 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static com.googlecode.catchexception.apis.BDDCatchException.*;
-import static org.assertj.core.api.BDDAssertions.*;
-import static org.assertj.core.api.BDDAssertions.then;
+import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
+import com.gemstone.gemfire.distributed.LocatorLauncher.Command;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,18 +35,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Properties;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestName;
-
-import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
-import com.gemstone.gemfire.distributed.LocatorLauncher.Command;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
+import static com.googlecode.catchexception.apis.BDDCatchException.when;
+import static org.assertj.core.api.BDDAssertions.assertThat;
+import static org.assertj.core.api.BDDAssertions.then;
 
 /**
  * Integration tests for LocatorLauncher. These tests require file system I/O.
@@ -116,8 +116,8 @@ public class LocatorLauncherIntegrationTest {
   public void testBuildWithMemberNameSetInGemFirePropertiesOnStart() throws Exception {
     // given: gemfire.properties with a name
     Properties gemfireProperties = new Properties();
-    gemfireProperties.setProperty(DistributionConfig.NAME_NAME, "locator123");
-    useGemFirePropertiesFileInTemporaryFolder("gemfire.properties", gemfireProperties);
+    gemfireProperties.setProperty(SystemConfigurationProperties.NAME, "locator123");
+    useGemFirePropertiesFileInTemporaryFolder(DistributionConfig.GEMFIRE_PREFIX + "properties", gemfireProperties);
     
     // when: starting with null MemberName
     LocatorLauncher launcher = new Builder()
@@ -134,7 +134,7 @@ public class LocatorLauncherIntegrationTest {
   @Test
   public void testBuildWithNoMemberNameOnStart() throws Exception {
     // given: gemfire.properties with no name
-    useGemFirePropertiesFileInTemporaryFolder("gemfire.properties", new Properties());
+    useGemFirePropertiesFileInTemporaryFolder(DistributionConfig.GEMFIRE_PREFIX + "properties", new Properties());
 
     // when: no MemberName is specified
     when(new Builder()

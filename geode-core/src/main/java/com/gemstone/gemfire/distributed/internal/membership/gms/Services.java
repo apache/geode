@@ -16,10 +16,6 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms;
 
-import java.util.Timer;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.ForcedDisconnectException;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
@@ -32,12 +28,7 @@ import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.auth.GMSAuthenticator;
 import com.gemstone.gemfire.distributed.internal.membership.gms.fd.GMSHealthMonitor;
-import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Authenticator;
-import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.HealthMonitor;
-import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.JoinLeave;
-import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Locator;
-import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
-import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Messenger;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.*;
 import com.gemstone.gemfire.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
@@ -46,6 +37,9 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Timer;
 
 public class Services {
 

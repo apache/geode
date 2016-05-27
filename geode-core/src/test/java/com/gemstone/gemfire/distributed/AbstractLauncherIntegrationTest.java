@@ -16,12 +16,8 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.util.Properties;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,8 +25,11 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.io.FileWriter;
+import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests for AbstractLauncher class. These tests require file system I/O.
@@ -49,10 +48,10 @@ public class AbstractLauncherIntegrationTest {
   
   @Before
   public void setUp() throws Exception {
-    this.gemfirePropertiesFile = this.temporaryFolder.newFile("gemfire.properties");
+    this.gemfirePropertiesFile = this.temporaryFolder.newFile(DistributionConfig.GEMFIRE_PREFIX + "properties");
     
     this.expectedGemfireProperties = new Properties();
-    this.expectedGemfireProperties.setProperty(DistributionConfig.NAME_NAME, "memberOne");
+    this.expectedGemfireProperties.setProperty(SystemConfigurationProperties.NAME, "memberOne");
     this.expectedGemfireProperties.setProperty(DistributionConfig.GROUPS_NAME, "groupOne, groupTwo");
     this.expectedGemfireProperties.store(new FileWriter(this.gemfirePropertiesFile, false), this.testName.getMethodName());
 

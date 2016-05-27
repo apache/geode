@@ -18,10 +18,10 @@ package com.gemstone.gemfire.admin.internal;
 
 import com.gemstone.gemfire.admin.*;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.internal.admin.GemFireVM;
 import com.gemstone.gemfire.internal.admin.remote.RemoteApplicationVM;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * Implements the administrative interface to a cache server.
@@ -142,7 +142,7 @@ public class CacheServerImpl extends ManagedSystemMemberImpl
     String file = this.getConfig().getCacheXMLFile();
     if (file != null && file.length() > 0) {
       sb.append(" ");
-      sb.append(com.gemstone.gemfire.distributed.internal.DistributionConfig.CACHE_XML_FILE_NAME);
+      sb.append(DistributionConfig.CACHE_XML_FILE_NAME);
       sb.append("=");
       sb.append(file);
     }

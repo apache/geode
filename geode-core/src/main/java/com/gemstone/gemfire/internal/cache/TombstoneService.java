@@ -16,25 +16,10 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
-import com.gemstone.gemfire.internal.GemFireVersion;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.control.MemoryEvent;
 import com.gemstone.gemfire.internal.cache.control.ResourceListener;
 import com.gemstone.gemfire.internal.cache.versions.CompactVersionHolder;
@@ -47,6 +32,13 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 import com.gemstone.gemfire.internal.size.ReflectionSingleObjectSizer;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Tombstones are region entries that have been destroyed but are held
@@ -71,7 +63,7 @@ public class TombstoneService  implements ResourceListener<MemoryEvent> {
    * The default is 600,000 milliseconds (10 minutes).
    */
   public static long REPLICATED_TOMBSTONE_TIMEOUT = Long.getLong(
-      "gemfire.tombstone-timeout", 600000L).longValue();
+      DistributionConfig.GEMFIRE_PREFIX + "tombstone-timeout", 600000L).longValue();
   
   /**
    * The default tombstone expiration period in millis for non-replicated
@@ -83,33 +75,34 @@ public class TombstoneService  implements ResourceListener<MemoryEvent> {
    * The default is 480,000 milliseconds (8 minutes)
    */
   public static long CLIENT_TOMBSTONE_TIMEOUT = Long.getLong(
-      "gemfire.non-replicated-tombstone-timeout", 480000);
+      DistributionConfig.GEMFIRE_PREFIX + "non-replicated-tombstone-timeout", 480000);
   
   /**
    * The max number of tombstones in an expired batch.  This covers
    * all replicated regions, including PR buckets.  The default is
    * 100,000 expired tombstones.
    */
-  public static long EXPIRED_TOMBSTONE_LIMIT = Long.getLong("gemfire.tombstone-gc-threshold", 100000);
+  public static long EXPIRED_TOMBSTONE_LIMIT = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "tombstone-gc-threshold", 100000);
   
   /**
    * The interval to scan for expired tombstones in the queues
    */
-  public static long DEFUNCT_TOMBSTONE_SCAN_INTERVAL = Long.getLong("gemfire.tombstone-scan-interval", 60000);
+  public static long DEFUNCT_TOMBSTONE_SCAN_INTERVAL = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "tombstone-scan-interval", 60000);
   
   /**
    * The threshold percentage of free max memory that will trigger tombstone GCs.
    * The default percentage is somewhat less than the LRU Heap evictor so that
    * we evict tombstones before we start evicting cache data.
    */
-  public static double GC_MEMORY_THRESHOLD = Integer.getInteger("gemfire.tombstone-gc-memory-threshold",
+  public static double GC_MEMORY_THRESHOLD = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "tombstone-gc-memory-threshold",
       30 /*100-HeapLRUCapacityController.DEFAULT_HEAP_PERCENTAGE*/) * 0.01;
   
   /** this is a test hook for causing the tombstone service to act as though free memory is low */
   public static boolean FORCE_GC_MEMORY_EVENTS = false;
 
   public final static Object debugSync = new Object();
-  public final static boolean DEBUG_TOMBSTONE_COUNT = Boolean.getBoolean("gemfire.TombstoneService.DEBUG_TOMBSTONE_COUNT"); // TODO:LOG:replace TombstoneService.DEBUG_TOMBSTONE_COUNT 
+  public final static boolean DEBUG_TOMBSTONE_COUNT = Boolean
+      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "TombstoneService.DEBUG_TOMBSTONE_COUNT"); // TODO:LOG:replace TombstoneService.DEBUG_TOMBSTONE_COUNT
 
   public static boolean IDLE_EXPIRATION = false; // dunit test hook for forced batch expiration
   

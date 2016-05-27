@@ -16,13 +16,11 @@
  */
 package com.gemstone.gemfire.internal.logging.log4j;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.URL;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.FileUtil;
+import com.gemstone.gemfire.internal.logging.LoggingPerformanceTestCase;
+import com.gemstone.gemfire.internal.util.IOUtils;
+import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -30,10 +28,8 @@ import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.logging.LoggingPerformanceTestCase;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
+import java.io.*;
+import java.net.URL;
 
 @Category(PerformanceTest.class)
 @Ignore("Tests have no assertions")
@@ -98,8 +94,8 @@ public class LogWriterLoggerPerformanceTest extends LoggingPerformanceTestCase {
     FileUtils.copyFileToDirectory(src, this.configDirectory);
     this.config = new File(this.configDirectory, "log4j2-test.xml");
     assertTrue(this.config.exists());
-    
-    this.logFile = new File(this.configDirectory, "gemfire.log");
+
+    this.logFile = new File(this.configDirectory, DistributionConfig.GEMFIRE_PREFIX + "log");
     final String logFilePath = IOUtils.tryGetCanonicalPathElseGetAbsolutePath(logFile);
     final String logFileName = FileUtil.stripOffExtension(logFilePath);
     setPropertySubstitutionValues(logFileName, DEFAULT_LOG_FILE_SIZE_LIMIT, DEFAULT_LOG_FILE_COUNT_LIMIT);

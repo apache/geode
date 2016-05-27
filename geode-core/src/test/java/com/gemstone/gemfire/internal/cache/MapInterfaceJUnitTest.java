@@ -16,30 +16,22 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.*;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
-
-import junit.framework.Assert;
-import junit.framework.TestCase;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import junit.framework.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 @Category(IntegrationTest.class)
 public class MapInterfaceJUnitTest {
@@ -47,8 +39,8 @@ public class MapInterfaceJUnitTest {
   @Test
   public void testLocalClear() {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     DistributedSystem ds = DistributedSystem.connect(props);
     Cache cache = null;
     Region region = null;
@@ -100,8 +92,8 @@ public class MapInterfaceJUnitTest {
   @Test
   public void testLocalPutAll() {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     DistributedSystem ds = DistributedSystem.connect(props);
     Cache cache = null;
     Region region = null;
@@ -159,8 +151,8 @@ public class MapInterfaceJUnitTest {
   public void testBeforeRegionClearCallBack() {
    
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     DistributedSystem ds = DistributedSystem.connect(props);
     Cache cache = null;
     Region region = null;
@@ -231,8 +223,8 @@ public class MapInterfaceJUnitTest {
   public void testSetValue() {
 
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     DistributedSystem ds = DistributedSystem.connect(props);
     Cache cache = null;
   

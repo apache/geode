@@ -16,29 +16,10 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.gemstone.gemfire.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
 import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
 import com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.DistributionLocator;
 import com.gemstone.gemfire.internal.GemFireVersion;
@@ -51,8 +32,27 @@ import com.gemstone.gemfire.internal.process.ProcessType;
 import com.gemstone.gemfire.internal.process.ProcessUtils;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 /**
  * Integration tests for launching a Locator in a forked process.
@@ -67,7 +67,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
   protected volatile Process process;
   protected volatile ProcessStreamReader processOutReader;
   protected volatile ProcessStreamReader processErrReader;
-  
+
   @Before
   public final void setUpLocatorLauncherRemoteTest() throws Exception {
   }
@@ -91,7 +91,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     final ProcessControllerFactory factory = new ProcessControllerFactory();
     assertTrue(factory.isAttachAPIFound());
   }
-  
+
   @Test
   @Ignore("TRAC bug #52304: test is broken and needs to be reworked")
   public void testRunningLocatorOutlivesForkingProcess() throws Exception {
@@ -153,7 +153,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
   public void testStartCreatesPidFile() throws Throwable {
     // build and start the locator
     final List<String> jvmArguments = getJvmArguments();
-    
+
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
     for (String jvmArgument : jvmArguments) {
@@ -177,7 +177,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
         .build();
     try {
       waitForLocatorToStart(this.launcher);
-    
+
       // validate the pid file and its contents
       this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.LOCATOR.getPidFileName());
       assertTrue(this.pidFile.exists());
@@ -185,9 +185,9 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
       assertTrue(pid > 0);
       assertTrue(ProcessUtils.isProcessAlive(pid));
 
-      final String logFileName = getUniqueName()+".log";
+      final String logFileName = getUniqueName() + ".log";
       assertTrue("Log file should exist: " + logFileName, new File(this.temporaryFolder.getRoot(), logFileName).exists());
-      
+
       // check the status
       final LocatorState locatorState = this.launcher.status();
       assertNotNull(locatorState);
@@ -195,7 +195,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     } catch (Throwable e) {
       this.errorCollector.addError(e);
     }
-      
+
     // stop the locator
     try {
       assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
@@ -220,10 +220,10 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     this.statusFile = new File(this.temporaryFolder.getRoot(), ProcessType.LOCATOR.getStatusFileName());
     this.statusFile.createNewFile();
     assertTrue(this.statusFile.exists());
-    
+
     // build and start the locator
     final List<String> jvmArguments = getJvmArguments();
-    
+
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
     for (String jvmArgument : jvmArguments) {
@@ -260,9 +260,9 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
       waitForFileToDelete(this.stopRequestFile);
       waitForFileToDelete(this.statusRequestFile);
       waitForFileToDelete(this.statusFile);
-      
+
       // validate log file was created
-      final String logFileName = getUniqueName()+".log";
+      final String logFileName = getUniqueName() + ".log";
       assertTrue("Log file should exist: " + logFileName, new File(this.temporaryFolder.getRoot(), logFileName).exists());
     } catch (Throwable e) {
       this.errorCollector.addError(e);
@@ -286,7 +286,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
 
     // build and start the locator
     final List<String> jvmArguments = getJvmArguments();
-    
+
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
     for (String jvmArgument : jvmArguments) {
@@ -318,7 +318,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
       assertTrue(ProcessUtils.isProcessAlive(pid));
       assertFalse(pid == Integer.MAX_VALUE);
 
-      final String logFileName = getUniqueName()+".log";
+      final String logFileName = getUniqueName() + ".log";
       assertTrue("Log file should exist: " + logFileName, new File(this.temporaryFolder.getRoot(), logFileName).exists());
     } catch (Throwable e) {
       this.errorCollector.addError(e);
@@ -344,7 +344,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
 
     // build and start the locator
     final List<String> jvmArguments = getJvmArguments();
-    
+
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
     for (String jvmArgument : jvmArguments) {
@@ -379,7 +379,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
       assertTrue(pid != otherPid);
 
       // validate log file was created
-      final String logFileName = getUniqueName()+".log";
+      final String logFileName = getUniqueName() + ".log";
       assertTrue("Log file should exist: " + logFileName, new File(this.temporaryFolder.getRoot(), logFileName).exists());
     } catch (Throwable e) {
       this.errorCollector.addError(e);
@@ -398,9 +398,9 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
   public void testStartUsingPortInUseFails() throws Throwable {
     this.socket = SocketCreator.getDefaultInstance().createServerSocket(this.locatorPort, 50, null, -1);
     this.locatorPort = this.socket.getLocalPort();
-    
+
     final List<String> jvmArguments = getJvmArguments();
-    
+
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
     for (String jvmArgument : jvmArguments) {
@@ -416,10 +416,12 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
 
     String expectedString = "java.net.BindException";
     AtomicBoolean outputContainedExpectedString = new AtomicBoolean();
-    
+
     this.process = new ProcessBuilder(command).directory(this.temporaryFolder.getRoot()).start();
-    this.processOutReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getInputStream()).inputListener(createExpectedListener("sysout", getUniqueName() + "#sysout", expectedString, outputContainedExpectedString)).build().start();
-    this.processErrReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getErrorStream()).inputListener(createExpectedListener("syserr", getUniqueName() + "#syserr", expectedString, outputContainedExpectedString)).build().start();
+    this.processOutReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getInputStream())
+        .inputListener(createExpectedListener("sysout", getUniqueName() + "#sysout", expectedString, outputContainedExpectedString)).build().start();
+    this.processErrReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getErrorStream())
+        .inputListener(createExpectedListener("syserr", getUniqueName() + "#syserr", expectedString, outputContainedExpectedString)).build().start();
 
     // wait for locator to start and fail
     final LocatorLauncher dirLauncher = new LocatorLauncher.Builder()
@@ -431,22 +433,22 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     } catch (Throwable e) {
       this.errorCollector.addError(e);
     }
-      
+
     try {
       // check the status
       final LocatorState locatorState = dirLauncher.status();
       assertNotNull(locatorState);
       assertEquals(Status.NOT_RESPONDING, locatorState.getStatus());
-      
-      final String logFileName = getUniqueName()+".log";
+
+      final String logFileName = getUniqueName() + ".log";
       assertFalse("Log file should exist: " + logFileName, new File(this.temporaryFolder.getRoot(), logFileName).exists());
     } catch (Throwable e) {
       this.errorCollector.addError(e);
     }
-    
+
     // if the following fails, then the SHORTER_TIMEOUT is too short for slow machines
     // or this test needs to use MainLauncher in ProcessWrapper
-    
+
     // validate that output contained BindException 
     this.errorCollector.checkThat(outputContainedExpectedString.get(), is(equalTo(true)));
 
@@ -454,10 +456,10 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     LocatorState status = null;
     try {
       status = dirLauncher.stop();
-    } catch (Throwable t) { 
+    } catch (Throwable t) {
       // ignore
     }
-    
+
     this.errorCollector.checkThat(status.getStatus(), is(equalTo(getExpectedStopStatusForNotRunning())));
   }
 
@@ -468,15 +470,15 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
 
     this.socket = SocketCreator.getDefaultInstance().createServerSocket(this.locatorPort, 50, null, -1);
     this.locatorPort = this.socket.getLocalPort();
-    
+
     assertFalse(AvailablePort.isPortAvailable(this.locatorPort, AvailablePort.SOCKET));
     assertTrue(this.socket.isBound());
     assertFalse(this.socket.isClosed());
-    
+
     // launch locator
     final List<String> jvmArguments = getJvmArguments();
     jvmArguments.add("-D" + DistributionLocator.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY + "=" + this.locatorPort);
-    
+
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
     for (String jvmArgument : jvmArguments) {
@@ -488,11 +490,13 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     command.add(LocatorLauncher.Command.START.getName());
     command.add(getUniqueName());
     command.add("--redirect-output");
-    
+
     this.process = new ProcessBuilder(command).directory(this.temporaryFolder.getRoot()).start();
-    this.processOutReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getInputStream()).inputListener(createExpectedListener("sysout", getUniqueName() + "#sysout", expectedString, outputContainedExpectedString)).build().start();
-    this.processErrReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getErrorStream()).inputListener(createExpectedListener("syserr", getUniqueName() + "#syserr", expectedString, outputContainedExpectedString)).build().start();
-    
+    this.processOutReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getInputStream())
+        .inputListener(createExpectedListener("sysout", getUniqueName() + "#sysout", expectedString, outputContainedExpectedString)).build().start();
+    this.processErrReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getErrorStream())
+        .inputListener(createExpectedListener("syserr", getUniqueName() + "#syserr", expectedString, outputContainedExpectedString)).build().start();
+
     // wait for locator to start up
     final LocatorLauncher dirLauncher = new LocatorLauncher.Builder()
         .setWorkingDirectory(this.temporaryFolder.getRoot().getCanonicalPath())
@@ -503,23 +507,23 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     } catch (Throwable e) {
       this.errorCollector.addError(e);
     }
-      
+
     try {
       // check the status
       final LocatorState locatorState = dirLauncher.status();
       assertNotNull(locatorState);
       assertEquals(Status.NOT_RESPONDING, locatorState.getStatus());
-      
+
       // creation of log file seems to be random -- look into why sometime
-      final String logFileName = getUniqueName()+".log";
+      final String logFileName = getUniqueName() + ".log";
       assertFalse("Log file should exist: " + logFileName, new File(this.temporaryFolder.getRoot(), logFileName).exists());
     } catch (Throwable e) {
       this.errorCollector.addError(e);
     }
-    
+
     // if the following fails, then the SHORTER_TIMEOUT might be too short for slow machines
     // or this test needs to use MainLauncher in ProcessWrapper
-    
+
     // validate that output contained BindException 
     this.errorCollector.checkThat(outputContainedExpectedString.get(), is(equalTo(true)));
 
@@ -527,10 +531,10 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     LocatorState status = null;
     try {
       status = dirLauncher.stop();
-    } catch (Throwable t) { 
+    } catch (Throwable t) {
       // ignore
     }
-    
+
     this.errorCollector.checkThat(status.getStatus(), is(equalTo(getExpectedStopStatusForNotRunning())));
   }
 
@@ -621,7 +625,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
   @Test
   public void testStatusUsingPid() throws Throwable {
     final List<String> jvmArguments = getJvmArguments();
-    
+
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
     for (String jvmArgument : jvmArguments) {
@@ -641,7 +645,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
 
     // wait for locator to start
     int pid = 0;
-    LocatorLauncher pidLauncher = null; 
+    LocatorLauncher pidLauncher = null;
     final LocatorLauncher dirLauncher = new LocatorLauncher.Builder()
         .setWorkingDirectory(this.temporaryFolder.getRoot().getCanonicalPath())
         .build();
@@ -656,7 +660,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
       assertTrue(ProcessUtils.isProcessAlive(pid));
 
       // validate log file was created
-      final String logFileName = getUniqueName()+".log";
+      final String logFileName = getUniqueName() + ".log";
       assertTrue("Log file should exist: " + logFileName, new File(this.temporaryFolder.getRoot(), logFileName).exists());
 
       // use launcher with pid
@@ -677,7 +681,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
       assertEquals(jvmArguments, actualStatus.getJvmArguments());
       assertEquals(ManagementFactory.getRuntimeMXBean().getClassPath(), actualStatus.getClasspath());
       assertEquals(GemFireVersion.getGemFireVersion(), actualStatus.getGemFireVersion());
-      assertEquals(System.getProperty("java.version"),  actualStatus.getJavaVersion());
+      assertEquals(System.getProperty("java.version"), actualStatus.getJavaVersion());
       assertEquals(this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + getUniqueName() + ".log", actualStatus.getLogFile());
       assertEquals(InetAddress.getLocalHost().getCanonicalHostName(), actualStatus.getHost());
       assertEquals(getUniqueName(), actualStatus.getMemberName());
@@ -691,10 +695,10 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
         assertEquals(Status.STOPPED, dirLauncher.stop().getStatus());
       } else {
         assertEquals(Status.STOPPED, pidLauncher.stop().getStatus());
-      }          
+      }
       waitForPidToStop(pid);
       waitForFileToDelete(this.pidFile);
-      
+
     } catch (Throwable e) {
       this.errorCollector.addError(e);
     }
@@ -704,7 +708,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
   @Test
   public void testStatusUsingWorkingDirectory() throws Throwable {
     final List<String> jvmArguments = getJvmArguments();
-    
+
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
     for (String jvmArgument : jvmArguments) {
@@ -738,7 +742,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
       assertTrue(ProcessUtils.isProcessAlive(pid));
 
       // validate log file was created
-      final String logFileName = getUniqueName()+".log";
+      final String logFileName = getUniqueName() + ".log";
       assertTrue("Log file should exist: " + logFileName, new File(this.temporaryFolder.getRoot(), logFileName).exists());
 
       assertNotNull(dirLauncher);
@@ -754,7 +758,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
       assertEquals(jvmArguments, actualStatus.getJvmArguments());
       assertEquals(ManagementFactory.getRuntimeMXBean().getClassPath(), actualStatus.getClasspath());
       assertEquals(GemFireVersion.getGemFireVersion(), actualStatus.getGemFireVersion());
-      assertEquals(System.getProperty("java.version"),  actualStatus.getJavaVersion());
+      assertEquals(System.getProperty("java.version"), actualStatus.getJavaVersion());
       assertEquals(this.temporaryFolder.getRoot().getCanonicalPath() + File.separator + getUniqueName() + ".log", actualStatus.getLogFile());
       assertEquals(InetAddress.getLocalHost().getCanonicalHostName(), actualStatus.getHost());
       assertEquals(getUniqueName(), actualStatus.getMemberName());
@@ -770,12 +774,12 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
       this.errorCollector.addError(e);
     }
   }
-  
+
   @Test
   public void testStatusWithEmptyPidFile() throws Exception {
     this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.LOCATOR.getPidFileName());
     assertTrue(this.pidFile + " already exists", this.pidFile.createNewFile());
-    
+
     final LocatorLauncher dirLauncher = new LocatorLauncher.Builder()
         .setWorkingDirectory(this.temporaryFolder.getRoot().getCanonicalPath())
         .build();
@@ -792,7 +796,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     assertThat(actualStatus.getHost(), is(nullValue()));
     assertThat(actualStatus.getMemberName(), is(nullValue()));
   }
-  
+
   @Test
   public void testStatusWithNoPidFile() throws Exception {
     final LocatorLauncher dirLauncher = new LocatorLauncher.Builder()
@@ -801,14 +805,14 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     LocatorState locatorState = dirLauncher.status();
     assertEquals(Status.NOT_RESPONDING, locatorState.getStatus());
   }
-  
+
   @Test
   public void testStatusWithStalePidFile() throws Exception {
     this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.LOCATOR.getPidFileName());
     final int pid = 0;
     assertFalse(ProcessUtils.isProcessAlive(pid));
     writePid(this.pidFile, pid);
-    
+
     final LocatorLauncher dirLauncher = new LocatorLauncher.Builder()
         .setWorkingDirectory(this.temporaryFolder.getRoot().getCanonicalPath())
         .build();
@@ -825,11 +829,11 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     assertThat(actualStatus.getHost(), is(nullValue()));
     assertThat(actualStatus.getMemberName(), is(nullValue()));
   }
-  
+
   @Test
   public void testStopUsingPid() throws Throwable {
     final List<String> jvmArguments = getJvmArguments();
-    
+
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
     for (String jvmArgument : jvmArguments) {
@@ -844,12 +848,14 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
     command.add("--redirect-output");
 
     this.process = new ProcessBuilder(command).directory(this.temporaryFolder.getRoot()).start();
-    this.processOutReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getInputStream()).inputListener(createLoggingListener("sysout", getUniqueName() + "#sysout")).build().start();
-    this.processErrReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getErrorStream()).inputListener(createLoggingListener("syserr", getUniqueName() + "#syserr")).build().start();
+    this.processOutReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getInputStream())
+        .inputListener(createLoggingListener("sysout", getUniqueName() + "#sysout")).build().start();
+    this.processErrReader = new ProcessStreamReader.Builder(this.process).inputStream(this.process.getErrorStream())
+        .inputListener(createLoggingListener("syserr", getUniqueName() + "#syserr")).build().start();
 
     // wait for locator to start
     int pid = 0;
-    LocatorLauncher pidLauncher = null; 
+    LocatorLauncher pidLauncher = null;
     final LocatorLauncher dirLauncher = new LocatorLauncher.Builder()
         .setWorkingDirectory(this.temporaryFolder.getRoot().getCanonicalPath())
         .build();
@@ -864,7 +870,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
       assertTrue(ProcessUtils.isProcessAlive(pid));
 
       // validate log file was created
-      final String logFileName = getUniqueName()+".log";
+      final String logFileName = getUniqueName() + ".log";
       assertTrue("Log file should exist: " + logFileName, new File(this.temporaryFolder.getRoot(), logFileName).exists());
 
       // use launcher with pid
@@ -891,10 +897,10 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
         assertEquals(Status.STOPPED, dirLauncher.stop().getStatus());
       } else {
         assertEquals(Status.STOPPED, pidLauncher.stop().getStatus());
-      }          
+      }
       waitForPidToStop(pid);
       waitForFileToDelete(pidFile);
-      
+
     } catch (Throwable e) {
       this.errorCollector.addError(e);
     }
@@ -904,7 +910,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
   @Test
   public void testStopUsingWorkingDirectory() throws Throwable {
     final List<String> jvmArguments = getJvmArguments();
-    
+
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
     for (String jvmArgument : jvmArguments) {
@@ -938,7 +944,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
       assertTrue(ProcessUtils.isProcessAlive(pid));
 
       // validate log file was created
-      final String logFileName = getUniqueName()+".log";
+      final String logFileName = getUniqueName() + ".log";
       assertTrue("Log file should exist: " + logFileName, new File(this.temporaryFolder.getRoot(), logFileName).exists());
 
     } catch (Throwable e) {
@@ -950,7 +956,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
       assertEquals(Status.STOPPED, dirLauncher.stop().getStatus());
       waitForPidToStop(pid);
       assertFalse("PID file still exists!", this.pidFile.exists());
-      
+
     } catch (Throwable e) {
       this.errorCollector.addError(e);
     }
@@ -974,16 +980,16 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
         command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getAbsolutePath());
         command.add("-cp");
         command.add(System.getProperty("java.class.path"));
-        command.add("-Dgemfire.mcast-port=0");
+        command.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "mcast-port=0");
         command.add(LocatorLauncher.class.getName());
         command.add(LocatorLauncher.Command.START.getName());
         command.add(LocatorLauncherForkingProcess.class.getSimpleName() + "_Locator");
         command.add("--port=" + port);
         command.add("--redirect-output");
-        
+
         logWriter.info(LocatorLauncherForkingProcess.class.getSimpleName() + "#main command: " + command);
         logWriter.info(LocatorLauncherForkingProcess.class.getSimpleName() + "#main starting...");
-        
+
         Process forkedProcess = new ProcessBuilder(command).start();
 
         @SuppressWarnings("unused")
@@ -998,8 +1004,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
         logWriter.info(LocatorLauncherForkingProcess.class.getSimpleName() + "#main exiting...");
 
         System.exit(0);
-      }
-      catch (Throwable t) {
+      } catch (Throwable t) {
         logWriter.info(LocatorLauncherForkingProcess.class.getSimpleName() + "#main error: " + t, t);
         System.exit(-1);
       }

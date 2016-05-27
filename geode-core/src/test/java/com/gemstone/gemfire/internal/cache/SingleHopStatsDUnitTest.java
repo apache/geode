@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.ClientMetadataService;
@@ -38,6 +37,9 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 public class SingleHopStatsDUnitTest extends CacheTestCase {
 
@@ -139,8 +141,8 @@ public class SingleHopStatsDUnitTest extends CacheTestCase {
   private void createClient(int port0, int port1, int port2, String colocation) {
     Properties props = new Properties();
     props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     CacheTestCase test = new SingleHopStatsDUnitTest(
         "SingleHopStatsDUnitTest");
     DistributedSystem distributedSystem = test.getSystem(props);

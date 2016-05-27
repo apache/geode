@@ -24,22 +24,27 @@ package com.gemstone.gemfire.internal.jta;
 
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.LogWriter;
-//import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
-//import com.gemstone.gemfire.cache.Region;
-//import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.util.test.TestUtil;
-
-import java.util.Properties;
-import java.sql.*;
-
 import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.util.test.TestUtil;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+
+//import com.gemstone.gemfire.cache.AttributesFactory;
+//import com.gemstone.gemfire.cache.Region;
+//import com.gemstone.gemfire.cache.RegionAttributes;
 
 /**
  * 
@@ -60,9 +65,9 @@ public class CacheUtils {
 
   public static String init(String className) throws Exception{
     Properties props = new Properties();
-    props.setProperty("cache-xml-file",TestUtil.getResourcePath(CacheUtils.class, "cachejta.xml"));
+    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, TestUtil.getResourcePath(CacheUtils.class, "cachejta.xml"));
     String tableName = "";
-    props.setProperty("mcast-port", "0");
+    props.setProperty(MCAST_PORT, "0");
     
     ds = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds);

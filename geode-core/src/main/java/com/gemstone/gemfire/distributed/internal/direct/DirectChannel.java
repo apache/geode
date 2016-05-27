@@ -17,57 +17,32 @@
 
 package com.gemstone.gemfire.distributed.internal.direct;
 
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.net.InetAddress;
-import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Semaphore;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelCriterion;
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.ToDataException;
+import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DirectReplyProcessor;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.ReplyProcessor21;
-import com.gemstone.gemfire.distributed.internal.membership.DistributedMembershipListener;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.cache.DirectReplyMessage;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
-import com.gemstone.gemfire.internal.tcp.BaseMsgStreamer;
-import com.gemstone.gemfire.internal.tcp.ConnectExceptions;
-import com.gemstone.gemfire.internal.tcp.Connection;
-import com.gemstone.gemfire.internal.tcp.ConnectionException;
-import com.gemstone.gemfire.internal.tcp.MemberShunnedException;
-import com.gemstone.gemfire.internal.tcp.MsgStreamer;
-import com.gemstone.gemfire.internal.tcp.TCPConduit;
+import com.gemstone.gemfire.internal.tcp.*;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
 import com.gemstone.gemfire.internal.util.concurrent.ReentrantSemaphore;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.net.InetAddress;
+import java.net.SocketTimeoutException;
+import java.util.*;
+import java.util.concurrent.Semaphore;
 
 /**
  * DirectChannel is used to interact directly with other Direct servers to
@@ -132,7 +107,7 @@ public class DirectChannel {
     }
 
     public DirectChannel(MembershipManager mgr, DirectChannelListener listener,
-        DistributionConfig dc) 
+        DistributionConfig dc)
         throws ConnectionException {
       this.receiver = listener;
 

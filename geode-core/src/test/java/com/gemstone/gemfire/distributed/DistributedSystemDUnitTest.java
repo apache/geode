@@ -16,10 +16,27 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.gemstone.gemfire.CancelException;
+import com.gemstone.gemfire.GemFireConfigException;
+import com.gemstone.gemfire.SystemConnectException;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.distributed.internal.*;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
+import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.SocketCreator;
+import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -29,38 +46,8 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.SystemConnectException;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionException;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystemJUnitTest;
-import com.gemstone.gemfire.distributed.internal.SerialDistributionMessage;
-import com.gemstone.gemfire.distributed.internal.SizeableRunnable;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger;
-import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.RMIException;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 /**
  * Tests the functionality of the {@link DistributedSystem} class.
@@ -84,8 +71,8 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     disconnectAllFromDS();
     int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     Properties p = getDistributedSystemProperties();
-    p.put(DistributionConfig.LOCATORS_NAME, "");
-    p.put(DistributionConfig.START_LOCATOR_NAME, "localhost["+locatorPort+"]");
+    p.put(LOCATORS, "");
+    p.put(START_LOCATOR, "localhost[" + locatorPort + "]");
     p.put(DistributionConfig.DISABLE_TCP_NAME, "true");
     InternalDistributedSystem ds = (InternalDistributedSystem)DistributedSystem.connect(p);
     try {
@@ -152,10 +139,10 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testGetSameSystemTwice() {
     Properties config = new Properties();
-    config.setProperty("mcast-port", "0");
-    config.setProperty("locators", "");
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
     // set a flow-control property for the test (bug 37562)
-    config.setProperty("mcast-flow-control", "3000000,0.20,3000");
+    config.setProperty(DistributionConfig.MCAST_FLOW_CONTROL_NAME, "3000000,0.20,3000");
     
     DistributedSystem system1 = DistributedSystem.connect(config);
     DistributedSystem system2 = DistributedSystem.connect(config);
@@ -171,16 +158,16 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testGetDifferentSystem() {
     Properties config = new Properties();
-    config.setProperty("mcast-port", "0");
-    config.setProperty("locators", "");
-    config.setProperty("mcast-flow-control", "3000000,0.20,3000");
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
+    config.setProperty(DistributionConfig.MCAST_FLOW_CONTROL_NAME, "3000000,0.20,3000");
 
 
     DistributedSystem system1 = DistributedSystem.connect(config);
-    config.setProperty("mcast-address", "224.0.0.1");
+    config.setProperty(MCAST_ADDRESS, "224.0.0.1");
     try {
       DistributedSystem.connect(config);
-      if (System.getProperty("gemfire.mcast-address") == null) {
+      if (System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "mcast-address") == null) {
         fail("Should have thrown an IllegalStateException");
       }
     }
@@ -199,8 +186,8 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testGetDifferentSystemAfterClose() {
     Properties config = new Properties();
-    config.setProperty("mcast-port", "0");
-    config.setProperty("locators", "");
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
 
     DistributedSystem system1 = DistributedSystem.connect(config);
     system1.disconnect();
@@ -217,26 +204,26 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     Properties config = new Properties();
     // a loner is all this test needs
     int unusedPort = 0;
-    config.setProperty("mcast-port", "0");
-    config.setProperty("locators", "");
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
 
     DistributedSystem system1 = DistributedSystem.connect(config);
     
     assertTrue(config != system1.getProperties());
-    assertEquals(unusedPort, Integer.parseInt(system1.getProperties().getProperty("mcast-port")));
+    assertEquals(unusedPort, Integer.parseInt(system1.getProperties().getProperty(MCAST_PORT)));
     
     system1.disconnect();
     
     assertTrue(config != system1.getProperties());
-    assertEquals(unusedPort, Integer.parseInt(system1.getProperties().getProperty("mcast-port")));
+    assertEquals(unusedPort, Integer.parseInt(system1.getProperties().getProperty(MCAST_PORT)));
   }
 
 
   @Test
   public void testIsolatedDistributedSystem() throws Exception {
     Properties config = new Properties();
-    config.setProperty("mcast-port", "0");
-    config.setProperty("locators", "");
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
     getSystem(config);
     try {
       // make sure isolated distributed system can still create a cache and region
@@ -255,8 +242,8 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   public void testSpecificTcpPort() throws Exception {
     Properties config = new Properties();
     int tcpPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    config.put("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
-    config.setProperty("tcp-port", String.valueOf(tcpPort));
+    config.put(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+    config.setProperty(TCP_PORT, String.valueOf(tcpPort));
     InternalDistributedSystem system = getSystem(config);
     DistributionManager dm = (DistributionManager)system.getDistributionManager();
     GMSMembershipManager mgr = (GMSMembershipManager)dm.getMembershipManager();
@@ -283,10 +270,10 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     }
     if (loopback != null) {
       Properties config = new Properties();
-      config.put(DistributionConfig.MCAST_PORT_NAME, "0");
+      config.put(MCAST_PORT, "0");
       String locators = InetAddress.getLocalHost().getHostName()+":"+DistributedTestUtils.getDUnitLocatorPort();
-      config.put(DistributionConfig.LOCATORS_NAME, locators);
-      config.setProperty(DistributionConfig.BIND_ADDRESS_NAME, loopback.getHostAddress());
+      config.put(LOCATORS, locators);
+      config.setProperty(BIND_ADDRESS, loopback.getHostAddress());
       LogWriterUtils.getLogWriter().info("attempting to connect with " + loopback +" and locators=" + locators);
       try {
         InternalDistributedSystem system = getSystem(config);
@@ -304,7 +291,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   public void testUDPPortRange() throws Exception {
     Properties config = new Properties();
     int unicastPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    config.put("locators", "localhost["+DistributedTestUtils.getDUnitLocatorPort()+"]");
+    config.put(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
     // Minimum 3 ports required in range for UDP, FD_SOCK and TcpConduit.
     config.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, 
         ""+unicastPort+"-"+(unicastPort+2));
@@ -347,7 +334,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testMembershipPortRangeWithExactThreeValues() throws Exception {
     Properties config = new Properties();
-    config.setProperty("locators", "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+    config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
     int portRange = 3;
     int portStartRange = getPortRange(portRange);
     int portEndRange = portStartRange + portRange - 1;
@@ -374,8 +361,8 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     final int mcastPort = AvailablePort.getRandomAvailablePort(AvailablePort.MULTICAST);
     final int[] socketPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     final int unicastPort = socketPorts[0];
-    config.setProperty("mcast-port", String.valueOf(mcastPort));
-    config.setProperty("start-locator", "localhost["+socketPorts[1]+"]");
+    config.setProperty(MCAST_PORT, String.valueOf(mcastPort));
+    config.setProperty(START_LOCATOR, "localhost[" + socketPorts[1] + "]");
     config.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, 
         ""+unicastPort+"-"+(unicastPort+2));
     InternalDistributedSystem system = (InternalDistributedSystem)DistributedSystem.connect(config);
@@ -386,8 +373,8 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
       vm.invoke(new CacheSerializableRunnable("start conflicting system") {
         public void run2() {
           try {
-            String locators = (String)config.remove("start-locator");
-            config.put("locators", locators);
+            String locators = (String) config.remove(START_LOCATOR);
+            config.put(LOCATORS, locators);
             DistributedSystem system = DistributedSystem.connect(config);
             system.disconnect();
           } catch (GemFireConfigException e) {
@@ -418,8 +405,8 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testEmptyCacheXmlFile() throws Exception {
     Properties config = new Properties();
-    config.setProperty("mcast-port", "0");
-    config.setProperty("locators", "");
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
     config.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, "");
 
     DistributedSystem sys = DistributedSystem.connect(config);

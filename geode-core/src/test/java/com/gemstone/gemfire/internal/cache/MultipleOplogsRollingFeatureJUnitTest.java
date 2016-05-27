@@ -16,14 +16,14 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.*;
-
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * The test will verify <br>
@@ -60,7 +60,7 @@ public class MultipleOplogsRollingFeatureJUnitTest extends
   @Test
   public void testMultipleRolling()
   {
-    System.setProperty("gemfire.MAX_OPLOGS_PER_COMPACTION", "17");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_COMPACTION", "17");
     try {
       deleteFiles();
       diskProps.setMaxOplogSize(450);
@@ -157,7 +157,7 @@ public class MultipleOplogsRollingFeatureJUnitTest extends
       ex.printStackTrace();
       fail("testMultipleRolling: test failed due to " + ex);
     } finally {
-      System.clearProperty("gemfire.MAX_OPLOGS_PER_COMPACTION");
+      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_COMPACTION");
     }
   }
 

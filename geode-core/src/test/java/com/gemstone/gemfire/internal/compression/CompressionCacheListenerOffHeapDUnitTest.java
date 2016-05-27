@@ -16,13 +16,13 @@
  */
 package com.gemstone.gemfire.internal.compression;
 
-import java.util.Properties;
-
 import com.gemstone.gemfire.compression.SnappyCompressor;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+
+import java.util.Properties;
 
 @SuppressWarnings("serial")
 public class CompressionCacheListenerOffHeapDUnitTest extends
@@ -33,10 +33,10 @@ public class CompressionCacheListenerOffHeapDUnitTest extends
   }
   
   public static void caseSetUp() {
-    System.setProperty("gemfire.trackOffHeapRefCounts", "true");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "trackOffHeapRefCounts", "true");
   }
   public static void caseTearDown() {
-    System.clearProperty("gemfire.trackOffHeapRefCounts");
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "trackOffHeapRefCounts");
   }
 
   @Override

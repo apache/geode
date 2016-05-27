@@ -58,7 +58,7 @@ public class JavaApiIntegrationTest extends JUnitSuite {
   public static void setUpBeforeClass() throws Exception {
     // start geode cluster, and spark context
     Properties settings = new Properties();
-    settings.setProperty("cache-xml-file", "src/it/resources/test-retrieve-regions.xml");
+    settings.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, "src/it/resources/test-retrieve-regions.xml");
     settings.setProperty("num-of-servers", Integer.toString(numServers));
     int locatorPort = GeodeCluster$.MODULE$.start(settings);
 

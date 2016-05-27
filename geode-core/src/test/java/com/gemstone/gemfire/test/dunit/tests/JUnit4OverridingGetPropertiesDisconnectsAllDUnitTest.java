@@ -16,17 +16,16 @@
  */
 package com.gemstone.gemfire.test.dunit.tests;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.Invoke.*;
-
-import java.util.Properties;
-
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.Invoke.invokeInEveryVM;
 
 /**
  * Verifies that overriding {@code getDistributedSystemProperties} results
@@ -48,7 +47,7 @@ public class JUnit4OverridingGetPropertiesDisconnectsAllDUnitTest extends JUnit4
   @Override
   public final Properties getDistributedSystemProperties() {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.setProperty(MCAST_PORT, "0");
     return props;
   }
 

@@ -19,33 +19,28 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Collection;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.*;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.internal.IndexTrackingQueryObserver;
 import com.gemstone.gemfire.cache.query.internal.IndexTrackingQueryObserver.IndexInfo;
 import com.gemstone.gemfire.cache.query.internal.QueryObserver;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
 import com.gemstone.gemfire.cache.query.internal.index.IndexTrackingQueryObserverDUnitTest.IndexTrackingTestHook;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Collection;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -63,7 +58,7 @@ public class IndexTrackingQueryObserverJUnitTest {
     
   @Before
   public void setUp() throws Exception {
-    System.setProperty("gemfire.Query.VERBOSE", "true");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE", "true");
     CacheUtils.startCache();
     QueryObserver observer = QueryObserverHolder.setInstance(new IndexTrackingQueryObserver());
   }
@@ -77,7 +72,7 @@ public class IndexTrackingQueryObserverJUnitTest {
   @Test
   public void testIndexInfoOnPartitionedRegion() throws Exception{
     //Query VERBOSE has to be true for the test
-    assertEquals("true", System.getProperty("gemfire.Query.VERBOSE"));
+    assertEquals("true", System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE"));
     
     //Create Partition Region
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -127,7 +122,7 @@ public class IndexTrackingQueryObserverJUnitTest {
   @Test
   public void testIndexInfoOnLocalRegion() throws Exception{
     //Query VERBOSE has to be true for the test
-    assertEquals("true", System.getProperty("gemfire.Query.VERBOSE"));
+    assertEquals("true", System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE"));
     
     //Create Partition Region
     AttributesFactory af = new AttributesFactory();

@@ -16,29 +16,21 @@
  */
 package com.gemstone.gemfire.cache.client;
 
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
+import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.test.dunit.*;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.InterestResultPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * The ClientServerRegisterInterestsDUnitTest class is a test suite of test cases testing the interaction between a
@@ -93,9 +85,9 @@ public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase 
         try {
           Cache cache = new CacheFactory()
             .set("name", "ClientServerRegisterInterestsTestGemFireServer")
-            .set("mcast-port", "0")
-            .set("log-file", "clientServerRegisterInterestsTest.log")
-            .set("log-level", "config")
+              .set(MCAST_PORT, "0")
+              .set(DistributionConfig.LOG_FILE_NAME, "clientServerRegisterInterestsTest.log")
+              .set(DistributionConfig.LOG_LEVEL_NAME, "config")
             //.set("jmx-manager", "true")
             //.set("jmx-manager-http-port", "0")
             //.set("jmx-manager-port", "1199")
@@ -148,7 +140,7 @@ public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase 
 
   private ClientCache setupGemFireClientCache() {
     ClientCache clientCache = new ClientCacheFactory()
-      .set("durable-client-id", "TestDurableClientId")
+        .set(DistributionConfig.DURABLE_CLIENT_ID_NAME, "TestDurableClientId")
       .create();
 
     PoolFactory poolFactory = PoolManager.createFactory();

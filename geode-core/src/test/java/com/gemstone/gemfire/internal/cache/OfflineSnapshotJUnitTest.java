@@ -16,21 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
-
-import junit.framework.TestCase;
-
 import com.examples.snapshot.MyObject;
 import com.examples.snapshot.MyPdxSerializer;
 import com.gemstone.gemfire.cache.Cache;
@@ -40,9 +25,19 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.snapshot.RegionGenerator;
 import com.gemstone.gemfire.cache.snapshot.RegionGenerator.RegionType;
 import com.gemstone.gemfire.cache.snapshot.RegionGenerator.SerializationType;
-import com.gemstone.gemfire.cache.snapshot.SnapshotIterator;
-import com.gemstone.gemfire.cache.snapshot.SnapshotReader;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 @Category(IntegrationTest.class)
 public class OfflineSnapshotJUnitTest {
@@ -126,8 +121,8 @@ public class OfflineSnapshotJUnitTest {
 
   public void reset() {
     CacheFactory cf = new CacheFactory()
-        .set("mcast-port", "0")
-        .set("log-level", "error")
+        .set(MCAST_PORT, "0")
+        .set(DistributionConfig.LOG_LEVEL_NAME, "error")
         .setPdxSerializer(new MyPdxSerializer())
         .setPdxPersistent(true);
     

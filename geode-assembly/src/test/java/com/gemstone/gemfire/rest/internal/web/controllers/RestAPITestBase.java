@@ -19,7 +19,6 @@ package com.gemstone.gemfire.rest.internal.web.controllers;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -110,7 +109,7 @@ public class RestAPITestBase extends DistributedTestCase {
     Properties props = new Properties();
 
     if (groups != null) {
-      props.put("groups", groups);
+      props.put(DistributionConfig.GROUPS_NAME, groups);
     }
 
     props.setProperty(DistributionConfig.START_DEV_REST_API_NAME, "true");

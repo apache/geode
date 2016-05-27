@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;

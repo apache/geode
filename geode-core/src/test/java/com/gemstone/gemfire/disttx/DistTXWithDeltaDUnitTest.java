@@ -16,10 +16,10 @@
  */
 package com.gemstone.gemfire.disttx;
 
-import java.util.Properties;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.TransactionsWithDeltaDUnitTest;
+
+import java.util.Properties;
 
 public class DistTXWithDeltaDUnitTest extends TransactionsWithDeltaDUnitTest {
 

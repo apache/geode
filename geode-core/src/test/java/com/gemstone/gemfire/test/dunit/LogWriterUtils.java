@@ -16,10 +16,6 @@
  */
 package com.gemstone.gemfire.test.dunit;
 
-import java.util.Properties;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
@@ -28,6 +24,9 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LogWriterFactory;
 import com.gemstone.gemfire.internal.logging.ManagerLogWriter;
 import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Properties;
 
 /**
  * <code>LogWriterUtils</code> provides static utility methods to access a

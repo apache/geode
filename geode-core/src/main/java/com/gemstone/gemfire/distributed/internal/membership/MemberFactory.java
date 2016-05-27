@@ -16,15 +16,15 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership;
 
-import java.io.File;
-import java.net.InetAddress;
-
 import com.gemstone.gemfire.distributed.internal.DMStats;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.LocatorStats;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMemberFactory;
 import com.gemstone.gemfire.distributed.internal.membership.gms.NetLocator;
 import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
+
+import java.io.File;
+import java.net.InetAddress;
 
 /**
  * Create a new Member based on the given inputs.

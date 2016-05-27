@@ -16,12 +16,11 @@
  */
 package com.gemstone.gemfire.management.internal;
 
-import java.util.concurrent.TimeUnit;
-
-import javax.management.ObjectName;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.internal.beans.QueryDataFunction;
+
+import javax.management.ObjectName;
+import java.util.concurrent.TimeUnit;
 
 
 /**

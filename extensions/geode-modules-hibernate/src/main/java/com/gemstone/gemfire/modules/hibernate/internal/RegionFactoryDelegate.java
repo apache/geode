@@ -16,31 +16,26 @@
 */
 package com.gemstone.gemfire.modules.hibernate.internal;
 
-import java.util.Iterator;
-import java.util.Properties;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.modules.hibernate.GemFireCacheProvider;
 import com.gemstone.gemfire.modules.util.BootstrappingFunction;
 import com.gemstone.gemfire.modules.util.CreateRegionFunction;
 import com.gemstone.gemfire.modules.util.RegionConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Iterator;
+import java.util.Properties;
 
 public class RegionFactoryDelegate  {
 
-  private static final String LOG_FILE = "log-file";
+  private static final String LOG_FILE = DistributionConfig.LOG_FILE_NAME;
 
-  private static final String CACHE_XML_FILE = "cache-xml-file";
+  private static final String CACHE_XML_FILE = DistributionConfig.CACHE_XML_FILE_NAME;
 
   private static final String DEFAULT_REGION_TYPE = RegionShortcut.REPLICATE_HEAP_LRU.name();
 
@@ -131,7 +126,7 @@ public class RegionFactoryDelegate  {
       return rType.toUpperCase();
     }
     rType = regionProperties
-        .getProperty("gemfire.default-region-attributes-id");
+        .getProperty(DistributionConfig.GEMFIRE_PREFIX + "default-region-attributes-id");
     if (rType == null) {
       rType =  DEFAULT_REGION_TYPE;
     }

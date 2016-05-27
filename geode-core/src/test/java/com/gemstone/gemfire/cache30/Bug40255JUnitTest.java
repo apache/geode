@@ -16,17 +16,6 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -34,6 +23,19 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
@@ -69,8 +71,8 @@ public class Bug40255JUnitTest {
   @Test
   public void testResolveReplacePropertyStringForLonerCache(){
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     System.setProperty("gemfirePropertyFile", BUG_40255_PROPS);
     props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, BUG_40255_XML);
     System.setProperty(NESTED_ATTR_PROPERTY_STRING, NESTED_ATTR_PROPERTY_VALUE);
@@ -99,8 +101,8 @@ public class Bug40255JUnitTest {
   @Test
   public void testResolveReplacePropertyStringForNonLonerCache(){
     Properties props = new Properties();
-    props.setProperty("mcast-port", "10333");
-    props.setProperty("locators", "");
+    props.setProperty(MCAST_PORT, "10333");
+    props.setProperty(LOCATORS, "");
     System.setProperty("gemfirePropertyFile", BUG_40255_PROPS);
     props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, BUG_40255_XML);
     System.setProperty(NESTED_ATTR_PROPERTY_STRING, NESTED_ATTR_PROPERTY_VALUE);

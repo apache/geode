@@ -16,23 +16,25 @@
  */
 package com.gemstone.gemfire.management.internal.cli;
 
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
-import static com.gemstone.gemfire.internal.AvailablePort.*;
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.util.Properties;
-
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import java.io.IOException;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.internal.AvailablePort.SOCKET;
+import static com.gemstone.gemfire.internal.AvailablePort.getRandomAvailablePort;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * TODO : Add more tests for error-catch, different type of results etc
@@ -52,12 +54,12 @@ public class HeadlessGfshIntegrationTest {
     int port = getRandomAvailablePort(SOCKET);
 
     Properties properties = new Properties();
-    properties.put(NAME_NAME, this.testName.getMethodName());
-    properties.put(JMX_MANAGER_NAME, "true");
-    properties.put(JMX_MANAGER_START_NAME, "true");
-    properties.put(JMX_MANAGER_PORT_NAME, String.valueOf(port));
-    properties.put(HTTP_SERVICE_PORT_NAME, "0");
-    properties.put(MCAST_PORT_NAME, "0");
+    properties.put(SystemConfigurationProperties.NAME, this.testName.getMethodName());
+    properties.put(JMX_MANAGER, "true");
+    properties.put(JMX_MANAGER_START, "true");
+    properties.put(JMX_MANAGER_PORT, String.valueOf(port));
+    properties.put(HTTP_SERVICE_PORT, "0");
+    properties.put(MCAST_PORT, "0");
 
     DistributedSystem ds = DistributedSystem.connect(properties);
     GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.create(ds);

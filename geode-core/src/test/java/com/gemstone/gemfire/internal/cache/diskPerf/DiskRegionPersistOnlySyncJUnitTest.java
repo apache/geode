@@ -16,24 +16,24 @@
  */
 package com.gemstone.gemfire.internal.cache.diskPerf;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.Arrays;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.DiskRegionHelperFactory;
 import com.gemstone.gemfire.internal.cache.DiskRegionProperties;
 import com.gemstone.gemfire.internal.cache.DiskRegionTestingBase;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Arrays;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Disk region perf test for Persist only with sync writes.
@@ -87,8 +87,8 @@ public class DiskRegionPersistOnlySyncJUnitTest extends DiskRegionTestingBase
     Arrays.fill(value, (byte)77);
     String config = "ENTRY_SIZE=" + ENTRY_SIZE + " OP_COUNT=" + OP_COUNT
         + " UNIQUE_KEYS=" + UNIQUE_KEYS + " opLogEnabled="
-        + !Boolean.getBoolean("gemfire.disableOpLog") + " syncWrites="
-        + Boolean.getBoolean("gemfire.syncWrites");
+        + !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableOpLog") + " syncWrites="
+        + Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "syncWrites");
     if (ra.getDiskStoreName() != null) {
       config += " diskStoreName="+ra.getDiskStoreName();
     } else {
@@ -190,8 +190,8 @@ public class DiskRegionPersistOnlySyncJUnitTest extends DiskRegionTestingBase
     Arrays.fill(value, (byte)77);
     String config = "ENTRY_SIZE=" + ENTRY_SIZE + " OP_COUNT=" + OP_COUNT
         + " UNIQUE_KEYS=" + UNIQUE_KEYS + " opLogEnabled="
-        + !Boolean.getBoolean("gemfire.disableOpLog") + " syncWrites="
-        + Boolean.getBoolean("gemfire.syncWrites");
+        + !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableOpLog") + " syncWrites="
+        + Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "syncWrites");
     if (ra.getDiskStoreName() != null) {
       config += " diskStoreName="+ra.getDiskStoreName();
     } else {

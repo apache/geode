@@ -16,26 +16,12 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.wancommand;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.management.remote.JMXConnectorServer;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
-import com.gemstone.gemfire.cache.wan.GatewayReceiver;
-import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
+import com.gemstone.gemfire.cache.wan.*;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
-import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
-import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -44,11 +30,7 @@ import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.*;
 
 import javax.management.remote.JMXConnectorServer;
 import java.io.File;
@@ -58,6 +40,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
 import static com.gemstone.gemfire.test.dunit.Assert.fail;
 
@@ -95,10 +78,10 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
   public Integer createFirstLocatorWithDSId(int dsId) {
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
+    props.setProperty(MCAST_PORT, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
-    props.setProperty(DistributionConfig.START_LOCATOR_NAME, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
+    props.setProperty(LOCATORS, "localhost[" + port + "]");
+    props.setProperty(START_LOCATOR, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
     InternalDistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
     return port;
@@ -107,10 +90,10 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
   public Integer createFirstRemoteLocator(int dsId, int remoteLocPort) {
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME,"0");
+    props.setProperty(MCAST_PORT, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
-    props.setProperty(DistributionConfig.START_LOCATOR_NAME, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
+    props.setProperty(LOCATORS, "localhost[" + port + "]");
+    props.setProperty(START_LOCATOR, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
     props.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + remoteLocPort + "]");
     getSystem(props);
     return port;
@@ -118,16 +101,16 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
 
   public void createCache(Integer locPort){
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locPort + "]");
     InternalDistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
   }
 
   public void createCacheWithGroups(Integer locPort, String groups){
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort + "]");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locPort + "]");
     props.setProperty(DistributionConfig.GROUPS_NAME, groups);
     InternalDistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
@@ -218,8 +201,8 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
 
   public int createAndStartReceiver(int locPort) {
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locPort
         + "]");
 
     InternalDistributedSystem ds = getSystem(props);
@@ -241,8 +224,8 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
 
   public int createReceiver(int locPort) {
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locPort
         + "]");
 
     InternalDistributedSystem ds = getSystem(props);
@@ -258,8 +241,8 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
 
   public int createReceiverWithGroup(int locPort, String groups) {
     Properties props =  getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locPort
         + "]");
     props.setProperty(DistributionConfig.GROUPS_NAME, groups);
 
@@ -295,8 +278,8 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
 
   public int createAndStartReceiverWithGroup(int locPort, String groups) {
     Properties props = getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locPort
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locPort
         + "]");
     props.setProperty(DistributionConfig.GROUPS_NAME, groups);
 

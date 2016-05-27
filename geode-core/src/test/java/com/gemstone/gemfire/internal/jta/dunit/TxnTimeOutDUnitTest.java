@@ -16,33 +16,21 @@
  */
 package com.gemstone.gemfire.internal.jta.dunit;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.sql.SQLException;
-import java.util.Properties;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.OSProcess;
+import com.gemstone.gemfire.internal.jta.CacheUtils;
+import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.util.test.TestUtil;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.transaction.UserTransaction;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.jta.CacheUtils;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.util.test.TestUtil;
+import java.io.*;
+import java.sql.SQLException;
+import java.util.Properties;
 
 /**
 *This test sees if the TransactionTimeOut works properly
@@ -69,9 +57,9 @@ public class TxnTimeOutDUnitTest extends DistributedTestCase {
     wr.write(modified_file_str);
     wr.flush();
     wr.close();
-    props.setProperty("cache-xml-file", path);
-//    props.setProperty("mcast-port", "10321");
-    props.setProperty("log-level", LogWriterUtils.getDUnitLogLevel());
+    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
+    //    props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "10321");
+    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
     try {
 //      ds = DistributedSystem.connect(props);
       ds = (new TxnTimeOutDUnitTest("temp")).getSystem(props);

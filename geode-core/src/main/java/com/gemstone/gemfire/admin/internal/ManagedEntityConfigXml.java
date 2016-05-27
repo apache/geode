@@ -16,11 +16,12 @@
  */
 package com.gemstone.gemfire.admin.internal;
 
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-
 import org.xml.sax.*;
-import java.io.*;
+
+import java.io.InputStream;
 
 /**
  * The abstract superclass of classes that convert XML into a {@link
@@ -57,7 +58,7 @@ abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
   public static final String REMOTE_COMMAND = "remote-command";
 
   /** The name of the <code>locators</code> element. */
-  public static final String LOCATORS = "locators";
+  public static final String LOCATORS = SystemConfigurationProperties.LOCATORS;
 
   /** The name of the <code>ssl</code> element. */
   public static final String SSL = "ssl";

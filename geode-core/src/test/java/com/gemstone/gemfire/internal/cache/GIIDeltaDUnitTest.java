@@ -21,60 +21,33 @@ package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache30.CacheTestCase;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
 import com.gemstone.gemfire.internal.cache.DestroyOperation.DestroyMessage;
-import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
-import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.DistributedTombstoneOperation.TombstoneMessage;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.InitialImageOperation;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation.GIITestHook;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation.GIITestHookType;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation.RequestImageMessage;
-import com.gemstone.gemfire.internal.cache.InitialImageOperation.RequestRVVMessage;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.LocalRegion.NonTXEntry;
-import com.gemstone.gemfire.internal.cache.TombstoneService;
 import com.gemstone.gemfire.internal.cache.UpdateOperation.UpdateMessage;
 import com.gemstone.gemfire.internal.cache.persistence.DiskStoreID;
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.junit.experimental.categories.Category;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import org.junit.experimental.categories.Category;
 
 public class GIIDeltaDUnitTest extends CacheTestCase {
 
@@ -2027,7 +2000,7 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
       public void run() {
         try {
-          String value = System.getProperty("gemfire.no-flush-on-close");
+          String value = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close");
           assertNull(value);
           RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
 //          CCRegion = (LocalRegion)f.create(REGION_NAME);
@@ -2047,10 +2020,10 @@ public class GIIDeltaDUnitTest extends CacheTestCase {
       public void run() {
         try {
           Cache cache = getCache();
-          System.setProperty("gemfire.no-flush-on-close", "true");
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close", "true");
           cache.close();
         } finally {
-          System.getProperties().remove("gemfire.no-flush-on-close");
+          System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close");
         }
       }
     };

@@ -18,15 +18,26 @@
    
 package com.gemstone.gemfire.internal.admin.remote;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.cache.*;
-//import com.gemstone.gemfire.internal.*;
-import com.gemstone.gemfire.internal.admin.*;
+import com.gemstone.gemfire.CancelException;
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.internal.admin.GemFireVM;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.distributed.internal.*;
-import java.io.*;
-import java.util.*;
-import com.gemstone.gemfire.distributed.internal.membership.*;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+//import com.gemstone.gemfire.internal.*;
 
 /**
  * Responds to {@link RootRegionResponse}.
@@ -47,7 +58,7 @@ public final class RootRegionResponse extends AdminResponse {
     try {
       Cache cache = CacheFactory.getInstance(dm.getSystem());
       final Collection roots;
-      if (! Boolean.getBoolean("gemfire.PRDebug")) {
+      if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
         roots = cache.rootRegions();
       } else {
         roots = ((GemFireCacheImpl)cache).rootRegions(true);

@@ -27,6 +27,9 @@ import org.junit.rules.TestName;
 import java.io.File;
 import java.util.Properties;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+
 /**
  * Test for transactional operations on overflowed data
  */
@@ -67,8 +70,8 @@ public class TransactionsWithOverflowTest {
   private Cache getCache() {
     if (cache == null) {
       Properties props = new Properties();
-      props.setProperty("locators", "");
-      props.setProperty("mcast-port","0");
+      props.setProperty(LOCATORS, "");
+      props.setProperty(MCAST_PORT, "0");
       cache = new CacheFactory(props).create();
     }
     return cache;

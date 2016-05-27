@@ -16,30 +16,22 @@
  */
 package com.gemstone.gemfire.internal.cache.lru;
 
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.StatisticDescriptor;
-import com.gemstone.gemfire.StatisticsFactory;
-import com.gemstone.gemfire.StatisticsType;
-import com.gemstone.gemfire.StatisticsTypeFactory;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheExistsException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAlgorithm;
-import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.*;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
 import com.gemstone.gemfire.internal.cache.PlaceHolderDiskRegion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**  This class tests the LRUCapacityController's core clock algorithm.  */
 @Category(IntegrationTest.class)
@@ -51,10 +43,10 @@ public class LRUClockJUnitTest extends junit.framework.TestCase {
 
   static Properties sysProps = new Properties();
   static {
-    //sysProps.setProperty("mcast-port", String.valueOf(unusedPort));
+    //sysProps.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, String.valueOf(unusedPort));
     // a loner is all this test needs
-    sysProps.setProperty("mcast-port", "0");
-    sysProps.setProperty("locators", "");
+    sysProps.setProperty(MCAST_PORT, "0");
+    sysProps.setProperty(LOCATORS, "");
   }
 
   public LRUClockJUnitTest( String name ) {

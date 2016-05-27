@@ -16,26 +16,23 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import java.util.Iterator;
-import java.util.Properties;
-
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.client.PoolFactory;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.cache.client.*;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.util.Iterator;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 public class Bug36995DUnitTest extends DistributedTestCase
 {
@@ -78,8 +75,8 @@ public class Bug36995DUnitTest extends DistributedTestCase
   {
     try {
       Properties props = new Properties();
-      props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, "");
       new Bug36995DUnitTest("temp").createCache(props);
       PoolImpl p = (PoolImpl)PoolManager.createFactory()
         .addServer(host, port1)
@@ -107,8 +104,8 @@ public class Bug36995DUnitTest extends DistributedTestCase
   {
     try {
       Properties props = new Properties();
-      props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, "");
       new Bug36995DUnitTest("temp").createCache(props);
       PoolImpl p = (PoolImpl)PoolManager.createFactory()
         .addServer(host, port1)

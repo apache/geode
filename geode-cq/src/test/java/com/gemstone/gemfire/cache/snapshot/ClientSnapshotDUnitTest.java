@@ -16,17 +16,9 @@
  */
 package com.gemstone.gemfire.cache.snapshot;
 
-import java.io.File;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.examples.snapshot.MyObject;
 import com.examples.snapshot.MyPdxSerializer;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
@@ -39,11 +31,15 @@ import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache.util.CqListenerAdapter;
 import com.gemstone.gemfire.cache30.CacheTestCase;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
+
+import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ClientSnapshotDUnitTest extends CacheTestCase {
 
@@ -255,7 +251,7 @@ public class ClientSnapshotDUnitTest extends CacheTestCase {
       @Override
       public Object call() throws Exception {
         ClientCacheFactory cf = new ClientCacheFactory()
-          .set("log-level", LogWriterUtils.getDUnitLogLevel())
+            .set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel())
           .setPdxSerializer(new MyPdxSerializer())
           .addPoolServer(NetworkUtils.getServerHostName(host), port)
           .setPoolSubscriptionEnabled(true)

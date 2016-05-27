@@ -16,22 +16,18 @@
  */
 package com.gemstone.gemfire.internal.compression;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.Properties;
-
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.compression.SnappyCompressor;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Properties;
 
 /**
  * Tests configured and badly configured cache.xml files with regards to compression.
@@ -127,7 +123,7 @@ public class CompressionCacheConfigDUnitTest extends CacheTestCase {
         try {
           disconnectFromDS();
           Properties props = new Properties();
-          props.setProperty("cache-xml-file",cacheXml);
+          props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, cacheXml);
           LogWriterUtils.getLogWriter().info("<ExpectedException action=add>ClassNotFoundException</ExpectedException>");
           getSystem(props);
           assertNotNull(getCache());

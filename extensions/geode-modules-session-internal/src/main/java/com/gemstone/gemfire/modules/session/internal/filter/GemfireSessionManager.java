@@ -21,6 +21,7 @@ import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.control.ResourceManager;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.modules.session.bootstrap.AbstractCache;
 import com.gemstone.gemfire.modules.session.bootstrap.ClientServerCache;
@@ -61,12 +62,12 @@ public class GemfireSessionManager implements SessionManager {
   /**
    * Prefix of init param string used to set gemfire properties
    */
-  private static final String GEMFIRE_PROPERTY = "gemfire.property.";
+  private static final String GEMFIRE_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "property.";
 
   /**
    * Prefix of init param string used to set gemfire distributedCache setting
    */
-  private static final String GEMFIRE_CACHE = "gemfire.cache.";
+  private static final String GEMFIRE_CACHE = DistributionConfig.GEMFIRE_PREFIX + "cache.";
 
   private static final String INIT_PARAM_CACHE_TYPE = "cache-type";
   private static final String CACHE_TYPE_CLIENT_SERVER = "client-server";

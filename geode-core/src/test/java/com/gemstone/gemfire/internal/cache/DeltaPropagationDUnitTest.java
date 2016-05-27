@@ -19,27 +19,10 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.File;
-import java.util.Properties;
-
 import com.gemstone.gemfire.DeltaTestImpl;
 import com.gemstone.gemfire.InvalidDeltaException;
 import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
@@ -59,12 +42,13 @@ import com.gemstone.gemfire.internal.cache.lru.EnableLRU;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.io.File;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * @since GemFire 6.1
@@ -663,8 +647,8 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
       ((PoolFactoryImpl)pf).getPoolAttributes();
   
       Properties properties = new Properties();
-      properties.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      properties.setProperty(DistributionConfig.LOCATORS_NAME, "");
+      properties.setProperty(MCAST_PORT, "0");
+      properties.setProperty(LOCATORS, "");
       properties.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME, durableClientId);
       properties.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, String.valueOf(60));
   
@@ -736,8 +720,8 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
       ((PoolFactoryImpl)pf).getPoolAttributes();
   
       Properties properties = new Properties();
-      properties.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-      properties.setProperty(DistributionConfig.LOCATORS_NAME, "");
+      properties.setProperty(MCAST_PORT, "0");
+      properties.setProperty(LOCATORS, "");
       properties.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME, durableClientId);
       properties.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, String.valueOf(60));
   
@@ -1328,8 +1312,8 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
     CacheServerTestUtil.disableShufflingOfEndpoints();
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     props.setProperty(DistributionConfig.CLIENT_CONFLATION_PROP_NAME, conflate);
     new DeltaPropagationDUnitTest("temp").createCache(props);
     AttributesFactory factory = new AttributesFactory();

@@ -16,15 +16,14 @@
  */
 package com.gemstone.gemfire.admin;
 
-import com.gemstone.gemfire.admin.internal.DistributedSystemConfigImpl;
 import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
+import com.gemstone.gemfire.admin.internal.DistributedSystemConfigImpl;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 
 import java.util.Properties;

@@ -20,9 +20,6 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import java.util.List;
-import java.util.Properties;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Declarable;
 import com.gemstone.gemfire.cache.Region;
@@ -38,6 +35,9 @@ import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.ResourceManagerCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
+
+import java.util.List;
+import java.util.Properties;
 
 
 public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
@@ -58,7 +58,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
   @SuppressWarnings("rawtypes")
   public void testEnableOffHeapMemory() {
     try {
-      System.setProperty("gemfire."+DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
       
       final String regionName = "testEnableOffHeapMemory";
       
@@ -82,7 +82,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
       assertEquals(true, ((LocalRegion)regionAfter).getOffHeap());
       regionAfter.localDestroyRegion();
     } finally {
-      System.clearProperty("gemfire."+DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME);
+      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME);
     }
   }
 
@@ -158,7 +158,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     final float high = 95.0f;
 
     try {
-      System.setProperty("gemfire."+DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
 
       Cache c;
       ResourceManagerCreation rmc = new ResourceManagerCreation();
@@ -236,7 +236,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
       assertEquals(0f, c.getResourceManager().getEvictionOffHeapPercentage());
       assertEquals(0f, c.getResourceManager().getCriticalOffHeapPercentage());
     } finally {
-      System.clearProperty("gemfire."+DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME);
+      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME);
     }
   }
 

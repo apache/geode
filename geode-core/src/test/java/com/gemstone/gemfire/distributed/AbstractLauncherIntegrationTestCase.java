@@ -16,26 +16,6 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static org.junit.Assert.*;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.rules.TestName;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.FileUtil;
@@ -46,6 +26,22 @@ import com.gemstone.gemfire.internal.process.ProcessStreamReader.InputListener;
 import com.gemstone.gemfire.internal.process.ProcessUtils;
 import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.internal.util.StopWatch;
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.rules.TestName;
+
+import java.io.*;
+import java.net.ServerSocket;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @since GemFire 8.0
@@ -80,7 +76,7 @@ public abstract class AbstractLauncherIntegrationTestCase {
   
   @Before
   public final void setUpAbstractLauncherIntegrationTestCase() throws Exception {
-    System.setProperty("gemfire." + DistributionConfig.MCAST_PORT_NAME, Integer.toString(0));
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, Integer.toString(0));
     logger.info(EXPECTED_EXCEPTION_ADD, EXPECTED_EXCEPTION_MBEAN_NOT_REGISTERED);
   }
 

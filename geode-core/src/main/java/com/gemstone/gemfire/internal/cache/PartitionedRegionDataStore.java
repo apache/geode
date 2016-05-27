@@ -16,50 +16,10 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.InternalGemFireException;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.AttributesMutator;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheRuntimeException;
-import com.gemstone.gemfire.cache.CustomExpiry;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryExistsException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.ExpirationAction;
-import com.gemstone.gemfire.cache.ExpirationAttributes;
-import com.gemstone.gemfire.cache.InterestRegistrationEvent;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.ResultSender;
@@ -70,8 +30,10 @@ import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
 import com.gemstone.gemfire.cache.query.internal.index.PartitionedIndex;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.cache.BucketRegion.RawValue;
 import com.gemstone.gemfire.internal.cache.LocalRegion.RegionPerfStats;
@@ -81,13 +43,7 @@ import com.gemstone.gemfire.internal.cache.execute.BucketMovedException;
 import com.gemstone.gemfire.internal.cache.execute.FunctionStats;
 import com.gemstone.gemfire.internal.cache.execute.PartitionedRegionFunctionResultSender;
 import com.gemstone.gemfire.internal.cache.execute.RegionFunctionContextImpl;
-import com.gemstone.gemfire.internal.cache.partitioned.Bucket;
-import com.gemstone.gemfire.internal.cache.partitioned.PRLocallyDestroyedException;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionFunctionStreamingMessage;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserver;
-import com.gemstone.gemfire.internal.cache.partitioned.PartitionedRegionObserverHolder;
-import com.gemstone.gemfire.internal.cache.partitioned.RedundancyAlreadyMetException;
-import com.gemstone.gemfire.internal.cache.partitioned.RemoveBucketMessage;
+import com.gemstone.gemfire.internal.cache.partitioned.*;
 import com.gemstone.gemfire.internal.cache.partitioned.RemoveBucketMessage.RemoveBucketResponse;
 import com.gemstone.gemfire.internal.cache.persistence.BackupManager;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -102,7 +58,16 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableReadLock;
 import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableWriteLock;
-import com.gemstone.gemfire.i18n.StringId;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Implementation of DataStore (DS) for a PartitionedRegion (PR). This will be
@@ -177,7 +142,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
    * Update an entry's last access time if a client is interested in the entry.
    */
   private static final boolean UPDATE_ACCESS_TIME_ON_INTEREST = Boolean
-      .getBoolean("gemfire.updateAccessTimeOnClientInterest");
+      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "updateAccessTimeOnClientInterest");
 
   
   //Only for testing
@@ -745,8 +710,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
       factory.setCacheLoader(this.loader);
     }
     factory.setEnableAsyncConflation(true);
-    
-    if (Boolean.getBoolean("gemfire.PRDebug")) {
+
+    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
       factory.addCacheListener(createDebugBucketListener());
     }
     
@@ -806,7 +771,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
     LocalRegion rootRegion = PartitionedRegionHelper.getPRRoot(this.partitionedRegion.getCache());
     BucketRegion bucketRegion = null;
 
-    if (Boolean.getBoolean("gemfire.PRDebug")) {
+    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
       logger.info(LocalizedMessage.create(
           LocalizedStrings.PartitionedRegionDataStore_CREATEBUCKETREGION_CREATING_BUCKETID_0_NAME_1,
           new Object[] {this.partitionedRegion.bucketStringForLogs(bucketId), bucketRegionName}));
@@ -853,7 +818,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
     // Determine the size of the bucket (the Region in this case is mirrored,
     // get initial image has populated the bucket, compute the size of the
     // region)
-    if (Boolean.getBoolean("gemfire.PRDebug")) {
+    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
       dumpBuckets(); 
       dumpBucket(bucketId, bucketRegion);
     }

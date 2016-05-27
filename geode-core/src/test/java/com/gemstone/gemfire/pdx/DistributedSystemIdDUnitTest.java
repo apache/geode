@@ -16,20 +16,15 @@
  */
 package com.gemstone.gemfire.pdx;
 
-import java.util.Properties;
-
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import com.gemstone.gemfire.test.dunit.*;
+
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class DistributedSystemIdDUnitTest extends DistributedTestCase {
   
@@ -113,7 +108,7 @@ public class DistributedSystemIdDUnitTest extends DistributedTestCase {
       public Object call() throws Exception {
         Properties props = new Properties();
         props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, dsId);
-        props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locatorPort + "]");
+        props.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
         getSystem(props);
         return null;
       }
@@ -127,9 +122,9 @@ public class DistributedSystemIdDUnitTest extends DistributedTestCase {
         int port = AvailablePortHelper.getRandomAvailableTCPPort();
         Properties props = new Properties();
         props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, dsId);
-        props.setProperty("mcast-port", "0");
-        props.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + port + "]");
-        props.setProperty(DistributionConfig.START_LOCATOR_NAME, "localhost[" + port + "]");
+        props.setProperty(MCAST_PORT, "0");
+        props.setProperty(LOCATORS, "localhost[" + port + "]");
+        props.setProperty(START_LOCATOR, "localhost[" + port + "]");
         getSystem(props);
 //        Locator locator = Locator.startLocatorAndDS(port, File.createTempFile("locator", ""), props);
 //        system = (InternalDistributedSystem) locator.getDistributedSystem();

@@ -16,29 +16,25 @@
  */
 package com.gemstone.gemfire.pdx;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
 import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
 import com.gemstone.gemfire.pdx.internal.PdxString;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-import junit.framework.TestCase;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @Category(IntegrationTest.class)
 public class PdxStringJUnitTest {
@@ -48,7 +44,7 @@ public class PdxStringJUnitTest {
   public void setUp() {
     // make it a loner
     this.c = (GemFireCacheImpl) new CacheFactory()
-        .set("mcast-port", "0")
+        .set(MCAST_PORT, "0")
         .setPdxReadSerialized(true)
         .create();
   }

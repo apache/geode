@@ -16,22 +16,19 @@
  */
 package com.gemstone.gemfire.management.internal.cli.help.utils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.management.cli.CliMetaData;
+import com.gemstone.gemfire.management.internal.cli.help.format.*;
 import com.gemstone.gemfire.management.internal.cli.modes.CommandModes;
 import com.gemstone.gemfire.management.internal.cli.modes.CommandModes.CommandMode;
-import com.gemstone.gemfire.management.internal.cli.help.format.Block;
-import com.gemstone.gemfire.management.internal.cli.help.format.DataNode;
-import com.gemstone.gemfire.management.internal.cli.help.format.Help;
-import com.gemstone.gemfire.management.internal.cli.help.format.NewHelp;
-import com.gemstone.gemfire.management.internal.cli.help.format.Row;
 import com.gemstone.gemfire.management.internal.cli.parser.Argument;
 import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
 import com.gemstone.gemfire.management.internal.cli.parser.Option;
 import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @since GemFire 7.0
@@ -77,7 +74,7 @@ public class HelpUtils {
   public static Help getHelp(CommandTarget commandTarget) {
     List<Block> blocks = new ArrayList<Block>();
     // First we will have the block for NAME of the command
-    blocks.add(block(NAME_NAME, row(commandTarget.getCommandName())));
+    blocks.add(block(SystemConfigurationProperties.NAME, row(commandTarget.getCommandName())));
     // Now add synonyms if any
     if (commandTarget.getSynonyms() != null) {
       blocks.add(block(SYNONYMS_NAME, row(commandTarget.getSynonyms())));
@@ -189,7 +186,7 @@ public class HelpUtils {
   public static NewHelp getNewHelp(CommandTarget commandTarget, boolean withinShell) {
     DataNode root = new DataNode(null, new ArrayList<DataNode>());
     // First we will have the block for NAME of the command
-    DataNode name = new DataNode(NAME_NAME, new ArrayList<DataNode>());
+    DataNode name = new DataNode(SystemConfigurationProperties.NAME, new ArrayList<DataNode>());
     name.addChild(new DataNode(commandTarget.getCommandName(), null));
     root.addChild(name);
     if (withinShell) {// include availabilty info

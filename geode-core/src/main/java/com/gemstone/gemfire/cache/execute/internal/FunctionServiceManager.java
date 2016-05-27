@@ -16,19 +16,6 @@
  */
 package com.gemstone.gemfire.cache.execute.internal;
 
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionService;
 import com.gemstone.gemfire.cache.client.ClientCache;
@@ -44,17 +31,15 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.InternalEntity;
-import com.gemstone.gemfire.internal.cache.AbstractRegion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.execute.DistributedRegionFunctionExecutor;
-import com.gemstone.gemfire.internal.cache.execute.MemberFunctionExecutor;
-import com.gemstone.gemfire.internal.cache.execute.PartitionedRegionFunctionExecutor;
-import com.gemstone.gemfire.internal.cache.execute.ServerFunctionExecutor;
-import com.gemstone.gemfire.internal.cache.execute.ServerRegionFunctionExecutor;
+import com.gemstone.gemfire.internal.cache.execute.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Provides the entry point into execution of user defined {@linkplain Function}s.
@@ -74,7 +59,7 @@ public final class FunctionServiceManager {
   /**
    * use when the optimization to execute onMember locally is not desired.
    */
-  public static final boolean RANDOM_onMember = Boolean.getBoolean("gemfire.randomizeOnMember");
+  public static final boolean RANDOM_onMember = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "randomizeOnMember");
 
   public FunctionServiceManager() {
   }

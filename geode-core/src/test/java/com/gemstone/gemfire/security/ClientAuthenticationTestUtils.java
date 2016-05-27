@@ -16,13 +16,13 @@
  */
 package com.gemstone.gemfire.security;
 
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
-import static com.gemstone.gemfire.security.SecurityTestUtils.*;
-import static org.junit.Assert.*;
+import com.gemstone.gemfire.cache.Region;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.Region;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
+import static com.gemstone.gemfire.security.SecurityTestUtils.*;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Extracted from ClientAuthenticationDUnitTest
@@ -41,7 +41,7 @@ public abstract class ClientAuthenticationTestUtils {
     }
 
     if (authenticator != null) {
-      authProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR_NAME, authenticator);
+      authProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR, authenticator);
     }
 
     return SecurityTestUtils.createCacheServer(authProps, javaProps, locatorPort, locatorString, 0, NO_EXCEPTION);
@@ -56,7 +56,7 @@ public abstract class ClientAuthenticationTestUtils {
     }
 
     if (authenticator != null) {
-      authProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR_NAME, authenticator);
+      authProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR, authenticator);
     }
     SecurityTestUtils.createCacheServer(authProps, javaProps, locatorPort, locatorString, serverPort, NO_EXCEPTION);
   }

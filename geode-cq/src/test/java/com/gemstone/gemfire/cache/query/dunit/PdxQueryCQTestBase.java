@@ -16,29 +16,11 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
-import java.io.IOException;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
 import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.Struct;
+import com.gemstone.gemfire.cache.query.*;
 import com.gemstone.gemfire.cache.query.data.PortfolioPdx;
 import com.gemstone.gemfire.cache.query.data.PositionPdx;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -55,6 +37,12 @@ import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+
+import java.io.IOException;
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 public abstract class PdxQueryCQTestBase extends CacheTestCase {
 
@@ -123,8 +111,8 @@ public abstract class PdxQueryCQTestBase extends CacheTestCase {
           public void run2() throws CacheException {
             // Create Cache.
             Properties props = new Properties();
-            props.setProperty("mcast-port", "0");
-            props.setProperty("locators", "");
+            props.setProperty(MCAST_PORT, "0");
+            props.setProperty(LOCATORS, "");
             getSystem(props );
             getCache();        
             PoolFactory cpf = PoolManager.createFactory();

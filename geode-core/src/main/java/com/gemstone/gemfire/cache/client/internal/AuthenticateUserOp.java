@@ -19,10 +19,6 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.util.Properties;
-
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
@@ -44,6 +40,10 @@ import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
 import com.gemstone.gemfire.security.NotAuthorizedException;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.util.Properties;
 
 /**
  * Authenticates this client (or a user) on a server. This op ideally should get

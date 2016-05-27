@@ -19,17 +19,6 @@
 
 package com.gemstone.gemfire.cache.lucene.internal.xml;
 
-import static org.junit.Assert.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-import java.nio.charset.Charset;
-
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
@@ -38,6 +27,17 @@ import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
+import java.nio.charset.Charset;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
 public class LuceneIndexXmlGeneratorIntegrationJUnitTest {
@@ -54,7 +54,7 @@ public class LuceneIndexXmlGeneratorIntegrationJUnitTest {
    */
   @Test
   public void generateWithFields() {
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     LuceneService service = LuceneServiceProvider.get(cache);
     service.createIndex("index", "region", "a", "b", "c");
     cache.createRegionFactory(RegionShortcut.PARTITION).create("region");
@@ -66,7 +66,7 @@ public class LuceneIndexXmlGeneratorIntegrationJUnitTest {
     pw.flush();
     
     cache.close();
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     
     byte[] bytes = baos.toByteArray();
     ByteArrayInputStream in = new ByteArrayInputStream(bytes);

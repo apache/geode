@@ -16,13 +16,13 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.process.ProcessStreamReader;
 import org.junit.After;
 import org.junit.Before;
 
-import com.gemstone.gemfire.internal.process.ProcessStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AbstractLocatorLauncherRemoteIntegrationTestCase extends AbstractLocatorLauncherIntegrationTestCase {
 
@@ -53,7 +53,7 @@ public abstract class AbstractLocatorLauncherRemoteIntegrationTestCase extends A
    */
   protected List<String> getJvmArguments() {
     final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-Dgemfire.log-level=config");
+    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "log-level=config");
     return jvmArguments;
   }
 

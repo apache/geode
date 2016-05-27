@@ -18,24 +18,7 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
@@ -46,12 +29,22 @@ import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @Category(IntegrationTest.class)
 public class LuceneIndexRecoveryHAIntegrationTest {
-
-  private static final String INDEX = "index";
-  private static final String REGION = "indexedRegion";
   String[] indexedFields = new String[] { "txt" };
   HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(indexedFields);
   Analyzer analyzer = new StandardAnalyzer();
@@ -67,7 +60,7 @@ public class LuceneIndexRecoveryHAIntegrationTest {
     analyzer = new StandardAnalyzer();
     LuceneServiceImpl.registerDataSerializables();
 
-    cache = new CacheFactory().set("mcast-port", "0").create();
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
     indexStats = new LuceneIndexStats(cache.getDistributedSystem(), "INDEX-REGION");
     fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), "INDEX-REGION");
   }

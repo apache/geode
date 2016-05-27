@@ -16,17 +16,6 @@
  */
 package com.gemstone.gemfire.distributed.internal.tcpserver;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.Properties;
-import java.util.Vector;
-
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-
-import junit.framework.Assert;
-
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.Locator;
@@ -35,8 +24,6 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
-import com.gemstone.gemfire.distributed.internal.tcpserver.TcpServer;
-import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
@@ -44,9 +31,15 @@ import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
-import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * This tests the rolling upgrade for locators with
@@ -115,8 +108,8 @@ public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
                             host.getHostName() + "[" + port1 + "]";
     
     final Properties props = new Properties();
-    props.setProperty(DistributionConfig.LOCATORS_NAME, locators);
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.setProperty(LOCATORS, locators);
+    props.setProperty(MCAST_PORT, "0");
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "finest");
     

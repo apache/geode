@@ -16,87 +16,17 @@
  */
 package com.gemstone.gemfire.internal;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.NotSerializableException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamClass;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.io.UTFDataFormatException;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Proxy;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.logging.log4j.Logger;
-
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.CanonicalInstantiator;
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.GemFireRethrowable;
-import com.gemstone.gemfire.Instantiator;
-import com.gemstone.gemfire.InternalGemFireError;
-import com.gemstone.gemfire.SerializationException;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.ToDataException;
+import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.execute.Function;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.distributed.internal.LonerDistributionManager;
-import com.gemstone.gemfire.distributed.internal.PooledDistributionMessage;
-import com.gemstone.gemfire.distributed.internal.SerialDistributionMessage;
+import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerHelper;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientDataSerializerMessage;
-import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
+import com.gemstone.gemfire.internal.cache.tier.sockets.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
@@ -106,17 +36,25 @@ import com.gemstone.gemfire.pdx.NonPortableClassException;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxSerializer;
-import com.gemstone.gemfire.pdx.internal.AutoSerializableManager;
+import com.gemstone.gemfire.pdx.internal.*;
 import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.AutoClassInfo;
-import com.gemstone.gemfire.pdx.internal.EnumInfo;
-import com.gemstone.gemfire.pdx.internal.PdxInputStream;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceEnum;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
-import com.gemstone.gemfire.pdx.internal.PdxOutputStream;
-import com.gemstone.gemfire.pdx.internal.PdxReaderImpl;
-import com.gemstone.gemfire.pdx.internal.PdxType;
-import com.gemstone.gemfire.pdx.internal.PdxWriterImpl;
-import com.gemstone.gemfire.pdx.internal.TypeRegistry;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.sql.Timestamp;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Contains static methods for data serializing instances of internal
@@ -140,9 +78,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   public static ConcurrentHashMap<String, DataSerializer> getClassesToSerializers() {
     return classesToSerializers;
   }
-  
-  
-  private static final String serializationVersionTxt = System.getProperty("gemfire.serializationVersion");
+
+  private static final String serializationVersionTxt = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "serializationVersion");
   /**
    * Any time new serialization format is added then a new enum needs to be added here.
    * @since GemFire 6.6.2
@@ -3346,7 +3283,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
      * Note that some tests set this to a small amount to speed up failures.
      * Made public for unit test access.
      */
-    public static int WAIT_MS = Integer.getInteger("gemfire.InternalDataSerializer.WAIT_MS", 60 * 1000);
+    public static int WAIT_MS = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "InternalDataSerializer.WAIT_MS", 60 * 1000);
 
     /**
      * Returns the serializer associated with this marker.  If the
@@ -4011,8 +3948,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     }
     return out.size();
   }
-  
-  public static final boolean LOAD_CLASS_EACH_TIME = Boolean.getBoolean("gemfire.loadClassOnEveryDeserialization");
+
+  public static final boolean LOAD_CLASS_EACH_TIME = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "loadClassOnEveryDeserialization");
   private static final CopyOnWriteHashMap<String, WeakReference<Class<?>>> classCache = LOAD_CLASS_EACH_TIME ? null : new CopyOnWriteHashMap<String, WeakReference<Class<?>>>();
   private static final Object cacheAccessLock = new Object();
   

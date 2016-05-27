@@ -16,13 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
@@ -32,9 +26,17 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.test.dunit.Assert.assertFalse;
+import static com.gemstone.gemfire.test.dunit.Assert.assertTrue;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 
 /***
  * DUnit test for 'show stack-trace' command
@@ -51,11 +53,11 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
 
   private Properties createProperties(Host host, String name, String groups) {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    props.setProperty(MCAST_PORT, "0");
     props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
     props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
     props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
-    props.setProperty(DistributionConfig.NAME_NAME, name);
+    props.setProperty(SystemConfigurationProperties.NAME, name);
     props.setProperty(DistributionConfig.GROUPS_NAME, groups);
     return props;
   }

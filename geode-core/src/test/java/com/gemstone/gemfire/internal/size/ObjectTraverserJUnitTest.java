@@ -16,19 +16,16 @@
  */
 package com.gemstone.gemfire.internal.size;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Set;
-
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import java.util.*;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 @Category(UnitTest.class)
 public class ObjectTraverserJUnitTest {
@@ -100,8 +97,8 @@ public class ObjectTraverserJUnitTest {
     Object object3 = new Object();
     set1.add(set2);
     set2.add(object3);
-    
-    System.setProperty("gemfire.ObjectSizer.SIZE_OF_CLASS", "com.gemstone.gemfire.internal.size.SizeOfUtil0");
+
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "ObjectSizer.SIZE_OF_CLASS", "com.gemstone.gemfire.internal.size.SizeOfUtil0");
     System.out.println(ObjectGraphSizer.histogram(set1, true));
   }
   

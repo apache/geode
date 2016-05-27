@@ -16,40 +16,27 @@
  */
 package com.gemstone.gemfire.internal.jta.dunit;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Properties;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
-
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.jta.CacheUtils;
 import com.gemstone.gemfire.internal.jta.JTAUtils;
-import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.ThreadUtils;
-import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.*;
 import com.gemstone.gemfire.util.test.TestUtil;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import java.io.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
 
 /**
  * This test case is to test the following test scenarios: 1) Behaviour of
@@ -197,9 +184,9 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     wr.write(modified_file_str1);
     wr.flush();
     wr.close();
-    props.setProperty("cache-xml-file", path);
+    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
     String tableName = "";
-    //    props.setProperty("mcast-port", "10339");
+    //    props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "10339");
     try {
       //        ds = DistributedSystem.connect(props);
       ds = (new TxnManagerMultiThreadDUnitTest("temp")).getSystem(props);

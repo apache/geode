@@ -16,22 +16,11 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.cache.partition.PartitionMemberInfo;
 import com.gemstone.gemfire.cache.partition.PartitionRebalanceInfo;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.MembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
@@ -46,17 +35,15 @@ import com.gemstone.gemfire.internal.cache.control.ResourceManagerStats;
 import com.gemstone.gemfire.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
 import com.gemstone.gemfire.internal.cache.partitioned.MoveBucketMessage.MoveBucketResponse;
 import com.gemstone.gemfire.internal.cache.partitioned.RemoveBucketMessage.RemoveBucketResponse;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.BucketOperator;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.BucketOperatorImpl;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.BucketOperatorWrapper;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.ParallelBucketOperator;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel;
+import com.gemstone.gemfire.internal.cache.partitioned.rebalance.*;
 import com.gemstone.gemfire.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.AddressComparor;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.RebalanceDirector;
-import com.gemstone.gemfire.internal.cache.partitioned.rebalance.SimulatedBucketOperator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class performs a rebalance on a single partitioned region. 
@@ -85,9 +72,9 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 @SuppressWarnings("synthetic-access")
 public class PartitionedRegionRebalanceOp {
   private static final Logger logger = LogService.getLogger();
-  
-  private static final int MAX_PARALLEL_OPERATIONS = Integer.getInteger("gemfire.MAX_PARALLEL_BUCKET_RECOVERIES", 8);
-  private final boolean DEBUG = Boolean.getBoolean("gemfire.LOG_REBALANCE");
+
+  private static final int MAX_PARALLEL_OPERATIONS = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_PARALLEL_BUCKET_RECOVERIES", 8);
+  private final boolean DEBUG = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "LOG_REBALANCE");
   
   private final boolean simulate;
   private final boolean replaceOfflineData;

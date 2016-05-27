@@ -24,17 +24,15 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * MigrationClient is used to retrieve all of the data for a region from
@@ -156,9 +154,9 @@ public class MigrationClient {
   private void createDistributedSystem() throws Exception {
     Properties dsProps = new Properties();
     // if no discovery information has been explicitly given, use a loner ds 
-    if (System.getProperty("gemfire." + DistributionConfig.MCAST_PORT_NAME) == null
-        && System.getProperty("gemfire." + DistributionConfig.LOCATORS_NAME) == null) {
-      dsProps.put(DistributionConfig.MCAST_PORT_NAME, "0");
+    if (System.getProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT) == null
+        && System.getProperty(DistributionConfig.GEMFIRE_PREFIX + LOCATORS) == null) {
+      dsProps.put(MCAST_PORT, "0");
     }
     dsProps.put(DistributionConfig.LOG_FILE_NAME, "migrationClient.log");
     if (this.cacheXmlFile != null) {

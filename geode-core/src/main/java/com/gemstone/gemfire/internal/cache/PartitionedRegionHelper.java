@@ -17,35 +17,8 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.EntryDestroyedException;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.EntryOperation;
-import com.gemstone.gemfire.cache.FixedPartitionAttributes;
-import com.gemstone.gemfire.cache.FixedPartitionResolver;
-import com.gemstone.gemfire.cache.Operation;
-import com.gemstone.gemfire.cache.PartitionResolver;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionExistsException;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.partition.PartitionNotAvailableException;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
@@ -53,6 +26,7 @@ import com.gemstone.gemfire.distributed.DistributedLockService;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.MembershipListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -63,6 +37,10 @@ import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  */
@@ -99,7 +77,7 @@ public class PartitionedRegionHelper
    * modify shared meta-data and this property controls the delay before giving
    * up trying to acquire a global lock
    */
-  static final String VM_OWNERSHIP_WAIT_TIME_PROPERTY = "gemfire.VM_OWNERSHIP_WAIT_TIME";
+  static final String VM_OWNERSHIP_WAIT_TIME_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "VM_OWNERSHIP_WAIT_TIME";
 
   /** Wait forever for ownership */
   static final long VM_OWNERSHIP_WAIT_TIME_DEFAULT = Long.MAX_VALUE;
@@ -248,7 +226,7 @@ public class PartitionedRegionHelper
       factory.setScope(Scope.DISTRIBUTED_ACK);
       factory.setDataPolicy(DataPolicy.REPLICATE);
       factory.addCacheListener(new FixedPartitionAttributesListener());
-      if (Boolean.getBoolean("gemfire.PRDebug")) {
+      if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
         factory.addCacheListener( new CacheListenerAdapter() {
           @Override
           public void afterCreate(EntryEvent event)
@@ -932,7 +910,7 @@ public class PartitionedRegionHelper
    * @param callingMethod methodName of the calling method.
    */
   public static void logForDataLoss(PartitionedRegion partitionedRegion, int bucketId, String callingMethod) {
-    if (! Boolean.getBoolean("gemfire.PRDebug")) {
+    if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
       return;
     }
     Region root = PartitionedRegionHelper.getPRRoot(partitionedRegion.getCache());

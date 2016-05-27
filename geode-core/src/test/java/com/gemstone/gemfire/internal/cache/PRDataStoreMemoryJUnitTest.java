@@ -16,26 +16,18 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import java.util.Properties;
-
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
+import java.util.Properties;
 
-import junit.framework.TestCase;
-
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests memory allocation operations on a PartitionedRegion on a single node.
@@ -62,7 +54,7 @@ public class PRDataStoreMemoryJUnitTest {
 
   protected Properties getDistributedSystemProperties() {
     Properties dsProps = new Properties();
-    dsProps.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
+    dsProps.setProperty(MCAST_PORT, "0");
     return dsProps;
   }
   

@@ -17,28 +17,6 @@
 
 package com.gemstone.gemfire.internal.cache.partitioned;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.InternalGemFireException;
@@ -46,26 +24,15 @@ import com.gemstone.gemfire.cache.InterestPolicy;
 import com.gemstone.gemfire.cache.LowMemoryException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ProfileListener;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
-import com.gemstone.gemfire.internal.cache.BucketAdvisor;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.BucketAdvisor.BucketProfile;
 import com.gemstone.gemfire.internal.cache.BucketAdvisor.ServerBucketProfile;
-import com.gemstone.gemfire.internal.cache.BucketPersistenceAdvisor;
-import com.gemstone.gemfire.internal.cache.BucketRegion;
-import com.gemstone.gemfire.internal.cache.BucketServerLocation66;
-import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
-import com.gemstone.gemfire.internal.cache.FixedPartitionAttributesImpl;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
-import com.gemstone.gemfire.internal.cache.Node;
 import com.gemstone.gemfire.internal.cache.PRHARedundancyProvider.DataStoreBuckets;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegionStats;
-import com.gemstone.gemfire.internal.cache.ProxyBucketRegion;
 import com.gemstone.gemfire.internal.cache.control.MemoryThresholds;
 import com.gemstone.gemfire.internal.cache.control.ResourceAdvisor;
 import com.gemstone.gemfire.internal.cache.persistence.PersistenceAdvisor;
@@ -74,6 +41,16 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class RegionAdvisor extends CacheDistributionAdvisor
 {
@@ -83,7 +60,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor
    * Number of threads allowed to concurrently volunteer for bucket primary.
    */
   public static final short VOLUNTEERING_THREAD_COUNT = Integer.getInteger(
-      "gemfire.RegionAdvisor.volunteeringThreadCount", 1).shortValue();
+      DistributionConfig.GEMFIRE_PREFIX + "RegionAdvisor.volunteeringThreadCount", 1).shortValue();
   
   /**
    * Non-thread safe queue for volunteering for primary bucket. Each
@@ -1232,7 +1209,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor
 
   /**
    * Get the most recent primary node for the bucketId. Returns null if no 
-   * primary can be found within {@link com.gemstone.gemfire.distributed.internal.DistributionConfig#getMemberTimeout}.
+   * primary can be found within {@link DistributionConfig#getMemberTimeout}.
    * @param bucketId
    * @return the Node managing the primary copy of the bucket 
    */

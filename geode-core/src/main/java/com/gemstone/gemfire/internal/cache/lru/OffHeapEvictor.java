@@ -17,7 +17,7 @@
 package com.gemstone.gemfire.internal.cache.lru;
 
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.control.ResourceManager;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
@@ -44,7 +44,8 @@ public class OffHeapEvictor extends HeapEvictor {
   }
 
   private void calculateEvictionBurst() {
-    float evictionBurstPercentage = Float.parseFloat(System.getProperty("gemfire.HeapLRUCapacityController.evictionBurstPercentage", "0.4"));
+    float evictionBurstPercentage = Float
+        .parseFloat(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "HeapLRUCapacityController.evictionBurstPercentage", "0.4"));
     
     MemoryAllocator allocator = ((GemFireCacheImpl) this.cache).getOffHeapStore();
     

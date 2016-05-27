@@ -16,23 +16,19 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
-import java.io.IOException;
-import java.util.Map;
-
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.EntryExistsException;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.wan.BatchException70;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
-import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.*;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.util.Map;
 
 public class SerialWANPropogationDUnitTest extends WANTestBase {
 
@@ -619,18 +615,18 @@ public class SerialWANPropogationDUnitTest extends WANTestBase {
           getTestMethodName() + "_RR_1", 1000 ));
     } finally {
       System.setProperty(
-          "gemfire.GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
+          DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
       vm4.invoke(new CacheSerializableRunnable("UnSetting system property ") {
         public void run2() throws CacheException {
           System.setProperty(
-              "gemfire.GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
+              DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
         }
       });
 
       vm5.invoke(new CacheSerializableRunnable("UnSetting system property ") {
         public void run2() throws CacheException {
           System.setProperty(
-              "gemfire.GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
+              DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION", "False");
         }
       });
     }

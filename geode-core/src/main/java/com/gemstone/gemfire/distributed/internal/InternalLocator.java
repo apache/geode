@@ -16,36 +16,11 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.ConnectException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.logging.log4j.Logger;
-
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.ClientReplacementRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.GetAllServersRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.LocatorListRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusResponse;
-import com.gemstone.gemfire.cache.client.internal.locator.QueueConnectionRequest;
-import com.gemstone.gemfire.cache.client.internal.locator.ServerLocationRequest;
+import com.gemstone.gemfire.cache.client.internal.locator.*;
 import com.gemstone.gemfire.cache.client.internal.locator.wan.LocatorMembershipListener;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.Locator;
@@ -82,6 +57,22 @@ import com.gemstone.gemfire.management.internal.configuration.handlers.SharedCon
 import com.gemstone.gemfire.management.internal.configuration.messages.ConfigurationRequest;
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusResponse;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.BIND_ADDRESS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
 
 /**
  * Provides the implementation of a distribution <code>Locator</code>
@@ -123,7 +114,7 @@ public class InternalLocator extends Locator implements ConnectListener {
   public static final String INHIBIT_DM_BANNER = "Locator.inhibitDMBanner";
   
   /** system property name for forcing locators to be preferred as coordinators */
-  public static final String LOCATORS_PREFERRED_AS_COORDINATORS = "gemfire.disable-floating-coordinator";
+  public static final String LOCATORS_PREFERRED_AS_COORDINATORS = DistributionConfig.GEMFIRE_PREFIX + "disable-floating-coordinator";
 
   /////////////////////  Instance Fields  //////////////////////
 
@@ -543,7 +534,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     // set bind-address explicitly only if not wildcard and let any explicit
     // value in distributedSystemProperties take precedence (#46870)
     if (bindAddress != null && !bindAddress.isAnyLocalAddress()) {
-      env.setProperty(DistributionConfig.BIND_ADDRESS_NAME,
+      env.setProperty(BIND_ADDRESS,
           bindAddress.getHostAddress());
     }
     
@@ -752,11 +743,11 @@ public class InternalLocator extends Locator implements ConnectListener {
           }
           if (setLocatorsProp) {
             Properties updateEnv = new Properties();
-            updateEnv.setProperty(DistributionConfig.LOCATORS_NAME, locatorsProp);
+            updateEnv.setProperty(LOCATORS, locatorsProp);
             this.config.setApiProps(updateEnv);
             // fix for bug 41248
             String propName = DistributionConfig.GEMFIRE_PREFIX +
-                                 DistributionConfig.LOCATORS_NAME;
+                LOCATORS;
             if (System.getProperty(propName) != null) {
               System.setProperty(propName, locatorsProp);
             }

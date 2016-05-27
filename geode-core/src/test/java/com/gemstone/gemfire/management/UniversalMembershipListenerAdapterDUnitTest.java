@@ -16,15 +16,6 @@
  */
 package com.gemstone.gemfire.management;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -43,20 +34,16 @@ import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
-import com.gemstone.gemfire.management.membership.ClientMembership;
-import com.gemstone.gemfire.management.membership.ClientMembershipEvent;
-import com.gemstone.gemfire.management.membership.ClientMembershipListener;
-import com.gemstone.gemfire.management.membership.MembershipEvent;
-import com.gemstone.gemfire.management.membership.MembershipListener;
-import com.gemstone.gemfire.management.membership.UniversalMembershipListenerAdapter;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.management.membership.*;
+import com.gemstone.gemfire.test.dunit.*;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 /**
  * Tests the UniversalMembershipListenerAdapter.
@@ -415,8 +402,8 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       public Object call() {
         com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testLonerClientEventsInServer] create bridge client");
         Properties config = new Properties();
-        config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-        config.setProperty(DistributionConfig.LOCATORS_NAME, "");
+        config.setProperty(MCAST_PORT, "0");
+        config.setProperty(LOCATORS, "");
         getSystem(config);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
@@ -1817,8 +1804,8 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] create loner bridge client");
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
-    config.setProperty(DistributionConfig.LOCATORS_NAME, "");
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
     getSystem(config);
         
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] create system bridge client");

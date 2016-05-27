@@ -16,90 +16,28 @@
  */
 package com.gemstone.gemfire;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.transaction.Synchronization;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.AttributesMutator;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheEvent;
-import com.gemstone.gemfire.cache.CacheException;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.CacheListener;
-import com.gemstone.gemfire.cache.CacheLoader;
-import com.gemstone.gemfire.cache.CacheLoaderException;
-import com.gemstone.gemfire.cache.CacheTransactionManager;
-import com.gemstone.gemfire.cache.CacheWriter;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.CommitConflictException;
-import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.DiskStoreFactory;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.EntryExistsException;
-import com.gemstone.gemfire.cache.EntryNotFoundException;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.FailedSynchronizationException;
-import com.gemstone.gemfire.cache.LoaderHelper;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionEvent;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.TransactionEvent;
-import com.gemstone.gemfire.cache.TransactionException;
-import com.gemstone.gemfire.cache.TransactionId;
-import com.gemstone.gemfire.cache.TransactionListener;
-import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryException;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.query.*;
 import com.gemstone.gemfire.cache.query.internal.index.IndexManager;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.TransactionListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.NanoTimer; // With java 1.5, please replace with System.nanoTime()
-import com.gemstone.gemfire.internal.cache.AbstractRegion;
-import com.gemstone.gemfire.internal.cache.CachePerfStats;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.TXManagerImpl;
-import com.gemstone.gemfire.internal.cache.TXStateProxy;
+import com.gemstone.gemfire.internal.NanoTimer;
+import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.util.StopWatch;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.*;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
+
+import javax.transaction.Synchronization;
+import java.util.*;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 /**
  * Tests basic transaction functionality
@@ -130,7 +68,7 @@ public class TXJUnitTest {
 
   protected void createCache() throws Exception {
     Properties p = new Properties();
-    p.setProperty("mcast-port", "0"); // loner
+    p.setProperty(MCAST_PORT, "0"); // loner
     this.cache = (GemFireCacheImpl)CacheFactory.create(DistributedSystem.connect(p));
     createRegion();
     this.txMgr = this.cache.getCacheTransactionManager();
@@ -4433,7 +4371,7 @@ public class TXJUnitTest {
       void assertValid() {
         assertEquals(this.txRollbacks, this.stats.getTxRollbacks());
         assertEquals(this.txRollbackChanges, this.stats.getTxRollbackChanges());
-        if (Boolean.getBoolean("gemfire.cache.enable-time-statistics")) {
+        if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "cache.enable-time-statistics")) {
           assertTrue(this.txRollbackTime <= this.stats.getTxRollbackTime());
           // assertTrue(this.txRollbackLifeTime+((SLEEP_MS-10)*1000000) <= this.stats.getTxRollbackLifeTime());
 	  assertTrue("RollbackLifeTime " + this.txRollbackLifeTime  
@@ -4480,7 +4418,7 @@ public class TXJUnitTest {
       testRollbackLifeTime += beforeRollback - afterBegin;
       // bruce - time based stats are disabled by default
       String p = (String)cache.getDistributedSystem()
-          .getProperties().get("gemfire.enable-time-statistics");
+          .getProperties().get(DistributionConfig.GEMFIRE_PREFIX + "enable-time-statistics");
       if (p != null && Boolean.getBoolean(p)) {
         assertTrue("Local RollbackLifeTime assertion:  " 
                 + testRollbackLifeTime 
@@ -4489,7 +4427,7 @@ public class TXJUnitTest {
       }
       testTotalTx += afterRollback - beforeBegin;
       final long totalTXMinusRollback = testTotalTx - stats.getTxRollbackTime();
-      if (Boolean.getBoolean("gemfire.cache.enable-time-statistics")) {
+      if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "cache.enable-time-statistics")) {
         assertTrue("Total Tx Minus Rollback assertion:  " 
 		 +  totalTXMinusRollback
 		 + " is not >= " + statsRollbackLifeTime,

@@ -16,15 +16,18 @@
  */
 package com.gemstone.gemfire.disttx;
 
-import java.util.Properties;
-
-import org.junit.experimental.categories.Category;
-
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.internal.offheap.TxReleasesOffHeapOnCloseJUnitTest;
 import com.gemstone.gemfire.test.junit.categories.DistributedTransactionsTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 
 
 /**
@@ -41,10 +44,10 @@ public class DistTXReleasesOffHeapOnCloseJUnitTest extends
   @Override
   protected void createCache() {
     Properties props = new Properties();
-    props.setProperty("mcast-port", "0");
-    props.setProperty("locators", "");
-    props.setProperty("off-heap-memory-size", "1m");
-    props.put("distributed-transactions", "true");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(SystemConfigurationProperties.OFF_HEAP_MEMORY_SIZE, "1m");
+    props.put(SystemConfigurationProperties.DISTRIBUTED_TRANSACTIONS, "true");
     cache = new CacheFactory(props).create();
     CacheTransactionManager txmgr = cache.getCacheTransactionManager();
     assert(txmgr.isDistributed());
