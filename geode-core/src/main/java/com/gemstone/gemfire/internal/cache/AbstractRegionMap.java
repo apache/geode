@@ -804,6 +804,9 @@ public abstract class AbstractRegionMap implements RegionMap {
         // server in the VM
         HAContainerWrapper haContainer = (HAContainerWrapper)CacheClientNotifier
             .getInstance().getHaContainer();
+        if (haContainer == null) {
+          return false;
+        }
         Map.Entry entry = null;
         HAEventWrapper original = null;
         synchronized (haContainer) {

@@ -1433,6 +1433,9 @@ public class CacheClientNotifier {
    * @since 5.7
    */
   private void checkAndRemoveFromClientMsgsRegion(Conflatable conflatable) {
+    if (haContainer == null) {
+      return;
+    }
     if (conflatable instanceof HAEventWrapper) {
       HAEventWrapper wrapper = (HAEventWrapper)conflatable;
       if (!wrapper.getIsRefFromHAContainer()) {
@@ -2536,7 +2539,7 @@ public class CacheClientNotifier {
    * (in case of eviction policy "none"). In both the cases, it'll store
    * HAEventWrapper as its key and ClientUpdateMessage as its value.
    */
-  private HAContainerWrapper haContainer;
+  private volatile HAContainerWrapper haContainer;
 
   //   /**
   //    * The singleton <code>CacheClientNotifier</code> instance
