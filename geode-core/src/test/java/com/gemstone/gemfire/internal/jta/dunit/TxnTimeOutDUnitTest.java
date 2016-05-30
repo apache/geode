@@ -32,6 +32,8 @@ import java.io.*;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
 *This test sees if the TransactionTimeOut works properly
 */
@@ -57,9 +59,9 @@ public class TxnTimeOutDUnitTest extends DistributedTestCase {
     wr.write(modified_file_str);
     wr.flush();
     wr.close();
-    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
+    props.setProperty(CACHE_XML_FILE, path);
     //    props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "10321");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+    props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     try {
 //      ds = DistributedSystem.connect(props);
       ds = (new TxnTimeOutDUnitTest("temp")).getSystem(props);

@@ -26,13 +26,15 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.test.dunit.*;
 import hydra.Log;
 
 import java.io.IOException;
 import java.util.HashSet;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  * Test class for Partitioned Region and CQs
  * 
@@ -1734,7 +1736,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer(serverHosts[0]/*getServerHostName(Host.getHost(0))*/, serverPorts[0]);
         ccf.setPoolSubscriptionEnabled(true);
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         
         // Create Client Cache.
         getClientCache(ccf);

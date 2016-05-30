@@ -17,15 +17,13 @@
 package com.gemstone.gemfire.admin.internal;
 
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import org.junit.After;
 import org.junit.Before;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Superclass of tests for the {@linkplain
@@ -70,7 +68,7 @@ public abstract class HealthEvaluatorTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
     return props;
   }

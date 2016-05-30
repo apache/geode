@@ -629,9 +629,9 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort + "]");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-    props.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    props.setProperty(USE_CLUSTER_CONFIGURATION, "false");
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds); 
     IgnoredException ex = new IgnoredException("could not get remote locator information for remote site");
@@ -772,8 +772,8 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
     props.setProperty(LOCATORS, "localhost[" + port + "]");
     props.setProperty(START_LOCATOR, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
     props.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + remoteLocPort + "]");
-    props.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(USE_CLUSTER_CONFIGURATION, "false");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     test.getSystem(props);
     return port;
   }
@@ -930,8 +930,8 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(LOCATORS, "localhost[" + port + "]");
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-    props.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    props.setProperty(USE_CLUSTER_CONFIGURATION, "false");
     props.setProperty(START_LOCATOR, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
     test.getSystem(props);
     return port;

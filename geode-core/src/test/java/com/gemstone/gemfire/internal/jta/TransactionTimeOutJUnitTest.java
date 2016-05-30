@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.jta;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.datasource.GemFireTransactionDataSource;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
@@ -38,7 +37,7 @@ import java.sql.Statement;
 import java.util.Properties;
 import java.util.Random;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 //import java.sql.SQLException;
 
@@ -65,8 +64,8 @@ public class TransactionTimeOutJUnitTest extends TestCase {
     wr.write(modified_file_str);
     wr.flush();
     wr.close();
-    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
-    // props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME,"D:\\projects\\JTA\\cachejta.xml");
+    props.setProperty(CACHE_XML_FILE, path);
+    // props.setProperty(cacheXmlFile,"D:\\projects\\JTA\\cachejta.xml");
     ds1 = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds1);
     cache.getLogger().fine("SWAP:running test:"+getName());

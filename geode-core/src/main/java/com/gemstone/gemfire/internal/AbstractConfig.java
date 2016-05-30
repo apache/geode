@@ -29,6 +29,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 /**
  * Provides an implementation of the {@link Config} interface
  * that implements functionality that all {@link Config} implementations
@@ -207,13 +208,13 @@ public abstract class AbstractConfig implements Config {
   }
   
   public boolean isDeprecated(String attName) {
-    if (attName.equals(DistributionConfig.SSL_CIPHERS_NAME)) {
+    if (attName.equals(SSL_CIPHERS)) {
       return true;
-    } else if (attName.equals(DistributionConfig.SSL_ENABLED_NAME)) {
+    } else if (attName.equals(SSL_ENABLED)) {
       return true;
-    } else if (attName.equals(DistributionConfig.SSL_PROTOCOLS_NAME)) {
+    } else if (attName.equals(SSL_PROTOCOLS)) {
       return true;
-    } else if (attName.equals(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME)) {
+    } else if (attName.equals(SSL_REQUIRE_AUTHENTICATION)) {
       return true;
     } else if (attName.equals(DistributionConfig.JMX_MANAGER_SSL_NAME)) {
       return true;
@@ -304,7 +305,7 @@ public abstract class AbstractConfig implements Config {
       return (String)result;
     }
 
-    if (attName.equalsIgnoreCase(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME)) {
+    if (attName.equalsIgnoreCase(MEMBERSHIP_PORT_RANGE)) {
       int[] value = (int[])result;
       return ""+value[0]+"-"+value[1];
     }

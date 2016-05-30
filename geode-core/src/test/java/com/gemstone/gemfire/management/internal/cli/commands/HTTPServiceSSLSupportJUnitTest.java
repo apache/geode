@@ -29,7 +29,7 @@ import org.junit.experimental.categories.Category;
 import java.io.File;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -74,14 +74,14 @@ public class HTTPServiceSSLSupportJUnitTest {
 
     Properties localProps = new Properties();
     localProps.setProperty(MCAST_PORT, "0");
-    localProps.setProperty(DistributionConfig.CLUSTER_SSL_ENABLED_NAME, "true");
-    localProps.setProperty(DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    localProps.setProperty(DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    localProps.setProperty(DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME, "JKS");
-    localProps.setProperty(DistributionConfig.CLUSTER_SSL_PROTOCOLS_NAME, "SSL");
-    localProps.setProperty(DistributionConfig.CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME, "true");
-    localProps.setProperty(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME, jks.getCanonicalPath());
-    localProps.setProperty(DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME, "password");
+    localProps.setProperty(CLUSTER_SSL_ENABLED, "true");
+    localProps.setProperty(CLUSTER_SSL_KEYSTORE, jks.getCanonicalPath());
+    localProps.setProperty(CLUSTER_SSL_KEYSTORE_PASSWORD, "password");
+    localProps.setProperty(CLUSTER_SSL_KEYSTORE_TYPE, "JKS");
+    localProps.setProperty(CLUSTER_SSL_PROTOCOLS, "SSL");
+    localProps.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION, "true");
+    localProps.setProperty(CLUSTER_SSL_TRUSTSTORE, jks.getCanonicalPath());
+    localProps.setProperty(CLUSTER_SSL_TRUSTSTORE_PASSWORD, "password");
 
     DistributionConfigImpl config = new DistributionConfigImpl(localProps);
 
@@ -101,12 +101,12 @@ public class HTTPServiceSSLSupportJUnitTest {
 
     Properties localProps = new Properties();
     localProps.setProperty(MCAST_PORT, "0");
-    localProps.setProperty(DistributionConfig.SSL_ENABLED_NAME, "true");
+    localProps.setProperty(SSL_ENABLED, "true");
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStore", jks.getCanonicalPath());
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStorePassword", "password");
 
-    localProps.setProperty(DistributionConfig.SSL_PROTOCOLS_NAME, "SSL");
-    localProps.setProperty(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME, "true");
+    localProps.setProperty(SSL_PROTOCOLS, "SSL");
+    localProps.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStore", jks.getCanonicalPath());
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStorePassword", "password");
 
@@ -129,10 +129,10 @@ public class HTTPServiceSSLSupportJUnitTest {
 
     Properties localProps = new Properties();
     localProps.setProperty(MCAST_PORT, "0");
-    localProps.setProperty(DistributionConfig.SSL_ENABLED_NAME, "true");
+    localProps.setProperty(SSL_ENABLED, "true");
 
-    localProps.setProperty(DistributionConfig.SSL_PROTOCOLS_NAME, "SSL");
-    localProps.setProperty(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME, "true");
+    localProps.setProperty(SSL_PROTOCOLS, "SSL");
+    localProps.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
 
     Properties sslProps = new Properties();
     sslProps.setProperty("javax.net.ssl.keyStore", jks.getCanonicalPath());

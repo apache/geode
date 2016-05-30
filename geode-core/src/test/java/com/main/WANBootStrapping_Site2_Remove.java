@@ -22,7 +22,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * This is a stand alone locator with a distributed-system-id = -2
@@ -48,7 +48,7 @@ public class WANBootStrapping_Site2_Remove {
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+ (-2));
     properties.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + 10101 + "]");
-    properties.setProperty(DistributionConfig.LOG_LEVEL_NAME, "warning");
+    properties.setProperty(LOG_LEVEL, "warning");
     Locator locator = null;
     try {
       locator = Locator.startLocatorAndDS(30445, null, properties);

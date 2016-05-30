@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.admin.jmx.internal;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.admin.*;
 import com.gemstone.gemfire.admin.jmx.Agent;
 import com.gemstone.gemfire.cache.InterestPolicy;
@@ -658,10 +660,10 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean
           //assuming will never return as per current implementation
           ConfigurationParameter[] configParams = member.getConfiguration();
           for (ConfigurationParameter configParam : configParams) {
-            if (DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME.equals(configParam.getName())) {
+            if (STATISTIC_SAMPLING_ENABLED.equals(configParam.getName())) {
               allDetails.put(MEMBER_STATSAMPLING_ENABLED, configParam.getValue());
               statSamplingEnabled = Boolean.parseBoolean(""+configParam.getValue());
-            } else if (DistributionConfig.ENABLE_TIME_STATISTICS_NAME.equals(configParam.getName())) {
+            } else if (ENABLE_TIME_STATISTICS.equals(configParam.getName())) {
               allDetails.put(MEMBER_TIME_STATS_ENABLED, configParam.getValue());
             }
           }

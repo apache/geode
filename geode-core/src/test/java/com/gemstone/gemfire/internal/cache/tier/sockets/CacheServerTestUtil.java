@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.*;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
@@ -202,17 +204,17 @@ public class CacheServerTestUtil extends DistributedTestCase
     ClientCacheFactory ccf = new ClientCacheFactory();
     try {
       File cacheXmlFile = new File(url.toURI().getPath());
-      ccf.set(DistributionConfig.CACHE_XML_FILE_NAME, cacheXmlFile.toURI().getPath());
+      ccf.set(CACHE_XML_FILE, cacheXmlFile.toURI().getPath());
       
     }
     catch (URISyntaxException e) {
       throw new ExceptionInInitializerError(e);
     }
     ccf.set(MCAST_PORT, "0");
-    ccf.set(DistributionConfig.DURABLE_CLIENT_ID_NAME, durableClientId);
-    ccf.set(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, String.valueOf(timeout));
-    ccf.set(DistributionConfig.LOG_FILE_NAME, "abs_client_system.log");
-    ccf.set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+    ccf.set(DURABLE_CLIENT_ID, durableClientId);
+    ccf.set(DURABLE_CLIENT_TIMEOUT, String.valueOf(timeout));
+    ccf.set(LOG_FILE, "abs_client_system.log");
+    ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     cache = (Cache)ccf.create();
     expected = IgnoredException.addIgnoredException("java.net.ConnectionException||java.net.SocketException");
     pool = (PoolImpl)PoolManager.find(poolName);
@@ -223,15 +225,15 @@ public class CacheServerTestUtil extends DistributedTestCase
     ClientCacheFactory ccf = new ClientCacheFactory();
     try {
       File cacheXmlFile = new File(url.toURI().getPath());
-      ccf.set(DistributionConfig.CACHE_XML_FILE_NAME, cacheXmlFile.toURI().getPath());
+      ccf.set(CACHE_XML_FILE, cacheXmlFile.toURI().getPath());
       
     }
     catch (URISyntaxException e) {
       throw new ExceptionInInitializerError(e);
     }
     ccf.set(MCAST_PORT, "0");
-    ccf.set(DistributionConfig.DURABLE_CLIENT_ID_NAME, durableClientId);
-    ccf.set(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, String.valueOf(timeout));
+    ccf.set(DURABLE_CLIENT_ID, durableClientId);
+    ccf.set(DURABLE_CLIENT_TIMEOUT, String.valueOf(timeout));
     cache = (Cache)ccf.create();
     expected = IgnoredException.addIgnoredException("java.net.ConnectionException||java.net.SocketException");
     pool = (PoolImpl)PoolManager.find(poolName);
@@ -242,11 +244,11 @@ public class CacheServerTestUtil extends DistributedTestCase
     CacheFactory ccf = new CacheFactory();
     try {
       File cacheXmlFile = new File(url.toURI().getPath());
-      ccf.set(DistributionConfig.CACHE_XML_FILE_NAME, cacheXmlFile.toURI().getPath());
+      ccf.set(CACHE_XML_FILE, cacheXmlFile.toURI().getPath());
       ccf.set(MCAST_PORT, "0");
       ccf.set(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
-      ccf.set(DistributionConfig.LOG_FILE_NAME, "abs_server_system.log");
-      ccf.set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+      ccf.set(LOG_FILE, "abs_server_system.log");
+      ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     }
     catch (URISyntaxException e) {
       throw new ExceptionInInitializerError(e);
@@ -259,7 +261,7 @@ public class CacheServerTestUtil extends DistributedTestCase
     CacheFactory ccf = new CacheFactory();
     try {
       File cacheXmlFile = new File(url.toURI().getPath());
-      ccf.set(DistributionConfig.CACHE_XML_FILE_NAME, cacheXmlFile.toURI().getPath());
+      ccf.set(CACHE_XML_FILE, cacheXmlFile.toURI().getPath());
       ccf.set(MCAST_PORT, "0");
       ccf.set(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
     }

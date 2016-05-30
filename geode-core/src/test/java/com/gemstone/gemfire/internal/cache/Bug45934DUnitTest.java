@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.util.DelayedAction;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
@@ -27,7 +26,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class Bug45934DUnitTest extends CacheTestCase {
   public Bug45934DUnitTest(String name) {
@@ -46,7 +45,7 @@ public class Bug45934DUnitTest extends CacheTestCase {
     // 1. create the local cache
     CacheFactory cf = new CacheFactory();
     cf.set(MCAST_PORT, "45934");
-    cf.set(DistributionConfig.CONSERVE_SOCKETS_NAME, "false");
+    cf.set(CONSERVE_SOCKETS, "false");
     Cache cache = getCache(cf);
 
     // 2. create normal region locally
@@ -84,7 +83,7 @@ public class Bug45934DUnitTest extends CacheTestCase {
       public Object call() throws Exception {
         CacheFactory cf = new CacheFactory();
         cf.set(MCAST_PORT, "45934");
-        cf.set(DistributionConfig.CONSERVE_SOCKETS_NAME, "false");
+        cf.set(CONSERVE_SOCKETS, "false");
 
         getCache(cf).<Integer, Integer> createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT)
             .create(name);

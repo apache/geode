@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.GemFireCache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import junit.framework.TestCase;
@@ -36,7 +35,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 @Ignore("Can this test be deleted?")
 @Category(IntegrationTest.class)
@@ -50,7 +49,7 @@ public class SecondVMTest extends TestCase {
   public void _testStartEmptyVM() throws IOException {
     Properties gemfireProperties = new Properties();
     gemfireProperties.setProperty(MCAST_PORT, "5555");
-    gemfireProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    gemfireProperties.setProperty(LOG_LEVEL, "fine");
     Cache cache = new CacheFactory(gemfireProperties).create();
     System.in.read();
     Iterator it = cache.rootRegions().iterator();

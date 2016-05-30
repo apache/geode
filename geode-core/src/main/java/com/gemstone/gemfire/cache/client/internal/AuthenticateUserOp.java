@@ -45,6 +45,8 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.Properties;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  * Authenticates this client (or a user) on a server. This op ideally should get
  * executed once-per-server.
@@ -111,8 +113,7 @@ public class AuthenticateUserOp {
       DistributedMember server = new InternalDistributedMember(con.getSocket()
           .getInetAddress(), con.getSocket().getPort(), false);
       DistributedSystem sys = InternalDistributedSystem.getConnectedInstance();
-      String authInitMethod = sys.getProperties().getProperty(
-          DistributionConfig.SECURITY_CLIENT_AUTH_INIT_NAME);
+      String authInitMethod = sys.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
       Properties tmpSecurityProperties = sys.getSecurityProperties();
 
       // LOG: following passes the DS API LogWriters into the security API
@@ -158,8 +159,7 @@ public class AuthenticateUserOp {
             .getSocket().getInetAddress(), cnx.getSocket().getPort(), false);
         DistributedSystem sys = InternalDistributedSystem
             .getConnectedInstance();
-        String authInitMethod = sys.getProperties().getProperty(
-            DistributionConfig.SECURITY_CLIENT_AUTH_INIT_NAME);
+        String authInitMethod = sys.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
 
         Properties credentials = HandShake.getCredentials(authInitMethod,
             this.securityProperties, server, false, (InternalLogWriter)sys.getLogWriter(), (InternalLogWriter)sys

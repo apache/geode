@@ -31,8 +31,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 
 /**
@@ -211,7 +210,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
         props.setProperty(MCAST_PORT, "0");
 
         props.setProperty(LOCATORS, "");
-        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+        props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
 
         InetAddress bindAddr = null;
         try {

@@ -56,6 +56,8 @@ import java.security.cert.X509Certificate;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 public class HandShake implements ClientHandShake
 {
   private static final Logger logger = LogService.getLogger();
@@ -344,8 +346,7 @@ public class HandShake implements ClientHandShake
    private byte setClientConflation() {
      byte result = CONFLATION_DEFAULT;
      
-     String clientConflationValue = this.system.getProperties().getProperty(
-         DistributionConfig.CLIENT_CONFLATION_PROP_NAME);
+     String clientConflationValue = this.system.getProperties().getProperty(CONFLATE_EVENTS);
      if (DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_ON
          .equalsIgnoreCase(clientConflationValue)) {
        result = CONFLATION_ON;
@@ -480,8 +481,7 @@ public class HandShake implements ClientHandShake
           writeCredentials(dos, dis, p_credentials, ports != null, member, hdos);
         }
       } else {
-        String authInitMethod = this.system.getProperties().getProperty(
-            DistributionConfig.SECURITY_CLIENT_AUTH_INIT_NAME);
+        String authInitMethod = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
         acceptanceCode = writeCredential(dos, dis, authInitMethod,
             ports != null, member, hdos);
       }
@@ -1252,8 +1252,7 @@ public class HandShake implements ClientHandShake
           REPLY_OK, this.clientReadTimeout, null, this.credentials, member,
           false);
       
-      String authInit = this.system.getProperties().getProperty(
-          DistributionConfig.SECURITY_CLIENT_AUTH_INIT_NAME);
+      String authInit = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
       if (communicationMode != Acceptor.GATEWAY_TO_GATEWAY
           && intermediateAcceptanceCode != REPLY_AUTH_NOT_REQUIRED
           && (authInit != null && authInit.length() != 0)) {
@@ -1593,8 +1592,7 @@ public class HandShake implements ClientHandShake
 
   private Properties getCredentials(DistributedMember member) {
 
-    String authInitMethod = this.system.getProperties().getProperty(
-        DistributionConfig.SECURITY_CLIENT_AUTH_INIT_NAME);
+    String authInitMethod = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
     return getCredentials(authInitMethod, this.system.getSecurityProperties(),
         member, false, (InternalLogWriter)this.system.getLogWriter(), 
         (InternalLogWriter)this.system.getSecurityLogWriter());

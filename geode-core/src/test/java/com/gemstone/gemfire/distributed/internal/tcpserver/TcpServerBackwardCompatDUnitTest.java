@@ -38,8 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * This tests the rolling upgrade for locators with
@@ -110,8 +109,8 @@ public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
     final Properties props = new Properties();
     props.setProperty(LOCATORS, locators);
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "finest");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    props.setProperty(LOG_LEVEL, "finest");
     
     // Start locator0 with props.
     //props.setProperty(DistributionConfig.START_LOCATOR_NAME, host.getHostName() + "["+port0+"]");

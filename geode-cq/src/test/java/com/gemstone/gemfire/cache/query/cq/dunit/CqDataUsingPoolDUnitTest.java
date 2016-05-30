@@ -27,7 +27,6 @@ import com.gemstone.gemfire.cache.query.internal.cq.CqQueryImpl.TestHook;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.cache30.CertifiableTestCacheListener;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
@@ -42,8 +41,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * This class tests the ContiunousQuery mechanism in GemFire.
@@ -1352,8 +1350,8 @@ public class CqDataUsingPoolDUnitTest extends CacheTestCase {
     Properties properties = new Properties();
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
-    properties.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME, durableClientId);
-    properties.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, String.valueOf(durableClientTimeout));
+    properties.setProperty(DURABLE_CLIENT_ID, durableClientId);
+    properties.setProperty(DURABLE_CLIENT_TIMEOUT, String.valueOf(durableClientTimeout));
     return properties;
   }
   

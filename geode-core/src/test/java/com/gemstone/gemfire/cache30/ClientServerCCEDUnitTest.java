@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
@@ -570,7 +572,7 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port);
         cf.setPoolSubscriptionEnabled(true);
-        cf.set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+        cf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache cache = getClientCache(cf);
         ClientRegionFactory crf = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
         crf.setConcurrencyChecksEnabled(ccEnabled);
@@ -594,9 +596,9 @@ public class ClientServerCCEDUnitTest extends CacheTestCase {
         cf.setPoolSubscriptionEnabled(true);
         cf.setPoolSubscriptionRedundancy(1);
         // bug #50683 - secondary durable queue retains all GC messages
-        cf.set(DistributionConfig.DURABLE_CLIENT_ID_NAME, "" + vm.getPid());
-        cf.set(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, "" + 200);
-        cf.set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+        cf.set(DURABLE_CLIENT_ID, "" + vm.getPid());
+        cf.set(DURABLE_CLIENT_TIMEOUT, "" + 200);
+        cf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache cache = getClientCache(cf);
         ClientRegionFactory crf = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
         crf.setConcurrencyChecksEnabled(ccEnabled);

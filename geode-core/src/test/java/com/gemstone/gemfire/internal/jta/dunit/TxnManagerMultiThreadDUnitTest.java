@@ -20,7 +20,6 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.jta.CacheUtils;
 import com.gemstone.gemfire.internal.jta.JTAUtils;
@@ -37,6 +36,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * This test case is to test the following test scenarios: 1) Behaviour of
@@ -184,7 +185,7 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     wr.write(modified_file_str1);
     wr.flush();
     wr.close();
-    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
+    props.setProperty(CACHE_XML_FILE, path);
     String tableName = "";
     //    props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "10339");
     try {

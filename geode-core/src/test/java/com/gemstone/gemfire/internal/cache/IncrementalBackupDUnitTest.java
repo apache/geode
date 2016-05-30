@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.persistence.PersistentID;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassBuilder;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.JarClassLoader;
@@ -35,6 +34,8 @@ import com.gemstone.gemfire.test.dunit.*;
 
 import java.io.*;
 import java.util.*;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Tests for the incremental backup feature.
@@ -67,7 +68,7 @@ public class IncrementalBackupDUnitTest extends CacheTestCase {
   private final SerializableRunnable createRegions = new SerializableRunnable() {
     @Override
     public void run() {
-      Cache cache = getCache(new CacheFactory().set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel()));
+      Cache cache = getCache(new CacheFactory().set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel()));
       cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("fooStore");
       cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("barStore");
       getRegionFactory(cache).setDiskStoreName("fooStore").create("fooRegion");

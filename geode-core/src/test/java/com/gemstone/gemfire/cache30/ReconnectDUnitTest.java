@@ -115,14 +115,14 @@ public class ReconnectDUnitTest extends CacheTestCase
   public Properties getDistributedSystemProperties() {
     if (dsProperties == null) {
       dsProperties = new Properties();
-      dsProperties.put(DistributionConfig.MAX_WAIT_TIME_FOR_RECONNECT_NAME, "20000");
-      dsProperties.put(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "true");
-      dsProperties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "false");
-      dsProperties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+      dsProperties.put(MAX_WAIT_TIME_RECONNECT, "20000");
+      dsProperties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
+      dsProperties.put(DISABLE_AUTO_RECONNECT, "false");
+      dsProperties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
       dsProperties.put(LOCATORS, "localHost[" + locatorPort + "]");
       dsProperties.put(MCAST_PORT, "0");
-      dsProperties.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "1000");
-      dsProperties.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+      dsProperties.put(MEMBER_TIMEOUT, "1000");
+      dsProperties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     }
     return dsProperties;
   }
@@ -198,8 +198,8 @@ public class ReconnectDUnitTest extends CacheTestCase
         //      DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to create region");
         locatorPort = locPort;
         Properties props = getDistributedSystemProperties();
-        props.put(DistributionConfig.CACHE_XML_FILE_NAME, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
-        props.put(DistributionConfig.MAX_NUM_RECONNECT_TRIES, "2");
+        props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
+        props.put(MAX_NUM_RECONNECT_TRIES, "2");
 //        props.put("log-file", "autoReconnectVM"+VM.getCurrentVMNum()+"_"+getPID()+".log");
         Cache cache = new CacheFactory(props).create();
         IgnoredException.addIgnoredException("com.gemstone.gemfire.ForcedDisconnectException||Possible loss of quorum");
@@ -267,9 +267,9 @@ public class ReconnectDUnitTest extends CacheTestCase
         //      DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to create region");
         locatorPort = locPort;
         Properties props = getDistributedSystemProperties();
-        props.put(DistributionConfig.CACHE_XML_FILE_NAME, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
-        props.put(DistributionConfig.MAX_WAIT_TIME_FOR_RECONNECT_NAME, "1000");
-        props.put(DistributionConfig.MAX_NUM_RECONNECT_TRIES, "2");
+        props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
+        props.put(MAX_WAIT_TIME_RECONNECT, "1000");
+        props.put(MAX_NUM_RECONNECT_TRIES, "2");
 //        props.put("log-file", "autoReconnectVM"+VM.getCurrentVMNum()+"_"+getPID()+".log");
         Cache cache = new CacheFactory(props).create();
         Region myRegion = cache.getRegion("root/myRegion");
@@ -287,9 +287,9 @@ public class ReconnectDUnitTest extends CacheTestCase
         //            DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to create region");
         locatorPort = locPort;
         final Properties props = getDistributedSystemProperties();
-        props.put(DistributionConfig.CACHE_XML_FILE_NAME, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
-        props.put(DistributionConfig.MAX_WAIT_TIME_FOR_RECONNECT_NAME, "5000");
-        props.put(DistributionConfig.MAX_NUM_RECONNECT_TRIES, "2");
+        props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
+        props.put(MAX_WAIT_TIME_RECONNECT, "5000");
+        props.put(MAX_NUM_RECONNECT_TRIES, "2");
         props.put(START_LOCATOR, "localhost[" + secondLocPort + "]");
         props.put(LOCATORS, props.get(LOCATORS) + ",localhost[" + secondLocPort + "]");
 //        props.put("log-file", "autoReconnectVM"+VM.getCurrentVMNum()+"_"+getPID()+".log");
@@ -482,10 +482,10 @@ public class ReconnectDUnitTest extends CacheTestCase
       {
         locatorPort = locPort;
         Properties props = getDistributedSystemProperties();
-        props.put(DistributionConfig.MAX_WAIT_TIME_FOR_RECONNECT_NAME, "1000");
-        props.put(DistributionConfig.MAX_NUM_RECONNECT_TRIES, "2");
+        props.put(MAX_WAIT_TIME_RECONNECT, "1000");
+        props.put(MAX_NUM_RECONNECT_TRIES, "2");
         props.put(LOCATORS, props.get(LOCATORS) + ",localhost[" + locPort + "]");
-        props.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+        props.put(ENABLE_CLUSTER_CONFIGURATION, "false");
         try {
           Locator.startLocatorAndDS(secondLocPort, null, props);
         } catch (IOException e) {
@@ -506,9 +506,9 @@ public class ReconnectDUnitTest extends CacheTestCase
         //      DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to create region");
         locatorPort = locPort;
         Properties props = getDistributedSystemProperties();
-        props.put(DistributionConfig.CACHE_XML_FILE_NAME, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
-        props.put(DistributionConfig.MAX_WAIT_TIME_FOR_RECONNECT_NAME, "1000");
-        props.put(DistributionConfig.MAX_NUM_RECONNECT_TRIES, "2");
+        props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
+        props.put(MAX_WAIT_TIME_RECONNECT, "1000");
+        props.put(MAX_NUM_RECONNECT_TRIES, "2");
         ReconnectDUnitTest.savedSystem = getSystem(props);
         Cache cache = getCache();
         Region myRegion = cache.getRegion("root/myRegion");
@@ -626,8 +626,8 @@ public class ReconnectDUnitTest extends CacheTestCase
 
     locatorPort = locPort;
     Properties config = getDistributedSystemProperties();
-    config.put(DistributionConfig.ROLES_NAME, "");
-    config.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+    config.put(ROLES, "");
+    config.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
 //    config.put("log-file", "roleLossController.log");
     //creating the DS
     getSystem(config);
@@ -670,11 +670,11 @@ public class ReconnectDUnitTest extends CacheTestCase
         LogWriterUtils.getLogWriter().info("####### STARTING THE REAL TEST ##########");
         locatorPort = locPort;
         Properties props = getDistributedSystemProperties();
-        props.put(DistributionConfig.CACHE_XML_FILE_NAME, xmlFileLoc + fileSeparator + "RoleReconnect-cache.xml");
-        props.put(DistributionConfig.MAX_WAIT_TIME_FOR_RECONNECT_NAME, "200");
+        props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "RoleReconnect-cache.xml");
+        props.put(MAX_WAIT_TIME_RECONNECT, "200");
         final int timeReconnect = 3;
-        props.put(DistributionConfig.MAX_NUM_RECONNECT_TRIES, "3");
-        props.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+        props.put(MAX_NUM_RECONNECT_TRIES, "3");
+        props.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
 //        props.put("log-file", "roleLossVM0.log");
 
         getSystem(props);
@@ -759,8 +759,8 @@ public class ReconnectDUnitTest extends CacheTestCase
 
     locatorPort = locPort;
     Properties config = getDistributedSystemProperties();
-    config.put(DistributionConfig.ROLES_NAME, "");
-    config.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+    config.put(ROLES, "");
+    config.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     //creating the DS
     getSystem(config);
 
@@ -892,10 +892,10 @@ public class ReconnectDUnitTest extends CacheTestCase
           LogWriterUtils.getLogWriter().info("Starting the test and creating the cache and regions etc ...");
           locatorPort = locPort;
           Properties props = getDistributedSystemProperties();
-          props.put(DistributionConfig.CACHE_XML_FILE_NAME, "RoleRegained.xml");
-          props.put(DistributionConfig.MAX_WAIT_TIME_FOR_RECONNECT_NAME, "3000");
-          props.put(DistributionConfig.MAX_NUM_RECONNECT_TRIES, "8");
-          props.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+          props.put(CACHE_XML_FILE, "RoleRegained.xml");
+          props.put(MAX_WAIT_TIME_RECONNECT, "3000");
+          props.put(MAX_NUM_RECONNECT_TRIES, "8");
+          props.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
 
           getSystem(props);
           basicGetSystem().getLogWriter().info("<ExpectedException action=add>"
@@ -1043,8 +1043,7 @@ public class ReconnectDUnitTest extends CacheTestCase
       public void run()  {
         locatorPort = locPort;
         final Properties props = getDistributedSystemProperties();
-        props.put(DistributionConfig.MAX_WAIT_TIME_FOR_RECONNECT_NAME, "1000");
-//        props.put("log-file", "");
+        props.put(MAX_WAIT_TIME_RECONNECT, "1000");
         dsProperties = props;
         ReconnectDUnitTest.savedSystem = getSystem(props);
         ReconnectDUnitTest.savedCache = (GemFireCacheImpl)getCache();
@@ -1094,8 +1093,8 @@ public class ReconnectDUnitTest extends CacheTestCase
         // getSystem().disconnect();
         locatorPort = locPort;
         Properties props = getDistributedSystemProperties();
-        props.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
-        props.put(DistributionConfig.ROLES_NAME, "RoleA");
+        props.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+        props.put(ROLES, "RoleA");
 
         getSystem(props);
         getCache();
@@ -1144,8 +1143,8 @@ public class ReconnectDUnitTest extends CacheTestCase
         LogWriterUtils.getLogWriter().info(startupMessage);
         locatorPort = locPort;
         Properties props = getDistributedSystemProperties();
-        props.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
-        props.put(DistributionConfig.ROLES_NAME, "RoleA");
+        props.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+        props.put(ROLES, "RoleA");
 
         getSystem(props);
         getCache();

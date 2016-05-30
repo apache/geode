@@ -65,7 +65,7 @@ public class WANBootStrapping_Site2_Add {
         .set(LOCATORS, "localhost[" + 20202 + "]")
         .set(START_LOCATOR, "localhost[" + 20202 + "],server=true,peer=true,hostname-for-clients=localhost")
     .set(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + 10101 + "]")
-    .set(DistributionConfig.LOG_LEVEL_NAME, "warning")
+    .set(LOG_LEVEL, "warning")
     .create();
     System.out.println("Cache Created");
     

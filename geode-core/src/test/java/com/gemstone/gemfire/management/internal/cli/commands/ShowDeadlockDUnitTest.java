@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
@@ -164,10 +166,10 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
 //    props.setProperty(DistributionConfig.LOCATORS_NAME, getServerHostName(host) + "[" + locatorPort + "]");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
-    props.put(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "true");
+    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+    props.setProperty(ENABLE_TIME_STATISTICS, "true");
+    props.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
     return props;
   }
 

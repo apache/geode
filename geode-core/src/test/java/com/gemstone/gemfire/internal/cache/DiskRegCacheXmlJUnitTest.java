@@ -20,7 +20,6 @@ import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 import org.junit.After;
@@ -32,7 +31,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -73,7 +72,7 @@ public class DiskRegCacheXmlJUnitTest
     props.setProperty(SystemConfigurationProperties.NAME, "test");
     String path = TestUtil.getResourcePath(getClass(), "DiskRegCacheXmlJUnitTest.xml");
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
+    props.setProperty(CACHE_XML_FILE, path);
     ds = DistributedSystem.connect(props);
     try {
       // Create the cache which causes the cache-xml-file to be parsed

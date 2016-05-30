@@ -42,8 +42,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class DistributedRegionFunctionExecutionDUnitTest extends DistributedTestCase {
 
@@ -906,8 +905,8 @@ public class DistributedRegionFunctionExecutionDUnitTest extends DistributedTest
     Properties props = new Properties();
     props.put(MCAST_PORT, "0");
     props.put(LOCATORS, "");
-    props.put(SystemConfigurationProperties.NAME, "SecurityClient");
-    props.put(DistributionConfig.SECURITY_CLIENT_AUTH_INIT_NAME, UserPasswordAuthInit.class.getName() + ".create");
+    props.put(NAME, "SecurityClient");
+    props.put(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create");
     props.put("security-username", "reader1");
     props.put("security-password", "reader1");
     new DistributedRegionFunctionExecutionDUnitTest("temp").createCache(props);

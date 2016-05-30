@@ -98,8 +98,8 @@ public abstract class LocatorTestBase extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, String.valueOf(0));
     props.setProperty(LOCATORS, otherLocators);
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     try {
       File logFile = new File(testName + "-locator" + locatorPort + ".log");
       InetAddress bindAddr = null;

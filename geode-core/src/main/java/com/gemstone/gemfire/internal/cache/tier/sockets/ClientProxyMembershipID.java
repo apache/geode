@@ -32,6 +32,8 @@ import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.util.Arrays;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  * This class represents a ConnectionProxy of the CacheClient
  * 
@@ -202,7 +204,7 @@ public final class ClientProxyMembershipID
 
   private ClientProxyMembershipID(int id, byte[] clientSideIdentity) {
     Boolean specialCase = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE");
-    String durableID = this.system.getProperties().getProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME);
+    String durableID = this.system.getProperties().getProperty(DURABLE_CLIENT_ID);
     if (specialCase.booleanValue() && durableID != null && (!durableID.equals(""))) {
         this.uniqueId = durable_synch_counter;
     } else {

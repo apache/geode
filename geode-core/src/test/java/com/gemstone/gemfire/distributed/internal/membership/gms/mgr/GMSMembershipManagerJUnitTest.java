@@ -75,14 +75,14 @@ public class GMSMembershipManagerJUnitTest {
   @Before
   public void initMocks() throws Exception {
     Properties nonDefault = new Properties();
-    nonDefault.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, "1");
-    nonDefault.put(DistributionConfig.ACK_SEVERE_ALERT_THRESHOLD_NAME, "10");
-    nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
+    nonDefault.put(ACK_WAIT_THRESHOLD, "1");
+    nonDefault.put(ACK_SEVERE_ALERT_THRESHOLD, "10");
+    nonDefault.put(DISABLE_TCP, "true");
     nonDefault.put(MCAST_PORT, "0");
     nonDefault.put(MCAST_TTL, "0");
-    nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
-    nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
-    nonDefault.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
+    nonDefault.put(LOG_FILE, "");
+    nonDefault.put(LOG_LEVEL, "fine");
+    nonDefault.put(MEMBER_TIMEOUT, "2000");
     nonDefault.put(LOCATORS, "localhost[10344]");
     distConfig = new DistributionConfigImpl(nonDefault);
     distProperties = nonDefault;

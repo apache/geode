@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.test.golden;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.process.ProcessWrapper;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
@@ -124,7 +126,7 @@ public abstract class GoldenTestCase {
   protected final Properties createProperties() {
     Properties properties = new Properties();
     properties.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
-    properties.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.LOG_LEVEL_NAME, "warning");
+    properties.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL, "warning");
     properties.setProperty("file.encoding", "UTF-8");
     return editProperties(properties);
   }

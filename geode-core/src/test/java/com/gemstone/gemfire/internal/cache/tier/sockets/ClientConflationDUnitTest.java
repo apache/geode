@@ -34,8 +34,7 @@ import com.gemstone.gemfire.test.dunit.*;
 import java.util.Iterator;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * This test verifies the per-client queue conflation override functionality
@@ -144,7 +143,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
     props.setProperty(DistributionConfig.DELTA_PROPAGATION_PROP_NAME, "false");
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(DistributionConfig.CLIENT_CONFLATION_PROP_NAME, conflation);
+    props.setProperty(CONFLATE_EVENTS, conflation);
     return props;
   }
 

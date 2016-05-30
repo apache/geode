@@ -16,10 +16,11 @@
  */
 package com.gemstone.gemfire.redis;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -383,7 +384,7 @@ public class GemFireRedisServer {
         if (c == null) {
           CacheFactory cacheFactory = new CacheFactory();
           if (logLevel != null)
-            cacheFactory.set(DistributionConfig.LOG_LEVEL_NAME, logLevel);
+            cacheFactory.set(LOG_LEVEL, logLevel);
           c = cacheFactory.create();
         }
       }

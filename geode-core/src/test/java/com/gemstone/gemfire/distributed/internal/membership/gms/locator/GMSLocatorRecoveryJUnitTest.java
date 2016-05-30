@@ -141,10 +141,10 @@ public class GMSLocatorRecoveryJUnitTest {
       
       // create configuration objects
       Properties nonDefault = new Properties();
-      nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
+      nonDefault.put(DISABLE_TCP, "true");
       nonDefault.put(MCAST_PORT, "0");
-      nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
-      nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
+      nonDefault.put(LOG_FILE, "");
+      nonDefault.put(LOG_LEVEL, "fine");
       nonDefault.put(LOCATORS, localHost.getHostAddress() + '[' + port + ']');
       nonDefault.put(BIND_ADDRESS, localHost.getHostAddress());
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);

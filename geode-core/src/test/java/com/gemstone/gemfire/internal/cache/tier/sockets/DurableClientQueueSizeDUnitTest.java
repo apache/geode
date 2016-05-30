@@ -32,7 +32,7 @@ import com.gemstone.gemfire.test.dunit.*;
 import java.util.Iterator;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  *
@@ -253,7 +253,7 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
       throws Exception {
     Properties props = new Properties();
     props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
-    //    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    //    props.setProperty(LOG_LEVEL, "fine");
 //    props.setProperty("log-file", "server_" + OSProcess.getId() + ".log");
 //    props.setProperty("statistic-archive-file", "server_" + OSProcess.getId()
 //        + ".gfs");
@@ -305,13 +305,13 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
     }
     Properties props = new Properties();
     if (durable) {
-      props.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME,
+      props.setProperty(DURABLE_CLIENT_ID,
           "my-durable-client");
-      props.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME,
+      props.setProperty(DURABLE_CLIENT_TIMEOUT,
           timeoutSeconds);
     }
     //    props.setProperty("log-file", "client_" + OSProcess.getId() + ".log");
-    //    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    //    props.setProperty(LOG_LEVEL, "fine");
 //    props.setProperty("statistic-archive-file", "client_" + OSProcess.getId()
 //        + ".gfs");
 //    props.setProperty("statistic-sampling-enabled", "true");

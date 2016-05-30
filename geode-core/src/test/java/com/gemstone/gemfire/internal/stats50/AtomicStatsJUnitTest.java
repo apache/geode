@@ -21,7 +21,6 @@ import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.StatisticsTypeFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Test;
@@ -32,7 +31,7 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -52,7 +51,7 @@ public class AtomicStatsJUnitTest {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     //    props.setProperty("statistic-sample-rate", "60000");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "false");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
     DistributedSystem ds = DistributedSystem.connect(props);
     
     String statName = "TestStats";

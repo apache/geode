@@ -31,7 +31,6 @@ import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache.util.CqListenerAdapter;
 import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
@@ -40,6 +39,8 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class ClientSnapshotDUnitTest extends CacheTestCase {
 
@@ -251,7 +252,7 @@ public class ClientSnapshotDUnitTest extends CacheTestCase {
       @Override
       public Object call() throws Exception {
         ClientCacheFactory cf = new ClientCacheFactory()
-            .set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel())
+            .set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel())
           .setPdxSerializer(new MyPdxSerializer())
           .addPoolServer(NetworkUtils.getServerHostName(host), port)
           .setPoolSubscriptionEnabled(true)

@@ -50,7 +50,7 @@ import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 /**
@@ -110,7 +110,7 @@ public class RestInterfaceJUnitTest {
         .setPdxIgnoreUnreadFields(false)
         .set("name", getClass().getSimpleName())
           .set(MCAST_PORT, "0")
-          .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+          .set(LOG_LEVEL, "config")
           .set(DistributionConfig.HTTP_SERVICE_BIND_ADDRESS_NAME, "localhost")
           .set(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(getHttpServicePort()))
         //.set("http-service-ssl-enabled", "false")

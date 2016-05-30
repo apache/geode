@@ -36,8 +36,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * 
@@ -94,7 +93,7 @@ public class Bug41091DUnitTest extends CacheTestCase {
         });
    
         Properties props = new Properties();
-        props.setProperty(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "true");
+        props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
         props.setProperty(LOCATORS, NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]");
         getSystem(props);
         
@@ -114,7 +113,7 @@ public class Bug41091DUnitTest extends CacheTestCase {
       
       public void run() {
         Properties props = new Properties();
-        props.setProperty(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "true");
+        props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
         props.setProperty(LOCATORS, NetworkUtils.getServerHostName(host) + "[" + locatorPort + "]");
         getSystem(props);
         Cache cache = getCache();
@@ -149,9 +148,9 @@ public class Bug41091DUnitTest extends CacheTestCase {
         disconnectFromDS();
         Properties props = new Properties();
         props.setProperty(MCAST_PORT, String.valueOf(0));
-        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
-        props.setProperty(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "true");
-        props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+        props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+        props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
+        props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
         try {
           File logFile = new File(testName + "-locator" + locatorPort
               + ".log");

@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassBuilder;
 import com.gemstone.gemfire.internal.ClassPathLoader;
@@ -154,7 +155,7 @@ public class UserCommandsDUnitTest extends CliCommandTestBase {
     });
 
     Properties properties = new Properties();
-    properties.setProperty(DistributionConfig.USER_COMMAND_PACKAGES, "junit.ucdunit");
+    properties.setProperty(SystemConfigurationProperties.USER_COMMAND_PACKAGES, "junit.ucdunit");
     setUpJmxManagerOnVm0ThenConnect(properties);
 
     CommandResult cmdResult = executeCommand("ucdunitcmd");

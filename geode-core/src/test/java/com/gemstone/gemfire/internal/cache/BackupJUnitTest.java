@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.cache.persistence.BackupManager;
 import com.gemstone.gemfire.internal.cache.persistence.RestoreScript;
@@ -33,8 +32,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 /**
@@ -44,7 +42,7 @@ import static org.junit.Assert.*;
 public class BackupJUnitTest {
   protected static GemFireCacheImpl cache = null;
   protected static File TMP_DIR;
-  protected static File CACHE_XML_FILE; 
+  protected static File cacheXmlFile;
 
   protected static DistributedSystem ds = null;
   protected static Properties props = new Properties();
@@ -69,12 +67,12 @@ public class BackupJUnitTest {
       TMP_DIR = tmpDirName == null ? new File("") : new File(tmpDirName); 
       try {
         URL url = BackupJUnitTest.class.getResource("BackupJUnitTest.cache.xml");
-        CACHE_XML_FILE = new File(url.toURI().getPath());
+        cacheXmlFile = new File(url.toURI().getPath());
       } catch (URISyntaxException e) {
         throw new ExceptionInInitializerError(e);
       }
-      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, CACHE_XML_FILE.getAbsolutePath());
-      props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "config"); // to keep diskPerf logs smaller
+      props.setProperty(CACHE_XML_FILE, cacheXmlFile.getAbsolutePath());
+      props.setProperty(LOG_LEVEL, "config"); // to keep diskPerf logs smaller
     }
 
     createCache();
@@ -303,7 +301,7 @@ public class BackupJUnitTest {
     backup.finishBackup(backupDir, null, false);
     File cacheXmlBackup = FileUtil.find(backupDir, ".*config.cache.xml");
     assertTrue(cacheXmlBackup.exists());
-    byte[] expectedBytes = getBytes(CACHE_XML_FILE);
+    byte[] expectedBytes = getBytes(cacheXmlFile);
     byte[] backupBytes = getBytes(cacheXmlBackup);
     assertEquals(expectedBytes.length, backupBytes.length);
     for(int i = 0; i < expectedBytes.length; i++) {

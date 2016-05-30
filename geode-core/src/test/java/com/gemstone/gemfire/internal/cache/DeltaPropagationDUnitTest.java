@@ -47,8 +47,7 @@ import com.gemstone.gemfire.test.dunit.*;
 import java.io.File;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * @since GemFire 6.1
@@ -649,8 +648,8 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
       Properties properties = new Properties();
       properties.setProperty(MCAST_PORT, "0");
       properties.setProperty(LOCATORS, "");
-      properties.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME, durableClientId);
-      properties.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, String.valueOf(60));
+      properties.setProperty(DURABLE_CLIENT_ID, durableClientId);
+      properties.setProperty(DURABLE_CLIENT_TIMEOUT, String.valueOf(60));
   
       createDurableCacheClient(((PoolFactoryImpl)pf).getPoolAttributes(),
           regionName, properties, new Integer(DURABLE_CLIENT_LISTENER), Boolean.TRUE);
@@ -722,8 +721,8 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
       Properties properties = new Properties();
       properties.setProperty(MCAST_PORT, "0");
       properties.setProperty(LOCATORS, "");
-      properties.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME, durableClientId);
-      properties.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, String.valueOf(60));
+      properties.setProperty(DURABLE_CLIENT_ID, durableClientId);
+      properties.setProperty(DURABLE_CLIENT_TIMEOUT, String.valueOf(60));
   
       createDurableCacheClient(((PoolFactoryImpl)pf).getPoolAttributes(),
           regionName, properties, new Integer(DURABLE_CLIENT_LISTENER), Boolean.FALSE);
@@ -1314,7 +1313,7 @@ public class DeltaPropagationDUnitTest extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(DistributionConfig.CLIENT_CONFLATION_PROP_NAME, conflate);
+    props.setProperty(CONFLATE_EVENTS, conflate);
     new DeltaPropagationDUnitTest("temp").createCache(props);
     AttributesFactory factory = new AttributesFactory();
     pool = ClientServerTestCase.configureConnectionPool(factory, "localhost", ports,

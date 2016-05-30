@@ -43,6 +43,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOG_FILE;
 import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.SERVER_BIND_ADDRESS;
 
 /**
@@ -658,15 +659,15 @@ public class CacheServerLauncher  {
     // properly configure logging, the declarative caching file, etc.
     final Properties props = (Properties) options.get(PROPERTIES);
 
-    if (props.getProperty(DistributionConfig.LOG_FILE_NAME) == null && CacheServerLauncher.isLoggingToStdOut()) {
+    if (props.getProperty(LOG_FILE) == null && CacheServerLauncher.isLoggingToStdOut()) {
       // Check First if the gemfire.properties set the log-file. If they do, we shouldn't override that default
       final Properties gemfireProperties = new Properties();
 
       DistributionConfigImpl.loadGemFireProperties(gemfireProperties);
 
-      if (gemfireProperties.get(DistributionConfig.LOG_FILE_NAME) == null) {
+      if (gemfireProperties.get(LOG_FILE) == null) {
         // Do not allow the cache server to log to stdout, override the logger with #defaultLogFileName
-        props.setProperty(DistributionConfig.LOG_FILE_NAME, defaultLogFileName);
+        props.setProperty(LOG_FILE, defaultLogFileName);
       }
     }
 
@@ -1196,7 +1197,7 @@ public class CacheServerLauncher  {
 
   /**
    * Reads {@link DistributedSystem#PROPERTY_FILE} and determines if the
-   * {@link DistributionConfig#LOG_FILE_NAME} property is set to stdout
+   * {@link SystemConfigurationProperties#LOG_FILE} property is set to stdout
    * @return true if the logging would go to stdout
    */
   private static boolean isLoggingToStdOut() {
@@ -1210,7 +1211,7 @@ public class CacheServerLauncher  {
         System.out.println("Failed reading " + url);
         System.exit( 1 );
       }
-      final String logFile = gfprops.getProperty(DistributionConfig.LOG_FILE_NAME);
+      final String logFile = gfprops.getProperty(LOG_FILE);
       if ( logFile == null || logFile.length() == 0 ) {
         return true;
       }
@@ -1262,9 +1263,9 @@ public class CacheServerLauncher  {
       commandLineWrapper.add(key + "=" + props.getProperty(key.toString()));
     }
 
-    if (props.getProperty(DistributionConfig.LOG_FILE_NAME) == null && CacheServerLauncher.isLoggingToStdOut()) {
+    if (props.getProperty(LOG_FILE) == null && CacheServerLauncher.isLoggingToStdOut()) {
       // Do not allow the cache server to log to stdout; override the logger with #defaultLogFileName
-      commandLineWrapper.add(DistributionConfig.LOG_FILE_NAME + "=" + defaultLogFileName);
+      commandLineWrapper.add(LOG_FILE + "=" + defaultLogFileName);
     }
   }
 

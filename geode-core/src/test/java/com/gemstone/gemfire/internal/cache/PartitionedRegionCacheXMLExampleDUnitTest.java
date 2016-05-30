@@ -20,10 +20,11 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.util.test.TestUtil;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 import java.util.Properties;
 
@@ -50,7 +51,7 @@ public class PartitionedRegionCacheXMLExampleDUnitTest extends
 
 				Properties props = new Properties();
 				String xmlfilepath = TestUtil.getResourcePath(getClass(), "PartitionRegionCacheExample1.xml");
-				props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, xmlfilepath);
+				props.setProperty(CACHE_XML_FILE, xmlfilepath);
 
 				getSystem(props);
 				cache = getCache();
@@ -105,7 +106,7 @@ public class PartitionedRegionCacheXMLExampleDUnitTest extends
 
 				Properties props = new Properties();
 				String xmlfilepath = TestUtil.getResourcePath(getClass(), "PartitionRegionCacheExample2.xml");
-				props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, xmlfilepath);
+				props.setProperty(CACHE_XML_FILE, xmlfilepath);
 				getSystem(props);
 				cache = getCache();
 			}

@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.jta;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
@@ -37,8 +36,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * This test case is to test the following test scenarios: 1) Get Simple DS
@@ -93,7 +91,7 @@ public class DataSourceJTAJUnitTest {
     try {
       Properties props = new Properties();
       String path= TestUtil.getResourcePath(CacheUtils.class, "cachejta.xml");
-      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
+      props.setProperty(CACHE_XML_FILE, path);
       ds = connect(props);
       tableName = CacheUtils.init(ds, "JTATest");
       // System.out.println ("Table name: " + tableName);
@@ -274,7 +272,7 @@ public class DataSourceJTAJUnitTest {
     try {
       Properties props = new Properties();
       String path= TestUtil.getResourcePath(CacheUtils.class, "cachejta.xml");
-      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
+      props.setProperty(CACHE_XML_FILE, path);
       ds = connect(props);
       tableName = CacheUtils.init(ds, "JTATest");
       System.out.println("Table name: " + tableName);
@@ -585,7 +583,7 @@ public class DataSourceJTAJUnitTest {
     try {
       Properties props = new Properties();
       String path= TestUtil.getResourcePath(CacheUtils.class, "cachejta.xml");
-      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
+      props.setProperty(CACHE_XML_FILE, path);
       ds = connect(props);
       tableName = CacheUtils.init(ds, "JTATest");
       // System.out.println ("Table name: " + tableName);
@@ -749,7 +747,7 @@ public class DataSourceJTAJUnitTest {
     try {
       Properties props = new Properties();
       String path= TestUtil.getResourcePath(CacheUtils.class, "cachejta.xml");
-      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
+      props.setProperty(CACHE_XML_FILE, path);
       ds = connect(props);
       tableName = CacheUtils.init(ds, "JTATest");
       // System.out.println ("Table name: " + tableName);

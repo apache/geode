@@ -944,7 +944,7 @@ public class CliStrings {
   public static final String EXPORT_LOGS__GROUP = "group";
   public static final String EXPORT_LOGS__GROUP__HELP = "Group of members whose log files will be exported.";
   public static final String EXPORT_LOGS__MSG__CANNOT_EXECUTE = "Cannot execute";
-  public static final String EXPORT_LOGS__LOGLEVEL = DistributionConfig.LOG_LEVEL_NAME;
+  public static final String EXPORT_LOGS__LOGLEVEL = LOG_LEVEL;
   public static final String EXPORT_LOGS__LOGLEVEL__HELP = "Minimum level of log entries to export. Valid values are: none, error, info, config , fine, finer and finest.  The default is \"info\".";
   public static final String EXPORT_LOGS__UPTO_LOGLEVEL = "only-log-level";
   public static final String EXPORT_LOGS__UPTO_LOGLEVEL__HELP = "Whether to only include those entries that exactly match the --log-level specified.";

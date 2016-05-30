@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache30;
 import com.company.app.DBLoader;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheTransactionManagerCreation;
@@ -32,6 +31,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Tests the declarative caching functionality introduced in GemFire
@@ -163,7 +164,7 @@ public class CacheXml45DUnitTest extends CacheXml41DUnitTest {
       // make our system play the roles used by this test so the create regions
       // will not think the a required role is missing
       Properties config = new Properties();
-      config.setProperty(DistributionConfig.ROLES_NAME, MY_ROLES);
+      config.setProperty(ROLES, MY_ROLES);
       this.xmlProps = config;
     }
     DistributedRegion.ignoreReconnect = true;

@@ -35,6 +35,8 @@ import org.junit.Ignore;
 
 import java.util.Properties;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  * This test is only for GLOBAL REPLICATE Regions. Tests are
  * similar to {@link DistributedAckRegionCCEDUnitTest}.
@@ -57,7 +59,7 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
   @Override
   public Properties getDistributedSystemProperties() {
     Properties p = super.getDistributedSystemProperties();
-    p.put(DistributionConfig.CONSERVE_SOCKETS_NAME, "false");
+    p.put(CONSERVE_SOCKETS, "false");
     if (distributedSystemID > 0) {
       p.put(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""
           + distributedSystemID);

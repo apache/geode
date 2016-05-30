@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
 import com.gemstone.gemfire.test.dunit.*;
@@ -33,6 +32,8 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * This tests the fix for bug #43407 under a variety of configurations and
@@ -181,7 +182,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("creating client cache");
     ClientCache c = new ClientCacheFactory()
                     .addPoolServer("localhost", serverPort)
-                    .set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel())
+                    .set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel())
                     .create();
     Region myRegion = c.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);;
     if (useTX) {
@@ -299,7 +300,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("creating client cache");
     ClientCache c = new ClientCacheFactory()
                     .addPoolServer("localhost", serverPort)
-                    .set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel())
+                    .set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel())
                     .create();
     Region myRegion = c.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);;
     if (useTX) {
@@ -421,7 +422,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends CacheTestCase
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("creating client cache");
     ClientCache c = new ClientCacheFactory()
                     .addPoolServer("localhost", serverPort)
-                    .set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel())
+                    .set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel())
                     .setPoolSubscriptionEnabled(true)
                     .create();
     

@@ -18,6 +18,8 @@ package com.gemstone.gemfire.internal.admin;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -113,15 +115,15 @@ public class SSLConfig {
    * @since GemFire 4.0
    */
   public void toDSProperties(Properties props) {
-    props.setProperty(DistributionConfig.SSL_ENABLED_NAME,
+    props.setProperty(SSL_ENABLED,
                       String.valueOf(this.enabled));
 
     if (this.enabled) {
-      props.setProperty(DistributionConfig.SSL_PROTOCOLS_NAME,
+      props.setProperty(SSL_PROTOCOLS,
                         this.protocols); 
-      props.setProperty(DistributionConfig.SSL_CIPHERS_NAME,
+      props.setProperty(SSL_CIPHERS,
                         this.ciphers);
-      props.setProperty(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME,
+      props.setProperty(SSL_REQUIRE_AUTHENTICATION,
                         String.valueOf(this.requireAuth));
     }
   }

@@ -67,7 +67,7 @@ public class WANBootStrapping_Site1_Add {
         START_LOCATOR,
         "localhost[" + 10101
             + "],server=true,peer=true,hostname-for-clients=localhost").set(
-        DistributionConfig.LOG_LEVEL_NAME, "warning").create();
+        LOG_LEVEL, "warning").create();
     System.out.println("Cache Created");
 
     // to create region and a gateway sender ask to run

@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.admin.AdminException;
 import com.gemstone.gemfire.admin.BackupStatus;
@@ -457,7 +459,7 @@ public class SystemAdmin {
   private static InternalDistributedSystem getAdminCnx() {
     InternalDistributedSystem.setCommandLineAdmin(true);
     Properties props = propertyOption;
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "warning");
+    props.setProperty(LOG_LEVEL, "warning");
     DistributionConfigImpl dsc = new DistributionConfigImpl(props);
     System.out.print("Connecting to distributed system:");
     if (!"".equals(dsc.getLocators())) {

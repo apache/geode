@@ -40,8 +40,7 @@ import java.io.File;
 import java.net.InetAddress;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
@@ -100,12 +99,12 @@ public class MembershipJUnitTest {
 
       // create configuration objects
       Properties nonDefault = new Properties();
-      nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
+      nonDefault.put(DISABLE_TCP, "true");
       nonDefault.put(MCAST_PORT, String.valueOf(mcastPort));
-      nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
-      nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
+      nonDefault.put(LOG_FILE, "");
+      nonDefault.put(LOG_LEVEL, "fine");
       nonDefault.put(DistributionConfig.GROUPS_NAME, "red, blue");
-      nonDefault.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
+      nonDefault.put(MEMBER_TIMEOUT, "2000");
       nonDefault.put(LOCATORS, localHost.getHostName() + '[' + port + ']');
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
       RemoteTransportConfig transport = new RemoteTransportConfig(config,
@@ -205,7 +204,7 @@ public class MembershipJUnitTest {
   public void testJoinTimeoutSetting() throws Exception {
     long timeout = 30000;
     Properties nonDefault = new Properties();
-    nonDefault.put(DistributionConfig.MEMBER_TIMEOUT_NAME, ""+timeout);
+    nonDefault.put(MEMBER_TIMEOUT, ""+timeout);
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig transport = new RemoteTransportConfig(config,
         DistributionManager.NORMAL_DM_TYPE);
@@ -246,10 +245,10 @@ public class MembershipJUnitTest {
   @Test
   public void testMulticastDiscoveryNotAllowed() {
     Properties nonDefault = new Properties();
-    nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
+    nonDefault.put(DISABLE_TCP, "true");
     nonDefault.put(MCAST_PORT, "12345");
-    nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
-    nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    nonDefault.put(LOG_FILE, "");
+    nonDefault.put(LOG_LEVEL, "fine");
     nonDefault.put(LOCATORS, "");
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig transport = new RemoteTransportConfig(config,

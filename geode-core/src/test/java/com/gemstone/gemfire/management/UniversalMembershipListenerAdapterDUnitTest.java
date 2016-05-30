@@ -42,8 +42,7 @@ import org.junit.experimental.categories.Category;
 import java.io.IOException;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Tests the UniversalMembershipListenerAdapter.
@@ -832,10 +831,10 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     final Properties serverProperties = getSystem().getProperties();
 
     //Below removed properties are already got copied as cluster SSL properties 
-    serverProperties.remove(DistributionConfig.SSL_ENABLED_NAME);
-    serverProperties.remove(DistributionConfig.SSL_CIPHERS_NAME);
-    serverProperties.remove(DistributionConfig.SSL_PROTOCOLS_NAME);
-    serverProperties.remove(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME);
+    serverProperties.remove(SSL_ENABLED);
+    serverProperties.remove(SSL_CIPHERS);
+    serverProperties.remove(SSL_PROTOCOLS);
+    serverProperties.remove(SSL_REQUIRE_AUTHENTICATION);
 
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] ports[0]=" + ports[0]);
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] serverMemberId=" + serverMemberId);
@@ -1524,10 +1523,10 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     final String serverMemberId = serverMember.toString();
     final Properties serverProperties = getSystem().getProperties();
 
-    serverProperties.remove(DistributionConfig.SSL_ENABLED_NAME);
-    serverProperties.remove(DistributionConfig.SSL_CIPHERS_NAME);
-    serverProperties.remove(DistributionConfig.SSL_PROTOCOLS_NAME);
-    serverProperties.remove(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME);
+    serverProperties.remove(SSL_ENABLED);
+    serverProperties.remove(SSL_CIPHERS);
+    serverProperties.remove(SSL_PROTOCOLS);
+    serverProperties.remove(SSL_REQUIRE_AUTHENTICATION);
     
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInPeerSystem] ports[0]=" + ports[0]);
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInPeerSystem] serverMemberId=" + serverMemberId);

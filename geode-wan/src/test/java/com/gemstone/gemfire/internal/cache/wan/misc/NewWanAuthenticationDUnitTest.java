@@ -33,8 +33,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
@@ -196,8 +195,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
         accessor);
     }
     if (clientAuthInit != null) {
-      authProps.setProperty(DistributionConfig.SECURITY_CLIENT_AUTH_INIT_NAME,
-        clientAuthInit);
+      authProps.setProperty(SECURITY_CLIENT_AUTH_INIT, clientAuthInit);
     }
     if (extraAuthProps != null) {
       authProps.putAll(extraAuthProps);

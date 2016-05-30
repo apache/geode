@@ -35,6 +35,8 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.*;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /****
  * 
  *
@@ -110,7 +112,7 @@ public class GetMemberConfigInformationFunction extends FunctionAdapter implemen
         cacheServerAttributes.put("message-time-to-live", Integer.toString(cacheServer.getMessageTimeToLive()));
         cacheServerAttributes.put("notify-by-subscription", Boolean.toString(cacheServer.getNotifyBySubscription()));
         cacheServerAttributes.put("port", Integer.toString(cacheServer.getPort()));
-        cacheServerAttributes.put(DistributionConfig.SOCKET_BUFFER_SIZE_NAME, Integer.toString(cacheServer.getSocketBufferSize()));
+        cacheServerAttributes.put(SOCKET_BUFFER_SIZE, Integer.toString(cacheServer.getSocketBufferSize()));
         cacheServerAttributes.put("load-poll-interval", Long.toString(cacheServer.getLoadPollInterval()));
         cacheServerAttributes.put("tcp-no-delay", Boolean.toString(cacheServer.getTcpNoDelay()));
 
@@ -160,7 +162,7 @@ public class GetMemberConfigInformationFunction extends FunctionAdapter implemen
     csAttributesDefault.put("message-time-to-live", Integer.toString(CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE));
     csAttributesDefault.put("notify-by-subscription", Boolean.toString(CacheServer.DEFAULT_NOTIFY_BY_SUBSCRIPTION));
     csAttributesDefault.put("port", Integer.toString(CacheServer.DEFAULT_PORT));
-    csAttributesDefault.put(DistributionConfig.SOCKET_BUFFER_SIZE_NAME, Integer.toString(CacheServer.DEFAULT_SOCKET_BUFFER_SIZE));
+    csAttributesDefault.put(SOCKET_BUFFER_SIZE, Integer.toString(CacheServer.DEFAULT_SOCKET_BUFFER_SIZE));
     csAttributesDefault.put("load-poll-interval", Long.toString(CacheServer.DEFAULT_LOAD_POLL_INTERVAL));
     return csAttributesDefault;
 

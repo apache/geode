@@ -34,6 +34,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  * Client health stats check
  * 
@@ -242,14 +244,14 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
   public static void createClientCache(Host host, Integer port, int clientNum, boolean subscriptionEnabled, boolean durable) throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME, "durable-"+clientNum);
-    props.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, "300000");
+    props.setProperty(DURABLE_CLIENT_ID, "durable-"+clientNum);
+    props.setProperty(DURABLE_CLIENT_TIMEOUT, "300000");
 
 //    props.setProperty("log-file", getTestMethodName()+"_client_" + clientNum + ".log");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
-    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, getTestMethodName() + "_client_" + clientNum
+    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(STATISTIC_ARCHIVE_FILE, getTestMethodName() + "_client_" + clientNum
         + ".gfs");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
     ClientCacheFactory ccf = new ClientCacheFactory(props);
     if(subscriptionEnabled){
@@ -259,8 +261,8 @@ public class ClientHealthStatsDUnitTest extends DistributedTestCase {
     }
     
     if(durable){
-      ccf.set(DistributionConfig.DURABLE_CLIENT_ID_NAME, "DurableClientId_" + clientNum);
-      ccf.set(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, "" + 300);
+      ccf.set(DURABLE_CLIENT_ID, "DurableClientId_" + clientNum);
+      ccf.set(DURABLE_CLIENT_TIMEOUT, "" + 300);
     }
 
     ccf.addPoolServer(host.getHostName(), port);

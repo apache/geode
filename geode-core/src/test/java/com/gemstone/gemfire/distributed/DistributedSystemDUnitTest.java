@@ -73,7 +73,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     Properties p = getDistributedSystemProperties();
     p.put(LOCATORS, "");
     p.put(START_LOCATOR, "localhost[" + locatorPort + "]");
-    p.put(DistributionConfig.DISABLE_TCP_NAME, "true");
+    p.put(DISABLE_TCP, "true");
     InternalDistributedSystem ds = (InternalDistributedSystem)DistributedSystem.connect(p);
     try {
       // construct a member ID that will represent a departed member
@@ -142,7 +142,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOCATORS, "");
     // set a flow-control property for the test (bug 37562)
-    config.setProperty(DistributionConfig.MCAST_FLOW_CONTROL_NAME, "3000000,0.20,3000");
+    config.setProperty(MCAST_FLOW_CONTROL, "3000000,0.20,3000");
     
     DistributedSystem system1 = DistributedSystem.connect(config);
     DistributedSystem system2 = DistributedSystem.connect(config);
@@ -160,7 +160,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOCATORS, "");
-    config.setProperty(DistributionConfig.MCAST_FLOW_CONTROL_NAME, "3000000,0.20,3000");
+    config.setProperty(MCAST_FLOW_CONTROL, "3000000,0.20,3000");
 
 
     DistributedSystem system1 = DistributedSystem.connect(config);
@@ -192,7 +192,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     DistributedSystem system1 = DistributedSystem.connect(config);
     system1.disconnect();
     int time = DistributionConfig.DEFAULT_ACK_WAIT_THRESHOLD + 17;
-    config.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME,
+    config.put(ACK_WAIT_THRESHOLD,
                String.valueOf(time));
     DistributedSystem system2 = DistributedSystem.connect(config);
     system2.disconnect();
@@ -293,7 +293,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     int unicastPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     config.put(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
     // Minimum 3 ports required in range for UDP, FD_SOCK and TcpConduit.
-    config.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, 
+    config.setProperty(MEMBERSHIP_PORT_RANGE,
         ""+unicastPort+"-"+(unicastPort+2));
     InternalDistributedSystem system = getSystem(config);
     DistributionManager dm = (DistributionManager)system.getDistributionManager();
@@ -338,7 +338,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     int portRange = 3;
     int portStartRange = getPortRange(portRange);
     int portEndRange = portStartRange + portRange - 1;
-    config.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, "" + (portStartRange) + "-" + (portEndRange));
+    config.setProperty(MEMBERSHIP_PORT_RANGE, "" + (portStartRange) + "-" + (portEndRange));
     InternalDistributedSystem system = getSystem(config);
     Cache cache = CacheFactory.create(system);
     cache.addCacheServer();
@@ -363,7 +363,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     final int unicastPort = socketPorts[0];
     config.setProperty(MCAST_PORT, String.valueOf(mcastPort));
     config.setProperty(START_LOCATOR, "localhost[" + socketPorts[1] + "]");
-    config.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, 
+    config.setProperty(MEMBERSHIP_PORT_RANGE,
         ""+unicastPort+"-"+(unicastPort+2));
     InternalDistributedSystem system = (InternalDistributedSystem)DistributedSystem.connect(config);
     try {
@@ -407,7 +407,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOCATORS, "");
-    config.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, "");
+    config.setProperty(CACHE_XML_FILE, "");
 
     DistributedSystem sys = DistributedSystem.connect(config);
 

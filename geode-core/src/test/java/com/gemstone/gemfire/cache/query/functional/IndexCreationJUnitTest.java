@@ -26,6 +26,8 @@
  */
 package com.gemstone.gemfire.cache.query.functional;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.query.*;
 import com.gemstone.gemfire.cache.query.data.ComparableWrapper;
@@ -849,7 +851,7 @@ public class IndexCreationJUnitTest{
       Properties props = new Properties();
       props.setProperty(SystemConfigurationProperties.NAME, "test");
       props.setProperty(MCAST_PORT, "0");
-      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, IndexCreationJUnitTest.class.getResource("index-creation-with-eviction.xml").toURI().getPath());
+      props.setProperty(CACHE_XML_FILE, IndexCreationJUnitTest.class.getResource("index-creation-with-eviction.xml").toURI().getPath());
       DistributedSystem ds = DistributedSystem.connect(props);
 
       // Create the cache which causes the cache-xml-file to be parsed
@@ -875,7 +877,7 @@ public class IndexCreationJUnitTest{
       props.setProperty(MCAST_PORT, "0");
       //Using a different cache.xml that changes some region properties
       //That will force the disk code to copy the region entries.
-      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME,
+      props.setProperty(CACHE_XML_FILE,
           IndexCreationJUnitTest.class.getResource("index-creation-without-eviction.xml").toURI().getPath());
       DistributedSystem ds = DistributedSystem.connect(props);
       Cache cache = CacheFactory.create(ds);
@@ -900,7 +902,7 @@ public class IndexCreationJUnitTest{
     props.setProperty(SystemConfigurationProperties.NAME, "test");
     props.setProperty(MCAST_PORT, "0");
     props
-        .setProperty(DistributionConfig.CACHE_XML_FILE_NAME, IndexCreationJUnitTest.class.getResource("index-creation-without-eviction.xml").toURI().getPath());
+        .setProperty(CACHE_XML_FILE, IndexCreationJUnitTest.class.getResource("index-creation-without-eviction.xml").toURI().getPath());
     DistributedSystem ds = DistributedSystem.connect(props);
     Cache cache = CacheFactory.create(ds);
     Region localRegion = cache.getRegion("localRegion");
@@ -928,7 +930,7 @@ public class IndexCreationJUnitTest{
     props.setProperty(SystemConfigurationProperties.NAME, "test");
     props.setProperty(MCAST_PORT, "0");
     props
-        .setProperty(DistributionConfig.CACHE_XML_FILE_NAME, IndexCreationJUnitTest.class.getResource("index-creation-without-eviction.xml").toURI().getPath());
+        .setProperty(CACHE_XML_FILE, IndexCreationJUnitTest.class.getResource("index-creation-without-eviction.xml").toURI().getPath());
     DistributedSystem ds = DistributedSystem.connect(props);
     Cache cache = CacheFactory.create(ds);
     Region localDiskRegion = cache.getRegion("localDiskRegion");
@@ -956,9 +958,9 @@ public class IndexCreationJUnitTest{
       Properties props = new Properties();
       props.setProperty(SystemConfigurationProperties.NAME, "test");
       props.setProperty(MCAST_PORT, "0");
-      props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-      props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
-      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, IndexCreationJUnitTest.class.getResource("index-recovery-overflow.xml").toURI().getPath());
+      props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+      props.setProperty(ENABLE_TIME_STATISTICS, "true");
+      props.setProperty(CACHE_XML_FILE, IndexCreationJUnitTest.class.getResource("index-recovery-overflow.xml").toURI().getPath());
       DistributedSystem ds = DistributedSystem.connect(props);
 
       // Create the cache which causes the cache-xml-file to be parsed
@@ -990,9 +992,9 @@ public class IndexCreationJUnitTest{
       Properties props = new Properties();
       props.setProperty(SystemConfigurationProperties.NAME, "test");
       props.setProperty(MCAST_PORT, "0");
-      props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-      props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
-      props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, IndexCreationJUnitTest.class.getResource("index-recovery-overflow.xml").toURI().getPath());
+      props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+      props.setProperty(ENABLE_TIME_STATISTICS, "true");
+      props.setProperty(CACHE_XML_FILE, IndexCreationJUnitTest.class.getResource("index-recovery-overflow.xml").toURI().getPath());
       DistributedSystem ds = DistributedSystem.connect(props);
       Cache cache = CacheFactory.create(ds);
       QueryService qs = cache.getQueryService();

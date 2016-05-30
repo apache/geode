@@ -32,8 +32,7 @@ import com.gemstone.gemfire.test.dunit.*;
 import java.net.SocketException;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 
 /**      
@@ -705,8 +704,8 @@ public class DurableClientReconnectDUnitTest extends DistributedTestCase
     Properties properties = new Properties();
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
-    properties.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME, durableClientId);
-    properties.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, String.valueOf(durableClientTimeout));
+    properties.setProperty(DURABLE_CLIENT_ID, durableClientId);
+    properties.setProperty(DURABLE_CLIENT_TIMEOUT, String.valueOf(durableClientTimeout));
     return properties;
   }
 

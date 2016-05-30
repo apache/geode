@@ -38,6 +38,8 @@ import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.*;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  *
  */
@@ -402,7 +404,7 @@ public class ClientsWithVersioningRetryDUnitTest extends CacheTestCase {
   
   public Properties getDistributedSystemProperties() {
     Properties p = super.getDistributedSystemProperties();
-    p.put(DistributionConfig.CONSERVE_SOCKETS_NAME, "false");
+    p.put(CONSERVE_SOCKETS, "false");
     return p;
   }
   

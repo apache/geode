@@ -29,10 +29,8 @@ import java.io.File;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 /**
  * Tests the old disk apis to make sure they do the correct thing.
@@ -52,10 +50,10 @@ public class DiskOldAPIsJUnitTest
   static {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "config"); // to keep diskPerf logs smaller
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
-    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "stats.gfs");
+    props.setProperty(LOG_LEVEL, "config"); // to keep diskPerf logs smaller
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+    props.setProperty(ENABLE_TIME_STATISTICS, "true");
+    props.setProperty(STATISTIC_ARCHIVE_FILE, "stats.gfs");
   }
 
   @Before

@@ -20,6 +20,8 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.*;
@@ -77,10 +79,10 @@ public class DiskRegionTestingBase
   {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "config"); // to keep diskPerf logs smaller
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
-    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "stats.gfs");
+    props.setProperty(LOG_LEVEL, "config"); // to keep diskPerf logs smaller
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+    props.setProperty(ENABLE_TIME_STATISTICS, "true");
+    props.setProperty(STATISTIC_ARCHIVE_FILE, "stats.gfs");
 
     File testingDirectory = new File("testingDirectory");
     testingDirectory.mkdir();
@@ -173,8 +175,8 @@ public class DiskRegionTestingBase
 
   protected Cache createCache() {
     // useful for debugging:
-//    props.put(DistributionConfig.LOG_FILE_NAME, "diskRegionTestingBase_system.log");
-//    props.put(DistributionConfig.LOG_LEVEL_NAME, getGemFireLogLevel());
+//    props.put(LOG_FILE, "diskRegionTestingBase_system.log");
+//    props.put(LOG_LEVEL, getGemFireLogLevel());
     cache = new CacheFactory(props).create();
     ds = cache.getDistributedSystem();
     logWriter = cache.getLogger();

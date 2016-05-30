@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.client.*;
@@ -147,10 +149,10 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, getDUnitLogLevel());
         // these settings were used to manually check that tx operation stats were being updated
-        //ccf.set(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-        //ccf.set(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "clientStats.gfs");
+        //ccf.set(STATISTIC_SAMPLING_ENABLED, "true");
+        //ccf.set(STATISTIC_ARCHIVE_FILE, "clientStats.gfs");
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<Integer, String> crf = cCache
             .createClientRegionFactory(isEmpty ? ClientRegionShortcut.PROXY
@@ -207,7 +209,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
     ccf.setPoolSubscriptionEnabled(false);
 
-    ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+    ccf.set(LOG_LEVEL, getDUnitLogLevel());
 
     ClientCache cCache = getClientCache(ccf);
     
@@ -278,7 +280,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     ClientCacheFactory ccf = new ClientCacheFactory();
     ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
     ccf.setPoolSubscriptionEnabled(false);
-    ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+    ccf.set(LOG_LEVEL, getDUnitLogLevel());
     ClientCache cCache = getClientCache(ccf);
     ClientRegionFactory<CustId, Customer> custrf = cCache
       .createClientRegionFactory(cachingProxy ? ClientRegionShortcut.CACHING_PROXY : ClientRegionShortcut.PROXY);
@@ -1333,7 +1335,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<CustId, Customer> custrf = cCache
             .createClientRegionFactory(ClientRegionShortcut.PROXY);
@@ -1429,7 +1431,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         ccf.addPoolServer("localhost", port2);
         ccf.setPoolLoadConditioningInterval(1);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<CustId, Customer> custrf = cCache
             .createClientRegionFactory(ClientRegionShortcut.PROXY);
@@ -1546,7 +1548,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         if (port2 != 0) ccf.addPoolServer("localhost", port2);
         if (port3 != 0) ccf.addPoolServer("localhost", port3);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<CustId, Customer> custrf = cCache
             .createClientRegionFactory(cachingProxy ? ClientRegionShortcut.CACHING_PROXY : ClientRegionShortcut.PROXY);
@@ -2058,7 +2060,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         ccf.addPoolServer("localhost", port2);
         ccf.setPoolSubscriptionEnabled(false);
         ccf.setPoolLoadConditioningInterval(1);
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<CustId, Customer> custrf = cCache
             .createClientRegionFactory(ClientRegionShortcut.PROXY);
@@ -2451,7 +2453,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         ccf.setPoolMinConnections(5);
         ccf.setPoolLoadConditioningInterval(-1);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         Region r1 = cCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("r1");
         Region r2 = cCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("r2");
@@ -2684,10 +2686,10 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
           ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port);
           ccf.addPoolServer("localhost", port2);
           ccf.setPoolSubscriptionEnabled(false);
-          ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+          ccf.set(LOG_LEVEL, getDUnitLogLevel());
           // these settings were used to manually check that tx operation stats were being updated
-          //ccf.set(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-          //ccf.set(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "clientStats.gfs");
+          //ccf.set(STATISTIC_SAMPLING_ENABLED, "true");
+          //ccf.set(STATISTIC_ARCHIVE_FILE, "clientStats.gfs");
           ClientCache cCache = getClientCache(ccf);
           ClientRegionFactory<Integer, String> crf = cCache
           .createClientRegionFactory(ClientRegionShortcut.PROXY);
@@ -2986,7 +2988,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
         if (port2 != 0) ccf.addPoolServer("localhost", port2);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<CustId, Customer> custrf = cCache
             .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
@@ -3127,7 +3129,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         ccf.addPoolServer("localhost", port2);
         ccf.setPoolMinConnections(0);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<CustId, Customer> custrf = cCache
             .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
@@ -3215,7 +3217,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
         ccf.setPoolMinConnections(0);
         ccf.setPoolSubscriptionEnabled(false);
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<CustId, Customer> custrf = cCache
             .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
@@ -3305,7 +3307,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         ccf.setPoolMinConnections(0);
         ccf.setPoolSubscriptionEnabled(true);
         ccf.setPoolSubscriptionRedundancy(0);
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         Region r = cCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).addCacheListener(new ClientListener()).create(regionName);
         r.registerInterestRegex(".*");
@@ -3321,7 +3323,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
         ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
         ccf.setPoolMinConnections(0);
         ccf.setPoolSubscriptionEnabled(true);
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
         Region r = cCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);
         getCache().getCacheTransactionManager().begin();

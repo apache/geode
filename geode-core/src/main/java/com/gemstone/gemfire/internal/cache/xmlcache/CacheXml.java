@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.internal.cache.xmlcache;
 
 import com.gemstone.gemfire.cache.CacheXmlException;
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -691,7 +692,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   /** The name of the <code>overflow-directory</code> attribute */
   protected static final String OVERFLOW_DIRECTORY = "overflow-directory";
   /** The name of the <code>socket-buffer-size</code> attribute */
-  protected static final String SOCKET_BUFFER_SIZE = DistributionConfig.SOCKET_BUFFER_SIZE_NAME;
+  protected static final String SOCKET_BUFFER_SIZE = SystemConfigurationProperties.SOCKET_BUFFER_SIZE;
   /** The name of the <code>socket-read-timeout</code> attribute */
   protected static final String SOCKET_READ_TIMEOUT = "socket-read-timeout";
   /** The name of the <code>maximum-queue-memory</code> attribute */

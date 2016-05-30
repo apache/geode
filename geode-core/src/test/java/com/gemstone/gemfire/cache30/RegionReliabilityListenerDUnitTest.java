@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache30;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.util.RegionRoleListenerAdapter;
 import com.gemstone.gemfire.distributed.Role;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
@@ -27,6 +26,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import java.util.Properties;
 import java.util.Set;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 /**
  * Tests the functionality of the {@link RegionRoleListener} class.
  *
@@ -64,7 +64,7 @@ public class RegionReliabilityListenerDUnitTest extends ReliabilityTestCase {
       Host.getHost(0).getVM(vm).invoke(new SerializableRunnable() {
         public void run() {
           Properties config = new Properties();
-          config.setProperty(DistributionConfig.ROLES_NAME, rolesProp[vm]);
+          config.setProperty(ROLES, rolesProp[vm]);
           getSystem(config);
         }
       });
@@ -83,7 +83,7 @@ public class RegionReliabilityListenerDUnitTest extends ReliabilityTestCase {
     
     // connect controller to system...
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     getSystem(config);
     
     // create region in controller...

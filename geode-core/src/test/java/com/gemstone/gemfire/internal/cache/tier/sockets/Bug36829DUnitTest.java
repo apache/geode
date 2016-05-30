@@ -24,14 +24,12 @@ import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
 import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class Bug36829DUnitTest extends DistributedTestCase {
   private VM serverVM;
@@ -156,9 +154,9 @@ public class Bug36829DUnitTest extends DistributedTestCase {
     Properties properties = new Properties();
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
-    properties.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME,
+    properties.setProperty(DURABLE_CLIENT_ID,
         durableClientId);
-    properties.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME,
+    properties.setProperty(DURABLE_CLIENT_TIMEOUT,
         String.valueOf(durableClientTimeout));
     return properties;
   }

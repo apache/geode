@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -70,13 +72,13 @@ public class LocatorLogFileJUnitTest {
     final String locators = "localhost[" + port + "]";
 
     final Properties properties = new Properties();
-    properties.put(DistributionConfig.LOG_LEVEL_NAME, "config");
+    properties.put(LOG_LEVEL, "config");
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, locators);
-    properties.put(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "false");
+    properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
     properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
-    properties.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
-    properties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    properties.put(MEMBER_TIMEOUT, "2000");
+    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     
     final File logFile = new File(name.getMethodName() + "-locator-" + port + ".log");
     if (logFile.exists()) {

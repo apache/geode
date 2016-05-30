@@ -28,6 +28,8 @@ import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.*;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  * This class tests distributed ownership via the DistributedLockService api.
  */
@@ -650,7 +652,7 @@ public class TXLockServiceDUnitTest extends DistributedTestCase {
   
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+    props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     return props;
   }
 

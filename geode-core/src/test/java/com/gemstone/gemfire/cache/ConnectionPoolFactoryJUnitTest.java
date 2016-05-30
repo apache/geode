@@ -31,8 +31,7 @@ import org.junit.experimental.categories.Category;
 import java.util.Map;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
@@ -46,7 +45,7 @@ public class ConnectionPoolFactoryJUnitTest {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info"); // to keep diskPerf logs smaller
+    props.setProperty(LOG_LEVEL, "info"); // to keep diskPerf logs smaller
     this.ds = DistributedSystem.connect(props);
     this.cache = CacheFactory.create(this.ds);
   }

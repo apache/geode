@@ -31,7 +31,6 @@ package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ResourceEvent;
 import com.gemstone.gemfire.distributed.internal.ResourceEventsListener;
 import com.gemstone.gemfire.distributed.internal.locks.DLockBatch;
@@ -54,6 +53,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 //import com.gemstone.gemfire.internal.cache.locks.TXLockId;
 
@@ -493,7 +494,7 @@ public class TXDistributedDUnitTest extends CacheTestCase {
   @Override
   public Properties getDistributedSystemProperties() {
     Properties p = super.getDistributedSystemProperties();
-    p.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+    p.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     return p;
   }
 

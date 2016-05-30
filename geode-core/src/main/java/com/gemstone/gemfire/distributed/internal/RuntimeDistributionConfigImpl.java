@@ -59,21 +59,21 @@ public final class RuntimeDistributionConfigImpl
   ////////////////////  Configuration Methods  ////////////////////
   @Override
   public void setLogLevel(int value) {
-    this.logLevel = (Integer)checkAttribute(LOG_LEVEL_NAME, value);
-    getAttSourceMap().put(LOG_LEVEL_NAME, ConfigSource.runtime());
+    this.logLevel = (Integer)checkAttribute(LOG_LEVEL, value);
+    getAttSourceMap().put(LOG_LEVEL, ConfigSource.runtime());
     this.ds.getInternalLogWriter().setLogWriterLevel(value);
     LogWriterAppenders.configChanged(LogWriterAppenders.Identifier.MAIN);
   }
   
   @Override
   public void setStatisticSamplingEnabled(boolean value) {
-    this.statisticSamplingEnabled = (Boolean)checkAttribute(STATISTIC_SAMPLING_ENABLED_NAME, value);
-    getAttSourceMap().put(STATISTIC_SAMPLING_ENABLED_NAME, ConfigSource.runtime());
+    this.statisticSamplingEnabled = (Boolean)checkAttribute(STATISTIC_SAMPLING_ENABLED, value);
+    getAttSourceMap().put(STATISTIC_SAMPLING_ENABLED, ConfigSource.runtime());
   }
 
   @Override
   public void setStatisticSampleRate(int value) {
-    value = (Integer)checkAttribute(STATISTIC_SAMPLE_RATE_NAME, value);
+    value = (Integer)checkAttribute(STATISTIC_SAMPLE_RATE, value);
     if (value < DEFAULT_STATISTIC_SAMPLE_RATE) {
       // fix 48228
       this.ds.getLogWriter().info("Setting statistic-sample-rate to " + DEFAULT_STATISTIC_SAMPLE_RATE + " instead of the requested " + value + " because VSD does not work with sub-second sampling.");
@@ -84,7 +84,7 @@ public final class RuntimeDistributionConfigImpl
 
   @Override
   public void setStatisticArchiveFile(File value) {
-    value = (File)checkAttribute(STATISTIC_ARCHIVE_FILE_NAME, value);
+    value = (File)checkAttribute(STATISTIC_ARCHIVE_FILE, value);
     if (value == null) {
       value = new File("");
     }
@@ -94,33 +94,33 @@ public final class RuntimeDistributionConfigImpl
       throw new IllegalArgumentException(ex.getMessage());
     }
     this.statisticArchiveFile = value;
-    getAttSourceMap().put(STATISTIC_ARCHIVE_FILE_NAME, ConfigSource.runtime());
+    getAttSourceMap().put(STATISTIC_ARCHIVE_FILE, ConfigSource.runtime());
   }
 
 
   @Override
   public void setArchiveDiskSpaceLimit(int value) {
-    this.archiveDiskSpaceLimit = (Integer)checkAttribute(ARCHIVE_DISK_SPACE_LIMIT_NAME, value);
-    getAttSourceMap().put(ARCHIVE_DISK_SPACE_LIMIT_NAME, ConfigSource.runtime());
+    this.archiveDiskSpaceLimit = (Integer)checkAttribute(ARCHIVE_DISK_SPACE_LIMIT, value);
+    getAttSourceMap().put(ARCHIVE_DISK_SPACE_LIMIT, ConfigSource.runtime());
   }
 
   @Override
   public void setArchiveFileSizeLimit(int value) {
-    this.archiveFileSizeLimit = (Integer)checkAttribute(ARCHIVE_FILE_SIZE_LIMIT_NAME, value);
-    getAttSourceMap().put(ARCHIVE_FILE_SIZE_LIMIT_NAME, ConfigSource.runtime());
+    this.archiveFileSizeLimit = (Integer)checkAttribute(ARCHIVE_FILE_SIZE_LIMIT, value);
+    getAttSourceMap().put(ARCHIVE_FILE_SIZE_LIMIT, ConfigSource.runtime());
   }
 
   @Override
   public void setLogDiskSpaceLimit(int value) {
-    this.logDiskSpaceLimit = (Integer)checkAttribute(LOG_DISK_SPACE_LIMIT_NAME, value);
-    getAttSourceMap().put(LOG_DISK_SPACE_LIMIT_NAME, ConfigSource.runtime());
+    this.logDiskSpaceLimit = (Integer)checkAttribute(LOG_DISK_SPACE_LIMIT, value);
+    getAttSourceMap().put(LOG_DISK_SPACE_LIMIT, ConfigSource.runtime());
     LogWriterAppenders.configChanged(LogWriterAppenders.Identifier.MAIN);
   }
 
   @Override
   public void setLogFileSizeLimit(int value) {
-    this.logFileSizeLimit = (Integer)checkAttribute(LOG_FILE_SIZE_LIMIT_NAME, value);
-    getAttSourceMap().put(this.LOG_FILE_SIZE_LIMIT_NAME, ConfigSource.runtime());
+    this.logFileSizeLimit = (Integer)checkAttribute(LOG_FILE_SIZE_LIMIT, value);
+    getAttSourceMap().put(LOG_FILE_SIZE_LIMIT, ConfigSource.runtime());
     LogWriterAppenders.configChanged(LogWriterAppenders.Identifier.MAIN);
   }
 
@@ -129,9 +129,9 @@ public final class RuntimeDistributionConfigImpl
   }
 
   public List<String> getModifiableAttributes(){
-    String[] modifiables = {HTTP_SERVICE_PORT_NAME,JMX_MANAGER_HTTP_PORT_NAME, ARCHIVE_DISK_SPACE_LIMIT_NAME,
-            ARCHIVE_FILE_SIZE_LIMIT_NAME, LOG_DISK_SPACE_LIMIT_NAME, LOG_FILE_SIZE_LIMIT_NAME,
-            LOG_LEVEL_NAME, STATISTIC_ARCHIVE_FILE_NAME, STATISTIC_SAMPLE_RATE_NAME, STATISTIC_SAMPLING_ENABLED_NAME};
+    String[] modifiables = {HTTP_SERVICE_PORT_NAME,JMX_MANAGER_HTTP_PORT_NAME, ARCHIVE_DISK_SPACE_LIMIT,
+            ARCHIVE_FILE_SIZE_LIMIT, LOG_DISK_SPACE_LIMIT, LOG_FILE_SIZE_LIMIT,
+            LOG_LEVEL, STATISTIC_ARCHIVE_FILE, STATISTIC_SAMPLE_RATE, STATISTIC_SAMPLING_ENABLED};
     return Arrays.asList(modifiables);
   };
 }

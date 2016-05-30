@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
@@ -28,7 +27,7 @@ import org.junit.experimental.categories.Category;
 import java.io.File;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.assertEquals;
 
 @Category(IntegrationTest.class)
@@ -196,7 +195,7 @@ public class PersistentPartitionedRegionJUnitTest {
   private Region createRegion(int ttl) {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
+    props.setProperty(LOG_LEVEL, "info");
 //    props.setProperty("log-file", "junit.log");
     cache = new CacheFactory(props).create();
     cache.createDiskStoreFactory()

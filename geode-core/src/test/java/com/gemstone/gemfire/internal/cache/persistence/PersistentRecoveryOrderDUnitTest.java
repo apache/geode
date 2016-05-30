@@ -53,6 +53,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.gemstone.gemfire.internal.lang.ThrowableUtils.getRootCause;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * This is a test of how persistent distributed
@@ -1760,7 +1761,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
       System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + "ack-wait-threshold");
     }
     Properties props = super.getDistributedSystemProperties();
-    props.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, "5");
+    props.put(ACK_WAIT_THRESHOLD, "5");
     return props;
   }
 

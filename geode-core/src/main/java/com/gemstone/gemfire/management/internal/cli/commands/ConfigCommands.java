@@ -16,12 +16,13 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.management.cli.CliMetaData;
 import com.gemstone.gemfire.management.cli.ConverterHint;
@@ -324,7 +325,7 @@ public class ConfigCommands implements CommandMarker {
       }
 
       if (statisticSamplingEnabled != null) {
-        runTimeDistributionConfigAttributes.put(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, statisticSamplingEnabled.toString());
+        runTimeDistributionConfigAttributes.put(STATISTIC_SAMPLING_ENABLED, statisticSamplingEnabled.toString());
       }
       
       

@@ -34,7 +34,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.START_LOCATOR;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 
 public class ProductUseLogDUnitTest extends CacheTestCase {
@@ -51,7 +51,7 @@ public class ProductUseLogDUnitTest extends CacheTestCase {
   @Override
   public Properties getDistributedSystemProperties() {
     Properties p = super.getDistributedSystemProperties();
-    p.put(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
+    p.put(USE_CLUSTER_CONFIGURATION, "false");
     return p;
   }
   
@@ -64,7 +64,7 @@ public class ProductUseLogDUnitTest extends CacheTestCase {
     int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     Properties p = new Properties();
     p.put(START_LOCATOR, "localhost[" + locatorPort + "],peer=false");
-    p.put(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
+    p.put(USE_CLUSTER_CONFIGURATION, "false");
     InternalDistributedSystem system = getSystem(p);
     
     InternalLocator locator = (InternalLocator)Locator.getLocator();

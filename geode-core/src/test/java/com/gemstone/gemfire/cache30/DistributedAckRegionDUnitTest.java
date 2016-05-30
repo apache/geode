@@ -16,8 +16,9 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.Properties;
@@ -48,8 +49,8 @@ public class DistributedAckRegionDUnitTest extends MultiVMRegionTestCase {
 
   public Properties getDistributedSystemProperties() {
     Properties p = new Properties();
-    p.put(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-    p.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+    p.put(STATISTIC_SAMPLING_ENABLED, "true");
+    p.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     return p;
   }
 

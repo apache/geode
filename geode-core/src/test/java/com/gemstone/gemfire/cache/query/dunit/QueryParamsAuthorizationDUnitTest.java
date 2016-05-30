@@ -38,7 +38,7 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 import org.junit.Ignore;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Test for accessing query bind parameters from authorization callbacks
@@ -87,9 +87,9 @@ public class QueryParamsAuthorizationDUnitTest extends CacheTestCase {
       public Object call() throws Exception {
         ClientCacheFactory ccf = new ClientCacheFactory()
             .addPoolServer(NetworkUtils.getServerHostName(server1.getHost()), port)
-            .set(DistributionConfig.SECURITY_CLIENT_AUTH_INIT_NAME, UserPasswordAuthInit.class.getName() + ".create")
-            .set("security-username", "root")
-            .set("security-password", "root");
+            .set(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create")
+            .set(SECURITY_PREFIX+"username", "root")
+            .set(SECURITY_PREFIX+"password", "root");
 
         ClientCache cache = getClientCache(ccf);
         Region r1 = cache.createClientRegionFactory(

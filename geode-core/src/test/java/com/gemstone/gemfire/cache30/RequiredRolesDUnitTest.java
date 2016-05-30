@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache30;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.Role;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
 import com.gemstone.gemfire.test.dunit.*;
 
@@ -27,6 +26,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Tests the functionality of the {@link RequiredRoles} class.
@@ -64,7 +65,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 
     // connect controller to system...
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     getSystem(config);
     
     // create region in controller...
@@ -126,7 +127,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
       Host.getHost(0).getVM(vm).invoke(new SerializableRunnable() {
         public void run() {
           Properties config = new Properties();
-          config.setProperty(DistributionConfig.ROLES_NAME, rolesProp[vm]);
+          config.setProperty(ROLES, rolesProp[vm]);
           getSystem(config);
         }
       });
@@ -134,7 +135,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 
     // connect controller to system...
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     getSystem(config);
     
     // create region in controller...
@@ -304,7 +305,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
       Host.getHost(0).getVM(vm).invoke(new SerializableRunnable() {
         public void run() {
           Properties config = new Properties();
-          config.setProperty(DistributionConfig.ROLES_NAME, rolesProp[vm]);
+          config.setProperty(ROLES, rolesProp[vm]);
           getSystem(config);
         }
       });
@@ -312,7 +313,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 
     // connect controller to system...
     Properties config = new Properties();
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     getSystem(config);
     
     // create region in controller...

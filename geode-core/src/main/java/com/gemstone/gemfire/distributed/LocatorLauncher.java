@@ -17,6 +17,8 @@
 
 package com.gemstone.gemfire.distributed;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.client.internal.locator.LocatorStatusResponse;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
@@ -1089,7 +1091,7 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
   private Properties getOverriddenDefaults() {
     Properties overriddenDefaults = new Properties();
 
-    overriddenDefaults.put(ProcessLauncherContext.OVERRIDDEN_DEFAULTS_PREFIX.concat(DistributionConfig.LOG_FILE_NAME),
+    overriddenDefaults.put(ProcessLauncherContext.OVERRIDDEN_DEFAULTS_PREFIX.concat(LOG_FILE),
       getLogFileName());
 
     for (String key : System.getProperties().stringPropertyNames()) {

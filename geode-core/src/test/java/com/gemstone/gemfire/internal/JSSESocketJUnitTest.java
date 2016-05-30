@@ -42,7 +42,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -101,10 +101,10 @@ public class JSSESocketJUnitTest {
       LogService.setBaseLogLevel(Level.DEBUG);
       {
         System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.SSL_ENABLED_NAME, "true");
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME, "true");
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.SSL_CIPHERS_NAME, "any");
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.SSL_PROTOCOLS_NAME, "TLSv1.2");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + SSL_ENABLED, "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + SSL_REQUIRE_AUTHENTICATION, "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + SSL_CIPHERS, "any");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + SSL_PROTOCOLS, "TLSv1.2");
 
         File jks = findTestJKS();
         System.setProperty("javax.net.ssl.trustStore", jks.getCanonicalPath());
@@ -164,7 +164,7 @@ public class JSSESocketJUnitTest {
   public void testClientSocketFactory() {
     System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "clientSocketFactory",
         TSocketFactory.class.getName());
-    System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.SSL_ENABLED_NAME);
+    System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + SSL_ENABLED);
     SocketCreator.getDefaultInstance(new Properties());
     factoryInvoked = false;
     try {

@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
@@ -33,8 +32,7 @@ import org.junit.rules.TestName;
 import java.net.InetAddress;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 @Category(IntegrationTest.class)
 public class TombstoneCreationJUnitTest {
@@ -55,7 +53,7 @@ public class TombstoneCreationJUnitTest {
     Properties props = new Properties();
     props.put(LOCATORS, "");
     props.put(MCAST_PORT, "0");
-    props.put(DistributionConfig.LOG_LEVEL_NAME, "config");
+    props.put(LOG_LEVEL, "config");
     GemFireCacheImpl cache = (GemFireCacheImpl)CacheFactory.create(DistributedSystem.connect(props));
     RegionFactory f = cache.createRegionFactory(RegionShortcut.REPLICATE);
     DistributedRegion region = (DistributedRegion)f.create(name);
@@ -92,7 +90,7 @@ public class TombstoneCreationJUnitTest {
     Properties props = new Properties();
     props.put(LOCATORS, "");
     props.put(MCAST_PORT, "0");
-    props.put(DistributionConfig.LOG_LEVEL_NAME, "config");
+    props.put(LOG_LEVEL, "config");
     final GemFireCacheImpl cache = (GemFireCacheImpl)CacheFactory.create(DistributedSystem.connect(props));
     RegionFactory f = cache.createRegionFactory(RegionShortcut.REPLICATE);
     final DistributedRegion region = (DistributedRegion)f.create(name);
@@ -167,7 +165,7 @@ public class TombstoneCreationJUnitTest {
     Properties props = new Properties();
     props.put(LOCATORS, "");
     props.put(MCAST_PORT, "0");
-    props.put(DistributionConfig.LOG_LEVEL_NAME, "config");
+    props.put(LOG_LEVEL, "config");
     final GemFireCacheImpl cache = (GemFireCacheImpl)CacheFactory.create(DistributedSystem.connect(props));
     RegionFactory f = cache.createRegionFactory(RegionShortcut.REPLICATE);
     final DistributedRegion region = (DistributedRegion)f.create(name);

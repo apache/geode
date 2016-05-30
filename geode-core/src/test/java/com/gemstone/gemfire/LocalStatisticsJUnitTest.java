@@ -18,14 +18,12 @@ package com.gemstone.gemfire;
 
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Tests the functionality of JOM {@link Statistics}.
@@ -40,8 +38,8 @@ public class LocalStatisticsJUnitTest extends StatisticsTestCase {
   protected DistributedSystem getSystem() {
     if (this.system == null) {
       Properties props = new Properties();
-      props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-      props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "StatisticsTestCase-localTest.gfs");
+      props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+      props.setProperty(STATISTIC_ARCHIVE_FILE, "StatisticsTestCase-localTest.gfs");
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(LOCATORS, "");
       props.setProperty(SystemConfigurationProperties.NAME, getName());

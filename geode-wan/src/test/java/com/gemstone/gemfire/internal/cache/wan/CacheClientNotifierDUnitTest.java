@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
@@ -36,8 +35,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class CacheClientNotifierDUnitTest extends WANTestBase {
   private static final int NUM_KEYS = 10;
@@ -227,8 +225,8 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     if (isDurable) {
-      props.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME, clientId);
-      props.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, "" + 200);
+      props.setProperty(DURABLE_CLIENT_ID, clientId);
+      props.setProperty(DURABLE_CLIENT_TIMEOUT, "" + 200);
     }
 
     InternalDistributedSystem ds = test.getSystem(props);

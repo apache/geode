@@ -41,8 +41,7 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Cache Server related management test cases
@@ -241,9 +240,9 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, String.valueOf(0));
     props.setProperty(LOCATORS, otherLocators);
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+    props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     props.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     File logFile = new File(getUniqueName() + "-locator" + locatorPort + ".log");
     try {
       InetAddress bindAddr = InetAddress.getByName(NetworkUtils.getServerHostName(vmHost));

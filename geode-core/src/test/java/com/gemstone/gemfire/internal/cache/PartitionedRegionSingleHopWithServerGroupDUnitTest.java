@@ -43,8 +43,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  *
@@ -1012,7 +1011,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
     props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(DistributionConfig.LOG_FILE_NAME, "");
+    props.setProperty(LOG_FILE, "");
     CacheTestCase test = new PartitionedRegionSingleHopWithServerGroupDUnitTest(
         "PartitionedRegionSingleHopWithServerGroupDUnitTest");
     DistributedSystem ds = test.getSystem(props);
@@ -1622,8 +1621,8 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends CacheTes
 
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-    props.setProperty(DistributionConfig.LOG_FILE_NAME, "");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    props.setProperty(LOG_FILE, "");
 
     try {
       locator = Locator.startLocatorAndDS(locatorPort, null, null, props);

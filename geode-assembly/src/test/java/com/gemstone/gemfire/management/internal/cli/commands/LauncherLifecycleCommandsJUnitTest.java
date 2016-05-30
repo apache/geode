@@ -35,8 +35,7 @@ import org.junit.experimental.categories.Category;
 import java.io.File;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 /**
@@ -101,8 +100,8 @@ public class LauncherLifecycleCommandsJUnitTest {
     final Properties gemfireProperties = new Properties();
 
     gemfireProperties.setProperty(LOCATORS, "localhost[11235]");
-    gemfireProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME, "config");
-    gemfireProperties.setProperty(DistributionConfig.LOG_FILE_NAME, StringUtils.EMPTY_STRING);
+    gemfireProperties.setProperty(LOG_LEVEL, "config");
+    gemfireProperties.setProperty(LOG_FILE, StringUtils.EMPTY_STRING);
     gemfireProperties.setProperty(MCAST_PORT, "0");
     gemfireProperties.setProperty(SystemConfigurationProperties.NAME, "tidepool");
 

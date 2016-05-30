@@ -62,7 +62,7 @@ public class PdxRenameDUnitTest  extends CacheTestCase{
     final Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locatorPorts[0] + "],localhost[" + locatorPorts[1] + "]");
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);

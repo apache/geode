@@ -43,8 +43,7 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeFalse;
 
@@ -181,7 +180,7 @@ public class GemFireStatSamplerJUnitTest extends StatSamplerTestCase {
     final File archiveFile1 = new File(dir + File.separator + this.testName + ".gfs");
     
     Properties props = createGemFireProperties();
-    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, archiveFileName);
+    props.setProperty(STATISTIC_ARCHIVE_FILE, archiveFileName);
     connect(props);
 
     GemFireStatSampler statSampler = getGemFireStatSampler();
@@ -360,9 +359,9 @@ public class GemFireStatSamplerJUnitTest extends StatSamplerTestCase {
     // set the system property to use KB instead of MB for file size
     System.setProperty(HostStatSampler.TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY, "true");
     Properties props = createGemFireProperties();
-    props.setProperty(DistributionConfig.ARCHIVE_FILE_SIZE_LIMIT_NAME, "1");
-    props.setProperty(DistributionConfig.ARCHIVE_DISK_SPACE_LIMIT_NAME, "0");
-    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, archiveFileName);
+    props.setProperty(ARCHIVE_FILE_SIZE_LIMIT, "1");
+    props.setProperty(ARCHIVE_DISK_SPACE_LIMIT, "0");
+    props.setProperty(STATISTIC_ARCHIVE_FILE, archiveFileName);
     connect(props);
 
     assertTrue(getGemFireStatSampler().waitForInitialization(5000));
@@ -408,10 +407,10 @@ public class GemFireStatSamplerJUnitTest extends StatSamplerTestCase {
     // set the system property to use KB instead of MB for file size
     System.setProperty(HostStatSampler.TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY, "true");
     Properties props = createGemFireProperties();
-    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, archiveFileName);
-    props.setProperty(DistributionConfig.ARCHIVE_FILE_SIZE_LIMIT_NAME, "1");
-    props.setProperty(DistributionConfig.ARCHIVE_DISK_SPACE_LIMIT_NAME, "12");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME, String.valueOf(sampleRate));
+    props.setProperty(STATISTIC_ARCHIVE_FILE, archiveFileName);
+    props.setProperty(ARCHIVE_FILE_SIZE_LIMIT, "1");
+    props.setProperty(ARCHIVE_DISK_SPACE_LIMIT, "12");
+    props.setProperty(STATISTIC_SAMPLE_RATE, String.valueOf(sampleRate));
     connect(props);
 
     assertTrue(getGemFireStatSampler().waitForInitialization(5000));
@@ -534,11 +533,11 @@ public class GemFireStatSamplerJUnitTest extends StatSamplerTestCase {
 
   private Properties createGemFireProperties() {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true"); // TODO: test true/false
-    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true"); // TODO: test true/false
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME, String.valueOf(STAT_SAMPLE_RATE));
-    props.setProperty(DistributionConfig.ARCHIVE_FILE_SIZE_LIMIT_NAME, "0");
-    props.setProperty(DistributionConfig.ARCHIVE_DISK_SPACE_LIMIT_NAME, "0");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true"); // TODO: test true/false
+    props.setProperty(ENABLE_TIME_STATISTICS, "true"); // TODO: test true/false
+    props.setProperty(STATISTIC_SAMPLE_RATE, String.valueOf(STAT_SAMPLE_RATE));
+    props.setProperty(ARCHIVE_FILE_SIZE_LIMIT, "0");
+    props.setProperty(ARCHIVE_DISK_SPACE_LIMIT, "0");
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     return props;

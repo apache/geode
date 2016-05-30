@@ -17,12 +17,13 @@
 package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Tests the performance of Regions when Roles are assigned.
@@ -115,7 +116,7 @@ public class RolePerformanceDUnitTest extends CacheTestCase {
         public void run() {
           Properties config = new Properties();
           if (assignRoles) {
-            config.setProperty(DistributionConfig.ROLES_NAME, vmRoles[vm][0]);
+            config.setProperty(ROLES, vmRoles[vm][0]);
           }
           getSystem(config);
         }

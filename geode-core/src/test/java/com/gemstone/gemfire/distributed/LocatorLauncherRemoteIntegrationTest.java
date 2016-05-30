@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
@@ -980,7 +981,7 @@ public class LocatorLauncherRemoteIntegrationTest extends AbstractLocatorLaunche
         command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getAbsolutePath());
         command.add("-cp");
         command.add(System.getProperty("java.class.path"));
-        command.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "mcast-port=0");
+        command.add("-D" + DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT+"=0");
         command.add(LocatorLauncher.class.getName());
         command.add(LocatorLauncher.Command.START.getName());
         command.add(LocatorLauncherForkingProcess.class.getSimpleName() + "_Locator");

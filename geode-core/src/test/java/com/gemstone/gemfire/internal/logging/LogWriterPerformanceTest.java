@@ -29,6 +29,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  * Tests performance of logging when level is OFF.
  * 
@@ -45,8 +47,8 @@ public class LogWriterPerformanceTest extends LoggingPerformanceTestCase {
     final Properties props = new Properties();
     this.logFile = new File(this.configDirectory, DistributionConfig.GEMFIRE_PREFIX + "log");
     final String logFilePath = IOUtils.tryGetCanonicalPathElseGetAbsolutePath(logFile);
-    props.setProperty(DistributionConfig.LOG_FILE_NAME, logFilePath);
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
+    props.setProperty(LOG_FILE, logFilePath);
+    props.setProperty(LOG_LEVEL, "info");
     return props;
   }
   

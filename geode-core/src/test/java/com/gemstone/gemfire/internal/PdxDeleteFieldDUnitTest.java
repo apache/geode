@@ -55,7 +55,7 @@ public class PdxDeleteFieldDUnitTest  extends CacheTestCase{
     final int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locatorPorts[0] + "],localhost[" + locatorPorts[1] + "]");
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
     final File f = new File(DS_NAME);
     f.mkdir();

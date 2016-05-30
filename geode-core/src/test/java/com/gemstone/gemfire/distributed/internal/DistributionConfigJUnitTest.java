@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.UnmodifiableException;
 import com.gemstone.gemfire.internal.ConfigSource;
@@ -138,7 +140,7 @@ public class DistributionConfigJUnitTest {
       assertTrue(setter.getName().startsWith("set"));
       assertEquals(setter.getParameterCount(), 1);
 
-      if (!(attr.equalsIgnoreCase(DistributionConfig.LOG_LEVEL_NAME) || attr.equalsIgnoreCase(DistributionConfig.SECURITY_LOG_LEVEL_NAME))) {
+      if (!(attr.equalsIgnoreCase(LOG_LEVEL) || attr.equalsIgnoreCase(DistributionConfig.SECURITY_LOG_LEVEL_NAME))) {
         Class clazz = attributes.get(attr).type();
         try {
           setter.invoke(mock(DistributionConfig.class), any(clazz));
@@ -158,7 +160,7 @@ public class DistributionConfigJUnitTest {
       assertTrue(getter.getName().startsWith("get"));
       assertEquals(getter.getParameterCount(), 0);
 
-      if (!(attr.equalsIgnoreCase(DistributionConfig.LOG_LEVEL_NAME) || attr.equalsIgnoreCase(DistributionConfig.SECURITY_LOG_LEVEL_NAME))) {
+      if (!(attr.equalsIgnoreCase(LOG_LEVEL) || attr.equalsIgnoreCase(DistributionConfig.SECURITY_LOG_LEVEL_NAME))) {
         Class clazz = attributes.get(attr).type();
         Class returnClass = getter.getReturnType();
         if (returnClass.isPrimitive()) {
@@ -205,10 +207,10 @@ public class DistributionConfigJUnitTest {
 
   @Test
   public void testGetAttributeObject() {
-    assertEquals(config.getAttributeObject(DistributionConfig.LOG_LEVEL_NAME), "config");
+    assertEquals(config.getAttributeObject(LOG_LEVEL), "config");
     assertEquals(config.getAttributeObject(DistributionConfig.SECURITY_LOG_LEVEL_NAME), "config");
     assertEquals(config.getAttributeObject(DistributionConfig.REDUNDANCY_ZONE_NAME), "");
-    assertEquals(config.getAttributeObject(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME).getClass(), Boolean.class);
+    assertEquals(config.getAttributeObject(ENABLE_CLUSTER_CONFIGURATION).getClass(), Boolean.class);
   }
 
   @Test
@@ -250,16 +252,16 @@ public class DistributionConfigJUnitTest {
     }
 
     assertEquals(modifiables.size(), 10);
-    assertEquals(modifiables.get(0), DistributionConfig.ARCHIVE_DISK_SPACE_LIMIT_NAME);
-    assertEquals(modifiables.get(1), DistributionConfig.ARCHIVE_FILE_SIZE_LIMIT_NAME);
+    assertEquals(modifiables.get(0), ARCHIVE_DISK_SPACE_LIMIT);
+    assertEquals(modifiables.get(1), ARCHIVE_FILE_SIZE_LIMIT);
     assertEquals(modifiables.get(2), DistributionConfig.HTTP_SERVICE_PORT_NAME);
     assertEquals(modifiables.get(3), DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME);
-    assertEquals(modifiables.get(4), DistributionConfig.LOG_DISK_SPACE_LIMIT_NAME);
-    assertEquals(modifiables.get(5), DistributionConfig.LOG_FILE_SIZE_LIMIT_NAME);
-    assertEquals(modifiables.get(6), DistributionConfig.LOG_LEVEL_NAME);
-    assertEquals(modifiables.get(7), DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME);
-    assertEquals(modifiables.get(8), DistributionConfig.STATISTIC_SAMPLE_RATE_NAME);
-    assertEquals(modifiables.get(9), DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME);
+    assertEquals(modifiables.get(4), LOG_DISK_SPACE_LIMIT);
+    assertEquals(modifiables.get(5), LOG_FILE_SIZE_LIMIT);
+    assertEquals(modifiables.get(6), LOG_LEVEL);
+    assertEquals(modifiables.get(7), STATISTIC_ARCHIVE_FILE);
+    assertEquals(modifiables.get(8), STATISTIC_SAMPLE_RATE);
+    assertEquals(modifiables.get(9), STATISTIC_SAMPLING_ENABLED);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -269,7 +271,7 @@ public class DistributionConfigJUnitTest {
 
   @Test(expected = UnmodifiableException.class)
   public void testSetUnmodifiableAttributeObject() {
-    config.setAttributeObject(DistributionConfig.ARCHIVE_DISK_SPACE_LIMIT_NAME, 0, ConfigSource.api());
+    config.setAttributeObject(ARCHIVE_DISK_SPACE_LIMIT, 0, ConfigSource.api());
   }
 
   @Test
@@ -286,7 +288,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testLogLevel() {
     config.modifiable = true;
-    config.setAttribute(DistributionConfig.LOG_LEVEL_NAME, "config", ConfigSource.api());
+    config.setAttribute(LOG_LEVEL, "config", ConfigSource.api());
     assertEquals(config.getLogLevel(), 700);
 
     config.setAttributeObject(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "debug", ConfigSource.api());
@@ -327,7 +329,7 @@ public class DistributionConfigJUnitTest {
     props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
     props.put(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "config");
     // add another non-security property to verify it won't get put in the security properties
-    props.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, 2);
+    props.put(ACK_WAIT_THRESHOLD, 2);
 
     DistributionConfig config = new DistributionConfigImpl(props);
     assertEquals(config.getSecurityProps().size(), 3);
@@ -340,7 +342,7 @@ public class DistributionConfigJUnitTest {
     props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
     props.put(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "config");
     // add another non-security property to verify it won't get put in the security properties
-    props.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, 2);
+    props.put(ACK_WAIT_THRESHOLD, 2);
     props.put("security-username", "testName");
 
     DistributionConfig config = new DistributionConfigImpl(props);

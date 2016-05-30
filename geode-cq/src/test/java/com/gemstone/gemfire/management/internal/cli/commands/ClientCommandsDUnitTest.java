@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.query.CqAttributesFactory;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -59,8 +58,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
@@ -725,10 +723,10 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
       if (cache == null) {
 
         Properties props = getNonDurableClientProps();
-        props.setProperty(DistributionConfig.LOG_FILE_NAME, "client_" + OSProcess.getId() + ".log");
-        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-        props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "client_" + OSProcess.getId() + ".gfs");
-        props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
+        props.setProperty(LOG_FILE, "client_" + OSProcess.getId() + ".log");
+        props.setProperty(LOG_LEVEL, "fine");
+        props.setProperty(STATISTIC_ARCHIVE_FILE, "client_" + OSProcess.getId() + ".gfs");
+        props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
         getSystem(props);
 
@@ -1063,10 +1061,10 @@ public class ClientCommandsDUnitTest extends CliCommandTestBase {
       if (cache == null) {
 
         Properties props = getNonDurableClientProps();
-        props.setProperty(DistributionConfig.LOG_FILE_NAME, "client_" + OSProcess.getId() + ".log");
-        props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-        props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "client_" + OSProcess.getId() + ".gfs");
-        props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
+        props.setProperty(LOG_FILE, "client_" + OSProcess.getId() + ".log");
+        props.setProperty(LOG_LEVEL, "fine");
+        props.setProperty(STATISTIC_ARCHIVE_FILE, "client_" + OSProcess.getId() + ".gfs");
+        props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
         getSystem(props);
 

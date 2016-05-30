@@ -1088,7 +1088,7 @@ public class DistributedSystemConfigImpl
     buf.append(lf);
     buf.append("  " + TCP_PORT + "=" + this.tcpPort);
     buf.append(lf);
-    buf.append("  " + DistributionConfig.DISABLE_TCP_NAME + "=");
+    buf.append("  " + DISABLE_TCP + "=");
     buf.append(String.valueOf(this.disableTcp));
     buf.append(lf);
     buf.append("  " + DistributionConfig.DISABLE_AUTO_RECONNECT_NAME + "=");
@@ -1097,7 +1097,7 @@ public class DistributedSystemConfigImpl
     buf.append("  " + REMOTE_COMMAND_NAME + "=");
     buf.append(String.valueOf(this.remoteCommand));
     buf.append(lf);
-    buf.append("  " + SSL_ENABLED_NAME + "=");
+    buf.append("  " + SSL_ENABLED + "=");
     buf.append(String.valueOf(this.sslEnabled));
     buf.append(lf);
     buf.append("  " + SSL_CIPHERS_NAME + "=");

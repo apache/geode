@@ -32,7 +32,7 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Implements the actual administration (starting, stopping, etc.) of
@@ -318,16 +318,16 @@ class EnabledManagedEntityController implements ManagedEntityController {
             MCAST_PORT,
                          "0");
     sslProps.setProperty(prefix +
-                         DistributionConfig.SSL_ENABLED_NAME,
+                         SSL_ENABLED,
                          String.valueOf(config.isSSLEnabled()));
     sslProps.setProperty(prefix +
-                         DistributionConfig.SSL_CIPHERS_NAME,
+                         SSL_CIPHERS,
                          config.getSSLCiphers());
     sslProps.setProperty(prefix +
-                         DistributionConfig.SSL_PROTOCOLS_NAME,
+                         SSL_PROTOCOLS,
                          config.getSSLProtocols());
     sslProps.setProperty(prefix +
-                         DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME,
+                         SSL_REQUIRE_AUTHENTICATION,
                          String.valueOf(config.isSSLAuthenticationRequired()));
     return sslProps;
   }

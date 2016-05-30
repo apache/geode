@@ -18,7 +18,6 @@ package com.gemstone.gemfire.redis;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
@@ -33,8 +32,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
@@ -50,7 +48,7 @@ public class SortedSetsJUnitTest {
     rand = new Random();
     CacheFactory cf = new CacheFactory();
     //cf.set("log-file", "redis.log");
-    cf.set(DistributionConfig.LOG_LEVEL_NAME, "error");
+    cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
     cache = cf.create();

@@ -29,8 +29,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Tests the setting of Roles in a DistributedSystem
@@ -62,7 +61,7 @@ public class RoleDUnitTest extends DistributedTestCase {
     distributionProperties = new Properties();
     distributionProperties.setProperty(MCAST_PORT, "0");
     distributionProperties.setProperty(LOCATORS, "");
-    distributionProperties.setProperty(DistributionConfig.ROLES_NAME, rolesProp);
+    distributionProperties.setProperty(ROLES, rolesProp);
 
     InternalDistributedSystem system = getSystem(distributionProperties);
     try {
@@ -107,8 +106,8 @@ public class RoleDUnitTest extends DistributedTestCase {
         public void run() {
           disconnectFromDS();
           Properties config = new Properties();
-          config.setProperty(DistributionConfig.ROLES_NAME, vmRoles[vm]);
-          config.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+          config.setProperty(ROLES, vmRoles[vm]);
+          config.setProperty(LOG_LEVEL, "fine");
           distributionProperties = config;
           getSystem();
         }
@@ -158,7 +157,7 @@ public class RoleDUnitTest extends DistributedTestCase {
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOCATORS, "");
-    config.setProperty(DistributionConfig.ROLES_NAME, rolesProp);
+    config.setProperty(ROLES, rolesProp);
     distributionProperties = config;
 
     InternalDistributedSystem system = getSystem();

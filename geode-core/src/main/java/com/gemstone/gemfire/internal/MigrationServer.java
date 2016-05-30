@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.admin.internal.InetAddressUtil;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -208,9 +210,9 @@ public class MigrationServer {
         && System.getProperty(DistributionConfig.GEMFIRE_PREFIX + LOCATORS) == null) {
       dsProps.put(MCAST_PORT, "0");
     }
-    dsProps.put(DistributionConfig.LOG_FILE_NAME, "migrationServer.log");
+    dsProps.put(LOG_FILE, "migrationServer.log");
     if (this.cacheXmlFile != null) {
-      dsProps.put(DistributionConfig.CACHE_XML_FILE_NAME, this.cacheXmlFile.getName());
+      dsProps.put(CACHE_XML_FILE, this.cacheXmlFile.getName());
     }
     this.distributedSystem = DistributedSystem.connect(dsProps);
     if (VERBOSE) {

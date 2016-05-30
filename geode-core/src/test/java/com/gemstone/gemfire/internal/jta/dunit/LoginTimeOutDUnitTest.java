@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.jta.dunit;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.jta.CacheUtils;
@@ -36,7 +35,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class LoginTimeOutDUnitTest extends DistributedTestCase {
   private static final Logger logger = LogService.getLogger();
@@ -132,7 +131,7 @@ public class LoginTimeOutDUnitTest extends DistributedTestCase {
     wr.write(modified_file_str);
     wr.flush();
     wr.close();
-    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
+    props.setProperty(CACHE_XML_FILE, path);
     props.setProperty(MCAST_PORT, "0");
     String tableName = "";
     cache = new CacheFactory(props).create();

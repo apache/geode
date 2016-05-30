@@ -264,7 +264,7 @@ public class RemoteTransportConfig implements TransportConfig {
                       bindAddress);
 //    System.out.println("entering ds port range property of " + this.membershipPortRange);
     if (this.membershipPortRange != null) {
-      props.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, this.membershipPortRange);
+      props.setProperty(MEMBERSHIP_PORT_RANGE, this.membershipPortRange);
     }
     if (this.tcpPort != 0) {
       props.setProperty(TCP_PORT, String.valueOf(this.tcpPort));
@@ -309,7 +309,7 @@ public class RemoteTransportConfig implements TransportConfig {
 
     this.sslConfig.toDSProperties(props);
     
-    props.setProperty(DistributionConfig.DISABLE_TCP_NAME,
+    props.setProperty(DISABLE_TCP,
       this.tcpDisabled? "true" : "false");
     
     props.setProperty(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, this.disableAutoReconnect? "true" : "false");

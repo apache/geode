@@ -40,8 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 
 @Category(DistributedTest.class)
@@ -600,10 +599,10 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
         final File locatorLogFile = new File("locator-" + locatorPort + ".log");
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator");
+        locatorProps.setProperty(NAME, "Locator");
         locatorProps.setProperty(MCAST_PORT, "0");
-        locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-        locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+        locatorProps.setProperty(LOG_LEVEL, "fine");
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
         try {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null,
               locatorProps);
@@ -684,7 +683,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
         localProps.setProperty(MCAST_PORT, "0");
         localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
         localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
-        localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
+        localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         getSystem(localProps);
         Cache cache = getCache();
         assertNotNull(cache);
@@ -729,7 +728,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
         localProps.setProperty(MCAST_PORT, "0");
         localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
         localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
-        localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
+        localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         getSystem(localProps);
         Cache cache = getCache();
         assertNotNull(cache);

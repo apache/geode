@@ -25,14 +25,13 @@ import com.gemstone.gemfire.cache.query.CqAttributesFactory;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import junit.framework.TestCase;
 import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 @Category(IntegrationTest.class)
 public class CQJUnitTest extends TestCase {
@@ -51,7 +50,7 @@ public class CQJUnitTest extends TestCase {
   public void setUp() throws Exception {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "config");
+    props.setProperty(LOG_LEVEL, "config");
     this.ds = DistributedSystem.connect(props);
     this.cache = CacheFactory.create(ds);
     this.qs = cache.getQueryService();

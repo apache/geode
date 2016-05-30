@@ -287,7 +287,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl
     props.setProperty(STATE_SAVE_FILE_NAME,
         String.valueOf(DEFAULT_STATE_SAVE_FILE));
 
-    props.setProperty(SSL_ENABLED_NAME,
+    props.setProperty(SSL_ENABLED,
         String.valueOf(DEFAULT_SSL_ENABLED));
 
     props.setProperty(SSL_PROTOCOLS_NAME,
@@ -695,7 +695,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl
     props.setProperty(EMAIL_NOTIFICATIONS_FROM_NAME, toString(EMAIL_NOTIFICATIONS_FROM_NAME, getEmailNotificationFrom()));
     props.setProperty(EMAIL_NOTIFICATIONS_TO_LIST_NAME, toString(EMAIL_NOTIFICATIONS_TO_LIST_NAME, getEmailNotificationToList()));
 
-    props.setProperty(SSL_ENABLED_NAME, toString(SSL_ENABLED_NAME, isSSLEnabled()));
+    props.setProperty(SSL_ENABLED, toString(SSL_ENABLED, isSSLEnabled()));
     props.setProperty(SSL_PROTOCOLS_NAME, toString(SSL_PROTOCOLS_NAME, getSSLProtocols()));
     props.setProperty(SSL_CIPHERS_NAME, toString(SSL_CIPHERS_NAME, getSSLCiphers()));
     props.setProperty(SSL_REQUIRE_AUTHENTICATION_NAME, toString(SSL_REQUIRE_AUTHENTICATION_NAME, isSSLAuthenticationRequired()));
@@ -1071,7 +1071,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl
         DEFAULT_HTTP_AUTHENTICATION_PASSWORD);
 
     this.sslEnabled = validateBoolean(props.getProperty(
-        SSL_ENABLED_NAME),
+        SSL_ENABLED),
         DEFAULT_SSL_ENABLED);
     this.sslProtocols = validateNonEmptyString(props.getProperty(
         SSL_PROTOCOLS_NAME),
@@ -1280,7 +1280,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl
       return LocalizedStrings.AgentConfigImpl_REFRESH_INTERVAL_IN_SECONDS_FOR_AUTOREFRESH_OF_MEMBERS_AND_STATISTIC_RESOURCES.toLocalizedString();
     } else if (prop.equals(REMOTE_COMMAND_NAME)) {
       return LocalizedStrings.AgentConfigImpl_COMMAND_PREFIX_USED_FOR_LAUNCHING_MEMBERS_OF_THE_DISTRIBUTED_SYSTEM.toLocalizedString();
-    } else if (prop.equals(SSL_ENABLED_NAME)) {
+    } else if (prop.equals(SSL_ENABLED)) {
       return LocalizedStrings.AgentConfigImpl_DOES_THE_DISTRIBUTED_SYSTEM_COMMUNICATE_USING_SSL.toLocalizedString();
     } else if (prop.equals(SSL_PROTOCOLS_NAME)) {
       return LocalizedStrings.AgentConfigImpl_SSL_PROTOCOLS_USED_TO_COMMUNICATE_WITH_DISTRIBUTED_SYSTEM.toLocalizedString();

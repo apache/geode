@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -670,7 +672,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         c.getLogger().info("SWAP:invoking function from client on g0");
@@ -768,7 +770,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         c.getLogger().info("SWAP:invoking function from client on g0");
@@ -845,7 +847,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         IgnoredException ex = IgnoredException.addIgnoredException("No member found");
@@ -925,7 +927,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         IgnoredException expected = IgnoredException.addIgnoredException("No member found");
@@ -1002,7 +1004,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         Execution e = InternalFunctionService.onServers(c, "g1");
@@ -1051,7 +1053,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         Execution e = InternalFunctionService.onServers(c, "g1");
@@ -1100,7 +1102,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         Execution e = InternalFunctionService.onServers(c, "g1");
@@ -1167,7 +1169,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolLocator(hostName, locatorPort);
         ccf.setPoolServerGroup("mg");
-        ccf.set(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+        ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache c = ccf.create();
 
         c.getLogger().info("SWAP:invoking function from client on g0");

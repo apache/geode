@@ -97,8 +97,7 @@ import java.security.KeyStore;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  *
@@ -415,8 +414,8 @@ public class ShellCommands implements CommandMarker {
     String truststorePasswordToUse = sslConfigProps.get(Gfsh.SSL_TRUSTSTORE_PASSWORD);
     // Ciphers are not passed to HttpsURLConnection. Could not find a clean way
     // to pass this attribute to socket layer (see #51645)
-    String sslCiphersToUse = sslConfigProps.get(DistributionConfig.CLUSTER_SSL_CIPHERS_NAME);
-    String sslProtocolsToUse = sslConfigProps.get(DistributionConfig.CLUSTER_SSL_PROTOCOLS_NAME);
+    String sslCiphersToUse = sslConfigProps.get(CLUSTER_SSL_CIPHERS);
+    String sslProtocolsToUse = sslConfigProps.get(CLUSTER_SSL_PROTOCOLS);
 
     //Commenting the code to set cipher suites in GFSH rest connect (see #51645)
     /*

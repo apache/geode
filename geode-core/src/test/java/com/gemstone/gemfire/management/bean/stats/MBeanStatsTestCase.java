@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.bean.stats;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -48,11 +50,11 @@ public abstract class MBeanStatsTestCase {
     //System.setProperty("gemfire.stats.debug.debugSampleCollector", "true");
 
     final Properties props = new Properties();
-    //props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "finest");
+    //props.setProperty(LOG_LEVEL, "finest");
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "false");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME, "60000");
+    props.setProperty(ENABLE_TIME_STATISTICS, "true");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
+    props.setProperty(STATISTIC_SAMPLE_RATE, "60000");
     
     this.system = (InternalDistributedSystem) DistributedSystem.connect(props);
     assertNotNull(this.system.getStatSampler());

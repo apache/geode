@@ -34,8 +34,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * 
@@ -714,9 +713,9 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     Properties properties = new Properties();
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
-    properties.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME,
+    properties.setProperty(DURABLE_CLIENT_ID,
         durableClientId);
-    properties.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME,
+    properties.setProperty(DURABLE_CLIENT_TIMEOUT,
         String.valueOf(durableClientTimeout));
     return properties;
   }

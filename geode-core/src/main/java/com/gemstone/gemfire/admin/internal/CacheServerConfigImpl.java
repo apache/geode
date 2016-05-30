@@ -18,8 +18,9 @@ package com.gemstone.gemfire.admin.internal;
 
 import com.gemstone.gemfire.admin.CacheServerConfig;
 import com.gemstone.gemfire.admin.CacheVmConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.admin.GemFireVM;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * An implementation of <code>CacheVmConfig</code>
@@ -54,7 +55,7 @@ public class CacheServerConfigImpl extends ManagedEntityConfigImpl
   public CacheServerConfigImpl(GemFireVM vm) {
     super(vm);
 
-    String name = DistributionConfig.CACHE_XML_FILE_NAME;
+    String name = CACHE_XML_FILE;
     this.cacheXMLFile = vm.getConfig().getAttribute(name);
     this.classpath = null;
   }

@@ -92,7 +92,7 @@ public class Bug51400DUnitTest extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
 //    props.setProperty("log-file", "server_" + OSProcess.getId() + ".log");
-    //    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    //    props.setProperty(LOG_LEVEL, "fine");
 //    props.setProperty("statistic-archive-file", "server_" + OSProcess.getId()
 //        + ".gfs");
 //    props.setProperty("statistic-sampling-enabled", "true");
@@ -124,7 +124,7 @@ public class Bug51400DUnitTest extends DistributedTestCase {
 //        "my-durable-client-" + ports.length);
 //    props.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, "300000");
 //    props.setProperty("log-file", "client_" + OSProcess.getId() + ".log");
-    //    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    //    props.setProperty(LOG_LEVEL, "fine");
 //    props.setProperty("statistic-archive-file", "client_" + OSProcess.getId()
 //        + ".gfs");
 //    props.setProperty("statistic-sampling-enabled", "true");

@@ -22,6 +22,8 @@ import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 public class DistTXWANDUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -35,7 +37,7 @@ public class DistTXWANDUnitTest extends WANTestBase {
     Invoke.invokeInEveryVM(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         return null;
       }
     }); 

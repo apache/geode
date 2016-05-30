@@ -26,6 +26,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 	
 public class Bug40751DUnitTest extends CacheTestCase {
 	 
@@ -97,7 +99,7 @@ public class Bug40751DUnitTest extends CacheTestCase {
     public Properties getDistributedSystemProperties() {
     Properties props = new Properties();
     System.setProperty("p2p.oldIO", "true");
-    props.setProperty(DistributionConfig.CONSERVE_SOCKETS_NAME, "true");
+    props.setProperty(CONSERVE_SOCKETS, "true");
     //    props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "12333");
     //    props.setProperty(DistributionConfig.DISABLE_TCP_NAME, "true");
     return props;

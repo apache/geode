@@ -26,7 +26,6 @@ import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueueStats;
@@ -35,6 +34,8 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * The test creates two datastores with a partitioned region, and also running a
@@ -138,9 +139,9 @@ public class Bug47388DUnitTest extends DistributedTestCase {
       throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME,
+    props.setProperty(DURABLE_CLIENT_ID,
         "my-durable-client-" + ports.length);
-    props.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, "300000");
+    props.setProperty(DURABLE_CLIENT_TIMEOUT, "300000");
 
     DistributedSystem ds = new Bug47388DUnitTest("Bug47388DUnitTest").getSystem(props);
     ds.disconnect();

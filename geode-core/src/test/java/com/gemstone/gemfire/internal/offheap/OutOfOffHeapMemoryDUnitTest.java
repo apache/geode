@@ -43,7 +43,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static com.jayway.awaitility.Awaitility.with;
 import static org.hamcrest.CoreMatchers.equalTo;
 
@@ -116,7 +116,7 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
   public Properties getDistributedSystemProperties() {
     final Properties props = new Properties();
     props.put(MCAST_PORT, "0");
-    props.put(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
+    props.put(STATISTIC_SAMPLING_ENABLED, "true");
     if (isSmallerVM.get()) {
       props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, getSmallerOffHeapMemorySize());
     } else {

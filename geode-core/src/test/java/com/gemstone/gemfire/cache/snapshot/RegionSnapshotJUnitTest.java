@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
@@ -244,7 +244,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
     cache.close();
 
     CacheFactory cf = new CacheFactory().set(MCAST_PORT, "0")
-        .set(DistributionConfig.LOG_LEVEL_NAME, "error")
+        .set(LOG_LEVEL, "error")
         .setPdxSerializer(new MyPdxSerializer())
         .set(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
     cache = cf.create();
@@ -264,7 +264,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
 
     // change the DSID from 1 -> 100
     CacheFactory cf2 = new CacheFactory().set(MCAST_PORT, "0")
-        .set(DistributionConfig.LOG_LEVEL_NAME, "error")
+        .set(LOG_LEVEL, "error")
         .setPdxSerializer(new MyPdxSerializer())
         .set(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "100");
     cache = cf2.create();

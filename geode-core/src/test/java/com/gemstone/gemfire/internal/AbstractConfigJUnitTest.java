@@ -24,69 +24,70 @@ import org.junit.experimental.categories.Category;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @Category(UnitTest.class)
 public class AbstractConfigJUnitTest {
 
-	@Test
-	public void testDisplayPropertyValue() throws Exception {
-		AbstractConfigTestClass actc = new AbstractConfigTestClass();
-		Method method = actc.getClass().getSuperclass().getDeclaredMethod("okToDisplayPropertyValue", String.class);
-		method.setAccessible(true);
-		assertFalse((Boolean) method.invoke(actc, "password"));
-		assertFalse((Boolean) method.invoke(actc, DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME));
-		assertTrue((Boolean) method.invoke(actc, DistributionConfig.CLUSTER_SSL_ENABLED_NAME));
-		assertFalse((Boolean) method.invoke(actc, DistributionConfig.GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME));
-		assertFalse((Boolean) method.invoke(actc, DistributionConfig.SERVER_SSL_KEYSTORE_PASSWORD_NAME));
-		assertTrue((Boolean) method.invoke(actc, DistributionConfig.SSL_ENABLED_NAME));
-		assertTrue((Boolean) method.invoke(actc, DistributionConfig.CONSERVE_SOCKETS_NAME));
-		assertFalse((Boolean) method.invoke(actc, "javax.net.ssl.keyStorePassword"));
-		assertFalse((Boolean) method.invoke(actc, "javax.net.ssl.keyStoreType"));
-		assertFalse((Boolean) method.invoke(actc, "sysprop-value"));
-	}
+  @Test
+  public void testDisplayPropertyValue() throws Exception {
+    AbstractConfigTestClass actc = new AbstractConfigTestClass();
+    Method method = actc.getClass().getSuperclass().getDeclaredMethod("okToDisplayPropertyValue", String.class);
+    method.setAccessible(true);
+    assertFalse((Boolean) method.invoke(actc, "password"));
+    assertFalse((Boolean) method.invoke(actc,CLUSTER_SSL_TRUSTSTORE_PASSWORD));
+    assertTrue((Boolean) method.invoke(actc, CLUSTER_SSL_ENABLED));
+    assertFalse((Boolean) method.invoke(actc, GATEWAY_SSL_TRUSTSTORE_PASSWORD));
+    assertFalse((Boolean) method.invoke(actc, SERVER_SSL_KEYSTORE_PASSWORD));
+    assertTrue((Boolean) method.invoke(actc, SSL_ENABLED));
+    assertTrue((Boolean) method.invoke(actc, CONSERVE_SOCKETS));
+    assertFalse((Boolean) method.invoke(actc, "javax.net.ssl.keyStorePassword"));
+    assertFalse((Boolean) method.invoke(actc, "javax.net.ssl.keyStoreType"));
+    assertFalse((Boolean) method.invoke(actc, "sysprop-value"));
+  }
 
-	private static class AbstractConfigTestClass extends AbstractConfig {
+  private static class AbstractConfigTestClass extends AbstractConfig {
 
-		@Override
-		protected Map getAttDescMap() {
-			return null;
-		}
+    @Override
+    protected Map getAttDescMap() {
+      return null;
+    }
 
-		@Override
-		protected Map<String, ConfigSource> getAttSourceMap() {
-			return null;
-		}
+    @Override
+    protected Map<String, ConfigSource> getAttSourceMap() {
+      return null;
+    }
 
-		@Override
-		public Object getAttributeObject(String attName) {
-			return null;
-		}
+    @Override
+    public Object getAttributeObject(String attName) {
+      return null;
+    }
 
-		@Override
-		public void setAttributeObject(String attName, Object attValue, ConfigSource source) {
+    @Override
+    public void setAttributeObject(String attName, Object attValue, ConfigSource source) {
 
-		}
+    }
 
-		@Override
-		public boolean isAttributeModifiable(String attName) {
-			return false;
-		}
+    @Override
+    public boolean isAttributeModifiable(String attName) {
+      return false;
+    }
 
-		@Override
-		public Class getAttributeType(String attName) {
-			return null;
-		}
+    @Override
+    public Class getAttributeType(String attName) {
+      return null;
+    }
 
-		@Override
-		public String[] getAttributeNames() {
-			return new String[0];
-		}
+    @Override
+    public String[] getAttributeNames() {
+      return new String[0];
+    }
 
-		@Override
-		public String[] getSpecificAttributeNames() {
-			return new String[0];
-		}
-	}
+    @Override
+    public String[] getSpecificAttributeNames() {
+      return new String[0];
+    }
+  }
 }

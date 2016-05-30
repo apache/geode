@@ -16,12 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.Conflatable;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
@@ -1964,7 +1965,7 @@ public class HARegionQueueJUnitTest
     cache.close();
     ds.disconnect();
     Properties props = new Properties();
-    props.put(DistributionConfig.LOG_LEVEL_NAME, "config");
+    props.put(LOG_LEVEL, "config");
    //props.put("mcast-port","11111");
     try {
       cache= CacheFactory.create(DistributedSystem.connect(props));

@@ -36,8 +36,7 @@ import org.junit.Assert;
 import java.net.InetAddress;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.BIND_ADDRESS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * This class tests the functionality of the {@link
@@ -248,13 +247,13 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
     // in order to set a small ack-wait-threshold, we have to remove the
     // system property established by the dunit harness
     String oldAckWait = (String)System.getProperties()
-        .remove(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.ACK_WAIT_THRESHOLD_NAME);
+        .remove(DistributionConfig.GEMFIRE_PREFIX + ACK_WAIT_THRESHOLD);
 
     try {
       final Properties props = getDistributedSystemProperties();
       props.setProperty(MCAST_PORT, "0");
-      props.setProperty(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, "3");
-      props.setProperty(DistributionConfig.ACK_SEVERE_ALERT_THRESHOLD_NAME, "3");
+      props.setProperty(ACK_WAIT_THRESHOLD, "3");
+      props.setProperty(ACK_SEVERE_ALERT_THRESHOLD, "3");
       props.setProperty(SystemConfigurationProperties.NAME, "putter");
   
       getSystem(props);
@@ -313,7 +312,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
     }
     finally {
       if (oldAckWait != null) {
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.ACK_WAIT_THRESHOLD_NAME, oldAckWait);
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + ACK_WAIT_THRESHOLD, oldAckWait);
       }
     }
   }
@@ -390,13 +389,13 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
     // in order to set a small ack-wait-threshold, we have to remove the
     // system property established by the dunit harness
     String oldAckWait = (String)System.getProperties()
-        .remove(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.ACK_WAIT_THRESHOLD_NAME);
+        .remove(DistributionConfig.GEMFIRE_PREFIX + ACK_WAIT_THRESHOLD);
 
     try {
       final Properties props = getDistributedSystemProperties();
       props.setProperty(MCAST_PORT, "0"); // loner
-      props.setProperty(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, "5");
-      props.setProperty(DistributionConfig.ACK_SEVERE_ALERT_THRESHOLD_NAME, "5");
+      props.setProperty(ACK_WAIT_THRESHOLD, "5");
+      props.setProperty(ACK_SEVERE_ALERT_THRESHOLD, "5");
       props.setProperty(SystemConfigurationProperties.NAME, "putter");
   
       getSystem(props);
@@ -485,7 +484,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
     }
     finally {
       if (oldAckWait != null) {
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.ACK_WAIT_THRESHOLD_NAME, oldAckWait);
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + ACK_WAIT_THRESHOLD, oldAckWait);
       }
     }
   }
@@ -501,8 +500,8 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
     props.setProperty(MCAST_PORT, "0"); // loner
     // use a valid address that's not proper for this machine
     props.setProperty(BIND_ADDRESS, "www.yahoo.com");
-    props.setProperty(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, "5");
-    props.setProperty(DistributionConfig.ACK_SEVERE_ALERT_THRESHOLD_NAME, "5");
+    props.setProperty(ACK_WAIT_THRESHOLD, "5");
+    props.setProperty(ACK_SEVERE_ALERT_THRESHOLD, "5");
     try {
       getSystem(props);
     } catch (IllegalArgumentException e) {

@@ -43,6 +43,8 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  * A "connection" to a GemFire distributed system.  A
  * <code>DistributedSystem</code> is created by invoking the {@link
@@ -1742,7 +1744,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
       //  String prop=(String)en.nextElement();
       //  logger.info(prop + "=" + props.getProperty(prop));
       //}
-      props.setProperty(DistributionConfig.CONSERVE_SOCKETS_NAME, "true");
+      props.setProperty(CONSERVE_SOCKETS, "true");
       // LOG: no longer using the LogWriter that was passed in
       return connect(props);
     }

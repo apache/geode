@@ -573,7 +573,7 @@ implements com.gemstone.gemfire.admin.AdminDistributedSystem,
             MCAST_ADDRESS,
             InetAddressUtil.toInetAddress(this.config.getMcastAddress())),
         new ConfigurationParameterImpl(
-            DistributionConfig.DISABLE_TCP_NAME,
+            DISABLE_TCP,
             Boolean.valueOf(this.config.getDisableTcp()) ),
       };
     member.setConfiguration(configParms);

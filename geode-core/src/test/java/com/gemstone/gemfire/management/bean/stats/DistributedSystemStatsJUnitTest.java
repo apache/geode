@@ -35,7 +35,7 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -59,9 +59,9 @@ public class DistributedSystemStatsJUnitTest {
 
     final Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "false");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME, "60000");
+    props.setProperty(ENABLE_TIME_STATISTICS, "true");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
+    props.setProperty(STATISTIC_SAMPLE_RATE, "60000");
     props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
     props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
     // set JMX_MANAGER_UPDATE_RATE to practically an infinite value, so that

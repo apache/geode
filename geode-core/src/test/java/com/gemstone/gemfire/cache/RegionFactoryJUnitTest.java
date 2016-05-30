@@ -373,7 +373,7 @@ public class RegionFactoryJUnitTest {
       final Properties gemfireProperties = createGemFireProperties();
       gemfireProperties.put(MCAST_TTL, "64");
       final String xmlFileName = getName() + "-cache.xml";
-      gemfireProperties.put(DistributionConfig.CACHE_XML_FILE_NAME, xmlFileName);
+      gemfireProperties.put(CACHE_XML_FILE, xmlFileName);
       xmlFile = new File(xmlFileName);
       xmlFile.delete();
       xmlFile.createNewFile();
@@ -400,8 +400,8 @@ public class RegionFactoryJUnitTest {
       r1 = factory.create(this.r1Name);
       assertBasicRegionFunctionality(r1, r1Name);
       assertEquals(gemfireProperties.get(MCAST_TTL), r1.getCache().getDistributedSystem().getProperties().get(MCAST_TTL));
-      assertEquals(gemfireProperties.get(DistributionConfig.CACHE_XML_FILE_NAME),
-          r1.getCache().getDistributedSystem().getProperties().get(DistributionConfig.CACHE_XML_FILE_NAME));
+      assertEquals(gemfireProperties.get(CACHE_XML_FILE),
+          r1.getCache().getDistributedSystem().getProperties().get(CACHE_XML_FILE));
       RegionAttributes ra = r1.getAttributes();
       assertEquals(ra.getStatisticsEnabled(), true);
       assertEquals(ra.getScope().isDistributedAck(), true);

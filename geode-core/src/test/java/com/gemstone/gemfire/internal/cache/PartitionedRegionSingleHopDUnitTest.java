@@ -32,7 +32,6 @@ import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.BucketAdvisor.ServerBucketProfile;
@@ -55,8 +54,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
 
@@ -134,7 +132,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     File logFile = new File("locator-" + locatorPort + ".log");
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
     try {
       locator = Locator.startLocatorAndDS(locatorPort, logFile, null, props);
@@ -160,8 +158,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     cache = CacheFactory.create(ds);
 
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    server.setPort(port);
+    server.setPort(0);
     server.setHostnameForClients("localhost");
     try {
       server.start();
@@ -223,7 +220,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     LogWriterUtils.getLogWriter().info(
         "Partitioned Region SHIPMENT created Successfully :"
             + shipmentRegion.toString());
-    return port;
+    return server.getPort();
   }
 
   public static void clearMetadata() {

@@ -19,9 +19,10 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.admin.remote.ShutdownAllRequest;
 
@@ -48,7 +49,7 @@ public class RunCacheInOldGemfire {
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, mcastPort);
     config.setProperty(LOCATORS, "");
-    config.setProperty(DistributionConfig.LOG_FILE_NAME, "oldgemfire.log");
+    config.setProperty(LOG_FILE, "oldgemfire.log");
     InternalDistributedSystem localsystem = (InternalDistributedSystem)DistributedSystem.connect(config);
     Cache cache = CacheFactory.create(localsystem);
     return cache;

@@ -52,8 +52,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.junit.runners.MethodSorters.NAME_ASCENDING;
@@ -106,7 +105,7 @@ public class ClientCacheFactoryJUnitTest {
     }
 
     try {
-      new ClientCacheFactory().set(DistributionConfig.LOG_LEVEL_NAME, "severe").create();
+      new ClientCacheFactory().set(LOG_LEVEL, "severe").create();
       fail("expected create to fail");
     } catch (IllegalStateException expected) {
     }
@@ -125,7 +124,7 @@ public class ClientCacheFactoryJUnitTest {
     URL url = ClientCacheFactoryJUnitTest.class.getResource("ClientCacheFactoryJUnitTest_single_pool.xml");;
     FileUtil.copy(url, this.tmpFile);
     this.cc = new ClientCacheFactory()
-        .set(DistributionConfig.CACHE_XML_FILE_NAME, this.tmpFile.getAbsolutePath())
+        .set(CACHE_XML_FILE, this.tmpFile.getAbsolutePath())
       .create();
     GemFireCacheImpl gfc = (GemFireCacheImpl)this.cc;
     assertEquals(true, gfc.isClient());
@@ -217,13 +216,13 @@ public class ClientCacheFactoryJUnitTest {
 
   @Test
   public void test004SetMethod() throws Exception {
-    this.cc = new ClientCacheFactory().set(DistributionConfig.LOG_LEVEL_NAME, "severe").create();
+    this.cc = new ClientCacheFactory().set(LOG_LEVEL, "severe").create();
     GemFireCacheImpl gfc = (GemFireCacheImpl)this.cc;
     assertEquals(true, gfc.isClient());
     Properties dsProps = this.cc.getDistributedSystem().getProperties();
     assertEquals("0", dsProps.getProperty(MCAST_PORT));
     assertEquals("", dsProps.getProperty(LOCATORS));
-    assertEquals("severe", dsProps.getProperty(DistributionConfig.LOG_LEVEL_NAME));
+    assertEquals("severe", dsProps.getProperty(LOG_LEVEL));
   }
 
   @Test

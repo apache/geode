@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
@@ -71,7 +73,7 @@ public class LogWriterFactory {
     } else {
       boolean defaultSource = false;
       if (config instanceof DistributionConfig) {
-        ConfigSource source = ((DistributionConfig) config).getConfigSource(DistributionConfig.LOG_LEVEL_NAME);
+        ConfigSource source = ((DistributionConfig) config).getConfigSource(LOG_LEVEL);
         if (source == null) {
           defaultSource = true;
         }

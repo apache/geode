@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
@@ -107,9 +109,9 @@ public class Bug48879DUnitTest extends DistributedTestCase {
       throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "client_" + OSProcess.getId()
+    props.setProperty(STATISTIC_ARCHIVE_FILE, "client_" + OSProcess.getId()
         + ".gfs");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
     DistributedSystem ds = new Bug48879DUnitTest("Bug48879DUnitTest").getSystem(props);
     ds.disconnect();

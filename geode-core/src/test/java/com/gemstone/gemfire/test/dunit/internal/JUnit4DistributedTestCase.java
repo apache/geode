@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.test.dunit.internal;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
@@ -156,11 +158,11 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
       if (logPerTest) {
         String testMethod = getTestMethodName();
         String testName = lastSystemCreatedInTest.getName() + '-' + testMethod;
-        String oldLogFile = p.getProperty(DistributionConfig.LOG_FILE_NAME);
-        p.put(DistributionConfig.LOG_FILE_NAME,
+        String oldLogFile = p.getProperty(LOG_FILE);
+        p.put(LOG_FILE,
                 oldLogFile.replace("system.log", testName+".log"));
-        String oldStatFile = p.getProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME);
-        p.put(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME,
+        String oldStatFile = p.getProperty(STATISTIC_ARCHIVE_FILE);
+        p.put(STATISTIC_ARCHIVE_FILE,
                 oldStatFile.replace("statArchive.gfs", testName+".gfs"));
       }
       system = (InternalDistributedSystem)DistributedSystem.connect(p);

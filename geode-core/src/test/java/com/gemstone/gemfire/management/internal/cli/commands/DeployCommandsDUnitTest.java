@@ -41,8 +41,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 
 /**
@@ -340,8 +339,8 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
         final Properties locatorProps = new Properties();
         locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator");
         locatorProps.setProperty(MCAST_PORT, "0");
-        locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-        locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+        locatorProps.setProperty(LOG_LEVEL, "fine");
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
 
         try {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null, locatorProps);

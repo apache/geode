@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.partitioned.fixed.QuarterPartitionResolver;
 import com.gemstone.gemfire.internal.cache.partitioned.fixed.SingleHopQuarterPartitionResolver;
@@ -38,8 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class FixedPRSinglehopDUnitTest extends CacheTestCase {
 
@@ -412,7 +410,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
     File logFile = new File("locator-" + locatorPort + ".log");
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
     try {
       locator = Locator.startLocatorAndDS(locatorPort, logFile, null, props);
     }

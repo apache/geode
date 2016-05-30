@@ -20,7 +20,6 @@ import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
@@ -34,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * TODO This doesn't really test the optimised RI behaviour but only that RI
@@ -234,10 +233,10 @@ public class Bug43684DUnitTest extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
 //    props.setProperty("log-file", "server_" + OSProcess.getId() + ".log");
-    //    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "server_" + OSProcess.getId()
+    //    props.setProperty(LOG_LEVEL, "fine");
+    props.setProperty(STATISTIC_ARCHIVE_FILE, "server_" + OSProcess.getId()
         + ".gfs");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
     CacheFactory cf = new CacheFactory(props);
     cache = (GemFireCacheImpl)cf.create();
 
@@ -262,10 +261,10 @@ public class Bug43684DUnitTest extends DistributedTestCase {
     DistributedTestCase.disconnectFromDS();
     Properties props = new Properties();
 //    props.setProperty("log-file", "client_" + OSProcess.getId() + ".log");
-    //    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-    props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "client_" + OSProcess.getId()
+    //    props.setProperty(LOG_LEVEL, "fine");
+    props.setProperty(STATISTIC_ARCHIVE_FILE, "client_" + OSProcess.getId()
         + ".gfs");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
     ClientCacheFactory ccf = new ClientCacheFactory(props);
     ccf.addPoolServer(host.getHostName(), port).setPoolSubscriptionEnabled(true);
     cache = (GemFireCacheImpl)ccf.create();

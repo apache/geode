@@ -30,7 +30,7 @@ import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * The ClientServerRegisterInterestsDUnitTest class is a test suite of test cases testing the interaction between a
@@ -86,8 +86,8 @@ public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase 
           Cache cache = new CacheFactory()
             .set("name", "ClientServerRegisterInterestsTestGemFireServer")
               .set(MCAST_PORT, "0")
-              .set(DistributionConfig.LOG_FILE_NAME, "clientServerRegisterInterestsTest.log")
-              .set(DistributionConfig.LOG_LEVEL_NAME, "config")
+              .set(LOG_FILE, "clientServerRegisterInterestsTest.log")
+              .set(LOG_LEVEL, "config")
             //.set("jmx-manager", "true")
             //.set("jmx-manager-http-port", "0")
             //.set("jmx-manager-port", "1199")
@@ -140,7 +140,7 @@ public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase 
 
   private ClientCache setupGemFireClientCache() {
     ClientCache clientCache = new ClientCacheFactory()
-        .set(DistributionConfig.DURABLE_CLIENT_ID_NAME, "TestDurableClientId")
+        .set(DURABLE_CLIENT_ID, "TestDurableClientId")
       .create();
 
     PoolFactory poolFactory = PoolManager.createFactory();

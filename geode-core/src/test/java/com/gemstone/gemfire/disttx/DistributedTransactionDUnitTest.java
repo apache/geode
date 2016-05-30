@@ -151,7 +151,7 @@ public class DistributedTransactionDUnitTest extends CacheTestCase {
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
     //props.put("distributed-transactions", "true");
-//    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+//    props.setProperty(LOG_LEVEL, "fine");
     return props;
   }
 

@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache.query.internal.index;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
@@ -31,7 +30,7 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.fail;
 
 /**
@@ -59,7 +58,7 @@ public class ProgRegionCreationIndexUpdateTypeJUnitTest{
   public void testProgrammaticIndexUpdateType() throws Exception  {
   	Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "config");
+    props.setProperty(LOG_LEVEL, "config");
     DistributedSystem  ds = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds);
     //Create a Region with index maintenance type as explicit synchronous

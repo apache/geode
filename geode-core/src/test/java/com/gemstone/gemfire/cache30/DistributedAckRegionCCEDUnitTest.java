@@ -40,6 +40,8 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.Set;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitTest {
 
   public DistributedAckRegionCCEDUnitTest(String name) {
@@ -54,7 +56,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
   @Override
   public Properties getDistributedSystemProperties() {
     Properties p = super.getDistributedSystemProperties();
-    p.put(DistributionConfig.CONSERVE_SOCKETS_NAME, "false");
+    p.put(CONSERVE_SOCKETS, "false");
     if (distributedSystemID > 0) {
       p.put(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+distributedSystemID);
     }

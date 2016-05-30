@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.statistics;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
@@ -23,7 +25,6 @@ import com.gemstone.gemfire.cache.util.RegionMembershipListenerAdapter;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.*;
@@ -125,9 +126,9 @@ public class StatisticsDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           new File(dir).mkdir();
           final Properties props = new Properties();
-          props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-          props.setProperty(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME, "1000");
-          props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, pubArchives[pubVM]);
+          props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+          props.setProperty(STATISTIC_SAMPLE_RATE, "1000");
+          props.setProperty(STATISTIC_ARCHIVE_FILE, pubArchives[pubVM]);
           final InternalDistributedSystem system = getSystem(props);
   
           // assert that sampler is working as expected
@@ -179,9 +180,9 @@ public class StatisticsDUnitTest extends CacheTestCase {
       public Object call() throws Exception {
         new File(dir).mkdir();
         final Properties props = new Properties();
-        props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-        props.setProperty(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME, "1000");
-        props.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, subArchive);
+        props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+        props.setProperty(STATISTIC_SAMPLE_RATE, "1000");
+        props.setProperty(STATISTIC_ARCHIVE_FILE, subArchive);
         final InternalDistributedSystem system = getSystem(props);
         
         final PubSubStats statistics = new PubSubStats(system, "sub-1", 1);

@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.logging.log4j.custom;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.Configurator;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -40,8 +39,7 @@ import org.junit.rules.TestName;
 import java.io.File;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static com.gemstone.gemfire.internal.logging.log4j.custom.CustomConfiguration.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -84,7 +82,7 @@ public class CustomConfigWithCacheIntegrationTest {
     Properties gemfireProperties = new Properties();
     gemfireProperties.put(LOCATORS, "");
     gemfireProperties.put(MCAST_PORT, "0");
-    gemfireProperties.put(DistributionConfig.LOG_LEVEL_NAME, "info");
+    gemfireProperties.put(LOG_LEVEL, "info");
     this.cache = new CacheFactory(gemfireProperties).create();
   }
 

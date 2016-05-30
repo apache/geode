@@ -18,7 +18,6 @@ package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.test.dunit.*;
@@ -27,6 +26,8 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Map;
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDUnitTest {
   
@@ -39,11 +40,11 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
   @Override
   public Properties getDistributedSystemProperties() {
     Properties p = super.getDistributedSystemProperties();
-    p.put(DistributionConfig.CONSERVE_SOCKETS_NAME, "false");
+    p.put(CONSERVE_SOCKETS, "false");
     if (distributedSystemID > 0) {
-      p.put(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+distributedSystemID);
+      p.put(DISTRIBUTED_SYSTEM_ID, ""+distributedSystemID);
     }
-    p.put(DistributionConfig.SOCKET_BUFFER_SIZE_NAME, ""+2000000);
+    p.put(SOCKET_BUFFER_SIZE, ""+2000000);
     return p;
   }
 

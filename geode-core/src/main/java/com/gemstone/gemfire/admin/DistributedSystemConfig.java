@@ -24,8 +24,6 @@ import java.util.Properties;
 
 import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
-//import com.gemstone.gemfire.admin.jmx.AgentConfig;
-//import java.net.InetAddress;
 
 /**
  * Configuration for defining a GemFire distributed system to
@@ -114,8 +112,7 @@ public interface DistributedSystemConfig extends Cloneable {
   /** The name of the "membership-port-range" property
    * @since GemFire 6.5
    */
-  String MEMBERSHIP_PORT_RANGE_NAME = 
-    DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME;
+  String MEMBERSHIP_PORT_RANGE_NAME = MEMBERSHIP_PORT_RANGE;
 
   /**
    * The default membership-port-range.
@@ -197,32 +194,28 @@ public interface DistributedSystemConfig extends Cloneable {
     "rsh -n {HOST} {CMD}";
 
   /** The name of the "SSLEnabled" property */
-  String SSL_ENABLED_NAME = 
-    DistributionConfig.SSL_ENABLED_NAME;
+  String SSL_ENABLED_NAME = SSL_ENABLED;
 
   /** The default ssl-enabled state (<code>false</code>) */
   boolean DEFAULT_SSL_ENABLED =
     DistributionConfig.DEFAULT_SSL_ENABLED;
  
   /** The name of the "SSLProtocols" property */
-  String SSL_PROTOCOLS_NAME =
-    DistributionConfig.SSL_PROTOCOLS_NAME;
+  String SSL_PROTOCOLS_NAME = SSL_PROTOCOLS;
 
   /** The default ssl-protocols value (<code>any</code>) */
   String DEFAULT_SSL_PROTOCOLS =
     DistributionConfig.DEFAULT_SSL_PROTOCOLS;
    
   /** The name of the "SSLCiphers" property */
-  String SSL_CIPHERS_NAME = 
-    DistributionConfig.SSL_CIPHERS_NAME;
+  String SSL_CIPHERS_NAME = SSL_CIPHERS;
 
   /** The default ssl-ciphers value. (<code>any</code>) */
   String DEFAULT_SSL_CIPHERS =
     DistributionConfig.DEFAULT_SSL_CIPHERS; 
   
   /** The name of the "SSLRequireAuthentication" property */
-  String SSL_REQUIRE_AUTHENTICATION_NAME =
-    DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME;
+  String SSL_REQUIRE_AUTHENTICATION_NAME = SSL_REQUIRE_AUTHENTICATION;
 
   /** The default ssl-require-authentication value (<code>true</code>) */
   boolean DEFAULT_SSL_REQUIRE_AUTHENTICATION =
@@ -241,21 +234,21 @@ public interface DistributedSystemConfig extends Cloneable {
   int DEFAULT_MEMBER_TIMEOUT = DistributionConfig.DEFAULT_MEMBER_TIMEOUT;
   
   /** The name of the "logFile" property */
-  String LOG_FILE_NAME = DistributionConfig.LOG_FILE_NAME;
+  String LOG_FILE_NAME = LOG_FILE;
 
   /** The default log-file value ("" which directs logging to standard
    * output) */
   String DEFAULT_LOG_FILE = "";
 
   /** The name of the "logLevel" property */
-  String LOG_LEVEL_NAME = DistributionConfig.LOG_LEVEL_NAME;
+  String LOG_LEVEL_NAME = LOG_LEVEL;
 
   /** The default log level ("config") */
   String DEFAULT_LOG_LEVEL = "config";
 
   /** The name of the "LogDiskSpaceLimit" property */
   String LOG_DISK_SPACE_LIMIT_NAME =
-      DistributionConfig.LOG_DISK_SPACE_LIMIT_NAME;
+      LOG_DISK_SPACE_LIMIT;
 
   /** The default log disk space limit in megabytes (0) */
   int DEFAULT_LOG_DISK_SPACE_LIMIT =
@@ -270,8 +263,7 @@ public interface DistributedSystemConfig extends Cloneable {
     DistributionConfig.MAX_LOG_DISK_SPACE_LIMIT;
     
   /** The name of the "LogFileSizeLimit" property */
-  String LOG_FILE_SIZE_LIMIT_NAME =
-      DistributionConfig.LOG_FILE_SIZE_LIMIT_NAME;
+  String LOG_FILE_SIZE_LIMIT_NAME = LOG_FILE_SIZE_LIMIT;
 
   /** The default log file size limit in megabytes (0) */
   int DEFAULT_LOG_FILE_SIZE_LIMIT =

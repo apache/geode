@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
 import com.gemstone.gemfire.internal.cache.lru.NewLRUClockHand;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -30,8 +29,7 @@ import org.junit.experimental.categories.Category;
 import java.io.File;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 /**
@@ -82,7 +80,7 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info"); // to keep diskPerf logs smaller
+    props.setProperty(LOG_LEVEL, "info"); // to keep diskPerf logs smaller
     distributedSystem = DistributedSystem.connect(props);
     cache = CacheFactory.create(distributedSystem);
     assertNotNull(cache);

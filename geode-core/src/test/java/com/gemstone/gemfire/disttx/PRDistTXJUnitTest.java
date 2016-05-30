@@ -48,7 +48,7 @@ public class PRDistTXJUnitTest extends PRTXJUnitTest {
     Properties p = new Properties();
     p.setProperty(MCAST_PORT, "0"); // loner
     p.setProperty(SystemConfigurationProperties.DISTRIBUTED_TRANSACTIONS, "true");
-    // p.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    // p.setProperty(LOG_LEVEL, "fine");
     this.cache = (GemFireCacheImpl) CacheFactory.create(DistributedSystem
         .connect(p));
     createRegion();

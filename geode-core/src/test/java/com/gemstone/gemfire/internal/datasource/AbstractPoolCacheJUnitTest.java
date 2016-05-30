@@ -22,6 +22,8 @@
  */
 package com.gemstone.gemfire.internal.datasource;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -57,11 +59,11 @@ public class AbstractPoolCacheJUnitTest {
   @Before
   public void setUp() throws Exception {
     props = new Properties();
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
+    props.setProperty(LOG_LEVEL, "info");
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     String path = TestUtil.getResourcePath(AbstractPoolCacheJUnitTest.class, "/jta/cachejta.xml");
-    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
+    props.setProperty(CACHE_XML_FILE, path);
     ds1 = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds1);
   }

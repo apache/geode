@@ -16,6 +16,8 @@
  */
 package com.main;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 
@@ -49,7 +51,7 @@ public class WANBootStrapping_Site1_Remove {
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+ (-1));
     properties.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + 20202 + "]");
-    properties.setProperty(DistributionConfig.LOG_LEVEL_NAME, "warning");
+    properties.setProperty(LOG_LEVEL, "warning");
     Locator locator = null;
     try {
       locator = Locator.startLocatorAndDS(40445, null, properties);

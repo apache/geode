@@ -20,7 +20,6 @@ import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
@@ -37,6 +36,8 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.security.Principal;
 import java.util.*;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class ExampleJSONAuthorization implements AccessControl, Authenticator {
 
@@ -94,7 +95,7 @@ public class ExampleJSONAuthorization implements AccessControl, Authenticator {
         user.pwd = user.name;
       }
 
-      JSONArray ops = obj.getJSONArray(DistributionConfig.ROLES_NAME);
+      JSONArray ops = obj.getJSONArray(ROLES);
       for (int j = 0; j < ops.length(); j++) {
         String roleName = ops.getString(j);
         user.roles.add(roleMap.get(roleName));
@@ -105,7 +106,7 @@ public class ExampleJSONAuthorization implements AccessControl, Authenticator {
 
   private static Map<String, Role> readRoles(JSONObject jsonBean) throws JSONException {
     Map<String, Role> roleMap = new HashMap<>();
-    JSONArray array = jsonBean.getJSONArray(DistributionConfig.ROLES_NAME);
+    JSONArray array = jsonBean.getJSONArray(ROLES);
     for (int i = 0; i < array.length(); i++) {
       JSONObject obj = array.getJSONObject(i);
       Role role = new Role();

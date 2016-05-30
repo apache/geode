@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.data.Position;
@@ -90,9 +92,9 @@ public class DataBrowserJSONValidationJUnitTest {
 
     final Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "false");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME, "60000");
+    props.setProperty(ENABLE_TIME_STATISTICS, "true");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
+    props.setProperty(STATISTIC_SAMPLE_RATE, "60000");
     props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
     props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
     props.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");

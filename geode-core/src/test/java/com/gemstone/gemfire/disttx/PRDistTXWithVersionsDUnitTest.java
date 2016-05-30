@@ -16,10 +16,11 @@
  */
 package com.gemstone.gemfire.disttx;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.execute.PRTransactionWithVersionsDUnitTest;
 
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class PRDistTXWithVersionsDUnitTest extends
     PRTransactionWithVersionsDUnitTest {
@@ -31,8 +32,8 @@ public class PRDistTXWithVersionsDUnitTest extends
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.DISTRIBUTED_TRANSACTIONS_NAME, "true");
-//    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    props.setProperty(DISTRIBUTED_TRANSACTIONS, "true");
+//    props.setProperty(LOG_LEVEL, "fine");
     return props;
   }
   

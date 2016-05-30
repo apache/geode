@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.cli.Result.Status;
@@ -54,9 +56,9 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
   private Properties createProperties(Host host, String name, String groups) {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
+    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+    props.setProperty(ENABLE_TIME_STATISTICS, "true");
     props.setProperty(SystemConfigurationProperties.NAME, name);
     props.setProperty(DistributionConfig.GROUPS_NAME, groups);
     return props;

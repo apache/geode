@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.extension.Extension;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
@@ -48,7 +47,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -129,7 +128,7 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
   public void createIndex() throws FileNotFoundException {
     CacheFactory cf = new CacheFactory();
     cf.set(MCAST_PORT, "0");
-    cf.set(DistributionConfig.CACHE_XML_FILE_NAME, getXmlFileForTest());
+    cf.set(CACHE_XML_FILE, getXmlFileForTest());
     Cache cache = cf.create();
 
     LuceneService service = LuceneServiceProvider.get(cache);

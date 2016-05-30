@@ -17,9 +17,10 @@
 package com.gemstone.gemfire.disttx;
 
 import com.gemstone.gemfire.cache30.CacheMapTxnDUnitTest;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 
 /**
@@ -59,8 +60,8 @@ public class CacheMapDistTXDUnitTest extends CacheMapTxnDUnitTest {
   }
 
   public static void setDistributedTX() {
-    props.setProperty(DistributionConfig.DISTRIBUTED_TRANSACTIONS_NAME, "true");
-//    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    props.setProperty(DISTRIBUTED_TRANSACTIONS, "true");
+//    props.setProperty(LOG_LEVEL, "fine");
   }
 
   public static void checkIsDistributedTX() {

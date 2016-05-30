@@ -53,8 +53,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * 
@@ -245,26 +244,26 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
   private void configureSSL(Properties props, Properties sslProperties, boolean clusterLevel) {
 
     if (clusterLevel) {
-      sslPropertyConverter(sslProperties, props, DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, DistributionConfig.CLUSTER_SSL_ENABLED_NAME);
-      sslPropertyConverter(sslProperties, props, DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, DistributionConfig.CLUSTER_SSL_KEYSTORE_NAME);
-      sslPropertyConverter(sslProperties, props, DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME,
-          DistributionConfig.CLUSTER_SSL_KEYSTORE_PASSWORD_NAME);
-      sslPropertyConverter(sslProperties, props, DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME, DistributionConfig.CLUSTER_SSL_KEYSTORE_TYPE_NAME);
-      sslPropertyConverter(sslProperties, props, DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME, DistributionConfig.CLUSTER_SSL_PROTOCOLS_NAME);
-      sslPropertyConverter(sslProperties, props, DistributionConfig.HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME,
-          DistributionConfig.CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME);
-      sslPropertyConverter(sslProperties, props, DistributionConfig.HTTP_SERVICE_SSL_TRUSTSTORE_NAME, DistributionConfig.CLUSTER_SSL_TRUSTSTORE_NAME);
-      sslPropertyConverter(sslProperties, props, DistributionConfig.HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME,
-          DistributionConfig.CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_ENABLED, CLUSTER_SSL_ENABLED);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_KEYSTORE, CLUSTER_SSL_KEYSTORE);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_KEYSTORE_PASSWORD,
+          CLUSTER_SSL_KEYSTORE_PASSWORD);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_KEYSTORE_TYPE, CLUSTER_SSL_KEYSTORE_TYPE);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_PROTOCOLS, CLUSTER_SSL_PROTOCOLS);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION,
+          CLUSTER_SSL_REQUIRE_AUTHENTICATION);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_TRUSTSTORE, CLUSTER_SSL_TRUSTSTORE);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD,
+          CLUSTER_SSL_TRUSTSTORE_PASSWORD);
     } else {
-      sslPropertyConverter(sslProperties, props, DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, null);
-      sslPropertyConverter(sslProperties, props, DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, null);
-      sslPropertyConverter(sslProperties, props, DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, null);
-      sslPropertyConverter(sslProperties, props, DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME, null);
-      sslPropertyConverter(sslProperties, props, DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME, null);
-      sslPropertyConverter(sslProperties, props, DistributionConfig.HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME, null);
-      sslPropertyConverter(sslProperties, props, DistributionConfig.HTTP_SERVICE_SSL_TRUSTSTORE_NAME, null);
-      sslPropertyConverter(sslProperties, props, DistributionConfig.HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME, null);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_ENABLED, null);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_KEYSTORE, null);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, null);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_KEYSTORE_TYPE, null);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_PROTOCOLS, null);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION, null);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_TRUSTSTORE, null);
+      sslPropertyConverter(sslProperties, props, HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD, null);
     }
   }
 

@@ -41,8 +41,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 import static com.gemstone.gemfire.test.dunit.NetworkUtils.getServerHostName;
@@ -78,9 +77,9 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
   private Properties createProperties(String name, String groups) {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
+    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+    props.setProperty(ENABLE_TIME_STATISTICS, "true");
     props.setProperty(SystemConfigurationProperties.NAME, name);
     props.setProperty(DistributionConfig.GROUPS_NAME, groups);
     return props;
@@ -171,10 +170,10 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
 
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, getServerHostName(host) + "[" + locatorPort + "]");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
-    props.put(DistributionConfig.ENABLE_NETWORK_PARTITION_DETECTION_NAME, "true");
+    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+    props.setProperty(ENABLE_TIME_STATISTICS, "true");
+    props.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
 
     return props;
   }

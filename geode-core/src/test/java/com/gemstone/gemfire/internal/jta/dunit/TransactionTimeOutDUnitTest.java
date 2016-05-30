@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.jta.dunit;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.datasource.GemFireTransactionDataSource;
 import com.gemstone.gemfire.internal.jta.CacheUtils;
@@ -35,6 +34,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
 *This test tests TransactionTimeOut functionality
@@ -61,7 +62,7 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
     wr.flush();
     wr.close();
 
-    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
+    props.setProperty(CACHE_XML_FILE, path);
     //    props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "10321");
     try {
 //      ds = DistributedSystem.connect(props);

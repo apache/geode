@@ -60,8 +60,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 import static com.jayway.awaitility.Awaitility.waitAtMost;
@@ -773,8 +772,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
       final Properties locatorProps = new Properties();
       locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator");
       locatorProps.setProperty(MCAST_PORT, "0");
-      locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-      locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+      locatorProps.setProperty(LOG_LEVEL, "fine");
+      locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
       try {
         final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null,
             locatorProps);
@@ -836,7 +835,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
       localProps.setProperty(MCAST_PORT, "0");
       localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
       localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
-      localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
+      localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
       getSystem(localProps);
       cache = getCache();
       assertNotNull(cache);
@@ -878,7 +877,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
         localProps.setProperty(MCAST_PORT, "0");
         localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
         localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
-        localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
+        localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         getSystem(localProps);
         cache = getCache();
         assertNotNull(cache);
@@ -907,8 +906,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
       final Properties locatorProps = new Properties();
       locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator");
       locatorProps.setProperty(MCAST_PORT, "0");
-      locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-      locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+      locatorProps.setProperty(LOG_LEVEL, "fine");
+      locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
       try {
         final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null,
             locatorProps);
@@ -988,7 +987,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
       localProps.setProperty(MCAST_PORT, "0");
       localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
       localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
-      localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
+      localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
       getSystem(localProps);
       cache = getCache();
       assertNotNull(cache);

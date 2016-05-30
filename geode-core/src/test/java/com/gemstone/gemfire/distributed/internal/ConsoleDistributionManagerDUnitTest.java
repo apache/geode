@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache30.CacheTestCase;
@@ -194,7 +196,7 @@ public class ConsoleDistributionManagerDUnitTest
       String[] attNames = conf.getAttributeNames();
       boolean foundIt = false;      
       for (int j=0; j<attNames.length; j++) {
-        if (attNames[j].equals(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME)) {
+        if (attNames[j].equals(STATISTIC_SAMPLING_ENABLED)) {
           foundIt = true;
           assertEquals(conf.getAttribute(attNames[j]), "true");
           break;

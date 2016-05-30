@@ -85,13 +85,13 @@ public class JGroupsMessengerJUnitTest {
       messenger = null;
     }
     Properties nonDefault = new Properties();
-    nonDefault.put(DistributionConfig.DISABLE_TCP_NAME, "true");
+    nonDefault.put(DISABLE_TCP, "true");
     nonDefault.put(MCAST_PORT, enableMcast ? "" + AvailablePortHelper.getRandomAvailableUDPPort() : "0");
     nonDefault.put(MCAST_TTL, "0");
-    nonDefault.put(DistributionConfig.LOG_FILE_NAME, "");
-    nonDefault.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    nonDefault.put(LOG_FILE, "");
+    nonDefault.put(LOG_LEVEL, "fine");
     nonDefault.put(LOCATORS, "localhost[10344]");
-    nonDefault.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, "1");
+    nonDefault.put(ACK_WAIT_THRESHOLD, "1");
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig tconfig = new RemoteTransportConfig(config,
         DistributionManager.NORMAL_DM_TYPE);

@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
@@ -34,7 +33,7 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.fail;
 
 /**
@@ -50,53 +49,9 @@ public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase
 
   DiskRegionProperties diskProps = new DiskRegionProperties();
 
-  DiskRegionProperties diskProps1 = new DiskRegionProperties();
+  DiskRegionProperties[] diskRegionProperties = new DiskRegionProperties[12];
 
-  DiskRegionProperties diskProps2 = new DiskRegionProperties();
-
-  DiskRegionProperties diskProps3 = new DiskRegionProperties();
-
-  DiskRegionProperties diskProps4 = new DiskRegionProperties();
-
-  DiskRegionProperties diskProps5 = new DiskRegionProperties();
-
-  DiskRegionProperties diskProps6 = new DiskRegionProperties();
-
-  DiskRegionProperties diskProps7 = new DiskRegionProperties();
-
-  DiskRegionProperties diskProps8 = new DiskRegionProperties();
-
-  DiskRegionProperties diskProps9 = new DiskRegionProperties();
-
-  DiskRegionProperties diskProps10 = new DiskRegionProperties();
-
-  DiskRegionProperties diskProps11 = new DiskRegionProperties();
-
-  DiskRegionProperties diskProps12 = new DiskRegionProperties();
-
-  Region region1;
-
-  Region region2;
-
-  Region region3;
-
-  Region region4;
-
-  Region region5;
-
-  Region region6;
-
-  Region region7;
-
-  Region region8;
-
-  Region region9;
-
-  Region region10;
-
-  Region region11;
-
-  Region region12;
+  Region[] regions = new Region[12];
 
   @Before
   public void setUp() throws Exception
@@ -107,18 +62,17 @@ public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase
     diskDirSize[1] = Integer.MAX_VALUE;
     diskDirSize[2] = 1073741824;
     diskDirSize[3] = 2073741824;
-    diskProps1.setDiskDirsAndSizes(dirs, diskDirSize);
-    diskProps2.setDiskDirs(dirs);
-    diskProps3.setDiskDirs(dirs);
-    diskProps4.setDiskDirs(dirs);
-    diskProps5.setDiskDirs(dirs);
-    diskProps6.setDiskDirs(dirs);
-    diskProps7.setDiskDirs(dirs);
-    diskProps8.setDiskDirs(dirs);
-    diskProps9.setDiskDirs(dirs);
-    diskProps10.setDiskDirs(dirs);
-    diskProps11.setDiskDirs(dirs);
-    diskProps12.setDiskDirs(dirs);
+
+    for (int i = 0; i < diskRegionProperties.length; i++) {
+      diskRegionProperties[i] = new DiskRegionProperties();
+      if(i == 0)
+      {
+        diskRegionProperties[i].setDiskDirsAndSizes(dirs, diskDirSize);
+      }
+      else{
+        diskRegionProperties[i].setDiskDirs(dirs);
+      }
+    }
   }
 
   @After
@@ -130,97 +84,97 @@ public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase
 
   public void createCacheXML()
   {
-    // create the region1 which is SyncPersistOnly and set DiskWriteAttibutes
-    diskProps1.setRolling(true);
-    diskProps1.setMaxOplogSize(1073741824L);
-    diskProps1.setRegionName("region1");
-    region1 = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache,
-        diskProps1, Scope.LOCAL);
+    // create the regions[0] which is SyncPersistOnly and set DiskWriteAttibutes
+    diskRegionProperties[0].setRolling(true);
+    diskRegionProperties[0].setMaxOplogSize(1073741824L);
+    diskRegionProperties[0].setRegionName("regions1");
+    regions[0] = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache,
+        diskRegionProperties[0], Scope.LOCAL);
 
-    // create the region2 which is SyncPersistOnly and set DiskWriteAttibutes
+    // create the regions[1] which is SyncPersistOnly and set DiskWriteAttibutes
 
-    diskProps2.setRolling(false);
-    diskProps2.setRegionName("region2");
-    region2 = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache,
-        diskProps2, Scope.LOCAL);
+    diskRegionProperties[1].setRolling(false);
+    diskRegionProperties[1].setRegionName("regions2");
+    regions[1] = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache,
+        diskRegionProperties[1], Scope.LOCAL);
 
-    // create the region3 which AsyncPersistOnly, No buffer and Rolling oplog
-    diskProps3.setRolling(true);
-    diskProps3.setMaxOplogSize(1073741824L);
-    diskProps3.setRegionName("region3");
-    region3 = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache,
-        diskProps3);
+    // create the regions[2] which AsyncPersistOnly, No buffer and Rolling oplog
+    diskRegionProperties[2].setRolling(true);
+    diskRegionProperties[2].setMaxOplogSize(1073741824L);
+    diskRegionProperties[2].setRegionName("regions3");
+    regions[2] = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache,
+        diskRegionProperties[2]);
 
-    // create the region4 which is AsynchPersistonly, No buffer and fixed oplog
-    diskProps4.setRolling(false);
-    diskProps4.setRegionName("region4");
-    region4 = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache,
-        diskProps4);
+    // create the regions[3] which is AsynchPersistonly, No buffer and fixed oplog
+    diskRegionProperties[3].setRolling(false);
+    diskRegionProperties[3].setRegionName("regions4");
+    regions[3] = DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache,
+        diskRegionProperties[3]);
 
-    // create the region5 which is SynchOverflowOnly, Rolling oplog
-    diskProps5.setRolling(true);
-    diskProps5.setMaxOplogSize(1073741824L);
-    diskProps5.setRegionName("region5");
-    region5 = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache,
-        diskProps5);
+    // create the regions[4] which is SynchOverflowOnly, Rolling oplog
+    diskRegionProperties[4].setRolling(true);
+    diskRegionProperties[4].setMaxOplogSize(1073741824L);
+    diskRegionProperties[4].setRegionName("regions5");
+    regions[4] = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache,
+        diskRegionProperties[4]);
 
-    // create the region6 which is SyncOverflowOnly, Fixed oplog
-    diskProps6.setRolling(false);
-    diskProps6.setRegionName("region6");
-    region6 = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache,
-        diskProps6);
+    // create the regions[5] which is SyncOverflowOnly, Fixed oplog
+    diskRegionProperties[5].setRolling(false);
+    diskRegionProperties[5].setRegionName("regions6");
+    regions[5] = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache,
+        diskRegionProperties[5]);
 
-    // create the region7 which is AsyncOverflow, with Buffer and rolling oplog
-    diskProps7.setRolling(true);
-    diskProps7.setMaxOplogSize(1073741824L);
-    diskProps7.setBytesThreshold(10000l);
-    diskProps7.setTimeInterval(15l);
-    diskProps7.setRegionName("region7");
-    region7 = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,
-        diskProps7);
+    // create the regions[6] which is AsyncOverflow, with Buffer and rolling oplog
+    diskRegionProperties[6].setRolling(true);
+    diskRegionProperties[6].setMaxOplogSize(1073741824L);
+    diskRegionProperties[6].setBytesThreshold(10000l);
+    diskRegionProperties[6].setTimeInterval(15l);
+    diskRegionProperties[6].setRegionName("regions7");
+    regions[6] = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,
+        diskRegionProperties[6]);
 
-    // create the region8 which is AsyncOverflow ,Time base buffer-zero byte
+    // create the regions[7] which is AsyncOverflow ,Time base buffer-zero byte
     // buffer
     // and Fixed oplog
-    diskProps8.setRolling(false);
-    diskProps8.setTimeInterval(15l);
-    diskProps8.setBytesThreshold(0l);
-    diskProps8.setRegionName("region8");
-    region8 = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,
-        diskProps8);
+    diskRegionProperties[7].setRolling(false);
+    diskRegionProperties[7].setTimeInterval(15l);
+    diskRegionProperties[7].setBytesThreshold(0l);
+    diskRegionProperties[7].setRegionName("regions8");
+    regions[7] = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,
+        diskRegionProperties[7]);
 
-    // create the region9 which is SyncPersistOverflow, Rolling oplog
-    diskProps9.setRolling(true);
-    diskProps9.setMaxOplogSize(1073741824L);
-    diskProps9.setRegionName("region9");
-    region9 = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,
-        diskProps9);
+    // create the regions[8] which is SyncPersistOverflow, Rolling oplog
+    diskRegionProperties[8].setRolling(true);
+    diskRegionProperties[8].setMaxOplogSize(1073741824L);
+    diskRegionProperties[8].setRegionName("regions9");
+    regions[8] = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,
+        diskRegionProperties[8]);
 
-    // create the region10 which is Sync PersistOverflow, fixed oplog
-    diskProps10.setRolling(false);
-    diskProps10.setRegionName("region10");
-    region10 = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,
-        diskProps10);
-    // create the region11 which is Async Overflow Persist ,with buffer and
+    // create the regions[9] which is Sync PersistOverflow, fixed oplog
+    diskRegionProperties[9].setRolling(false);
+    diskRegionProperties[9].setRegionName("regions10");
+    regions[9] = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,
+        diskRegionProperties[9]);
+    // create the regions[10] which is Async Overflow Persist ,with buffer and
     // rollong
     // oplog
-    diskProps11.setRolling(true);
-    diskProps11.setMaxOplogSize(1073741824L);
-    diskProps11.setBytesThreshold(10000l);
-    diskProps11.setTimeInterval(15l);
-    diskProps11.setRegionName("region11");
-    region11 = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache,
-        diskProps11);
+    diskRegionProperties[10].setRolling(true);
+    diskRegionProperties[10].setMaxOplogSize(1073741824L);
+    diskRegionProperties[10].setBytesThreshold(10000l);
+    diskRegionProperties[10].setTimeInterval(15l);
+    diskRegionProperties[10].setRegionName("regions11");
+    regions[10] = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache,
+        diskRegionProperties[10]);
 
-    // create the region12 which is Async Persist Overflow with time based
+    // create the regions[11] which is Async Persist Overflow with time based
     // buffer
     // and Fixed oplog
-    diskProps12.setRolling(false);
-    diskProps12.setBytesThreshold(0l);
-    diskProps12.setTimeInterval(15l);
-    diskProps12.setRegionName("region12");
-    region12 = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache,
-        diskProps12);
+    diskRegionProperties[11].setRolling(false);
+    diskRegionProperties[11].setBytesThreshold(0l);
+    diskRegionProperties[11].setTimeInterval(15l);
+    diskRegionProperties[11].setRegionName("regions12");
+    regions[11] = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache,
+        diskRegionProperties[11]);
 
 
     //cacheXmlGenerator: generates cacheXml file
@@ -246,58 +200,46 @@ public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase
     props.setProperty(SystemConfigurationProperties.NAME, "DiskRegCachexmlGeneratorJUnitTest");
     props.setProperty(MCAST_PORT, "0");
     String path = "DiskRegCachexmlGeneratorJUnitTest.xml";
-    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
+    props.setProperty(CACHE_XML_FILE, path);
     ds = DistributedSystem.connect(props);
     // Create the cache which causes the cache-xml-file to be parsed
     cache = CacheFactory.create(ds);
 
-    // Get the region1 
-    region1 = cache.getRegion("region1");
-    verify((LocalRegion)region1, diskProps1);
+    // Get the regions[0] 
+    verify((LocalRegion) cache.getRegion("regions1"), diskRegionProperties[0]);
 
-    // Get the region2
-    Region region2 = cache.getRegion("region2");
-    verify((LocalRegion)region2, diskProps2);
+    // Get the regions[1]
+    verify((LocalRegion) cache.getRegion("regions2"), diskRegionProperties[1]);
 
-    // Get the region3 
-    Region region3 = cache.getRegion("region3");
-    verify((LocalRegion)region3, diskProps3);
+    // Get the regions[2] 
+    verify((LocalRegion) cache.getRegion("regions3"), diskRegionProperties[2]);
 
-    // Get the region4 
-    Region region4 = cache.getRegion("region4");
-    verify((LocalRegion)region4, diskProps4);
+    // Get the regions[3] 
+    verify((LocalRegion) cache.getRegion("regions4"), diskRegionProperties[3]);
     
-    // Get the region5 
-    Region region5 = cache.getRegion("region5");
-    verify((LocalRegion)region5, diskProps5);
+    // Get the regions[4] 
+    verify((LocalRegion) cache.getRegion("regions5"), diskRegionProperties[4]);
 
-    // Get the region6 
-    Region region6 = cache.getRegion("region6");
-    verify((LocalRegion)region6, diskProps6);
+    // Get the regions[5] 
+    verify((LocalRegion) cache.getRegion("regions6"), diskRegionProperties[5]);
     
-    // Get the region7 
-    Region region7 = cache.getRegion("region7");
-    verify((LocalRegion)region7, diskProps7);
+    // Get the regions[6] 
+    verify((LocalRegion) cache.getRegion("regions7"), diskRegionProperties[6]);
 
-    // Get the region8 
-    Region region8 = cache.getRegion("region8");
-    verify((LocalRegion)region8, diskProps8);
+    // Get the regions[7] 
+    verify((LocalRegion) cache.getRegion("regions8"), diskRegionProperties[7]);
 
-    // Get the region9 
-    Region region9 = cache.getRegion("region9");
-    verify((LocalRegion)region9, diskProps9);
+    // Get the regions[8] 
+    verify((LocalRegion) cache.getRegion("regions9"), diskRegionProperties[8]);
 
-    // Get the region10 
-    Region region10 = cache.getRegion("region10");
-    verify((LocalRegion)region10, diskProps10);
+    // Get the regions[9] 
+    verify((LocalRegion) cache.getRegion("regions10"), diskRegionProperties[9]);
 
-    // Get the region11
-    Region region11 = cache.getRegion("region11");
-    verify((LocalRegion)region11, diskProps11);
+    // Get the regions[10]
+    verify((LocalRegion) cache.getRegion("regions11"), diskRegionProperties[10]);
 
-    // Get the region12 
-    Region region12 = cache.getRegion("region12");
-    verify((LocalRegion)region12, diskProps12);
+    // Get the regions[11] 
+    verify((LocalRegion) cache.getRegion("regions12"), diskRegionProperties[11]);
   }
 
 }// end of DiskRegCachexmlGeneratorJUnitTest

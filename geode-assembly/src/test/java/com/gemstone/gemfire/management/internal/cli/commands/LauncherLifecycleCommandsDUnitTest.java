@@ -64,7 +64,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.START_LOCATOR;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
 
@@ -917,7 +917,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
   }
 
   private ClientCache setupClientCache(final String durableClientId, final int serverPort) {
-    ClientCache clientCache = new ClientCacheFactory().set(DistributionConfig.DURABLE_CLIENT_ID_NAME, durableClientId).create();
+    ClientCache clientCache = new ClientCacheFactory().set(DURABLE_CLIENT_ID, durableClientId).create();
 
     PoolFactory poolFactory = PoolManager.createFactory();
 

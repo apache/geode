@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.cache.diskPerf;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.DiskStoreFactoryImpl;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -30,8 +29,7 @@ import org.junit.rules.TestName;
 import java.io.File;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 @Category(IntegrationTest.class)
 public class MultiThreadedOplogPerJUnitPerformanceTest
@@ -101,7 +99,7 @@ public class MultiThreadedOplogPerJUnitPerformanceTest
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
+    props.setProperty(LOG_LEVEL, "info");
     DistributedSystem ds = DistributedSystem.connect(props);
     Cache cache = null;
     try {

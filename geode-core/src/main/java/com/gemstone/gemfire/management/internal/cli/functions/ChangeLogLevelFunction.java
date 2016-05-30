@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.cli.functions;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.Function;
@@ -56,7 +58,7 @@ public class ChangeLogLevelFunction implements Function, InternalEntity {
       final String logLevel = (String) args[0];
       Level log4jLevel = LogWriterLogger.logWriterNametoLog4jLevel(logLevel);
       logwriterLogger.setLevel(log4jLevel);
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.LOG_LEVEL_NAME, logLevel);
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL, logLevel);
       // LOG:CONFIG:
       logger.info(LogMarker.CONFIG, "GFSH Changed log level to {}", log4jLevel);
       result.put(cache.getDistributedSystem().getDistributedMember().getId(), "New log level is " + log4jLevel);

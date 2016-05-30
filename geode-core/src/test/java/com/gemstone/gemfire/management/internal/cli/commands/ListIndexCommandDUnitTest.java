@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.query.IndexStatistics;
 import com.gemstone.gemfire.cache.query.IndexType;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.lang.MutableIdentifiable;
 import com.gemstone.gemfire.internal.lang.ObjectUtils;
 import com.gemstone.gemfire.internal.lang.StringUtils;
@@ -44,6 +43,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getDUnitLogLevel;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * The ListIndexCommandDUnitTest class is distributed test suite of test cases for testing the index-based GemFire shell
@@ -126,7 +127,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
   private Properties createDistributedSystemProperties(final String gemfireName) {
     final Properties distributedSystemProperties = new Properties();
 
-    distributedSystemProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME, getDUnitLogLevel());
+    distributedSystemProperties.setProperty(LOG_LEVEL, getDUnitLogLevel());
     distributedSystemProperties.setProperty(SystemConfigurationProperties.NAME, gemfireName);
 
     return distributedSystemProperties;

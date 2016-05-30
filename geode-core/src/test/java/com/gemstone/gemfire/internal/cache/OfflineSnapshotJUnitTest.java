@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.snapshot.RegionGenerator;
 import com.gemstone.gemfire.cache.snapshot.RegionGenerator.RegionType;
 import com.gemstone.gemfire.cache.snapshot.RegionGenerator.SerializationType;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
@@ -37,7 +36,7 @@ import java.io.FilenameFilter;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 @Category(IntegrationTest.class)
 public class OfflineSnapshotJUnitTest {
@@ -122,7 +121,7 @@ public class OfflineSnapshotJUnitTest {
   public void reset() {
     CacheFactory cf = new CacheFactory()
         .set(MCAST_PORT, "0")
-        .set(DistributionConfig.LOG_LEVEL_NAME, "error")
+        .set(LOG_LEVEL, "error")
         .setPdxSerializer(new MyPdxSerializer())
         .setPdxPersistent(true);
     

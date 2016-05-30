@@ -168,7 +168,7 @@ public class InternalDistributedSystemJUnitTest
   public void testMemberTimeout() {
     Properties props = new Properties();
     int memberTimeout = 100;
-    props.put(DistributionConfig.MEMBER_TIMEOUT_NAME, String.valueOf(memberTimeout));
+    props.put(MEMBER_TIMEOUT, String.valueOf(memberTimeout));
     props.put(MCAST_PORT, "0");
 
     DistributionConfig config = createSystem(props).getOriginalConfig();
@@ -301,7 +301,7 @@ public class InternalDistributedSystemJUnitTest
     // a loner is all this test needs
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.put(DistributionConfig.LOG_LEVEL_NAME, logLevel.toString());
+    props.put(LOG_LEVEL, logLevel.toString());
 
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(logLevel.intValue(), config.getLogLevel());
@@ -311,7 +311,7 @@ public class InternalDistributedSystemJUnitTest
   public void testInvalidLogLevel() {
     try {
       Properties props = new Properties();
-      props.put(DistributionConfig.LOG_LEVEL_NAME, "blah blah blah");
+      props.put(LOG_LEVEL, "blah blah blah");
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
 
@@ -326,7 +326,7 @@ public class InternalDistributedSystemJUnitTest
     // a loner is all this test needs
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.put(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
+    props.put(STATISTIC_SAMPLING_ENABLED, "true");
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(true, config.getStatisticSamplingEnabled());
   }
@@ -338,7 +338,7 @@ public class InternalDistributedSystemJUnitTest
     // a loner is all this test needs
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.put(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME, rate);
+    props.put(STATISTIC_SAMPLE_RATE, rate);
     DistributionConfig config = createSystem(props).getConfig();
     // The fix for 48228 causes the rate to be 1000 even if we try to set it less
     assertEquals(1000, config.getStatisticSampleRate());
@@ -349,7 +349,7 @@ public class InternalDistributedSystemJUnitTest
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, "5100-5200");
+    props.setProperty(MEMBERSHIP_PORT_RANGE, "5100-5200");
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(5100, config.getMembershipPortRange()[0]);
     assertEquals(5200, config.getMembershipPortRange()[1]);
@@ -360,7 +360,7 @@ public class InternalDistributedSystemJUnitTest
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME, "5200-5100");
+    props.setProperty(MEMBERSHIP_PORT_RANGE, "5200-5100");
     Object exception = null;
     try {
       createSystem(props).getConfig();
@@ -377,7 +377,7 @@ public class InternalDistributedSystemJUnitTest
     // a loner is all this test needs
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.put(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, fileName);
+    props.put(STATISTIC_ARCHIVE_FILE, fileName);
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(fileName, config.getStatisticArchiveFile().getName());
   }
@@ -393,7 +393,7 @@ public class InternalDistributedSystemJUnitTest
     // a loner is all this test needs
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, time);
+    props.put(ACK_WAIT_THRESHOLD, time);
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(Integer.parseInt(time), config.getAckWaitThreshold());
   }
@@ -405,7 +405,7 @@ public class InternalDistributedSystemJUnitTest
    */
   public void _testInvalidAckWaitThreshold() {
     Properties props = new Properties();
-    props.put(DistributionConfig.ACK_WAIT_THRESHOLD_NAME, "blah");
+    props.put(ACK_WAIT_THRESHOLD, "blah");
     try {
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
@@ -422,7 +422,7 @@ public class InternalDistributedSystemJUnitTest
     // a loner is all this test needs
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.put(DistributionConfig.CACHE_XML_FILE_NAME, fileName);
+    props.put(CACHE_XML_FILE, fileName);
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(fileName, config.getCacheXmlFile().getPath());
   }
@@ -434,7 +434,7 @@ public class InternalDistributedSystemJUnitTest
     // a loner is all this test needs
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.put(DistributionConfig.ARCHIVE_DISK_SPACE_LIMIT_NAME, value);
+    props.put(ARCHIVE_DISK_SPACE_LIMIT, value);
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(Integer.parseInt(value), config.getArchiveDiskSpaceLimit());
   }
@@ -442,7 +442,7 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testInvalidArchiveDiskSpaceLimit() {
     Properties props = new Properties();
-    props.put(DistributionConfig.ARCHIVE_DISK_SPACE_LIMIT_NAME, "blah");
+    props.put(ARCHIVE_DISK_SPACE_LIMIT, "blah");
     try {
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
@@ -459,7 +459,7 @@ public class InternalDistributedSystemJUnitTest
     // a loner is all this test needs
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.put(DistributionConfig.ARCHIVE_FILE_SIZE_LIMIT_NAME, value);
+    props.put(ARCHIVE_FILE_SIZE_LIMIT, value);
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(Integer.parseInt(value), config.getArchiveFileSizeLimit());
   }
@@ -467,7 +467,7 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testInvalidArchiveFileSizeLimit() {
     Properties props = new Properties();
-    props.put(DistributionConfig.ARCHIVE_FILE_SIZE_LIMIT_NAME, "blah");
+    props.put(ARCHIVE_FILE_SIZE_LIMIT, "blah");
     try {
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
@@ -484,7 +484,7 @@ public class InternalDistributedSystemJUnitTest
     // a loner is all this test needs
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.put(DistributionConfig.LOG_DISK_SPACE_LIMIT_NAME, value);
+    props.put(LOG_DISK_SPACE_LIMIT, value);
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(Integer.parseInt(value), config.getLogDiskSpaceLimit());
   }
@@ -492,7 +492,7 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testInvalidLogDiskSpaceLimit() {
     Properties props = new Properties();
-    props.put(DistributionConfig.LOG_DISK_SPACE_LIMIT_NAME, "blah");
+    props.put(LOG_DISK_SPACE_LIMIT, "blah");
     try {
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
@@ -509,7 +509,7 @@ public class InternalDistributedSystemJUnitTest
     // a loner is all this test needs
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.put(DistributionConfig.LOG_FILE_SIZE_LIMIT_NAME, value);
+    props.put(LOG_FILE_SIZE_LIMIT, value);
     DistributionConfig config = createSystem(props).getConfig();
     assertEquals(Integer.parseInt(value), config.getLogFileSizeLimit());
   }
@@ -517,7 +517,7 @@ public class InternalDistributedSystemJUnitTest
   @Test
   public void testInvalidLogFileSizeLimit() {
     Properties props = new Properties();
-    props.put(DistributionConfig.LOG_FILE_SIZE_LIMIT_NAME, "blah");
+    props.put(LOG_FILE_SIZE_LIMIT, "blah");
     try {
       createSystem(props);
       fail("Should have thrown an IllegalArgumentException");
@@ -566,7 +566,7 @@ public class InternalDistributedSystemJUnitTest
     File spropFile = new File("gfsecurity.properties");
     boolean spropFileExisted = spropFile.exists();
     try {
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.LOG_LEVEL_NAME, "finest");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL, "finest");
       Properties apiProps = new Properties();
       apiProps.setProperty(DistributionConfig.GROUPS_NAME, "foo, bar");
       {
@@ -584,7 +584,7 @@ public class InternalDistributedSystemJUnitTest
           spropFile.renameTo(new File("gfsecurity.properties.sav"));
         }
         Properties fileProps = new Properties();
-        fileProps.setProperty(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME, "999");
+        fileProps.setProperty(STATISTIC_SAMPLE_RATE, "999");
         FileWriter fw = new FileWriter("gfsecurity.properties");
         fileProps.store(fw, null);
         fw.close();
@@ -592,9 +592,9 @@ public class InternalDistributedSystemJUnitTest
       DistributionConfigImpl dci = new DistributionConfigImpl(apiProps);
       assertEquals(null, dci.getAttributeSource(MCAST_PORT));
       assertEquals(ConfigSource.api(), dci.getAttributeSource(DistributionConfig.GROUPS_NAME));
-      assertEquals(ConfigSource.sysprop(), dci.getAttributeSource(DistributionConfig.LOG_LEVEL_NAME));
+      assertEquals(ConfigSource.sysprop(), dci.getAttributeSource(LOG_LEVEL));
       assertEquals(ConfigSource.Type.FILE, dci.getAttributeSource("name").getType());
-      assertEquals(ConfigSource.Type.SECURE_FILE, dci.getAttributeSource(DistributionConfig.STATISTIC_SAMPLE_RATE_NAME).getType());
+      assertEquals(ConfigSource.Type.SECURE_FILE, dci.getAttributeSource(STATISTIC_SAMPLE_RATE).getType());
     } finally {
       System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "log-level");
       propFile.delete();
@@ -629,7 +629,7 @@ public class InternalDistributedSystemJUnitTest
     // a loner is all this test needs
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.put(DistributionConfig.LOG_LEVEL_NAME, level.toString());
+    props.put(LOG_LEVEL, level.toString());
     InternalDistributedSystem system = createSystem(props);
     assertEquals(level.intValue(), system.getConfig().getLogLevel());
     assertEquals(level.intValue(), ((InternalLogWriter) system.getLogWriter()).getLogWriterLevel());
@@ -688,7 +688,7 @@ public class InternalDistributedSystemJUnitTest
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(DistributionConfig.SSL_ENABLED_NAME, "true");
+    props.setProperty(SSL_ENABLED, "true");
     Config config1 = new DistributionConfigImpl(props, false);
     Properties props1 = config1.toProperties();
     // For the deprecated ssl-* properties a decision was made
@@ -697,12 +697,12 @@ public class InternalDistributedSystemJUnitTest
     // and its use in toProperties.
     // The other thing that is done is the ssl-* props are copied to cluster-ssl-*.
     // The following two assertions demonstrate this.
-    assertEquals(null, props1.getProperty(DistributionConfig.SSL_ENABLED_NAME));
-    assertEquals("true", props1.getProperty(DistributionConfig.CLUSTER_SSL_ENABLED_NAME));
+    assertEquals(null, props1.getProperty(SSL_ENABLED));
+    assertEquals("true", props1.getProperty(CLUSTER_SSL_ENABLED));
     Config config2 = new DistributionConfigImpl(props1, false);
     assertEquals(true, config1.sameAs(config2));
     Properties props3 = new Properties(props1);
-    props3.setProperty(DistributionConfig.SSL_ENABLED_NAME, "false");
+    props3.setProperty(SSL_ENABLED, "false");
     Config config3 = new DistributionConfigImpl(props3, false);
     assertEquals(false, config1.sameAs(config3));
   }

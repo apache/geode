@@ -34,8 +34,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 
 /**
@@ -63,7 +62,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOCATORS, "");
-    config.setProperty(DistributionConfig.ROLES_NAME, "");
+    config.setProperty(ROLES, "");
     config.setProperty(DistributionConfig.GROUPS_NAME, "");
     config.setProperty(SystemConfigurationProperties.NAME, "");
 
@@ -123,7 +122,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOCATORS, "");
-    config.setProperty(DistributionConfig.ROLES_NAME, rolesProp);
+    config.setProperty(ROLES, rolesProp);
     config.setProperty(DistributionConfig.GROUPS_NAME, groupsProp);
 
     InternalDistributedSystem system = getSystem(config);
@@ -195,7 +194,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
         public void run() {
           //disconnectFromDS();
           Properties config = new Properties();
-          config.setProperty(DistributionConfig.ROLES_NAME, vmRoles[vm]);
+          config.setProperty(ROLES, vmRoles[vm]);
           getSystem(config);
         }
       });

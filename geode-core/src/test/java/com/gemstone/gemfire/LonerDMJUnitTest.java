@@ -33,8 +33,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 /**
@@ -62,7 +61,7 @@ public class LonerDMJUnitTest {
     Properties cfg = new Properties();
     cfg.setProperty(MCAST_PORT, "0");
     cfg.setProperty(LOCATORS, "");
-    cfg.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "false");
+    cfg.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
 
     for (int i=0; i < 2; i++) {
       start = System.currentTimeMillis();
@@ -115,8 +114,8 @@ public class LonerDMJUnitTest {
     Properties cfg = new Properties();
     cfg.setProperty(MCAST_PORT, "0");
     cfg.setProperty(LOCATORS, "");
-    cfg.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-    cfg.setProperty(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "lonerStats.gfs");
+    cfg.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+    cfg.setProperty(STATISTIC_ARCHIVE_FILE, "lonerStats.gfs");
 
     for (int i=0; i < 1; i++) {
       start = System.currentTimeMillis();
@@ -168,7 +167,7 @@ public class LonerDMJUnitTest {
     Properties cfg = new Properties();
     cfg.setProperty(MCAST_PORT, "0");
     cfg.setProperty(LOCATORS, "");
-    cfg.setProperty(DistributionConfig.ROLES_NAME, "lonelyOne");
+    cfg.setProperty(ROLES, "lonelyOne");
     cfg.setProperty(SystemConfigurationProperties.NAME, name);
     DistributedSystem ds = DistributedSystem.connect(cfg);
     System.out.println("MemberId = " + ds.getMemberId());

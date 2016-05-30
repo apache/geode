@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -58,7 +60,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     invokeInEveryVM(new SerializableRunnable("reset log level") {
       public void run() {
         if (cachedLogLevel != null) {
-          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.LOG_LEVEL_NAME, cachedLogLevel);
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL, cachedLogLevel);
           cachedLogLevel = null;
         }
       }
@@ -124,7 +126,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   public void testShowLogDefault() throws IOException {
     Properties props = new Properties();
     try {
-      props.setProperty(DistributionConfig.LOG_FILE_NAME, "testShowLogDefault.log");
+      props.setProperty(LOG_FILE, "testShowLogDefault.log");
       setUpJmxManagerOnVm0ThenConnect(props);
       final VM vm1 = Host.getHost(0).getVM(0);
       final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
@@ -146,7 +148,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testShowLogNumLines() {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.LOG_FILE_NAME, "testShowLogNumLines.log");
+    props.setProperty(LOG_FILE, "testShowLogNumLines.log");
     try {
       setUpJmxManagerOnVm0ThenConnect(props);
       final VM vm1 = Host.getHost(0).getVM(0);

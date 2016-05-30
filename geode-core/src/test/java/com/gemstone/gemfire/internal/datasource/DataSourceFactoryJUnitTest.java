@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.datasource;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 import org.junit.After;
@@ -31,7 +30,7 @@ import javax.naming.Context;
 import java.sql.Connection;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.fail;
 
 /*
@@ -49,7 +48,7 @@ public class DataSourceFactoryJUnitTest {
     props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     String path = TestUtil.getResourcePath(DataSourceFactoryJUnitTest.class, "/jta/cachejta.xml");
-    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
+    props.setProperty(CACHE_XML_FILE, path);
     ds1 = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds1);
   }

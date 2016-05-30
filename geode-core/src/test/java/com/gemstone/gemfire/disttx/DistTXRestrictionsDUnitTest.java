@@ -17,8 +17,7 @@
 package com.gemstone.gemfire.disttx;
 
 import com.gemstone.gemfire.cache30.TXRestrictionsDUnitTest;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import java.util.Properties;
 
 /**
@@ -35,8 +34,8 @@ public class DistTXRestrictionsDUnitTest extends TXRestrictionsDUnitTest {
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
 //    props.put("distributed-transactions", "true");
-    props.setProperty(DistributionConfig.DISTRIBUTED_TRANSACTIONS_NAME, "true");
-//    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    props.setProperty(DISTRIBUTED_TRANSACTIONS, "true");
+//    props.setProperty(LOG_LEVEL, "fine");
     return props;
   }
 }

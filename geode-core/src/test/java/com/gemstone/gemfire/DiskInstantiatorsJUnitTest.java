@@ -18,7 +18,6 @@ package com.gemstone.gemfire;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.InternalInstantiator;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
@@ -32,8 +31,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import static org.junit.Assert.fail;
 
 /**
@@ -77,7 +76,7 @@ public class DiskInstantiatorsJUnitTest {
     Properties cfg = new Properties();
     cfg.setProperty(MCAST_PORT, "0");
     cfg.setProperty(LOCATORS, "");
-    cfg.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "false");
+    cfg.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
 
     this.ds = DistributedSystem.connect(cfg);
     this.c = CacheFactory.create(ds);

@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.jta.dunit;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.jta.CacheUtils;
 import com.gemstone.gemfire.test.dunit.*;
@@ -33,6 +32,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class IdleTimeOutDUnitTest extends DistributedTestCase {
 
@@ -128,7 +129,7 @@ public class IdleTimeOutDUnitTest extends DistributedTestCase {
     wr.write(modified_file_str);
     wr.flush();
     wr.close();
-    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
+    props.setProperty(CACHE_XML_FILE, path);
     String tableName = "";
     //	        props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "10339");
     try {

@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.cli;
 
+import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.management.cli.CliMetaData;
@@ -47,7 +48,7 @@ public class CommandManager {
   
   private static final Object INSTANCE_LOCK = new Object();
   private static CommandManager INSTANCE = null;
-  public static final String USER_CMD_PACKAGES_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.USER_COMMAND_PACKAGES;
+  public static final String USER_CMD_PACKAGES_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + SystemConfigurationProperties.USER_COMMAND_PACKAGES;
   public static final String USER_CMD_PACKAGES_ENV_VARIABLE = "GEMFIRE_USER_COMMAND_PACKAGES";
   
   private Properties cacheProperties;
@@ -92,7 +93,7 @@ public class CommandManager {
     
     // Find by  packages specified in the distribution config
     if (this.cacheProperties != null) {
-      String cacheUserCmdPackages = this.cacheProperties.getProperty(DistributionConfig.USER_COMMAND_PACKAGES);
+      String cacheUserCmdPackages = this.cacheProperties.getProperty(SystemConfigurationProperties.USER_COMMAND_PACKAGES);
       if (cacheUserCmdPackages != null && !cacheUserCmdPackages.isEmpty()) {
         StringTokenizer tokenizer = new StringTokenizer(cacheUserCmdPackages, ",");
         while (tokenizer.hasMoreTokens()) {

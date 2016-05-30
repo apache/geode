@@ -237,12 +237,12 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
   
   public Properties getDistributedSystemProperties() {
     Properties p = new Properties();
-    p.put(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-    p.put(DistributionConfig.STATISTIC_ARCHIVE_FILE_NAME, "multicast");
+    p.put(STATISTIC_SAMPLING_ENABLED, "true");
+    p.put(STATISTIC_ARCHIVE_FILE, "multicast");
     p.put(MCAST_PORT, mcastport);
     p.put(MCAST_TTL, mcastttl);
     p.put(LOCATORS, "localhost[" + locatorPort + "]");
-    p.put(DistributionConfig.LOG_LEVEL_NAME, "info");
+    p.put(LOG_LEVEL, "info");
     return p;
   } 
   
@@ -274,7 +274,7 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
         locatorProps.setProperty(SystemConfigurationProperties.NAME, "LocatorWithMcast");
         locatorProps.setProperty(MCAST_PORT, mcastport);
         locatorProps.setProperty(MCAST_TTL, mcastttl);
-        locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
+        locatorProps.setProperty(LOG_LEVEL, "info");
         //locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
         try {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, null, null,

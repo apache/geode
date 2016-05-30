@@ -39,6 +39,8 @@ import java.io.File;
 
 import static org.junit.Assert.*;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  * These tests are part of assembly as they require the REST war file to be present.
  */
@@ -70,11 +72,11 @@ public class LocatorLauncherAssemblyIntegrationTest extends AbstractLocatorLaunc
         .setPort(this.locatorPort)
         .setRedirectOutput(false)
         .setWorkingDirectory(rootFolder)
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false")
-        .set(DistributionConfig.JMX_MANAGER_NAME, "true")
-        .set(DistributionConfig.JMX_MANAGER_START_NAME, "true")
-        .set(DistributionConfig.JMX_MANAGER_PORT_NAME, "0");
+        .set(LOG_LEVEL, "config")
+        .set(ENABLE_CLUSTER_CONFIGURATION, "false")
+        .set(JMX_MANAGER, "true")
+        .set(JMX_MANAGER_START, "true")
+        .set(JMX_MANAGER_PORT, "0");
 
     performTest(builder);
   }
@@ -91,11 +93,11 @@ public class LocatorLauncherAssemblyIntegrationTest extends AbstractLocatorLaunc
         .setPort(this.locatorPort)
         .setRedirectOutput(false)
         .setWorkingDirectory(rootFolder)
-        .set(DistributionConfig.LOG_LEVEL_NAME, "config")
-        .set(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false")
-        .set(DistributionConfig.JMX_MANAGER_NAME, "true")
-        .set(DistributionConfig.JMX_MANAGER_START_NAME, "true")
-        .set(DistributionConfig.JMX_MANAGER_PORT_NAME, Integer.toString(jmxPort));
+        .set(LOG_LEVEL, "config")
+        .set(ENABLE_CLUSTER_CONFIGURATION, "false")
+        .set(JMX_MANAGER, "true")
+        .set(JMX_MANAGER_START, "true")
+        .set(JMX_MANAGER_PORT, Integer.toString(jmxPort));
 
     performTest(builder);
   }

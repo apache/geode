@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.query.*;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -42,8 +41,7 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.assertTrue;
 import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
@@ -401,8 +399,8 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
     Properties p = new Properties();
     p.setProperty(MCAST_PORT, "0");
     p.setProperty(LOCATORS, "");
-    p.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME, durableClientId);
-    p.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, String.valueOf(durableClientTimeout));
+    p.setProperty(DURABLE_CLIENT_ID, durableClientId);
+    p.setProperty(DURABLE_CLIENT_TIMEOUT, String.valueOf(durableClientTimeout));
     return p;
   }
 

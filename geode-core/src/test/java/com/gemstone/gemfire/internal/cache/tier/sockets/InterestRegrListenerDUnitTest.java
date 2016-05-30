@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.dunit.*;
 
@@ -32,6 +31,8 @@ import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Written to test fix for Bug #47132
@@ -168,8 +169,8 @@ public class InterestRegrListenerDUnitTest extends DistributedTestCase {
   public void setUpClientVM(String host, int port, boolean isDurable, String vmID) {
     Properties gemFireProps = new Properties();
     if (isDurable) {
-      gemFireProps.put(DistributionConfig.DURABLE_CLIENT_ID_NAME, vmID);
-      gemFireProps.put(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, "" + DURABLE_CLIENT_TIMEOUT);
+      gemFireProps.put(DURABLE_CLIENT_ID, vmID);
+      gemFireProps.put(DURABLE_CLIENT_TIMEOUT, "" + DURABLE_CLIENT_TIMEOUT);
     }
     ClientCacheFactory clientCacheFactory = new ClientCacheFactory(gemFireProps);
     clientCacheFactory.addPoolServer(host, port);

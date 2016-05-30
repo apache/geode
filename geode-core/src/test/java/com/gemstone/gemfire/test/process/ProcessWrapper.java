@@ -16,7 +16,8 @@
  */
 package com.gemstone.gemfire.test.process;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 
@@ -275,7 +276,7 @@ public class ProcessWrapper {
 
     if (properties != null) {
       for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-        if (!entry.getKey().equals(DistributionConfig.LOG_FILE_NAME)) {
+        if (!entry.getKey().equals(LOG_FILE)) {
           jvmArgumentsList.add("-D" + entry.getKey() + "=" + entry.getValue());
         }
       }

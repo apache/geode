@@ -22,8 +22,7 @@ import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.START_LOCATOR;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /** A test of 46438 - missing response to an update attributes message */
 public class ConnectDisconnectDUnitTest extends CacheTestCase {
@@ -151,8 +150,8 @@ public class ConnectDisconnectDUnitTest extends CacheTestCase {
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
-    props.setProperty(DistributionConfig.CONSERVE_SOCKETS_NAME, "false");
+    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(CONSERVE_SOCKETS, "false");
     if (LOCATOR_PORT > 0) {
       props.setProperty(START_LOCATOR, "localhost[" + LOCATOR_PORT + "]");
       props.setProperty(LOCATORS, LOCATORS_STRING);

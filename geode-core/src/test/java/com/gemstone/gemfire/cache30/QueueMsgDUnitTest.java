@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.CachePerfStats;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.test.dunit.*;
@@ -26,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Test to make sure message queuing works.
@@ -79,7 +80,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
     vm.invoke(new SerializableRunnable() {
         public void run() {
           Properties config = new Properties();
-          config.setProperty(DistributionConfig.ROLES_NAME, "missing");
+          config.setProperty(ROLES, "missing");
           getSystem(config);
         }
       });
@@ -219,7 +220,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
     vm.invoke(new SerializableRunnable() {
         public void run() {
           Properties config = new Properties();
-          config.setProperty(DistributionConfig.ROLES_NAME, "pubFirst");
+          config.setProperty(ROLES, "pubFirst");
           getSystem(config);
         }
       });
@@ -257,7 +258,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
     vm.invoke(new SerializableRunnable() {
         public void run() {
           Properties config = new Properties();
-          config.setProperty(DistributionConfig.ROLES_NAME, "subFirst");
+          config.setProperty(ROLES, "subFirst");
           getSystem(config);
         }
       });

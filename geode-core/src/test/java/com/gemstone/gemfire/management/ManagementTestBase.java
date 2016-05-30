@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -202,7 +204,7 @@ public class ManagementTestBase extends DistributedTestCase {
 
   public Cache createCache(Properties props) {
     System.setProperty("dunitLogPerTest", "true");
-    props.setProperty(DistributionConfig.LOG_FILE_NAME, getTestMethodName() + "-.log");
+    props.setProperty(LOG_FILE, getTestMethodName() + "-.log");
     ds = (new ManagementTestBase("temp")).getSystem(props);
     cache = CacheFactory.create(ds);
     managementService = ManagementService.getManagementService(cache);
@@ -224,9 +226,9 @@ public class ManagementTestBase extends DistributedTestCase {
       props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "0");
       props.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
     }
-    props.setProperty(DistributionConfig.ENABLE_TIME_STATISTICS_NAME, "true");
-    props.setProperty(DistributionConfig.STATISTIC_SAMPLING_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.LOG_FILE_NAME, getTestMethodName() + "-.log");
+    props.setProperty(ENABLE_TIME_STATISTICS, "true");
+    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+    props.setProperty(LOG_FILE, getTestMethodName() + "-.log");
     ds = (new ManagementTestBase("temp")).getSystem(props);
     cache = CacheFactory.create(ds);
     managementService = ManagementService.getManagementService(cache);

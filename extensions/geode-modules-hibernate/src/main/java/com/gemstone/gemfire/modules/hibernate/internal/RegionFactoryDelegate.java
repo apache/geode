@@ -31,11 +31,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Iterator;
 import java.util.Properties;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 public class RegionFactoryDelegate  {
-
-  private static final String LOG_FILE = DistributionConfig.LOG_FILE_NAME;
-
-  private static final String CACHE_XML_FILE = DistributionConfig.CACHE_XML_FILE_NAME;
 
   private static final String DEFAULT_REGION_TYPE = RegionShortcut.REPLICATE_HEAP_LRU.name();
 

@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.jta;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -40,8 +39,7 @@ import java.sql.Statement;
 import java.util.Properties;
 import java.util.Random;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.assertNotNull;
 
 @Category(IntegrationTest.class)
@@ -143,7 +141,7 @@ public class BlockingTimeOutJUnitTest {
     wr.write(modified_file_str);
     wr.flush();
     wr.close();
-    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, path);
+    props.setProperty(CACHE_XML_FILE, path);
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     String tableName = "";

@@ -71,8 +71,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.BIND_ADDRESS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Provides the implementation of a distribution <code>Locator</code>
@@ -541,7 +540,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     if (distributedSystemProperties != null) {
       env.putAll(distributedSystemProperties);
     }
-    env.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, "");
+    env.setProperty(CACHE_XML_FILE, "");
 
     // create a DC so that all of the lookup rules, gemfire.properties, etc,
     // are considered and we have a config object we can trust

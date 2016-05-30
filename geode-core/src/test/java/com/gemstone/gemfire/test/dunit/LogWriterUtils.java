@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.test.dunit;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
@@ -101,7 +103,7 @@ public class LogWriterUtils {
    */
   public static String getDUnitLogLevel() {
     Properties dsProperties = DUnitEnv.get().getDistributedSystemProperties();
-    String result = dsProperties.getProperty(DistributionConfig.LOG_LEVEL_NAME);
+    String result = dsProperties.getProperty(LOG_LEVEL);
     if (result == null) {
       result = ManagerLogWriter.levelToString(DistributionConfig.DEFAULT_LOG_LEVEL);
     }

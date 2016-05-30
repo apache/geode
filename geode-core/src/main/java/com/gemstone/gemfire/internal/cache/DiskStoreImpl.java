@@ -72,8 +72,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Represents a (disk-based) persistent store for region data. Used for both
@@ -4358,7 +4357,7 @@ public class DiskStoreImpl implements DiskStore {
     Properties props = new Properties();
     props.setProperty(LOCATORS, "");
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.CACHE_XML_FILE_NAME, "");
+    props.setProperty(CACHE_XML_FILE, "");
     DistributedSystem ds = DistributedSystem.connect(props);
     offlineDS = ds;
     Cache c = com.gemstone.gemfire.cache.CacheFactory.create(ds);

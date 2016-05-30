@@ -50,8 +50,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * A class to build a fake test configuration and launch some DUnit VMS.
@@ -212,9 +211,9 @@ public class DUnitLauncher {
     Properties p = new Properties();
     p.setProperty(LOCATORS, getLocatorString());
     p.setProperty(MCAST_PORT, "0");
-    p.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-    p.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
-    p.setProperty(DistributionConfig.LOG_LEVEL_NAME, LOG_LEVEL);
+    p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    p.setProperty(USE_CLUSTER_CONFIGURATION, "false");
+    p.setProperty(LOG_LEVEL, LOG_LEVEL);
     return p;
   }
 
@@ -254,7 +253,7 @@ public class DUnitLauncher {
         p.setProperty(DistributionConfig.JMX_MANAGER_NAME, "false");
         //Disable the shared configuration on this locator.
         //Shared configuration tests create their own locator
-        p.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
+        p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
         //Tell the locator it's the first in the system for
         //faster boot-up
         System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");

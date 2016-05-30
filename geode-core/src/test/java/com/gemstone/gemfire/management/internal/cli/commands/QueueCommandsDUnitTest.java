@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.distributed.Locator;
@@ -261,8 +263,8 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
         final Properties locatorProps = new Properties();
         locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator");
         locatorProps.setProperty(MCAST_PORT, "0");
-        locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
-        locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+        locatorProps.setProperty(LOG_LEVEL, "fine");
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
         try {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null,
               locatorProps);
@@ -365,7 +367,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
         localProps.setProperty(MCAST_PORT, "0");
         localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
         localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
-        localProps.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "true");
+        localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         getSystem(localProps);
         cache = getCache();
         assertNotNull(cache);

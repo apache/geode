@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 import java.util.Properties;
 
@@ -37,7 +37,7 @@ public class PartitionedRegionAPIConserveSocketsFalseDUnitTest extends
   public Properties getDistributedSystemProperties()
   {
     Properties ret = new Properties();
-    ret.setProperty(DistributionConfig.CONSERVE_SOCKETS_NAME, "false");
+    ret.setProperty(CONSERVE_SOCKETS, "false");
     return ret; 
   }
 

@@ -27,7 +27,7 @@ import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class CqStateDUnitTest extends HelperTestCase {
 
@@ -121,7 +121,7 @@ public class CqStateDUnitTest extends HelperTestCase {
   
   public Properties getClientProperties() {
     Properties props = new Properties();
-    props.put(DistributionConfig.SECURITY_CLIENT_AUTH_INIT_NAME, UserPasswordAuthInit.class.getName() + ".create");
+    props.put(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create");
     props.put("security-username", "root");
     props.put("security-password", "root");
     return props;

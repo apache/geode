@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.modules.session;
 
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.modules.session.catalina.DeltaSessionManager;
 import com.gemstone.gemfire.modules.session.catalina.PeerToPeerCacheLifecycleListener;
@@ -37,7 +36,7 @@ import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static junit.framework.Assert.*;
 
 public abstract class TestSessionsBase {
@@ -59,7 +58,7 @@ public abstract class TestSessionsBase {
 
     PeerToPeerCacheLifecycleListener p2pListener = new PeerToPeerCacheLifecycleListener();
     p2pListener.setProperty(MCAST_PORT, "0");
-    p2pListener.setProperty(DistributionConfig.LOG_LEVEL_NAME, "config");
+    p2pListener.setProperty(LOG_LEVEL, "config");
     server.getEmbedded().addLifecycleListener(p2pListener);
     sessionManager = manager;
     sessionManager.setEnableCommitValve(true);

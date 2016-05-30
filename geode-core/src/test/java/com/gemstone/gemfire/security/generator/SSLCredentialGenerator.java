@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.Properties;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 public class SSLCredentialGenerator extends CredentialGenerator {
 
   private static final Logger logger = LogService.getLogger();
@@ -113,10 +115,10 @@ public class SSLCredentialGenerator extends CredentialGenerator {
 
   private Properties getSSLProperties() {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.SSL_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.SSL_REQUIRE_AUTHENTICATION_NAME, "true");
-    props.setProperty(DistributionConfig.SSL_CIPHERS_NAME, "SSL_RSA_WITH_3DES_EDE_CBC_SHA");
-    props.setProperty(DistributionConfig.SSL_PROTOCOLS_NAME, "TLSv1");
+    props.setProperty(SSL_ENABLED, "true");
+    props.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
+    props.setProperty(SSL_CIPHERS, "SSL_RSA_WITH_3DES_EDE_CBC_SHA");
+    props.setProperty(SSL_PROTOCOLS, "TLSv1");
     return props;
   }
 }

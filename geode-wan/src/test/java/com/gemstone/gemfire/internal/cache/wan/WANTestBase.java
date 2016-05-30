@@ -246,7 +246,7 @@ public class WANTestBase extends DistributedTestCase{
   public static void bringBackLocatorOnOldPort(int dsId, int remoteLocPort, int oldPort) {
     WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = test.getDistributedSystemProperties();
-    props.put(DistributionConfig.LOG_LEVEL_NAME, "fine");
+    props.put(LOG_LEVEL, "fine");
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
     props.setProperty(LOCATORS, "localhost[" + oldPort + "]");
@@ -851,7 +851,7 @@ public class WANTestBase extends DistributedTestCase{
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort + "]");
-    props.setProperty(DistributionConfig.CONSERVE_SOCKETS_NAME, conserveSockets.toString());
+    props.setProperty(CONSERVE_SOCKETS, conserveSockets.toString());
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
   }
@@ -880,7 +880,7 @@ public class WANTestBase extends DistributedTestCase{
     boolean gatewaySslRequireAuth = true;
 
     Properties gemFireProps = test.getDistributedSystemProperties();
-    gemFireProps.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+    gemFireProps.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     gemFireProps.put(DistributionConfig.GATEWAY_SSL_ENABLED_NAME, String.valueOf(gatewaySslenabled));
     gemFireProps.put(DistributionConfig.GATEWAY_SSL_PROTOCOLS_NAME, gatewaySslprotocols);
     gemFireProps.put(DistributionConfig.GATEWAY_SSL_CIPHERS_NAME, gatewaySslciphers);
@@ -1938,7 +1938,7 @@ public class WANTestBase extends DistributedTestCase{
     WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+    props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     props.setProperty(LOCATORS, "localhost[" + locPort
         + "]");
 
@@ -1974,7 +1974,7 @@ public class WANTestBase extends DistributedTestCase{
 
     Properties gemFireProps = test.getDistributedSystemProperties();
 
-    gemFireProps.put(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+    gemFireProps.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     gemFireProps.put(DistributionConfig.GATEWAY_SSL_ENABLED_NAME, String.valueOf(gatewaySslenabled));
     gemFireProps.put(DistributionConfig.GATEWAY_SSL_PROTOCOLS_NAME, gatewaySslprotocols);
     gemFireProps.put(DistributionConfig.GATEWAY_SSL_CIPHERS_NAME, gatewaySslciphers);

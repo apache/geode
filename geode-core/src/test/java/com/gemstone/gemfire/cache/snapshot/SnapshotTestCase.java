@@ -16,12 +16,13 @@
  */
 package com.gemstone.gemfire.cache.snapshot;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.examples.snapshot.MyObject;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.snapshot.RegionGenerator.SerializationType;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import org.junit.After;
 import org.junit.Before;
 
@@ -52,7 +53,7 @@ public class SnapshotTestCase {
 
     CacheFactory cf = new CacheFactory()
         .set(MCAST_PORT, "0")
-        .set(DistributionConfig.LOG_LEVEL_NAME, "error");
+        .set(LOG_LEVEL, "error");
     cache = cf.create();
     
     ds = cache.createDiskStoreFactory()

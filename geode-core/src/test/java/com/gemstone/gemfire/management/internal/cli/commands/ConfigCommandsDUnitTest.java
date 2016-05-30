@@ -139,7 +139,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
       assertEquals(true, cmdResult.getStatus().equals(Status.OK));
       assertEquals(true, resultStr.contains("G1"));
       assertEquals(true, resultStr.contains(controllerName));
-      assertEquals(true, resultStr.contains(DistributionConfig.ARCHIVE_FILE_SIZE_LIMIT_NAME));
+      assertEquals(true, resultStr.contains(ARCHIVE_FILE_SIZE_LIMIT));
       assertEquals(true, !resultStr.contains("copy-on-read"));
 
       cmdResult = executeCommand(command + " --" + CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS + "=false");

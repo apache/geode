@@ -17,6 +17,8 @@
 
 package com.gemstone.gemfire.distributed;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
@@ -1258,7 +1260,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     final Properties overriddenDefaults = new Properties();
     
     overriddenDefaults.put(
-      ProcessLauncherContext.OVERRIDDEN_DEFAULTS_PREFIX.concat(DistributionConfig.LOG_FILE_NAME), 
+      ProcessLauncherContext.OVERRIDDEN_DEFAULTS_PREFIX.concat(LOG_FILE),
       getLogFileName());
 
     for (String key : System.getProperties().stringPropertyNames()) {

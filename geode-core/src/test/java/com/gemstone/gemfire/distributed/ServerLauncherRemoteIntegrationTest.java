@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
@@ -643,7 +644,7 @@ public class ServerLauncherRemoteIntegrationTest extends AbstractServerLauncherR
     
     // launch server and specify a different port
     final List<String> jvmArguments = getJvmArguments();
-    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "" + DistributionConfig.CACHE_XML_FILE_NAME + "=" + cacheXmlFile.getCanonicalPath());
+    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "" + CACHE_XML_FILE + "=" + cacheXmlFile.getCanonicalPath());
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -728,7 +729,7 @@ public class ServerLauncherRemoteIntegrationTest extends AbstractServerLauncherR
   
     // launch server and specify a different port
     final List<String> jvmArguments = getJvmArguments();
-    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "" + DistributionConfig.CACHE_XML_FILE_NAME + "=" + cacheXmlFile.getCanonicalPath());
+    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "" + CACHE_XML_FILE + "=" + cacheXmlFile.getCanonicalPath());
     
     final List<String> command = new ArrayList<String>();
     command.add(new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath());
@@ -1298,8 +1299,8 @@ public class ServerLauncherRemoteIntegrationTest extends AbstractServerLauncherR
   @Override
   protected List<String> getJvmArguments() {
     final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "log-level=config");
-    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "mcast-port=0");
+    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + SystemConfigurationProperties.LOG_LEVEL+"=config");
+    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + SystemConfigurationProperties.MCAST_PORT+"=0");
     return jvmArguments;
   }
   
