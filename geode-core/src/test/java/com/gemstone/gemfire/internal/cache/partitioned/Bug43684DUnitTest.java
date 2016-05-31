@@ -232,8 +232,6 @@ public class Bug43684DUnitTest extends DistributedTestCase {
     DistributedTestCase.disconnectFromDS();
     Properties props = new Properties();
     props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
-//    props.setProperty("log-file", "server_" + OSProcess.getId() + ".log");
-    //    props.setProperty(LOG_LEVEL, "fine");
     props.setProperty(STATISTIC_ARCHIVE_FILE, "server_" + OSProcess.getId()
         + ".gfs");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
@@ -260,8 +258,6 @@ public class Bug43684DUnitTest extends DistributedTestCase {
   public static void createClientCache(Host host, Integer port) {
     DistributedTestCase.disconnectFromDS();
     Properties props = new Properties();
-//    props.setProperty("log-file", "client_" + OSProcess.getId() + ".log");
-    //    props.setProperty(LOG_LEVEL, "fine");
     props.setProperty(STATISTIC_ARCHIVE_FILE, "client_" + OSProcess.getId()
         + ".gfs");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");

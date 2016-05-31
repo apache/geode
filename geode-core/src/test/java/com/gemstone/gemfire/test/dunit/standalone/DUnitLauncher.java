@@ -64,7 +64,7 @@ import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 public class DUnitLauncher {
 
   /** change this to use a different log level in unit tests */
-  public static final String LOG_LEVEL = System.getProperty("logLevel", "info");
+  public static final String logLevel = System.getProperty("logLevel", "info");
   
   public static final String LOG4J = System.getProperty("log4j.configurationFile");
   
@@ -213,7 +213,7 @@ public class DUnitLauncher {
     p.setProperty(MCAST_PORT, "0");
     p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     p.setProperty(USE_CLUSTER_CONFIGURATION, "false");
-    p.setProperty(LOG_LEVEL, LOG_LEVEL);
+    p.setProperty(LOG_LEVEL, logLevel);
     return p;
   }
 

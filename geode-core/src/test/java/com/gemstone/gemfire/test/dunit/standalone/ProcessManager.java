@@ -33,6 +33,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  *
  */
@@ -167,7 +169,7 @@ public class ProcessManager {
     if (vmNum >= 0) { // let the locator print a banner
       cmds.add("-D" + InternalLocator.INHIBIT_DM_BANNER + "=true");
     }
-    cmds.add("-DlogLevel=" + DUnitLauncher.LOG_LEVEL);
+    cmds.add("-D"+LOG_LEVEL+"=" + DUnitLauncher.logLevel);
     if (DUnitLauncher.LOG4J != null) {
       cmds.add("-Dlog4j.configurationFile=" + DUnitLauncher.LOG4J);
     }

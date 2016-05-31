@@ -91,11 +91,6 @@ public class Bug51400DUnitTest extends DistributedTestCase {
       Integer maxMessageCount) throws Exception {
     Properties props = new Properties();
     props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
-//    props.setProperty("log-file", "server_" + OSProcess.getId() + ".log");
-    //    props.setProperty(LOG_LEVEL, "fine");
-//    props.setProperty("statistic-archive-file", "server_" + OSProcess.getId()
-//        + ".gfs");
-//    props.setProperty("statistic-sampling-enabled", "true");
 
     Bug51400DUnitTest test = new Bug51400DUnitTest("Bug51400DUnitTest");
     DistributedSystem ds = test.getSystem(props);
@@ -120,14 +115,6 @@ public class Bug51400DUnitTest extends DistributedTestCase {
   public static void createClientCache(String hostName, Integer[] ports,
       Integer interval) throws Exception {
     Properties props = new Properties();
-//    props.setProperty(DistributionConfig.DURABLE_CLIENT_ID_NAME,
-//        "my-durable-client-" + ports.length);
-//    props.setProperty(DistributionConfig.DURABLE_CLIENT_TIMEOUT_NAME, "300000");
-//    props.setProperty("log-file", "client_" + OSProcess.getId() + ".log");
-    //    props.setProperty(LOG_LEVEL, "fine");
-//    props.setProperty("statistic-archive-file", "client_" + OSProcess.getId()
-//        + ".gfs");
-//    props.setProperty("statistic-sampling-enabled", "true");
 
     DistributedSystem ds = new Bug51400DUnitTest("Bug51400DUnitTest").getSystem(props);
     ds.disconnect();

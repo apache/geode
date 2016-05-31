@@ -33,9 +33,7 @@ public class DistTXRestrictionsDUnitTest extends TXRestrictionsDUnitTest {
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
-//    props.put("distributed-transactions", "true");
     props.setProperty(DISTRIBUTED_TRANSACTIONS, "true");
-//    props.setProperty(LOG_LEVEL, "fine");
     return props;
   }
 }

@@ -257,7 +257,8 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
   @Test
   @Ignore("Need to rewrite this without using dunit.Host")
   public void testStartUsingForceOverwritesExistingPidFile() throws Throwable {
-  }/*
+  }
+  /*
     assertTrue(getUniqueName() + " is broken if PID == Integer.MAX_VALUE", ProcessUtils.identifyPid() != Integer.MAX_VALUE);
     
     // create existing pid file
@@ -272,7 +273,6 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
         .setMemberName(getUniqueName())
         .setPort(this.locatorPort)
         .setRedirectOutput(true)
-        .set(LOG_LEVEL, "config");
 
     assertTrue(builder.getForce());
     this.launcher = builder.build();
@@ -422,7 +422,7 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
         .setMemberName(getUniqueName())
         .setPort(this.locatorPort)
         .setRedirectOutput(true)
-        .set(LOG_LEVEL, "config");
+        .set(logLevel, "config");
 
     assertFalse(builder.getForce());
     this.launcher = builder.build();

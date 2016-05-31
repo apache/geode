@@ -416,7 +416,6 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setForce(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
-        .set(LOG_LEVEL, "config")
         .set(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "0");
 
     assertTrue(builder.getForce());
@@ -697,7 +696,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setDisableDefaultServer(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
-        .set(LOG_LEVEL, "config")
+        .set(logLevel, "config")
         .set(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "0");
 
     assertFalse(builder.getForce());

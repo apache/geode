@@ -37,7 +37,6 @@ public class DistTXOrderDUnitTest extends TXOrderDUnitTest {
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
     props.setProperty(DISTRIBUTED_TRANSACTIONS, "true");
-//    props.setProperty(LOG_LEVEL, "fine");
     return props;
   }
   

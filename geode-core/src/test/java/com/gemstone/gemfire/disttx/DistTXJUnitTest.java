@@ -20,7 +20,6 @@ import com.gemstone.gemfire.TXJUnitTest;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.junit.categories.DistributedTransactionsTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -32,7 +31,7 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Run the basic transaction functionality tests in TXJUnitTest after setting
@@ -49,8 +48,7 @@ public class DistTXJUnitTest extends TXJUnitTest {
   protected void createCache() throws Exception {
     Properties p = new Properties();
     p.setProperty(MCAST_PORT, "0"); // loner
-    p.setProperty(SystemConfigurationProperties.DISTRIBUTED_TRANSACTIONS, "true");
-    //    p.setProperty(LOG_LEVEL, "fine");
+    p.setProperty(DISTRIBUTED_TRANSACTIONS, "true");
     this.cache = (GemFireCacheImpl)CacheFactory.create(DistributedSystem.connect(p));
     createRegion();
     this.txMgr = this.cache.getCacheTransactionManager();

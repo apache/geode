@@ -61,7 +61,6 @@ public class CacheMapDistTXDUnitTest extends CacheMapTxnDUnitTest {
 
   public static void setDistributedTX() {
     props.setProperty(DISTRIBUTED_TRANSACTIONS, "true");
-//    props.setProperty(LOG_LEVEL, "fine");
   }
 
   public static void checkIsDistributedTX() {

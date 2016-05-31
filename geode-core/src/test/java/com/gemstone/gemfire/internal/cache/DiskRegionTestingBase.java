@@ -174,9 +174,6 @@ public class DiskRegionTestingBase
   }
 
   protected Cache createCache() {
-    // useful for debugging:
-//    props.put(LOG_FILE, "diskRegionTestingBase_system.log");
-//    props.put(LOG_LEVEL, getGemFireLogLevel());
     cache = new CacheFactory(props).create();
     ds = cache.getDistributedSystem();
     logWriter = cache.getLogger();

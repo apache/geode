@@ -50,7 +50,6 @@ public abstract class MBeanStatsTestCase {
     //System.setProperty("gemfire.stats.debug.debugSampleCollector", "true");
 
     final Properties props = new Properties();
-    //props.setProperty(LOG_LEVEL, "finest");
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(ENABLE_TIME_STATISTICS, "true");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "false");

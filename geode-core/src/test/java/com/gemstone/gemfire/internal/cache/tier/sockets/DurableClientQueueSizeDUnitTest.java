@@ -253,12 +253,6 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
       throws Exception {
     Properties props = new Properties();
     props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
-    //    props.setProperty(LOG_LEVEL, "fine");
-//    props.setProperty("log-file", "server_" + OSProcess.getId() + ".log");
-//    props.setProperty("statistic-archive-file", "server_" + OSProcess.getId()
-//        + ".gfs");
-//    props.setProperty("statistic-sampling-enabled", "true");
-
     DurableClientQueueSizeDUnitTest test = new DurableClientQueueSizeDUnitTest(
         "DurableClientQueueSizeDUnitTest");
     DistributedSystem ds = test.getSystem(props);
@@ -310,11 +304,6 @@ public class DurableClientQueueSizeDUnitTest extends DistributedTestCase {
       props.setProperty(DURABLE_CLIENT_TIMEOUT,
           timeoutSeconds);
     }
-    //    props.setProperty("log-file", "client_" + OSProcess.getId() + ".log");
-    //    props.setProperty(LOG_LEVEL, "fine");
-//    props.setProperty("statistic-archive-file", "client_" + OSProcess.getId()
-//        + ".gfs");
-//    props.setProperty("statistic-sampling-enabled", "true");
 
     DistributedSystem ds = new DurableClientQueueSizeDUnitTest(
         "DurableClientQueueSizeDUnitTest").getSystem(props);
