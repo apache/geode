@@ -28,7 +28,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 /**
  * Tests Distributed Ack Region with OffHeap memory.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 @SuppressWarnings({ "deprecation", "serial" })
 public class DistributedAckRegionOffHeapDUnitTest extends DistributedAckRegionDUnitTest {

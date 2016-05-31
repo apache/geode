@@ -220,7 +220,7 @@ public class CommandManagerJUnitTest {
   
   /**
    * Tests {@link CommandManager#loadPluginCommands()}.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testCommandManagerLoadPluginCommands() throws Exception {

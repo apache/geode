@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 /**
  * Class PulseServiceFactory
  * 
- * @since version 7.5
+ * @since GemFire version 7.5
  */
 @Component
 @Scope("singleton")

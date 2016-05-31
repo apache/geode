@@ -64,7 +64,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * it is the user's responsibility to register this function. see
  * {@link FunctionService#registerFunction(Function)}
  * 
- * @since 6.6.1
+ * @since GemFire 6.6.1
  */
 public class RollbackFunction implements Function {
   private static final Logger logger = LogService.getLogger();

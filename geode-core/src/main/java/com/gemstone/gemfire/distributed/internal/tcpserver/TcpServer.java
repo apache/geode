@@ -69,7 +69,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * This code was factored out of GossipServer.java to allow multiple handlers to
  * share the same gossip server port.
  * 
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class TcpServer {
   /**
@@ -127,7 +127,7 @@ public class TcpServer {
    * handled by this member "With different GOSSIPVERION". If GOSSIPVERIONS
    * are same for then current GOSSIPVERSION should be used.
    *
-   * @since 7.1
+   * @since GemFire 7.1
    */
   static {
     GOSSIP_TO_GEMFIRE_VERSION_MAP.put(GOSSIPVERSION, Version.GFE_71.ordinal());

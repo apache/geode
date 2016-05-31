@@ -59,7 +59,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * results in Arraylist. There is no need to provide a synchronization mechanism
  * in the user implementations of ResultCollector
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * 
  */
 public interface ResultCollector<T,S> {
@@ -72,7 +72,7 @@ public interface ResultCollector<T,S> {
    * @return the result
    * @throws FunctionException
    *           if result retrieval fails
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public S getResult() throws FunctionException;
 
@@ -91,7 +91,7 @@ public interface ResultCollector<T,S> {
    *           if result retrieval fails within timeout provided
    * @throws InterruptedException
    *           if the current thread was interrupted while waiting
-   * @since 6.0
+   * @since GemFire 6.0
    * 
    */
   public S getResult(long timeout, TimeUnit unit)
@@ -103,7 +103,7 @@ public interface ResultCollector<T,S> {
    * result is sent using ResultSender.
    * 
    * @param resultOfSingleExecution
-   * @since 6.0
+   * @since GemFire 6.0
    * @param memberID
    *          DistributedMember ID to which result belongs
    */
@@ -117,7 +117,7 @@ public interface ResultCollector<T,S> {
    * {@link ResultSender#lastResult(Object) last result} from all the
    * executing nodes, it keeps waiting for more results to come.
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    * 
    * @see ResultSender#lastResult(Object)
    */
@@ -128,7 +128,7 @@ public interface ResultCollector<T,S> {
    * Function Execution HA). This is to clear the previous execution results from
    * the result collector
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void clearResults();
 

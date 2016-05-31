@@ -22,7 +22,7 @@ import java.nio.ByteBuffer;
  * Used to uniquely identify a conflatable message. If two messages have
  * keys that are equal then the latter message can replace (i.e. conflate)
  * the earlier message.
- * @since 4.2.1
+ * @since GemFire 4.2.1
  */
 public class ConflationKey {
   private final Object entryKey;

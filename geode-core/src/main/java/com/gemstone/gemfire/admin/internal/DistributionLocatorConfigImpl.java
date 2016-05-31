@@ -29,7 +29,7 @@ import java.util.Properties;
  * Provides an implementation of
  * <code>DistributionLocatorConfig</code>.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class DistributionLocatorConfigImpl 
   extends ManagedEntityConfigImpl 

@@ -31,7 +31,7 @@ import com.gemstone.gemfire.distributed.DistributedSystem; // for javadocs
  * <p>
  * To get rid of all created pool call {@link #close()}.
  *
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public final class PoolManager {

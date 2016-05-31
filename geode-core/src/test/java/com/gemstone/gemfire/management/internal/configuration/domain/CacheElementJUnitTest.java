@@ -43,7 +43,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * Test cases for {@link CacheElement}.
  *
  * @see CacheElement
- * @since 8.1
+ * @since GemFire 8.1
  */
 @Category(UnitTest.class)
 public class CacheElementJUnitTest {
@@ -60,7 +60,7 @@ public class CacheElementJUnitTest {
    * Asserts that Cache type is defined as a embedded ComplexType under an
    * Element named "cache" for version 8.1.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testCacheDefinedAsNestedComplexType8_1() throws Exception {
@@ -76,7 +76,7 @@ public class CacheElementJUnitTest {
    * means that cache type is defined as a named ComplexType or reference.
    * Update code in CacheElement.buildElementMapCacheType to account for this.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testCacheDefinedAsNestedComplexTypeLatest() throws Exception {
@@ -93,7 +93,7 @@ public class CacheElementJUnitTest {
    * correct order. If we change to use choice for all elements then we can
    * abandon this mapping.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testBuildElementMap() throws Exception {

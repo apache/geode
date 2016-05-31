@@ -31,7 +31,7 @@ import java.util.*;
  * Parses an XML file and configures a {@link DistributedSystemConfig}
  * from it.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class ManagedEntityConfigXmlParser
   extends ManagedEntityConfigXml implements ContentHandler {

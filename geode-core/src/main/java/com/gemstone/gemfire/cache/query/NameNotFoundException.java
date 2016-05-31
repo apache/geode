@@ -22,7 +22,7 @@ package com.gemstone.gemfire.cache.query;
  * Thrown when an attribute or method name could not be resolved during query
  * execution because no matching method or field could be found.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 
 public class NameNotFoundException extends NameResolutionException {

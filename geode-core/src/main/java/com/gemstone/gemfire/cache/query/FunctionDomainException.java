@@ -19,7 +19,7 @@ package com.gemstone.gemfire.cache.query;
 /**
  * Thrown if the domain of a function is not legal.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 
 public class FunctionDomainException extends QueryException {

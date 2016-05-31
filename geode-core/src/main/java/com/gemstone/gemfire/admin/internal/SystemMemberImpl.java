@@ -52,7 +52,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Member of a GemFire system.
  *
- * @since     3.5
+ * @since GemFire     3.5
  */
 public class SystemMemberImpl 
 implements com.gemstone.gemfire.admin.SystemMember,
@@ -134,7 +134,7 @@ implements com.gemstone.gemfire.admin.SystemMember,
    * @throws AdminException
    *           if construction of SystemMember fails
    *           
-   * @since 6.5
+   * @since GemFire 6.5
    */
   protected SystemMemberImpl(AdminDistributedSystem system,
                           InternalDistributedMember member) 
@@ -430,7 +430,7 @@ implements com.gemstone.gemfire.admin.SystemMember,
    * @param member
    *          InternalDistributedMember instance to update this SystemMember
    *          
-   * @since 6.5
+   * @since GemFire 6.5
    */
   private void updateByInternalDistributedMember(
       InternalDistributedMember member) {

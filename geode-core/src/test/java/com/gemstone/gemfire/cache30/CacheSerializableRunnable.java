@@ -31,7 +31,7 @@ import junit.framework.AssertionFailedError;
  * try/catch code in the tests.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public abstract class CacheSerializableRunnable
   extends SerializableRunnable 

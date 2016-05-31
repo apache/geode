@@ -23,7 +23,7 @@ import com.gemstone.gemfire.cache.CacheCallback;
  * distributed system
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface GatewayEventFilter extends CacheCallback {
 

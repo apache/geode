@@ -30,7 +30,7 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
 
 /**
  * Responds to {@link RegionResponse}.
- * @since 3.5
+ * @since GemFire 3.5
  */
 public final class RegionResponse extends AdminResponse {
 //   instance variables

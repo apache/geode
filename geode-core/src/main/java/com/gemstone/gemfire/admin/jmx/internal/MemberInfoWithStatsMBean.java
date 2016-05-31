@@ -81,7 +81,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * defined for Admin Distributed System. 
  * 
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class MemberInfoWithStatsMBean extends AbstractDynamicMBean 
                                  implements NotificationEmitter {
@@ -1253,7 +1253,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean
  * notifications.
  * 
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 class NotificationForwarder extends NotificationBroadcasterSupport 
   implements NotificationListener {

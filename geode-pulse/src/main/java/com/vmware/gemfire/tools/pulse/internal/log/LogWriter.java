@@ -24,7 +24,7 @@ package com.vmware.gemfire.tools.pulse.internal.log;
  * 
  * LogWriter interface for Pulse Logging.
  * 
- * @since 7.0.1
+ * @since GemFire 7.0.1
  * 
  */
 public interface LogWriter {

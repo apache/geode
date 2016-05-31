@@ -334,7 +334,7 @@ public class OSProcess {
    * @throws IllegalArgumentException
    *         If <code>pid</code> is not positive
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   private static void checkPid(int pid) {
     if (pid <= 0) {

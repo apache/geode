@@ -97,7 +97,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * complex examples in transaction processing and a more straightforward
  * example in DistributedCacheOperation.
  * 
- * @since 5.0.1
+ * @since GemFire 5.0.1
  */
 public class StateFlushOperation  {
 
@@ -274,7 +274,7 @@ public class StateFlushOperation  {
    * This flushes the ordered messages in flight between members and the gii
    * provider, so we don't miss data when the image is requested.
    * 
-   * @since 5.0.1
+   * @since GemFire 5.0.1
    * @see StateFlushOperation.StateStabilizationMessage
    * @see StateFlushOperation.StateStabilizedMessage
    *
@@ -508,7 +508,7 @@ public class StateFlushOperation  {
    * <p>author bruce
    * @see StateFlushOperation.StateStabilizedMessage
    * @see StateFlushOperation.StateMarkerMessage
-   * @since 5.0.1
+   * @since GemFire 5.0.1
    */
   public static final class StateStabilizationMessage
     extends SerialDistributionMessage  {
@@ -653,7 +653,7 @@ public class StateFlushOperation  {
    * <p>author bruce
    * @see StateFlushOperation.StateMarkerMessage
    * @see StateFlushOperation.StateStabilizationMessage
-   * @since 5.0.1
+   * @since GemFire 5.0.1
    *
    */
   public static final class StateStabilizedMessage extends ReplyMessage {

@@ -35,7 +35,7 @@ package com.gemstone.gemfire.cache;
  * clientSession.registerInterest(event.getRegion().getFullPath(), event.getKey(), InterestResultPolicy.KEYS_VALUES, true);
  * </pre>
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * @see com.gemstone.gemfire.cache.server.CacheServer#getClientSession(String)
  *      getClientSession
  * @see com.gemstone.gemfire.cache.server.CacheServer#getClientSession(com.gemstone.gemfire.distributed.DistributedMember)
@@ -81,7 +81,7 @@ public interface ClientSession {
    *          to notify-by-subscription false. The default is true.
    * @throws IllegalStateException
    *          if this is not the primary server for the given client
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void registerInterest(String regionName, Object keyOfInterest,
       InterestResultPolicy policy, boolean isDurable, boolean receiveValues);
@@ -115,7 +115,7 @@ public interface ClientSession {
    *          to notify-by-subscription false. The default is true.
    * @throws IllegalStateException
    *           if this is not the primary server for the given client
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void registerInterestRegex(String regionName, String regex,
       boolean isDurable, boolean receiveValues);
@@ -149,7 +149,7 @@ public interface ClientSession {
    *          to notify-by-subscription false. The default is true.
    * @throws IllegalStateException
    *           if this is not the primary server for the given client
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void unregisterInterest(String regionName, Object keyOfInterest,
       boolean isDurable, boolean receiveValues);
@@ -183,7 +183,7 @@ public interface ClientSession {
    *          to notify-by-subscription false. The default is true.
    * @throws IllegalStateException
    *           if this is not the primary server for the given client
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void unregisterInterestRegex(String regionName, String regex,
       boolean isDurable, boolean receiveValues);

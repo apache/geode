@@ -59,7 +59,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  *
  * Test to verify correct propagation of EventID from server to client
  *
- * @since 5.1
+ * @since GemFire 5.1
  */
 
 public class HAEventIdPropagationDUnitTest extends DistributedTestCase

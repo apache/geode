@@ -34,7 +34,7 @@ import com.gemstone.gemfire.test.dunit.Assert;
  * though this test is a {@link com.gemstone.gemfire.test.dunit.DistributedTestCase}, it does
  * not perform any distribution.
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class LocalRegionDUnitTest extends CacheListenerTestCase {
 

@@ -30,7 +30,7 @@ import java.util.*;
  * {@link MembershipAttributes#getRequiredRoles required roles} are provided
  *  in each RegionDistributionException.
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class CommitDistributionException extends TransactionException {
   private static final long serialVersionUID = -3517820638706581823L;

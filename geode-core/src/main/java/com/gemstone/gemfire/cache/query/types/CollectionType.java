@@ -21,7 +21,7 @@ package com.gemstone.gemfire.cache.query.types;
  * Represents the type of a collection, an object that can contain element
  * objects.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public interface CollectionType extends ObjectType {
   

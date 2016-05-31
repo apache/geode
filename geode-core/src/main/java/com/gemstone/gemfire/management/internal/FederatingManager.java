@@ -60,7 +60,7 @@ import com.gemstone.gemfire.management.ManagementException;
  * The FederatingManager is only appropriate for a peer or server in a GemFire
  * distributed system.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class FederatingManager extends Manager {
   public static final Logger logger = LogService.getLogger();

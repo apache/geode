@@ -43,7 +43,7 @@ import com.gemstone.gemfire.internal.lang.Filter;
  * @see java.util.List
  * @see java.util.Map
  * @see java.util.Set
- * @since 7.0
+ * @since GemFire 7.0
  */
 public abstract class CollectionUtils {
 
@@ -208,7 +208,7 @@ public abstract class CollectionUtils {
    * @param enumeration
    *          to add to collection.
    * @return true if collection is modified, otherwise false.
-   * @since 8.1
+   * @since GemFire 8.1
    * @see Collection#addAll(Collection)
    */
   public static final <T> boolean addAll(final Collection<T> collection, final Enumeration<T> enumeration) {
@@ -234,7 +234,7 @@ public abstract class CollectionUtils {
    * @param iterable
    *          to wrap as unmodifiable
    * @return unmodifiable {@link Iterable}
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static final <T> Iterable<T> unmodifiableIterable(final Iterable<T> iterable) {
     return new UnmodifiableIterable<T>(iterable);
@@ -245,7 +245,7 @@ public abstract class CollectionUtils {
    * {@link Collections#unmodifiableCollection(Collection)}.
    * 
    *
-   * @since 8.1
+   * @since GemFire 8.1
    */
   static private class UnmodifiableIterable<T> implements Iterable<T> {
 

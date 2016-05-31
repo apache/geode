@@ -30,7 +30,7 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
  * references for {@link #logWriter} and {@link #stack}
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 // UnitTest AbstractXmlParserTest
 public abstract class AbstractXmlParser implements XmlParser {

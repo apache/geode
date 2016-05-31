@@ -33,7 +33,7 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  * allows authorization depending on the format of the {@code Principal}
  * string.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class DummyAuthorization implements AccessControl {
 

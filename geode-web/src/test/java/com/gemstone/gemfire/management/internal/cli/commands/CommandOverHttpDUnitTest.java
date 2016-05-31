@@ -18,6 +18,7 @@
 package com.gemstone.gemfire.management.internal.cli.commands;
 
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.gemstone.gemfire.test.junit.runner.SuiteRunner;
 
 import org.junit.ClassRule;
@@ -26,7 +27,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 @RunWith(SuiteRunner.class)
 @Suite.SuiteClasses({
   ConfigCommandsDUnitTest.class,

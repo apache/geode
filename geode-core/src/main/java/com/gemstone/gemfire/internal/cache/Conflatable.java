@@ -25,7 +25,7 @@ import java.io.Serializable;
  * client.
  * 
  * 
- * @since 4.2
+ * @since GemFire 4.2
  */
 public interface Conflatable extends Serializable
 {

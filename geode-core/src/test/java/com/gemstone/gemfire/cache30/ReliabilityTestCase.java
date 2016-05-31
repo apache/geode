@@ -23,7 +23,7 @@ import java.util.*;
 /**
  * Provides functionality helpful to testing Reliability and RequiredRoles.
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public abstract class ReliabilityTestCase extends CacheTestCase {
 

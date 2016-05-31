@@ -53,7 +53,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * @see StructBag
  * @see SortedResultsBag
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public abstract class Bag<E> extends AbstractCollection<E> implements
     CqResults<E> {

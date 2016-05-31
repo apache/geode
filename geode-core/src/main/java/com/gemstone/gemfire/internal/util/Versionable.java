@@ -21,7 +21,7 @@ package com.gemstone.gemfire.internal.util;
  * A simple interface that describes the contract of an
  * object that has a version
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public interface Versionable
 {

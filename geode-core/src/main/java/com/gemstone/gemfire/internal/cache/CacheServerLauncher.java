@@ -59,7 +59,7 @@ import com.gemstone.gemfire.internal.util.JavaCommandBuilder;
  * Launcher program to start a cache server.
  *
  *
- * @since 2.0.2
+ * @since GemFire 2.0.2
  */
 public class CacheServerLauncher  {
 

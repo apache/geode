@@ -35,7 +35,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * This class is used to work with a managed VM that hosts a {@link
  * com.gemstone.gemfire.distributed.Locator}.
  *
- * @since 2.0
+ * @since GemFire 2.0
  */
 public class DistributionLocator  {
   

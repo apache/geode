@@ -39,7 +39,7 @@ import java.text.DecimalFormat;
  * 
  * This class contains implementations of getting Memeber's Statistics.
  * 
- * @since version 7.5
+ * @since GemFire version 7.5
  */
 @Component
 @Service("MemberDetails")

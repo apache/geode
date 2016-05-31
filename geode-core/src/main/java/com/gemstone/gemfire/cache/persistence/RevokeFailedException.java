@@ -23,7 +23,7 @@ import com.gemstone.gemfire.GemFireException;
  * with that persistent ID is currently running. You can only revoke
  * members which is not running.
  * 
- * @since 6.6.2
+ * @since GemFire 6.6.2
  */
 public class RevokeFailedException extends GemFireException {
 

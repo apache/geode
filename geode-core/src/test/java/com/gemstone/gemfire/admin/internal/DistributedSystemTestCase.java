@@ -26,7 +26,7 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 /**
  * Provides common setUp and tearDown for testing the Admin API.
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public abstract class DistributedSystemTestCase {
 

@@ -23,7 +23,7 @@ package com.gemstone.gemfire.cache;
  * region.
  *
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class RegionReinitializedException extends RegionDestroyedException {
 private static final long serialVersionUID = 8532904304288670752L;

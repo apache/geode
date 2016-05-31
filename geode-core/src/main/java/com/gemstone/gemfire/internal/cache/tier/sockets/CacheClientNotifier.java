@@ -60,7 +60,7 @@ import java.util.concurrent.*;
  * notifies them when updates occur.
  *
  *
- * @since 3.2
+ * @since GemFire 3.2
  */
 @SuppressWarnings({"synthetic-access", "deprecation"})
 public class CacheClientNotifier {
@@ -682,7 +682,7 @@ public class CacheClientNotifier {
    *
    * @param membershipID
    *          Uniquely identifies the client pool
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setKeepAlive(ClientProxyMembershipID membershipID, boolean keepAlive)
   {
@@ -1323,7 +1323,7 @@ public class CacheClientNotifier {
    * @param regionsWithEmptyDataPolicy
    * @param regionName
    * @param regionDataPolicy (0==empty)
-   * @since 6.1
+   * @since GemFire 6.1
    */
   public void updateMapOfEmptyRegions(Map regionsWithEmptyDataPolicy,
       String regionName, int regionDataPolicy) {
@@ -1430,9 +1430,12 @@ public class CacheClientNotifier {
    * haContainer.
    * 
    * @param conflatable
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void checkAndRemoveFromClientMsgsRegion(Conflatable conflatable) {
+    if (haContainer == null) {
+      return;
+    }
     if (conflatable instanceof HAEventWrapper) {
       HAEventWrapper wrapper = (HAEventWrapper)conflatable;
       if (!wrapper.getIsRefFromHAContainer()) {
@@ -1731,7 +1734,7 @@ public class CacheClientNotifier {
    *                id for the durable-client
    * @return - true if a proxy is present for the given durable client
    * 
-   * @since 5.6
+   * @since GemFire 5.6
    */
   public boolean hasDurableClient(String durableId)
   {
@@ -1752,7 +1755,7 @@ public class CacheClientNotifier {
    *                id for the durable-client
    * @return - true if a primary proxy is present for the given durable client
    * 
-   * @since 5.6
+   * @since GemFire 5.6
    */
   public boolean hasPrimaryForDurableClient(String durableId)
   {
@@ -1951,7 +1954,7 @@ public class CacheClientNotifier {
    * @param listener
    *                The <code>InterestRegistrationListener</code> to register
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public void registerInterestRegistrationListener(
       InterestRegistrationListener listener) {
@@ -1966,7 +1969,7 @@ public class CacheClientNotifier {
    *                The <code>InterestRegistrationListener</code> to
    *                unregister
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public void unregisterInterestRegistrationListener(
       InterestRegistrationListener listener) {
@@ -1980,7 +1983,7 @@ public class CacheClientNotifier {
    * @return a read-only collection of <code>InterestRegistrationListener</code>s
    *         registered with this notifier
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public Set getInterestRegistrationListeners() {
     return this.readableInterestRegistrationListeners;
@@ -1988,7 +1991,7 @@ public class CacheClientNotifier {
 
   /**
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   protected boolean containsInterestRegistrationListeners() {
     return !this.writableInterestRegistrationListeners.isEmpty();
@@ -1996,7 +1999,7 @@ public class CacheClientNotifier {
 
   /**
    * 
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   protected void notifyInterestRegistrationListeners(
       InterestRegistrationEvent event) {
@@ -2536,7 +2539,7 @@ public class CacheClientNotifier {
    * (in case of eviction policy "none"). In both the cases, it'll store
    * HAEventWrapper as its key and ClientUpdateMessage as its value.
    */
-  private HAContainerWrapper haContainer;
+  private volatile HAContainerWrapper haContainer;
 
   //   /**
   //    * The singleton <code>CacheClientNotifier</code> instance

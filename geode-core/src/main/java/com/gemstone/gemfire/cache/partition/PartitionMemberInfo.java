@@ -25,7 +25,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * <p>
  * This is an immutable snapshot of the details.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public interface PartitionMemberInfo {
   

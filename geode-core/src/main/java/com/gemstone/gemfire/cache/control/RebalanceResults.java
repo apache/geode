@@ -24,7 +24,7 @@ import com.gemstone.gemfire.cache.partition.PartitionRebalanceInfo;
 /**
  * The results of rebalancing <code>Cache</code> resources.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public interface RebalanceResults {
   

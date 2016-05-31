@@ -665,7 +665,7 @@ public class CompiledSelect extends AbstractCompiledValue {
    * whereclause.
    * @param collExpr 
    * @throws RegionNotFoundException 
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   private int getRegionIteratorSize(ExecutionContext context,
       CompiledValue collExpr) throws RegionNotFoundException {

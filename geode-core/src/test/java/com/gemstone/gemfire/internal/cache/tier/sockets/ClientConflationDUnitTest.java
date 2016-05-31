@@ -53,7 +53,7 @@ import com.gemstone.gemfire.internal.cache.CacheServerImpl;
  * This test verifies the per-client queue conflation override functionality
  * Taken from the existing ConflationDUnitTest.java and modified.
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class ClientConflationDUnitTest extends DistributedTestCase
 {

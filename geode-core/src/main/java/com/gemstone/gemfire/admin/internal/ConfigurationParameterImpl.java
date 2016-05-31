@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * A single configuration parameter of a system member.
  *
- * @since     3.5
+ * @since GemFire     3.5
  *
  */
 public class ConfigurationParameterImpl

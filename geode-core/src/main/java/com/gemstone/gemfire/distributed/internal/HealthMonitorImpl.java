@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Implements a thread that monitors the health of the vm it lives in.
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class HealthMonitorImpl implements HealthMonitor, Runnable {
   private static final Logger logger = LogService.getLogger();

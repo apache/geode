@@ -27,7 +27,7 @@ import com.gemstone.gemfire.cache.*;
  * @see MultiVMRegionTestCase#testRemoteCacheWriter
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public abstract class CacheWriterTestCase
   extends RegionAttributesTestCase {

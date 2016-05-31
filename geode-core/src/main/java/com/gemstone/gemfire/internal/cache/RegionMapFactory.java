@@ -22,7 +22,7 @@ package com.gemstone.gemfire.internal.cache;
 /**
  * Used to produce instances of RegionMap
  *
- * @since 3.5.1
+ * @since GemFire 3.5.1
  *
  *
  */

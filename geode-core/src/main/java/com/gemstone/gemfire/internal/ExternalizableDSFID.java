@@ -23,7 +23,7 @@ import java.io.*;
  * addition to being DataSerializableFixedID.
  * <p> Note: subclasses must also provide a zero-arg constructor
  *
- * @since 5.7 
+ * @since GemFire 5.7
  */
 public abstract class ExternalizableDSFID
   implements DataSerializableFixedID, Externalizable

@@ -23,7 +23,7 @@ package com.gemstone.gemfire.cache.util;
  * with empty implementations. Applications can subclass this class and only
  * override the methods of interest.
  *
- * @since 5.1
+ * @since GemFire 5.1
  */
 
 import com.gemstone.gemfire.cache.query.CqListener;

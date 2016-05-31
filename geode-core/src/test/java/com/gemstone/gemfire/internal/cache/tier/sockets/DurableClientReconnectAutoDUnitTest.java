@@ -24,7 +24,7 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 
 /**
- * @since 5.7
+ * @since GemFire 5.7
  *
  * Test reconnecting a durable client that is using
  * the locator to discover its servers

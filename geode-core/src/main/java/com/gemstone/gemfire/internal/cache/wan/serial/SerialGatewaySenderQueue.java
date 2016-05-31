@@ -74,7 +74,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
 
 /**
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
 public class SerialGatewaySenderQueue implements RegionQueue {

@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * <li>Userbits of the value
  * </ul>
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 
 public abstract class DiskId
@@ -184,13 +184,13 @@ public abstract class DiskId
   /**
    * Return true if entry is schedule to be async written to disk.
    * Return false if it has already been written or was never modified.
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public boolean isPendingAsync() {
     return EntryBits.isPendingAsync(getUserBits());
   }
   /**
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public synchronized void setPendingAsync(boolean v) {
     byte origBits = getUserBits();
@@ -460,12 +460,12 @@ public abstract class DiskId
   {
     /**
      * Used by DiskRegion for compaction
-     * @since prPersistSprint1
+     * @since GemFire prPersistSprint1
      */
     private DiskEntry prev;
     /**
      * Used by DiskRegion for compaction
-     * @since prPersistSprint1
+     * @since GemFire prPersistSprint1
      */
     private DiskEntry next;
 
@@ -528,12 +528,12 @@ public abstract class DiskId
   {
     /**
      * Used by DiskRegion for compaction
-     * @since prPersistSprint1
+     * @since GemFire prPersistSprint1
      */
     private DiskEntry prev;
     /**
      * Used by DiskRegion for compaction
-     * @since prPersistSprint1
+     * @since GemFire prPersistSprint1
      */
     private DiskEntry next;
 
@@ -611,12 +611,12 @@ public abstract class DiskId
   {
     /**
      * Used by DiskRegion for compaction
-     * @since prPersistSprint1
+     * @since GemFire prPersistSprint1
      */
     private DiskEntry prev;
     /**
      * Used by DiskRegion for compaction
-     * @since prPersistSprint1
+     * @since GemFire prPersistSprint1
      */
     private DiskEntry next;
 
@@ -695,12 +695,12 @@ public abstract class DiskId
   {
     /**
      * Used by DiskRegion for compaction
-     * @since prPersistSprint1
+     * @since GemFire prPersistSprint1
      */
     private DiskEntry prev;
     /**
      * Used by DiskRegion for compaction
-     * @since prPersistSprint1
+     * @since GemFire prPersistSprint1
      */
     private DiskEntry next;
 

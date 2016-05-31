@@ -31,7 +31,7 @@ package com.gemstone.gemfire;
  * <code>StatisticDescriptor</code>s are naturally ordered by their name.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public interface StatisticDescriptor extends Comparable<StatisticDescriptor> {
 

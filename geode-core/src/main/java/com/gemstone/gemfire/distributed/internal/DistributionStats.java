@@ -776,7 +776,7 @@ public class DistributionStats implements DMStats {
 
   /**
    * Returns the current NanoTime or, if clock stats are disabled, zero.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static long getStatTime() {
     return enableClockStats? NanoTimer.getTime() : 0;
@@ -1477,7 +1477,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the overflow queue can record its
    * stats to the proper distribution stats.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public ThrottledQueueStatHelper getOverflowQueueHelper() {
     return new ThrottledQueueStatHelper() {
@@ -1502,7 +1502,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the waiting queue can record its
    * stats to the proper distribution stats.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public QueueStatHelper getWaitingQueueHelper() {
     return new QueueStatHelper() {
@@ -1521,7 +1521,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the high priority queue can record its
    * stats to the proper distribution stats.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public ThrottledQueueStatHelper getHighPriorityQueueHelper() {
     return new ThrottledQueueStatHelper() {
@@ -1546,7 +1546,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the partitioned region queue can record its
    * stats to the proper distribution stats.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public ThrottledQueueStatHelper getPartitionedRegionQueueHelper() {
     return new ThrottledQueueStatHelper() {
@@ -1570,7 +1570,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the partitioned region pool can record its
    * stats to the proper distribution stats.
-   * @since 5.0.2
+   * @since GemFire 5.0.2
    */
   public PoolStatHelper getPartitionedRegionPoolHelper() {
     return new PoolStatHelper() {
@@ -1586,7 +1586,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the function execution queue can record its
    * stats to the proper distribution stats.
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public ThrottledQueueStatHelper getFunctionExecutionQueueHelper() {
     return new ThrottledQueueStatHelper() {
@@ -1610,7 +1610,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the function execution pool can record its
    * stats to the proper distribution stats.
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public PoolStatHelper getFunctionExecutionPoolHelper() {
     return new PoolStatHelper() {
@@ -1626,7 +1626,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the serial queue can record its
    * stats to the proper distribution stats.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public ThrottledMemQueueStatHelper getSerialQueueHelper() {
     return new ThrottledMemQueueStatHelper() {
@@ -1657,7 +1657,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the normal pool can record its
    * stats to the proper distribution stats.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public PoolStatHelper getNormalPoolHelper() {
     return new PoolStatHelper() {
@@ -1673,7 +1673,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the waiting pool can record its
    * stats to the proper distribution stats.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public PoolStatHelper getWaitingPoolHelper() {
     return new PoolStatHelper() {
@@ -1689,7 +1689,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the highPriority pool can record its
    * stats to the proper distribution stats.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public PoolStatHelper getHighPriorityPoolHelper() {
     return new PoolStatHelper() {
@@ -1745,7 +1745,7 @@ public class DistributionStats implements DMStats {
   }
 
   /**
-   * @since 5.0.2.4
+   * @since GemFire 5.0.2.4
    */
   public void incReceiverBufferSize(int inc, boolean direct) {
     if (direct) {
@@ -1755,7 +1755,7 @@ public class DistributionStats implements DMStats {
     }
   }
   /**
-   * @since 5.0.2.4
+   * @since GemFire 5.0.2.4
    */
   public void incSenderBufferSize(int inc, boolean direct) {
     if (direct) {

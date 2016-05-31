@@ -33,7 +33,7 @@ import com.gemstone.gemfire.security.Authenticator;
 /**
  * An implementation of {@link Authenticator} that uses LDAP.
  *
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class LdapUserAuthenticator implements Authenticator {
 

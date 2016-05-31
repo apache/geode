@@ -27,7 +27,7 @@ import java.io.File;
  * <code>SystemMemberRegion</code> will throw {@link
  * RegionNotFoundException}.
  *
- * @since 3.5
+ * @since GemFire 3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface SystemMemberRegion {
@@ -100,7 +100,7 @@ public interface SystemMemberRegion {
    * CacheListeners
    * 
    * @return String[] the region's <code>CacheListeners</code> as a String array
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public String[] getCacheListeners();
 
@@ -270,7 +270,7 @@ public interface SystemMemberRegion {
    * @return False if acks are sent after updates are processed;
    *         true if acks are sent before updates are processed.
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public boolean getEarlyAck();
 
@@ -292,7 +292,7 @@ public interface SystemMemberRegion {
    * @throws AdminException
    *         If the region cannot be created
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public SystemMemberRegion createSubregion(String name,
                                             RegionAttributes attrs)
@@ -307,13 +307,13 @@ public interface SystemMemberRegion {
   
   /**
    * Returns the <code>SubscriptionAttributes</code> for the region.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public SubscriptionAttributes getSubscriptionAttributes();
   
   /**
    * Returns the <code>PartitionAttributes</code> for the region.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public PartitionAttributes getPartitionAttributes();
 

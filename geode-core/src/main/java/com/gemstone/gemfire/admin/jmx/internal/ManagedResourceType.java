@@ -21,7 +21,7 @@ package com.gemstone.gemfire.admin.jmx.internal;
  * ({@link #getClassTypeName}) must match the fully qualified class name listed
  * in the type descriptor in mbeans-descriptors.xml.
  *
- * @since     3.5
+ * @since GemFire     3.5
  *
  */
 public class ManagedResourceType implements java.io.Serializable {

@@ -48,7 +48,7 @@ import java.util.Set;
  * @see ClientCache#createAuthenticatedView(Properties)
  * @see ProxyQueryService
  * @see ProxyRegion
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class ProxyCache implements RegionService {
   

@@ -43,7 +43,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * 
  * TODO - refactor this to support keep-alive connections to the server. requestToServer
  * probably shouldn't a static method.
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public class TcpClient {

@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * must invoke runSecondRunnable() with another Runnable that invokes
  * afterCompletion behavior. 
  * 
- * @since 6.6
+ * @since GemFire 6.6
  *
  */
 public class TXSynchronizationRunnable implements Runnable {

@@ -59,7 +59,7 @@ import org.junit.experimental.categories.Category;
 /**
  * Tests remote (client/server) query execution.
  *
- * @since 5.0.1
+ * @since GemFire 5.0.1
  */
 public class RemoteQueryDUnitTest extends CacheTestCase {
 

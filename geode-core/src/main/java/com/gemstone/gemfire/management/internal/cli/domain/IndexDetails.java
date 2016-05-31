@@ -32,7 +32,7 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
  * @see com.gemstone.gemfire.cache.query.IndexStatistics
  * @see com.gemstone.gemfire.cache.query.IndexType
  * @see com.gemstone.gemfire.distributed.DistributedMember
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public class IndexDetails implements Comparable<IndexDetails>, Serializable {

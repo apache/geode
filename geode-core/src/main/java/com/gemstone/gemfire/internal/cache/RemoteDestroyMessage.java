@@ -73,7 +73,7 @@ import static com.gemstone.gemfire.internal.cache.DistributedCacheOperation.VALU
  * frequently, if they are not then it makes sense to fold the destroy and the
  * invalidate into the same message and use an extra bit to differentiate
  * 
- * @since 6.5
+ * @since GemFire 6.5
  *  
  */
 public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply implements OldValueImporter {
@@ -204,7 +204,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
    * on one of the bridge servers.
    * 
    * @param event underlying event.
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public void setOldValue(EntryEventImpl event){
     if (event.hasOldValue()) {

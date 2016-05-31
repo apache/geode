@@ -50,6 +50,7 @@ import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
 import com.gemstone.gemfire.management.internal.web.http.converter.SerializableObjectHttpMessageConverter;
 import com.gemstone.gemfire.management.internal.web.shell.support.HttpMBeanProxyFactory;
 import com.gemstone.gemfire.management.internal.web.util.UriUtils;
+import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 
 import org.apache.logging.log4j.Logger;
@@ -65,7 +66,6 @@ import org.springframework.web.client.RestTemplate;
 /**
  * The AbstractHttpOperationInvoker class is an abstract base class encapsulating common functionality for all
  * HTTP-based OperationInvoker implementations.
- * 
  * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
  * @see com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker
  * @see com.gemstone.gemfire.management.internal.web.shell.HttpOperationInvoker
@@ -73,7 +73,7 @@ import org.springframework.web.client.RestTemplate;
  * @see com.gemstone.gemfire.management.internal.web.shell.SimpleHttpOperationInvoker
  * @see org.springframework.http.client.SimpleClientHttpRequestFactory
  * @see org.springframework.web.client.RestTemplate
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public abstract class AbstractHttpOperationInvoker implements HttpOperationInvoker {
@@ -118,10 +118,10 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   private final String baseUrl;
 
 
-  protected Map<String,String> securityProperties;
+  protected Map<String, String> securityProperties;
 
   /**
-   * Default, public, no-arg constructor to create an instance of the AbstractHttpOperationInvoker class 
+   * Default, public, no-arg constructor to create an instance of the AbstractHttpOperationInvoker class
    * for testing purposes.
    */
   AbstractHttpOperationInvoker(final String baseUrl) {
@@ -134,14 +134,13 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   /**
    * Constructs an instance of the AbstractHttpOperationInvoker class with a reference to the GemFire shell (Gfsh)
    * instance using this HTTP-based OperationInvoker to send commands to the GemFire Manager via HTTP for processing.
-   * 
    * @param gfsh a reference to the instance of the GemFire shell (Gfsh) using this HTTP-based OperationInvoker for
    * command processing.
    * @throws AssertionError if the reference to the Gfsh instance is null.
    * @see #AbstractHttpOperationInvoker(com.gemstone.gemfire.management.internal.cli.shell.Gfsh, String, Map)
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
    */
-  public AbstractHttpOperationInvoker(final Gfsh gfsh, Map<String,String> securityProperties) {
+  public AbstractHttpOperationInvoker(final Gfsh gfsh, Map<String, String> securityProperties) {
     this(gfsh, REST_API_URL, securityProperties);
   }
 
@@ -149,7 +148,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * Constructs an instance of the AbstractHttpOperationInvoker class with a reference to the GemFire shell (Gfsh)
    * instance using this HTTP-based OperationInvoker to send commands to the GemFire Manager via HTTP for procsessing
    * along with the base URL to the GemFire Manager's embedded HTTP service hosting the HTTP (REST) interface.
-   * 
    * @param gfsh a reference to the instance of the GemFire shell (Gfsh) using this HTTP-based OperationInvoker for
    * command processing.
    * @param baseUrl a String specifying the base URL to the GemFire Manager's embedded HTTP service hosting the REST
@@ -157,7 +155,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @throws AssertionError if the reference to the Gfsh instance is null.
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
    */
-  public AbstractHttpOperationInvoker(final Gfsh gfsh, final String baseUrl, Map<String,String> securityProperties) {
+  public AbstractHttpOperationInvoker(final Gfsh gfsh, final String baseUrl, Map<String, String> securityProperties) {
     assertNotNull(gfsh, "The reference to the GemFire shell (Gfsh) cannot be null!");
 
     this.gfsh = gfsh;
@@ -213,10 +211,15 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
           gfsh.logSevere(body, null);
         }
 
-        if(response.getRawStatusCode()==403)
+        if (response.getRawStatusCode() == 401) {
+          throw new AuthenticationFailedException(message);
+        }
+        else if (response.getRawStatusCode() == 403) {
           throw new NotAuthorizedException(message);
-        else
+        }
+        else {
           throw new RuntimeException(message);
+        }
       }
 
       private String readBody(final ClientHttpResponse response) throws IOException {
@@ -244,7 +247,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   /**
    * Asserts the argument is valid, as determined by the caller passing the result of an evaluated expression to this
    * assertion.
-   * 
    * @param validArg a boolean value indicating the evaluation of the expression validating the argument.
    * @param message a String value used as the message when constructing an IllegalArgumentException.
    * @param args Object arguments used to populate placeholder's in the message.
@@ -259,7 +261,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
 
   /**
    * Asserts the Object reference is not null!
-   * 
    * @param obj the reference to the Object.
    * @param message the String value used as the message when constructing and throwing a NullPointerException.
    * @param args Object arguments used to populate placeholder's in the message.
@@ -274,7 +275,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
 
   /**
    * Asserts whether state, based on the evaluation of a conditional expression, passed to this assertion is valid.
-   * 
    * @param validState a boolean value indicating the evaluation of the expression from which the conditional state
    * is based.  For example, a caller might use an expression of the form (initableObj.isInitialized()).
    * @param message a String values used as the message when constructing an IllegalStateException.
@@ -290,7 +290,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
 
   /**
    * Gets a list of acceptable content/media types supported by Gfsh.
-   * 
    * @return a List of acceptable content/media types supported by Gfsh.
    * @see org.springframework.http.MediaType
    */
@@ -301,7 +300,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   /**
    * Returns the base URL to GemFire's REST interface hosted in the GemFire Manager's embedded HTTP service
    * (Tomcat server).
-   * 
    * @return a String value specifying the base URL to the GemFire REST interface.
    */
   protected String getBaseUrl() {
@@ -310,7 +308,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
 
   /**
    * Determines whether Gfsh is in debug mode (or whether the user enabled debugging in Gfsh).
-   * 
    * @return a boolean value indicating if debugging has been turned on in Gfsh.
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh#getDebug()
    */
@@ -320,21 +317,19 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
 
   /**
    * Gets the ExecutorService used by this HTTP OperationInvoker to scheduled periodic or delayed tasks.
-   * 
    * @return an instance of the ScheduledExecutorService for scheduling periodic or delayed tasks.
    * @see java.util.concurrent.ScheduledExecutorService
    */
   protected final ScheduledExecutorService getExecutorService() {
     assertState(this.executorService != null,
       "The ExecutorService for this HTTP OperationInvoker (%1$s) was not properly initialized!",
-        getClass().getName());
+      getClass().getName());
     return this.executorService;
   }
 
   /**
    * Returns the reference to the GemFire shell (Gfsh) instance using this HTTP-based OperationInvoker to send commands
    * to the GemFire Manager for remote execution and processing.
-   * 
    * @return a reference to the instance of the GemFire shell (Gfsh) using this HTTP-based OperationInvoker to process
    * commands.
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
@@ -346,7 +341,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   /**
    * Returns a reference to the Spring RestTemplate used by this HTTP-based OperationInvoker to send HTTP requests to
    * GemFire's REST interface, making REST API calls.
-   * 
    * @return an instance of the Spring RestTemplate used to make REST API web service calls.
    * @see org.springframework.web.client.RestTemplate
    */
@@ -357,7 +351,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   /**
    * Creates an instance of a client HTTP request with the specified Link targeting the resource as well as the intended
    * operation on the resource.
-   * 
    * @param link a Link with the URI targeting and identifying the resource as well as the method of operation on the
    * resource.
    * @return a client HTTP request with the details of the request.
@@ -369,10 +362,10 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
     request.addHeaderValues(HttpHeader.USER_AGENT.getName(), USER_AGENT_HTTP_REQUEST_HEADER_VALUE);
     request.getHeaders().setAccept(getAcceptableMediaTypes());
 
-    if(this.securityProperties != null){
+    if (this.securityProperties != null) {
       Iterator<Entry<String, String>> it = this.securityProperties.entrySet().iterator();
-      while(it.hasNext()){
-        Entry<String,String> entry= it.next();
+      while (it.hasNext()) {
+        Entry<String, String> entry = it.next();
         request.addHeaderValues(entry.getKey(), entry.getValue());
       }
     }
@@ -381,7 +374,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
 
   /**
    * Creates a Link with the specified relation and URI of the remote resource.
-   * 
    * @param relation a String indicating the link relation, or relative state transition, operation.
    * @param href the URI identifying the resource and it's location.
    * @return a Link with the providing relation and URI.
@@ -394,7 +386,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
 
   /**
    * Creates a Link with the specified relation and URI of the remote resource along with the method of the operation.
-   * 
    * @param relation a String indicating the link relation, or relative state transition, operation.
    * @param href the URI identifying the resource and it's location.
    * @param method the HTTP method for the operation of the request.
@@ -411,7 +402,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * Decodes the encoded String value using the default encoding UTF-8.  It is assumed the String value was encoded
    * with the URLEncoder using the UTF-8 encoding.  This method handles UnsupportedEncodingException by just returning
    * the encodedValue.
-   * 
    * @param encodedValue the encoded String value to decode.
    * @return the decoded value of the String or encodedValue if the UTF-8 encoding is unsupported.
    * @see com.gemstone.gemfire.management.internal.web.util.UriUtils#decode(String)
@@ -424,7 +414,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * Decodes the encoded String value using the specified encoding (such as UTF-8).  It is assumed the String value
    * was encoded with the URLEncoder using the specified encoding.  This method handles UnsupportedEncodingException
    * by just returning the encodedValue.
-   * 
    * @param encodedValue a String value encoded in the encoding.
    * @param encoding a String value specifying the encoding.
    * @return the decoded value of the String or encodedValue if the specified encoding is unsupported.
@@ -436,7 +425,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
 
   /**
    * Encode the String value using the default encoding UTF-8.
-   * 
    * @param value the String value to encode.
    * @return an encoded value of the String using the default encoding UTF-8 or value if the UTF-8 encoding
    * is unsupported.
@@ -448,7 +436,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
 
   /**
    * Encode the String value using the specified encoding (such as UTF-8).
-   * 
    * @param value the String value to encode.
    * @param encoding a String value indicating the encoding.
    * @return an encoded value of the String using the specified encoding or value if the specified encoding
@@ -461,7 +448,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
 
   /**
    * Finds a Link containing the HTTP request URI for the relational operation (state transition) on the resource.
-   * 
    * @param relation a String describing the relational operation, or state transition on the resource.
    * @return an instance of Link containing the HTTP request URI used to perform the intended operation on the resource.
    * @see com.gemstone.gemfire.management.internal.web.domain.Link
@@ -473,7 +459,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   /**
    * Handles resource access errors such as ConnectExceptions when the server-side process/service is not listening
    * for client connections, or the connection to the server/service fails.
-   * 
    * @param e the ResourceAccessException resulting in some sort of I/O error.
    * @return a user-friendly String message describing the problem and appropriate action/response by the user.
    * @see #stop()
@@ -483,13 +468,12 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
     stop();
 
     return String.format("The connection to the GemFire Manager's HTTP service @ %1$s failed with: %2$s. "
-      + "Please try reconnecting or see the GemFire Manager's log file for further details.",
+        + "Please try reconnecting or see the GemFire Manager's log file for further details.",
       getBaseUrl(), e.getMessage());
   }
 
   /**
    * Displays the message inside GemFire shell at debug level.
-   * 
    * @param message the String containing the message to display inside Gfsh.
    * @see #isDebugEnabled()
    * @see #printInfo(String, Object...)
@@ -502,7 +486,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
 
   /**
    * Displays the message inside GemFire shell at info level.
-   * 
    * @param message the String containing the message to display inside Gfsh.
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh#printAsInfo(String)
    */
@@ -512,7 +495,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
 
   /**
    * Displays the message inside GemFire shell at warning level.
-   * 
    * @param message the String containing the message to display inside Gfsh.
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh#printAsWarning(String)
    */
@@ -522,7 +504,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
 
   /**
    * Displays the message inside GemFire shell at severe level.
-   * 
    * @param message the String containing the message to display inside Gfsh.
    * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh#printAsSevere(String)
    */
@@ -533,7 +514,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   /**
    * Sends the HTTP request, using Spring's RestTemplate, to the GemFire REST API web service endpoint, expecting the
    * specified response type from the server in return.
-   * 
    * @param <T> the response type.
    * @param request the client HTTP request to send.
    * @param responseType the expected Class type of the return value in the server's response.
@@ -549,7 +529,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   /**
    * Sends the HTTP request, using Spring's RestTemplate, to the GemFire REST API web service endpoint, expecting the
    * specified response type from the server in return.
-   * 
    * @param request the client HTTP request to send.
    * @param responseType the expected Class type of the return value in the server's response.
    * @param uriVariables a Mapping of URI template path variables to values.
@@ -587,7 +566,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   /**
    * Determines whether this HTTP-based OperationInvoker is successfully connected to the remote GemFire Manager's
    * HTTP service in order to send commands for execution/processing.
-   * 
    * @return a boolean value indicating the connection state of the HTTP-based OperationInvoker.
    */
   @Override
@@ -598,7 +576,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   /**
    * Determines whether this HTTP-based OperationInvoker is ready to send commands to the GemFire Manager for remote
    * execution/processing.
-   * 
    * @return a boolean value indicating whether this HTTP-based OperationInvoker is ready for command invocations.
    * @see #isConnected()
    */
@@ -608,10 +585,10 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   }
 
   // TODO research the use of Jolokia instead
+
   /**
    * Read the attribute identified by name from a remote resource identified by name.  The intent of this method
    * is to return the value of an attribute on an MBean located in the remote MBeanServer.
-   * 
    * @param resourceName name/url of the remote resource from which to fetch the attribute value.
    * @param attributeName name of the attribute who's value will be fetched.
    * @return the value of the named attribute for the named resource (typically an MBean).
@@ -640,12 +617,12 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
       catch (IOException e) {
         throw new MBeanAccessException(String.format(
           "De-serializing the result of accessing attribute (%1$s) on MBean (%2$s) failed!",
-            resourceName, attributeName), e);
+          resourceName, attributeName), e);
       }
       catch (ClassNotFoundException e) {
         throw new MBeanAccessException(String.format(
           "The Class type of the result when accessing attribute (%1$s) on MBean (%2$s) was not found!",
-            resourceName, attributeName), e);
+          resourceName, attributeName), e);
       }
     }
     else {
@@ -657,7 +634,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
 
   /**
    * Gets the identifier of the GemFire cluster.
-   * 
    * @return an integer value indicating the identifier of the GemFire cluster.
    * @see #initClusterId()
    */
@@ -681,7 +657,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   /**
    * Gets a proxy to the remote DistributedSystem MXBean to access attributes and invoke operations on the distributed
    * system, or the GemFire cluster.
-   * 
    * @return a proxy instance of the GemFire Manager's DistributedSystem MXBean.
    * @see #getMBeanProxy(javax.management.ObjectName, Class)
    * @see com.gemstone.gemfire.management.DistributedSystemMXBean
@@ -693,7 +668,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
 
   /**
    * Gets a proxy to an MXBean on a remote MBeanServer using HTTP for remoting.
-   * 
    * @param <T> the class type of the remote MXBean.
    * @param objectName the JMX ObjectName uniquely identifying the remote MXBean.
    * @param mbeanInterface the interface of the remote MXBean to proxy for attribute/operation access.
@@ -708,7 +682,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
   /**
    * Invoke an operation identified by name on a remote resource identified by name with the given arguments.
    * The intent of this method is to invoke an arbitrary operation on an MBean located in the remote MBeanServer.
-   * 
    * @param resourceName name/url (object name) of the remote resource (MBea) on which operation is to be invoked.
    * @param operationName name of the operation to be invoked.
    * @param params an array of arguments for the parameters to be set when the operation is invoked.
@@ -742,12 +715,12 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
       catch (IOException e) {
         throw new MBeanAccessException(String.format(
           "De-serializing the result from invoking operation (%1$s) on MBean (%2$s) failed!",
-            resourceName, operationName), e);
+          resourceName, operationName), e);
       }
       catch (ClassNotFoundException e) {
         throw new MBeanAccessException(String.format(
           "The Class type of the result from invoking operation (%1$s) on MBean (%2$s) was not found!",
-            resourceName, operationName), e);
+          resourceName, operationName), e);
       }
     }
     else {
@@ -761,7 +734,6 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * This method searches the MBean server, based on the OperationsInvoker's JMX-based or remoting capable MBean server
    * connection, for MBeans matching a specific ObjectName or matching an ObjectName pattern along with satisfying
    * criteria from the Query expression.
-   * 
    * @param objectName the ObjectName or pattern for which matching MBeans in the target MBean server will be returned.
    * @param queryExpression the JMX-based query expression used to filter matching MBeans.
    * @return a set of ObjectName's matching MBeans in the MBean server matching the ObjectName and Query expression
@@ -790,11 +762,12 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
       catch (Exception e) {
         throw new MBeanAccessException(String.format(
           "An error occurred while querying for MBean names using ObjectName pattern (%1$s) and Query expression (%2$s)!",
-            objectName, queryExpression), e);
+          objectName, queryExpression), e);
       }
     }
     else {
-      printSevere("Running a query to get the ObjectNames of all MBeans matching the ObjectName pattern (%1$s) and Query expression (%2$s) is currently unsupported!",
+      printSevere(
+        "Running a query to get the ObjectNames of all MBeans matching the ObjectName pattern (%1$s) and Query expression (%2$s) is currently unsupported!",
         objectName, queryExpression);
       throw new RestApiCallForCommandNotFoundException(MBEAN_QUERY_LINK_RELATION);
     }

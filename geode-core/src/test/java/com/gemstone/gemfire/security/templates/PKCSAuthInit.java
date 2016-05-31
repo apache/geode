@@ -40,7 +40,7 @@ import com.gemstone.gemfire.security.AuthenticationFailedException;
  * set to the fully qualified name the static {@code create} function
  * viz. {@code com.gemstone.gemfire.security.templates.PKCSAuthInit.create}
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class PKCSAuthInit implements AuthInitialize {
 

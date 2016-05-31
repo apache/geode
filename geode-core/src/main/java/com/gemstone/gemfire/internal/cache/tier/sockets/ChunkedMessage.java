@@ -59,7 +59,7 @@ import org.apache.logging.log4j.Logger;
  * @see com.gemstone.gemfire.internal.cache.tier.MessageType
  * 
  * 
- * @since 4.2
+ * @since GemFire 4.2
  */
 public class ChunkedMessage extends Message
 {

@@ -29,7 +29,7 @@ import com.gemstone.gemfire.cache.execute.ResultSender;
  * For data dependent functions refer to {@link RegionFunctionContext}
  * 
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * 
  * @see RegionFunctionContextImpl
  * 

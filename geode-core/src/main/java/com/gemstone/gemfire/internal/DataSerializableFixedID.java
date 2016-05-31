@@ -58,7 +58,7 @@ import java.io.*;
  *
  * @see DataSerializer
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 public interface DataSerializableFixedID extends SerializationVersions {
 

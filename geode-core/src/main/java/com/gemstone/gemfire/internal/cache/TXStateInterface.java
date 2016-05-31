@@ -85,7 +85,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
 
   /**
    * Return true if mod counts for this transaction can not be represented by a byte
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public boolean needsLargeModCount();
   

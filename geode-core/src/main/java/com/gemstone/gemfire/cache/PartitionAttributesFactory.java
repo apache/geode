@@ -68,7 +68,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * 
  * @see com.gemstone.gemfire.cache.PartitionAttributes
  * @see com.gemstone.gemfire.cache.AttributesFactory#setPartitionAttributes(PartitionAttributes)
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class PartitionAttributesFactory<K,V>
 {
@@ -264,7 +264,7 @@ public class PartitionAttributesFactory<K,V>
    * Default value is set to -1 which indicates
    * that redundancy will not be recovered after a failure.
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public PartitionAttributesFactory<K,V> setRecoveryDelay(long recoveryDelay) {
     this.partitionAttributes.setRecoveryDelay(recoveryDelay);
@@ -278,7 +278,7 @@ public class PartitionAttributesFactory<K,V>
    * The default (set to 0) is to recover redundancy immediately when a new
    * member is added. 
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public PartitionAttributesFactory<K,V> setStartupRecoveryDelay(long startupRecoveryDelay) {
     this.partitionAttributes.setStartupRecoveryDelay(startupRecoveryDelay);
@@ -290,7 +290,7 @@ public class PartitionAttributesFactory<K,V>
    * 
    * @param listener
    * @return PartitionAttributeFactory
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public PartitionAttributesFactory<K, V> addPartitionListener(
       PartitionListener listener) {
@@ -349,7 +349,7 @@ public class PartitionAttributesFactory<K,V>
    * FixedPartitionAttributes defined for this partitioned region is added to
    * PR attributes.
    * 
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public PartitionAttributesFactory<K, V> addFixedPartitionAttributes(
       FixedPartitionAttributes fpa) {

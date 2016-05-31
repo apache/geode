@@ -35,7 +35,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * Test create + localDestroy for bug 34387
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class Bug34387DUnitTest extends CacheTestCase {
 

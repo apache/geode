@@ -24,7 +24,7 @@ import com.gemstone.gemfire.GemFireException;
  * not be located in the file system.
  * </p>
  * @see com.gemstone.gemfire.GemFireException
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public class JConsoleNotFoundException extends GemFireException {

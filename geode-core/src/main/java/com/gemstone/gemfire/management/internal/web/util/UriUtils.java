@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
  * <p/>
  * @see java.net.URLDecoder
  * @see java.net.URLEncoder
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public abstract class UriUtils {

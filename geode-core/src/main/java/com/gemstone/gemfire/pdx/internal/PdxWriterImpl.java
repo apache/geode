@@ -42,7 +42,7 @@ import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.AutoClassInfo;
  * {@link PdxSerializable}. But it may share the underlying instance
  * of {@link HeapDataOutputStream} with other instances of this class.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  * @see InternalDataSerializer#basicWriteObject(Object, java.io.DataOutput, boolean)
  */
 public class PdxWriterImpl implements PdxWriter {

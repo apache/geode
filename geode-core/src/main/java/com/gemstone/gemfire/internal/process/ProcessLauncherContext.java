@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.io.TeePrintStream;
  * Thread based context for launching a process. GemFire internals can acquire
  * optional configuration details from a process launcher via this context.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class ProcessLauncherContext {
 

@@ -35,7 +35,7 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
  * <p/>
  * @see javax.xml.bind.annotation.XmlRootElement
  * @see com.gemstone.gemfire.management.internal.web.domain.Link
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 @XmlRootElement(name = "link-index")

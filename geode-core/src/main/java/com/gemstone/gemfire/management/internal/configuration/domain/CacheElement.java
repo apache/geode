@@ -103,7 +103,7 @@ public class CacheElement {
    * @throws ParserConfigurationException 
    * @throws SAXException 
    * @throws XPathExpressionException 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static LinkedHashMap<String, CacheElement> buildElementMap(final Document doc) throws IOException, XPathExpressionException, SAXException, ParserConfigurationException {
     final Map<String, List<String>> schemaLocationMap = XmlUtils.buildSchemaLocationMap(
@@ -129,7 +129,7 @@ public class CacheElement {
    * @return {@link InputSource} for schema if found.
    * @throws IOException
    *           if unable to open {@link InputSource}.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private static final InputSource resolveSchema(final Map<String, List<String>> schemaLocationMap, String namespaceUri) throws IOException {
     final EntityResolver2 entityResolver = new CacheXmlParser();
@@ -168,7 +168,7 @@ public class CacheElement {
    * @throws IOException
    * @throws ParserConfigurationException 
    * @throws XPathExpressionException 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private static final void buildElementMapCacheType(final LinkedHashMap<String, CacheElement> elementMap, final InputSource inputSource) throws SAXException,
       IOException, ParserConfigurationException, XPathExpressionException {
@@ -200,7 +200,7 @@ public class CacheElement {
    *          XPath context for queries.
    * @return final rank of elements.
    * @throws XPathExpressionException 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private static int buildElementMapXPath(final LinkedHashMap<String, CacheElement> elementMap, final Document schema, final Node parent, int rank,
       final String xPath, final XPathContext xPathContext) throws XPathExpressionException {
@@ -238,7 +238,7 @@ public class CacheElement {
    * @param element
    *          to test for multiple.
    * @return true if mulitple allowed, otherwise false.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private static boolean isMultiple(final Element element) {
     final String maxOccurs = getAttribute(element, "maxOccurs");

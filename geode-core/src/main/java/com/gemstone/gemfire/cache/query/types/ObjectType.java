@@ -32,7 +32,7 @@ import com.gemstone.gemfire.DataSerializable;
  * @see CollectionType
  * @see MapType
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public interface ObjectType extends DataSerializable {
 

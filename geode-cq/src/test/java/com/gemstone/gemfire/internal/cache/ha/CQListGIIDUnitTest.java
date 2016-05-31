@@ -69,7 +69,7 @@ import junit.framework.TestSuite;
 /**
  *
  *
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public class CQListGIIDUnitTest extends DistributedTestCase {

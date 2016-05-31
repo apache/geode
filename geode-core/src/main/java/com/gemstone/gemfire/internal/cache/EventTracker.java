@@ -51,7 +51,7 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableCountDownLatch;
  * memberID:threadID.  It is used to avoid replaying events in
  * client/server and partitioned-region configurations.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public class EventTracker
 {
@@ -522,7 +522,7 @@ public class EventTracker
    * @param r - a Runnable to wrap the processing of the bulk op
    * @param eventID - the base event ID of the bulk op
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void syncBulkOp(Runnable r, EventID eventID) {
     Assert.assertTrue(eventID != null);
@@ -597,7 +597,7 @@ public class EventTracker
   /**
    * A sequence number tracker to keep events from clients from being
    * re-applied to the cache if they've already been seen.
-   * @since 5.5
+   * @since GemFire 5.5
    */
   static class EventSeqnoHolder implements DataSerializable {
     private static final long serialVersionUID = 8137262960763308046L;
@@ -654,7 +654,7 @@ public class EventTracker
    * membershipID and threadID in the cache
    * processed is true means the bulk op is processed by one thread 
    * no need to redo it by other threads.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   static class BulkOpProcessed {
     /** whether the op is processed */
@@ -693,7 +693,7 @@ public class EventTracker
   /**
    * A holder for the version tags generated for a bulk operation (putAll or removeAll). These
    * version tags are retrieved when a bulk op is retried.
-   * @since 7.0
+   * @since GemFire 7.0
    * protected for test purposes only.
    */
   protected static class BulkOpHolder {

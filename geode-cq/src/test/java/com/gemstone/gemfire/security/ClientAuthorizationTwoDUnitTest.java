@@ -35,7 +35,7 @@ import com.gemstone.gemfire.test.junit.categories.SecurityTest;
  * This is the second part of the test which had become long enough to
  * occasionally go beyond the 10min limit.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 @Category({ DistributedTest.class, SecurityTest.class })
 public class ClientAuthorizationTwoDUnitTest extends ClientAuthorizationTestCase {

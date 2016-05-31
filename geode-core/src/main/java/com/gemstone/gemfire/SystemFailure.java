@@ -185,7 +185,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
           ...
         }
  * </pre>
- * @since 5.1
+ * @since GemFire 5.1
  */
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="DM_GC", justification="This class performs System.gc as last ditch effort during out-of-memory condition.") 
 public final class SystemFailure {
@@ -610,7 +610,7 @@ public final class SystemFailure {
    * The default is false, so this monitoring is turned off. This monitoring has been found 
    * to be unreliable in non-Sun VMs when the VM is under stress or behaves in unpredictable ways.
    *
-   * @since 6.5
+   * @since GemFire 6.5
    */
   static final public boolean MONITOR_MEMORY = Boolean.getBoolean(
       "gemfire.SystemFailure.MONITOR_MEMORY");

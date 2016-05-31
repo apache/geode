@@ -39,7 +39,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * {@link Command} for {@link GetClientPartitionAttributesOp} operation for 6.6
  * clients
  * 
- * @since 6.6
+ * @since GemFire 6.6
  * 
  */
 public class GetClientPartitionAttributesCommand66 extends BaseCommand {

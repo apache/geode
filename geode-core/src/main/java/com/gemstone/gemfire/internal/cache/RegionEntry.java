@@ -42,7 +42,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * has its own entry class. The "value" field of each of these entries
  * will implement this interface.
  *
- * @since 3.5.1
+ * @since GemFire 3.5.1
  *
 
 Implementations:
@@ -88,7 +88,7 @@ public interface RegionEntry {
    * Returns true if getLastAccessed, getHitCount, and getMissCount can be called
    * without throwing InternalStatisticsDisabledException.
    * Otherwise returns false.
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public boolean hasStats();
     
@@ -200,7 +200,7 @@ public interface RegionEntry {
    * @see InitialImageOperation.RequestImageMessage#chunkEntries
    *
    * @return false if map entry not found
-   * @since 3.2.1
+   * @since GemFire 3.2.1
    */
   public boolean fillInValue(LocalRegion r,
       @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) InitialImageOperation.Entry entry,
@@ -271,7 +271,7 @@ public interface RegionEntry {
    * Returns the value as stored by the RegionEntry implementation.  For instance, if compressed this
    * value would be the compressed form.
    *  
-   * @since 8.0
+   * @since GemFire 8.0
    */
   @Retained
   public Object getTransformedValue();
@@ -357,13 +357,13 @@ public interface RegionEntry {
 
   /**
    * @return true if entry's value came from a netsearch
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public boolean getValueWasResultOfSearch();
   /**
    * @param v true if entry's value should be marked as having been
    * the result of a netsearch.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void setValueResultOfSearch(boolean v);
 
@@ -372,7 +372,7 @@ public interface RegionEntry {
    * on the disk, ignoring heap data.
    * @param localRegion the persistent region 
    * @return the serialized value from disk
-   * @since gemfire5.7_hotfix
+   * @since GemFire 5.7
    */
   public Object getSerializedValueOnDisk(LocalRegion localRegion);
 

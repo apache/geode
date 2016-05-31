@@ -32,7 +32,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
  * {@link MockRegionExtension} {@link XmlGenerator}.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public final class MockRegionExtensionXmlGenerator extends AbstractMockExtensionXmlGenerator<Region<?, ?>> {
   public MockRegionExtensionXmlGenerator(MockRegionExtension extension) {

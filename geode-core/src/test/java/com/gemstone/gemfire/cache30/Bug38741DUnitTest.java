@@ -59,7 +59,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
 /**
  *
- * @since bugfix5.7
+ * @since GemFire bugfix5.7
  */
 public class Bug38741DUnitTest extends ClientServerTestCase {
   private static final long serialVersionUID = 1L;
@@ -78,7 +78,7 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
    * Test that CopyOnRead doesn't cause {@link HARegionQueue#peek()} to create a copy,
    * assuming that creating copies performs a serialize and de-serialize operation.
    * @throws Exception when there is a failure
-   * @since bugfix5.7
+   * @since GemFire bugfix5.7
    */
   public void testCopyOnReadWithBridgeServer() throws Exception {
     final Host h = Host.getHost(0);

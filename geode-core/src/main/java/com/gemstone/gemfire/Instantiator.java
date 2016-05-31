@@ -142,7 +142,7 @@ public class User implements DataSerializable {
  * @see #register(Instantiator)
  * @see #newInstance
  *
- * @since 3.5 */
+ * @since GemFire 3.5 */
 public abstract class Instantiator {
 
   /** The class associated with this instantiator.  Used mainly for

@@ -55,7 +55,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * dead and interrupts its threads.
  * 
  * 
- * @since 4.2.3
+ * @since GemFire 4.2.3
  */
 public class ClientHealthMonitor {
   private static final Logger logger = LogService.getLogger();
@@ -786,7 +786,7 @@ public class ClientHealthMonitor {
   /**
    * Returns a brief description of this <code>ClientHealthMonitor</code>
    *
-   * @since 5.1
+   * @since GemFire 5.1
    */
   @Override
   public String toString()

@@ -22,7 +22,7 @@ import java.util.Set;
  * This is a sample class for objects which hold information of the authorized
  * function names and authorized value for the {@code optimizeForWrite}.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public class FunctionSecurityPrmsHolder {
 

@@ -2378,7 +2378,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor  {
    * DistributedCacheOperation messages and notification-only partition
    * messages
    * @return a set of recipients requiring both cache-op and notification messages
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Set adviseRequiresTwoMessages() {
     return adviseNotInitialized();

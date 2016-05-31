@@ -65,7 +65,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Released;
  * A Replicate Region putAll message.  Meant to be sent only to
  * the peer who hosts transactional data.
  *
- * @since 6.5
+ * @since GemFire 6.5
  */
 public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply
   {

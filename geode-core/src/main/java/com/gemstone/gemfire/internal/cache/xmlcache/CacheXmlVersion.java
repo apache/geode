@@ -24,7 +24,7 @@ import java.util.HashMap;
  * "8_0" and "10.0" was older than "9.0".
  *
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 // TODO future - replace constants in CacheXml with this Enum completely
 public enum CacheXmlVersion {
@@ -76,7 +76,7 @@ public enum CacheXmlVersion {
    * 
    * @return the version
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public String getVersion() {
     return version;
@@ -87,7 +87,7 @@ public enum CacheXmlVersion {
    *
    * @return the schemaLocation if schema exists, otherwise null.
    *
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public String getSchemaLocation() {
     return schemaLocation;
@@ -106,7 +106,7 @@ public enum CacheXmlVersion {
    * The DTD public id.
    * 
    * @return the publicId if DTD exists, otherwise null.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public String getPublicId() {
     return publicId;
@@ -116,7 +116,7 @@ public enum CacheXmlVersion {
    * The DTD system id.
    * 
    * @return the systemId if DTD exists, otherwise null.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public String getSystemId() {
     return systemId;
@@ -132,7 +132,7 @@ public enum CacheXmlVersion {
    * @return {@link CacheXmlVersion} if exists.
    * @throws IllegalArgumentException
    *           if version does not exist.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static final CacheXmlVersion valueForVersion(final String version) {
     final CacheXmlVersion cacheXmlVersion = valuesForVersion.get(version);

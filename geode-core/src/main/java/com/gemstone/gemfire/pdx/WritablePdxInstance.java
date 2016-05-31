@@ -22,7 +22,7 @@ package com.gemstone.gemfire.pdx;
  * using the {@link #setField setField} method. 
  * To get a WritablePdxInstance call {@link PdxInstance#createWriter createWriter}.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 
 public interface WritablePdxInstance extends PdxInstance {

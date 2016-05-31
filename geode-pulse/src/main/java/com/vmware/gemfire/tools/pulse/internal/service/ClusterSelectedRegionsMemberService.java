@@ -42,7 +42,7 @@ import java.util.List;
  * This class contains implementations of getting Cluster's selected region's member specific details
  * for all members in that region
  *
- * @since version 7.5 cedar 2014-03-01
+ * @since GemFire version 7.5 cedar 2014-03-01
  */
 
 @Component

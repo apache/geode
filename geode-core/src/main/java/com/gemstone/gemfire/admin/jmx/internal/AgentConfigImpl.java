@@ -46,7 +46,7 @@ import java.util.StringTokenizer;
  * <p>
  * Extends and implements DistributedSystemConfig.
  *
- * @since     3.5 (in which it was named AgentConfig)
+ * @since GemFire     3.5 (in which it was named AgentConfig)
  */
 public class AgentConfigImpl extends DistributedSystemConfigImpl
   implements AgentConfig {
@@ -488,7 +488,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl
    * Checks to see if this config object is "read only".  If it is,
    * then an {@link IllegalStateException} is thrown.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   @Override
   protected void checkReadOnly() {
@@ -865,7 +865,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl
    * See <a href="#rmi-server-port">description</a> above.
    *
    * @return the value set for rmi-server-port
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public int getRmiServerPort() {
     return this.rmiServerPort;
@@ -875,7 +875,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl
    * Sets the port of the RMI Connector Server.
    *
    * @param port rmi-server-port to set.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void setRmiServerPort(int port) {
     checkReadOnly();

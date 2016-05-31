@@ -40,7 +40,7 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  * being passed for the operation is encapsulated in a {@link OperationContext}
  * object that can be modified by the post-processing authorization callbacks.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class AuthorizeRequestPP {
 

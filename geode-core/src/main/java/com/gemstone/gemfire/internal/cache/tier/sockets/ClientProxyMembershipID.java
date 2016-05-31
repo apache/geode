@@ -421,7 +421,7 @@ public final class ClientProxyMembershipID
    * Returns whether this <code>ClientProxyMembershipID</code> is durable.
    * @return whether this <code>ClientProxyMembershipID</code> is durable
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public boolean isDurable() {
     String durableClientId = getDistributedMember().getDurableClientAttributes().getId(); 
@@ -432,7 +432,7 @@ public final class ClientProxyMembershipID
    * Returns this <code>ClientProxyMembershipID</code>'s durable attributes.
    * @return this <code>ClientProxyMembershipID</code>'s durable attributes
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    */
   protected DurableClientAttributes getDurableAttributes() {
     return getDistributedMember().getDurableClientAttributes();
@@ -442,7 +442,7 @@ public final class ClientProxyMembershipID
    * Returns this <code>ClientProxyMembershipID</code>'s durable id.
    * @return this <code>ClientProxyMembershipID</code>'s durable id
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public String getDurableId() {
     DurableClientAttributes dca = getDurableAttributes();
@@ -453,7 +453,7 @@ public final class ClientProxyMembershipID
    * Returns this <code>ClientProxyMembershipID</code>'s durable timeout.
    * @return this <code>ClientProxyMembershipID</code>'s durable timeout
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    */
   protected int getDurableTimeout() {
     DurableClientAttributes dca = getDurableAttributes();
@@ -509,7 +509,7 @@ public final class ClientProxyMembershipID
    * @return the name of the <code>HARegion</code> queueing this proxy's
    * messages.
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    */
   protected String getHARegionName() {
     return getBaseRegionName() + "_queue";
@@ -522,7 +522,7 @@ public final class ClientProxyMembershipID
    * @return the name of the region used for communicating interest changes
    * between servers
    * 
-   * @since 5.6
+   * @since GemFire 5.6
    */
   protected String getInterestRegionName() {
     return getBaseRegionName() + "_interest";
@@ -548,7 +548,7 @@ public final class ClientProxyMembershipID
    * stops/starts its cache. When it restarts its cache, it needs to maintain
    * the same unique id
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public static synchronized void resetUniqueIdCounter() {
     synch_counter = 0;
@@ -565,7 +565,7 @@ public final class ClientProxyMembershipID
    * <p>
    * This class is used to clean up resources associated with a particular
    * client and thus does not want to limit itself to the durable id.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public class Identity {
     public int getUniqueId() {

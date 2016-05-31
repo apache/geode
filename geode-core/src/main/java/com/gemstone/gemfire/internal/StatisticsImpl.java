@@ -39,7 +39,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * @see <A href="package-summary.html#statistics">Package introduction</A>
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public abstract class StatisticsImpl implements Statistics {
 
@@ -365,7 +365,7 @@ public abstract class StatisticsImpl implements Statistics {
    * For internal use only.
    * Tells the implementation to prepare the data in this instance
    * for sampling.
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public void prepareForSample() {
     // nothing needed in this impl.

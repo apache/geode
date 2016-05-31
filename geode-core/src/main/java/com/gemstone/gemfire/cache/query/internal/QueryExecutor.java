@@ -27,7 +27,7 @@ import com.gemstone.gemfire.cache.query.TypeMismatchException;
  * An interface allowing different Region implementations to support 
  * querying. 
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public interface QueryExecutor {
   //TODO Yogesh , fix this signature 

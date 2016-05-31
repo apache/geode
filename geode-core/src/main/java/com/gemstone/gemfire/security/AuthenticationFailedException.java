@@ -20,7 +20,7 @@ package com.gemstone.gemfire.security;
 /**
  * Thrown if authentication of this client/peer fails.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class AuthenticationFailedException extends GemFireSecurityException {
 private static final long serialVersionUID = -8202866472279088879L;

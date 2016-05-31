@@ -86,7 +86,7 @@ import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteHashMap;
  * long integers.  This reduces the size of routing information when sent
  * over the network.
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class FilterProfile implements DataSerializableFixedID {
   private static final Logger logger = LogService.getLogger();

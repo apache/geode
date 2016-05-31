@@ -37,7 +37,7 @@ import javax.servlet.http.HttpServletRequest;
  * This class contains implementations of getting Memeber's GC Pauses (JVM
  * Pauses) details and its trend over the time.
  * 
- * @since version 7.5
+ * @since GemFire version 7.5
  */
 
 @Component

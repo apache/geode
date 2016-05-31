@@ -42,7 +42,7 @@ public abstract class AbstractEntityResolverTest {
    * Assert that {@link PivotalEntityResolver} extends
    * {@link DefaultEntityResolver2}.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testInstanceOfDefaultEntityResolver2() {
@@ -54,7 +54,7 @@ public abstract class AbstractEntityResolverTest {
    * Verifies that the META-INF/services file is correctly found and the the
    * implementation class is loadable.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testDiscovery() {
@@ -73,7 +73,7 @@ public abstract class AbstractEntityResolverTest {
    * Resolve the cache.xml XSD using the {@link PivotalEntityResolver}. Verifies
    * that the META-INF/schemas files are correctly found.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testResolveEntity() throws Exception {
@@ -87,7 +87,7 @@ public abstract class AbstractEntityResolverTest {
    * <code>null</code> <code>systemId</code>. Asserts that returns to
    * <code>null<code>.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testResolveEntityNullSystemId() throws SAXException, Exception {
@@ -101,7 +101,7 @@ public abstract class AbstractEntityResolverTest {
    * <code>"--not-a-valid-system-id--"</code> <code>systemId</code>, which is
    * not in the Pivotal namespace.. Asserts that returns to <code>null<code>.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testResolveEntityUnkownSystemId() throws Exception {
@@ -116,7 +116,7 @@ public abstract class AbstractEntityResolverTest {
    * <code>systemId</code>, which should not be found. Asserts that returns to
    * <code>null<code>.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testResolveEntityNotFoundSystemId() throws Exception {

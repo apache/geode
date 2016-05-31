@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.concurrent.CompactConcurrentHashSet2;
  * segments for accurate count.
  * 
  * @param <E>
- * @since 7.0 
+ * @since GemFire 7.0
  */
 public class IndexConcurrentHashSet<E> extends CompactConcurrentHashSet2<E> {
 

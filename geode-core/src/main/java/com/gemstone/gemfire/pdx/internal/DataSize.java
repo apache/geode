@@ -20,7 +20,7 @@ package com.gemstone.gemfire.pdx.internal;
  * This is a helper class that defines the size of the
  * primitive java types.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 public class DataSize {
 

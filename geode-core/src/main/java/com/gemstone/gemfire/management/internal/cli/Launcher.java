@@ -65,7 +65,7 @@ import joptsimple.OptionSet;
  *  </ol>
  * </ul>
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class Launcher {
   private static final String EXECUTE_OPTION = "execute";

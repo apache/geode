@@ -42,7 +42,7 @@ import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
  * A little test program for testing (and debugging) disk regions.
  *
  *
- * @since 3.2
+ * @since GemFire 3.2
  */
 public class TestDiskRegion {
 

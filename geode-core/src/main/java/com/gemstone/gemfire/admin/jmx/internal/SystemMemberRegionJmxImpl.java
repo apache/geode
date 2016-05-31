@@ -27,7 +27,7 @@ import javax.management.modelmbean.ModelMBean;
  * MBean representation of {@link 
  * com.gemstone.gemfire.admin.SystemMemberRegion}.
  *
- * @since     3.5
+ * @since GemFire     3.5
  */
 public class SystemMemberRegionJmxImpl 
 extends com.gemstone.gemfire.admin.internal.SystemMemberRegionImpl

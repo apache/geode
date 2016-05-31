@@ -29,7 +29,7 @@ import java.io.*;
 /**
  * A message that is sent to a particular distribution manager to
  * remove a health listener.
- * @since 3.5
+ * @since GemFire 3.5
  */
 public final class RemoveHealthListenerRequest extends AdminRequest {
   // instance variables

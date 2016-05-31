@@ -79,7 +79,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 /**
  * PR removeAll
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
 {
@@ -769,7 +769,7 @@ public final class RemoveAllPRMessage extends PartitionMessageWithDirectReply
   
   /**
    * A processor to capture the value returned by {@link RemoveAllPRMessage}
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static class RemoveAllResponse extends PartitionResponse {
     private volatile boolean returnValue;

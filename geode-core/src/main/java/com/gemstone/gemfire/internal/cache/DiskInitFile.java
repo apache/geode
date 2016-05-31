@@ -87,7 +87,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * Does all the IF file work for a DiskStoreImpl.
  *
  *
- * @since prPersistSprint1
+ * @since GemFire prPersistSprint1
  */
 public class DiskInitFile implements DiskInitFileInterpreter {
   private static final Logger logger = LogService.getLogger();
@@ -135,7 +135,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    *   4: blobLength
    *   blobLength: member bytes
    *   1: EndOfRecordMarker
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public static final byte IFREC_ONLINE_MEMBER_ID = 59;
   /**
@@ -146,7 +146,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    *   4: blobLength
    *   blobLength: member bytes
    *   1: EndOfRecordMarker
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public static final byte IFREC_OFFLINE_MEMBER_ID = 60;
   /**
@@ -157,7 +157,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    *   4: blobLength
    *   blobLength: member bytes
    *   1: EndOfRecordMarker
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public static final byte IFREC_RM_MEMBER_ID = 61;
   /**
@@ -168,7 +168,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    *   4: blobLength
    *   blobLength: member bytes
    *   1: EndOfRecordMarker
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public static final byte IFREC_MY_MEMBER_INITIALIZING_ID = 62;
   /**
@@ -177,7 +177,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * Byte Format:
    *   RegionId
    *   1: EndOfRecordMarker
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public static final byte IFREC_MY_MEMBER_INITIALIZED_ID = 63;
 
@@ -189,7 +189,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    *   4: nameLength
    *   nameLength: name bytes
    *   1: EndOfRecordMarker
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public static final byte IFREC_CREATE_REGION_ID = 64;
   /**
@@ -198,7 +198,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * Byte Format:
    *   RegionId
    *   1: EndOfRecordMarker
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public static final byte IFREC_BEGIN_DESTROY_REGION_ID = 65;
   /**
@@ -208,7 +208,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    *   RegionId
    *   8: oplogEntryId
    *   1: EndOfRecordMarker
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public static final byte IFREC_CLEAR_REGION_ID = 66;
   /**
@@ -217,7 +217,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * Byte Format:
    *   RegionId
    *   1: EndOfRecordMarker
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public static final byte IFREC_END_DESTROY_REGION_ID = 67;
   /**
@@ -226,7 +226,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * Byte Format:
    *   RegionId
    *   1: EndOfRecordMarker
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public static final byte IFREC_BEGIN_PARTIAL_DESTROY_REGION_ID = 68;
   /**
@@ -235,7 +235,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * Byte Format:
    *   RegionId
    *   1: EndOfRecordMarker
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public static final byte IFREC_END_PARTIAL_DESTROY_REGION_ID = 69;
 
@@ -291,7 +291,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    *   4: blobLength
    *   blobLength: member bytes
    *   1: EndOfRecordMarker
-   * @since prPersistSprint3
+   * @since GemFire prPersistSprint3
    */
   public static final byte IFREC_OFFLINE_AND_EQUAL_MEMBER_ID = 75;
   /**
@@ -363,7 +363,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * Used to say that a disk store has been revoked
    * Byte Format:
    *   variable: a PersistentMemberPattern
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static final byte IFREC_REVOKE_DISK_STORE_ID = 81;
   
@@ -372,7 +372,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * Byte Format:
    * 1: version byte from Version.GFE_CURRENT.ordinal
    * 1: EndOfRecord
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static final byte IFREC_GEMFIRE_VERSION = 82;
 
@@ -383,7 +383,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    *   RegionId
    *   variable: serialized RVV
    *   1: EndOfRecordMarker
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static final byte IFREC_CLEAR_REGION_WITH_RVV_ID = 83;
   
@@ -414,7 +414,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * number
    * Followed by EndOfRecord
    * Fix for bug 43824
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public static final byte OPLOG_MAGIC_SEQ_ID = 89;
   
@@ -435,7 +435,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * 1: versioned (boolean)
    * 1: offHeap (boolean) added in 9.0
    * 1: EndOfRecordMarker
-   * @since 9.0
+   * @since Geode 1.0
    */
   public static final byte IFREC_REGION_CONFIG_ID_90 = 90;
 
@@ -2438,7 +2438,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * Currently only few for GemFireXD added here but all other boolean flags also
    * be better moved here.
    * 
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public enum DiskRegionFlag {
     /**

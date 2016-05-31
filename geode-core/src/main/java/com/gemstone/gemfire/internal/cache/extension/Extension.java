@@ -25,7 +25,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.XmlGenerator;
  * Interface used for objects wishing to extend and {@link Extensible} object.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public interface Extension<T> {
 
@@ -34,7 +34,7 @@ public interface Extension<T> {
    * configuration.
    * 
    * @return {@link XmlGenerator} for this object's configuration.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   XmlGenerator<T> getXmlGenerator();
 
@@ -58,7 +58,7 @@ public interface Extension<T> {
    *          source object this extension is currently attached to.
    * @param target
    *          target object to attach any created extensions to.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   void onCreate(Extensible<T> source, Extensible<T> target);
 

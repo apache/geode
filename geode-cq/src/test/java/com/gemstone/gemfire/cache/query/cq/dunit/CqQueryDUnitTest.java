@@ -3918,7 +3918,7 @@ public void testCQEventsWithNotEqualsUndefined() throws Exception {
    * Starts a bridge server on the given port to serve up the given
    * region.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void startBridgeServer(int port) throws IOException {
     startBridgeServer(port, CacheServer.DEFAULT_NOTIFY_BY_SUBSCRIPTION);
@@ -3929,7 +3929,7 @@ public void testCQEventsWithNotEqualsUndefined() throws Exception {
    * deserializeValues and notifyBySubscription to serve up the
    * given region.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void startBridgeServer(int port, boolean notifyBySubscription)
   throws IOException {
@@ -3945,7 +3945,7 @@ public void testCQEventsWithNotEqualsUndefined() throws Exception {
   /**
    * Stops the bridge server that serves up the given cache.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   protected void stopBridgeServer(Cache cache) {
     CacheServer bridge =

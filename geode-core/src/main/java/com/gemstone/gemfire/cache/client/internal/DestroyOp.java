@@ -37,7 +37,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * Does a region destroy on a server
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class DestroyOp {
 

@@ -23,7 +23,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
  * Factory to create SerialGatewaySender
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * @see GatewaySender
  * 
  */

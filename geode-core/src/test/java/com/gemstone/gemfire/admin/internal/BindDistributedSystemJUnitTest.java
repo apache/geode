@@ -42,7 +42,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Tests {@link com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl}.
  *
  * @created   August 30, 2004
- * @since     3.5
+ * @since GemFire     3.5
  */
 @SuppressWarnings("deprecation")
 @Category(IntegrationTest.class)

@@ -75,7 +75,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * functionality.
  * 
  * 
- * @since 5.2
+ * @since GemFire 5.2
  */ 
 public class DurableClientTestCase extends DistributedTestCase {
 

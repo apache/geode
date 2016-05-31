@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * Property resolver for resolving ${} like strings with system or Gemfire
  * properties in Cache.xml
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 public class CacheXmlPropertyResolver implements PropertyResolver{
   private static final Logger logger = LogService.getLogger();

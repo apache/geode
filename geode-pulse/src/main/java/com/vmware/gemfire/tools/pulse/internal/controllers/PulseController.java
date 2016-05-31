@@ -52,7 +52,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * This class contains the implementations for all http Ajax requests needs to
  * be served in Pulse.
  * 
- * @since version 7.5
+ * @since GemFire version 7.5
  */
 @Controller
 public class PulseController {

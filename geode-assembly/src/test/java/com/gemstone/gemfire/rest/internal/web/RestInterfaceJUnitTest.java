@@ -83,7 +83,7 @@ import org.springframework.web.client.RestTemplate;
  * @see com.gemstone.gemfire.cache.Region
  * @see com.gemstone.gemfire.pdx.PdxInstance
  * @see com.gemstone.gemfire.pdx.ReflectionBasedAutoSerializer
- * @since 1.0.0
+ * @since Geode 1.0.0
  */
 //@RunWith(SpringJUnit4ClassRunner.class)
 //@ContextConfiguration

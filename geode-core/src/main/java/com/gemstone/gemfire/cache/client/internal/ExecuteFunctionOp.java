@@ -48,7 +48,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * Executes the function on server (possibly without region/cache).<br> 
  * Also gets the result back from the server
- * @since 5.8
+ * @since GemFire 5.8
  */
 
 public class ExecuteFunctionOp {

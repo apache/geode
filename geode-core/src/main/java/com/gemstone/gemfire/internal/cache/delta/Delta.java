@@ -27,7 +27,7 @@ import com.gemstone.gemfire.cache.EntryEvent;
  * Internal Note: When an update message carries a Delta as a payload,
  * it makes sure it gets deserialized before being put into the region.
  *
- * @since 5.5
+ * @since GemFire 5.5
  * @see com.gemstone.gemfire.internal.cache.UpdateOperation
  */
 public interface Delta {

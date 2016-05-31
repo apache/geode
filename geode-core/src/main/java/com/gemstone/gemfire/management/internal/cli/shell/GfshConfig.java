@@ -24,7 +24,7 @@ import com.gemstone.gemfire.internal.util.IOUtils;
 
 /**
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 // According to 8.0 discussions, gfsh should have as less confing as possible
 // hence Persisting GfshConfig is not done

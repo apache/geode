@@ -62,7 +62,7 @@ import com.gemstone.gemfire.cache.query.types.*;
  *
  * @see com.gemstone.gemfire.cache.query.Query#execute()
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public interface SelectResults<E> extends Collection<E> {  
   
@@ -81,7 +81,7 @@ public interface SelectResults<E> extends Collection<E> {
    * collection, then 0 is returned.
    * @param element the element
    * @return the number of occurrances of element
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public int occurrences(E element);
   

@@ -35,7 +35,7 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 /**
  * Test to make sure cache close is working.
  *
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class CacheLogRollDUnitTest extends CacheTestCase {
 

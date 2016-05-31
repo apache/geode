@@ -26,7 +26,7 @@ import com.gemstone.gemfire.internal.cache.tier.MessageType;
 
 /**
  * Creates a CQ and fetches initial results on a server
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class CreateCQWithIROp {
   /**

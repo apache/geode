@@ -44,7 +44,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
 
 /**
  * A message used to determine the number of bytes a Bucket consumes.
- * @since 5.0
+ * @since GemFire 5.0
  */
 
 public final class BucketSizeMessage extends PartitionMessage
@@ -232,7 +232,7 @@ public final class BucketSizeMessage extends PartitionMessage
   /**
    * A processor to capture the value returned by {@link 
    * com.gemstone.gemfire.internal.cache.partitioned.GetMessage.GetReplyMessage}
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static class BucketSizeResponse extends ReplyProcessor21  {
     private volatile long returnValue;

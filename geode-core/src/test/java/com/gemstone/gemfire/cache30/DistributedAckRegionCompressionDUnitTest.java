@@ -25,7 +25,7 @@ import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 /**
  * Tests Distributed Ack Region with compression.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings({ "deprecation", "serial" })
 public class DistributedAckRegionCompressionDUnitTest extends

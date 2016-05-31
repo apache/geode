@@ -43,7 +43,7 @@ import com.gemstone.gemfire.test.dunit.VM;
  * This class tests the functionality of a cache {@link Region region}
  * that has a scope of {@link Scope#GLOBAL global}.
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
 

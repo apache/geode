@@ -29,7 +29,7 @@ package com.gemstone.gemfire.cache;
  * is usually colocated. This is because data can be moved from one node to another
  * during the time between the original transactional operations and the commit. 
  *
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class TransactionDataNotColocatedException extends TransactionException {
   

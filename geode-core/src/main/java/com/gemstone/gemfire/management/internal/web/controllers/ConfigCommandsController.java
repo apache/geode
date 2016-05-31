@@ -44,7 +44,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @see org.springframework.web.bind.annotation.RequestMethod
  * @see org.springframework.web.bind.annotation.RequestParam
  * @see org.springframework.web.bind.annotation.ResponseBody
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Controller("configController")
 @RequestMapping(AbstractCommandsController.REST_API_VERSION)

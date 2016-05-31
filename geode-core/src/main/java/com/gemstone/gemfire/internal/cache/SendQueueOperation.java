@@ -28,7 +28,7 @@ import com.gemstone.gemfire.distributed.internal.*;
 /**
  * Sends a chunk of queued messages to everyone currently playing a role.
  *
- * @since 5.0
+ * @since GemFire 5.0
  *
  */
 public class SendQueueOperation {

@@ -22,13 +22,14 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.management.MemberMXBean;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SecurityTest.class})
 public class DataCommandsSecurityTest {
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
@@ -66,7 +67,7 @@ public class DataCommandsSecurityTest {
   // dataUser has all the permissions granted, but not to region2 (only to region1)
   @JMXConnectionConfiguration(user = "region1-user", password = "1234567")
   @Test
-  public void testRegionAcess(){
+  public void testRegionAccess(){
     assertThatThrownBy(() -> bean.processCommand("rebalance --include-region=region2")).isInstanceOf(GemFireSecurityException.class)
         .hasMessageContaining(TestCommand.dataManage.toString());
 

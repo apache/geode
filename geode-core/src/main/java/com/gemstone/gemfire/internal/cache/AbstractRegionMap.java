@@ -86,7 +86,7 @@ import com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMa
  * Abstract implementation of {@link RegionMap}that has all the common
  * behavior.
  *
- * @since 3.5.1
+ * @since GemFire 3.5.1
  *
  *
  */
@@ -804,6 +804,9 @@ public abstract class AbstractRegionMap implements RegionMap {
         // server in the VM
         HAContainerWrapper haContainer = (HAContainerWrapper)CacheClientNotifier
             .getInstance().getHaContainer();
+        if (haContainer == null) {
+          return false;
+        }
         Map.Entry entry = null;
         HAEventWrapper original = null;
         synchronized (haContainer) {

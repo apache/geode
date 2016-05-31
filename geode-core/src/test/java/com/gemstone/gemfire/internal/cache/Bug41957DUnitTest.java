@@ -46,7 +46,7 @@ import com.gemstone.gemfire.test.dunit.VM;
  * do a register interest with key&values and see if we end up with more entries
  * in the client than the eviction limit.
  *
- * @since 6.5
+ * @since GemFire 6.5
  */
  public class Bug41957DUnitTest extends ClientServerTestCase {
 

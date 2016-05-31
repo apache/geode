@@ -38,7 +38,7 @@ import java.io.*;
  * @see AttributesFactory#setDataPolicy
  * @see RegionAttributes#getDataPolicy
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class DataPolicy implements java.io.Serializable {
   private static final long serialVersionUID = 2095573273889467233L;
@@ -91,7 +91,7 @@ public class DataPolicy implements java.io.Serializable {
   /**
    * In addition to <code>PARTITION</code> also causes data to be stored to
    * disk. The region initialization may use the data stored on disk.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final DataPolicy PERSISTENT_PARTITION = new DataPolicy(6, "PERSISTENT_PARTITION");
   
@@ -161,7 +161,7 @@ public class DataPolicy implements java.io.Serializable {
    * @return true if this policy does persistence.
    * @see #PERSISTENT_PARTITION
    * @see #PERSISTENT_REPLICATE
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public boolean withPersistence() {
     return this == PERSISTENT_PARTITION || this == PERSISTENT_REPLICATE;
@@ -171,7 +171,7 @@ public class DataPolicy implements java.io.Serializable {
    * @return true if this policy does partitioning
    * @see #PARTITION
    * @see #PERSISTENT_PARTITION
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public boolean withPartitioning() {
     return this == PARTITION || this == PERSISTENT_PARTITION;
@@ -180,7 +180,7 @@ public class DataPolicy implements java.io.Serializable {
   /** Return whether this policy does preloaded.
    * @return true if this policy does preloaded.
    * @see #PRELOADED
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public boolean withPreloaded() {
     return this == PRELOADED;

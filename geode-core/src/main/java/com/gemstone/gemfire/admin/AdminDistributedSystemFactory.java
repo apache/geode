@@ -32,7 +32,7 @@ import java.util.Properties;
 /**
  * Factory for creating GemFire administration entities. 
  *
- * @since     3.5
+ * @since GemFire     3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public class AdminDistributedSystemFactory {
@@ -92,7 +92,7 @@ public class AdminDistributedSystemFactory {
    * @throws IllegalStateException if a {@link DistributedSystem}
    * or {@link AdminDistributedSystem} connection already exists.
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static void setEnableAdministrationOnly(boolean adminOnly) {
     InternalDistributedSystem.setEnableAdministrationOnly(adminOnly);
@@ -116,7 +116,7 @@ public class AdminDistributedSystemFactory {
    *        {@linkplain DistributedSystemConfig#DEFAULT_REMOTE_COMMAND
    *        default} will be used.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public static DistributedSystemConfig
     defineDistributedSystem(DistributedSystem system,

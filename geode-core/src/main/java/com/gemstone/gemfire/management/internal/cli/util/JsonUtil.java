@@ -45,7 +45,7 @@ import org.json.JSONObject;
  * used by classes used for the Command Line Interface (CLI).
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class JsonUtil {
 

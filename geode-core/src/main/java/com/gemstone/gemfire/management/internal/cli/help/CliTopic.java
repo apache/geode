@@ -28,7 +28,7 @@ import com.gemstone.gemfire.management.internal.cli.parser.CommandTarget;
 /**
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CliTopic implements Comparable<CliTopic> {
   private static final Map<String, String> nameDescriptionMap = new HashMap<String, String>();

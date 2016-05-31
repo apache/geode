@@ -42,7 +42,7 @@ import javax.tools.ToolProvider;
 /**
  * Test framework utility class to programmatically create classes, JARs and ClassLoaders that include the classes.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class ClassBuilder implements Serializable {
   private static final long serialVersionUID = 1L;

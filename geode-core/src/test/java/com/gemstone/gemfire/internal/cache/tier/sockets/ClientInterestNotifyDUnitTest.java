@@ -55,7 +55,7 @@ import com.jayway.awaitility.Awaitility;
  * functionality along with register interest new receiveValues flag.
  * Taken from the existing ClientConflationDUnitTest.java and modified.
  *
- * @since 6.0.3
+ * @since GemFire 6.0.3
  */
 public class ClientInterestNotifyDUnitTest extends DistributedTestCase
 {

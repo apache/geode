@@ -21,7 +21,7 @@ package com.gemstone.gemfire.cache;
  * A Generic exception to indicate that a resource exception has occurred.
  * This class is abstract so that only subclasses can be instantiated.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public abstract class ResourceException extends CacheRuntimeException {
   /**

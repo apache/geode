@@ -75,7 +75,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * Manages the client side of client to server connections
  * and client queues. 
  * 
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class PoolImpl implements InternalPool {
   public static final String ON_DISCONNECT_CLEAR_PDXTYPEIDS = "gemfire.ON_DISCONNECT_CLEAR_PDXTYPEIDS";
@@ -153,7 +153,7 @@ public class PoolImpl implements InternalPool {
   }
 
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void finishCreate(PoolManagerImpl pm) {
     pm.register(this);
@@ -262,7 +262,7 @@ public class PoolImpl implements InternalPool {
    * Return true if the given Pool is compatible with these attributes.
    * Currently this does what equals would but in the future we might
    * decide to weaken the compatibility contract.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public boolean isCompatible(Pool p) {
     if (p == null) return false;
@@ -700,7 +700,7 @@ public class PoolImpl implements InternalPool {
    * It will only execute it once and on one server.
    * @param op the operation to execute
    * @return the result of execution if any; null if not
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Object execute(Op op) {
     //if(multiuser)
@@ -721,7 +721,7 @@ public class PoolImpl implements InternalPool {
    * @param op the operation to execute
    * @param retries how many times to retry the operation
    * @return the result of execution if any; null if not
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Object execute(Op op, int retries) {
     authenticateIfRequired(op);
@@ -770,7 +770,7 @@ public class PoolImpl implements InternalPool {
    * queues for this pool
    * @param op the operation to execute
    * @return the result of execution if any; null if not
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Object executeOnQueuesAndReturnPrimaryResult(Op op) {
     authenticateOnAllServers(op);
@@ -817,7 +817,7 @@ public class PoolImpl implements InternalPool {
    *
    * @param eventId the EventId of the incoming event
    * @return true if it is already present
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public boolean verifyIfDuplicate(EventID eventId) {
     return ((QueueStateImpl)this.queueManager.getState()).verifyIfDuplicate(eventId);
@@ -1053,7 +1053,7 @@ public class PoolImpl implements InternalPool {
   
   /**
    * Atomic counter used to keep track of services using this pool.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private final AtomicInteger attachCount = new AtomicInteger();
   public static volatile boolean IS_INSTANTIATOR_CALLBACK = false ;
@@ -1061,7 +1061,7 @@ public class PoolImpl implements InternalPool {
   /**
    * Returns number of services currently using/attached to this pool.
    * <p>Made public so it can be used by tests
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public int getAttachCount() {
     return this.attachCount.get();
@@ -1069,7 +1069,7 @@ public class PoolImpl implements InternalPool {
   /**
    * This needs to be called when a service (like a Region or CQService)
    * starts using a pool.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void attach() {
     this.attachCount.getAndIncrement();
@@ -1077,7 +1077,7 @@ public class PoolImpl implements InternalPool {
   /**
    * This needs to be called when a service (like a Region or CQService)
    * stops using a pool.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void detach() {
     this.attachCount.getAndDecrement();

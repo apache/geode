@@ -196,7 +196,7 @@ public class GemFireVersion {
    * Returns the revision of the source code on which GemFire was
    * built.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public static String getSourceRevision() {
     GemFireVersion v = getInstance();
@@ -211,7 +211,7 @@ public class GemFireVersion {
   /**
    * Returns the source code repository from which GemFire was built.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public static String getSourceRepository() {
     GemFireVersion v = getInstance();

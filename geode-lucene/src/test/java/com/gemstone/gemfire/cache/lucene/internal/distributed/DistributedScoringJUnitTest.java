@@ -36,6 +36,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
 import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
@@ -51,11 +52,13 @@ public class DistributedScoringJUnitTest {
 
   private final StandardAnalyzer analyzer = new StandardAnalyzer();
   private Region<String, String> region;
+  private LuceneIndexStats stats;
 
   @Before
   public void createMocks() {
     region = Mockito.mock(Region.class);
     Mockito.when(region.isDestroyed()).thenReturn(false);
+    stats = Mockito.mock(LuceneIndexStats.class);
   }
 
   /**
@@ -142,7 +145,7 @@ public class DistributedScoringJUnitTest {
     IndexWriterConfig config = new IndexWriterConfig(analyzer);
     IndexWriter writer = new IndexWriter(dir, config);
 
-    return new IndexRepositoryImpl(region, writer, mapper);
+    return new IndexRepositoryImpl(region, writer, mapper, stats);
   }
 
   private static class TestType {

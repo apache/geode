@@ -57,7 +57,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Unit test for the ClientCacheFactory class
- * @since 6.5
+ * @since GemFire 6.5
  */
 @FixMethodOrder(NAME_ASCENDING)
 @Category(IntegrationTest.class)

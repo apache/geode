@@ -23,7 +23,7 @@ import com.gemstone.gemfire.distributed.internal.ServerLocation;
 
 /**
  * Used to send operations from a client to a server.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class ServerProxy {
   protected final InternalPool pool;

@@ -63,7 +63,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * public for testing purposes.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class RegionCreation implements Region, Extensible<Region<?,?>> {
 
@@ -79,12 +79,12 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
 
   /** The id of the region-attributes this regions uses by default.
    *
-   * @since 6.5 */
+   * @since GemFire 6.5 */
   private String refid;
 
   /**
    * If true then someone explicitly added region attributes to this region
-   * @since 6.5
+   * @since GemFire 6.5
    */
   private boolean hasAttributes;
 
@@ -110,7 +110,7 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
   /**
    * {@link ExtensionPoint} to {@link Region}.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private final SimpleExtensionPoint<Region<?, ?>> extensionPoint = new SimpleExtensionPoint<Region<?,?>>(this, this);
 
@@ -925,7 +925,7 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
   /**
    * Sets the refid of the region attributes being created
    *
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void setRefid(String refid) {
     this.refid = refid;
@@ -934,7 +934,7 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
   /**
    * Returns the refid of the region attributes being created
    *
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public String getRefid() {
     return this.refid;
@@ -961,7 +961,7 @@ public class RegionCreation implements Region, Extensible<Region<?,?>> {
   }
   
   /**
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Override
   public ExtensionPoint<Region<?, ?>> getExtensionPoint() {

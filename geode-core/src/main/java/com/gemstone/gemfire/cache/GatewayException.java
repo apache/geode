@@ -21,7 +21,7 @@ package com.gemstone.gemfire.cache;
  * An exception thrown by a <code>Gateway</code>.
  *
  *
- * @since 4.2
+ * @since GemFire 4.2
  */
 public class GatewayException extends OperationAbortedException {
 private static final long serialVersionUID = 8090143153569084886L;

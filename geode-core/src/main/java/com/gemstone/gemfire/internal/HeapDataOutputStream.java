@@ -40,7 +40,7 @@ import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream.ByteSource;
  * It is always better to use this class instead ByteArrayOutputStream.
  * <p>This class is not thread safe
  *
- *  @since 5.0.2
+ *  @since GemFire 5.0.2
  * 
  *
  *

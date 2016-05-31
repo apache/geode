@@ -57,7 +57,7 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
  * 
  * Replicate regions can use this message to send a Get request to another peer.
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 public final class RemoteGetMessage extends RemoteOperationMessageWithDirectReply
   {
@@ -228,7 +228,7 @@ public final class RemoteGetMessage extends RemoteOperationMessageWithDirectRepl
    * is used <bold>very </bold> frequently the performance of this class is
    * critical.
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final class GetReplyMessage extends ReplyMessage
    {
@@ -363,7 +363,7 @@ public final class RemoteGetMessage extends RemoteOperationMessageWithDirectRepl
    * A processor to capture the value returned by {@link 
    * com.gemstone.gemfire.internal.cache.RemoteGetMessage.GetReplyMessage}
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static class RemoteGetResponse extends RemoteOperationResponse {
 

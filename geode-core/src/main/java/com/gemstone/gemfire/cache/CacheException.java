@@ -26,7 +26,7 @@ import com.gemstone.gemfire.GemFireException;
  * subclasses are instantiated.
  *
  *
- * @since 2.0
+ * @since GemFire 2.0
  */
 public abstract class CacheException extends GemFireException {
   /** Constructs a new <code>CacheException</code>. */

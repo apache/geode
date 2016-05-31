@@ -30,7 +30,7 @@ import java.io.OutputStream;
 /**
  * Utility class for copying log files
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class LogFileUtils {
   

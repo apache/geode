@@ -37,7 +37,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * UnitTest for ConfigLocator which is used to find the Log4J 2 configuration file.
  * 
- * @since 8.2
+ * @since GemFire 8.2
  */
 @Category(IntegrationTest.class)
 public class ConfigLocatorJUnitTest {

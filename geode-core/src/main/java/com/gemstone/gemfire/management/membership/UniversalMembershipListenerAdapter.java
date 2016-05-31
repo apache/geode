@@ -145,7 +145,7 @@ import com.gemstone.gemfire.management.ManagementService;
  * </p>
  *
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public abstract class UniversalMembershipListenerAdapter implements MembershipListener{
   

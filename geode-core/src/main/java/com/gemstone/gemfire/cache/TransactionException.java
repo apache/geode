@@ -19,7 +19,7 @@ package com.gemstone.gemfire.cache;
 /**
  * This is the superclass for all Exceptions that may be thrown
  * by a GemFire transaction.
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class TransactionException extends CacheException {
 

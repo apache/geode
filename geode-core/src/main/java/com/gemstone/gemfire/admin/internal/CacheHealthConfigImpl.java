@@ -22,7 +22,7 @@ import com.gemstone.gemfire.admin.*;
  * The implementation of <code>CacheHealthConfig</code>
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public abstract class CacheHealthConfigImpl
   extends MemberHealthConfigImpl implements CacheHealthConfig {

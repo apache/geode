@@ -20,7 +20,7 @@ package com.gemstone.gemfire.management;
 
 /**
  * Composite Data type to be used by member to depict gemfire properties in key value manner
- * @since 7.0
+ * @since GemFire 7.0
  *
  */
 public class GemFireProperties {

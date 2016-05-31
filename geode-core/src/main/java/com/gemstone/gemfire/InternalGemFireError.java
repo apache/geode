@@ -25,7 +25,7 @@ package com.gemstone.gemfire;
  * This is similar to {@link AssertionError}, but these errors are always
  * enabled in a GemFire system.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  * @see AssertionError
  */
 public class InternalGemFireError extends Error {

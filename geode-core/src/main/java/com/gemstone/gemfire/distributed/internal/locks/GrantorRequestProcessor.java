@@ -48,7 +48,7 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
  * A processor for sending a message to the elder asking it for the
  * grantor of a dlock service.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class GrantorRequestProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();

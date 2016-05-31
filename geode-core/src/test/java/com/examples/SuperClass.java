@@ -23,7 +23,7 @@ import java.util.*;
  * <code>Serializable</code>. 
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class SuperClass {
 

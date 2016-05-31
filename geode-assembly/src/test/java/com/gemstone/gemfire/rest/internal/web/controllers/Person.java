@@ -27,7 +27,7 @@ import java.io.Serializable;
 /**
 * The Person class is an abstraction modeling a person.
 * <p/>
-* @since 8.0
+* @since GemFire 8.0
 */
 @SuppressWarnings("unused")
 public class Person implements PdxSerializable {

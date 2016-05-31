@@ -67,6 +67,7 @@ public class LuceneIndexRecoveryHAIntegrationTest {
   Analyzer analyzer = new StandardAnalyzer();
 
   Cache cache;
+  private LuceneIndexStats stats;
 
   @Before
   public void setup() {
@@ -76,6 +77,7 @@ public class LuceneIndexRecoveryHAIntegrationTest {
     LuceneServiceImpl.registerDataSerializables();
 
     cache = new CacheFactory().set("mcast-port", "0").create();
+    stats = new LuceneIndexStats(cache.getDistributedSystem(), "INDEX", "REGION");
   }
 
   @After
@@ -103,7 +105,7 @@ public class LuceneIndexRecoveryHAIntegrationTest {
     PartitionedRegion fileRegion = (PartitionedRegion) regionfactory.create("fileRegion");
     PartitionedRegion chunkRegion = (PartitionedRegion) regionfactory.create("chunkRegion");
 
-    RepositoryManager manager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, mapper, analyzer);
+    RepositoryManager manager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, mapper, analyzer, stats);
     IndexRepository repo = manager.getRepository(userRegion, 0, null);
     assertNotNull(repo);
 
@@ -115,7 +117,7 @@ public class LuceneIndexRecoveryHAIntegrationTest {
 
     userRegion = (PartitionedRegion) regionfactory.create("userRegion");
     userRegion.put("rebalance", "test");
-    manager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, mapper, analyzer);
+    manager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, mapper, analyzer, stats);
     IndexRepository newRepo = manager.getRepository(userRegion, 0, null);
 
     Assert.assertNotEquals(newRepo, repo);

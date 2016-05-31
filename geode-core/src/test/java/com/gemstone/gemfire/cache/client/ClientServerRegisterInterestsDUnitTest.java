@@ -45,7 +45,7 @@ import com.gemstone.gemfire.test.dunit.VM;
  * client and a server in a Register Interests scenario.
  *
  * @see com.gemstone.gemfire.test.dunit.DistributedTestCase
- * @since 8.0
+ * @since GemFire 8.0
  */
 public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase {
 

@@ -130,7 +130,7 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
  * the {@link Cache}/{@link ClientCache},{@link Region}s, etc.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 @SuppressWarnings("deprecation")
 public class CacheXmlParser extends CacheXml implements ContentHandler {
@@ -138,17 +138,17 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   private static final Logger logger = LogService.getLogger();
   
   /**
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private static final String BUFFER_SIZE = "http://apache.org/xml/properties/input-buffer-size";
 
   /**
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private static final String DISALLOW_DOCTYPE_DECL_FEATURE = "http://apache.org/xml/features/disallow-doctype-decl";
 
   /**
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
 
@@ -160,14 +160,14 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   /**
    * Delegate {@link XmlParser}s mapped by namespace URI.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private HashMap<String, XmlParser> delegates = new HashMap<>();
 
   /**
    * Document {@link Locator} used for {@link SAXParseException}.
    * 
-   * @since 8.2
+   * @since GemFire 8.2
    */
   protected Locator documentLocator;
 
@@ -184,7 +184,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    *
    * @throws CacheXmlException Something went wrong while parsing the XML
    *
-   * @since 4.0
+   * @since GemFire 4.0
    *
    */
   public static CacheXmlParser parse(InputStream is) {
@@ -406,7 +406,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     stack.push(this.cache);
   }
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void startPool(Attributes atts) {
     PoolFactory f = this.cache.createPoolFactory();
@@ -488,7 +488,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     }
   }
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void endPool() {
     PoolFactory f = (PoolFactory)stack.pop();
@@ -496,7 +496,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     f.create(name);
   }
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void doLocator(Attributes atts) {
     PoolFactory f = (PoolFactory)stack.peek();
@@ -505,7 +505,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     f.addLocator(host, port);
   }
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void doServer(Attributes atts) {
     PoolFactory f = (PoolFactory)stack.peek();
@@ -518,7 +518,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * When a <code>cache-server</code> element is first encountered, we create
    * a new {@link CacheCreation#addCacheServer() CacheServer} in the cache.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   private void startCacheServer(Attributes atts) {
     CacheServer bridge = this.cache.addCacheServer();
@@ -809,7 +809,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * When a <code>load-probe</code> element is encountered,
    * create a new probe for the current <code>CacheServer</code>.
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void endLoadProbe() {
     Declarable d = createDeclarable();
@@ -1320,7 +1320,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
   /**
    * finish parsing a "group" element which is just a string
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void endGroup() {
     StringBuffer str = (StringBuffer) stack.pop();
@@ -2861,7 +2861,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * @param namespaceUri
    *          to find {@link XmlParser} for.
    * @return {@link XmlParser} if found, otherwise null.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   // UnitTest CacheXmlParser.testGetDelegate()
   private XmlParser getDelegate(final String namespaceUri) {
@@ -2911,7 +2911,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * <code>capacity</code> and
    * <code>overflow-directory</code>, then pass these values to Bridge Server
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void startClientHaQueue(Attributes atts) {
     ClientHaQueueCreation clientHaQueue = new ClientHaQueueCreation();
@@ -3385,7 +3385,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
   /**
    * Do nothing
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private void endClientHaQueue() {
   }

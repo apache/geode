@@ -38,7 +38,7 @@ import java.util.Set;
  * Abstract class that contains common code that all true implementations
  * of {@link CacheServer} can use.
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 public abstract class AbstractCacheServer implements CacheServer {
 
@@ -87,7 +87,7 @@ public abstract class AbstractCacheServer implements CacheServer {
   protected int messageTimeToLive;
   /**
    * The groups this server belongs to. Use <code>getGroups</code> to read.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected String[] groups;
   
@@ -95,13 +95,13 @@ public abstract class AbstractCacheServer implements CacheServer {
 
   /**
    * The ip address or host name that this server is to listen on.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected String bindAddress;
   /**
    * The ip address or host name that will be given to clients so they can connect
    * to this server
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected String hostnameForClients;
   

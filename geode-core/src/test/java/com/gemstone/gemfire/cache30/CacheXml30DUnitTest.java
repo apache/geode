@@ -77,7 +77,7 @@ import com.gemstone.gemfire.util.test.TestUtil;
  * 3.X (3.0, 3.2, 3.5).  Tests for syntax added in subsequent releases
  * is tested by subclasses of this class.
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class CacheXml30DUnitTest extends CacheXmlTestCase {
 
@@ -575,7 +575,7 @@ public class CacheXml30DUnitTest extends CacheXmlTestCase {
    * Tests to make sure that the example cache.xml file in the API
    * documentation conforms to the DTD.
    *
-   * @since 3.2.1
+   * @since GemFire 3.2.1
    */
   public void testExampleCacheXmlFile() throws Exception {
     // Check for old example files

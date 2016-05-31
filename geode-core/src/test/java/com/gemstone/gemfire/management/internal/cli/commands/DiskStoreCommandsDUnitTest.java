@@ -79,7 +79,7 @@ import org.junit.runners.Parameterized;
  * @see com.gemstone.gemfire.management.internal.cli.commands.DiskStoreCommands
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")

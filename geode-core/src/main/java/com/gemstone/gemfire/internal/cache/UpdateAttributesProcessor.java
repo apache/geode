@@ -62,7 +62,7 @@ public class UpdateAttributesProcessor {
   /**
    * If true then sender is telling receiver to remove the sender's profile.
    * No profile exchange is needed in this case.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private boolean removeProfile = false;
   private ReplyProcessor21 processor;
@@ -74,7 +74,7 @@ public class UpdateAttributesProcessor {
 
   /**
    * Creates a new instance of UpdateAttributesProcessor
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public UpdateAttributesProcessor(DistributionAdvisee da, boolean removeProfile) {
     this.advisee = da;
@@ -191,7 +191,7 @@ public class UpdateAttributesProcessor {
      * Registers this processor as a membership listener and
      * returns a set of the current members.
      * @return a Set of the current members
-     * @since 5.7
+     * @since GemFire 5.7
      */
     @Override
     protected Set addListenerAndGetMembers() {
@@ -205,7 +205,7 @@ public class UpdateAttributesProcessor {
     }
     /**
      * Unregisters this processor as a membership listener
-     * @since 5.7
+     * @since GemFire 5.7
      */
     @Override
     protected void removeListener() {
@@ -220,7 +220,7 @@ public class UpdateAttributesProcessor {
      * If this processor being used by controller then return
      * ALL members; otherwise defer to super.
      * @return a Set of the current members
-     * @since 5.7
+     * @since GemFire 5.7
      */
     @Override
     protected Set getDistributionManagerIds() {
@@ -460,7 +460,7 @@ public class UpdateAttributesProcessor {
   }
   /**
    * Used to return multiple profiles
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static class ProfilesReplyMessage extends ReplyMessage {
     Profile[] profiles;

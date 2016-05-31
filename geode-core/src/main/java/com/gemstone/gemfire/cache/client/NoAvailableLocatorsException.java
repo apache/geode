@@ -19,7 +19,7 @@ package com.gemstone.gemfire.cache.client;
 
 /**
  * An exception indicating that there are no active locators available to connect to.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class NoAvailableLocatorsException extends ServerConnectivityException {
   private static final long serialVersionUID = -8212446737778234890L;

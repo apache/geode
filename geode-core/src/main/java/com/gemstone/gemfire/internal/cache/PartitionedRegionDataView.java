@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 
 
 /**
- * @since 6.0tx
+ * @since GemFire 6.0tx
  */
 public class PartitionedRegionDataView extends LocalRegionDataView {
 

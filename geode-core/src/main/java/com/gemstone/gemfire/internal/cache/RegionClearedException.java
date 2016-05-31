@@ -19,7 +19,7 @@ package com.gemstone.gemfire.internal.cache;
 /**
  * Indicates that a Clear Operation happened while an entry operation
  * was in progress, which would result in the ongoing entry operation to abort
- * @since 5.1
+ * @since GemFire 5.1
  */
 public class RegionClearedException extends Exception  {
 private static final long serialVersionUID = 1266503771775907997L;

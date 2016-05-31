@@ -74,7 +74,7 @@ public final class GemFireStatSampler extends HostStatSampler  {
    * that <code>null</code> will be returned if operating statistics
    * are disabled.
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public final ProcessStats getProcessStats() {
     return this.processStats;

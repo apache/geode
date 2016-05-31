@@ -32,7 +32,7 @@ import java.io.IOException;
  * <li>http://weblogs.java.net/blog/kohsuke/archive/2009/01/writing_a_unix.html
  * <li>http://www.enderunix.org/docs/eng/daemon.php
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class LocalProcessLauncher {
 

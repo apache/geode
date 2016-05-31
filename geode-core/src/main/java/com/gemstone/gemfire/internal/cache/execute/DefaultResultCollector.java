@@ -31,7 +31,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * implementation stores the result in a List. The size of the list will be same
  * as the no of nodes on which a function got executed
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * 
  */
 public class DefaultResultCollector implements ResultCollector {

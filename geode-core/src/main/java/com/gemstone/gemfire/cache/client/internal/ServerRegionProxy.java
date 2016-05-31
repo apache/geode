@@ -59,7 +59,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Used to send region operations from a client to a server
- * @since 5.7
+ * @since GemFire 5.7
  */
 @SuppressWarnings("deprecation")
 public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAccess {

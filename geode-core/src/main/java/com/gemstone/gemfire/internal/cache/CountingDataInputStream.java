@@ -22,7 +22,7 @@ import java.io.*;
  * A data input stream that counts the bytes it plans on reading.
  * 
  * 
- * @since prPersistSprint2
+ * @since GemFire prPersistSprint2
  */
 
 public class CountingDataInputStream implements DataInput {

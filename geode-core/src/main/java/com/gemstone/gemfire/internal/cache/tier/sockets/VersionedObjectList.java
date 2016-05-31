@@ -56,7 +56,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * This class also implements Externalizable so that it can be serialized as
  * part of a PutAllPartialResultException.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 
 public class VersionedObjectList extends ObjectPartList implements Externalizable {

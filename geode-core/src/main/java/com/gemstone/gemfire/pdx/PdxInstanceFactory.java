@@ -29,7 +29,7 @@ import com.gemstone.gemfire.cache.RegionService;
  * multiple factories or use {@link PdxInstance#createWriter()} to create subsequent instances.
  * Using {@link PdxInstance#createWriter()} is usually faster.
  * 
- * @since 6.6.2
+ * @since GemFire 6.6.2
  */
 public interface PdxInstanceFactory {
   /**
@@ -222,7 +222,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if checkPortability is true and a non-portable object is serialized
    * @throws PdxSerializationException if serialization of the field fails.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public PdxInstanceFactory writeObject(String fieldName, Object value, boolean checkPortability);
 
@@ -353,7 +353,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if checkPortability is true and a non-portable element is serialized
    * @throws PdxSerializationException if serialization of the field fails.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public PdxInstanceFactory writeObjectArray(String fieldName, Object[] value, boolean checkPortability);
   /**
@@ -445,7 +445,7 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if checkPortability is true and a non-portable object is serialized
    * @throws PdxSerializationException if serialization of the field fails.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public <CT, VT extends CT> PdxInstanceFactory writeField(String fieldName, VT fieldValue, Class<CT> fieldType, boolean checkPortability);
 

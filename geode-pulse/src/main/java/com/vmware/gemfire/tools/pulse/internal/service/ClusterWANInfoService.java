@@ -37,7 +37,7 @@ import java.util.Map;
  * This class contains implementations of getting Cluster's WAN Informations
  * (connected clusters)
  * 
- * @since version 7.5
+ * @since GemFire version 7.5
  */
 @Component
 @Service("ClusterWANInfo")

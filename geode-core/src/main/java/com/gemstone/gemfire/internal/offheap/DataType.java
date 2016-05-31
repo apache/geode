@@ -36,7 +36,7 @@ import com.gemstone.gemfire.pdx.internal.PdxType;
  * Determines the data type of the bytes in an off-heap MemoryBlock. This is
  * used by the tests for inspection of the off-heap memory.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 public class DataType implements DSCODE {
 

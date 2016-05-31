@@ -46,7 +46,7 @@ import com.gemstone.gemfire.management.internal.cli.util.ReadWriteFile;
 // TODO:LOG:CONVERT: supports log-file only -- update to support Log4J 2 as well?
 /**
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class LogFileFunction implements Function, InternalEntity {
   private static final Logger logger = LogService.getLogger();

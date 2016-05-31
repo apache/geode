@@ -20,7 +20,7 @@ package com.gemstone.gemfire.rest.internal.web.controllers.support;
 /**
  * The QueryResultTypes type describes possible query result types 
  * <p/>
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 public enum QueryResultTypes {

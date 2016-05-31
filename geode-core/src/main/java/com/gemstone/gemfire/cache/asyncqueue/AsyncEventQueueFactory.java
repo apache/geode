@@ -45,7 +45,7 @@ import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
   AsyncEventQueue asyncQueue = factory.create(asyncQueueId, asyncEventListener);
 </PRE>
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface AsyncEventQueueFactory {
 

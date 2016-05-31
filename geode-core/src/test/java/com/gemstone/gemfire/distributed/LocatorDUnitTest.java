@@ -53,7 +53,7 @@ import java.util.Set;
  * Tests the ability of the {@link Locator} API to start and stop
  * locators running in remote VMs.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class LocatorDUnitTest extends DistributedTestCase {
 
@@ -1817,7 +1817,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
    * Tests starting, stopping, and restarting a locator.  See bug
    * 32856.
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public void testRestartLocator() throws Exception {
     disconnectAllFromDS();

@@ -51,7 +51,7 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 /**
  * Unit tests for the DeployCommands class
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("serial")
 @Category(DistributedTest.class)

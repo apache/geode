@@ -29,7 +29,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
  * Tests the declarative caching functionality introduced in GemFire
  * 4.0. 
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
 
@@ -50,7 +50,7 @@ public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
   /**
    * Tests the cache server attribute
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void testServer() {
     CacheCreation cache = new CacheCreation();
@@ -63,7 +63,7 @@ public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
   /**
    * Tests declarative bridge servers
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void testBridgeServers() {
     CacheCreation cache = new CacheCreation();
@@ -108,7 +108,7 @@ public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
   /**
    * Tests a cache listener with no parameters
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void testTransactionListener() {
     CacheCreation cache = new CacheCreation();
@@ -121,7 +121,7 @@ public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
   /**
    * Tests transaction manager with no listener
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void testCacheTransactionManager() {
     CacheCreation cache = new CacheCreation();
@@ -134,7 +134,7 @@ public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
    * Tests the value constraints region attribute that was added in
    * GemFire 4.0.
    *
-   * @since 4.1
+   * @since GemFire 4.1
    */
   public void testConstrainedValues() throws CacheException {
     CacheCreation cache = new CacheCreation();

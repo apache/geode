@@ -32,7 +32,7 @@ import java.util.*;
  * @see <A href="package-summary.html#statistics">Package introduction</A>
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  *
  */
 public class Atomic50StatisticsImpl extends StatisticsImpl {
@@ -304,7 +304,7 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
   /**
    * Used to take striped thread stats and "roll them up" into a single
    * shared stat.
-   * @since 5.1
+   * @since GemFire 5.1
    */
   @Override
   public void prepareForSample() {

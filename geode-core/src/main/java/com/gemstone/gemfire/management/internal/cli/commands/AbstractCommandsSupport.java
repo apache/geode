@@ -45,7 +45,7 @@ import org.springframework.shell.core.CommandMarker;
  * @see com.gemstone.gemfire.distributed.DistributedMember
  * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
  * @see org.springframework.shell.core.CommandMarker
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public abstract class AbstractCommandsSupport implements CommandMarker {

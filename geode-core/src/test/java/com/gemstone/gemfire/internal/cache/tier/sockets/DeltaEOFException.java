@@ -27,7 +27,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 /**
  * Faulty delta implementation, raising EndOfFile exception as
  * fromDelta reads more fields then wrote by toDelta
- * @since 6.1
+ * @since GemFire 6.1
  */
 public class DeltaEOFException extends FaultyDelta {
   

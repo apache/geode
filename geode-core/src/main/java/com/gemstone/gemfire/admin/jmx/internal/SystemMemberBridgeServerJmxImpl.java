@@ -29,7 +29,7 @@ import javax.management.modelmbean.ModelMBean;
  * MBean representation of a {@link
  * com.gemstone.gemfire.admin.SystemMemberBridgeServer}. 
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class SystemMemberBridgeServerJmxImpl
   extends SystemMemberBridgeServerImpl implements ManagedResource {

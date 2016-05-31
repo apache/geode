@@ -453,7 +453,7 @@ public final class FetchKeysMessage extends PartitionMessage
   /**
    * A processor to capture the value returned by {@link 
    * com.gemstone.gemfire.internal.cache.partitioned.GetMessage.GetReplyMessage}
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static class FetchKeysResponse extends PartitionResponse  {
 

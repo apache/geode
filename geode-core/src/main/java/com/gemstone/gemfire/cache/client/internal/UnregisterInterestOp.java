@@ -22,7 +22,7 @@ import com.gemstone.gemfire.internal.cache.tier.InterestType;
 
 /**
  * Does a region unregisterInterest on a server
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class UnregisterInterestOp {
   /**

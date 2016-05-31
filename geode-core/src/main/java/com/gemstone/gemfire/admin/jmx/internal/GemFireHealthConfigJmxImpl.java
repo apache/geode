@@ -43,7 +43,7 @@ import com.gemstone.gemfire.admin.internal.GemFireHealthConfigImpl;
  * @see GemFireHealthJmxImpl#createDistributedSystemHealthConfig
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(justification="This class is deprecated. Also, any further changes so close to the release is inadvisable.") 
 public class GemFireHealthConfigJmxImpl

@@ -93,17 +93,17 @@ public interface Config {
   public boolean sameAs(Config v);
   /**
    * Converts the contents of this config to a property instance.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public Properties toProperties();
   /**
    * Writes this config to the specified file.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public void toFile(File f) throws IOException;
   /**
    * Returns a formatted string suitable for logging.
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public String toLoggerString();
 

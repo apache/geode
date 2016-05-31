@@ -24,7 +24,7 @@ import java.util.List;
 
 /**
  * Does a region unregisterInterestList on a server
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class UnregisterInterestListOp {
   /**

@@ -186,7 +186,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   /**
    * Test method that causes expiration to be suspended until
    * permitExpiration is called.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public final static void suspendExpiration() {
     synchronized (suspendLock) {
@@ -202,7 +202,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   /**
    * Wait until permission is given for expiration to be done.
    * Tests are allowed to suspend expiration.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   private final void waitOnExpirationSuspension() {
       for (;;) {

@@ -28,7 +28,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 /**
  * Tests PartitionedRegion localMaxMemory with Off-Heap memory.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 @SuppressWarnings({ "deprecation", "serial" })
 public class PartitionedRegionLocalMaxMemoryOffHeapDUnitTest extends PartitionedRegionLocalMaxMemoryDUnitTest {

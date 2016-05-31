@@ -23,7 +23,7 @@ package com.vmware.gemfire.tools.pulse.internal.util;
  * Class StringUtils This is utility class for string.
  * 
  * 
- * @since version 7.0.1
+ * @since GemFire version 7.0.1
  */
 public class StringUtils {
   /**

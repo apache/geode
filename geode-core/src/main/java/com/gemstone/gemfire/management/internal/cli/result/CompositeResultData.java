@@ -25,7 +25,7 @@ import com.gemstone.gemfire.management.internal.cli.json.GfJsonObject;
 /**
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CompositeResultData extends AbstractResultData {
   public static String SEPARATOR = "__separator__";
@@ -132,7 +132,7 @@ public class CompositeResultData extends AbstractResultData {
   
   /**
    * 
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static class SectionResultData /*extends AbstractResultData*/ {
     protected GfJsonObject sectionGfJsonObject;

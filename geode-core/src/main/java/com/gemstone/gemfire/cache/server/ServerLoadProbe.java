@@ -49,7 +49,7 @@ import com.gemstone.gemfire.cache.CacheCallback;
  * be called once for each cache server.
  * </p>
  * 
- * @since 5.7
+ * @since GemFire 5.7
  * 
  */
 public interface ServerLoadProbe extends CacheCallback {

@@ -45,7 +45,7 @@ import com.gemstone.gemfire.test.junit.rules.RetryRule;
  * with post-process callbacks in case return values of operations and for
  * notifications along-with failover.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 @Category({ DistributedTest.class, SecurityTest.class })
 public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCase {

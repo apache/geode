@@ -27,7 +27,7 @@ import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
  * GemFire statistics about a {@link DiskRegion}.
  *
  *
- * @since 3.2
+ * @since GemFire 3.2
  */
 public class DiskRegionStats {
 

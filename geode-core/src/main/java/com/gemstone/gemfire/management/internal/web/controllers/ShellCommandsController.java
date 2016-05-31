@@ -55,7 +55,7 @@ import com.gemstone.gemfire.management.internal.web.http.HttpMethod;
  * @see org.springframework.web.bind.annotation.RequestMethod
  * @see org.springframework.web.bind.annotation.RequestParam
  * @see org.springframework.web.bind.annotation.ResponseBody
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Controller("shellController")
 @RequestMapping(AbstractCommandsController.REST_API_VERSION)

@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * A locator discovery callback that does nothing.
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public class LocatorDiscoveryCallbackAdapter implements

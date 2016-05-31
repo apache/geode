@@ -29,7 +29,7 @@ import java.io.*;
 /**
  * A message that is sent to a particular distribution manager to
  * reset its current health status.
- * @since 3.5
+ * @since GemFire 3.5
  */
 public final class ResetHealthStatusRequest extends AdminRequest {
   // instance variables

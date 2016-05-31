@@ -38,7 +38,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 /**
- * @since  8.1
+ * @since GemFire  8.1
  */
 @Category({ DistributedTest.class, SecurityTest.class })
 public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {

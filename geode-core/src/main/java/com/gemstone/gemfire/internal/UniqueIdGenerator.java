@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * <p>
  * Instances of this class are thread safe.
  *
- * @since 5.0.2
+ * @since GemFire 5.0.2
    
 */
 public class UniqueIdGenerator {

@@ -28,7 +28,7 @@ import java.util.Map.Entry;
  * @see CacheSnapshotService
  * @see RegionSnapshotService
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface SnapshotFilter<K, V> extends Serializable {
   /**

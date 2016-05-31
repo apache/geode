@@ -90,7 +90,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * Tests putAll for c/s. Also tests removeAll
  * 
- * @since 5.0.23
+ * @since GemFire 5.0.23
  */
 @SuppressWarnings("serial")
 public class PutAllCSDUnitTest extends ClientServerTestCase {

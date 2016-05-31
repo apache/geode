@@ -29,7 +29,7 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(UnitTest.class)
 public class ProcessControllerFactoryJUnitTest {

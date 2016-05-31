@@ -41,7 +41,7 @@ package com.gemstone.gemfire;
  * </code>
  * 
  * @see CancelException
- * @since 5.1
+ * @since GemFire 5.1
  */
 public abstract class CancelCriterion
 {

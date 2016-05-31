@@ -98,7 +98,7 @@ public class ReplyException extends GemFireException {
    * local stack frames. The remote stack elements have the sender id info. 
    * 
    * @param t Remote exception to fix up
-   * @since 5.1
+   * @since GemFire 5.1
    */
   private void fixUpRemoteEx(Throwable t) {
     if (getSender() == null) {
@@ -174,7 +174,7 @@ public class ReplyException extends GemFireException {
   /**
    * Sets the member that threw the received exception
    * @param sendr the member that threw the exception
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public synchronized void setSenderIfNull(InternalDistributedMember sendr) {
     if (this.sender == null) {
@@ -185,7 +185,7 @@ public class ReplyException extends GemFireException {
   /**
    * Gets the member which threw the exception
    * @return the throwing member
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public synchronized InternalDistributedMember getSender() {
     return this.sender;

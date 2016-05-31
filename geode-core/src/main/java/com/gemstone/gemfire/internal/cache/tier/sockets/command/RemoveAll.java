@@ -16,7 +16,7 @@
  */
 /**
  * Author: dschneider
- * @since 8.1
+ * @since GemFire 8.1
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 

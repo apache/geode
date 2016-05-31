@@ -64,7 +64,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * <code>GatewaySender</code>
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
 public class GatewaySenderEventImpl implements 

@@ -22,7 +22,7 @@ import java.util.Set;
 /**
  * The detailed results of rebalancing a partitioned region.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public interface PartitionRebalanceInfo {
   

@@ -37,7 +37,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Retained;
  * the remote commit code.
  * 
  * 
- * @since 4.0
+ * @since GemFire 4.0
  *  
  */
 public class TXRmtEvent implements TransactionEvent

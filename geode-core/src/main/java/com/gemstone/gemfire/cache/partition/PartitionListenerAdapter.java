@@ -31,7 +31,7 @@ import com.gemstone.gemfire.cache.Region;
  * (dev@geode.incubator.apache.org) before using these APIs.
  *
  * 
- * @since 6.6.2
+ * @since GemFire 6.6.2
  */
 public class PartitionListenerAdapter implements PartitionListener {
 

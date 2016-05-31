@@ -34,7 +34,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Test cases for {@link CacheXmlParser}.
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 @Category(UnitTest.class)
 public class CacheXmlParserJUnitTest {
@@ -53,7 +53,7 @@ public class CacheXmlParserJUnitTest {
    * Asserts that null is returned when no {@link XmlParser} is registered for
    * namespace.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testGetDelegate() {
@@ -82,7 +82,7 @@ public class CacheXmlParserJUnitTest {
   /**
    * Test that {@link CacheXmlParser} falls back to DTD parsing when locale language is not English.
    * 
-   * @since 9.0
+   * @since Geode 1.0
    */
   @Test
   public void testDTDFallbackWithNonEnglishLocal() {
@@ -100,7 +100,7 @@ public class CacheXmlParserJUnitTest {
   /**
    * Get access to {@link CacheXmlParser} protected methods and fields.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private static class TestCacheXmlParser extends CacheXmlParser {
 
@@ -121,7 +121,7 @@ public class CacheXmlParserJUnitTest {
 
     /**
      * @return {@link CacheXmlParser} private delegates field.
-     * @since 8.1
+     * @since GemFire 8.1
      */
     @SuppressWarnings("unchecked")
     public HashMap<String, XmlParser> getDelegates() {
@@ -135,7 +135,7 @@ public class CacheXmlParserJUnitTest {
     /**
      * Access to {@link CacheXmlParser} getDelegate(String) method.
      * 
-     * @since 8.1
+     * @since GemFire 8.1
      */
     public XmlParser getDelegate(final String namespaceUri) {
       try {

@@ -19,7 +19,7 @@ package com.gemstone.gemfire.internal.tcp;
 import com.gemstone.gemfire.GemFireException;
 
 /**
-    @since 3.0
+    @since GemFire 3.0
    
  */
 public class ConnectionException extends GemFireException

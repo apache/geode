@@ -24,7 +24,7 @@ import com.gemstone.gemfire.DataSerializer;
  * It is basically an Enum and could be changed to one once we drop 1.4.
  * The allowed range of these codes is -128..127 inclusive (i.e. byte).
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 public interface DSCODE {
   /**
@@ -41,37 +41,37 @@ public interface DSCODE {
   /**
    * A header byte meaning that the next element in the stream is a
    * {@link DataSerializableFixedID} whose id is a single signed byte.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte DS_FIXED_ID_BYTE = 1;
   /**
    * A header byte meaning that the next element in the stream is a
    * {@link DataSerializableFixedID} whose id is a single signed short.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte DS_FIXED_ID_SHORT = 2;
   /**
    * A header byte meaning that the next element in the stream is a
    * {@link DataSerializableFixedID} whose id is a single signed int.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte DS_FIXED_ID_INT = 3;
   /**
    * A header byte meaning that the next element in the stream is a
    * {@link DataSerializableFixedID} whose id is <code>NO_FIXED_ID</code>.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte DS_NO_FIXED_ID = 4;
 
   /** A header byte meaning that the object was serialized by a user's
    * <code>DataSerializer</code> and the id is encoded with 2 bytes.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte USER_CLASS_2 = 5;
 
   /** A header byte meaning that the object was serialized by a user's
    * <code>DataSerializer</code> and the id is encoded with 4 bytes.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte USER_CLASS_4 = 6;
 
@@ -86,7 +86,7 @@ public interface DSCODE {
 
   /** A header byte meaning that the next element in the stream is a
    * <code>Properties</code>.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte PROPERTIES = 11;
 
@@ -106,11 +106,11 @@ public interface DSCODE {
   public static final byte VOID_TYPE = 25;
 
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte BOOLEAN_ARRAY = 26;
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte CHAR_ARRAY = 27;
   
@@ -119,14 +119,14 @@ public interface DSCODE {
   /** A header byte meaning that a DataSerializable that was
    * registered with the Instantiator was data serialized
    * using four bytes for its ID.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte USER_DATA_SERIALIZABLE_4 = 37;
 
   /** A header byte meaning that a DataSerializable that was
    * registered with the Instantiator was data serialized
    * using two bytes for its ID.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte USER_DATA_SERIALIZABLE_2 = 38;
 
@@ -258,43 +258,43 @@ public interface DSCODE {
 
   /** A header byte meaning that the next element in the stream is a
    * <code>Hashtable</code>.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte HASH_TABLE = 70;
 
   /** A header byte meaning that the next element in the stream is a
    * <code>Vector</code>.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte VECTOR = 71;
 
   /** A header byte meaning that the next element in the stream is a
    * <code>IdentityHashMap</code>.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte IDENTITY_HASH_MAP = 72;
 
   /** A header byte meaning that the next element in the stream is a
    * <code>LinkedHashSet</code>.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte LINKED_HASH_SET = 73;
 
   /** A header byte meaning that the next element in the stream is a
    * <code>Stack</code>.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte STACK = 74;
 
   /** A header byte meaning that the next element in the stream is a
    * <code>TreeMap</code>.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte TREE_MAP = 75;
 
   /** A header byte meaning that the next element in the stream is a
    * <code>TreeSet</code>.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte TREE_SET = 76;
 
@@ -310,7 +310,7 @@ public interface DSCODE {
    * A header byte meaning that the next element in the stream is a
    * buffer of 1-byte characters to turn into a String whose length
    * is > 0xFFFF.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte HUGE_STRING_BYTES = 88;
 
@@ -318,7 +318,7 @@ public interface DSCODE {
    * A header byte meaning that the next element in the stream is a
    * buffer of 2-byte characters to turn into a String whose length
    * is > 0xFFFF.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte HUGE_STRING = 89;
 
@@ -326,7 +326,7 @@ public interface DSCODE {
    * A header byte meaning that the next element in the stream is an
    * SQLFabric DataValueDescriptor array.
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public static final byte SQLF_DVD_ARR = 90;
 
@@ -338,7 +338,7 @@ public interface DSCODE {
    * A header byte meaning that the next element in the stream is an
    * object of SQLFabric XML type.
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final byte SQLF_XML = 92;
 
@@ -346,7 +346,7 @@ public interface DSCODE {
    * A header byte meaning that the next element in the stream is a
    * PdxSerializable object.
    * 
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public static final byte PDX = 93;
   
@@ -354,18 +354,18 @@ public interface DSCODE {
    * A header byte meaning that the next element in the stream is an
    * enum whose type is defined in the pdx registry.
    * 
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public static final byte PDX_ENUM = 94;
 
   /**
    * java.math.BigInteger
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public static final byte BIG_INTEGER = 95;
   /**
    * java.math.BigDecimal
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public static final byte BIG_DECIMAL = 96;
 
@@ -375,37 +375,37 @@ public interface DSCODE {
    * header byte meaning that the next element in the stream is a
    * ConcurrentHashMap object.
    * 
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public static final byte CONCURRENT_HASH_MAP = 97;
 
   /**
    * java.util.UUID
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public static final byte UUID = 98;
   /**
    * java.sql.Timestamp
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public static final byte TIMESTAMP = 99;
   
   /**
    * Used for enums that need to always be deserialized into their enum domain class.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public static final byte GEMFIRE_ENUM = 100;
   /**
    * Used for enums that need to be encoded inline because
    * the pdx registry may not be available.
    * During deserialization this type of enum may be deserialized as a PdxInstance.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public static final byte PDX_INLINE_ENUM = 101;
   
   /**
    * Used for wildcard searches in soplogs with composite keys.
-   * @since 8.0 
+   * @since GemFire 8.0
    */
   public static final byte WILDCARD = 102;
   

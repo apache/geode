@@ -22,7 +22,7 @@ import com.gemstone.gemfire.internal.cache.DataLocationException;
 /**
  * An exception indicating that a PartitionedRegion was found to be Locally
  * Destroyed
- * @since 5.1
+ * @since GemFire 5.1
  *
  */
 public class PRLocallyDestroyedException extends DataLocationException {

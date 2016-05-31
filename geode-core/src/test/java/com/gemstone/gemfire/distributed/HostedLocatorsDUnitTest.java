@@ -48,7 +48,7 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 /**
  * Extracted from LocatorLauncherLocalIntegrationTest.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(DistributedTest.class)
 public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {

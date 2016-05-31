@@ -45,7 +45,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * <a href="http://java.sun.com/j2se/1.4.2/docs/guide/security/jsse/JSSERefGuide.html">
  * http://java.sun.com/j2se/1.4.2/docs/guide/security/jsse/JSSERefGuide.html</a>
  *
- * @since     3.5 (old name was SSLAdaptorServerSocketFactory)
+ * @since GemFire     3.5 (old name was SSLAdaptorServerSocketFactory)
  */
 public class MX4JServerSocketFactory 
 implements mx4j.tools.adaptor.AdaptorServerSocketFactory,

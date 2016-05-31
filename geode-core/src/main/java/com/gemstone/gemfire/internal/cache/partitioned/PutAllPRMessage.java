@@ -80,7 +80,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Retained;
  * a bucket's primary owner.  In addition to updating an entry it is also used to
  * send Partitioned Region event information.
  *
- * @since 6.0
+ * @since GemFire 6.0
  */
 public final class PutAllPRMessage extends PartitionMessageWithDirectReply
 {
@@ -839,7 +839,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
   
   /**
    * A processor to capture the value returned by {@link PutAllPRMessage}
-   * @since 5.8
+   * @since GemFire 5.8
    */
   public static class PutAllResponse extends PartitionResponse {
     private volatile boolean returnValue;

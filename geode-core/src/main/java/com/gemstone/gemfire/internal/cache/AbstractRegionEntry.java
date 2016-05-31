@@ -85,7 +85,7 @@ import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
  * This is the topmost implementation class so common behavior
  * lives here.
  *
- * @since 3.5.1
+ * @since GemFire 3.5.1
  *
  *
  */

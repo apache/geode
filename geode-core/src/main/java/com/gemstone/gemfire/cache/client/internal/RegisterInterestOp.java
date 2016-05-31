@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 /**
  * Does a region registerInterest on a server
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class RegisterInterestOp {
   /**

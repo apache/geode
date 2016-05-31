@@ -67,7 +67,7 @@ import com.gemstone.gemfire.management.internal.cli.util.CLIConsoleBufferUtil;
  * Implementation of the {@link Parser} interface for GemFire SHell (gfsh)
  * requirements.
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class GfshParser implements Parser {
   public static final String LINE_SEPARATOR = System.getProperty("line.separator");

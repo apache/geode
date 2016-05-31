@@ -21,7 +21,7 @@ package com.gemstone.gemfire.management.cli;
  * Service for processing GemFire Command Line Interface (CLI) commands.
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CommandServiceException extends Exception {
 

@@ -25,7 +25,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 /**
  * Factory for getting DiskWriteAttribute objects
  * 
- * @since 5.1
+ * @since GemFire 5.1
  * @deprecated as of 6.5 use {@link DiskStoreFactory} instead
  */
 @Deprecated
@@ -249,7 +249,7 @@ public final class DiskWriteAttributesFactory implements java.io.Serializable
    * @throws IllegalStateException
    *           if the current settings has compaction enabled with maximum Oplog
    *           Size specified as infinite ( represented by 0 ) *
-   * @since 5.1
+   * @since GemFire 5.1
    * @deprecated as of 6.5 use {@link DiskStoreFactory#create} instead
    */
   @Deprecated

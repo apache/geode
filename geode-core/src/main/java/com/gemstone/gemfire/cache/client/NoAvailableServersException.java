@@ -19,7 +19,7 @@ package com.gemstone.gemfire.cache.client;
 
 /**
  * An exception indicating that there are no active servers available to connect to.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class NoAvailableServersException extends ServerConnectivityException {
   private static final long serialVersionUID = -8212446737778234890L;

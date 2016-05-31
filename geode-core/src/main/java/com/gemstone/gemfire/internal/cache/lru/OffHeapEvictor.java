@@ -29,7 +29,7 @@ import com.gemstone.gemfire.internal.offheap.MemoryAllocator;
  * Triggers centralized eviction(asynchronously) when the ResourceManager sends
  * an eviction event for off-heap regions. This is registered with the ResourceManager.
  *
- * @since 9.0
+ * @since Geode 1.0
  */
 public class OffHeapEvictor extends HeapEvictor {
   private static final String EVICTOR_THREAD_GROUP_NAME = "OffHeapEvictorThreadGroup";

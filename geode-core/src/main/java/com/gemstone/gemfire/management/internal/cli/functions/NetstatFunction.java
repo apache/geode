@@ -36,7 +36,7 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 /**
  * Executes 'netstat' OS command & returns the result as compressed bytes.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class NetstatFunction implements Function, InternalEntity {
   private static final long serialVersionUID = 1L;

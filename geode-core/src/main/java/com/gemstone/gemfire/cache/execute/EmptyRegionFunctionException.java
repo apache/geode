@@ -21,7 +21,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 /**
  * Exception to indicate that Region is empty for data aware functions.
  * 
- * @since 6.5
+ * @since GemFire 6.5
  * 
  */
 public class EmptyRegionFunctionException extends FunctionException {

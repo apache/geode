@@ -20,7 +20,7 @@ package com.gemstone.gemfire.internal.i18n;
 /**
  * This class forms the basis of the i18n strategy. Its primary function is to
  * be used as a key to be passed to an instance of StringIdResourceBundle.
- * @since 6.0 
+ * @since GemFire 6.0
  */
 public interface StringId {
   /**

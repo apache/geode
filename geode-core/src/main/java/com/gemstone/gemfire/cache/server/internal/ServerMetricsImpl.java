@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.server.ServerMetrics;
 
 /**
  * Metrics describing the load on a  bridge server.
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public class ServerMetricsImpl implements ServerMetrics {

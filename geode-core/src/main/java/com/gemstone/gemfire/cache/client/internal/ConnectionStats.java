@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.MessageStats;
 
 /**
  * Stats for a client to server {@link Connection}
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class ConnectionStats implements MessageStats {
   // static fields 

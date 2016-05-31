@@ -24,7 +24,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * to connect to a server, but the handshake was rejected.
  *
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class ServerRefusedConnectionException extends OperationAbortedException {
 private static final long serialVersionUID = 1794959225832197946L;

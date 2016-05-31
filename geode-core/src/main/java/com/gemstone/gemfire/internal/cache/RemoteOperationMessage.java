@@ -57,7 +57,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * The base PartitionedRegion message type upon which other messages should be
  * based.
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 public abstract class RemoteOperationMessage extends DistributionMessage implements 
     MessageWithReply, TransactionMessage
@@ -187,7 +187,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
   /**
    * check to see if the cache is closing
    */
-  final public boolean checkCacheClosing(DistributionManager dm) {
+  public boolean checkCacheClosing(DistributionManager dm) {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     // return (cache != null && cache.isClosed());
     return cache == null || cache.isClosed();
@@ -197,11 +197,11 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
    * check to see if the distributed system is closing
    * @return true if the distributed system is closing
    */
-  final public boolean checkDSClosing(DistributionManager dm) {
+  public boolean checkDSClosing(DistributionManager dm) {
     InternalDistributedSystem ds = dm.getSystem();
     return (ds == null || ds.isDisconnecting());
   }
-  
+
   /**
    * Upon receipt of the message, both process the message and send an
    * acknowledgement, not necessarily in that order. Note: Any hang in this
@@ -222,8 +222,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
         thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0.toLocalizedString(dm.getId()));
         return;
       }
-      GemFireCacheImpl gfc = (GemFireCacheImpl)CacheFactory.getInstance(dm.getSystem());
-      r = gfc.getRegionByPathForProcessing(this.regionPath);
+      GemFireCacheImpl gfc = getCache(dm);
+      r = getRegionByPath(gfc);
       if (r == null && failIfRegionMissing()) {
         // if the distributed system is disconnecting, don't send a reply saying
         // the partitioned region can't be found (bug 36585)
@@ -235,13 +235,19 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
       thr = UNHANDLED_EXCEPTION;
       
       // [bruce] r might be null here, so we have to go to the cache instance to get the txmgr
-      TXManagerImpl txMgr = GemFireCacheImpl.getInstance().getTxManager();
-      TXStateProxy tx = null;
-      try {
-        tx = txMgr.masqueradeAs(this);
-        sendReply = operateOnRegion(dm, r, startTime);
-      } finally {
-        txMgr.unmasquerade(tx);
+      TXManagerImpl txMgr = getTXManager(gfc);
+      TXStateProxy tx = txMgr.masqueradeAs(this);
+      if (tx == null) {
+        sendReply = operateOnRegion(dm, r, startTime);        
+      } else {
+        try {
+          TXId txid = new TXId(getMemberToMasqueradeAs(), getTXUniqId());
+          if (!hasTxAlreadyFinished(tx, txMgr, txid)) {
+            sendReply = operateOnRegion(dm, r, startTime);       
+          }  
+        } finally {
+          txMgr.unmasquerade(tx);
+        }
       }
       thr = null;
           
@@ -309,6 +315,22 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
         sendReply(getSender(), this.processorId, dm, rex, r, startTime);
       } 
     }
+  }
+
+  boolean hasTxAlreadyFinished(TXStateProxy tx, TXManagerImpl txMgr, TXId txid) {
+    return txMgr.hasTxAlreadyFinished(tx, txid);
+  }
+
+  TXManagerImpl getTXManager(GemFireCacheImpl cache) {
+    return cache.getTxManager();
+  }
+
+  LocalRegion getRegionByPath(GemFireCacheImpl gfc) {
+    return gfc.getRegionByPathForProcessing(this.regionPath);
+  }
+
+  GemFireCacheImpl getCache(final DistributionManager dm) {
+    return (GemFireCacheImpl)CacheFactory.getInstance(dm.getSystem());
   }
   
   /** Send a generic ReplyMessage.  This is in a method so that subclasses can override the reply message type
@@ -470,7 +492,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
   /**
    * added to support old value to be written on wire.
    * @param value true or false
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void setHasOldValue(boolean value) {
     // override in subclasses which need old value to be serialized.
@@ -506,7 +528,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
    * recipient, capturing any CacheException thrown by the recipient and handle
    * it as an expected exception.
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    * @see #waitForCacheException()
    */
   public static class RemoteOperationResponse extends DirectReplyProcessor {

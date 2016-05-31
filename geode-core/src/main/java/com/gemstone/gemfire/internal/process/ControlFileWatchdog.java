@@ -26,7 +26,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Invokes a ControlRequestHandler when a control file has been created.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 final class ControlFileWatchdog implements Runnable {
   private static final Logger logger = LogService.getLogger();

@@ -25,7 +25,7 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
- * @since 8.1
+ * @since GemFire 8.1
  */
 @Category(UnitTest.class)
 public class CacheXmlVersionJUnitTest {
@@ -36,7 +36,7 @@ public class CacheXmlVersionJUnitTest {
    * "9.0".compareTo("10.0") < 0. Testing that ENUM based solution is ordinal
    * correct for comparisons.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testOrdinal() {
@@ -61,7 +61,7 @@ public class CacheXmlVersionJUnitTest {
    * Test that {@link CacheXmlVersion#valueForVersion(String)} matches the same
    * {@link CacheXmlVersion} via {@link CacheXmlVersion#getVersion()}.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testValueForVersion() {

@@ -55,7 +55,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link AbstractRegion}.
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 @Category(UnitTest.class)
 public class AbstractRegionJUnitTest {

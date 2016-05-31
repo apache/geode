@@ -58,7 +58,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
    * will be in MB for eviction-policy mem else
    * number of entries
    * @see #DEFAULT_CAPACITY
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public int getCapacity(){
     return this.haQueueCapacity ;
@@ -68,7 +68,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
    * will be in MB for eviction-policy mem else
    * number of entries
    * @see #DEFAULT_CAPACITY
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setCapacity(int capacity){
     this.haQueueCapacity = capacity;
@@ -76,7 +76,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   /**
    * Returns the eviction policy that is executed when capacity of the client client queue is reached.
    * @see #DEFAULT_EVICTION_POLICY
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public String getEvictionPolicy(){
     return this.haEvictionPolicy ;
@@ -84,7 +84,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   /**
    * Sets the eviction policy that is executed when capacity of the client client queue is reached.
    * @see #DEFAULT_EVICTION_POLICY
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setEvictionPolicy(String policy){
     this.haEvictionPolicy = policy;
@@ -93,7 +93,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   /**
    * Sets the overflow directory for a client client queue 
    * @param overflowDirectory the overflow directory for a client queue's overflowed entries
-   * @since 5.7
+   * @since GemFire 5.7
    * @deprecated as of prPersistSprint2 
    */
   @Deprecated
@@ -111,7 +111,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
    * overflowed client queue entries.
    * @return the overflow directory for a client queue's
    * overflowed entries
-   * @since 5.7
+   * @since GemFire 5.7
    * @deprecated as of prPersistSprint2 
    */
   @Deprecated
@@ -137,7 +137,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   }
   /**
    * get the diskStoreName for overflow
-   * @since prPersistSprint2
+   * @since GemFire prPersistSprint2
    */
   public String getDiskStoreName() {
     return diskStoreName;
@@ -145,7 +145,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   /**
    * Sets the disk store name for overflow  
    * @param diskStoreName 
-   * @since prPersistSprint2
+   * @since GemFire prPersistSprint2
    */
   public void setDiskStoreName(String diskStoreName) {
     if (hasOverflowDirectory()) {

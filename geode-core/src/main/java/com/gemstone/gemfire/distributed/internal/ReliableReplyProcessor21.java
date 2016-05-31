@@ -25,7 +25,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * This is a reply processor which tracks departed members in order for
  * reliable messaging to determine which recipients departed before replying.
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class ReliableReplyProcessor21 extends ReplyProcessor21 {
 

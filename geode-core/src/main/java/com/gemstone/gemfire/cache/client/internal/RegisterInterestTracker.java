@@ -37,7 +37,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 /**
  * Used to keep track of what interest a client has registered.
  * This code was extracted from the old ConnectionProxyImpl.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class RegisterInterestTracker {
   private static final Logger logger = LogService.getLogger();
@@ -334,7 +334,7 @@ public class RegisterInterestTracker {
    * a client fails over to another server and does register interest based on 
    * this Data structure 
    * 
-   * @since 5.5
+   * @since GemFire 5.5
    *
    */
    static protected class FailoverInterestList {

@@ -24,7 +24,7 @@ import com.gemstone.gemfire.internal.cache.persistence.DiskRegionView;
  * they can be compacted.
  * 
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 
 public interface CompactableOplog {

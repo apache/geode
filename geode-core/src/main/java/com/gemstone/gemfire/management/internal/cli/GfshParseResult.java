@@ -40,7 +40,7 @@ import com.gemstone.gemfire.management.internal.cli.shell.OperationInvoker;
  * command and send it to ManagementMBean via {@link OperationInvoker}.
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class GfshParseResult extends ParseResult {
   private String userInput;

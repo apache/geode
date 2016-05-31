@@ -24,7 +24,7 @@ import java.lang.reflect.Method;
  * The ObjectUtils class is an abstract utility class for working with and invoking methods on Objects.
  * <p/>
  * @see java.lang.Object
- * @since 6.8
+ * @since GemFire 6.8
  */
 @SuppressWarnings("unused")
 public abstract class ObjectUtils {

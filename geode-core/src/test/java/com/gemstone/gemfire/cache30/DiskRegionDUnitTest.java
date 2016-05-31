@@ -60,7 +60,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * written to disk.
  *
  *
- * @since 3.2
+ * @since GemFire 3.2
  */
 public class DiskRegionDUnitTest extends CacheTestCase {
 

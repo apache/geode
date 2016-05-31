@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * </code> 
  * 
  *
- * @since 9.0
+ * @since Geode 1.0
  */
 public class StackTraceCollector {
   /**

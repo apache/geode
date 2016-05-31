@@ -46,7 +46,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * shutdown. The grantor should release all locks which are currently held
  * by the calling member.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();

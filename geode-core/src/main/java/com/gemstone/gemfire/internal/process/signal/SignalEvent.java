@@ -23,7 +23,7 @@ import java.util.EventObject;
  * The SignalEvent class...
  * </p>
  * @see java.util.EventObject
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public class SignalEvent extends EventObject {

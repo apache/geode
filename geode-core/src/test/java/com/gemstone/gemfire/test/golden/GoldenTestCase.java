@@ -30,7 +30,7 @@ import com.gemstone.gemfire.test.process.ProcessWrapper;
 /**
  * Test framework for launching processes and comparing output to expected golden output.
  *
- * @since 4.1.1
+ * @since GemFire 4.1.1
  */
 public abstract class GoldenTestCase {
 

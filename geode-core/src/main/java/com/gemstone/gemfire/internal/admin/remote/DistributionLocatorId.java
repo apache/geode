@@ -236,21 +236,21 @@ public class DistributionLocatorId implements java.io.Serializable {
   }
   
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public boolean isPeerLocator() {
     return this.peerLocator;
   }
   
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public boolean isServerLocator() {
     return this.serverLocator;
   }
 
   /**
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public String getHostnameForClients() {
     return this.hostnameForClients;

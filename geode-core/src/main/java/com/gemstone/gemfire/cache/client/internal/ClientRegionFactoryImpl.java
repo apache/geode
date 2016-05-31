@@ -38,7 +38,7 @@ import com.gemstone.gemfire.internal.cache.UserSpecifiedRegionAttributes;
 /**
  * The distributed system will always default to a loner on a client.
  * 
- * @since 6.5
+ * @since GemFire 6.5
  */
 
 public class ClientRegionFactoryImpl<K,V> implements ClientRegionFactory<K,V>

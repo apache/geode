@@ -21,7 +21,7 @@ import com.gemstone.gemfire.CancelException;
 /**
  * Thrown when a GemFire transaction manager has been terminated.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 
 public class TXManagerCancelledException extends CancelException {

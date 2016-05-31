@@ -23,7 +23,7 @@ import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
  * AccessControlMBean Implementation. This retrieves JMXPrincipal from AccessController
  * and performs authorization for given role using gemfire AccessControl Plugin
  *
- * @since 9.0
+ * @since Geode 1.0
  */
 public class AccessControlMBean implements AccessControlMXBean {
 

@@ -50,7 +50,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * If we can not find enough free memory then all the existing free memory is defragmented.
  * If we still do not have enough to make the allocation an exception is thrown.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 public class MemoryAllocatorImpl implements MemoryAllocator {
 

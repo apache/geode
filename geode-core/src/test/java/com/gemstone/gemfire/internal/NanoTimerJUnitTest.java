@@ -27,7 +27,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for NanoTimer.
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(UnitTest.class)
 public class NanoTimerJUnitTest {

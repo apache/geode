@@ -30,7 +30,7 @@ import java.util.*;
  *
  *
  *
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class PutAllPartialResultException extends GemFireException {
 

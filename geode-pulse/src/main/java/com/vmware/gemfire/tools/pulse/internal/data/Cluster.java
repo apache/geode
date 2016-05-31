@@ -58,7 +58,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Class Cluster This class is the Data Model for the data used for the Pulse
  * Web UI.
  *
- * @since version 7.0.Beta 2012-09-23
+ * @since GemFire version 7.0.Beta 2012-09-23
  */
 public class Cluster extends Thread {
   private static final int POLL_INTERVAL = 5000;

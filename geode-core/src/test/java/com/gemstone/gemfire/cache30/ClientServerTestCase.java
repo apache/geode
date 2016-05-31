@@ -46,7 +46,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * test case was created by refactoring methods from ConnectionPoolDUnitTest into
  * this class.
  *
- * @since 4.2.1
+ * @since GemFire 4.2.1
  */
 public class ClientServerTestCase extends CacheTestCase {
   
@@ -81,7 +81,7 @@ public class ClientServerTestCase extends CacheTestCase {
   /**
    * Starts a bridge server on the given port
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public int startBridgeServer(int port)
     throws IOException {
@@ -105,7 +105,7 @@ public class ClientServerTestCase extends CacheTestCase {
   /**
    * Stops the bridge server that serves up the given cache.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void stopBridgeServers(Cache cache) {
     CacheServer bridge = null;

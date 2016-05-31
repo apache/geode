@@ -28,7 +28,7 @@ import com.gemstone.gemfire.cache.control.ResourceManager;
  * from sending out QueryExecutionLowMemoryExeceptions at the risk of
  * a query exhausting all memory.
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class QueryExecutionLowMemoryException extends CacheRuntimeException {
   

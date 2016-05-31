@@ -413,7 +413,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
    * Tests that configuring a distributed system with a cache-xml-file
    * of "" does not initialize a cache.  See bug 32254.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   @Test
   public void testEmptyCacheXmlFile() throws Exception {

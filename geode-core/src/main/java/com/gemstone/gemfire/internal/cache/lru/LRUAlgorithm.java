@@ -69,7 +69,7 @@ import java.util.*;
  * region will result in an {@link IllegalStateException} being
  * thrown.
  *
- * @since 3.2
+ * @since GemFire 3.2
  */
 public abstract class LRUAlgorithm
   implements CacheCallback, Serializable, Cloneable
@@ -207,7 +207,7 @@ public abstract class LRUAlgorithm
    * This method is an artifact when eviction controllers used to 
    * called capacity controllers and were configured in the cache.xml 
    * file as <code>Declarable</code>
-   * @since 4.1.1
+   * @since GemFire 4.1.1
    */
   public abstract Properties getProperties();
 
@@ -271,7 +271,7 @@ public abstract class LRUAlgorithm
   /**
    * Force subclasses to have a reasonable <code>toString</code>
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   @Override
   public abstract String toString();

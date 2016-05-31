@@ -42,7 +42,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Does a region put (or create) on a server
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class PutOp {
   
@@ -347,7 +347,7 @@ public class PutOp {
      * @throws Exception
      *                 if response could not be processed or we received a
      *                 response with a server exception.
-     * @since 6.1
+     * @since GemFire 6.1
      */
     @Override
     protected Object processResponse(Message msg, Connection con)
@@ -411,7 +411,7 @@ public class PutOp {
      * @throws Exception
      *                 if response could not be processed or we received a
      *                 response with a server exception.
-     * @since 6.1
+     * @since GemFire 6.1
      */
     private final void processAck(Message msg, String opName, Connection con)
         throws Exception

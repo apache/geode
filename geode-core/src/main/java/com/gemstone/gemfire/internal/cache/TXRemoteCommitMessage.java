@@ -133,7 +133,7 @@ public class TXRemoteCommitMessage extends TXMessage {
    * remote commit operation: a commit from a stub to the tx host. This is the
    * reply to a {@link TXRemoteCommitMessage}.
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public static final class TXRemoteCommitReplyMessage extends ReplyMessage
    {
@@ -250,7 +250,7 @@ public class TXRemoteCommitMessage extends TXMessage {
    * A processor to capture the value returned by {@link 
    * com.gemstone.gemfire.internal.cache.TXRemoteCommitMessage.TXRemoteCommitReplyMessage}
    * 
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public static class RemoteCommitResponse extends RemoteOperationResponse
    {

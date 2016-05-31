@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
  * has made to a region.
  *
  * 
- * @since 4.0
+ * @since GemFire 4.0
  * 
  * @see TXManagerImpl
  */

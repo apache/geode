@@ -37,13 +37,14 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import com.jayway.awaitility.Awaitility;
 
 import org.json.JSONException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-@Category(DistributedTest.class)
+@Category({ DistributedTest.class, SecurityTest.class })
 public class MultiUserDUnitTest extends CliCommandTestBase {
 
   @Test

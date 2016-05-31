@@ -94,7 +94,7 @@ import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
  * Contains utility methods for setting up servers/clients for authentication
  * and authorization tests.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public final class SecurityTestUtils {
 

@@ -35,7 +35,7 @@ public class PerformanceTestFunction extends FunctionAdapter {
 
   /**
    *  Application execution implementation
-   *  @since 5.8Beta
+   *  @since GemFire 5.8Beta
    */
   public void execute(FunctionContext context) {
     if (context instanceof RegionFunctionContext) {
@@ -59,7 +59,7 @@ public class PerformanceTestFunction extends FunctionAdapter {
   /**
    * Get the function identifier, used by clients to invoke this function
    * @return an object identifying this function
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public String getId() {
     return getClass().getName();

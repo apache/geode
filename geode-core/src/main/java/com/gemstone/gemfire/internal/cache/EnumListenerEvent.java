@@ -38,7 +38,7 @@ public abstract class EnumListenerEvent
   /**
    * Invoke the correct listener method for this event.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public abstract void dispatchEvent(CacheEvent event, CacheListener listener);
 

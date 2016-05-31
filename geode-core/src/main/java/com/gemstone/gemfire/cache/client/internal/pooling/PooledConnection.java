@@ -35,7 +35,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerQueueStatus;
 /**
  * A connection managed by the connection manager. Keeps track
  * of the current state of the connection. 
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 class PooledConnection implements Connection {

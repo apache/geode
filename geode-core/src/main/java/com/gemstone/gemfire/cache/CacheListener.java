@@ -66,7 +66,7 @@ package com.gemstone.gemfire.cache;
  * @see AttributesMutator#addCacheListener
  * @see AttributesMutator#removeCacheListener
  * @see AttributesMutator#initCacheListeners
- * @since 3.0
+ * @since GemFire 3.0
  */
 public interface CacheListener<K,V> extends CacheCallback {
 
@@ -142,7 +142,7 @@ public interface CacheListener<K,V> extends CacheCallback {
    * @param event the RegionEvent
    *
    * @see Region#clear
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void afterRegionClear(RegionEvent<K,V> event);
   
@@ -157,7 +157,7 @@ public interface CacheListener<K,V> extends CacheCallback {
    *
    * @see Cache#createRegion
    * @see Region#createSubregion
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public void afterRegionCreate(RegionEvent<K,V> event);
 
@@ -167,7 +167,7 @@ public interface CacheListener<K,V> extends CacheCallback {
    * @param event the RegionEvent
    * 
    * @see Cache#readyForEvents
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public void afterRegionLive(RegionEvent<K,V> event);
 }

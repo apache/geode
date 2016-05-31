@@ -25,7 +25,7 @@ import com.gemstone.gemfire.DataSerializer;
  * consuming any memory.
  * <p>This class is not thread safe
  *
- *  @since 5.0.2
+ *  @since GemFire 5.0.2
  * 
  */
 public final class NullDataOutputStream extends OutputStream implements

@@ -69,7 +69,7 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
  * @see DiskRegion
  *
  *
- * @since 3.2
+ * @since GemFire 3.2
  */
 public interface DiskEntry extends RegionEntry {
   /**
@@ -138,7 +138,7 @@ public interface DiskEntry extends RegionEntry {
      * Testing purpose only
      * Get the value of an entry that is on disk without faulting
      * it in and without looking in the io buffer.
-     * @since 3.2.1
+     * @since GemFire 3.2.1
      */
     static Object getValueOnDisk(DiskEntry entry, DiskRegion dr) {
       DiskId id = entry.getDiskId();
@@ -168,7 +168,7 @@ public interface DiskEntry extends RegionEntry {
      * @param entry the entry used to identify the value to fetch
      * @param dr the persistent storage from which to fetch the value
      * @return either null, byte array, or CacheDeserializable
-     * @since gemfire57_hotfix
+     * @since GemFire 57_hotfix
      */
     public static Object getSerializedValueOnDisk(
         DiskEntry entry, DiskRegion dr) {
@@ -199,7 +199,7 @@ public interface DiskEntry extends RegionEntry {
      * This method is used for concurrent map operations and CQ processing
      * 
      * @throws DiskAccessException
-     * @since 5.1
+     * @since GemFire 5.1
      */
     static Object getValueOnDiskOrBuffer(DiskEntry entry, DiskRegion dr, RegionEntryContext context) {
       @Released Object v = getOffHeapValueOnDiskOrBuffer(entry, dr, context);
@@ -252,7 +252,7 @@ public interface DiskEntry extends RegionEntry {
      * Returns false if the entry is INVALID (or LOCAL_INVALID). Determines this
      * without faulting in the value from disk.
      * 
-     * @since 3.2.1
+     * @since GemFire 3.2.1
      */
     /* TODO prpersist - Do we need this method? It was added by the sqlf merge
     static boolean isValid(DiskEntry entry, DiskRegion dr) {
@@ -309,7 +309,7 @@ public interface DiskEntry extends RegionEntry {
     /**
      * Get the value of an entry that is on disk without faulting
      * it in.
-     * @since 3.2.1
+     * @since GemFire 3.2.1
      */
     static boolean fillInValue(DiskEntry de, InitialImageOperation.Entry entry,
                                DiskRegion dr, DM mgr, ByteArrayDataInput in, RegionEntryContext context) {
@@ -1700,7 +1700,7 @@ public interface DiskEntry extends RegionEntry {
     /**
      * Flush an entry that was previously scheduled to be written to disk.
      * @param tag 
-     * @since prPersistSprint1
+     * @since GemFire prPersistSprint1
      */
     public static void doAsyncFlush(DiskEntry entry, LocalRegion region, VersionTag tag) {
       if (region.isThisRegionBeingClosedOrDestroyed()) return;

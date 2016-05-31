@@ -37,7 +37,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * Implementation of SelectResults that extends HashSet
  * If the elements are Structs, then use a StructSet instead.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public final class ResultsSet  extends HashSet implements SelectResults,
  DataSerializableFixedID {

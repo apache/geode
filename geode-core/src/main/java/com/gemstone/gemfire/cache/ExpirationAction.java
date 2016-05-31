@@ -26,7 +26,7 @@ import java.io.*;
  *
  *
  * @see ExpirationAttributes
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class ExpirationAction implements Serializable {
     private static final long serialVersionUID = 658925707882047900L;

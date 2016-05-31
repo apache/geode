@@ -50,7 +50,7 @@ import java.util.Properties;
 /**
  * A <code>ServerHandShakeProcessor</code> verifies the client's version compatibility with server.
  *
- * @since 5.7
+ * @since GemFire 5.7
  */
 
 
@@ -66,7 +66,7 @@ public class ServerHandShakeProcessor {
   /**
    * Test hook for server version support
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static void setSeverVersionForTesting(short ver) {
     currentServerVersion = Version.fromOrdinalOrCurrent(ver);

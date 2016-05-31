@@ -27,7 +27,7 @@ import com.gemstone.gemfire.distributed.internal.ServerLocation;
  * Represents the {@link ServerLocation} of a {@link BucketRegion}
  * 
  * 
- * @since 6.5 
+ * @since GemFire 6.5
  */
 @SuppressWarnings("serial")
 public class BucketServerLocation extends ServerLocation {

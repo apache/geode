@@ -31,7 +31,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionStats;
  * client notifications for each client.
  *
  *
- * @since 4.2
+ * @since GemFire 4.2
  */
 public class CacheClientProxyStats implements MessageStats {
 

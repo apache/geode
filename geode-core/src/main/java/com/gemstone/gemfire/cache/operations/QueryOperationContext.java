@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.operations.OperationContext;
  * Encapsulates a cache query operation for both the pre-operation and
  * post-operation cases.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class QueryOperationContext extends OperationContext {
 

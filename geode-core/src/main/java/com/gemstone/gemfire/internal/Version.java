@@ -35,7 +35,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * deserialization problems.  Client/server code also uses greater-than
  * comparison of ordinals in backward-compatibility checks.
  * 
- * @since 5.7
+ * @since GemFire 5.7
  */
 public final class Version implements Comparable<Version> {
 

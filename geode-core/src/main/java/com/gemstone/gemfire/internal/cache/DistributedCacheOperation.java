@@ -96,21 +96,21 @@ public abstract class DistributedCacheOperation {
    * Deserialization policy: do not deserialize (for byte array, null or cases
    * where the value should stay serialized)
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte DESERIALIZATION_POLICY_NONE = (byte)0;
 
   /**
    * Deserialization policy: deserialize eagerly (for Deltas)
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte DESERIALIZATION_POLICY_EAGER = (byte)1;
 
   /**
    * Deserialization policy: deserialize lazily (for all other objects)
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final byte DESERIALIZATION_POLICY_LAZY = (byte)2;
   
@@ -199,7 +199,7 @@ public abstract class DistributedCacheOperation {
    * false if not. Currently the only case it doesn't need to be is a
    * DestroyRegionOperation doing a "local" destroy.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   boolean isOperationReliable() {
     Operation op = this.event.getOperation();
@@ -957,7 +957,7 @@ public abstract class DistributedCacheOperation {
      * Add the cache event's old value to this message.  We must propagate
      * the old value when the receiver is doing GII and has listeners (CQs)
      * that require the old value.
-     * @since 5.5
+     * @since GemFire 5.5
      * @param event the entry event that contains the old value
      */
     public void appendOldValueToMessage(EntryEventImpl event) {
@@ -979,7 +979,7 @@ public abstract class DistributedCacheOperation {
      * Insert this message's oldValue into the given event.  This fixes
      * bug 38382 by propagating old values with Entry level
      * CacheOperationMessages during initial image transfer
-     * @since 5.5
+     * @since GemFire 5.5
      */
     public void setOldValueInEvent(EntryEventImpl event) {
       CqService cqService = event.getRegion().getCache().getCqService();
@@ -1000,7 +1000,7 @@ public abstract class DistributedCacheOperation {
      * Sets a flag in the message indicating that this message contains delta
      * bytes.
      * 
-     * @since 6.1
+     * @since GemFire 6.1
      */
     protected void setHasDelta(boolean flag) {
       this.hasDelta = flag;
@@ -1015,7 +1015,7 @@ public abstract class DistributedCacheOperation {
     }
 
     /**
-     * @since 4.2.3
+     * @since GemFire 4.2.3
      */
     protected transient boolean regionAllowsConflation;
 

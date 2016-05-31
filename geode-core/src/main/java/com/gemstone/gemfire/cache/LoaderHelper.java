@@ -24,7 +24,7 @@ package com.gemstone.gemfire.cache;
  *
  *
  * @see CacheLoader#load(LoaderHelper) load
- * @since 2.0
+ * @since GemFire 2.0
  */
 public interface LoaderHelper<K,V>
 {

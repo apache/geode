@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @see org.springframework.web.bind.annotation.RequestMethod
  * @see org.springframework.web.bind.annotation.ResponseBody
  * @see com.gemstone.gemfire.management.internal.web.controllers.AbstractCommandsController
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Controller("clusterController")
 @RequestMapping(AbstractCommandsController.REST_API_VERSION)

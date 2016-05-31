@@ -30,7 +30,7 @@ import java.util.UUID;
  * </PRE>
  * <p>Existing DiskStore instances can be found using {@link Cache#findDiskStore(String)}
  *
- * @since 6.5
+ * @since GemFire 6.5
  *
  */
 public interface DiskStore {
@@ -176,7 +176,7 @@ public interface DiskStore {
    * @throws IllegalStateException if the disk store is currently
    * in use by any regions, gateway senders, or a PDX type registry.
    * 
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public void destroy();
   
@@ -186,7 +186,7 @@ public interface DiskStore {
    * disk volume.
    * 
    * @return the warning percent
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public float getDiskUsageWarningPercentage();
 
@@ -195,7 +195,7 @@ public interface DiskStore {
    * disk volume.
    * 
    * @return the critical percent
-   * @since 8.0
+   * @since GemFire 8.0
    */
   public float getDiskUsageCriticalPercentage();
   

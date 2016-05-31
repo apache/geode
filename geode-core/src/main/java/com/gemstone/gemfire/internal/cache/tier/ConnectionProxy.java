@@ -21,14 +21,14 @@ import com.gemstone.gemfire.internal.Version;
 /**
  * Provides the version of the client.
  *
- * @since 2.0.2
+ * @since GemFire 2.0.2
  */
 @SuppressWarnings("deprecation")
 public interface ConnectionProxy {
 
 /**
    * The GFE version of the client.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static final Version VERSION = Version.CURRENT.getGemFireVersion();
 }

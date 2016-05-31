@@ -21,7 +21,7 @@ import com.gemstone.gemfire.GemFireException;
 /**
  * Thrown if the query language syntax is not valid.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 
 public class QueryInvalidException extends GemFireException {

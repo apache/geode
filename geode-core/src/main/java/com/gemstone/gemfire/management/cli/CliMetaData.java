@@ -28,7 +28,7 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
  * An annotation to define additional meta-data for commands.
  *
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
@@ -72,7 +72,7 @@ public @interface CliMetaData {
   // TODO - Abhishek - refactor to group this
 //  /**
 //   *
-//   * @since 8.0
+//   * @since GemFire 8.0
 //   */
 //  @Retention(RetentionPolicy.RUNTIME)
 //  @Target({ ElementType.PARAMETER })
@@ -87,7 +87,7 @@ public @interface CliMetaData {
    * An annotation to define additional meta-data for availability of commands.
    * 
    *
-   * @since 8.0
+   * @since GemFire 8.0
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target({ ElementType.METHOD })

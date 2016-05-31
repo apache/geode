@@ -48,7 +48,7 @@ public interface NetMember extends Comparable<NetMember>
   
   /**
    * return a flag stating whether the member has network partition detection enabled
-   * @since 5.6
+   * @since GemFire 5.6
    */
   public boolean isNetworkPartitionDetectionEnabled();
   
@@ -56,7 +56,7 @@ public interface NetMember extends Comparable<NetMember>
   
   /**
    * return a flag stating whether the member can be the membership coordinator
-   * @since 5.6
+   * @since GemFire 5.6
    */
   public boolean preferredForCoordinator();
   

@@ -264,7 +264,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
    * {@link XmlGenerator}, {@link XmlEntity} as it applies to Extensions.
    * Asserts that Mock Extension is created and altered on region and cache.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testCreateExtensions() throws Exception {
@@ -335,7 +335,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
    * {@link XmlGenerator}, {@link XmlEntity} as it applies to Extensions.
    * Asserts that Mock Entension is created and destroyed on region and cache.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @Test
   public void testDestroyExtensions() throws Exception {

@@ -53,7 +53,7 @@ import java.net.UnknownHostException;
 /**
  * Tests 6.1 cache.xml features.
  * 
- * @since 6.1
+ * @since GemFire 6.1
  */
 
 public class CacheXml61DUnitTest extends CacheXml60DUnitTest {

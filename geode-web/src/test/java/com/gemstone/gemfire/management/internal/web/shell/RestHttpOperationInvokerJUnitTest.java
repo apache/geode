@@ -54,7 +54,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * @see com.gemstone.gemfire.management.internal.web.shell.RestHttpOperationInvoker
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 @Category(UnitTest.class)

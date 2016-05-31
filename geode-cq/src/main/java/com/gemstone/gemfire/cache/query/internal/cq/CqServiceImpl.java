@@ -79,7 +79,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.i18n.StringId;
 
 /**
- * @since 5.5
+ * @since GemFire 5.5
  *
  * Implements the CqService functionality.
  * 

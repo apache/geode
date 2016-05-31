@@ -27,7 +27,7 @@ import com.gemstone.gemfire.DataSerializer;
 /**
  * A response from the TCP server with information
  * about the server
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class InfoResponse implements DataSerializable {
   private static final long serialVersionUID = 6249492407448855032L;

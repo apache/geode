@@ -40,7 +40,7 @@ import com.vmware.gemfire.tools.pulse.internal.util.ConnectionUtil;
  * GemFire's internal serialization codes and byte sequences have been hard
  * coded into this code.
  * 
- * @since version 7.0.Beta 2012-09-23
+ * @since GemFire version 7.0.Beta 2012-09-23
  * 
  */
 public class JmxManagerFinder {

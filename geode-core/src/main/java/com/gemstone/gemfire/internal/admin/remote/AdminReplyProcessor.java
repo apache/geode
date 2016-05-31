@@ -33,7 +33,7 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
  * An <code>AdminReplyProcessor</code> can be {@linkplain #cancel
  * cancelled}.  
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 class AdminReplyProcessor extends ReplyProcessor21 {
 

@@ -32,7 +32,7 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
  * </p>
  * 
  * 
- * @since 6.6
+ * @since GemFire 6.6
  * @see FunctionService
  */
 

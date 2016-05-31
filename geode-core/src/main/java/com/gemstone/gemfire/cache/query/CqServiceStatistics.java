@@ -21,7 +21,7 @@ package com.gemstone.gemfire.cache.query;
  * This class provides methods to get aggregate statistical information 
  * about the CQs of a client.
  *
- * @since 5.5
+ * @since GemFire 5.5
  */
 public interface CqServiceStatistics {
 

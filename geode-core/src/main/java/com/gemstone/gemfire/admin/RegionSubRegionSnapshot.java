@@ -35,7 +35,7 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
  * This class is used by the monitoring tool.
  * 
  * 
- * @since 5.7
+ * @since GemFire 5.7
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public class RegionSubRegionSnapshot implements DataSerializable {

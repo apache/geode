@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests the ClientMembership API including ClientMembershipListener.
  *
- * @since 4.2.1
+ * @since GemFire 4.2.1
  */
 public class ClientMembershipDUnitTest extends ClientServerTestCase {
 

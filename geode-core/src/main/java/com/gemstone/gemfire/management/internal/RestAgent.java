@@ -39,7 +39,7 @@ import java.net.UnknownHostException;
  * The RestAgent is used to start http service in embedded mode on any non
  * manager data node with developer REST APIs service enabled.
  *
- * @since 8.0
+ * @since GemFire 8.0
  */
 public class RestAgent {
   private static final Logger logger = LogService.getLogger();

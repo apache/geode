@@ -41,7 +41,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Wraps spawned {@link java.lang.Process} to capture output and provide interaction with the process.
  *
- * @since 4.1.1
+ * @since GemFire 4.1.1
  */
 public class ProcessWrapper {
   private static final Logger logger = LogService.getLogger();

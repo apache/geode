@@ -24,7 +24,7 @@ package com.gemstone.gemfire.cache.query;
  * The methods allow you to retrieve CQ related information, operate on CQ
  * like execute, stop, close and get the state of the CQ.
  *
- * @since 5.5
+ * @since GemFire 5.5
  */
 
 public interface CqQuery {
@@ -147,7 +147,7 @@ public interface CqQuery {
   /**
    * This allows to check if the CQ is durable.
    * @return boolean true if durable, false otherwise
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public boolean isDurable();
 

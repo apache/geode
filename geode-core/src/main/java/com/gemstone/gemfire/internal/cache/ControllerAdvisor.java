@@ -112,7 +112,7 @@ public class ControllerAdvisor extends GridAdvisor {
      * controller. The reply needs to contain any controller(s) that exist in
      * this vm and any bridge servers that exist in this vm.
      * 
-     * @since 5.7
+     * @since GemFire 5.7
      */
     @Override
     public void processIncoming(DistributionManager dm, String adviseePath,

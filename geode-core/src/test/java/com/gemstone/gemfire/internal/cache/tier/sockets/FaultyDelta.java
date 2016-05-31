@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 /**
  * Faulty delta implementation, raising ArrayIndexOutOfBound exception as
  * fromDelta reads incorrect sequence then wrote by toDelta
- * @since 6.1
+ * @since GemFire 6.1
  */
 public class FaultyDelta implements Delta, DataSerializable {
 

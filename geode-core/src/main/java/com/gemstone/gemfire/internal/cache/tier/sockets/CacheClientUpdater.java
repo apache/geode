@@ -102,7 +102,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * {@linkplain com.gemstone.gemfire.cache.Region#localInvalidate(Object) invalidates}
  * the local cache based on the contents of those messages.
  * 
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class CacheClientUpdater extends Thread implements ClientUpdater,
     DisconnectListener {
@@ -1698,7 +1698,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
           
           // extract the eventId and verify if it is a duplicate event
           // if it is a duplicate event, ignore
-          // @since 5.1
+          // @since GemFire 5.1
           int numberOfParts = _message.getNumberOfParts();
           eid = _message.getPart(numberOfParts - 1);
           // TODO the message handling methods also deserialized the eventID - inefficient
@@ -1926,7 +1926,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater,
   /**
    * Stats for a CacheClientUpdater. Currently the only thing measured
    * are incoming bytes on the wire
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static class CCUStats implements MessageStats {
     // static fields 

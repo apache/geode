@@ -30,7 +30,7 @@ import com.gemstone.gemfire.test.dunit.VM;
  * Tests the declarative caching functionality introduced in the GemFire
  * 5.0 (i.e. congo1). Don't be confused by the 45 in my name :-)
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 
 public class CacheXml51DUnitTest extends CacheXml45DUnitTest

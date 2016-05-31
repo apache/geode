@@ -70,7 +70,7 @@ public abstract class JUnit3DistributedTestCase extends TestCase implements Dist
    * <p>Note: "final" was removed so that WANTestBase can override this method.
    * This was part of the xd offheap merge.
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public final InternalDistributedSystem getSystem(final Properties props) {
     return delegate.getSystem(props);
@@ -86,7 +86,7 @@ public abstract class JUnit3DistributedTestCase extends TestCase implements Dist
    *
    * @see #getSystem(Properties)
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public final InternalDistributedSystem getSystem() {
     return delegate.getSystem();
@@ -107,7 +107,7 @@ public abstract class JUnit3DistributedTestCase extends TestCase implements Dist
   /**
    * Returns a loner distributed system that isn't connected to other vms.
    *
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public final InternalDistributedSystem getLonerSystem() {
     return delegate.getLonerSystem();
@@ -125,7 +125,7 @@ public abstract class JUnit3DistributedTestCase extends TestCase implements Dist
    * {@link DistributedSystem}. Unless overridden, this method will return an
    * empty {@code Properties} object.
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public Properties getDistributedSystemProperties() {
     return delegate.defaultGetDistributedSystemProperties();

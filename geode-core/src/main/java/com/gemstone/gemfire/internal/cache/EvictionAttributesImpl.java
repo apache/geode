@@ -48,7 +48,7 @@ import com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController;
  * @see com.gemstone.gemfire.cache.RegionAttributes
  * @see com.gemstone.gemfire.cache.AttributesMutator
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public final class EvictionAttributesImpl extends EvictionAttributes 
   implements EvictionAttributesMutator
@@ -224,7 +224,7 @@ public final class EvictionAttributesImpl extends EvictionAttributes
   /**
    * Returns true if this object uses a LIFO algorithm
    * 
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public boolean isLIFO() {
     return this.algorithm.isLIFO();

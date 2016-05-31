@@ -21,7 +21,7 @@ import java.io.Serializable;
 /**
  * Describes where the value of a configuration attribute came from.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class ConfigSource implements Serializable {
   private static final long serialVersionUID = -4097017272431018553L;

@@ -43,7 +43,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * correctly on it after various other operations have been applied on it
  * (Including destroy when entry is a {@link Tombstone}).
  * 
- * @since 7.0.1
+ * @since GemFire 7.0.1
  *
  */
 @Category(IntegrationTest.class)

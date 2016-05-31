@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.Region;
  * Gemfire Context passed to <code>PartitionResolver</code> to compute the
  * data location
  * 
- * @since 5.8
+ * @since GemFire 5.8
  * 
  */
 public class EntryOperationImpl implements EntryOperation {
@@ -64,7 +64,7 @@ public class EntryOperationImpl implements EntryOperation {
    * Return a description of the operation that triggered this event.
    * 
    * @return the operation that triggered this event.
-   * @since 5.8Beta
+   * @since GemFire 5.8Beta
    */
   public Operation getOperation() {
     return this.operation;

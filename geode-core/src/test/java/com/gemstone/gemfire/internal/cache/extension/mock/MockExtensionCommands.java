@@ -47,7 +47,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * Mock Extension gfsh commands.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public class MockExtensionCommands implements CommandMarker {
 
@@ -77,7 +77,7 @@ public class MockExtensionCommands implements CommandMarker {
    *          {@link String} value to set on
    *          {@link MockRegionExtension#setValue(String)}.
    * @return {@link Result}
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @CliCommand(value = CREATE_MOCK_REGION_EXTENSION)
   @CliMetaData(writesToSharedConfiguration = true)
@@ -98,7 +98,7 @@ public class MockExtensionCommands implements CommandMarker {
    *          {@link String} value to set on
    *          {@link MockRegionExtension#setValue(String)}.
    * @return {@link Result}
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @CliCommand(value = ALTER_MOCK_REGION_EXTENSION)
   @CliMetaData(writesToSharedConfiguration = true)
@@ -117,7 +117,7 @@ public class MockExtensionCommands implements CommandMarker {
    *          {@link Region} name on which to create {@link MockRegionExtension}
    *          .
    * @return {@link Result}
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @CliCommand(value = DESTROY_MOCK_REGION_EXTENSION)
   @CliMetaData(writesToSharedConfiguration = true)
@@ -134,7 +134,7 @@ public class MockExtensionCommands implements CommandMarker {
    *          {@link String} value to set on
    *          {@link MockCacheExtension#setValue(String)}.
    * @return {@link Result}
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @CliCommand(value = CREATE_MOCK_CACHE_EXTENSION)
   @CliMetaData(writesToSharedConfiguration = true)
@@ -150,7 +150,7 @@ public class MockExtensionCommands implements CommandMarker {
    *          {@link String} value to set on
    *          {@link MockCacheExtension#setValue(String)}.
    * @return {@link Result}
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @CliCommand(value = ALTER_MOCK_CACHE_EXTENSION)
   @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
@@ -163,7 +163,7 @@ public class MockExtensionCommands implements CommandMarker {
    * Destroy a {@link MockCacheExtension}.
    * 
    * @return {@link Result}
-   * @since 8.1
+   * @since GemFire 8.1
    */
   @CliCommand(value = DESTROY_MOCK_CACHE_EXTENSION)
   @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
@@ -184,7 +184,7 @@ public class MockExtensionCommands implements CommandMarker {
    * @param args
    *          Arguments to pass to function.
    * @return {@link TabularResultData}
-   * @since 8.1
+   * @since GemFire 8.1
    */
   protected Result executeFunctionOnAllMembersTabulateResultPersist(final Function function, final boolean addXmlElement, final Object... args) {
     final Cache cache = CacheFactory.getAnyInstance();

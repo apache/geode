@@ -84,7 +84,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
       // we will create RegionDirectories on the fly when data comes in
       HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(getFieldNames());
-      repositoryManager = new PartitionedRepositoryManager(dataRegion, (PartitionedRegion)fileRegion, (PartitionedRegion)chunkRegion, mapper, analyzer);
+      repositoryManager = new PartitionedRepositoryManager(dataRegion, (PartitionedRegion)fileRegion, (PartitionedRegion)chunkRegion, mapper, analyzer, this.stats);
       
       // create AEQ, AEQ listener and specify the listener to repositoryManager
       createAEQ(dataRegion);

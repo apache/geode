@@ -24,7 +24,7 @@ import com.gemstone.gemfire.distributed.internal.membership.*;
  * be sent asynchronously through the transport layer.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public interface MessageWithReply {
 

@@ -26,7 +26,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * Unit test for {@link PivotalEntityResolver} and
  * {@link DefaultEntityResolver2}.
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 @Category(UnitTest.class)
 public class PivotalEntityResolverJUnitTest extends AbstractEntityResolverTest {

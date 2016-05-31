@@ -25,7 +25,7 @@ package com.gemstone.gemfire;
  * is reserved for an older class that extends {@link java.lang.RuntimeException}.
  * 
  * @see com.gemstone.gemfire.GemFireException
- * @since 5.1
+ * @since GemFire 5.1
  */
 public abstract class GemFireCheckedException extends Exception {
 

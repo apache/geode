@@ -134,21 +134,21 @@ public class EntryEventImpl
   /**
    * This field will be null unless this event is used for a putAll operation.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected transient DistributedPutAllOperation putAllOp;
 
   /**
    * This field will be null unless this event is used for a removeAll operation.
    *
-   * @since 8.1
+   * @since GemFire 8.1
    */
   protected transient DistributedRemoveAllOperation removeAllOp;
 
   /**
    * The member that originated this event
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected DistributedMember distributedMember;
 
@@ -164,7 +164,7 @@ public class EntryEventImpl
   /**
    * The originating membershipId of this event.
    *
-   * @since 5.1
+   * @since GemFire 5.1
    */
   protected ClientProxyMembershipID context = null;
   
@@ -443,7 +443,7 @@ public class EntryEventImpl
    * Creates a PutAllEvent given the distributed operation, the region, and the
    * entry data.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   @Retained
   static EntryEventImpl createPutAllEvent(
@@ -1192,7 +1192,7 @@ public class EntryEventImpl
    * Returns the value of the EntryEventImpl field.
    * This is for internal use only. Customers should always call
    * {@link #getCallbackArgument}
-   * @since 5.5 
+   * @since GemFire 5.5
    */
   public Object getRawCallbackArgument() {
     return this.keyInfo.getCallbackArg();
@@ -1518,7 +1518,7 @@ public class EntryEventImpl
 
   /**
    * Forces this entry's new value to be in serialized form.
-   * @since 5.0.2
+   * @since GemFire 5.0.2
    */
   public void makeSerializedNewValue() {
     makeSerializedNewValue(false);
@@ -1687,7 +1687,7 @@ public class EntryEventImpl
   /**
    * If we are currently a create op then turn us into an update
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   void makeUpdate()
   {
@@ -1697,7 +1697,7 @@ public class EntryEventImpl
   /**
    * If we are currently an update op then turn us into a create
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   void makeCreate()
   {
@@ -2580,7 +2580,7 @@ public class EntryEventImpl
   
   /**
    * Return true if this event came from a server by the client doing a get.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public boolean isFromServer() {
     return testEventFlag(EventFlags.FLAG_FROM_SERVER);
@@ -2590,7 +2590,7 @@ public class EntryEventImpl
    * comes from a server while the affected region entry is not locked.  Among
    * other things it causes version conflict checks to be performed to protect
    * against overwriting a newer version of the entry.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setFromServer(boolean v) {
     setEventFlag(EventFlags.FLAG_FROM_SERVER, v);

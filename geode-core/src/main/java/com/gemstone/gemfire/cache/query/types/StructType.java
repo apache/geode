@@ -22,7 +22,7 @@ package com.gemstone.gemfire.cache.query.types;
  * Describes the field names and types for each field in a {@link
  * com.gemstone.gemfire.cache.query.Struct}.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public interface StructType extends ObjectType {
   

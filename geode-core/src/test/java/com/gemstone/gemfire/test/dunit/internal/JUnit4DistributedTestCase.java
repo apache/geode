@@ -153,7 +153,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    * <p>Note: "final" was removed so that WANTestBase can override this method.
    * This was part of the xd offheap merge.
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public final InternalDistributedSystem getSystem(final Properties props) {
     // Setting the default disk store name is now done in setUp
@@ -224,7 +224,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    *
    * @see #getSystem(Properties)
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public final InternalDistributedSystem getSystem() {
     return getSystem(getDistributedSystemProperties());
@@ -245,7 +245,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   /**
    * Returns a loner distributed system that isn't connected to other vms.
    *
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public final InternalDistributedSystem getLonerSystem() {
     Properties props = getDistributedSystemProperties();
@@ -268,7 +268,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    *
    * <p>Override this as needed. Default implementation returns empty {@code Properties}.
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   @Override
   public Properties getDistributedSystemProperties() {

@@ -18,7 +18,7 @@ package com.gemstone.gemfire.distributed.internal;
 
 /** Sizeable objects have a getSize() method that returns the approximate size of the object.
 
-    @since 5.0
+    @since GemFire 5.0
  */
 
 public interface Sizeable {

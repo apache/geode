@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
  * A wrapper around an object array for storing values in index data structure
  * with minimal set of operations supported and the maximum size of 128 elements  
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class IndexElemArray implements Iterable, Collection {
 

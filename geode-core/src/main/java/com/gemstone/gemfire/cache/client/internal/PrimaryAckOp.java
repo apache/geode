@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Send the primary server acknowledgement on the events this client
  * has received and processed from it.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class PrimaryAckOp {
   /**

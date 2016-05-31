@@ -80,7 +80,7 @@ import java.io.*;
  * @see DataSerializer
  * @see Instantiator
  *
- * @since 3.5 */
+ * @since GemFire 3.5 */
 public interface DataSerializable extends Serializable {
 
   /**

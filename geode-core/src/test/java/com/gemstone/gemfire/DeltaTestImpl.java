@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegionLocalMaxMemoryDUnitT
 /**
  * Sample test class which implements Delta.
  * 
- * @since 6.1
+ * @since GemFire 6.1
  */
 public class DeltaTestImpl implements DataSerializable, Delta {
   

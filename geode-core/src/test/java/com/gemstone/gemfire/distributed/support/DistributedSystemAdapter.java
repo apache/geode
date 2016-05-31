@@ -36,7 +36,7 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
  * abstract methods when testing.
  * <p/>
  * @see com.gemstone.gemfire.distributed.DistributedSystem
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public abstract class DistributedSystemAdapter extends DistributedSystem {

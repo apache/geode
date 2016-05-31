@@ -50,7 +50,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests remote (client/server) query execution.
  *
- * @since 5.0.1
+ * @since GemFire 5.0.1
  */
 public class QueryUsingPoolDUnitTest extends CacheTestCase {
 

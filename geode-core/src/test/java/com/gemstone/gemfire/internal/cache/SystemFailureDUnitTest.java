@@ -39,7 +39,7 @@ import junit.framework.Assert;
  * This class tests the response of GemFire to various
  * occurrences of {@link VirtualMachineError}
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   

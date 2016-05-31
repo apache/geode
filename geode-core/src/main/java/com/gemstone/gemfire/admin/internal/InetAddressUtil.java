@@ -34,7 +34,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * Provides static utilities for manipulating, validating, and converting
  * InetAddresses and host strings.
  *
- * @since     3.5
+ * @since GemFire     3.5
  */
 @Deprecated
 public class InetAddressUtil {

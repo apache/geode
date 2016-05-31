@@ -22,7 +22,7 @@ package com.gemstone.gemfire.internal.lang;
  * order property of a Comparable type.
  * <p/>
  * @see java.lang.Comparable
- * @since 6.8
+ * @since GemFire 6.8
  */
 public interface Orderable<T extends Comparable<T>> {
 

@@ -28,7 +28,7 @@ package com.gemstone.gemfire.internal.statistics;
  * instead of a constructor with many similar parameters (ie, multiple Strings
  * which could easily be interposed with one another).
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class StatArchiveDescriptor {
 

@@ -67,7 +67,7 @@ import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
  *  {@link ConcurrentParallelGatewaySenderQueue}.
  * The dispatcher could be either GatewaySenderEventRemoteDispatcher or GatewaySenderEventCallbackDispatcher.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
 public abstract class AbstractGatewaySenderEventProcessor extends Thread {

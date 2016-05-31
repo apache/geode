@@ -21,7 +21,7 @@ import com.gemstone.gemfire.admin.GemFireHealth;
 
 /**
  * Represents a thread that monitor the health of the vm it lives in.
- * @since 3.5
+ * @since GemFire 3.5
  */
 public interface HealthMonitor {
   /**

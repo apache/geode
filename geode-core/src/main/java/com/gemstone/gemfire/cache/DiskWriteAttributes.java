@@ -26,7 +26,7 @@ package com.gemstone.gemfire.cache;
  * @see Region#writeToDisk
  *
  *
- * @since 3.2
+ * @since GemFire 3.2
  * @deprecated as of 6.5 use {@link DiskStore} instead
  */
 @Deprecated

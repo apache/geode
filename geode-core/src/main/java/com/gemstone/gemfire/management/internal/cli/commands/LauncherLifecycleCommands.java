@@ -16,6 +16,40 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import java.awt.Desktop;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EmptyStackException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.Query;
+import javax.management.QueryExp;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
+
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.operations.OperationContext;
@@ -76,45 +110,11 @@ import com.gemstone.gemfire.management.internal.configuration.domain.SharedConfi
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.security.AuthenticationFailedException;
+
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
-
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.Query;
-import javax.management.QueryExp;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
-import java.awt.*;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EmptyStackException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The LauncherLifecycleCommands class encapsulates all GemFire launcher commands for GemFire tools (like starting
@@ -124,7 +124,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @see com.gemstone.gemfire.distributed.ServerLauncher
  * @see com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSupport
  * @see com.gemstone.gemfire.management.internal.cli.shell.Gfsh
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public class LauncherLifecycleCommands extends AbstractCommandsSupport {
@@ -597,6 +597,11 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
         getGfsh().logToFile(ignore.getMessage(), ignore);
         jmxManagerAuthEnabled = true;
         break; // no need to continue after SecurityException
+      }
+      catch (AuthenticationFailedException ignore) {
+        getGfsh().logToFile(ignore.getMessage(), ignore);
+        jmxManagerAuthEnabled = true;
+        break; // no need to continue after AuthenticationFailedException
       }
       catch (SSLException ignore) {
         if (ignore instanceof SSLHandshakeException) {

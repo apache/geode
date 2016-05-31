@@ -57,7 +57,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * Commands for deploying, un-deploying and listing files deployed using the command line shell.
  * <p/>
  * @see com.gemstone.gemfire.management.internal.cli.commands.AbstractCommandsSupport
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class DeployCommands extends AbstractCommandsSupport implements CommandMarker {
 

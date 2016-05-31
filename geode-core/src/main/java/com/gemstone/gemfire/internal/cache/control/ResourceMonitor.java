@@ -24,7 +24,7 @@ import com.gemstone.gemfire.internal.cache.control.ResourceAdvisor.ResourceManag
  * Implemented by classes that the ResourceManager creates in order to monitor a
  * specific type of resource (heap memory, off-heap memory, disk, etc.).
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 interface ResourceMonitor {
 

@@ -23,7 +23,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 /**
- * @since 7.1
+ * @since GemFire 7.1
  */
 public class VersionRequest implements DataSerializable {
 

@@ -22,7 +22,7 @@ import com.gemstone.gemfire.GemFireException;
  * This exception is thrown when two nodes are defined with same primary
  * partitions
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 public class DuplicatePrimaryPartitionException extends GemFireException {
 

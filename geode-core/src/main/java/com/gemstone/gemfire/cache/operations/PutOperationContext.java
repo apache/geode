@@ -24,7 +24,7 @@ import com.gemstone.gemfire.cache.Region;
  * and value objects for for both the pre-operation case and for post-operation
  * updates.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class PutOperationContext extends KeyValueOperationContext {
 
@@ -61,7 +61,7 @@ public class PutOperationContext extends KeyValueOperationContext {
    * @param isObject
    *                true when the value is an object; false when it is a raw
    *                byte array
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public PutOperationContext(Object key,Object value,
       boolean isObject) {
@@ -81,7 +81,7 @@ public class PutOperationContext extends KeyValueOperationContext {
    *                byte array
    * @param postOperation
    *                true if the context is at the time of sending updates
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public PutOperationContext(Object key, Object value,
       boolean isObject, boolean postOperation) {
@@ -104,7 +104,7 @@ public class PutOperationContext extends KeyValueOperationContext {
    *                unknown
    * @param isPostOperation
    *                true if the context is at the time of sending updates
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public PutOperationContext(Object key, Object value,
       boolean isObject, byte opType, boolean isPostOperation) {

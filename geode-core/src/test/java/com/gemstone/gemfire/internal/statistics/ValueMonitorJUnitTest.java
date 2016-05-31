@@ -48,7 +48,7 @@ import junit.framework.TestCase;
 /**
  * Integration test for the SampleCollector class.
  *   
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(IntegrationTest.class)
 public class ValueMonitorJUnitTest {

@@ -33,7 +33,7 @@ import java.io.*;
  * Note that {@link DataSerializer#fromData} is always called on the instance
  * returned from <code>newInstance(DataInput)</code>.
  *
- * @since 5.1
+ * @since GemFire 5.1
  */
 public abstract class CanonicalInstantiator extends Instantiator {
   /**
@@ -78,7 +78,7 @@ public abstract class CanonicalInstantiator extends Instantiator {
    * @param in the data input that can be read to decide what instance to create.
    * @return the new "empty" instance.
    * @throws IOException if a read from <code>in</code> fails.
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public abstract DataSerializable newInstance(DataInput in)
     throws IOException;

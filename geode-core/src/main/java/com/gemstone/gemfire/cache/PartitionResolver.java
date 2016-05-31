@@ -57,7 +57,7 @@ package com.gemstone.gemfire.cache;
  * </p>
  * 
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public interface PartitionResolver<K,V> extends CacheCallback {
 

@@ -35,7 +35,7 @@ import com.gemstone.gemfire.internal.util.StopWatch;
 /**
  * Integration TestCase for StatSampler.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public abstract class StatSamplerTestCase {
   protected static final Logger logger = LogService.getLogger();

@@ -42,7 +42,7 @@ package com.gemstone.gemfire.cache;
  * @see AttributesFactory#setCacheWriter
  * @see RegionAttributes#getCacheWriter
  * @see AttributesMutator#setCacheWriter
- * @since 3.0
+ * @since GemFire 3.0
  */
 public interface CacheWriter<K,V> extends CacheCallback {
 

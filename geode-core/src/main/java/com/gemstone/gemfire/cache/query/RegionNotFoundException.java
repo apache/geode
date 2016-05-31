@@ -19,7 +19,7 @@ package com.gemstone.gemfire.cache.query;
 /**
  * Thrown if a region referenced by name in a query cannot be found.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 
 public class RegionNotFoundException extends NameResolutionException {

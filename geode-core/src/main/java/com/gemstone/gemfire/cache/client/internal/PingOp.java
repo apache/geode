@@ -23,7 +23,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 
 /**
  * Ping a server to see if it is still alive.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class PingOp {
   /**

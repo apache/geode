@@ -44,7 +44,7 @@ import java.util.Set;
  * This class is used to hold the information about the servers and
  * their Filters (CQs and Interest List) that are satisfied by the 
  * cache update operation.
- * @since 6.5
+ * @since GemFire 6.5
  */
 public class FilterRoutingInfo implements VersionedDataSerializable {
   

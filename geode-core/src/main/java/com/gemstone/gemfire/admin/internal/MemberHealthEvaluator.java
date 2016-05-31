@@ -37,7 +37,7 @@ import java.util.*;
  * @see DMStats
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 /**
  *

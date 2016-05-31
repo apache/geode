@@ -34,7 +34,7 @@ import com.gemstone.gemfire.cache.Declarable;
  * this class is <code>Declarable</code>, we can describe instances of
  * it in a GemFire <code>cache.xml</code> file.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class Portfolio implements Declarable, Serializable {
   private int id;  /* id is used as the entry key and is stored in the entry */

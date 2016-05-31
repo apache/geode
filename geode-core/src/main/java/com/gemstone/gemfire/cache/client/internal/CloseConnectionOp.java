@@ -23,7 +23,7 @@ import java.io.EOFException;
 
 /**
  * Tell a server that a connection is being closed
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class CloseConnectionOp {
   /**

@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.*;
  * Tests region reliability defined by MembershipAttributes using 
  * DISTRIBUTED_ACK scope.
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class RegionReliabilityDistAckDUnitTest extends RegionReliabilityTestCase {
 

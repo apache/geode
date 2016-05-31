@@ -57,7 +57,7 @@ package com.gemstone.gemfire.management.internal.cli.result;
  * </literal>
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 import java.util.ArrayList;
 import java.util.List;
@@ -172,7 +172,7 @@ public class TableBuilder {
    * when built will automatically be set to the length of the longest value in
    * the column.
    * 
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static class RowGroup {
     private final Table table;

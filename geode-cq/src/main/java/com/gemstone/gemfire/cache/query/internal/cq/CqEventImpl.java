@@ -21,7 +21,7 @@ package com.gemstone.gemfire.cache.query.internal.cq;
  * Interface for CqEvent. Offers methods to get information from
  * CqEvent.
  *
- * @since 5.5
+ * @since GemFire 5.5
  */
 
 import com.gemstone.gemfire.InvalidDeltaException;

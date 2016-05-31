@@ -49,7 +49,7 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  * operation only if the authorization field in {@link ObjectWithAuthz} object
  * allows the current principal.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class FilterPostAuthorization implements AccessControl {
 

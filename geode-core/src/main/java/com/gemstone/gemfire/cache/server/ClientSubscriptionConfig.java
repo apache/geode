@@ -63,7 +63,7 @@ package com.gemstone.gemfire.cache.server;
  * @see #getCapacity
  * 
  * 
- * @since 5.7
+ * @since GemFire 5.7
  */
 
 public interface ClientSubscriptionConfig {
@@ -88,7 +88,7 @@ public interface ClientSubscriptionConfig {
    * will be in MB for eviction-policy <b>mem</b> else
    * number of entries
    * @see #DEFAULT_CAPACITY
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public int getCapacity();
 
@@ -97,28 +97,28 @@ public interface ClientSubscriptionConfig {
    * will be in MB for eviction-policy <b>mem</b> else
    * number of entries
    * @see #DEFAULT_CAPACITY
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setCapacity(int capacity);
 
   /**
    * Returns the eviction policy that is executed when capacity of the client queue is reached.
    * @see #DEFAULT_EVICTION_POLICY
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public String getEvictionPolicy();
 
   /**
    * Sets the eviction policy that is executed when capacity of the client queue is reached.
    * @see #DEFAULT_EVICTION_POLICY
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void setEvictionPolicy(String policy);
 
   /**
    * Sets the overflow directory for a client queue 
    * @param overflowDirectory the overflow directory for a client queue's overflowed entries
-   * @since 5.7
+   * @since GemFire 5.7
    * @deprecated as of 6.5 use {@link #setDiskStoreName(String)} instead
    */
   public void setOverflowDirectory(String overflowDirectory);
@@ -128,20 +128,20 @@ public interface ClientSubscriptionConfig {
    * overflowed client queue entries.
    * @return the overflow directory for a client queue's
    * overflowed entries
-   * @since 5.7
+   * @since GemFire 5.7
    * @deprecated as of 6.5 use {@link #getDiskStoreName} instead
    */
   public String getOverflowDirectory();
   /**
    * Sets the disk store name for overflow  
    * @param diskStoreName 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public void setDiskStoreName(String diskStoreName);
 
   /**
    * get the diskStoreName for overflow
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public String getDiskStoreName();
 }

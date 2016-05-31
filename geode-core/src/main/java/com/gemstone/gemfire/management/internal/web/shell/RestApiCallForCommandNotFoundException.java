@@ -20,7 +20,7 @@ package com.gemstone.gemfire.management.internal.web.shell;
  * The NoRestApiCallForCommandException class...
  * <p/>
  * @see java.lang.RuntimeException
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public class RestApiCallForCommandNotFoundException extends RuntimeException {

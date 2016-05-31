@@ -26,7 +26,7 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
  * The CommandRequest class encapsulates information pertaining to the command the user entered in Gfsh.
  * <p/>
  * @see com.gemstone.gemfire.management.internal.cli.GfshParseResult
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public class CommandRequest {

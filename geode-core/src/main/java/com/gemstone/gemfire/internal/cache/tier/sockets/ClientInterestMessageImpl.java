@@ -32,7 +32,7 @@ import java.io.*;
  * client.
  *
  *
- * @since 5.6
+ * @since GemFire 5.6
  */
 public class ClientInterestMessageImpl implements ClientMessage {
 
@@ -62,7 +62,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
   /**
    * Whether the create or update events for this <code>ClientMessage</code>
    * is sent as an invalidate
-   * @since 6.0.3
+   * @since GemFire 6.0.3
    */
   private boolean forUpdatesAsInvalidates;
   

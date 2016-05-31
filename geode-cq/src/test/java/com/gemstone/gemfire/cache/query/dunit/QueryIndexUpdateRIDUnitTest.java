@@ -576,7 +576,7 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
    * deserializeValues and notifyBySubscription to serve up the
    * given region.
    *
-   * @since 6.6
+   * @since GemFire 6.6
    */
   public void startBridgeServer(int port, boolean notifyBySubscription)
   throws IOException {

@@ -26,7 +26,7 @@ import com.gemstone.gemfire.SerializationException;
  * or deserialization of a PDX. In most cases consult the cause for
  * a description of the problem.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 public class PdxSerializationException extends SerializationException {
 

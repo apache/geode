@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * An implementation of {@link Compressor} for Google's Snappy compression
  * codec. Utilizes the xerial java-snappy wrapper.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public final class SnappyCompressor implements Compressor, Serializable {
   private static final long serialVersionUID = 496609875302446099L;

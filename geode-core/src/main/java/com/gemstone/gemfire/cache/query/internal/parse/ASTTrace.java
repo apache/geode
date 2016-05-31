@@ -23,7 +23,7 @@ import com.gemstone.gemfire.cache.query.internal.QCompiler;
 
 /**
  * 
- * @since 6.6.2
+ * @since GemFire 6.6.2
  *
  */
 public class ASTTrace extends GemFireAST {

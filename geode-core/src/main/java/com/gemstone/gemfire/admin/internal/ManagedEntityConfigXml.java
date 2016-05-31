@@ -27,7 +27,7 @@ import java.io.*;
  * com.gemstone.gemfire.admin.DistributedSystemConfig} and vice versa.
  * It provides helper methods and constants.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
 

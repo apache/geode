@@ -212,30 +212,30 @@ public class HandShake implements ClientHandShake
 
   public static final String PRIVATE_KEY_PASSWD_PROP = "security-server-kspasswd";
 
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   public static final byte CONFLATION_DEFAULT = 0;
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   public static final byte CONFLATION_ON = 1;
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   public static final byte CONFLATION_OFF = 2;
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   private byte clientConflation = CONFLATION_DEFAULT;
 
-  /** @since 6.0.3
+  /** @since GemFire 6.0.3
    *  List of per client property override bits.
    */
   private byte[] overrides = null;
   
   /**
    * Test hooks for per client conflation
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static byte clientConflationForTesting = 0;
   public static boolean setClientConflationForTesting = false;
 
   /**
    * Test hook for client version support
-   * @since 5.7
+   * @since GemFire 5.7
    */
   private static Version currentClientVersion = ConnectionProxy.VERSION;
   /**

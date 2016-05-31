@@ -29,7 +29,7 @@ import com.gemstone.gemfire.management.internal.cli.parser.preprocessor.Preproce
  * The methods herein always ensure that the syntax is proper before performing
  * the desired operation
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class ParserUtils {
   public static String[] split(String input, String splitAround) {

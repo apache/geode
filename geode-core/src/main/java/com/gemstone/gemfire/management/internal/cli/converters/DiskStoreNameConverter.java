@@ -34,7 +34,7 @@ import org.springframework.shell.core.MethodTarget;
 /**
  * 
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class DiskStoreNameConverter implements Converter<String> {
 

@@ -34,7 +34,7 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
  * <code>META-INF/services/com.gemstone.gemfire.internal.cache.xmlcache.XmlParser</code>
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public interface XmlParser extends ContentHandler {
 
@@ -42,7 +42,7 @@ public interface XmlParser extends ContentHandler {
    * Get XML Namespace this parser is responsible for.
    * 
    * @return XML Namespace.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   String getNamspaceUri();
 
@@ -51,7 +51,7 @@ public interface XmlParser extends ContentHandler {
    * 
    * @param stack
    *          current XML config stack.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   void setStack(Stack<Object> stack);
 }

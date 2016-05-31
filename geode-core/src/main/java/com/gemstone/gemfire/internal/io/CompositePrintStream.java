@@ -21,7 +21,7 @@ import java.io.PrintStream;
 import java.util.Iterator;
 
 /**
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CompositePrintStream extends PrintStream {
 

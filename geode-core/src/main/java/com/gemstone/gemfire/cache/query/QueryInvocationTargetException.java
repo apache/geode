@@ -19,7 +19,7 @@ package com.gemstone.gemfire.cache.query;
 /**
  * Thrown if an exception is thrown when a method is invoked during query execution.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 
 public class QueryInvocationTargetException extends QueryException {

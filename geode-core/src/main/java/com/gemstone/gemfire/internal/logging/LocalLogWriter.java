@@ -86,7 +86,7 @@ public class LocalLogWriter extends PureLogWriter {
      *
      * @throws IllegalArgumentException if level is not in legal range
      *
-     * @since 3.5
+     * @since GemFire 3.5
      */
     public LocalLogWriter(int level, PrintWriter logWriter,
                           String connectionName) {

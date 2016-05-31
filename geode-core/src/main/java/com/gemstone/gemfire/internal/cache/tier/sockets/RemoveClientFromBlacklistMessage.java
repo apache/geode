@@ -36,7 +36,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 /**
  * Distribution message for dropping client from blacklist.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  *
  */
 public class RemoveClientFromBlacklistMessage extends PooledDistributionMessage {

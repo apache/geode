@@ -37,7 +37,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  *
  * @see AlertLevel
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public final class AlertLevelChangeMessage extends SerialDistributionMessage {
   

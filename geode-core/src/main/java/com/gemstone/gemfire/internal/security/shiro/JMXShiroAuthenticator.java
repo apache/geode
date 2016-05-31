@@ -30,6 +30,7 @@ import javax.security.auth.Subject;
 
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import com.gemstone.gemfire.security.AuthenticationFailedException;
 
 /**
  * this will make JMX authentication to use Shiro for Authentication
@@ -48,7 +49,7 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
       username = ((Properties) credentials).getProperty(ResourceConstants.USER_NAME);
       password = ((Properties) credentials).getProperty(ResourceConstants.PASSWORD);
     } else {
-      throw new SecurityException(WRONGE_CREDENTIALS_MESSAGE);
+      throw new AuthenticationFailedException(MISSING_CREDENTIALS_MESSAGE);
     }
 
     org.apache.shiro.subject.Subject shiroSubject = GeodeSecurityUtil.login(username, password);

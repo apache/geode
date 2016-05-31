@@ -23,7 +23,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 /**
  * Identifies specific lock grantor member and version.
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 public class LockGrantorId {
 

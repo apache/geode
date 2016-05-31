@@ -51,7 +51,7 @@ public class User implements PdxSerializable {
 }
  * </PRE>
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 
 public interface PdxSerializable {

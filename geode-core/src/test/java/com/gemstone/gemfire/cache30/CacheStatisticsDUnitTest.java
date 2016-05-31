@@ -34,7 +34,7 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * Region} and a {@link com.gemstone.gemfire.cache.Region.Entry}.
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public class CacheStatisticsDUnitTest extends CacheTestCase {
 

@@ -71,7 +71,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
  * Called from the client and execute client to server
  * requests against servers. Handles retrying to different servers,
  * and marking servers dead if we get exception from them.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class OpExecutorImpl implements ExecutablePool {
   private static final Logger logger = LogService.getLogger();

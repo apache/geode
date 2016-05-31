@@ -20,7 +20,7 @@ package com.gemstone.gemfire.pdx;
  * Thrown if "check-portability" is enabled and an attempt is made to
  * pdx serialize a class that is not portable to non-java platforms.
  * 
- * @since 6.6.2
+ * @since GemFire 6.6.2
  */
 public class NonPortableClassException extends PdxSerializationException {
 

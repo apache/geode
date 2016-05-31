@@ -37,7 +37,7 @@ import com.gemstone.gemfire.security.templates.PKCSAuthenticator;
  * Encapsulates obtaining valid and invalid credentials. Implementations will be
  * for different kinds of authentication schemes.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public abstract class CredentialGenerator {
 
@@ -194,7 +194,7 @@ public abstract class CredentialGenerator {
    * <p>All security dunit tests will automagically start testing the new
    * implementation after this.
    *
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public static final class ClassCode {
 

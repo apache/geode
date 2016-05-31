@@ -34,7 +34,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Tests PoolManager
- * @since 5.7
+ * @since GemFire 5.7
  */
 @Category(IntegrationTest.class)
 public class PoolManagerJUnitTest {

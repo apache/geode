@@ -46,7 +46,7 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  * pre-operation phase to add an integer denoting which <code>Principal</code>s
  * would be allowed to get that object.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class FilterPreAuthorization implements AccessControl {
 

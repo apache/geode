@@ -23,7 +23,7 @@ package com.gemstone.gemfire.cache;
  *
  *
  *
- * @since 3.0
+ * @since GemFire 3.0
  */
 public abstract class OperationAbortedException extends CacheRuntimeException {
   

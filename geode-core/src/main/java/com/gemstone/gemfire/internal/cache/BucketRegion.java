@@ -103,7 +103,7 @@ import com.gemstone.gemfire.internal.concurrent.AtomicLong5;
  * Primary election for a BucketRegion can be found in the 
  * {@link com.gemstone.gemfire.internal.cache.BucketAdvisor} class
  * 
- * @since 5.1
+ * @since GemFire 5.1
  *
  */
 public class BucketRegion extends DistributedRegion
@@ -1327,7 +1327,7 @@ implements Bucket
    * Return true if this bucket has been destroyed.
    * Don't bother checking to see if the PR that owns this bucket was destroyed;
    * that has already been checked.
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public boolean isBucketDestroyed() {
     return super.isDestroyed();
@@ -2044,7 +2044,7 @@ implements Bucket
 
   /* (non-Javadoc)
    * @see com.gemstone.gemfire.internal.cache.partitioned.Bucket#getBucketOwners()
-   * @since gemfire59poc
+   * @since GemFire 5.9
    */
   public Set getBucketOwners() {
     return getBucketAdvisor().getProxyBucketRegion().getBucketOwners();    

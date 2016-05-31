@@ -26,7 +26,7 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
  * Base interface for {@link MsgStreamer} and {@link MsgStreamerList} to send a
  * message over a list of connections to one or more peers.
  * 
- * @since 7.1
+ * @since GemFire 7.1
  */
 public interface BaseMsgStreamer {
 

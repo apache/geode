@@ -35,7 +35,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for the StatMonitorHandler and its inner classes.
  *   
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(UnitTest.class)
 public class StatMonitorHandlerJUnitTest {
@@ -203,7 +203,7 @@ public class StatMonitorHandlerJUnitTest {
   }
   
   /**
-   * @since 7.0
+   * @since GemFire 7.0
    */
   private static class TestStatisticsMonitor extends StatisticsMonitor {
     private volatile long timeStamp;

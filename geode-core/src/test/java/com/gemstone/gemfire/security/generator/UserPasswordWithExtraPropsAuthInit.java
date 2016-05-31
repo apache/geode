@@ -31,7 +31,7 @@ import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
  * properties provided in getCredential props argument will also be 
  * copied as new credentials.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class UserPasswordWithExtraPropsAuthInit extends UserPasswordAuthInit {
 

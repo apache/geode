@@ -41,7 +41,7 @@ import com.gemstone.gemfire.internal.lang.StringUtils;
  * @see java.lang.Comparable
  * @see java.lang.Iterable
  * @see java.util.UUID
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public class DiskStoreDetails implements Comparable<DiskStoreDetails>, MutableIdentifiable<UUID>, Iterable<DiskStoreDetails.DiskDirDetails>, Serializable {

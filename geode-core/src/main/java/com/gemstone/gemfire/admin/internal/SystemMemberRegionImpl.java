@@ -28,7 +28,7 @@ import java.util.*;
 /**
  * View of a region in a GemFire system member's cache.
  *
- * @since     3.5
+ * @since GemFire     3.5
  */
 public class SystemMemberRegionImpl implements SystemMemberRegion {
 
@@ -236,7 +236,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
    * 
    * @return String[] the region's <code>CacheListeners</code> descriptions as a
    *         String array
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public String[] getCacheListeners() {
     Object[] o = this.ra.getCacheListeners();

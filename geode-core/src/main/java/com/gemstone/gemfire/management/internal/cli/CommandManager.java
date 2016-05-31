@@ -57,7 +57,7 @@ import com.gemstone.gemfire.management.internal.cli.util.ClasspathScanLoadHelper
 
 /**
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CommandManager {
   //1. Load Commands, availability indicators - Take from GfshParser
@@ -148,7 +148,7 @@ public class CommandManager {
   /**
    * Loads commands via {@link ServiceLoader} from {@link ClassPathLoader}. 
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private void loadPluginCommands() {
     final Iterator<CommandMarker> iterator  = ServiceLoader.load(CommandMarker.class, ClassPathLoader.getLatest().asClassLoader()).iterator();

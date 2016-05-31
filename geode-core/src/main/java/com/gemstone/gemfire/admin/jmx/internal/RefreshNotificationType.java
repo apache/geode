@@ -19,7 +19,7 @@ package com.gemstone.gemfire.admin.jmx.internal;
 /**
  * Type-safe definition for refresh notifications.
  *
- * @since     3.5
+ * @since GemFire     3.5
  *
  */
 public class RefreshNotificationType implements java.io.Serializable {

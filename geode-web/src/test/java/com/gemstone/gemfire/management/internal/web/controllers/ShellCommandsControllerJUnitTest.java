@@ -53,7 +53,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * <p/>
  * @see org.junit.Test
  * @see com.gemstone.gemfire.management.internal.web.controllers.ShellCommandsController
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(UnitTest.class)
 public class ShellCommandsControllerJUnitTest {

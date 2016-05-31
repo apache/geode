@@ -41,7 +41,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  * Make sure entry expiration does not happen during gii for bug 35214
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class Bug35214DUnitTest extends CacheTestCase {
 

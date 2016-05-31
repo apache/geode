@@ -28,7 +28,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
  * Checks that minimum system requirements are met.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public final class MinimumSystemRequirements {
 
@@ -45,7 +45,7 @@ public final class MinimumSystemRequirements {
    * 
    * @see #checkAndLog()
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static void assertLogAndExit() {
     if (!checkAndLog()) {
@@ -58,7 +58,7 @@ public final class MinimumSystemRequirements {
    * 
    * @return true if minimum system requirements met, otherwise false.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public static boolean checkAndLog() {
     boolean minimumSystemRequirementsMet = true;
@@ -77,7 +77,7 @@ public final class MinimumSystemRequirements {
    * 
    * @return true if minimum system requirements met, otherwise false.
    * 
-   * @since 8.1
+   * @since GemFire 8.1
    */
   private static boolean checkJavaVersion() {
     if (SystemUtils.isJavaVersionAtLeast(JAVA_VERSION)) {

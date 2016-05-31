@@ -37,7 +37,7 @@ import org.junit.experimental.categories.Category;
  * Tests the functionality of the {@link CopyHelper#copy} method
  * and the builtin copy-on-get Cache functions.
  *
- * @since 4.0
+ * @since GemFire 4.0
  *
  */
 @Category(IntegrationTest.class)

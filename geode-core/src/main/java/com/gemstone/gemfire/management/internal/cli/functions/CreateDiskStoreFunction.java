@@ -20,7 +20,7 @@ package com.gemstone.gemfire.management.internal.cli.functions;
  * Function used by the 'create disk-store' gfsh command to create a disk store
  * on each member.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 import org.apache.logging.log4j.Logger;
 

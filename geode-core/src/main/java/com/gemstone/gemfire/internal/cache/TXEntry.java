@@ -265,7 +265,7 @@ public class TXEntry implements Region.Entry
   }
 
   /**
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public Object setValue(Object arg0)
   {

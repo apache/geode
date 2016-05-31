@@ -46,7 +46,7 @@ import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.cache.client.internal.SenderProxy;
 
 /**
- * @since 7.0
+ * @since GemFire 7.0
  *
  */
 public class GatewaySenderEventRemoteDispatcher implements

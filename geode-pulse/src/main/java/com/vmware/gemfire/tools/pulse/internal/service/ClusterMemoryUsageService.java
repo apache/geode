@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletRequest;
  * This class contains implementations of getting Cluster's overall current
  * memory usage details and its trend over the time.
  * 
- * @since version 7.5
+ * @since GemFire version 7.5
  */
 
 @Component

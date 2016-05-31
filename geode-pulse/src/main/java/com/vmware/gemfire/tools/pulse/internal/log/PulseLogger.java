@@ -38,7 +38,7 @@ import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
  * PulseLogger is the custom logger class for Pulse Web Application. It logs
  * messages to the file in custom format.
  * 
- * @since version 7.0.Beta
+ * @since GemFire version 7.0.Beta
  */
 public class PulseLogger {
 
@@ -105,7 +105,7 @@ public class PulseLogger {
    * MessageFormatter is the custom formatter class for formatting the log
    * messages.
    * 
-   * @since version 7.0.Beta 2012-09-23
+   * @since GemFire version 7.0.Beta 2012-09-23
    */
   private static class MessageFormatter extends Formatter {
 

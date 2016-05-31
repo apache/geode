@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.admin.GemFireVM;
  * reflectively (for MBean operations) on instances of its
  * subclasses. 
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
   implements InternalManagedEntity {

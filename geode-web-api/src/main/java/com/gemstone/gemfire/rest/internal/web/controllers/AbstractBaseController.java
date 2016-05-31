@@ -89,7 +89,7 @@ import org.json.JSONTokener;
 
 /**
  * AbstractBaseController class contains common functionalities required for other controllers. 
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 @SuppressWarnings("unused")

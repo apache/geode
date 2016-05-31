@@ -32,7 +32,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * cases while a {@link LogWriter#warning(String)} level logging is done for
  * the {@code warning} case.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class XmlErrorHandler implements ErrorHandler {
 

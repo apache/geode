@@ -61,7 +61,7 @@ import java.util.Properties;
  * See {@link ReflectionBasedAutoSerializer#reconfigure(String...) reconfigure}
  * for additional details on the format of the parameter string.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  */
 public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable {
 
@@ -149,7 +149,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * 
    * @param patterns the patterns which are matched against domain class
    *  names to determine whether they should be serialized
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public ReflectionBasedAutoSerializer(String... patterns) {
     this(false, patterns);
@@ -187,7 +187,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    *  non-java languages.
    * @param patterns the patterns which are matched against domain class
    *  names to determine whether they should be serialized
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public ReflectionBasedAutoSerializer(boolean checkPortability, String... patterns) {
     // We allow this class to escape its constructor so that our delegate can
@@ -259,7 +259,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * order of the patterns is not relevant.
    * 
    * @param patterns the definitions to apply
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public final void reconfigure(String... patterns) {
     reconfigure(false, patterns);
@@ -295,7 +295,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * @param checkPortability if <code>true</code> then an serialization done by
    * this serializer will throw an exception if the object it not portable to
    * non-java languages.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public final void reconfigure(boolean checkPortability, String... patterns) {
     this.manager.reconfigure(checkPortability, patterns);
@@ -385,7 +385,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * will be remembered and used the next time the same class is seen.
    * @param clazz the class that is being considered for auto serialization.
    * @return true if instances of the class should be auto serialized; false if not.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public boolean isClassAutoSerialized(Class<?> clazz) {
     return this.manager.defaultIsClassAutoSerialized(clazz);
@@ -410,7 +410,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    *   Note that this field may have been inherited from a super class by this class.
    *   If you want to find the class that declared this field use {@link Field#getDeclaringClass()}.
    * @return true if the field should be serialized as a pdx field; false if it should be ignored.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public boolean isFieldIncluded(Field f, Class<?> clazz) {
     return this.manager.defaultIsFieldIncluded(f, clazz);
@@ -431,7 +431,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    *   Note that this field may have been inherited from a super class by this class.
    *   If you want to find the class that declared this field use {@link Field#getDeclaringClass()}.
    * @return the name of the field
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public String getFieldName(Field f, Class<?> clazz) {
     return f.getName();
@@ -455,7 +455,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    *   Note that this field may have been inherited from a super class by this class.
    *   If you want to find the class that declared this field use {@link Field#getDeclaringClass()}.
    * @return true if the field should be marked as an identity field; false if not.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public boolean isIdentityField(Field f, Class<?> clazz) {
     return this.manager.defaultIsIdentityField(f, clazz);
@@ -476,7 +476,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    *   Note that this field may have been inherited from a super class by this class.
    *   If you want to find the class that declared this field use {@link Field#getDeclaringClass()}.
    * @return the pdx field type of the given domain class field.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public FieldType getFieldType(Field f, Class<?> clazz) {
     return this.manager.defaultGetFieldType(f, clazz);
@@ -498,7 +498,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    *   If you want to find the class that declared this field use {@link Field#getDeclaringClass()}.
    * @return true if the {@link #writeTransform} and {@link #readTransform} need to be called
    * when serializing and deserializing this field's value.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public boolean transformFieldValue(Field f, Class<?> clazz) {
     return false;
@@ -516,7 +516,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * @param originalValue the value of the field that was read from the domain object. 
    * @return the actual value to write for this field. Return <code>originalValue</code>
    *   if you decide not to transform the value. 
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public Object writeTransform(Field f, Class<?> clazz, Object originalValue) {
     return originalValue;
@@ -534,7 +534,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * @param serializedValue the value of the field that was serialized for this field.
    * @return the actual value to write for this field. Return <code>serializedValue</code>
    *   if you decide not to transform the value. 
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public Object readTransform(Field f, Class<?> clazz, Object serializedValue) {
     return serializedValue;
@@ -542,14 +542,14 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
   /**
    * Returns the cache that this serializer is installed on.
    * Returns null if it is not installed.
-   * @since 6.6.2
+   * @since GemFire 6.6.2
    */
   public final RegionService getRegionService() {
     return this.manager.getRegionService();
   }
   /**
    * For internal use only.
-   * @since 8.2
+   * @since GemFire 8.2
    */
   public final Object getManager() {
     // The result is not AutoSerializableManager because

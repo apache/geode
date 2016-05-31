@@ -26,7 +26,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link ArrayUtils}.
  *
- * @since 7.x
+ * @since GemFire 7.x
  */
 @Category(UnitTest.class)
 public class ArrayUtilsJUnitTest {

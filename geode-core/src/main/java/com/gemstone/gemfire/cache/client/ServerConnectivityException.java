@@ -22,7 +22,7 @@ import com.gemstone.gemfire.GemFireException;
  * A generic exception indicating that a failure has happened while communicating
  * with a gemfire server. Subclasses of this exception provide more detail
  * on specific failures.
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class ServerConnectivityException extends GemFireException {
 private static final long serialVersionUID = -5205644901262051330L;

@@ -43,7 +43,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * A disk region that is created when doing offline validation.
- * @since prPersistSprint3
+ * @since GemFire prPersistSprint3
  */
 public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStore {
   protected ValidatingDiskRegion(DiskStoreImpl ds,

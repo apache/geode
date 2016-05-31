@@ -49,7 +49,7 @@ import com.gemstone.gemfire.test.junit.categories.SecurityTest;
  * pre-operation callbacks. It also checks for authorization in case of
  * failover.
  *
- * @since 5.5
+ * @since GemFire 5.5
  */
 @Category({ DistributedTest.class, SecurityTest.class })
 public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {

@@ -65,7 +65,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Released;
  * A Replicate Region removeAll message.  Meant to be sent only to
  * the peer who hosts transactional data.
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectReply
   {

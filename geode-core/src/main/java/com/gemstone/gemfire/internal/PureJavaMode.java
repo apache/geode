@@ -27,7 +27,7 @@ public final class PureJavaMode {
   public final static String PURE_MODE_PROPERTY = "gemfire.pureJavaMode";
   /**
    * System property to set to true enable debug information regarding native library loading.
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public final static String LOADLIBRARY_DEBUG_PROPERTY = "gemfire.loadLibrary.debug";
 

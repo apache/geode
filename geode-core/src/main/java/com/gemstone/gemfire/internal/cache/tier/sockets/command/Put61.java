@@ -47,7 +47,7 @@ import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 
 /**
- * @since 6.1 
+ * @since GemFire 6.1
  */
 public class Put61 extends BaseCommand {
 

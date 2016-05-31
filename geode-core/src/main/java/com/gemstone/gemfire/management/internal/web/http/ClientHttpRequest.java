@@ -63,7 +63,7 @@ import org.springframework.web.util.UriTemplate;
  * @see org.springframework.util.MultiValueMap
  * @see org.springframework.web.util.UriComponentsBuilder
  * @see org.springframework.web.util.UriTemplate
- * @since 8.0
+ * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public class ClientHttpRequest implements HttpRequest {

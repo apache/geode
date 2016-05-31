@@ -28,7 +28,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 /**
  * Tests Global Region with ConcurrencyChecksEnabled and OffHeap memory.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 @SuppressWarnings({ "deprecation", "serial" })
 public class GlobalRegionCCEOffHeapDUnitTest extends GlobalRegionCCEDUnitTest {

@@ -54,7 +54,7 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * Test class for Partitioned Region and CQs
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
 
@@ -1588,7 +1588,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
    * deserializeValues and notifyBySubscription to serve up the
    * given region.
    *
-   * @since 5.5
+   * @since GemFire 5.5
    */
   protected void startBridgeServer(int port, boolean notifyBySubscription)
   throws IOException {

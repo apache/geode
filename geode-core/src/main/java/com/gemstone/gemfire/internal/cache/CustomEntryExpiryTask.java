@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.ExpirationAttributes;
  * Remembers the expiration attributes returned from
  * the customer's CustomExpiry callback, if any.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  *
  */
 public class CustomEntryExpiryTask extends EntryExpiryTask {  

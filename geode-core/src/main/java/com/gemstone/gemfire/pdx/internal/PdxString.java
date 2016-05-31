@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.tcp.ByteBufferInputStream;
  * A class that references the String offset in PdxInstance
  * Used as Index keys for PdxInstances and 
  * query evaluation for PdxInstances
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class PdxString implements Comparable<PdxString>, Sendable {
   private final byte[] bytes;

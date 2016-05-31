@@ -37,7 +37,7 @@ import java.util.Properties;
  * @see Region#writeToDisk
  * 
  * 
- * @since 5.1
+ * @since GemFire 5.1
  */
 @SuppressWarnings({"deprecation", "unused"})
 public final class DiskWriteAttributesImpl implements DiskWriteAttributes
@@ -100,7 +100,7 @@ public final class DiskWriteAttributesImpl implements DiskWriteAttributes
   /**
    * Default disk directory size in megabytes
    * 
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public static final int DEFAULT_DISK_DIR_SIZE = DiskStoreFactory.DEFAULT_DISK_DIR_SIZE;
 

@@ -19,9 +19,10 @@ package com.gemstone.gemfire.management.internal.security;
 
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
 import org.junit.experimental.categories.Category;
 
-@Category(IntegrationTest.class)
+@Category({ IntegrationTest.class, SecurityTest.class })
 public class GfshCommandsOverHttpSecurityTest extends GfshCommandsSecurityTest {
   public GfshCommandsOverHttpSecurityTest(){
     gfshConnection = new GfshShellConnectionRule(jmxPort, httpPort, true);

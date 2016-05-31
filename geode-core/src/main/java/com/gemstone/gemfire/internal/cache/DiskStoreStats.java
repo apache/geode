@@ -25,7 +25,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionStats;
  * GemFire statistics about a {@link DiskStoreImpl}.
  *
  *
- * @since prPersistSprint2
+ * @since GemFire prPersistSprint2
  */
 public class DiskStoreStats {
 

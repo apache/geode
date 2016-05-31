@@ -22,7 +22,7 @@ import java.util.*;
 /**
  * Contains exceptions generated when attempting to process a commit operation.
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 public class CommitReplyException extends ReplyException {
 private static final long serialVersionUID = -7711083075296622596L;

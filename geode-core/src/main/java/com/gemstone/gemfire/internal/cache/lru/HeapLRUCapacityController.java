@@ -57,7 +57,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * options improve the behavior of the <code>HeapLRUCapacityController</code>.
  * 
  * 
- * @since 3.2
+ * @since GemFire 3.2
  */
 @SuppressWarnings("synthetic-access")
 public class HeapLRUCapacityController extends LRUAlgorithm {
@@ -173,7 +173,7 @@ public class HeapLRUCapacityController extends LRUAlgorithm {
   /**
    * Returns a brief description of this eviction controller.
    * 
-   * @since 4.0
+   * @since GemFire 4.0
    */
   @Override
   public String toString() {

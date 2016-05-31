@@ -26,7 +26,7 @@ import java.io.Serializable;
  * in a HashMap(OR HashSet) for calculation of hash-code for
  * custom objects and primitive types.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  *
  */
 public interface HashingStrategy extends Serializable {

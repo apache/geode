@@ -48,7 +48,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  * The PdxBasedCrudController class serving REST Requests related to the REST CRUD operation on region
  * <p/>
  * @see org.springframework.stereotype.Controller
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 @Controller("pdxCrudController")

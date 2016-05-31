@@ -27,7 +27,7 @@ import com.gemstone.gemfire.cache.execute.ResultCollector;
 /**
  * Internal interface for SQLFabric. It has internal methods specific for SQLFabric
  * 
- * @since 5.8LA
+ * @since GemFire 5.8LA
  * 
  */
 public interface InternalExecution extends Execution {
@@ -73,7 +73,7 @@ public interface InternalExecution extends Execution {
    * @throws UnsupportedOperationException
    *           if not called after
    *           {@link FunctionService#onRegion(com.gemstone.gemfire.cache.Region)}
-   * @since 9.0
+   * @since Geode 1.0
    */
   public InternalExecution withBucketFilter(Set<Integer> bucketIDs);
   

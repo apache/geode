@@ -58,7 +58,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
  * A standard {@link ReplyMessage} is used to send the reply, however any exception that it carries
  * is ignored, preventing interuption after sending this message.
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public final class DestroyPartitionedRegionMessage extends PartitionMessage
 {
@@ -225,7 +225,7 @@ public final class DestroyPartitionedRegionMessage extends PartitionMessage
   /**
    * The response on which to wait for all the replies.  This response ignores any exceptions received from the "far side"
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   static public class DestroyPartitionedRegionResponse extends ReplyProcessor21
   {

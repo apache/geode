@@ -57,7 +57,7 @@ import org.junit.runners.Parameterized;
 /**
  * Integration tests for launching a Locator in a forked process.
  *
- * @since 8.0
+ * @since GemFire 8.0
  */
 @Category(IntegrationTest.class)
 @RunWith(Parameterized.class)

@@ -54,7 +54,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Integration tests for GemFireStatSampler.
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(IntegrationTest.class)
 public class GemFireStatSamplerJUnitTest extends StatSamplerTestCase {

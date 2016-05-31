@@ -19,7 +19,7 @@ package com.gemstone.gemfire.cache.query;
 
 /**
  * Thrown if a CQ by this name already exists on this client 
- * @since 5.5
+ * @since GemFire 5.5
  */
 
 public class CqExistsException extends QueryException {

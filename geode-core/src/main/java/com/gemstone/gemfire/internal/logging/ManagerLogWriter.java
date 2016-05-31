@@ -43,7 +43,7 @@ import com.gemstone.gemfire.internal.util.LogFileUtils;
   * Its just like {@link LocalLogWriter} except it has support for rolling
   * and alerts. 
   *
-  * @since 1.0
+  * @since Geode 1.0
   */
 public class ManagerLogWriter extends LocalLogWriter  {
 
@@ -75,7 +75,7 @@ public class ManagerLogWriter extends LocalLogWriter  {
      *
      * @throws IllegalArgumentException if level is not in legal range
      *
-     * @since 3.5
+     * @since GemFire 3.5
      */
     public ManagerLogWriter(int level, PrintStream out,
                             String connectionName) {

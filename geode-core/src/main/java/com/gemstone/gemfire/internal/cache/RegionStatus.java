@@ -29,7 +29,7 @@ import java.io.Serializable;
  * <code>Region</code>s. This class is used by the monitoring tool.
  *
  *
- * @since 5.1
+ * @since GemFire 5.1
  */
 public class RegionStatus implements Serializable {
   private static final long serialVersionUID = 3442040750396350302L;

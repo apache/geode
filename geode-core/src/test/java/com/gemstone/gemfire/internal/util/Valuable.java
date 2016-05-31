@@ -21,7 +21,7 @@ package com.gemstone.gemfire.internal.util;
  * value associated with them.  This interface is not considered to be
  * a "user class".
  *
- * @since 2.0.3
+ * @since GemFire 2.0.3
  */
 public interface Valuable {
 

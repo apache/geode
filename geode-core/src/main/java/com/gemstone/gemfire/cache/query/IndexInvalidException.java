@@ -27,7 +27,7 @@ import com.gemstone.gemfire.GemFireException;
 /**
  * Thrown if the index definition is not valid.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 
 public class IndexInvalidException extends GemFireException {

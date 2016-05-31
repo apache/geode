@@ -27,7 +27,7 @@ import com.gemstone.gemfire.internal.util.CollectionUtils;
  * existing objects.
  * 
  *
- * @since 8.1
+ * @since GemFire 8.1
  */
 // UnitTest SimpleExtensionPointJUnitTest
 public class SimpleExtensionPoint<T> implements ExtensionPoint<T> {
@@ -50,7 +50,7 @@ public class SimpleExtensionPoint<T> implements ExtensionPoint<T> {
    * @param target
    *          the <code>T</code> instance being extended. Likely the same as
    *          <code>exensible</code>.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public SimpleExtensionPoint(final Extensible<T> extensible, final T target) {
     this.extensible = extensible;

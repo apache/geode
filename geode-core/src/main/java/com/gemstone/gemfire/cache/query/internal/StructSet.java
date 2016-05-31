@@ -41,7 +41,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * The values in this set are stored as Object[] and get wrapped in Structs as
  * necessary.
  * 
- * @since 4.0
+ * @since GemFire 4.0
  */
 public final class StructSet /*extends ObjectOpenCustomHashSet*/ implements Set, SelectResults, 
 DataSerializableFixedID, StructFields {
@@ -107,7 +107,7 @@ DataSerializableFixedID, StructFields {
 
   /** Creates a StructSet directly from a StructBag;
    *  (internal use) 
-   *  @since 5.1
+   *  @since GemFire 5.1
    */
   StructSet(StructBag bag) {
     this.contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());

@@ -52,7 +52,7 @@ import org.springframework.util.StringUtils;
  * <p/>
  * @see com.fasterxml.jackson.databind.JsonSerializable
  * @see java.lang.Iterable
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 @SuppressWarnings("unused")

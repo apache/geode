@@ -20,7 +20,7 @@ package com.gemstone.gemfire.admin;
  * A dedicated cache server VM that is managed by the administration
  * API.
  *
- * @since 4.0
+ * @since GemFire 4.0
  * @deprecated as of 5.7 use {@link CacheVm} instead.
  */
 @Deprecated
@@ -38,7 +38,7 @@ public interface CacheServer extends SystemMember, ManagedEntity {
    *                durable-id of the client
    * @return true if the server is primary for given client
    * 
-   * @since 5.6
+   * @since GemFire 5.6
    */
   public boolean isPrimaryForDurableClient(String durableClientId);
 

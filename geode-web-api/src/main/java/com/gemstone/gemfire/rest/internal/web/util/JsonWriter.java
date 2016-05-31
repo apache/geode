@@ -47,7 +47,7 @@ import com.gemstone.gemfire.rest.internal.web.exception.GemfireRestException;
 /**
  * The JsonWriter class is an utility to write various java types as a JSON string.
  * <p/>
- * @since 8.0
+ * @since GemFire 8.0
  */
 public class JsonWriter {
   

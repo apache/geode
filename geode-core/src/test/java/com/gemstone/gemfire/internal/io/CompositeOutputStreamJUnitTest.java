@@ -35,7 +35,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 /**
  * Unit tests for CompositeOutputStream.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(UnitTest.class)
 public class CompositeOutputStreamJUnitTest {

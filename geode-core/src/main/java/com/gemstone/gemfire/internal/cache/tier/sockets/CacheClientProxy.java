@@ -113,7 +113,7 @@ import com.gemstone.gemfire.i18n.StringId;
  * client.
  *
  *
- * @since 4.2
+ * @since GemFire 4.2
  */
 @SuppressWarnings("synthetic-access")
 public class CacheClientProxy implements ClientSession {
@@ -250,7 +250,7 @@ public class CacheClientProxy implements ClientSession {
 
   private boolean isPrimary;
   
-  /** @since 5.7 */
+  /** @since GemFire 5.7 */
   protected byte clientConflation = HandShake.CONFLATION_DEFAULT;
   
   /**
@@ -278,7 +278,7 @@ public class CacheClientProxy implements ClientSession {
    * event's region name is present in this map, it's full value (and not 
    * delta) is sent to the client represented by this proxy.
    *
-   * @since 6.1
+   * @since GemFire 6.1
    */
   private volatile Map regionsWithEmptyDataPolicy = new HashMap();
 
@@ -793,7 +793,7 @@ public class CacheClientProxy implements ClientSession {
    *
    * @return whether the proxy is paused
    *
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public boolean isPaused() {
     return this._isPaused;
@@ -3088,7 +3088,7 @@ public class CacheClientProxy implements ClientSession {
   /**
    * Get map of regions with empty data policy
    *
-   * @since 6.1
+   * @since GemFire 6.1
    */
   public Map getRegionsWithEmptyDataPolicy() {
     return regionsWithEmptyDataPolicy;
@@ -3107,7 +3107,7 @@ public class CacheClientProxy implements ClientSession {
    * Returns the number of seconds that have elapsed since the Client proxy
    * created.
    * 
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public long getUpTime() {
     return (long) ((System.currentTimeMillis() - this.creationDate.getTime()) / 1000);

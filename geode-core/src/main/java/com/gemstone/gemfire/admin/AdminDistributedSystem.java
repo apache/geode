@@ -36,7 +36,7 @@ import java.util.UUID;
  *
  * @see AdminDistributedSystemFactory
  *
- * @since     3.5
+ * @since GemFire     3.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface AdminDistributedSystem {
@@ -274,7 +274,7 @@ public interface AdminDistributedSystem {
    * Does nothing if the listener is already registered. The listeners are called
    * in the order they are registered.
    * @param listener the listener to register.
-    * @since 5.0
+    * @since GemFire 5.0
    */
    public void addCacheListener(SystemMemberCacheListener listener);
 
@@ -282,7 +282,7 @@ public interface AdminDistributedSystem {
     * Unregisters a cache listener. Does nothing if the listener is
     * not registered.
     * @param listener the listener to unregister.
-    * @since 5.0
+    * @since GemFire 5.0
     */
    public void removeCacheListener(SystemMemberCacheListener listener);
 
@@ -291,7 +291,7 @@ public interface AdminDistributedSystem {
    * CacheServerConfig configure} and {@linkplain #start
    * start}.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    * @deprecated as of 5.7 use {@link #addCacheVm} instead.
    */
   @Deprecated
@@ -303,7 +303,7 @@ public interface AdminDistributedSystem {
    * application VMs that host a server cache are not included in the
    * array.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    * @deprecated as of 5.7 use {@link #getCacheVms} instead.
    */
   @Deprecated
@@ -319,7 +319,7 @@ public interface AdminDistributedSystem {
    * @return array of CacheServer(s) having the queue for the durable client
    * @throws AdminException
    *
-   * @since 5.6
+   * @since GemFire 5.6
    */
   public CacheServer[] getCacheServers(String durableClientId)
       throws AdminException;
@@ -329,7 +329,7 @@ public interface AdminDistributedSystem {
    * CacheVmConfig configure} and {@linkplain #start
    * start}.
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public CacheVm addCacheVm() throws AdminException;
 
@@ -339,7 +339,7 @@ public interface AdminDistributedSystem {
    * application VMs that host a server cache are not included in the
    * array.
    *
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public CacheVm[] getCacheVms() throws AdminException;
 
@@ -349,7 +349,7 @@ public interface AdminDistributedSystem {
    *
    * @param distributedMember the distributed member to lookup
    * @return administrative SystemMember for that distributed member
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public SystemMember lookupSystemMember(DistributedMember distributedMember) 
   throws AdminException;
@@ -365,7 +365,7 @@ public interface AdminDistributedSystem {
    *          The host of the member whose files were lost.
    * @param directory
    *          The directory where those files resided.
-   * @since 6.5
+   * @since GemFire 6.5
    * @deprecated use {@link #revokePersistentMember(UUID)} instead
    */
   public void revokePersistentMember(InetAddress host, String directory) throws AdminException;
@@ -381,7 +381,7 @@ public interface AdminDistributedSystem {
    *          The unique id of the disk store which you are revoking. The unique
    *          id can be discovered from {@link #getMissingPersistentMembers()}
    * 
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public void revokePersistentMember(UUID diskStoreID) throws AdminException;
   
@@ -391,7 +391,7 @@ public interface AdminDistributedSystem {
    * @return The persistent members that were known to the existing persistent members,
    * when the existing members were last online.
    * @throws AdminException
-   * @since 6.5
+   * @since GemFire 6.5
    * 
    */
   public Set<PersistentID> getMissingPersistentMembers() throws AdminException;
@@ -409,7 +409,7 @@ public interface AdminDistributedSystem {
    *  
    * This is equivalent to calling shutDownAllMembers(0);
    * @return The set of members that were shutdown
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public Set<DistributedMember> shutDownAllMembers() throws AdminException;
   
@@ -429,7 +429,7 @@ public interface AdminDistributedSystem {
    *          complete. 
    * @return The set of members that were shutdown, or null if the timeout is exceeded.
    * 
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public Set<DistributedMember> shutDownAllMembers(long timeout) throws AdminException;
 
@@ -442,7 +442,7 @@ public interface AdminDistributedSystem {
    * @return The status of the backup, which includes the set of members
    * that were backed up and the set of members that were known to be
    * offline at the time of backup.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public BackupStatus backupAllMembers(File targetDir) throws AdminException;
   
@@ -459,7 +459,7 @@ public interface AdminDistributedSystem {
    * @return The status of the backup, which includes the set of members
    * that were backed up and the set of members that were known to be
    * offline at the time of backup.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public BackupStatus backupAllMembers(File targetDir,File baselineDir) throws AdminException;
   
@@ -470,7 +470,7 @@ public interface AdminDistributedSystem {
    * This is equivalent to calling {DiskStore#forceCompaction} on all members.
    * 
    * @return The set of members that compacted their disk stores.
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public Map<DistributedMember, Set<PersistentID>> compactAllDiskStores() throws AdminException;
 }

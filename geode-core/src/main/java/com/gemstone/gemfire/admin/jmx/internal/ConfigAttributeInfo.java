@@ -29,7 +29,7 @@ import javax.management.modelmbean.ModelMBeanAttributeInfo;
  * {@link javax.management.modelmbean.ModelMBeanAttributeInfo} descriptor's 
  * <i>targetObject</i> value.
  *
- * @since     3.5
+ * @since GemFire     3.5
  *
  */
 class ConfigAttributeInfo extends org.apache.commons.modeler.AttributeInfo {

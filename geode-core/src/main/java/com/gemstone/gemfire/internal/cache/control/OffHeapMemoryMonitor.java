@@ -37,7 +37,7 @@ import com.gemstone.gemfire.internal.offheap.MemoryUsageListener;
  * are compared against current off-heap usage and, with the help of {#link
  * InternalResourceManager}, dispatches events when the thresholds are crossed.
  *
- * @since 9.0
+ * @since Geode 1.0
  */
 public class OffHeapMemoryMonitor implements ResourceMonitor, MemoryUsageListener {
   private static final Logger logger = LogService.getLogger();

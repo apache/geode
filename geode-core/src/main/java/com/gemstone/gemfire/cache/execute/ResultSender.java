@@ -46,7 +46,7 @@ package com.gemstone.gemfire.cache.execute;
  * </pre>
  * 
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * 
  * @see ResultCollector#addResult(com.gemstone.gemfire.distributed.DistributedMember, Object)
  * 
@@ -85,7 +85,7 @@ public interface ResultSender<T> {
    * @param t
    * 
    * @see #lastResult(Object)
-   * @since 6.3
+   * @since GemFire 6.3
    */
   public void sendException(Throwable t);
 }

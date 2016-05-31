@@ -53,7 +53,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * class.  Mostly checks configuration error checking.
  *
  *
- * @since 2.1
+ * @since GemFire 2.1
  */
 @Category(IntegrationTest.class)
 public class InternalDistributedSystemJUnitTest 
@@ -244,7 +244,7 @@ public class InternalDistributedSystemJUnitTest
    * @throws IllegalArgumentException
    *         If <code>locators</code> is malformed
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   private void checkLocator(String locator) {
     Properties props = new Properties();
@@ -256,7 +256,7 @@ public class InternalDistributedSystemJUnitTest
    * Tests that both the traditional syntax ("host[port]") and post
    * bug-32306 syntax ("host:port") can be used with locators.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   @Test
   public void testLocatorSyntax() throws Exception {

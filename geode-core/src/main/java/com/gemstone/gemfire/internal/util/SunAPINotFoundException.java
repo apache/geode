@@ -22,7 +22,7 @@ package com.gemstone.gemfire.internal.util;
  * not be found, which is most likely the case when we are not running a Sun JVM (like HotSpot).
  * </p>
  * @see java.lang.RuntimeException
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
 public class SunAPINotFoundException extends RuntimeException {

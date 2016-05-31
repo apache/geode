@@ -30,7 +30,7 @@ import com.gemstone.gemfire.pdx.PdxInstance;
 
 /**
  * Produces instances that implement CachedDeserializable.
- * @since 5.0.2
+ * @since GemFire 5.0.2
  *
  */
 public class CachedDeserializableFactory {
@@ -261,7 +261,7 @@ public class CachedDeserializableFactory {
   /**
    * Return how much memory this object will consume
    * if it is in serialized form
-   * @since 6.1.2.9
+   * @since GemFire 6.1.2.9
    */
   public static int calcSerializedMemSize(Object o) {
     int result = calcSerializedSize(o);

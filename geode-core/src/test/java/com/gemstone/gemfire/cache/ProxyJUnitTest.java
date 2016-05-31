@@ -38,7 +38,7 @@ import org.junit.experimental.categories.Category;
 /**
  * Unit test for basic DataPolicy.EMPTY feature.
  * NOTE: these tests using a loner DistributedSystem and local scope regions
- * @since 5.0
+ * @since GemFire 5.0
  */
 @Category(IntegrationTest.class)
 public class ProxyJUnitTest {

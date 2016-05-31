@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.process.ControlFileWatchdog.ControlRequestH
  * Creates the PID file and ControlFileWatchdogs to monitor working directory
  * for creation of stop or status request files.
  * 
- * @since 8.0
+ * @since GemFire 8.0
  */
 public final class ControllableProcess {
   private static final Logger logger = LogService.getLogger();

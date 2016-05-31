@@ -344,7 +344,7 @@ public abstract class HostStatSampler
    * use {@link #waitForInitialization(long)} instead.
    *
    * @see #initSpecialStats
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public final void waitForInitialization() throws InterruptedException {
     this.statSamplerInitializedLatch.await();
@@ -356,7 +356,7 @@ public abstract class HostStatSampler
    * within tests.
    *
    * @see #initSpecialStats
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public final boolean waitForInitialization(long ms) throws InterruptedException {
     return this.statSamplerInitializedLatch.await(ms);
@@ -369,7 +369,7 @@ public abstract class HostStatSampler
   /**
    * Returns the <code>VMStatsContract</code> for this VM.
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public final VMStatsContract getVMStats() {
     return this.vmStats;

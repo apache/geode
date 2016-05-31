@@ -63,7 +63,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
     Connections represent a pipe between two endpoints represented
     by generic DistributedMembers.</p>
 
-    @since 2.1
+    @since GemFire 2.1
 */
 /*
     Note: We no longer use InputMultiplexer
@@ -1083,7 +1083,7 @@ public class ConnectionTable  {
    * records the current outgoing message count on all thread-owned
    * ordered connections.  This does not synchronize or stop new connections
    * from being formed or new messages from being sent
-   * @since 5.1
+   * @since GemFire 5.1
    */
   protected void getThreadOwnedOrderedConnectionState(DistributedMember member,
       Map result) {

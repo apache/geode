@@ -19,7 +19,7 @@ package com.gemstone.gemfire.management.internal.cli.shell;
 /**
  * RuntimeException to wrap JMX Connection Error/Exception.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class JMXConnectionException extends RuntimeException {
   private static final long serialVersionUID = 3872374016604940917L;

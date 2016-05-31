@@ -26,7 +26,7 @@ import com.gemstone.gemfire.distributed.DistributedMember;
  * The status of a backup operation, returned by
  * {@link AdminDistributedSystem#backupAllMembers(java.io.File,java.io.File)}.
  * 
- * @since 6.5 
+ * @since GemFire 6.5
  * @deprecated as of 7.0 use the <code><a href="{@docRoot}/com/gemstone/gemfire/management/package-summary.html">management</a></code> package instead
  */
 public interface BackupStatus {

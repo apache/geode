@@ -23,7 +23,7 @@ import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsType;
 
 /**
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface StatisticsNotification extends Iterable<StatisticId> {
   

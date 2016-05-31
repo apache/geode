@@ -37,7 +37,7 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
  * with new load information from the server.
  * Also includes the id of any clients whose estimate is no
  * longer needed on the server-locator.
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public class CacheServerLoadMessage extends SerialDistributionMessage {

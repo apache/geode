@@ -78,7 +78,7 @@ import joptsimple.OptionSet;
  * 
  * @see com.gemstone.gemfire.distributed.AbstractLauncher
  * @see com.gemstone.gemfire.distributed.ServerLauncher
- * @since 7.0
+ * @since GemFire 7.0
  */
 @SuppressWarnings({ "unused" })
 public final class LocatorLauncher extends AbstractLauncher<String> {

@@ -26,7 +26,7 @@ import com.gemstone.gemfire.cache.operations.internal.UpdateOnlyMap;
  * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#PUTALL} operation for both the
  * pre-operation and post-operation cases.
  * 
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class PutAllOperationContext extends OperationContext {
 
@@ -114,7 +114,7 @@ public class PutAllOperationContext extends OperationContext {
    * Get the callback argument object for this operation.
    * 
    * @return the callback argument object for this operation.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public Object getCallbackArg() {
     return this.callbackArg;
@@ -125,7 +125,7 @@ public class PutAllOperationContext extends OperationContext {
    * 
    * @param callbackArg
    *                the callback argument object for this operation.
-   * @since 8.1
+   * @since GemFire 8.1
    */
   public void setCallbackArg(Object callbackArg) {
     this.callbackArg = callbackArg;

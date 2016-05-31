@@ -74,7 +74,7 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
  * Line Interface (CLI).
  *
  *
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class CliUtil {
   public static final String GFSHVM_IDENTIFIER = "gfsh";

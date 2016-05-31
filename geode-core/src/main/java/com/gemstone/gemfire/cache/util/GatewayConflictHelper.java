@@ -20,7 +20,7 @@ package com.gemstone.gemfire.cache.util;
  * GatewayConflictHelper is used by an GatewayConflictResolver to decide what to
  * do with an event received from another distributed system that is going to overwrite
  * the current cache state.
- * @since 7.0
+ * @since GemFire 7.0
  */
 public interface GatewayConflictHelper {
   /** disallow the event */

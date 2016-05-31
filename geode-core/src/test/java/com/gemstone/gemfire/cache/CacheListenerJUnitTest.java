@@ -34,7 +34,7 @@ import org.junit.experimental.categories.Category;
  * NOTE: these tests using a loner DistributedSystem and local scope regions
  *   so all the listener features tested are for local listeners being invoked
  *   for local operations.
- * @since 5.0
+ * @since GemFire 5.0
  */
 @Category(IntegrationTest.class)
 public class CacheListenerJUnitTest {

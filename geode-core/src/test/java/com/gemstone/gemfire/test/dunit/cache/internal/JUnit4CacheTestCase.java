@@ -252,7 +252,7 @@ public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements Ca
   /**
    * Creates a client cache from the factory if one does not already exist.
    *
-   * @since 6.5
+   * @since GemFire 6.5
    */
   public final ClientCache getClientCache(final ClientCacheFactory factory) {
     synchronized (JUnit4CacheTestCase.class) {

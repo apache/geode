@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.TransactionEvent;
  * override the methods for the events of interest.
  * 
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public abstract class TransactionListenerAdapter implements TransactionListener {
   public void afterCommit(TransactionEvent event) {

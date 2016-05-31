@@ -53,7 +53,7 @@ import java.util.*;
 /**
  * Dunit Test containing inter - operations between REST Client and Gemfire cache client
  *
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {

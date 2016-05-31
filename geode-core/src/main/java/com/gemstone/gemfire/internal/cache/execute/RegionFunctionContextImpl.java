@@ -37,7 +37,7 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
  * and filter passed to the function execution
  * 
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * 
  * @see FunctionContextImpl
  */

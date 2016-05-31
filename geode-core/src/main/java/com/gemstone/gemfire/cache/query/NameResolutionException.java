@@ -19,7 +19,7 @@ package com.gemstone.gemfire.cache.query;
 /**
  * Thrown if an attribute or method name in a query cannot be resolved.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 
 public class NameResolutionException extends QueryException {

@@ -48,7 +48,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.i18n.StringId;
 
 /**
- * @since 5.5
+ * @since GemFire 5.5
  * Represents the CqQuery object. Implements CqQuery API and CqAttributeMutator. 
  *  
  */

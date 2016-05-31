@@ -42,7 +42,7 @@ import joptsimple.internal.Strings;
  * Used for both persistent recoverable regions and overflow-only regions.
  *
  *
- * @since 3.2
+ * @since GemFire 3.2
  */
 public class DiskRegion extends AbstractDiskRegion {
 
@@ -404,7 +404,7 @@ public class DiskRegion extends AbstractDiskRegion {
   }
 
   /**
-   * @since 3.2.1
+   * @since GemFire 3.2.1
    */
   final BytesAndBits getBytesAndBits(DiskId id) {
     return getBytesAndBits(id, true);
@@ -415,7 +415,7 @@ public class DiskRegion extends AbstractDiskRegion {
   }
 
   /**
-   * @since 3.2.1
+   * @since GemFire 3.2.1
    */
   final byte getBits(DiskId id) {
     return getDiskStore().getBits(this, id);
@@ -470,20 +470,20 @@ public class DiskRegion extends AbstractDiskRegion {
   /**
    * Get serialized form of data off the disk
    * @param id
-   * @since gemfire5.7_hotfix
+   * @since GemFire 5.7
    */
   public Object getSerializedData(DiskId id) {
     return getDiskStore().getSerializedData(this, id);
   }
 
   /**
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public void scheduleAsyncWrite(AsyncDiskEntry ade) {
     getDiskStore().scheduleAsyncWrite(ade);
   }
   /**
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public void unscheduleAsyncWrite(DiskId did) {
     getDiskStore().unscheduleAsyncWrite(did);
@@ -544,7 +544,7 @@ public class DiskRegion extends AbstractDiskRegion {
   /**
    * Returns true if the state of the specified entry was recovered from disk.
    * If so it will also set it to no longer be recovered.
-   * @since prPersistSprint1
+   * @since GemFire prPersistSprint1
    */
   public boolean testIsRecoveredAndClear(RegionEntry re) {
     DiskEntry de = (DiskEntry)re;

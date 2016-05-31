@@ -53,7 +53,7 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
  * All disk region unit tests extend this base class , common method to be used in
  * all tests are present here.
  * 
- * @since 5.1
+ * @since GemFire 5.1
  *
  */
 public class DiskRegionTestingBase

@@ -37,7 +37,7 @@ import com.gemstone.gemfire.security.templates.XmlAuthorization;
  * operation in a region. Implementations will be for different kinds of
  * authorization scheme and authentication scheme combos.
  * 
- * @since 5.5
+ * @since GemFire 5.5
  */
 public abstract class AuthzCredentialGenerator {
   
@@ -320,7 +320,7 @@ public abstract class AuthzCredentialGenerator {
    * <p>All dunit tests will automagically start testing the new implementation
    * after this.
    *
-   * @since 5.5
+   * @since GemFire 5.5
    */
   public static final class ClassCode {
 

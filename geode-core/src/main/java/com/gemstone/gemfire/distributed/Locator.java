@@ -64,7 +64,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * 
  * <P>
  *  
- * @since 4.0
+ * @since GemFire 4.0
  */
 public abstract class Locator {
 
@@ -78,7 +78,7 @@ public abstract class Locator {
 
   /**
    * the hostname to give to clients so they can connect to this locator.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected String hostnameForClients;
   
@@ -134,7 +134,7 @@ public abstract class Locator {
    * relied on for stable membership information. The locator will provide provide
    * peer and cache server location services.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    * 
    * @param port
    *                The port on which the locator will listen for membership
@@ -215,7 +215,7 @@ public abstract class Locator {
    * information. The locator will provide provide
    * peer and cache server location services.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    *
    * @param port
    *        The port on which the locator will listen for membership
@@ -264,7 +264,7 @@ public abstract class Locator {
    * information. The locator will provide provide
    * peer and cache server location services.
    *
-   * @since 5.7
+   * @since GemFire 5.7
    *
    * @param port
    *        The port on which the locator will listen for membership
@@ -303,7 +303,7 @@ public abstract class Locator {
    * @throws IOException
    *         If the locator cannot be started
    *         
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public static Locator startLocatorAndDS(
     int port,
@@ -391,7 +391,7 @@ public abstract class Locator {
    * Returns the locator if it exists in this JVM.
    * Otherwise returns null.
    * @return the locator that exists in this JVM; null if no locator.
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static Locator getLocator() {
     return InternalLocator.getLocator();
@@ -410,7 +410,7 @@ public abstract class Locator {
    * Returns true if a locator exists in this JVM.
    * 
    * @return true if a locator exists in this JVM.
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static boolean hasLocator() {
     return InternalLocator.hasLocator();
@@ -447,7 +447,7 @@ public abstract class Locator {
    * Returns the hostname that will be given to clients so that they can
    * connect to this locator. Returns <code>null</code> if clients should
    * use the bind address.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public String getHostnameForClients() {
     String result = this.hostnameForClients;
@@ -538,7 +538,7 @@ public abstract class Locator {
    * to use to connect to this locator.
    * If unspecified, defaults to the bind-address.
    *
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static void main(String args[]) {
     com.gemstone.gemfire.internal.DistributionLocator.main(args);

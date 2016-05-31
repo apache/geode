@@ -26,7 +26,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  *
  *
  *
- * @since 3.5
+ * @since GemFire 3.5
  */
 public class GemFireHealthConfigImpl
   extends CacheHealthConfigImpl

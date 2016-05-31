@@ -60,7 +60,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Tests transaction expiration functionality
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 @Category(IntegrationTest.class)
 public class TXExpiryJUnitTest {

@@ -30,7 +30,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
  * @see com.gemstone.gemfire.internal.lang.ObjectUtils
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 6.8
+ * @since GemFire 6.8
  */
 @Category(UnitTest.class)
 public class ObjectUtilsJUnitTest {

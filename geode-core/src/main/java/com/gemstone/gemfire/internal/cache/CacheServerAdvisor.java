@@ -117,7 +117,7 @@ public class CacheServerAdvisor extends GridAdvisor {
      * vm needs to be told about this incoming new cache server. The reply
      * needs to contain any controller(s) that exist in this vm.
      * 
-     * @since 5.7
+     * @since GemFire 5.7
      */
     @Override
     public void processIncoming(DistributionManager dm, String adviseePath,

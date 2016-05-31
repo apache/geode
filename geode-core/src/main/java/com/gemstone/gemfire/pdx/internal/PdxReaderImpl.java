@@ -45,7 +45,7 @@ import com.gemstone.gemfire.pdx.internal.AutoSerializableManager.PdxFieldWrapper
  * It is also used as the base class of our {@link PdxInstance} implementation.
  * It is serializable because PdxInstance is.
  * 
- * @since 6.6
+ * @since GemFire 6.6
  * @see InternalDataSerializer#readPdxSerializable(java.io.DataInput)
  */
 public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {

@@ -125,7 +125,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
    * @param ev the event describing the operation
    * @param lastMod the modification timestamp for this op
    * @return true if the update was done.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static boolean doPutOrCreate(LocalRegion rgn, EntryEventImpl ev, long lastMod) {
     try {

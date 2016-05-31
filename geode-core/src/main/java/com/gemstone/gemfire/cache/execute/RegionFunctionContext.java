@@ -37,7 +37,7 @@ import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
  * </p>
  * 
  * 
- * @since 6.0
+ * @since GemFire 6.0
  * 
  * @see FunctionContext
  * @see PartitionRegionHelper
@@ -52,7 +52,7 @@ public interface RegionFunctionContext extends FunctionContext {
    * @see Execution#withFilter(Set)
    * 
    * @return the objects that caused the function to be routed to this cluster member
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public Set<?> getFilter();
 
@@ -63,7 +63,7 @@ public interface RegionFunctionContext extends FunctionContext {
    * 
    * @return returns the Region on which the function is executed
    * 
-   * @since 6.0
+   * @since GemFire 6.0
    */
   public <K, V> Region<K, V> getDataSet();
   

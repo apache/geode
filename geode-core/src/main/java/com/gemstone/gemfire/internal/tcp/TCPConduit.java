@@ -76,7 +76,7 @@ import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
     If the ServerDelegate is null, DistributionMessages are ignored by
     the TCPConduit.</p>
 
-    @since 2.0
+    @since GemFire 2.0
    
 */
 
@@ -169,7 +169,7 @@ public class TCPConduit implements Runnable {
 
   /**
    * Config from the delegate
-   * @since 4.2.1
+   * @since GemFire 4.2.1
    */
   DistributionConfig config;
   
@@ -553,7 +553,7 @@ public class TCPConduit implements Runnable {
   /**
    * Returns whether or not this conduit is stopped
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public boolean isStopped() {
     return this.stopped;
@@ -792,7 +792,7 @@ public class TCPConduit implements Runnable {
   /**
    * records the current outgoing message count on all thread-owned
    * ordered connections
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public void getThreadOwnedOrderedConnectionState(
     DistributedMember member,
@@ -805,7 +805,7 @@ public class TCPConduit implements Runnable {
    * wait for the incoming connections identified by the keys in the
    * argument to receive and dispatch the number of messages associated
    * with the key
-   * @since 5.1
+   * @since GemFire 5.1
    */
   public void waitForThreadOwnedOrderedConnectionState(DistributedMember member, Map channelState)
     throws InterruptedException

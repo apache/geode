@@ -67,7 +67,7 @@ public interface GatewayReceiver {
   /**
    * The default value (true) for manually starting a
    * <code>GatewayReceiver</code>.
-   * @since 8.1 
+   * @since GemFire 8.1
    */
   public static final boolean DEFAULT_MANUAL_START = false;
   

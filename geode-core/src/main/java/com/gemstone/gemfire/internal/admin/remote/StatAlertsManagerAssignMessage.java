@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.admin.StatAlertsManager;
  * This class represents a request object to set an alert manager for the newly
  * joined member.
  * 
- * @since 5.7
+ * @since GemFire 5.7
  */
 public class StatAlertsManagerAssignMessage extends PooledDistributionMessage {
   // instance variables

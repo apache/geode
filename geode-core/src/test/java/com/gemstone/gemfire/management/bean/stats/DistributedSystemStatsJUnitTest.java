@@ -41,7 +41,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * 
- * @since  1.4
+ * @since GemFire  1.4
  */
 @Category(IntegrationTest.class)
 public class DistributedSystemStatsJUnitTest {

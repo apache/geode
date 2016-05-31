@@ -25,7 +25,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 /**
  * MBean that provides access to an {@link AsyncEventQueue}.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
 @ResourceOperation(resource = Resource.CLUSTER, operation = OperationContext.OperationCode.READ)

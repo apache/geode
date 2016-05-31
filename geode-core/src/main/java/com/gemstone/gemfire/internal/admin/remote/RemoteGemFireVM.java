@@ -635,7 +635,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    *                the 'durable-client-id' for the client
    * @return - true if the member contains a durable-queue for the given client
    * 
-   * @since 5.6
+   * @since GemFire 5.6
    */
   public boolean hasDurableClient(String durableClientId)
   {
@@ -655,7 +655,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    * @return - true if the member contains a primary durable-queue for the given
    *         client
    * 
-   * @since 5.6
+   * @since GemFire 5.6
    */
   public boolean isPrimaryForDurableClient(String durableClientId)
   {

@@ -28,7 +28,7 @@ import com.gemstone.gemfire.distributed.internal.ServerLocation;
  * A pool for managing client to server connections. This interface
  * allows connections to be checked out and checked in, and keeps
  * the number of connections within the min and max boundaries. 
- * @since 5.7
+ * @since GemFire 5.7
  *
  */
 public interface ConnectionManager {

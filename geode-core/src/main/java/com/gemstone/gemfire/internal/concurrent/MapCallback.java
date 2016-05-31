@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentMap;
  * <p>
  * Now also has a bunch of callbacks including for replace/remove etc.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  * @param <K>
  *          the type of key of the map

@@ -22,7 +22,7 @@ import java.util.*;
  * Represents one or more distributed operations that can be reliably distributed.
  * This interface allows the data to be queued and checked for reliable distribution.
  * 
- * @since 5.0
+ * @since GemFire 5.0
  */
 public interface ReliableDistributionData  {
 //  /**

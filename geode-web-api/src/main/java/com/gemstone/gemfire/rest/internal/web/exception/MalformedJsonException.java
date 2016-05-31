@@ -22,7 +22,7 @@ import com.gemstone.gemfire.pdx.JSONFormatterException;
 /**
  * Indicates that incorrect JSON document encountered while processing it.
  * <p/>
- * @since 8.0
+ * @since GemFire 8.0
  */
 
 @SuppressWarnings("unused")

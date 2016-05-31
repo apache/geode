@@ -49,7 +49,7 @@ public class ThreadUtils {
   /**
    * Print stack dumps for all vms.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static void dumpAllStacks() {
     for (int h=0; h < Host.getHostCount(); h++) {
@@ -67,7 +67,7 @@ public class ThreadUtils {
   /** 
    * Print a stack dump for this vm.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static void dumpStack() {
     OSProcess.printStacks(0, false);
@@ -76,7 +76,7 @@ public class ThreadUtils {
   /** 
    * Print stack dumps for all vms on the given host.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static void dumpStack(final Host host) {
     for (int v=0; v < host.getVMCount(); v++) {
@@ -87,7 +87,7 @@ public class ThreadUtils {
   /** 
    * Print a stack dump for the given vm.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static void dumpStack(final VM vm) {
     vm.invoke(com.gemstone.gemfire.test.dunit.DistributedTestCase.class, "dumpStack");

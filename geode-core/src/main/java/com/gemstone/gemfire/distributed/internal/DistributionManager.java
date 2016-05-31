@@ -123,7 +123,7 @@ import com.gemstone.gemfire.internal.util.concurrent.StoppableReentrantLock;
  * So, we refactored the code of those two subclasses into
  * <code>DistributionManager</code>.
  *
- * @since 2.0
+ * @since GemFire 2.0
  *
  * @see DistributionMessage#process
  * @see IgnoredByManager
@@ -215,7 +215,7 @@ public class DistributionManager
   public static final int NORMAL_DM_TYPE = 10;
 
   /** The DM type for locator distribution managers 
-   * @since 7.0
+   * @since GemFire 7.0
    */
   public static final int LOCATOR_DM_TYPE = 11;
 
@@ -289,7 +289,7 @@ public class DistributionManager
    * JMX agent)?  If so, then it creates {@link #ADMIN_ONLY_DM_TYPE}
    * type distribution managers.
    *
-   * @since 4.0 
+   * @since GemFire 4.0
    */
   public static volatile boolean isDedicatedAdminVM = false;
   
@@ -321,12 +321,12 @@ public class DistributionManager
     new MembershipListenersLock();
   /** The <code>MembershipListener</code>s that are registered on this
    * manager for ALL members.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected volatile Set allMembershipListeners = Collections.EMPTY_SET;
   /**
    * A lock to hold while adding and removing all membership listeners.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected final Object allMembershipListenersLock =
     new MembershipListenersLock();
@@ -1626,7 +1626,7 @@ public class DistributionManager
    * hosted locators. The value is a collection of host[port] strings. If a 
    * bind-address was used for a locator then the form is bind-addr[port].
    *
-   * @since 6.6.3
+   * @since GemFire 6.6.3
    */
   public void addHostedLocators(InternalDistributedMember member, Collection<String> locators, boolean isSharedConfigurationEnabled) {
     synchronized (this.membersLock) {
@@ -1700,7 +1700,7 @@ public class DistributionManager
    * hosted locators. The value is a collection of host[port] strings. If a 
    * bind-address was used for a locator then the form is bind-addr[port].
    * 
-   * @since 6.6.3
+   * @since GemFire 6.6.3
    */
   public Collection<String> getHostedLocators(InternalDistributedMember member) {
     synchronized (this.membersLock) {
@@ -1713,7 +1713,7 @@ public class DistributionManager
    * member, and the value is a collection of host[port] strings. If a 
    * bind-address was used for a locator then the form is bind-addr[port].
    * 
-   * @since 6.6.3
+   * @since GemFire 6.6.3
    */
   public Map<InternalDistributedMember, Collection<String>> getAllHostedLocators() {
     synchronized (this.membersLock) {
@@ -1725,7 +1725,7 @@ public class DistributionManager
    * member, and the value is a collection of host[port] strings. If a 
    * bind-address was used for a locator then the form is bind-addr[port].
    * 
-   * @since 8.0
+   * @since GemFire 8.0
    */
   @Override
   public Map<InternalDistributedMember, Collection<String>> getAllHostedLocatorsWithSharedConfiguration() {
@@ -1750,7 +1750,7 @@ public class DistributionManager
    * Returns the low-level distribution channel for this distribution
    * manager. (brought over from ConsoleDistributionManager)
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public DistributionChannel getDistributionChannel() {
     return this.channel;
@@ -1838,7 +1838,7 @@ public class DistributionManager
    * Returns the id of the underlying distribution channel used for
    * communication.
    *
-   * @since 3.0
+   * @since GemFire 3.0
    */
   public long getChannelId() {
     return this.channel.getId();
@@ -2318,7 +2318,7 @@ public class DistributionManager
   
   /**
    * Returns the transport configuration for this distribution manager
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public RemoteTransportConfig getTransport() {
     return this.transport;
@@ -2348,7 +2348,7 @@ public class DistributionManager
   /**
    * Adds a <code>MembershipListener</code> to this distribution
    * manager.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void addAllMembershipListener(MembershipListener l) {
     synchronized (this.allMembershipListenersLock) {
@@ -2366,7 +2366,7 @@ public class DistributionManager
    * @throws IllegalArgumentException
    *         <code>l</code> was not registered on this distribution
    *         manager
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public void removeAllMembershipListener(MembershipListener l) {
     synchronized (this.allMembershipListenersLock) {
@@ -2575,7 +2575,7 @@ public class DistributionManager
 //    * Initializes and returns a <code>DistributedSystem</code> to be
 //    * sent to new members of the distributed system.
 //    *
-//    * @since 3.0
+//    * @since GemFire 3.0
 //    */
 //   protected DistributedState getNewDistributedState() {
 //     DistributedState state = new DistributedState();
@@ -2618,7 +2618,7 @@ public class DistributionManager
   /**
    * Add a membership listener for all members
    * and return other DistribtionManagerIds as an atomic operation
-   * @since 5.7
+   * @since GemFire 5.7
    */
   public Set addAllMembershipListenerAndGetAllIds(MembershipListener l) {
     // TO fix this deadlock:
@@ -3897,7 +3897,7 @@ public class DistributionManager
    * Sets the administration agent associated with this distribution
    * manager.
    *
-   * @since 4.0
+   * @since GemFire 4.0
    */
   public void setAgent(RemoteGfManagerAgent agent) {
     // Don't let the agent be set twice.  There should be a one-to-one
@@ -3918,7 +3918,7 @@ public class DistributionManager
   /**
    * Returns the agent that owns this distribution manager.
    * (in ConsoleDistributionManager)
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public RemoteGfManagerAgent getAgent(){
     return this.agent;
@@ -3931,7 +3931,7 @@ public class DistributionManager
    * @return <code>null</code> if no admin {@linkplain #getAgent
    *         agent} is associated with this distribution manager
    *
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public String getDistributionConfigDescription() {
     if (this.agent == null) {
@@ -3971,7 +3971,7 @@ public class DistributionManager
    * @param owner the agent that owns the returned monitor
    * @return the health monitor created by the owner; <code>null</code>
    *    if the owner has now created a monitor.
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public HealthMonitor getHealthMonitor(InternalDistributedMember owner) {
     return (HealthMonitor)this.hmMap.get(owner);
@@ -3981,7 +3981,7 @@ public class DistributionManager
    *
    * @param owner the agent that owns the created monitor
    * @param cfg the configuration to use when creating the monitor
-   * @since 3.5
+   * @since GemFire 3.5
    */
   public void createHealthMonitor(InternalDistributedMember owner,
                                   GemFireHealthConfig cfg) {
@@ -4652,7 +4652,7 @@ public class DistributionManager
 
   /* (non-Javadoc)
    * @see com.gemstone.gemfire.distributed.internal.DM#getMembersOnThisHost()
-   * @since gemfire59poc
+   * @since GemFire 5.9
    */
   public Set<InternalDistributedMember> getMembersInThisZone() {
     return getMembersInSameZone(getDistributionManagerId());

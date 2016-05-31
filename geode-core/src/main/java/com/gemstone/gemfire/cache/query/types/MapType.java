@@ -23,7 +23,7 @@ package com.gemstone.gemfire.cache.query.types;
  * The type of the keys is obtained from the getKeyType method, and the type
  * of the values is obtained from the getElementType method.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public interface MapType extends CollectionType {
   

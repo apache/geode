@@ -22,7 +22,7 @@ package com.gemstone.gemfire;
  *
  *
  * @see CopyHelper#copy
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class CopyException extends GemFireException {
 private static final long serialVersionUID = -1143711608610323585L;

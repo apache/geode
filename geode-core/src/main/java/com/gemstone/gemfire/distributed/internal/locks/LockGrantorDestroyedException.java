@@ -21,7 +21,7 @@ package com.gemstone.gemfire.distributed.internal.locks;
  * A <code>LockGrantorDestroyedException</code> is thrown when attempting
  * use a distributed lock grantor that has been destroyed.
  *
- * @since     4.0
+ * @since GemFire     4.0
  */
 public class LockGrantorDestroyedException extends IllegalStateException {
 private static final long serialVersionUID = -3540124531032570817L;

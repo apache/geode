@@ -48,7 +48,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * @see com.gemstone.gemfire.management.internal.cli.commands.LauncherLifecycleCommands
  * @see org.junit.Assert
  * @see org.junit.Test
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(IntegrationTest.class)
 public class LauncherLifecycleCommandsIntegrationTest {

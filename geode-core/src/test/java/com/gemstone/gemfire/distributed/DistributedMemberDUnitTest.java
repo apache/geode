@@ -45,7 +45,7 @@ import org.junit.experimental.categories.Category;
 /**
  * Tests the functionality of the {@link DistributedMember} class.
  *
- * @since 5.0
+ * @since GemFire 5.0
  */
 @Category(DistributedTest.class)
 public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {

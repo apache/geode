@@ -25,7 +25,7 @@ import java.util.*;
  * for a single transaction.
  *
  * 
- * @since 4.0
+ * @since GemFire 4.0
  * 
  */
 public class TXLockRequest {

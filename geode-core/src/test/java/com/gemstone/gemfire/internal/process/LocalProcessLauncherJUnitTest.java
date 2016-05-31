@@ -36,7 +36,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 /**
  * Unit tests for ProcessLauncher.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 @Category(IntegrationTest.class)
 public class LocalProcessLauncherJUnitTest {

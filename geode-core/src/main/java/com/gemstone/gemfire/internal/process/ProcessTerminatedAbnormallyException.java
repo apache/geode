@@ -24,7 +24,7 @@ import com.gemstone.gemfire.GemFireException;
  * terminated abnormally, and it's exit code is captured along with this RuntimeException.
  * </p>
  * @see com.gemstone.gemfire.GemFireException
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class ProcessTerminatedAbnormallyException extends GemFireException {
   private static final long serialVersionUID = -1181367425266595492L;

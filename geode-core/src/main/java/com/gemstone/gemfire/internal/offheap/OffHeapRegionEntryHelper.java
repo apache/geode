@@ -34,7 +34,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
  * It allows common code to be shared for all the
  * classes we have that implement {@link OffHeapRegionEntry}.
  * 
- * @since 9.0
+ * @since Geode 1.0
  */
 public class OffHeapRegionEntryHelper {
 
@@ -261,7 +261,7 @@ public class OffHeapRegionEntryHelper {
   }
 
   static Object decodeAddressToObject(long ohAddress) {
-      byte[] bytes = decodeAddressToBytes(ohAddress, true, false);
+      byte[] bytes = decodeUncompressedAddressToBytes(ohAddress);
 
       boolean isSerialized = (ohAddress & SERIALIZED_BIT) != 0;
       if (isSerialized) {
@@ -280,9 +280,22 @@ public class OffHeapRegionEntryHelper {
     return (int) ((addr & SIZE_MASK) >> SIZE_SHIFT);
   }
   
-  static byte[] decodeAddressToBytes(long addr, boolean decompress, boolean compressedOk) {
+  /**
+   * Returns the bytes encoded in the given address.
+   * Note that compressed addresses are not supported by this method.
+   * @throws UnsupportedOperationException if the address has compressed data
+   */
+  static byte[] decodeUncompressedAddressToBytes(long addr) {
+    assert (addr & COMPRESSED_BIT) == 0 : "Did not expect encoded address to be compressed";
+    return decodeAddressToRawBytes(addr);
+  }
+  
+  /**
+   * Returns the "raw" bytes that have been encoded in the given address.
+   * Note that if address is compressed then the raw bytes are the compressed bytes.
+   */
+  static byte[] decodeAddressToRawBytes(long addr) {
     assert (addr & ENCODED_BIT) != 0;
-    boolean isCompressed = (addr & COMPRESSED_BIT) != 0;
     int size = (int) ((addr & SIZE_MASK) >> SIZE_SHIFT);
     boolean isLong = (addr & LONG_BIT) != 0;
     byte[] bytes;
@@ -303,11 +316,6 @@ public class OffHeapRegionEntryHelper {
       for (int i=size-1; i >=0; i--) {
         addr >>= 8;
         bytes[i] = (byte) (addr & 0x00ff);
-      }
-    }
-    if (decompress && isCompressed) {
-      if (!compressedOk) {
-        throw new UnsupportedOperationException("Did not expect encoded address to be compressed");
       }
     }
     return bytes;

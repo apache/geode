@@ -44,7 +44,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * locally.
  * 
  * 
- * @since 5.8 LA
+ * @since GemFire 5.8 LA
  * 
  */
 public class DistributedRegionFunctionExecutor extends AbstractExecution {

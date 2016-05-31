@@ -21,7 +21,7 @@ import com.gemstone.gemfire.cache.DiskStore;
 /**
  * Composite data type used to distribute metrics for a {@link DiskStore}.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class DiskMetrics {
   

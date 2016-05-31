@@ -83,7 +83,7 @@ import com.gemstone.gemfire.pdx.internal.PdxString;
  * 
  * Currently this implementation only supports an index on a region path.
  * 
- * @since 6.0
+ * @since GemFire 6.0
  */
 public class CompactRangeIndex extends AbstractIndex {
 

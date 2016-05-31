@@ -37,7 +37,7 @@ import java.text.DecimalFormat;
  * This service class has implementation for providing cluster's basic
  * statistical data.
  * 
- * @since version 7.5
+ * @since GemFire version 7.5
  */
 
 @Component

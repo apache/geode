@@ -53,7 +53,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * </tr>
  * </table>
  * 
- * @since 7.0
+ * @since GemFire 7.0
  * 
  */
 @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)

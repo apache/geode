@@ -58,7 +58,7 @@ import com.gemstone.gemfire.internal.util.Breadcrumbs;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 
 /**
- * @since 6.5 
+ * @since GemFire 6.5
  */
 public class Put65 extends BaseCommand {
 

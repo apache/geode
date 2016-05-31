@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * Interface having updateData() function which is getting Override by both
  * MockDataUpdater and JMXDataUpdater
  * 
- * @since  version 7.0.Beta 2012-09-23 
+ * @since GemFire  version 7.0.Beta 2012-09-23
  * 
  */
 public interface IClusterUpdater {

@@ -32,7 +32,7 @@ import java.util.Set;
 /**
  * Represents a {@link CacheServer} that is created declaratively.
  *
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class CacheServerCreation extends AbstractCacheServer {
 

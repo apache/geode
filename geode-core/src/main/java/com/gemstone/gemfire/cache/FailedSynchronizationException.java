@@ -31,7 +31,7 @@ import javax.transaction.UserTransaction;
  * @see UserTransaction#setRollbackOnly
  * @see Transaction#registerSynchronization
  * @see Status
- * @since 4.0
+ * @since GemFire 4.0
  */
 public class FailedSynchronizationException extends CacheRuntimeException {
 private static final long serialVersionUID = -6225053492344591496L;

@@ -57,7 +57,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
  * 
  * Extracted from DistributedTestCase.
  * 
- * @since 5.7bugfix
+ * @since GemFire 5.7bugfix
  */
 @SuppressWarnings("serial")
 public class IgnoredException implements Serializable {
@@ -144,7 +144,7 @@ public class IgnoredException implements Serializable {
    * suspect string is used by the GrepLogs utility and so can contain
    * regular expression characters.
    * 
-   * @since 5.7bugfix
+   * @since GemFire 5.7bugfix
    * @param suspectString the exception string to expect
    * @param vm the VM on which to log the expected exception or null for all VMs
    * @return an IgnoredException instance for removal purposes
@@ -197,7 +197,7 @@ public class IgnoredException implements Serializable {
    * If you do not remove the ignored exception, it will be removed at the
    * end of your test case automatically.
    * 
-   * @since 5.7bugfix
+   * @since GemFire 5.7bugfix
    * @param suspectString the exception string to expect
    * @return an IgnoredException instance for removal
    */

@@ -162,7 +162,7 @@ public class DistributedRegion extends LocalRegion implements
   /**
    * Provides a queue for reliable message delivery
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected final ReliableMessageQueue rmq;
 
@@ -684,7 +684,7 @@ public class DistributedRegion extends LocalRegion implements
    * @throws RoleException
    *           if a required role is missing and the LossAction is either
    *           NO_ACCESS or LIMITED_ACCESS.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected boolean isNoDistributionOk()
   {
@@ -703,7 +703,7 @@ public class DistributedRegion extends LocalRegion implements
   /**
    * returns true if this Region does not distribute its operations to other
    * members.
-   * @since 6.0
+   * @since GemFire 6.0
    * @see HARegion#localDestroyNoCallbacks(Object)
    */
   public boolean doesNotDistribute() {
@@ -727,7 +727,7 @@ public class DistributedRegion extends LocalRegion implements
    *          removed from this set.
    * @return the set, possibly null, of recipients that are currently having
    *         their data queued.
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected Set adjustForQueuing(Set recipients)
   {
@@ -767,7 +767,7 @@ public class DistributedRegion extends LocalRegion implements
    * @param b
    *          a non-null non-empty set
    * @return true if sets a and b intersect; false if not
-   * @since 5.0
+   * @since GemFire 5.0
    */
   public static boolean intersects(Set a, Set b)
   {
@@ -1891,7 +1891,7 @@ public class DistributedRegion extends LocalRegion implements
   /**
    * Distribute the invalidate of a region given its event.
    * This implementation sends the invalidate to peers.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   protected void distributeInvalidateRegion(RegionEventImpl event) {
     new InvalidateRegionOperation(event).distribute();
@@ -3584,7 +3584,7 @@ public class DistributedRegion extends LocalRegion implements
   /**
    * Distribute the PutAllOp.
    * This implementation distributes it to peers.
-   * @since 5.7
+   * @since GemFire 5.7
    */
   @Override
   public void postPutAllSend(DistributedPutAllOperation putAllOp, VersionedObjectList successfulPuts) {
@@ -3764,7 +3764,7 @@ public class DistributedRegion extends LocalRegion implements
    * Used to get membership events from our advisor to implement
    * RegionMembershipListener invocations.
    * 
-   * @since 5.0
+   * @since GemFire 5.0
    */
   protected class AdvisorListener implements MembershipListener
   {
@@ -3983,7 +3983,7 @@ public class DistributedRegion extends LocalRegion implements
    * 
    * @param function
    * @param args
-   * @since 5.8
+   * @since GemFire 5.8
    */  
   @Override
   public ResultCollector executeFunction(

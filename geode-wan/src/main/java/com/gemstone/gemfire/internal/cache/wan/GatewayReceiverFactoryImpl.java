@@ -33,7 +33,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public class GatewayReceiverFactoryImpl implements GatewayReceiverFactory {
 

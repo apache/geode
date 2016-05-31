@@ -42,7 +42,7 @@ import java.util.Set;
  * <p>
  * This class used to be in package <code>com.gemstone.gemfire.util</code>.
  * 
- * @since 7.0
+ * @since GemFire 7.0
  */
 public final class GatewaySenderEventCallbackArgument extends
 WrappedCallbackArgument implements DataSerializableFixedID {
