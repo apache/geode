@@ -51,7 +51,7 @@ import java.util.Set;
 
 import static com.gemstone.gemfire.cache.RegionShortcut.PARTITION;
 import static com.gemstone.gemfire.cache.RegionShortcut.REPLICATE;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static com.gemstone.gemfire.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static com.gemstone.gemfire.internal.FileUtil.delete;
 import static com.gemstone.gemfire.internal.FileUtil.deleteMatching;
@@ -347,13 +347,13 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
         final Properties locatorProps = new Properties();
         locatorProps.setProperty(NAME, locator1Name);
         locatorProps.setProperty(MCAST_PORT, "0");
-        locatorProps.setProperty(SystemConfigurationProperties.LOG_LEVEL, "config");
-        locatorProps.setProperty(SystemConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "true");
-        locatorProps.setProperty(SystemConfigurationProperties.JMX_MANAGER, "true");
-        locatorProps.setProperty(SystemConfigurationProperties.JMX_MANAGER_START, "true");
-        locatorProps.setProperty(SystemConfigurationProperties.JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
-        locatorProps.setProperty(SystemConfigurationProperties.JMX_MANAGER_PORT, String.valueOf(jmxPort));
-        locatorProps.setProperty(SystemConfigurationProperties.HTTP_SERVICE_PORT, String.valueOf(httpPort));
+        locatorProps.setProperty(LOG_LEVEL, "config");
+        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
+        locatorProps.setProperty(JMX_MANAGER, "true");
+        locatorProps.setProperty(JMX_MANAGER_START, "true");
+        locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
+        locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
+        locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
 
         final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator1Port, locatorLogFile, null, locatorProps);
 
@@ -392,7 +392,7 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
       public Object call() {
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(SystemConfigurationProperties.LOCATORS, "localhost:" + locator1Port);
+        localProps.setProperty(LOCATORS, "localhost:" + locator1Port);
         localProps.setProperty(NAME, "DataMember");
         getSystem(localProps);
         Cache cache = getCache();

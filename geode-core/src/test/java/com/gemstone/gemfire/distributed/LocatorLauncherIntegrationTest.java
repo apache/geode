@@ -39,6 +39,7 @@ import static com.googlecode.catchexception.apis.BDDCatchException.caughtExcepti
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
 import static org.assertj.core.api.BDDAssertions.assertThat;
 import static org.assertj.core.api.BDDAssertions.then;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Integration tests for LocatorLauncher. These tests require file system I/O.

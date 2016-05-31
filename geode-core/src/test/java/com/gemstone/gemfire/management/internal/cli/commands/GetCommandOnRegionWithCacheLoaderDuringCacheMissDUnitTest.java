@@ -41,8 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOG_LEVEL;
-import static com.gemstone.gemfire.distributed.NAME;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.Host.getHost;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;

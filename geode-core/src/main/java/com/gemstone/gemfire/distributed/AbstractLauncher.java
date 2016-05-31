@@ -46,6 +46,8 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  * The AbstractLauncher class is a base class for implementing various launchers to construct and run different GemFire
  * processes, like Cache Servers, Locators, Managers, HTTP servers and so on.

@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.help.utils;
 
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.management.cli.CliMetaData;
 import com.gemstone.gemfire.management.internal.cli.help.format.*;
 import com.gemstone.gemfire.management.internal.cli.modes.CommandModes;
@@ -29,6 +28,8 @@ import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * @since GemFire 7.0

@@ -35,6 +35,7 @@ import static com.gemstone.gemfire.test.dunit.Assert.assertNotNull;
 import static com.gemstone.gemfire.test.dunit.Host.getHost;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getDUnitLogLevel;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * The ListAndDescribeDiskStoreCommandsDUnitTest class is a test suite of functional tests cases testing the proper

@@ -17,7 +17,6 @@
 package com.gemstone.gemfire;
 
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import org.junit.After;
 import org.junit.Before;
@@ -26,8 +25,7 @@ import org.junit.rules.TestName;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.assertTrue;
 
 /**

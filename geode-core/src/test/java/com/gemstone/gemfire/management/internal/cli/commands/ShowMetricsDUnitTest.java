@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.management.*;
 import com.gemstone.gemfire.management.cli.Result;
@@ -45,6 +44,7 @@ import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
 import static com.gemstone.gemfire.test.dunit.Assert.assertTrue;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 @Category(DistributedTest.class)
 public class ShowMetricsDUnitTest extends CliCommandTestBase {
