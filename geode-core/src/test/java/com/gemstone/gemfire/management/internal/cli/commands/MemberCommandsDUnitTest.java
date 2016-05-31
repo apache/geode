@@ -80,7 +80,7 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
     props.setProperty(LOG_LEVEL, "info");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
     props.setProperty(ENABLE_TIME_STATISTICS, "true");
-    props.setProperty(SystemConfigurationProperties.NAME, name);
+    props.setProperty(NAME, name);
     props.setProperty(GROUPS, groups);
     return props;
   }

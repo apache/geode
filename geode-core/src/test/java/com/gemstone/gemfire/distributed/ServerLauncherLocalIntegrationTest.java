@@ -113,7 +113,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
       assertEquals("true", distributedSystem.getProperties().getProperty(DISABLE_AUTO_RECONNECT));
       assertEquals("config", distributedSystem.getProperties().getProperty(LOG_LEVEL));
       assertEquals("0", distributedSystem.getProperties().getProperty(MCAST_PORT));
-      assertEquals(getUniqueName(), distributedSystem.getProperties().getProperty(SystemConfigurationProperties.NAME));
+      assertEquals(getUniqueName(), distributedSystem.getProperties().getProperty(NAME));
 
     } catch (Throwable e) {
       this.errorCollector.addError(e);

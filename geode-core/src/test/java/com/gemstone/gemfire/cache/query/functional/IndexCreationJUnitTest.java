@@ -849,7 +849,7 @@ public class IndexCreationJUnitTest{
     
     {
       Properties props = new Properties();
-      props.setProperty(SystemConfigurationProperties.NAME, "test");
+      props.setProperty(NAME, "test");
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(CACHE_XML_FILE, IndexCreationJUnitTest.class.getResource("index-creation-with-eviction.xml").toURI().getPath());
       DistributedSystem ds = DistributedSystem.connect(props);
@@ -873,7 +873,7 @@ public class IndexCreationJUnitTest{
 
     {
       Properties props = new Properties();
-      props.setProperty(SystemConfigurationProperties.NAME, "test");
+      props.setProperty(NAME, "test");
       props.setProperty(MCAST_PORT, "0");
       //Using a different cache.xml that changes some region properties
       //That will force the disk code to copy the region entries.
@@ -899,7 +899,7 @@ public class IndexCreationJUnitTest{
     file.mkdir();
 
     Properties props = new Properties();
-    props.setProperty(SystemConfigurationProperties.NAME, "test");
+    props.setProperty(NAME, "test");
     props.setProperty(MCAST_PORT, "0");
     props
         .setProperty(CACHE_XML_FILE, IndexCreationJUnitTest.class.getResource("index-creation-without-eviction.xml").toURI().getPath());
@@ -927,7 +927,7 @@ public class IndexCreationJUnitTest{
     file.mkdir();
 
     Properties props = new Properties();
-    props.setProperty(SystemConfigurationProperties.NAME, "test");
+    props.setProperty(NAME, "test");
     props.setProperty(MCAST_PORT, "0");
     props
         .setProperty(CACHE_XML_FILE, IndexCreationJUnitTest.class.getResource("index-creation-without-eviction.xml").toURI().getPath());
@@ -956,7 +956,7 @@ public class IndexCreationJUnitTest{
     
     {
       Properties props = new Properties();
-      props.setProperty(SystemConfigurationProperties.NAME, "test");
+      props.setProperty(NAME, "test");
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
       props.setProperty(ENABLE_TIME_STATISTICS, "true");
@@ -990,7 +990,7 @@ public class IndexCreationJUnitTest{
 
     {
       Properties props = new Properties();
-      props.setProperty(SystemConfigurationProperties.NAME, "test");
+      props.setProperty(NAME, "test");
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
       props.setProperty(ENABLE_TIME_STATISTICS, "true");

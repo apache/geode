@@ -123,7 +123,7 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
     final Properties distributedSystemProperties = new Properties();
 
     distributedSystemProperties.setProperty(SystemConfigurationProperties.LOG_LEVEL, getDUnitLogLevel());
-    distributedSystemProperties.setProperty(SystemConfigurationProperties.NAME, gemfireName);
+    distributedSystemProperties.setProperty(NAME, gemfireName);
 
     return distributedSystemProperties;
   }
@@ -170,7 +170,7 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
     }
 
     public String getName() {
-      return getDistributedSystemConfiguration().getProperty(SystemConfigurationProperties.NAME);
+      return getDistributedSystemConfiguration().getProperty(NAME);
     }
 
     public VM getVm() {

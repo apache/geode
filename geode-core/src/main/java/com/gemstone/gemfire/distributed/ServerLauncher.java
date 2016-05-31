@@ -2264,9 +2264,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
     protected void validateOnStart() {
       if (Command.START.equals(getCommand())) {
         if (StringUtils.isBlank(getMemberName())
-            && !isSet(System.getProperties(), DistributionConfig.GEMFIRE_PREFIX + SystemConfigurationProperties.NAME)
-            && !isSet(getDistributedSystemProperties(), SystemConfigurationProperties.NAME)
-            && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), SystemConfigurationProperties.NAME))
+            && !isSet(System.getProperties(), DistributionConfig.GEMFIRE_PREFIX + NAME)
+            && !isSet(getDistributedSystemProperties(), NAME)
+            && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), NAME))
         {
           throw new IllegalStateException(LocalizedStrings.Launcher_Builder_MEMBER_NAME_VALIDATION_ERROR_MESSAGE
             .toLocalizedString("Server"));

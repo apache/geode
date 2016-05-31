@@ -103,7 +103,7 @@ public class LauncherLifecycleCommandsJUnitTest {
     gemfireProperties.setProperty(LOG_LEVEL, "config");
     gemfireProperties.setProperty(LOG_FILE, StringUtils.EMPTY_STRING);
     gemfireProperties.setProperty(MCAST_PORT, "0");
-    gemfireProperties.setProperty(SystemConfigurationProperties.NAME, "tidepool");
+    gemfireProperties.setProperty(NAME, "tidepool");
 
     getLauncherLifecycleCommands().addGemFireSystemProperties(commandLine, gemfireProperties);
 

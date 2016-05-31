@@ -302,7 +302,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testExecuteFunctionOnMembers() {
     Properties localProps = new Properties();
-    localProps.setProperty(SystemConfigurationProperties.NAME, "Manager");
+    localProps.setProperty(NAME, "Manager");
     localProps.setProperty(GROUPS, "Group1");
     setUpJmxManagerOnVm0ThenConnect(localProps);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
@@ -336,7 +336,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testExecuteFunctionOnMembersWithArgs() {
     Properties localProps = new Properties();
-    localProps.setProperty(SystemConfigurationProperties.NAME, "Manager");
+    localProps.setProperty(NAME, "Manager");
     localProps.setProperty(GROUPS, "Group1");
     setUpJmxManagerOnVm0ThenConnect(localProps);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RETURN_ARGS);
@@ -372,7 +372,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testExecuteFunctionOnMembersWithArgsAndCustomResultCollector() {
     Properties localProps = new Properties();
-    localProps.setProperty(SystemConfigurationProperties.NAME, "Manager");
+    localProps.setProperty(NAME, "Manager");
     localProps.setProperty(GROUPS, "Group1");
     setUpJmxManagerOnVm0ThenConnect(localProps);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RETURN_ARGS);
@@ -409,7 +409,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testExecuteFunctionOnGroups() {
     Properties localProps = new Properties();
-    localProps.setProperty(SystemConfigurationProperties.NAME, "Manager");
+    localProps.setProperty(NAME, "Manager");
     localProps.setProperty(GROUPS, "Group0");
     setUpJmxManagerOnVm0ThenConnect(localProps);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
@@ -488,7 +488,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testDestroyOnGroups() {
     Properties localProps = new Properties();
-    localProps.setProperty(SystemConfigurationProperties.NAME, "Manager");
+    localProps.setProperty(NAME, "Manager");
     localProps.setProperty(GROUPS, "Group0");
     setUpJmxManagerOnVm0ThenConnect(localProps);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
@@ -578,7 +578,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     vm1.invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(SystemConfigurationProperties.NAME, vm1Name);
+        localProps.setProperty(NAME, vm1Name);
         localProps.setProperty(GROUPS, "Group2");
         getSystem(localProps);
         getCache();
@@ -597,7 +597,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     vm2.invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(SystemConfigurationProperties.NAME, vm2Name);
+        localProps.setProperty(NAME, vm2Name);
         localProps.setProperty(GROUPS, "Group3");
         getSystem(localProps);
         getCache();

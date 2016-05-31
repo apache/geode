@@ -183,7 +183,7 @@ public class ServerLauncherIntegrationTest {
   public void testBuildWithMemberNameSetInGemFirePropertiesOnStart() throws Exception {
     // given: gemfire.properties with a name
     Properties gemfireProperties = new Properties();
-    gemfireProperties.setProperty(SystemConfigurationProperties.NAME, "server123");
+    gemfireProperties.setProperty(NAME, "server123");
     useGemFirePropertiesFileInTemporaryFolder(DistributionConfig.GEMFIRE_PREFIX + "properties", gemfireProperties);
 
     // when: starting with null MemberName

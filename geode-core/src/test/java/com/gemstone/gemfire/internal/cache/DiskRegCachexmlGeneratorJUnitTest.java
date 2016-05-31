@@ -197,7 +197,7 @@ public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase
     ds.disconnect();
     // Connect to the GemFire distributed system
     Properties props = new Properties();
-    props.setProperty(SystemConfigurationProperties.NAME, "DiskRegCachexmlGeneratorJUnitTest");
+    props.setProperty(NAME, "DiskRegCachexmlGeneratorJUnitTest");
     props.setProperty(MCAST_PORT, "0");
     String path = "DiskRegCachexmlGeneratorJUnitTest.xml";
     props.setProperty(CACHE_XML_FILE, path);

@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOG_LEVEL;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.NAME;
+import static com.gemstone.gemfire.distributed.NAME;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.Host.getHost;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
@@ -265,7 +265,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
     }
 
     public String getName() {
-      return getConfiguration().getProperty(SystemConfigurationProperties.NAME);
+      return getConfiguration().getProperty(NAME);
     }
 
     public VM getVm() {

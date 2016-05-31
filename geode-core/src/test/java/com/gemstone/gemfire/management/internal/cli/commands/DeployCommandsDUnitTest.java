@@ -98,7 +98,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     final String vmName = "VM" + vm.getPid();
 
     // Create the cache in this VM
-    props.setProperty(SystemConfigurationProperties.NAME, "Controller");
+    props.setProperty(NAME, "Controller");
     props.setProperty(GROUPS, "Group1");
     getSystem(props);
     getCache();
@@ -106,7 +106,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     // Create the cache in the other VM
     vm.invoke(new SerializableRunnable() {
       public void run() {
-        props.setProperty(SystemConfigurationProperties.NAME, vmName);
+        props.setProperty(NAME, vmName);
         props.setProperty(GROUPS, "Group2");
         getSystem(props);
         getCache();
@@ -184,7 +184,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     final String vmName = "VM" + vm.getPid();
 
     // Create the cache in this VM
-    props.setProperty(SystemConfigurationProperties.NAME, "Controller");
+    props.setProperty(NAME, "Controller");
     props.setProperty(GROUPS, "Group1");
     getSystem(props);
     getCache();
@@ -192,7 +192,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     // Create the cache in the other VM
     vm.invoke(new SerializableRunnable() {
       public void run() {
-        props.setProperty(SystemConfigurationProperties.NAME, vmName);
+        props.setProperty(NAME, vmName);
         props.setProperty(GROUPS, "Group2");
         getSystem(props);
         getCache();
@@ -261,7 +261,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     final String vmName = "VM" + vm.getPid();
 
     // Create the cache in this VM
-    props.setProperty(SystemConfigurationProperties.NAME, "Controller");
+    props.setProperty(NAME, "Controller");
     props.setProperty(GROUPS, "Group1");
     getSystem(props);
     getCache();
@@ -269,7 +269,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     // Create the cache in the other VM
     vm.invoke(new SerializableRunnable() {
       public void run() {
-        props.setProperty(SystemConfigurationProperties.NAME, vmName);
+        props.setProperty(NAME, vmName);
         props.setProperty(GROUPS, "Group2");
         getSystem(props);
         getCache();
@@ -337,7 +337,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
         final File locatorLogFile = new File(locatorLogPath);
 
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator");
+        locatorProps.setProperty(NAME, "Locator");
         locatorProps.setProperty(MCAST_PORT, "0");
         locatorProps.setProperty(LOG_LEVEL, "fine");
         locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");

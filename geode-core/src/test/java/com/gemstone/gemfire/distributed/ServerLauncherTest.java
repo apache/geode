@@ -500,18 +500,18 @@ public class ServerLauncherTest {
     ServerLauncher launcher = new Builder()
       .setCommand(ServerLauncher.Command.START)
       .setMemberName(null)
-        .set(SystemConfigurationProperties.NAME, "serverABC")
+        .set(NAME, "serverABC")
       .build();
 
     assertNotNull(launcher);
     assertEquals(ServerLauncher.Command.START, launcher.getCommand());
     assertNull(launcher.getMemberName());
-    assertEquals("serverABC", launcher.getProperties().getProperty(SystemConfigurationProperties.NAME));
+    assertEquals("serverABC", launcher.getProperties().getProperty(NAME));
   }
 
   @Test
   public void testBuildWithMemberNameSetInSystemPropertiesOnStart() {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + SystemConfigurationProperties.NAME, "serverXYZ");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + NAME, "serverXYZ");
 
     ServerLauncher launcher = new Builder()
       .setCommand(ServerLauncher.Command.START)

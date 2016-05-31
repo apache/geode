@@ -168,7 +168,7 @@ public class LonerDMJUnitTest {
     cfg.setProperty(MCAST_PORT, "0");
     cfg.setProperty(LOCATORS, "");
     cfg.setProperty(ROLES, "lonelyOne");
-    cfg.setProperty(SystemConfigurationProperties.NAME, name);
+    cfg.setProperty(NAME, name);
     DistributedSystem ds = DistributedSystem.connect(cfg);
     System.out.println("MemberId = " + ds.getMemberId());
     assertEquals(host.toString(), ds.getDistributedMember().getHost());

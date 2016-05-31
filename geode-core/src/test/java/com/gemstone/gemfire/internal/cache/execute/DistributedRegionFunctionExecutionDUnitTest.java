@@ -888,7 +888,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends DistributedTest
 
   public static void createCacheInVm_41367() {
     Properties props = new Properties();
-    props.put(SystemConfigurationProperties.NAME, "SecurityServer");
+    props.put(NAME, "SecurityServer");
     props.put(SECURITY_CLIENT_AUTHENTICATOR, DummyAuthenticator.class.getName() + ".create");
     new DistributedRegionFunctionExecutionDUnitTest("temp").createCache(props);
   }

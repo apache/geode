@@ -69,7 +69,7 @@ public class DiskRegCacheXmlJUnitTest
     dirs[2] = file3;
     // Connect to the GemFire distributed system
     Properties props = new Properties();
-    props.setProperty(SystemConfigurationProperties.NAME, "test");
+    props.setProperty(NAME, "test");
     String path = TestUtil.getResourcePath(getClass(), "DiskRegCacheXmlJUnitTest.xml");
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(CACHE_XML_FILE, path);

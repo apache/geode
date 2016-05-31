@@ -94,7 +94,7 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
         final File locatorLogFile = new File(testName + "-locator-" + locator1Port + ".log");
 
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(SystemConfigurationProperties.NAME, locator1Name);
+        locatorProps.setProperty(NAME, locator1Name);
         locatorProps.setProperty(MCAST_PORT, "0");
         locatorProps.setProperty(LOG_LEVEL, "fine");
         locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
@@ -143,7 +143,7 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
         final File locatorLogFile = new File(testName + "-locator-" + locator2Port + ".log");
 
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(SystemConfigurationProperties.NAME, locator2Name);
+        locatorProps.setProperty(NAME, locator2Name);
         locatorProps.setProperty(MCAST_PORT, "0");
         locatorProps.setProperty(LOG_LEVEL, "fine");
         locatorProps.setProperty(LOCATORS, "localhost:" + locator1Port);
@@ -229,7 +229,7 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
         final File locatorLogFile = new File(testName + "-locator-" + locator1Port + ".log");
 
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator1");
+        locatorProps.setProperty(NAME, "Locator1");
         locatorProps.setProperty(MCAST_PORT, "0");
         locatorProps.setProperty(LOG_LEVEL, "info");
         locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
@@ -321,7 +321,7 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
         final File locatorLogFile = new File(testName + "-locator-" + locator2Port + ".log");
 
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator2");
+        locatorProps.setProperty(NAME, "Locator2");
         locatorProps.setProperty(MCAST_PORT, "0");
         locatorProps.setProperty(LOG_LEVEL, "info");
         locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");

@@ -254,7 +254,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(ACK_WAIT_THRESHOLD, "3");
       props.setProperty(ACK_SEVERE_ALERT_THRESHOLD, "3");
-      props.setProperty(SystemConfigurationProperties.NAME, "putter");
+      props.setProperty(NAME, "putter");
   
       getSystem(props);
       Region rgn = (new RegionFactory())
@@ -265,7 +265,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
 
       vm1.invoke(new SerializableRunnable("Connect to distributed system") {
         public void run() {
-          props.setProperty(SystemConfigurationProperties.NAME, "sleeper");
+          props.setProperty(NAME, "sleeper");
           getSystem(props);
           IgnoredException.addIgnoredException("elapsed while waiting for replies");
           RegionFactory rf = new RegionFactory();
@@ -396,7 +396,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
       props.setProperty(MCAST_PORT, "0"); // loner
       props.setProperty(ACK_WAIT_THRESHOLD, "5");
       props.setProperty(ACK_SEVERE_ALERT_THRESHOLD, "5");
-      props.setProperty(SystemConfigurationProperties.NAME, "putter");
+      props.setProperty(NAME, "putter");
   
       getSystem(props);
       Region rgn = (new RegionFactory())
@@ -407,7 +407,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
       
       vm1.invoke(new SerializableRunnable("Connect to distributed system") {
         public void run() {
-          props.setProperty(SystemConfigurationProperties.NAME, "sleeper");
+          props.setProperty(NAME, "sleeper");
           getSystem(props);
           LogWriter log = basicGetSystem().getLogWriter();
           log.info("<ExpectedException action=add>service failure</ExpectedException>");

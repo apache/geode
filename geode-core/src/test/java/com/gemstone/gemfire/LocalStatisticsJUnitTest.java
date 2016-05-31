@@ -42,7 +42,7 @@ public class LocalStatisticsJUnitTest extends StatisticsTestCase {
       props.setProperty(STATISTIC_ARCHIVE_FILE, "StatisticsTestCase-localTest.gfs");
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(LOCATORS, "");
-      props.setProperty(SystemConfigurationProperties.NAME, getName());
+      props.setProperty(NAME, getName());
       this.system = DistributedSystem.connect(props);
     }
 

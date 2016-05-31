@@ -765,7 +765,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
         Properties props = new Properties();
-        props.setProperty(SystemConfigurationProperties.NAME, VM1Name);
+        props.setProperty(NAME, VM1Name);
         props.setProperty(GROUPS, group1);
         getSystem(props);
         Region parReg = createParReg(parRegName, getCache(), String.class, Stock.class);
@@ -799,7 +799,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
         Properties props = new Properties();
-        props.setProperty(SystemConfigurationProperties.NAME, VM1Name);
+        props.setProperty(NAME, VM1Name);
         props.setProperty(GROUPS, group1);
         getSystem(props);
         Region parReg = createParReg(parRegName, getCache(), String.class, Stock.class);

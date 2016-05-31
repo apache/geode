@@ -271,7 +271,7 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
       public Object call() {
         final File locatorLogFile = new File(getTestMethodName() + "-locator-" + locatorPort + ".log");
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(SystemConfigurationProperties.NAME, "LocatorWithMcast");
+        locatorProps.setProperty(NAME, "LocatorWithMcast");
         locatorProps.setProperty(MCAST_PORT, mcastport);
         locatorProps.setProperty(MCAST_TTL, mcastttl);
         locatorProps.setProperty(LOG_LEVEL, "info");

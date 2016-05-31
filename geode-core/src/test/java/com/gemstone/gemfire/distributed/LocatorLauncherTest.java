@@ -314,18 +314,18 @@ public class LocatorLauncherTest {
     LocatorLauncher launcher = new Builder()
       .setCommand(LocatorLauncher.Command.START)
       .setMemberName(null)
-        .set(SystemConfigurationProperties.NAME, "locatorABC")
+        .set(NAME, "locatorABC")
       .build();
 
     assertNotNull(launcher);
     assertEquals(LocatorLauncher.Command.START, launcher.getCommand());
     assertNull(launcher.getMemberName());
-    assertEquals("locatorABC", launcher.getProperties().getProperty(SystemConfigurationProperties.NAME));
+    assertEquals("locatorABC", launcher.getProperties().getProperty(NAME));
   }
 
   @Test
   public void testBuildWithMemberNameSetInSystemPropertiesOnStart() {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + SystemConfigurationProperties.NAME, "locatorXYZ");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + NAME, "locatorXYZ");
 
     LocatorLauncher launcher = new Builder()
       .setCommand(LocatorLauncher.Command.START)

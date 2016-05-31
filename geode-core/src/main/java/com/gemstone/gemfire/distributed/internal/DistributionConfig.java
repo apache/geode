@@ -79,7 +79,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
   void setName(String value);
 
   /**
-   * The name of the "name" property
+   * The "name" property, representing the system's name
    */
   @ConfigAttribute(type = String.class)
   String NAME_NAME = NAME;

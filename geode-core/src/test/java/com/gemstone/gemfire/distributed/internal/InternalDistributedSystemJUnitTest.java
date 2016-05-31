@@ -155,7 +155,7 @@ public class InternalDistributedSystemJUnitTest
     String name = "testGetName";
 
     Properties props = new Properties();
-    props.put(SystemConfigurationProperties.NAME, name);
+    props.put(NAME, name);
     // a loner is all this test needs
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -617,7 +617,7 @@ public class InternalDistributedSystemJUnitTest
     // a loner is all this test needs
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(SystemConfigurationProperties.NAME, name);
+    props.setProperty(NAME, name);
     createSystem(props);
   }
 

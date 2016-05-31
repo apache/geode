@@ -401,7 +401,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     this.alterVm1Name = "VM" + this.alterVm1.getPid();
     this.alterVm1.invoke(() -> {
       Properties localProps = new Properties();
-      localProps.setProperty(SystemConfigurationProperties.NAME, alterVm1Name);
+      localProps.setProperty(NAME, alterVm1Name);
       localProps.setProperty(GROUPS, "Group1");
       getSystem(localProps);
       Cache cache = getCache();
@@ -434,7 +434,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     this.alterVm2Name = "VM" + this.alterVm2.getPid();
     this.alterVm2.invoke(() -> {
       Properties localProps = new Properties();
-      localProps.setProperty(SystemConfigurationProperties.NAME, alterVm2Name);
+      localProps.setProperty(NAME, alterVm2Name);
       localProps.setProperty(GROUPS, "Group1,Group2");
       getSystem(localProps);
       Cache cache = getCache();
@@ -770,7 +770,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     Host.getHost(0).getVM(3).invoke(() -> {
       final File locatorLogFile = new File("locator-" + locatorPort + ".log");
       final Properties locatorProps = new Properties();
-      locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator");
+      locatorProps.setProperty(NAME, "Locator");
       locatorProps.setProperty(MCAST_PORT, "0");
       locatorProps.setProperty(LOG_LEVEL, "fine");
       locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
@@ -904,7 +904,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     Host.getHost(0).getVM(3).invoke(() -> {
       final File locatorLogFile = new File("locator-" + locatorPort + ".log");
       final Properties locatorProps = new Properties();
-      locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator");
+      locatorProps.setProperty(NAME, "Locator");
       locatorProps.setProperty(MCAST_PORT, "0");
       locatorProps.setProperty(LOG_LEVEL, "fine");
       locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");

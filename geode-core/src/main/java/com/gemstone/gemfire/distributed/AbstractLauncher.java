@@ -285,7 +285,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     }
 
     if (!StringUtils.isBlank(getMemberName())) {
-      distributedSystemProperties.setProperty(SystemConfigurationProperties.NAME, getMemberName());
+      distributedSystemProperties.setProperty(NAME, getMemberName());
     }
 
     // Set any other GemFire Distributed System/Distribution Config directory-based properties as necessary

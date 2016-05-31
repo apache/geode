@@ -83,6 +83,8 @@ import com.gemstone.gemfire.management.internal.configuration.messages.SharedCon
 import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils;
 import com.gemstone.gemfire.management.internal.configuration.utils.ZipUtils;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 @SuppressWarnings({ "deprecation", "unchecked" })
 public class SharedConfiguration {
 
@@ -142,7 +144,7 @@ public class SharedConfiguration {
   public SharedConfiguration(Cache cache) throws IOException {
     this.cache = (GemFireCacheImpl)cache;
     this.configDiskDirName = CLUSTER_CONFIG_DISK_DIR_PREFIX + cache.getDistributedSystem().getName();
-    String clusterConfigDir = cache.getDistributedSystem().getProperties().getProperty(DistributionConfig.CLUSTER_CONFIGURATION_DIR);
+    String clusterConfigDir = cache.getDistributedSystem().getProperties().getProperty(CLUSTER_CONFIGURATION_DIR);
     if (StringUtils.isBlank(clusterConfigDir)) {
       clusterConfigDir = System.getProperty("user.dir");
     } else {

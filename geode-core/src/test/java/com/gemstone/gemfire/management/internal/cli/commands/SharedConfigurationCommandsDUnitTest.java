@@ -178,7 +178,7 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
         localProps.setProperty(MCAST_PORT, "0");
         localProps.setProperty(LOCATORS, "localhost:" + locator1Port);
         localProps.setProperty(GROUPS, groupName);
-        localProps.setProperty(SystemConfigurationProperties.NAME, "DataMember");
+        localProps.setProperty(NAME, "DataMember");
         getSystem(localProps);
         Cache cache = getCache();
         assertNotNull(cache);
@@ -286,7 +286,7 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
       public void run() {
         final File locatorLogFile = new File(locator2LogFilePath);
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(SystemConfigurationProperties.NAME, locator2Name);
+        locatorProps.setProperty(NAME, locator2Name);
         locatorProps.setProperty(MCAST_PORT, "0");
         locatorProps.setProperty(LOG_LEVEL, "fine");
         locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");

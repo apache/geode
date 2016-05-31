@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import com.gemstone.gemfire.distributed.internal.ConfigAttribute;
 
 /**
  * Created by ukohlmeyer on 26/05/2016.
@@ -130,9 +129,8 @@ public interface SystemConfigurationProperties {
   String MEMCACHED_PROTOCOL = "memcached-protocol";
 
   /**
-   * The name of the "name" property
+   * The "name" property, representing the system's name
    */
-  @ConfigAttribute(type = String.class)
   String NAME = "name";
   String REDUNDANCY_ZONE = "redundancy-zone";
   String REMOTE_LOCATORS = "remote-locators";

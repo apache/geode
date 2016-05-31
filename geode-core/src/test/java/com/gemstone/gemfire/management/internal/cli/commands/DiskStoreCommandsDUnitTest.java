@@ -83,7 +83,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     vm1.invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(SystemConfigurationProperties.NAME, vm1Name);
+        localProps.setProperty(NAME, vm1Name);
         getSystem(localProps);
         Cache cache = getCache();
       }
@@ -747,7 +747,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     filesToBeDeleted.add(fullBackupDirPath);
 
     Properties props = new Properties();
-    props.setProperty(SystemConfigurationProperties.NAME, controllerName);
+    props.setProperty(NAME, controllerName);
 
     getSystem(props);
 
@@ -762,7 +762,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     vm1.invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(SystemConfigurationProperties.NAME, vm1Name);
+        localProps.setProperty(NAME, vm1Name);
         getSystem(localProps);
 
         Cache cache = getCache();
@@ -840,7 +840,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         diskStore1Dir2.mkdirs();
 
         Properties localProps = new Properties();
-        localProps.setProperty(SystemConfigurationProperties.NAME, vm1Name);
+        localProps.setProperty(NAME, vm1Name);
         localProps.setProperty(GROUPS, "Group1");
         getSystem(localProps);
         getCache();
@@ -856,7 +856,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         diskStore2Dir.mkdirs();
 
         Properties localProps = new Properties();
-        localProps.setProperty(SystemConfigurationProperties.NAME, vm2Name);
+        localProps.setProperty(NAME, vm2Name);
         localProps.setProperty(GROUPS, "Group2");
         getSystem(localProps);
         getCache();
@@ -959,7 +959,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         diskStore2Dir1.mkdirs();
 
         Properties localProps = new Properties();
-        localProps.setProperty(SystemConfigurationProperties.NAME, vm1Name);
+        localProps.setProperty(NAME, vm1Name);
         localProps.setProperty(GROUPS, "Group1,Group2");
         getSystem(localProps);
         Cache cache = getCache();
@@ -985,7 +985,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         diskStore2Dir2.mkdirs();
 
         Properties localProps = new Properties();
-        localProps.setProperty(SystemConfigurationProperties.NAME, vm2Name);
+        localProps.setProperty(NAME, vm2Name);
         localProps.setProperty(GROUPS, "Group2");
         getSystem(localProps);
         Cache cache = getCache();

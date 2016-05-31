@@ -104,7 +104,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     final VM vm1 = Host.getHost(0).getVM(1);
     final VM vm2 = Host.getHost(0).getVM(2);
     Properties props = new Properties();
-    props.setProperty(SystemConfigurationProperties.NAME, testName + "Manager");
+    props.setProperty(NAME, testName + "Manager");
     HeadlessGfsh gfsh = setUpJmxManagerOnVm0ThenConnect(props);
     assertNotNull(gfsh);
     assertEquals(true, gfsh.isConnectedAndReady());

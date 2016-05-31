@@ -54,7 +54,7 @@ public class HeadlessGfshIntegrationTest {
     int port = getRandomAvailablePort(SOCKET);
 
     Properties properties = new Properties();
-    properties.put(SystemConfigurationProperties.NAME, this.testName.getMethodName());
+    properties.put(NAME, this.testName.getMethodName());
     properties.put(JMX_MANAGER, "true");
     properties.put(JMX_MANAGER_START, "true");
     properties.put(JMX_MANAGER_PORT, String.valueOf(port));

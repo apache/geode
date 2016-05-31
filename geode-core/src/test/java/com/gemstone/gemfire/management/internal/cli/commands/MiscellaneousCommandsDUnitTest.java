@@ -71,7 +71,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testGCForGroup() {
     Properties localProps = new Properties();
-    localProps.setProperty(SystemConfigurationProperties.NAME, "Manager");
+    localProps.setProperty(NAME, "Manager");
     localProps.setProperty(GROUPS, "Group1");
     setUpJmxManagerOnVm0ThenConnect(localProps);
     String command = "gc --group=Group1";
@@ -441,7 +441,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testChangeLogLevelForGrps() {
     Properties localProps = new Properties();
-    localProps.setProperty(SystemConfigurationProperties.NAME, "Manager");
+    localProps.setProperty(NAME, "Manager");
     localProps.setProperty(GROUPS, "Group0");
 
     final VM vm1 = Host.getHost(0).getVM(1);

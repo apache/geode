@@ -54,7 +54,7 @@ public class JsonAuthorizationCacheStartRule extends ExternalResource {
 
   protected void before() throws Throwable {
     Properties properties = new Properties();
-    properties.put(SystemConfigurationProperties.NAME, JsonAuthorizationCacheStartRule.class.getSimpleName());
+    properties.put(NAME, JsonAuthorizationCacheStartRule.class.getSimpleName());
     properties.put(LOCATORS, "");
     properties.put(MCAST_PORT, "0");
     properties.put(JMX_MANAGER, "true");

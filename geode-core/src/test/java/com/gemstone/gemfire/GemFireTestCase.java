@@ -48,7 +48,7 @@ public abstract class GemFireTestCase {
     // make it a loner
     p.setProperty(MCAST_PORT, "0");
     p.setProperty(LOCATORS, "");
-    p.setProperty(SystemConfigurationProperties.NAME, getName());
+    p.setProperty(NAME, getName());
     DistributedSystem.connect(p);
   }
 

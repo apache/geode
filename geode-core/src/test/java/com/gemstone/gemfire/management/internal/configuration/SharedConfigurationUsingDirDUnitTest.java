@@ -306,7 +306,7 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
       disconnectFromDS();
 
       final Properties props = new Properties();
-      props.setProperty(SystemConfigurationProperties.NAME, "member" + i);
+      props.setProperty(NAME, "member" + i);
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(LOCATORS, getLocatorStr(locatorPorts));
       props.setProperty(LOG_FILE, "server-" + i + ".log");

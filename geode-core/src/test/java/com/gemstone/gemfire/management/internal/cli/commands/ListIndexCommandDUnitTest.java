@@ -128,7 +128,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
     final Properties distributedSystemProperties = new Properties();
 
     distributedSystemProperties.setProperty(LOG_LEVEL, getDUnitLogLevel());
-    distributedSystemProperties.setProperty(SystemConfigurationProperties.NAME, gemfireName);
+    distributedSystemProperties.setProperty(NAME, gemfireName);
 
     return distributedSystemProperties;
   }
@@ -318,7 +318,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
     }
 
     public String getName() {
-      return getConfiguration().getProperty(SystemConfigurationProperties.NAME);
+      return getConfiguration().getProperty(NAME);
     }
 
     public VM getVm() {

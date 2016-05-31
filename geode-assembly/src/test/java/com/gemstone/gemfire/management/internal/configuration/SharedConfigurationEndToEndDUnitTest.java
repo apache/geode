@@ -345,7 +345,7 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
         final File locatorLogFile = new File(locatorLogPath);
 
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(SystemConfigurationProperties.NAME, locator1Name);
+        locatorProps.setProperty(NAME, locator1Name);
         locatorProps.setProperty(MCAST_PORT, "0");
         locatorProps.setProperty(SystemConfigurationProperties.LOG_LEVEL, "config");
         locatorProps.setProperty(SystemConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "true");
@@ -393,7 +393,7 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
         localProps.setProperty(SystemConfigurationProperties.LOCATORS, "localhost:" + locator1Port);
-        localProps.setProperty(SystemConfigurationProperties.NAME, "DataMember");
+        localProps.setProperty(NAME, "DataMember");
         getSystem(localProps);
         Cache cache = getCache();
         assertNotNull(cache);

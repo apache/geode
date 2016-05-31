@@ -94,7 +94,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
         diskStoreDir.mkdirs();
 
         Properties localProps = new Properties();
-        localProps.setProperty(SystemConfigurationProperties.NAME, vm1Name);
+        localProps.setProperty(NAME, vm1Name);
         localProps.setProperty(GROUPS, "Group1");
         getSystem(localProps);
         getCache();
@@ -106,7 +106,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
     vm2.invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(SystemConfigurationProperties.NAME, vm2Name);
+        localProps.setProperty(NAME, vm2Name);
         localProps.setProperty(GROUPS, "Group2");
         getSystem(localProps);
         getCache();
@@ -261,7 +261,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
 
         final File locatorLogFile = new File("locator-" + locatorPort + ".log");
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator");
+        locatorProps.setProperty(NAME, "Locator");
         locatorProps.setProperty(MCAST_PORT, "0");
         locatorProps.setProperty(LOG_LEVEL, "fine");
         locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");

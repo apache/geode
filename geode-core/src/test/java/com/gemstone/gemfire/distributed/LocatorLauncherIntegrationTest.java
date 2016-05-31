@@ -116,7 +116,7 @@ public class LocatorLauncherIntegrationTest {
   public void testBuildWithMemberNameSetInGemFirePropertiesOnStart() throws Exception {
     // given: gemfire.properties with a name
     Properties gemfireProperties = new Properties();
-    gemfireProperties.setProperty(SystemConfigurationProperties.NAME, "locator123");
+    gemfireProperties.setProperty(NAME, "locator123");
     useGemFirePropertiesFileInTemporaryFolder(DistributionConfig.GEMFIRE_PREFIX + "properties", gemfireProperties);
     
     // when: starting with null MemberName

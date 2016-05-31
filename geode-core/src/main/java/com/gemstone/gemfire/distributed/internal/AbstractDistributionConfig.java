@@ -809,7 +809,7 @@ public abstract class AbstractDistributionConfig
       LocalizedStrings.AbstractDistributionConfig_SERVER_BIND_ADDRESS_NAME_0
         .toLocalizedString(DEFAULT_BIND_ADDRESS));
 
-    m.put(SystemConfigurationProperties.NAME, "A name that uniquely identifies a member in its distributed system." +
+    m.put(NAME, "A name that uniquely identifies a member in its distributed system." +
         " Multiple members in the same distributed system can not have the same name." +
         " Defaults to \"\".");
 

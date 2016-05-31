@@ -53,7 +53,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
   private void createLocalSetUp() {
     Properties localProps = new Properties();
-    localProps.setProperty(SystemConfigurationProperties.NAME, "Controller");
+    localProps.setProperty(NAME, "Controller");
     getSystem(localProps);
     Cache cache = getCache();
     RegionFactory<Integer, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
@@ -74,7 +74,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
     vm1.invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(SystemConfigurationProperties.NAME, vm1Name);
+        localProps.setProperty(NAME, vm1Name);
         getSystem(localProps);
 
         Cache cache = getCache();
@@ -117,7 +117,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
     vm1.invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(SystemConfigurationProperties.NAME, vm1Name);
+        localProps.setProperty(NAME, vm1Name);
         getSystem(localProps);
 
         Cache cache = getCache();

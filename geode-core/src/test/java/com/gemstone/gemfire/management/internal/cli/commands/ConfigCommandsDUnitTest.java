@@ -160,7 +160,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testExportConfig() throws Exception {
     Properties localProps = new Properties();
-    localProps.setProperty(SystemConfigurationProperties.NAME, "Manager");
+    localProps.setProperty(NAME, "Manager");
     localProps.setProperty(GROUPS, "Group1");
     setUpJmxManagerOnVm0ThenConnect(localProps);
 
@@ -168,7 +168,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     Host.getHost(0).getVM(1).invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(SystemConfigurationProperties.NAME, "VM1");
+        localProps.setProperty(NAME, "VM1");
         localProps.setProperty(GROUPS, "Group2");
         getSystem(localProps);
         getCache();
@@ -179,7 +179,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     Host.getHost(0).getVM(2).invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(SystemConfigurationProperties.NAME, "VM2");
+        localProps.setProperty(NAME, "VM2");
         localProps.setProperty(GROUPS, "Group2");
         getSystem(localProps);
         getCache();
@@ -188,7 +188,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
 
     // Create a cache in the local VM
     localProps = new Properties();
-    localProps.setProperty(SystemConfigurationProperties.NAME, "Shell");
+    localProps.setProperty(NAME, "Shell");
     getSystem(localProps);
     Cache cache = getCache();
 
@@ -260,7 +260,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     setUpJmxManagerOnVm0ThenConnect(null);
 
     Properties localProps = new Properties();
-    localProps.setProperty(SystemConfigurationProperties.NAME, controller);
+    localProps.setProperty(NAME, controller);
     localProps.setProperty(LOG_LEVEL, "error");
     getSystem(localProps);
 
@@ -305,7 +305,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     setUpJmxManagerOnVm0ThenConnect(null);
 
     Properties localProps = new Properties();
-    localProps.setProperty(SystemConfigurationProperties.NAME, controller);
+    localProps.setProperty(NAME, controller);
     localProps.setProperty(LOG_LEVEL, "error");
     getSystem(localProps);
 
@@ -315,7 +315,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     Host.getHost(0).getVM(1).invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(SystemConfigurationProperties.NAME, member1);
+        localProps.setProperty(NAME, member1);
         getSystem(localProps);
         Cache cache = getCache();
       }
@@ -353,7 +353,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     setUpJmxManagerOnVm0ThenConnect(null);
 
     Properties localProps = new Properties();
-    localProps.setProperty(SystemConfigurationProperties.NAME, controller);
+    localProps.setProperty(NAME, controller);
     localProps.setProperty(LOG_LEVEL, "error");
     getSystem(localProps);
 
@@ -363,7 +363,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     Host.getHost(0).getVM(1).invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();
-        localProps.setProperty(SystemConfigurationProperties.NAME, member1);
+        localProps.setProperty(NAME, member1);
         getSystem(localProps);
         Cache cache = getCache();
       }
@@ -430,7 +430,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
         final File locatorLogFile = new File(locatorDirectory, "locator-" + locatorPort + ".log");
 
         final Properties locatorProps = new Properties();
-        locatorProps.setProperty(SystemConfigurationProperties.NAME, "Locator");
+        locatorProps.setProperty(NAME, "Locator");
         locatorProps.setProperty(MCAST_PORT, "0");
         locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
         locatorProps.setProperty(CLUSTER_CONFIGURATION_DIR, locatorDirectory);

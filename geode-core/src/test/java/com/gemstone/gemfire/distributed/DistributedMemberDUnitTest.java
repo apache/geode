@@ -64,7 +64,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     config.setProperty(LOCATORS, "");
     config.setProperty(ROLES, "");
     config.setProperty(GROUPS, "");
-    config.setProperty(SystemConfigurationProperties.NAME, "");
+    config.setProperty(NAME, "");
 
     InternalDistributedSystem system = getSystem(config);
     try {
@@ -93,7 +93,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOCATORS, "");
-    config.setProperty(SystemConfigurationProperties.NAME, "nondefault");
+    config.setProperty(NAME, "nondefault");
 
     InternalDistributedSystem system = getSystem(config);
     try {
@@ -154,21 +154,21 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       public void run() {
         Properties config = new Properties();
-        config.setProperty(SystemConfigurationProperties.NAME, "name0");
+        config.setProperty(NAME, "name0");
         getSystem(config);
       }
     });
     Host.getHost(0).getVM(1).invoke(new SerializableRunnable() {
       public void run() {
         Properties config = new Properties();
-        config.setProperty(SystemConfigurationProperties.NAME, "name1");
+        config.setProperty(NAME, "name1");
         getSystem(config);
       }
     });
     Host.getHost(0).getVM(2).invoke(new SerializableRunnable() {
       public void run() {
         Properties config = new Properties();
-        config.setProperty(SystemConfigurationProperties.NAME, "name0");
+        config.setProperty(NAME, "name0");
         try {
           getSystem(config);
           fail("expected IncompatibleSystemException");
@@ -363,7 +363,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOCATORS, "");
-    config.setProperty(SystemConfigurationProperties.NAME, "foobar");
+    config.setProperty(NAME, "foobar");
 
     InternalDistributedSystem system = getSystem(config);
     try {
@@ -421,7 +421,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
       @Override
       public Object call() throws Exception {
         Properties config = new Properties();
-        config.setProperty(SystemConfigurationProperties.NAME, name);
+        config.setProperty(NAME, name);
         DistributedSystem ds = getSystem(config);
         return ds.getDistributedMember();
       }

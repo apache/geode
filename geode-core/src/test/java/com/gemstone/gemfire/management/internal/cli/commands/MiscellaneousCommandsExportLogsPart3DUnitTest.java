@@ -86,7 +86,7 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
   @Test
   public void testExportLogsForGroup() throws IOException {
     Properties localProps = new Properties();
-    localProps.setProperty(SystemConfigurationProperties.NAME, "Manager");
+    localProps.setProperty(NAME, "Manager");
     localProps.setProperty(GROUPS, "Group1");
     setUpJmxManagerOnVm0ThenConnect(localProps);
     String dir = getCurrentTimeString();

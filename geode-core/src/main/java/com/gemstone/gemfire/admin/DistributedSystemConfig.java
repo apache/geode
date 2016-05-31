@@ -81,7 +81,7 @@ public interface DistributedSystemConfig extends Cloneable {
   String DEFAULT_SYSTEM_ID = "Default System";
 
   /** The name of the "name" property. See {@link #getSystemName()}. */
-  String NAME_NAME = SystemConfigurationProperties.NAME;
+  String NAME_NAME = NAME;
 
   /** The default value of the "name" property (""). See {@link #getSystemName()}. */
   String DEFAULT_NAME = "";

@@ -134,8 +134,8 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
         jmxHost = "localhost";
       }
 
-      if (!localProps.containsKey(SystemConfigurationProperties.NAME)) {
-        localProps.setProperty(SystemConfigurationProperties.NAME, "Manager");
+      if (!localProps.containsKey(NAME)) {
+        localProps.setProperty(NAME, "Manager");
       }
 
       final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);

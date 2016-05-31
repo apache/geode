@@ -35,8 +35,6 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
-
 /**
  * Provides an implementation of <code>DistributionConfig</code> that
  * knows how to read the configuration file.
@@ -1574,7 +1572,7 @@ public class DistributionConfigImpl
     if (value == null) {
       value = DEFAULT_NAME;
     }
-    this.name = (String) checkAttribute(SystemConfigurationProperties.NAME, value);
+    this.name = (String) checkAttribute(NAME, value);
   }
   public void setTcpPort(int value) {
     this.tcpPort = (Integer) checkAttribute(TCP_PORT, value);
