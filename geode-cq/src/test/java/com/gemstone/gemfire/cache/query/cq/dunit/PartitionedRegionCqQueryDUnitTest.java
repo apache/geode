@@ -16,24 +16,43 @@
  */
 package com.gemstone.gemfire.cache.query.cq.dunit;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+
+import java.io.IOException;
+import java.util.HashSet;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.PartitionAttributes;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.query.*;
+import com.gemstone.gemfire.cache.query.CqAttributes;
+import com.gemstone.gemfire.cache.query.CqAttributesFactory;
+import com.gemstone.gemfire.cache.query.CqListener;
+import com.gemstone.gemfire.cache.query.CqQuery;
+import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.test.dunit.*;
-import hydra.Log;
-
-import java.io.IOException;
-import java.util.HashSet;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
 
 /**
  * Test class for Partitioned Region and CQs
@@ -1418,8 +1437,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         if (localRegion != null) {
 
           // REGION NULL
-          Log.getLogWriter().info("Local region is NOT null in client 1");
-          
           Wait.pause(5*1000);
           CqQuery[] cqs = getCache().getQueryService().getCqs();
           if (cqs != null && cqs.length > 0) {
