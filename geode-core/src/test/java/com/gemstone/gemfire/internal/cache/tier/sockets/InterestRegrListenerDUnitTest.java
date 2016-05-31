@@ -50,7 +50,7 @@ public class InterestRegrListenerDUnitTest extends DistributedTestCase {
   
   private static final String UNREGISTER_INTEREST = "UnregisterInterest";
   private static final String REGISTER_INTEREST = "RegisterInterest";
-  private static final int DURABLE_CLIENT_TIMEOUT=20;  
+  private static final int DURABLE_CLIENT_TIMEOUT_TEST=20;
   
   private static InterestRegrListenerDUnitTest instance = new InterestRegrListenerDUnitTest("InterestRegrListenerDUnitTest");
 
@@ -170,7 +170,7 @@ public class InterestRegrListenerDUnitTest extends DistributedTestCase {
     Properties gemFireProps = new Properties();
     if (isDurable) {
       gemFireProps.put(DURABLE_CLIENT_ID, vmID);
-      gemFireProps.put(DURABLE_CLIENT_TIMEOUT, "" + DURABLE_CLIENT_TIMEOUT);
+      gemFireProps.put(DURABLE_CLIENT_TIMEOUT, "" + DURABLE_CLIENT_TIMEOUT_TEST);
     }
     ClientCacheFactory clientCacheFactory = new ClientCacheFactory(gemFireProps);
     clientCacheFactory.addPoolServer(host, port);
@@ -293,7 +293,7 @@ public class InterestRegrListenerDUnitTest extends DistributedTestCase {
     assertEquals(3, registerCount);
     assertEquals(0, unregisterCount);
     LogWriterUtils.getLogWriter().info("Sleeping till durable client queue are expired and unregister event is called on to listener");
-    Thread.sleep((DURABLE_CLIENT_TIMEOUT+5)*1000);    
+    Thread.sleep((DURABLE_CLIENT_TIMEOUT_TEST+5)*1000);
     listnerMap = (Map<String, Integer>) serverVM.invoke(() -> InterestRegrListenerDUnitTest.getListenerMapTask());
     LogWriterUtils.getLogWriter().info("Listener Map after sleeping " + listnerMap);
     registerCount = getMapValueForKey(listnerMap,REGISTER_INTEREST);
@@ -355,7 +355,7 @@ public class InterestRegrListenerDUnitTest extends DistributedTestCase {
     assertEquals(3, registerCount);
     assertEquals(0, unregisterCount);
     LogWriterUtils.getLogWriter().info("Sleeping till durable client queue are expired and unregister event is called on to listener");
-    Thread.sleep((DURABLE_CLIENT_TIMEOUT+5)*1000);    
+    Thread.sleep((DURABLE_CLIENT_TIMEOUT_TEST+5)*1000);
     listnerMap = (Map<String, Integer>) serverVM.invoke(() -> InterestRegrListenerDUnitTest.getListenerMapTask());
     LogWriterUtils.getLogWriter().info("Listener Map after sleeping " + listnerMap);
     registerCount = getMapValueForKey(listnerMap,REGISTER_INTEREST);
@@ -441,7 +441,7 @@ public class InterestRegrListenerDUnitTest extends DistributedTestCase {
     Wait.waitForCriterion(wc, 20000, 500, true);
     
     LogWriterUtils.getLogWriter().info("Sleeping till durable client queue are expired and unregister event is called on to listener");
-    Thread.sleep((DURABLE_CLIENT_TIMEOUT+5)*1000);
+    Thread.sleep((DURABLE_CLIENT_TIMEOUT_TEST+5)*1000);
     serverVM.invoke(() -> InterestRegrListenerDUnitTest.closeCacheTask());
   }
   
