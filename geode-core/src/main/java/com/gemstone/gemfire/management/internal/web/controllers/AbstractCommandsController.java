@@ -534,16 +534,16 @@ public abstract class AbstractCommandsController {
   }
 
   protected Callable<ResponseEntity<String>> getProcessCommandCallable(final String command){
-    return getProcessCommandCallable(command, null);
+    return getProcessCommandCallable(command, getEnvironment(), null);
   }
 
-  protected Callable<ResponseEntity<String>> getProcessCommandCallable(final String command, final byte[][] fileData){
+  protected Callable<ResponseEntity<String>> getProcessCommandCallable(final String command, final Map<String, String> environment, final byte[][] fileData){
     Callable callable = new Callable<ResponseEntity<String>>() {
       @Override
       public ResponseEntity<String> call() throws Exception {
         String result = null;
         try {
-          result = processCommand(command, fileData);
+          result = processCommand(command, environment, fileData);
         }
         catch(NotAuthorizedException ex){
           return new ResponseEntity<String>(ex.getMessage(), HttpStatus.FORBIDDEN);

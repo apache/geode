@@ -193,7 +193,7 @@ public class ConfigCommandsController extends AbstractMultiPartCommandsControlle
 
     command.addOption(CliStrings.IMPORT_SHARED_CONFIG__ZIP, zipFileName);
 
-    return getProcessCommandCallable(command.toString(), ConvertUtils.convert(zipFileResources));
+    return getProcessCommandCallable(command.toString(), getEnvironment(), ConvertUtils.convert(zipFileResources));
   }
 
 }

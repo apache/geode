@@ -20,9 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.shell.event.ParseResult;
-import org.springframework.util.ReflectionUtils;
-
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.management.cli.Result;
@@ -41,6 +38,9 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.ResultData;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
+
+import org.springframework.shell.event.ParseResult;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Utility class to abstract CompositeResultData for Multi-step commands
@@ -115,8 +115,12 @@ public class CLIMultiStepHelper {
         if (shell.isConnectedAndReady()) {
           if (GfshParseResult.class.isInstance(parseResult)) {
             GfshParseResult gfshParseResult = (GfshParseResult) parseResult;
-
-            CommandRequest commandRequest = new CommandRequest(gfshParseResult, prepareJSONArgs(shell.getEnv(), nextStepArgs));
+            // this makes sure that "quit" step will correctly update the environment with empty stepArgs
+            if (nextStepArgs != null) {
+              GfJsonObject argsJSon = nextStepArgs.getSectionGfJsonObject();
+              shell.setEnvProperty(CLIMultiStepHelper.STEP_ARGS, argsJSon.toString());
+            }
+            CommandRequest commandRequest = new CommandRequest(gfshParseResult, shell.getEnv());
             commandRequest.setCustomInput(changeStepName(gfshParseResult.getUserInput(), nextStep.getName()));
             commandRequest.getCustomParameters().put(CliStrings.QUERY__STEPNAME, nextStep.getName());
 
@@ -157,14 +161,6 @@ public class CLIMultiStepHelper {
       // specified!
       return userInput.substring(0, i) + "--step-name=" + stepName;
     }
-  }
-
-  public static Map<String, String> prepareJSONArgs(Map<String, String> env, SectionResultData nextStepArgs) {
-    if (nextStepArgs != null) {
-      GfJsonObject argsJSon = nextStepArgs.getSectionGfJsonObject();
-      env.put(CLIMultiStepHelper.STEP_ARGS, argsJSon.toString());
-    }
-    return env;
   }
 
   public static SectionResultData extractArgumentsForNextStep(Result result) {
