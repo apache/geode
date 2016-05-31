@@ -45,6 +45,7 @@ import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
 import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.Type2;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -63,12 +64,14 @@ public class IndexRepositoryImplJUnitTest {
   private IndexWriter writer;
   private Region region;
   private LuceneIndexStats stats;
+  private FileSystemStats fileSystemStats;
 
   @Before
   public void setUp() throws IOException {
     ConcurrentHashMap<String, File> fileRegion = new ConcurrentHashMap<String, File>();
     ConcurrentHashMap<ChunkKey, byte[]> chunkRegion = new ConcurrentHashMap<ChunkKey, byte[]>();
-    RegionDirectory dir = new RegionDirectory(fileRegion, chunkRegion);
+    fileSystemStats = mock(FileSystemStats.class);
+    RegionDirectory dir = new RegionDirectory(fileRegion, chunkRegion, fileSystemStats);
     IndexWriterConfig config = new IndexWriterConfig(analyzer);
     writer = new IndexWriter(dir, config);
     String[] indexedFields= new String[] {"s", "i", "l", "d", "f", "s2", "missing"};
@@ -142,9 +145,12 @@ public class IndexRepositoryImplJUnitTest {
 
   @Test
   public void queryShouldUpdateStats() throws IOException, ParseException {
-    checkQuery("NotARealWord", "s");
+    repo.create("key2", new Type2("McMinnville Cream doughnut", 1, 2L, 3.0, 4.0f, "Captain my Captain doughnut"));
+    repo.create("key4", new Type2("Portland Cream doughnut", 1, 2L, 3.0, 4.0f, "Captain my Captain doughnut"));
+    repo.commit();
+    checkQuery("Cream", "s", "key2", "key4");
     verify(stats, times(1)).startQuery();
-    verify(stats, times(1)).endQuery(anyLong());
+    verify(stats, times(1)).endQuery(anyLong(), eq(2));
   }
 
   private void updateAndRemove(Object key1, Object key2, Object key3,

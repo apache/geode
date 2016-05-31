@@ -18,6 +18,8 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal.directory;
 
+import static org.mockito.Mockito.mock;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +32,7 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -47,11 +50,12 @@ public class RegionDirectoryJUnitTest extends BaseDirectoryTestCase {
 
   @Override
   protected Directory getDirectory(Path path) throws IOException {
+    final FileSystemStats stats = mock(FileSystemStats.class);
     
     //This is super lame, but log4j automatically sets the system property, and the lucene
     //test asserts that no system properties have changed. Unfortunately, there is no
     //way to control the order of rules, so we can't clear this property with a rule
     //or @After method. Instead, do it in the close method of the directory.
-    return new RegionDirectory(new ConcurrentHashMap<String, File>(), new ConcurrentHashMap<ChunkKey, byte[]>());
+    return new RegionDirectory(new ConcurrentHashMap<String, File>(), new ConcurrentHashMap<ChunkKey, byte[]>(), stats);
   }
 }

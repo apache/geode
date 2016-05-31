@@ -40,6 +40,7 @@ import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
 import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepositoryImpl;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
@@ -52,13 +53,15 @@ public class DistributedScoringJUnitTest {
 
   private final StandardAnalyzer analyzer = new StandardAnalyzer();
   private Region<String, String> region;
-  private LuceneIndexStats stats;
+  private LuceneIndexStats indexStats;
+  private FileSystemStats fileSystemStats;
 
   @Before
   public void createMocks() {
     region = Mockito.mock(Region.class);
     Mockito.when(region.isDestroyed()).thenReturn(false);
-    stats = Mockito.mock(LuceneIndexStats.class);
+    indexStats = Mockito.mock(LuceneIndexStats.class);
+    fileSystemStats = Mockito.mock(FileSystemStats.class);
   }
 
   /**
@@ -140,12 +143,12 @@ public class DistributedScoringJUnitTest {
   private IndexRepositoryImpl createIndexRepo() throws IOException {
     ConcurrentHashMap<String, File> fileRegion = new ConcurrentHashMap<String, File>();
     ConcurrentHashMap<ChunkKey, byte[]> chunkRegion = new ConcurrentHashMap<ChunkKey, byte[]>();
-    RegionDirectory dir = new RegionDirectory(fileRegion, chunkRegion);
+    RegionDirectory dir = new RegionDirectory(fileRegion, chunkRegion, fileSystemStats);
 
     IndexWriterConfig config = new IndexWriterConfig(analyzer);
     IndexWriter writer = new IndexWriter(dir, config);
 
-    return new IndexRepositoryImpl(region, writer, mapper, stats);
+    return new IndexRepositoryImpl(region, writer, mapper, indexStats);
   }
 
   private static class TestType {

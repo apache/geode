@@ -66,8 +66,10 @@ import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntriesCollector;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import com.gemstone.gemfire.cache.query.QueryException;
+import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
 
 /**
@@ -114,8 +116,8 @@ public class IndexRepositoryImplPerformanceTest {
         Region<String, File> fileRegion = cache.<String, File>createRegionFactory(RegionShortcut.REPLICATE).create("files");
         Region<ChunkKey, byte[]> chunkRegion = cache.<ChunkKey, byte[]>createRegionFactory(RegionShortcut.REPLICATE).create("chunks");
 
-        RegionDirectory dir = new RegionDirectory(fileRegion, chunkRegion);
-        final LuceneIndexStats stats = new LuceneIndexStats(cache.getDistributedSystem(), "region", "index");
+        RegionDirectory dir = new RegionDirectory(fileRegion, chunkRegion, new FileSystemStats(cache.getDistributedSystem(), "region-index"));
+        final LuceneIndexStats stats = new LuceneIndexStats(cache.getDistributedSystem(), "region-index");
         
         
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
@@ -216,12 +218,17 @@ public class IndexRepositoryImplPerformanceTest {
   public  void testLuceneWithRegionDirectory() throws Exception {
     doTest("RegionDirectory", new TestCallbacks() {
 
+      public Cache cache;
       private IndexWriter writer;
       private SearcherManager searcherManager;
 
       @Override
       public void init() throws Exception {
-        RegionDirectory dir = new RegionDirectory(new ConcurrentHashMap<String, File>(), new ConcurrentHashMap<ChunkKey, byte[]>());
+        cache = new CacheFactory().set("mcast-port", "0")
+          .set("log-level", "warning")
+          .create();
+        final FileSystemStats stats = new FileSystemStats(cache.getDistributedSystem(), "stats");
+        RegionDirectory dir = new RegionDirectory(new ConcurrentHashMap<String, File>(), new ConcurrentHashMap<ChunkKey, byte[]>(), stats);
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         writer = new IndexWriter(dir, config);
         searcherManager = new SearcherManager(writer, true, true, null);
@@ -244,6 +251,7 @@ public class IndexRepositoryImplPerformanceTest {
       @Override
       public void cleanup() throws Exception {
         writer.close();
+        cache.close();;
       }
       
       @Override

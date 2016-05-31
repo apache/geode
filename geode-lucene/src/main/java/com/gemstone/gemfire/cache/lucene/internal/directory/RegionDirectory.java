@@ -36,6 +36,7 @@ import org.apache.lucene.store.SingleInstanceLockFactory;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystem;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
 
 /**
  * An implementation of Directory that stores data in geode regions.
@@ -52,9 +53,9 @@ public class RegionDirectory extends BaseDirectory {
    * Create a region directory with a given file and chunk region. These regions
    * may be bucket regions or they may be replicated regions.
    */
-  public RegionDirectory(ConcurrentMap<String, File> fileRegion, ConcurrentMap<ChunkKey, byte[]> chunkRegion) {
+  public RegionDirectory(ConcurrentMap<String, File> fileRegion, ConcurrentMap<ChunkKey, byte[]> chunkRegion, FileSystemStats stats) {
     super(new SingleInstanceLockFactory());
-    fs = new FileSystem(fileRegion, chunkRegion);
+    fs = new FileSystem(fileRegion, chunkRegion, stats);
   }
 
   @Override

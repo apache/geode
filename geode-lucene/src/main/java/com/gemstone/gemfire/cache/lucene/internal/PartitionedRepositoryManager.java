@@ -27,12 +27,12 @@ import java.util.Set;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepositoryImpl;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
@@ -69,7 +69,8 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   private final PartitionedRegion chunkRegion;
   private final LuceneSerializer serializer;
   private final Analyzer analyzer;
-  private final LuceneIndexStats stats;
+  private final LuceneIndexStats indexStats;
+  private final FileSystemStats fileSystemStats;
 
   /**
    * 
@@ -83,13 +84,15 @@ public class PartitionedRepositoryManager implements RepositoryManager {
                                       PartitionedRegion chunkRegion,
                                       LuceneSerializer serializer,
                                       Analyzer analyzer,
-                                      LuceneIndexStats stats) {
+                                      LuceneIndexStats indexStats,
+                                      FileSystemStats fileSystemStats) {
     this.userRegion = userRegion;
     this.fileRegion = fileRegion;
     this.chunkRegion = chunkRegion;
     this.serializer = serializer;
     this.analyzer = analyzer;
-    this.stats = stats;
+    this.indexStats = indexStats;
+    this.fileSystemStats = fileSystemStats;
   }
 
   @Override
@@ -136,10 +139,10 @@ public class PartitionedRepositoryManager implements RepositoryManager {
       try {
         BucketRegion fileBucket = getMatchingBucket(fileRegion, bucketId);
         BucketRegion chunkBucket = getMatchingBucket(chunkRegion, bucketId);
-        RegionDirectory dir = new RegionDirectory(fileBucket, chunkBucket);
+        RegionDirectory dir = new RegionDirectory(fileBucket, chunkBucket, fileSystemStats);
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         IndexWriter writer = new IndexWriter(dir, config);
-        repo = new IndexRepositoryImpl(fileBucket, writer, serializer, stats);
+        repo = new IndexRepositoryImpl(fileBucket, writer, serializer, indexStats);
         IndexRepository oldRepo = indexRepositories.putIfAbsent(bucketId, repo);
         if(oldRepo != null) {
           repo = oldRepo;

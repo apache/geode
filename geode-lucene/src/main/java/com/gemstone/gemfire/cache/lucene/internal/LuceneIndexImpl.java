@@ -34,6 +34,7 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 import com.gemstone.gemfire.cache.lucene.internal.xml.LuceneIndexCreation;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -52,8 +53,8 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   
   Region<String, File> fileRegion;
   Region<ChunkKey, byte[]> chunkRegion;
-  LuceneIndexStats stats;
-  
+  LuceneIndexStats indexStats;
+
   protected String indexName;
   protected String regionPath;
   protected boolean hasInitialized = false;
@@ -65,7 +66,8 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     this.indexName = indexName;
     this.regionPath = regionPath;
     this.cache = cache;
-    this.stats = new LuceneIndexStats(cache.getDistributedSystem(), indexName, regionPath);
+    final String statsName = indexName + "-" + regionPath;
+    this.indexStats = new LuceneIndexStats(cache.getDistributedSystem(), statsName);
   }
 
   @Override

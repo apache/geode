@@ -16,8 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.gemstone.gemfire.cache.lucene.internal;
+package com.gemstone.gemfire.cache.lucene.internal.filesystem;
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import com.gemstone.gemfire.Statistics;
@@ -31,10 +32,10 @@ import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
 @Category(UnitTest.class)
-public class LuceneIndexStatsJUnitTest {
+public class FileSystemStatsJUnitTest {
 
   private Statistics statistics;
-  private LuceneIndexStats stats;
+  private FileSystemStats stats;
   private StatisticsType type;
 
   @Before
@@ -42,7 +43,7 @@ public class LuceneIndexStatsJUnitTest {
     StatisticsFactory statsFactory = mock(StatisticsFactory.class);
     statistics =  mock(Statistics.class);
     when(statsFactory.createAtomicStatistics(any(), anyString())).thenReturn(statistics);
-    stats = new LuceneIndexStats(statsFactory, "region-index");
+    stats = new FileSystemStats(statsFactory, "stats");
 
 
     ArgumentCaptor<StatisticsType> statsTypeCaptor = ArgumentCaptor.forClass(StatisticsType.class);
@@ -51,46 +52,39 @@ public class LuceneIndexStatsJUnitTest {
   }
 
   @Test
-  public void shouldIncrementQueryStats() {
-
-    stats.startQuery();
-    verifyIncInt("queryExecutionsInProgress", 1);
-    stats.endQuery(5, 2);
-    verifyIncInt("queryExecutionsInProgress", -1);
-    verifyIncInt("queryExecutions", 1);
-    verifyIncLong("queryExecutionTotalHits", 2);
-    //Because the initial stat time is 0 and the final time is 5, the delta is -5
-    verifyIncLong("queryExecutionTime", -5);
+  public void shouldIncrementReadBytes() {
+    stats.incReadBytes(5);
+    verifyIncLong("readBytes", 5);
   }
 
   @Test
-  public void shouldIncrementUpdateStats() {
-
-    stats.startUpdate();
-    verifyIncInt("updatesInProgress", 1);
-    stats.endUpdate(5);
-    verifyIncInt("updatesInProgress", -1);
-    verifyIncInt("updates", 1);
-    //Because the initial stat time is 0 and the final time is 5, the delta is -5
-    verifyIncLong("updateTime", -5);
+  public void shouldIncrementWrittenBytes() {
+    stats.incWrittenBytes(5);
+    verifyIncLong("writtenBytes", 5);
   }
 
   @Test
-  public void shouldIncrementCommitStats() {
-
-    stats.startCommit();
-    verifyIncInt("commitsInProgress", 1);
-    stats.endCommit(5);
-    verifyIncInt("commitsInProgress", -1);
-    verifyIncInt("commits", 1);
-    //Because the initial stat time is 0 and the final time is 5, the delta is -5
-    verifyIncLong("commitTime", -5);
+  public void shouldIncrementFileCreates() {
+    stats.incFileCreates(5);
+    verifyIncInt("fileCreates", 5);
   }
 
   @Test
-  public void shouldIncrementDocumentStat() {
-    stats.incDocuments(5);
-    verifyIncInt("documents", 5);
+  public void shouldIncrementFileDeletes() {
+    stats.incFileDeletes(5);
+    verifyIncInt("fileDeletes", 5);
+  }
+
+  @Test
+  public void shouldIncrementFileRenames() {
+    stats.incFileRenames(5);
+    verifyIncInt("fileRenames", 5);
+  }
+
+  @Test
+  public void shouldIncrementTemporyFileCreates() {
+    stats.incTemporaryFileCreates(5);
+    verifyIncInt("temporaryFileCreates", 5);
   }
 
   private void verifyIncInt(final String statName, final int value) {

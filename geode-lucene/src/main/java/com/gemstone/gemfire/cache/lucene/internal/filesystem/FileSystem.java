@@ -41,6 +41,7 @@ public class FileSystem {
   private final ConcurrentMap<ChunkKey, byte[]> chunkRegion;
   
   static final int CHUNK_SIZE = 1024 * 1024; //1 MB
+  private final FileSystemStats stats;
 
   /**
    * Create filesystem that will store data in the two provided regions. The fileRegion contains
@@ -50,10 +51,10 @@ public class FileSystem {
    * @param fileRegion the region to store metadata about the files
    * @param chunkRegion the region to store actual file data.
    */
-  public FileSystem(ConcurrentMap<String, File> fileRegion, ConcurrentMap<ChunkKey, byte[]> chunkRegion) {
-    super();
+  public FileSystem(ConcurrentMap<String, File> fileRegion, ConcurrentMap<ChunkKey, byte[]> chunkRegion, FileSystemStats stats) {
     this.fileRegion = fileRegion;
     this.chunkRegion = chunkRegion;
+    this.stats = stats;
   }
 
   public Collection<String> listFileNames() {
@@ -66,12 +67,14 @@ public class FileSystem {
     if (null != fileRegion.putIfAbsent(name, file)) {
       throw new IOException("File exists.");
     }
+    stats.incFileCreates(1);
     // TODO unlock region ?
     return file;
   }
 
   public File createTemporaryFile(final String name) throws IOException {
     final File file = new File(this, name);
+    stats.incTemporaryFileCreates(1);
     return file;
   }
   
@@ -97,7 +100,7 @@ public class FileSystem {
     if(file == null) {
       throw new FileNotFoundException(name);
     }
-    
+
     // TODO consider removeAll with all ChunkKeys listed.
     final ChunkKey key = new ChunkKey(file.id, 0);
     while (true) {
@@ -108,6 +111,8 @@ public class FileSystem {
       }
       key.chunkId++;
     }
+
+    stats.incFileDeletes(1);
   }
   
   public void renameFile(String source, String dest) throws IOException {
@@ -131,6 +136,8 @@ public class FileSystem {
     // at the same data
 
     fileRegion.remove(source);
+
+    stats.incFileRenames(1);
   }
   
   byte[] getChunk(final File file, final int id) {
@@ -148,12 +155,14 @@ public class FileSystem {
     }
     
     final byte[] chunk = chunkRegion.get(key);
+    stats.incReadBytes(chunk.length);
     return chunk;
   }
 
   public void putChunk(final File file, final int id, final byte[] chunk) {
     final ChunkKey key = new ChunkKey(file.id, id);
     chunkRegion.put(key, chunk);
+    stats.incWrittenBytes(chunk.length);
   }
 
   void updateFile(File file) {

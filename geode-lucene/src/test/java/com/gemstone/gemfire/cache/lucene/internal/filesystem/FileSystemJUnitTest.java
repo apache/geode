@@ -19,6 +19,7 @@
 package com.gemstone.gemfire.cache.lucene.internal.filesystem;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -39,6 +40,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -60,12 +62,14 @@ public class FileSystemJUnitTest {
 
   @Rule
   public DiskDirRule dirRule = new DiskDirRule();
+  private FileSystemStats fileSystemStats;
 
   @Before
   public void setUp() {
     fileRegion = new ConcurrentHashMap<String, File>();
     chunkRegion = new ConcurrentHashMap<ChunkKey, byte[]>();
-    system = new FileSystem(fileRegion, chunkRegion);
+    fileSystemStats = mock(FileSystemStats.class);
+    system = new FileSystem(fileRegion, chunkRegion, fileSystemStats);
   }
   
   /**
@@ -316,7 +320,7 @@ public class FileSystemJUnitTest {
     byte[] bytes = getRandomBytes(size );
     file1.getOutputStream().write(bytes);
     
-    FileSystem system2 = new FileSystem(fileRegion, chunkRegion);
+    FileSystem system2 = new FileSystem(fileRegion, chunkRegion, fileSystemStats);
     File file = system2.getFile(name1);
     
     assertTrue(file.getLength() <= bytes.length);
@@ -354,10 +358,10 @@ public class FileSystemJUnitTest {
     //Create a couple of mock regions where we count the operations
     //that happen to them. We will then use this to abort the rename
     //in the middle.
-    ConcurrentHashMap<String, File> spyFileRegion = Mockito.mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, fileRegion));
-    ConcurrentHashMap<ChunkKey, byte[]> spyChunkRegion = Mockito.mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, chunkRegion));
+    ConcurrentHashMap<String, File> spyFileRegion = mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, fileRegion));
+    ConcurrentHashMap<ChunkKey, byte[]> spyChunkRegion = mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, chunkRegion));
     
-    system = new FileSystem(spyFileRegion, spyChunkRegion);
+    system = new FileSystem(spyFileRegion, spyChunkRegion, fileSystemStats);
     
     String name = "file";
     File file = system.createFile(name);
@@ -393,7 +397,7 @@ public class FileSystemJUnitTest {
       
     }
     
-    system = new FileSystem(fileRegion, chunkRegion);
+    system = new FileSystem(fileRegion, chunkRegion, fileSystemStats);
     
     //This is not the ideal behavior. We are left
     //with two duplicate files. However, we will still
@@ -421,10 +425,10 @@ public class FileSystemJUnitTest {
     //Create a couple of mock regions where we count the operations
     //that happen to them. We will then use this to abort the rename
     //in the middle.
-    ConcurrentHashMap<String, File> spyFileRegion = Mockito.mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, fileRegion));
-    ConcurrentHashMap<ChunkKey, byte[]> spyChunkRegion = Mockito.mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, chunkRegion));
+    ConcurrentHashMap<String, File> spyFileRegion = mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, fileRegion));
+    ConcurrentHashMap<ChunkKey, byte[]> spyChunkRegion = mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, chunkRegion));
     
-    system = new FileSystem(spyFileRegion, spyChunkRegion);
+    system = new FileSystem(spyFileRegion, spyChunkRegion, fileSystemStats);
     
     String name1 = "file1";
     String name2 = "file2";
@@ -461,7 +465,7 @@ public class FileSystemJUnitTest {
     } catch(CacheClosedException expectedException) {
     }
     
-    system = new FileSystem(fileRegion, chunkRegion);
+    system = new FileSystem(fileRegion, chunkRegion, fileSystemStats);
     
     if(system.listFileNames().size() == 0) {
       //File was deleted, but shouldn't have any dangling chunks at this point
@@ -490,6 +494,52 @@ public class FileSystemJUnitTest {
 
     assertExportedFileContents(file1Data, new java.io.File(parentDir, "testFile1"));
     assertExportedFileContents(file2Data, new java.io.File(parentDir, "testFile2"));
+  }
+
+  @Test
+  public void testIncrementFileCreates() throws IOException {
+    File file= system.createFile("file");
+    verify(fileSystemStats).incFileCreates(1);
+  }
+  @Test
+  public void testIncrementFileDeletes() throws IOException {
+    File file= system.createFile("file");
+    system.deleteFile("file");
+    verify(fileSystemStats).incFileDeletes(1);
+  }
+
+  @Test
+  public void testIncrementFileRenames() throws IOException {
+    File file= system.createFile("file");
+    system.renameFile("file", "dest");
+    verify(fileSystemStats).incFileRenames(1);
+  }
+
+  @Test
+  public void testIncrementTemporaryFileCreates() throws IOException {
+    File file= system.createTemporaryFile("file");
+    verify(fileSystemStats).incTemporaryFileCreates(1);
+  }
+
+  @Test
+  public void testIncrementWrittenBytes() throws IOException {
+    File file= system.createTemporaryFile("file");
+    final byte[] bytes = writeRandomBytes(file);
+    ArgumentCaptor<Integer> captor = ArgumentCaptor.forClass(Integer.class);
+    verify(fileSystemStats, atLeast(1)).incWrittenBytes(captor.capture());
+    final int actualByteCount = captor.getAllValues().stream().mapToInt(Integer::intValue).sum();
+    assertEquals(bytes.length, actualByteCount);
+  }
+
+  @Test
+  public void testIncrementReadBytes() throws IOException {
+    File file= system.createTemporaryFile("file");
+    final byte[] bytes = writeRandomBytes(file);
+    file.getInputStream().read(bytes);
+    ArgumentCaptor<Integer> captor = ArgumentCaptor.forClass(Integer.class);
+    verify(fileSystemStats, atLeast(1)).incReadBytes(captor.capture());
+    final int actualByteCount = captor.getAllValues().stream().mapToInt(Integer::intValue).sum();
+    assertEquals(bytes.length, actualByteCount);
   }
 
   private void assertExportedFileContents(final byte[] expected, final java.io.File exportedFile) throws IOException {

@@ -25,7 +25,6 @@ import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.StatisticsTypeFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 
 public class LuceneIndexStats {
@@ -37,6 +36,7 @@ public class LuceneIndexStats {
   private static final int queryExecutionsId;
   private static final int queryExecutionTimeId;
   private static final int queryExecutionsInProgressId;
+  private static final int queryExecutionTotalHits;
   private static final int updatesId;
   private static final int updateTimeId;
   private static final int updatesInProgressId;
@@ -56,6 +56,7 @@ public class LuceneIndexStats {
         f.createIntCounter("queryExecutions", "Number of lucene queries executed on this member", "operations"),
         f.createLongCounter("queryExecutionTime", "Amount of time spent executing lucene queries", "nanoseconds"),
         f.createIntGauge("queryExecutionsInProgress", "Number of query executions currently in progress", "operations"),
+        f.createLongCounter("queryExecutionTotalHits", "Total number of documents returned by query executions", "entries"),
         f.createIntCounter("updates", "Number of lucene index documents added/removed on this member", "operations"),
         f.createLongCounter("updateTime", "Amount of time spent adding or removing documents from the index", "nanoseconds"),
         f.createIntGauge("updatesInProgress", "Number of index updates in progress", "operations"),
@@ -69,6 +70,7 @@ public class LuceneIndexStats {
     queryExecutionsId = statsType.nameToId("queryExecutions");
     queryExecutionTimeId = statsType.nameToId("queryExecutionTime");
     queryExecutionsInProgressId = statsType.nameToId("queryExecutionsInProgress");
+    queryExecutionTotalHits = statsType.nameToId("queryExecutionTotalHits");
     updatesId = statsType.nameToId("updates");
     updateTimeId = statsType.nameToId("updateTime");
     updatesInProgressId = statsType.nameToId("updatesInProgress");
@@ -78,8 +80,8 @@ public class LuceneIndexStats {
     documentsId = statsType.nameToId("documents");
   }
 
-  public LuceneIndexStats(StatisticsFactory f, String indexName, String regionName) {
-    this.stats = f.createAtomicStatistics(statsType, indexName + "-" + regionName);
+  public LuceneIndexStats(StatisticsFactory f, String name) {
+    this.stats = f.createAtomicStatistics(statsType, name);
   }
 
   /**
@@ -92,10 +94,11 @@ public class LuceneIndexStats {
   /**
    * @param start the timestamp taken when the operation started
    */
-  public void endQuery(long start) {
+  public void endQuery(long start, final int totalHits) {
     stats.incLong(queryExecutionTimeId, getStatTime()-start);
     stats.incInt(queryExecutionsInProgressId, -1);
     stats.incInt(queryExecutionsId, 1);
+    stats.incLong(queryExecutionTotalHits, totalHits);
   }
 
   /**

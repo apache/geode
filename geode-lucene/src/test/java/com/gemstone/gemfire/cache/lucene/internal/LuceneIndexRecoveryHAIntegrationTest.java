@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache.lucene.internal;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -33,28 +32,19 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.EvictionAction;
-import com.gemstone.gemfire.cache.EvictionAlgorithm;
 import com.gemstone.gemfire.cache.PartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
-import com.gemstone.gemfire.cache.lucene.LuceneQuery;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
-import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
+import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
-import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.Type1;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
-import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -67,7 +57,8 @@ public class LuceneIndexRecoveryHAIntegrationTest {
   Analyzer analyzer = new StandardAnalyzer();
 
   Cache cache;
-  private LuceneIndexStats stats;
+  private LuceneIndexStats indexStats;
+  private FileSystemStats fileSystemStats;
 
   @Before
   public void setup() {
@@ -77,7 +68,8 @@ public class LuceneIndexRecoveryHAIntegrationTest {
     LuceneServiceImpl.registerDataSerializables();
 
     cache = new CacheFactory().set("mcast-port", "0").create();
-    stats = new LuceneIndexStats(cache.getDistributedSystem(), "INDEX", "REGION");
+    indexStats = new LuceneIndexStats(cache.getDistributedSystem(), "INDEX-REGION");
+    fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), "INDEX-REGION");
   }
 
   @After
@@ -105,7 +97,8 @@ public class LuceneIndexRecoveryHAIntegrationTest {
     PartitionedRegion fileRegion = (PartitionedRegion) regionfactory.create("fileRegion");
     PartitionedRegion chunkRegion = (PartitionedRegion) regionfactory.create("chunkRegion");
 
-    RepositoryManager manager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, mapper, analyzer, stats);
+    RepositoryManager manager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, mapper, analyzer,
+      indexStats, fileSystemStats);
     IndexRepository repo = manager.getRepository(userRegion, 0, null);
     assertNotNull(repo);
 
@@ -117,7 +110,7 @@ public class LuceneIndexRecoveryHAIntegrationTest {
 
     userRegion = (PartitionedRegion) regionfactory.create("userRegion");
     userRegion.put("rebalance", "test");
-    manager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, mapper, analyzer, stats);
+    manager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, mapper, analyzer, indexStats, fileSystemStats);
     IndexRepository newRepo = manager.getRepository(userRegion, 0, null);
 
     Assert.assertNotEquals(newRepo, repo);
