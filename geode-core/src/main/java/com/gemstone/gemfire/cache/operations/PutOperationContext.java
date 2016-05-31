@@ -63,10 +63,8 @@ public class PutOperationContext extends KeyValueOperationContext {
    *                byte array
    * @since GemFire 6.5
    */
-  public PutOperationContext(Object key,Object value,
-      boolean isObject) {
-    super(key, value, isObject);
-    this.opType = UNKNOWN;
+  public PutOperationContext(Object key,Object value, boolean isObject) {
+    this(key, value, isObject, false);
   }
 
   /**
@@ -83,10 +81,8 @@ public class PutOperationContext extends KeyValueOperationContext {
    *                true if the context is at the time of sending updates
    * @since GemFire 6.5
    */
-  public PutOperationContext(Object key, Object value,
-      boolean isObject, boolean postOperation) {
-    super(key, value, isObject, postOperation);
-    this.opType = UNKNOWN;
+  public PutOperationContext(Object key, Object value, boolean isObject, boolean postOperation) {
+    this(key, value, isObject, UNKNOWN, postOperation);
   }
 
   /**
@@ -106,21 +102,9 @@ public class PutOperationContext extends KeyValueOperationContext {
    *                true if the context is at the time of sending updates
    * @since GemFire 6.5
    */
-  public PutOperationContext(Object key, Object value,
-      boolean isObject, byte opType, boolean isPostOperation) {
-    super(key, value, isObject, isPostOperation);
+  public PutOperationContext(Object key, Object value, boolean isObject, byte opType, boolean isPostOperation) {
+    super(OperationCode.PUT, key, value, isObject, isPostOperation);
     this.opType = opType;
-  }
-
-  /**
-   * Return the operation associated with the <code>OperationContext</code>
-   * object.
-   * 
-   * @return <code>OperationCode.PUT</code>.
-   */
-  @Override
-  public OperationCode getOperationCode() {
-    return OperationCode.PUT;
   }
 
   /**

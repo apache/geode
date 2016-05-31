@@ -33,18 +33,7 @@ public class RegionDestroyOperationContext extends RegionOperationContext {
    *                true to set the post-operation flag
    */
   public RegionDestroyOperationContext(boolean postOperation) {
-    super(postOperation);
-  }
-
-  /**
-   * Return the operation associated with the <code>OperationContext</code>
-   * object.
-   * 
-   * @return <code>OperationCode.REGION_DESTROY</code>.
-   */
-  @Override
-  public OperationCode getOperationCode() {
-    return OperationCode.REGION_DESTROY;
+    super(OperationCode.REGION_DESTROY, postOperation);
   }
 
 }

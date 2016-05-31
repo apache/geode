@@ -18,12 +18,14 @@
 package com.gemstone.gemfire.cache.operations;
 
 
+import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
+
 /**
  * Encapsulates registration/unregistration of interest in a region.
  * 
  * @since GemFire 5.5
  */
-public abstract class InterestOperationContext extends OperationContext {
+public abstract class InterestOperationContext extends ResourceOperationContext {
 
   /** The key or list of keys being registered/unregistered. */
   private Object key;
@@ -32,24 +34,16 @@ public abstract class InterestOperationContext extends OperationContext {
   private InterestType interestType;
 
   /**
-   * Constructor for the register interest operation.
-   * 
-   * @param key
-   *                the key or list of keys being registered/unregistered
-   * @param interestType
-   *                the <code>InterestType</code> of the register request
+   * Constructor for the register interest operation. This constructor is only for subclasses.
+   *
+   * @param code         the {@link OperationCode} for this context
+   * @param key          the key or list of keys being registered/unregistered
+   * @param interestType the <code>InterestType</code> of the register request
    */
-  public InterestOperationContext(Object key, InterestType interestType) {
+ protected InterestOperationContext(OperationCode code, Object key, InterestType interestType) {
+    super(Resource.DATA, code, false);
     this.key = key;
     this.interestType = interestType;
-  }
-
-  /**
-   * True if the context is for post-operation.
-   */
-  @Override
-  public boolean isPostOperation() {
-    return false;
   }
 
   /**

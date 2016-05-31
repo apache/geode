@@ -44,19 +44,25 @@ public class ExecuteCQOperationContext extends QueryOperationContext {
    */
   public ExecuteCQOperationContext(String cqName, String queryString,
       Set regionNames, boolean postOperation) {
-    super(queryString, regionNames, postOperation);
-    this.cqName = cqName;
+    this(OperationCode.EXECUTE_CQ, cqName, queryString, regionNames, postOperation);
   }
 
   /**
-   * Return the operation associated with the <code>OperationContext</code>
-   * object.
-   * 
-   * @return the <code>OperationCode</code> of this operation
+   * Constructor for the EXECUTE_CQ operation only intended for use by subclasses.
+   *
+   * @param cqName
+   *                the name of the continuous query being registered
+   * @param queryString
+   *                the query string for this operation
+   * @param regionNames
+   *                names of regions that are part of the query string
+   * @param postOperation
+   *                true to set the post-operation flag
    */
-  @Override
-  public OperationCode getOperationCode() {
-    return OperationCode.EXECUTE_CQ;
+  protected ExecuteCQOperationContext(OperationCode code, String cqName, String queryString,
+      Set regionNames, boolean postOperation) {
+    super(code, queryString, regionNames, postOperation);
+    this.cqName = cqName;
   }
 
   /** Return the name of the continuous query. */

@@ -34,18 +34,7 @@ public class ContainsKeyOperationContext extends KeyOperationContext {
    *                the key for this operation
    */
   public ContainsKeyOperationContext(Object key) {
-    super(key);
-  }
-
-  /**
-   * Return the operation associated with the <code>OperationContext</code>
-   * object.
-   * 
-   * @return <code>OperationCode.CONTAINS_KEY</code>.
-   */
-  @Override
-  public OperationCode getOperationCode() {
-    return OperationCode.CONTAINS_KEY;
+    super(OperationCode.CONTAINS_KEY, key);
   }
 
 }

@@ -16,7 +16,8 @@
  */
 package com.gemstone.gemfire.cache.operations;
 
-import java.io.Serializable;
+import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
+
 import java.util.Set;
 
 /**
@@ -25,53 +26,44 @@ import java.util.Set;
  * @since GemFire 6.0
  *
  */
-public class ExecuteFunctionOperationContext extends OperationContext {
+public class ExecuteFunctionOperationContext extends ResourceOperationContext {
 
   private String functionId;
 
-  private String regionName;
+  private boolean optimizeForWrite;
 
-  private boolean optizeForWrite;
-
-  private boolean isPostOperation;
-  
   private Set keySet;
   
   private Object arguments;
 
   private Object result;
 
+  /**
+   * Constructor for the EXECUTE_FUNCTION operation.
+   *
+   * @param functionName     the name of the function being executed
+   * @param regionName       the name of the region on which the function is being executed
+   * @param keySet           the set of keys against which the function is filtered
+   * @param arguments        the array of function arguments
+   * @param optimizeForWrite boolean indicating whether this function is optimized for writing
+   * @param isPostOperation  boolean indicating whether this context is for post-operation evaluation
+   */
   public ExecuteFunctionOperationContext(String functionName,
       String regionName, Set keySet, Object arguments,
       boolean optimizeForWrite, boolean isPostOperation) {
+    super(Resource.DATA, OperationCode.EXECUTE_FUNCTION, regionName, isPostOperation);
     this.functionId = functionName;
-    this.regionName = regionName;
     this.keySet = keySet;
     this.arguments = arguments;
-    this.optizeForWrite = optimizeForWrite;
-    this.isPostOperation = isPostOperation;
-  }
-
-  @Override
-  public OperationCode getOperationCode() {
-    return OperationCode.EXECUTE_FUNCTION;
-  }
-
-  @Override
-  public boolean isPostOperation() {
-    return this.isPostOperation;
+    this.optimizeForWrite = optimizeForWrite;
   }
 
   public String getFunctionId() {
     return this.functionId;
   }
 
-  public String getRegionName() {
-    return this.regionName;
-  }
-
   public boolean isOptimizeForWrite() {
-    return this.optizeForWrite;
+    return this.optimizeForWrite;
   }
   
   public Object getResult() {
@@ -90,7 +82,4 @@ public class ExecuteFunctionOperationContext extends OperationContext {
     this.result = oneResult;
   }
   
-  public void setIsPostOperation(boolean isPostOperation) {
-    this.isPostOperation = isPostOperation;
-  }
 }

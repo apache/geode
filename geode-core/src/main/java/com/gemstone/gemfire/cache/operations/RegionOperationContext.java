@@ -18,6 +18,8 @@
 package com.gemstone.gemfire.cache.operations;
 
 
+import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
+
 /**
  * Encapsulates a region-level operation in both the pre-operation and
  * post-operation cases. The operations this class encapsulates are
@@ -26,13 +28,10 @@ package com.gemstone.gemfire.cache.operations;
  * 
  * @since GemFire 5.5
  */
-public abstract class RegionOperationContext extends OperationContext {
+public abstract class RegionOperationContext extends ResourceOperationContext {
 
   /** Callback object for the operation (if any) */
   private Object callbackArg;
-
-  /** True if this is a post-operation context */
-  private boolean postOperation;
 
   /**
    * Constructor for a region operation.
@@ -40,28 +39,9 @@ public abstract class RegionOperationContext extends OperationContext {
    * @param postOperation
    *                true to set the post-operation flag
    */
-  public RegionOperationContext(boolean postOperation) {
+  protected RegionOperationContext(OperationCode code, boolean postOperation) {
+    super(Resource.DATA, code, postOperation);
     this.callbackArg = null;
-    this.postOperation = postOperation;
-  }
-
-  /**
-   * Return the operation associated with the <code>OperationContext</code>
-   * object.
-   * 
-   * @return The <code>OperationCode</code> of this operation. This is one of
-   *         {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGION_CLEAR} or
-   *         {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGION_DESTROY}.
-   */
-  @Override
-  public abstract OperationCode getOperationCode();
-
-  /**
-   * True if the context is for post-operation.
-   */
-  @Override
-  public boolean isPostOperation() {
-    return this.postOperation;
   }
 
   /**

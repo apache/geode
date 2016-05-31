@@ -244,7 +244,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     // results from server
     AuthorizeRequestPP authzRequestPP = this.sc.getPostAuthzRequest();
     if (authzRequestPP != null) {
-      this.authContext.setIsPostOperation(true);
+      this.authContext.setPostOperation();
       this.authContext = authzRequestPP.executeFunctionAuthorize(oneResult,
           this.authContext);
     }

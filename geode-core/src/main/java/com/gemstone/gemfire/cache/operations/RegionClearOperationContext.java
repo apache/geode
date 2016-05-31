@@ -33,18 +33,6 @@ public class RegionClearOperationContext extends RegionOperationContext {
    *                true to set the post-operation flag
    */
   public RegionClearOperationContext(boolean postOperation) {
-    super(postOperation);
+    super(OperationCode.REGION_CLEAR, postOperation);
   }
-
-  /**
-   * Return the operation associated with the <code>OperationContext</code>
-   * object.
-   * 
-   * @return <code>OperationCode.REGION_CLEAR</code>.
-   */
-  @Override
-  public OperationCode getOperationCode() {
-    return OperationCode.REGION_CLEAR;
-  }
-
 }

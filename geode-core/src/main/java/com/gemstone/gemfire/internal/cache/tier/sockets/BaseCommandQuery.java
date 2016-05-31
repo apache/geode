@@ -31,7 +31,6 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.internal.CqEntry;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
 import com.gemstone.gemfire.cache.query.internal.cq.ServerCQ;
 import com.gemstone.gemfire.cache.query.internal.types.CollectionTypeImpl;
 import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
@@ -65,7 +64,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
    */
   protected static boolean processQuery(Message msg, Query query,
       String queryString, Set regionNames, long start, ServerCQ cqQuery,
-      QueryOperationContext queryContext, ServerConnection servConn, 
+      QueryOperationContext queryContext, ServerConnection servConn,
       boolean sendResults)
       throws IOException, InterruptedException {
     return processQueryUsingParams(msg, query, queryString,
@@ -89,7 +88,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
    */
   protected static boolean processQueryUsingParams(Message msg, Query query,
       String queryString, Set regionNames, long start, ServerCQ cqQuery,
-      QueryOperationContext queryContext, ServerConnection servConn, 
+      QueryOperationContext queryContext, ServerConnection servConn,
       boolean sendResults, Object[] params)
       throws IOException, InterruptedException {
     ChunkedMessage queryResponseMsg = servConn.getQueryResponseMessage();

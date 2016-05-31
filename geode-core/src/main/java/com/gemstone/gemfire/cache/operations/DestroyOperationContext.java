@@ -33,7 +33,7 @@ public class DestroyOperationContext extends KeyOperationContext {
    *                the key for this operation
    */
   public DestroyOperationContext(Object key) {
-    super(key);
+    this(key, false);
   }
 
   /**
@@ -45,18 +45,7 @@ public class DestroyOperationContext extends KeyOperationContext {
    *                true to set the post-operation flag
    */
   public DestroyOperationContext(Object key, boolean postOperation) {
-    super(key, postOperation);
-  }
-
-  /**
-   * Return the operation associated with the <code>OperationContext</code>
-   * object.
-   * 
-   * @return <code>OperationCode.DESTROY</code>.
-   */
-  @Override
-  public OperationCode getOperationCode() {
-    return OperationCode.DESTROY;
+    super(OperationCode.DESTROY, key, postOperation);
   }
 
 }

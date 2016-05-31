@@ -19,6 +19,7 @@ package com.gemstone.gemfire.management.internal.security;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.operations.OperationContext;
+import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.security.AccessControl;
@@ -119,10 +120,10 @@ public class ExampleJSONAuthorization implements AccessControl, Authenticator {
       for (int j = 0; j < ops.length(); j++) {
         String[] parts = ops.getString(j).split(":");
         if(regionNames!=null) {
-          role.permissions.add(new ResourceOperationContext(parts[0], parts[1], regionNames));
+          role.permissions.add(new ResourceOperationContext(parts[0], parts[1], regionNames, false));
         }
         else
-          role.permissions.add(new ResourceOperationContext(parts[0], parts[1], "*"));
+          role.permissions.add(new ResourceOperationContext(parts[0], parts[1], "*", false));
       }
 
       roleMap.put(role.name, role);

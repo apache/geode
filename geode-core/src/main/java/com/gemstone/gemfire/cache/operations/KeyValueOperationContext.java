@@ -54,12 +54,9 @@ public abstract class KeyValueOperationContext extends KeyOperationContext {
    *                byte array
    * @since GemFire 6.5
    */
-  public KeyValueOperationContext(Object key, Object value,
-      boolean isObject) {
-    super(key);
+  protected KeyValueOperationContext(OperationCode code, Object key, Object value, boolean isObject) {
+    super(code, key);
     setValue(value,isObject);
-    //this.value = value;
-    // this.isObject = isObject;
   }
 
   /**
@@ -76,12 +73,9 @@ public abstract class KeyValueOperationContext extends KeyOperationContext {
    *                true if the context is at the time of sending updates
    * @since GemFire 6.5
    */
-  public KeyValueOperationContext(Object key, Object value,
-      boolean isObject, boolean postOperation) {
-    super(key, postOperation);
+  protected KeyValueOperationContext(OperationCode code, Object key, Object value, boolean isObject, boolean postOperation) {
+    super(code, key, postOperation);
     setValue(value,isObject);
-    //this.value = value;
-    //this.isObject = isObject;
   }
 
   /**
