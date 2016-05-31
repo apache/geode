@@ -35,6 +35,8 @@ import static com.jayway.awaitility.Awaitility.to;
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static org.hamcrest.Matchers.equalTo;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  * This class checks and verifies various data and operations exposed through
  * MemberMXBean interface.
@@ -756,7 +758,7 @@ public class CacheManagementDUnitTest extends ManagementTestBase {
     VM node2 = managedNodeList.get(1);
     VM node3 = managedNodeList.get(2);
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.REDUNDANCY_ZONE_NAME, "ARMY_ZONE");
+    props.setProperty(REDUNDANCY_ZONE, "ARMY_ZONE");
     
     createCache(node1,props);
     

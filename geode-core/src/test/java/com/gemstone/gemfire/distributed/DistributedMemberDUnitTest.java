@@ -63,7 +63,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOCATORS, "");
     config.setProperty(ROLES, "");
-    config.setProperty(DistributionConfig.GROUPS_NAME, "");
+    config.setProperty(GROUPS, "");
     config.setProperty(SystemConfigurationProperties.NAME, "");
 
     InternalDistributedSystem system = getSystem(config);
@@ -123,7 +123,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOCATORS, "");
     config.setProperty(ROLES, rolesProp);
-    config.setProperty(DistributionConfig.GROUPS_NAME, groupsProp);
+    config.setProperty(GROUPS, groupsProp);
 
     InternalDistributedSystem system = getSystem(config);
     try {
@@ -277,7 +277,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
         public void run() {
           //disconnectFromDS();
           Properties config = new Properties();
-          config.setProperty(DistributionConfig.GROUPS_NAME, makeGroupsString(vm));
+          config.setProperty(GROUPS, makeGroupsString(vm));
           getSystem(config);
         }
       });

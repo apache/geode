@@ -19,13 +19,14 @@ package com.gemstone.gemfire.internal.cache;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class DistrbutedRegionProfileOffHeapDUnitTest extends CacheTestCase {
   private static final long serialVersionUID = 1L;
@@ -64,7 +65,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         disconnectFromDS();
         Properties properties = new Properties();
-        properties.put(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "2m");
+        properties.put(OFF_HEAP_MEMORY_SIZE, "2m");
         getSystem(properties);
 
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
@@ -121,7 +122,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends CacheTestCase {
         public void run2() throws CacheException {
           disconnectFromDS();
           Properties properties = new Properties();
-          properties.put(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "2m");
+          properties.put(OFF_HEAP_MEMORY_SIZE, "2m");
           getSystem(properties);
 
           GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
@@ -158,7 +159,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         disconnectFromDS();
         Properties properties = new Properties();
-        properties.put(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "2m");
+        properties.put(OFF_HEAP_MEMORY_SIZE, "2m");
         getSystem(properties);
 
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
@@ -179,7 +180,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         disconnectFromDS();
         Properties properties = new Properties();
-        properties.put(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "2m");
+        properties.put(OFF_HEAP_MEMORY_SIZE, "2m");
         getSystem(properties);
 
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
@@ -211,7 +212,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         disconnectFromDS();
         Properties properties = new Properties();
-        properties.put(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "2m");
+        properties.put(OFF_HEAP_MEMORY_SIZE, "2m");
         getSystem(properties);
 
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
@@ -232,7 +233,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         disconnectFromDS();
         Properties properties = new Properties();
-        properties.put(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "2m");
+        properties.put(OFF_HEAP_MEMORY_SIZE, "2m");
         getSystem(properties);
 
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();

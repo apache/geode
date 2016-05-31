@@ -619,7 +619,7 @@ public abstract class AbstractDistributionConfig
    * @return an empty list
      */
   public List<String> getModifiableAttributes(){
-    String[] modifiables = {HTTP_SERVICE_PORT,JMX_MANAGER_HTTP_PORT_NAME};
+    String[] modifiables = {HTTP_SERVICE_PORT,JMX_MANAGER_HTTP_PORT};
     return Arrays.asList(modifiables);
   };
 
@@ -962,7 +962,7 @@ public abstract class AbstractDistributionConfig
       LocalizedStrings.AbstractDistributionConfig_SECURITY_LOG_FILE_NAME_0
         .toLocalizedString(DEFAULT_SECURITY_LOG_FILE));
 
-    m.put(SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME,
+    m.put(SECURITY_PEER_VERIFY_MEMBER_TIMEOUT,
       LocalizedStrings.AbstractDistributionConfig_SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME_0
 	.toLocalizedString(Integer.valueOf(DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT)));
 
@@ -974,11 +974,11 @@ public abstract class AbstractDistributionConfig
         LocalizedStrings.AbstractDistributionConfig_USERDEFINED_PREFIX_NAME
           .toLocalizedString());
 
-    m.put(REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME,
+    m.put(REMOVE_UNRESPONSIVE_CLIENT,
         LocalizedStrings.AbstractDistributionConfig_REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME_0
           .toLocalizedString(DEFAULT_REMOVE_UNRESPONSIVE_CLIENT));
 
-    m.put(DELTA_PROPAGATION_PROP_NAME, "Whether delta propagation is enabled");
+    m.put(DELTA_PROPAGATION, "Whether delta propagation is enabled");
     
     m.put(REMOTE_LOCATORS,
         LocalizedStrings.AbstractDistributionConfig_REMOTE_DISTRIBUTED_SYSTEMS_NAME_0
@@ -987,7 +987,7 @@ public abstract class AbstractDistributionConfig
     m.put(DISTRIBUTED_SYSTEM_ID, "An id that uniquely idenitifies this distributed system. " +
         "Required when using portable data exchange objects and the WAN." +
     		"Must be the same on each member in this distributed system if set.");
-    m.put(ENFORCE_UNIQUE_HOST_NAME, "Whether to require partitioned regions to put " +
+    m.put(ENFORCE_UNIQUE_HOST, "Whether to require partitioned regions to put " +
     		"redundant copies of data on different physical machines");
     
     m.put(REDUNDANCY_ZONE, "The zone that this member is in. When this is set, " +

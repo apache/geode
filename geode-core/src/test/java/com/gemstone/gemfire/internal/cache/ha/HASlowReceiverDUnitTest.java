@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
@@ -33,8 +32,7 @@ import com.gemstone.gemfire.test.dunit.*;
 import java.net.SocketException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class HASlowReceiverDUnitTest extends DistributedTestCase {
   protected static Cache cache = null;
@@ -107,7 +105,7 @@ public class HASlowReceiverDUnitTest extends DistributedTestCase {
       throws Exception {
 
     Properties prop = new Properties();
-    prop.setProperty(DistributionConfig.REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME,
+    prop.setProperty(REMOVE_UNRESPONSIVE_CLIENT,
         "true");
     new HASlowReceiverDUnitTest("temp").createCache(prop);
 

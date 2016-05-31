@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.GemFireProperties;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.MemberMXBean;
@@ -26,7 +25,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -38,7 +37,7 @@ public class SSLConfigIntegrationJUnitTest {
 
   @Test
   public void testIsClusterSSLRequireAuthentication() {
-    Cache mCache = new CacheFactory().set(MCAST_PORT, "0").set(DistributionConfig.JMX_MANAGER_NAME, "true").create();
+    Cache mCache = new CacheFactory().set(MCAST_PORT, "0").set(JMX_MANAGER, "true").create();
     ManagementService mService = ManagementService.getManagementService(mCache);
     MemberMXBean mMemberBean = mService.getMemberMXBean();
     GemFireProperties mGemFireProperties = mMemberBean.listGemFireProperties();

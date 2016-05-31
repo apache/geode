@@ -72,7 +72,7 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
         .setPort(this.locatorPort)
         .setWorkingDirectory(this.workingDirectory)
         .set(DistributionConfig.CLUSTER_CONFIGURATION_DIR, this.clusterConfigDirectory)
-        .set(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true")
+        .set(DISABLE_AUTO_RECONNECT, "true")
         .set(LOG_LEVEL, "config")
         .set(MCAST_PORT, "0")
         .build();
@@ -87,7 +87,7 @@ public class LocatorLauncherLocalIntegrationTest extends AbstractLocatorLauncher
       final DistributedSystem distributedSystem = locator.getDistributedSystem();
   
       assertNotNull(distributedSystem);
-      assertEquals("true", distributedSystem.getProperties().getProperty(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME));
+      assertEquals("true", distributedSystem.getProperties().getProperty(DISABLE_AUTO_RECONNECT));
       assertEquals("0", distributedSystem.getProperties().getProperty(MCAST_PORT));
       assertEquals("config", distributedSystem.getProperties().getProperty(LOG_LEVEL));
       assertEquals(getUniqueName(), distributedSystem.getProperties().getProperty(SystemConfigurationProperties.NAME));

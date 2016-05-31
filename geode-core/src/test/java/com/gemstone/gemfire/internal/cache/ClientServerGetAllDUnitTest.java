@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
@@ -30,8 +29,7 @@ import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Class <code>ClientServerGetAllDUnitTest</code> test client/server getAll.
@@ -655,7 +653,7 @@ import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCA
         Properties config = new Properties();
         config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
         if (offheap) {
-          config.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "350m");
+          config.setProperty(OFF_HEAP_MEMORY_SIZE, "350m");
         }
         getSystem(config);
 

@@ -46,6 +46,7 @@ import java.util.concurrent.TimeoutException;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  *
@@ -295,7 +296,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       public void run() {
         Properties props = new Properties();
-        props.setProperty(DistributionConfig.ENFORCE_UNIQUE_HOST_NAME, "true");
+        props.setProperty(ENFORCE_UNIQUE_HOST, "true");
         getSystem(props); 
       }
     });
@@ -754,7 +755,7 @@ public class RebalanceOperationDUnitTest extends CacheTestCase {
       public Object call() {
         System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "resource.manager.threads", "2");
         Properties props = new Properties();
-        props.setProperty(DistributionConfig.REDUNDANCY_ZONE_NAME, zone);
+        props.setProperty(REDUNDANCY_ZONE, zone);
         DistributedSystem system = getSystem(props);
         return system.getDistributedMember();
         

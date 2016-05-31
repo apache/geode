@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.internal.security.shiro;
 
 import com.gemstone.gemfire.cache.operations.OperationContext;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.ClassLoadUtil;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.StringUtils;
@@ -44,6 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static com.gemstone.gemfire.management.internal.security.ResourceConstants.ACCESS_DENIED_MESSAGE;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class CustomAuthRealm extends AuthorizingRealm{
   public static final String REALM_NAME = "CUSTOMAUTHREALM";
@@ -58,9 +58,9 @@ public class CustomAuthRealm extends AuthorizingRealm{
 
   public CustomAuthRealm(Properties securityProps) {
     this.securityProps = securityProps;
-    this.authzFactoryName = securityProps.getProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME);
-    this.postAuthzFactoryName = securityProps.getProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_PP_NAME);
-    this.authenticatorFactoryName = securityProps.getProperty(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
+    this.authzFactoryName = securityProps.getProperty(SECURITY_CLIENT_ACCESSOR);
+    this.postAuthzFactoryName = securityProps.getProperty(SECURITY_CLIENT_ACCESSOR_PP);
+    this.authenticatorFactoryName = securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
     this.cachedAuthZCallback = new ConcurrentHashMap<>();
     this.cachedPostAuthZCallback = new ConcurrentHashMap<>();
   }

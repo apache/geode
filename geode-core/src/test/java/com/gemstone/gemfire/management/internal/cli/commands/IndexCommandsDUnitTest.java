@@ -639,7 +639,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
         localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+        localProps.setProperty(GROUPS, groupName);
         getSystem(localProps);
         assertNotNull(getCache());
 
@@ -682,7 +682,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
         localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+        localProps.setProperty(GROUPS, groupName);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         getSystem(localProps);
         Cache cache = getCache();
@@ -727,7 +727,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
         localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+        localProps.setProperty(GROUPS, groupName);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         getSystem(localProps);
         Cache cache = getCache();
@@ -766,7 +766,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
       public Object call() throws Exception {
         Properties props = new Properties();
         props.setProperty(SystemConfigurationProperties.NAME, VM1Name);
-        props.setProperty(DistributionConfig.GROUPS_NAME, group1);
+        props.setProperty(GROUPS, group1);
         getSystem(props);
         Region parReg = createParReg(parRegName, getCache(), String.class, Stock.class);
         parReg.put("MSFT", new Stock("MSFT", 27));
@@ -800,7 +800,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
       public Object call() throws Exception {
         Properties props = new Properties();
         props.setProperty(SystemConfigurationProperties.NAME, VM1Name);
-        props.setProperty(DistributionConfig.GROUPS_NAME, group1);
+        props.setProperty(GROUPS, group1);
         getSystem(props);
         Region parReg = createParReg(parRegName, getCache(), String.class, Stock.class);
         parReg.put("MSFT", new Stock("MSFT", 27));

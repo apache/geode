@@ -24,8 +24,7 @@ import org.junit.rules.ExternalResource;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 public class JsonAuthorizationCacheStartRule extends ExternalResource {
   private Cache cache;
@@ -58,14 +57,14 @@ public class JsonAuthorizationCacheStartRule extends ExternalResource {
     properties.put(SystemConfigurationProperties.NAME, JsonAuthorizationCacheStartRule.class.getSimpleName());
     properties.put(LOCATORS, "");
     properties.put(MCAST_PORT, "0");
-    properties.put(DistributionConfig.JMX_MANAGER_NAME, "true");
-    properties.put(DistributionConfig.JMX_MANAGER_START_NAME, "true");
-    properties.put(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxManagerPort));
-    properties.put(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
-    properties.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME,
+    properties.put(JMX_MANAGER, "true");
+    properties.put(JMX_MANAGER_START, "true");
+    properties.put(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort));
+    properties.put(HTTP_SERVICE_PORT, String.valueOf(httpPort));
+    properties.put(SECURITY_CLIENT_AUTHENTICATOR,
         JSONAuthorization.class.getName() + ".create");
     if (doAuthorization) {
-      properties.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
+      properties.put(SECURITY_CLIENT_ACCESSOR, JSONAuthorization.class.getName() + ".create");
     }
     JSONAuthorization.setUpWithJsonFile(jsonFile);
 

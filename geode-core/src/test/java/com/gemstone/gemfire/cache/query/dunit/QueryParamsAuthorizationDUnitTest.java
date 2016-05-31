@@ -68,9 +68,9 @@ public class QueryParamsAuthorizationDUnitTest extends CacheTestCase {
       public Object call() throws Exception {
         CacheFactory cf = new CacheFactory()
             .set(MCAST_PORT, "0")
-            .set(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME,
+            .set(SECURITY_CLIENT_ACCESSOR,
                 "com.gemstone.gemfire.cache.query.dunit.QueryAuthorization.create")
-            .set(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, DummyAuthenticator.class.getName() + ".create");
+            .set(SECURITY_CLIENT_AUTHENTICATOR, DummyAuthenticator.class.getName() + ".create");
         Cache cache = getCache(cf);
         cache.createRegionFactory(RegionShortcut.REPLICATE).create(regName);
         CacheServer server = cache.addCacheServer();

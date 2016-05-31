@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.wancommand;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
@@ -30,8 +29,7 @@ import org.junit.experimental.categories.Category;
 import java.util.List;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 import static com.gemstone.gemfire.test.dunit.Wait.pause;
@@ -48,7 +46,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
@@ -77,7 +75,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
     props.setProperty(LOCATORS, "localhost[" + punePort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
@@ -130,7 +128,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
     props.setProperty(LOCATORS, "localhost[" + lnPort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
@@ -180,7 +178,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
     props.setProperty(LOCATORS, "localhost[" + lnPort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
@@ -242,7 +240,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
     props.setProperty(LOCATORS, "localhost[" + lnPort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 

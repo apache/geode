@@ -118,9 +118,9 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
     props.put(MCAST_PORT, "0");
     props.put(STATISTIC_SAMPLING_ENABLED, "true");
     if (isSmallerVM.get()) {
-      props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, getSmallerOffHeapMemorySize());
+      props.setProperty(OFF_HEAP_MEMORY_SIZE, getSmallerOffHeapMemorySize());
     } else {
-      props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, getOffHeapMemorySize());
+      props.setProperty(OFF_HEAP_MEMORY_SIZE, getOffHeapMemorySize());
     }
     return props;
   }

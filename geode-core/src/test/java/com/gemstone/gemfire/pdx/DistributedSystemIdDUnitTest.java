@@ -107,7 +107,7 @@ public class DistributedSystemIdDUnitTest extends DistributedTestCase {
     SerializableCallable createSystem = new SerializableCallable() {
       public Object call() throws Exception {
         Properties props = new Properties();
-        props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, dsId);
+        props.setProperty(DISTRIBUTED_SYSTEM_ID, dsId);
         props.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
         getSystem(props);
         return null;
@@ -121,7 +121,7 @@ public class DistributedSystemIdDUnitTest extends DistributedTestCase {
       public Object call() throws Exception {
         int port = AvailablePortHelper.getRandomAvailableTCPPort();
         Properties props = new Properties();
-        props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, dsId);
+        props.setProperty(DISTRIBUTED_SYSTEM_ID, dsId);
         props.setProperty(MCAST_PORT, "0");
         props.setProperty(LOCATORS, "localhost[" + port + "]");
         props.setProperty(START_LOCATOR, "localhost[" + port + "]");

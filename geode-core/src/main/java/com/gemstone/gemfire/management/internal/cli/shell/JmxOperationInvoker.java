@@ -46,6 +46,8 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  * OperationInvoker JMX Implementation
  *
@@ -109,7 +111,7 @@ public class JmxOperationInvoker implements OperationInvoker {
         Entry<String, String> entry = it.next();
         String key = entry.getKey();
         String value = entry.getValue();
-        if (key.startsWith("javax.") || key.startsWith("cluster-ssl") || key.startsWith(DistributionConfig.JMX_MANAGER_SSL_NAME)) {
+        if (key.startsWith("javax.") || key.startsWith("cluster-ssl") || key.startsWith(JMX_MANAGER_SSL)) {
           key =  checkforSystemPropertyPrefix(entry.getKey());
           if((key.equals(Gfsh.SSL_ENABLED_CIPHERS) || key.equals(Gfsh.SSL_ENABLED_PROTOCOLS)) && "any".equals(value)){
             continue;
@@ -224,7 +226,7 @@ public class JmxOperationInvoker implements OperationInvoker {
     String returnKey = key;
     if (key.startsWith("javax."))
       returnKey = key;
-    if (key.startsWith("cluster-ssl") || key.startsWith(DistributionConfig.JMX_MANAGER_SSL_NAME)) {
+    if (key.startsWith("cluster-ssl") || key.startsWith(JMX_MANAGER_SSL)) {
       if (key.endsWith("keystore")) {
         returnKey = Gfsh.SSL_KEYSTORE;
       } else if (key.endsWith("keystore-password")) {

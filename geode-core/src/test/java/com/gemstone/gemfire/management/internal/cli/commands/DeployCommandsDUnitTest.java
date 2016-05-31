@@ -99,7 +99,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
 
     // Create the cache in this VM
     props.setProperty(SystemConfigurationProperties.NAME, "Controller");
-    props.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
+    props.setProperty(GROUPS, "Group1");
     getSystem(props);
     getCache();
 
@@ -107,7 +107,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     vm.invoke(new SerializableRunnable() {
       public void run() {
         props.setProperty(SystemConfigurationProperties.NAME, vmName);
-        props.setProperty(DistributionConfig.GROUPS_NAME, "Group2");
+        props.setProperty(GROUPS, "Group2");
         getSystem(props);
         getCache();
       }
@@ -185,7 +185,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
 
     // Create the cache in this VM
     props.setProperty(SystemConfigurationProperties.NAME, "Controller");
-    props.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
+    props.setProperty(GROUPS, "Group1");
     getSystem(props);
     getCache();
 
@@ -193,7 +193,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     vm.invoke(new SerializableRunnable() {
       public void run() {
         props.setProperty(SystemConfigurationProperties.NAME, vmName);
-        props.setProperty(DistributionConfig.GROUPS_NAME, "Group2");
+        props.setProperty(GROUPS, "Group2");
         getSystem(props);
         getCache();
       }
@@ -262,7 +262,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
 
     // Create the cache in this VM
     props.setProperty(SystemConfigurationProperties.NAME, "Controller");
-    props.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
+    props.setProperty(GROUPS, "Group1");
     getSystem(props);
     getCache();
 
@@ -270,7 +270,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     vm.invoke(new SerializableRunnable() {
       public void run() {
         props.setProperty(SystemConfigurationProperties.NAME, vmName);
-        props.setProperty(DistributionConfig.GROUPS_NAME, "Group2");
+        props.setProperty(GROUPS, "Group2");
         getSystem(props);
         getCache();
       }
@@ -367,7 +367,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     // Start the default manager
     Properties managerProps = new Properties();
     managerProps.setProperty(MCAST_PORT, "0");
-    managerProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+    managerProps.setProperty(GROUPS, groupName);
     managerProps.setProperty(LOCATORS, "localhost:" + locatorPort);
     setUpJmxManagerOnVm0ThenConnect(managerProps);
 

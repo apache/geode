@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.management.internal.cli.commands;
 
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.management.internal.cli.CommandManager;
@@ -36,8 +35,7 @@ import org.junit.experimental.categories.Category;
 import java.util.Map;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static com.gemstone.gemfire.management.internal.cli.commands.CliCommandTestBase.commandResultToString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -59,9 +57,9 @@ public class HelpCommandsIntegrationTest {
     Properties localProps = new Properties();
     localProps.setProperty(LOCATORS, "");
     localProps.setProperty(MCAST_PORT, "0");
-    localProps.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-    localProps.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
-    localProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
+    localProps.setProperty(JMX_MANAGER, "true");
+    localProps.setProperty(JMX_MANAGER_START, "true");
+    localProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
 
     new CacheFactory(localProps).create();
 

@@ -246,7 +246,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
     CacheFactory cf = new CacheFactory().set(MCAST_PORT, "0")
         .set(LOG_LEVEL, "error")
         .setPdxSerializer(new MyPdxSerializer())
-        .set(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "1");
+        .set(DISTRIBUTED_SYSTEM_ID, "1");
     cache = cf.create();
 
     RegionType rt = RegionType.REPLICATE;
@@ -266,7 +266,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
     CacheFactory cf2 = new CacheFactory().set(MCAST_PORT, "0")
         .set(LOG_LEVEL, "error")
         .setPdxSerializer(new MyPdxSerializer())
-        .set(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "100");
+        .set(DISTRIBUTED_SYSTEM_ID, "100");
     cache = cf2.create();
 
     final Map<Integer, Object> read = new HashMap<Integer, Object>();

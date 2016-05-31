@@ -1256,7 +1256,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    *
    * @since GemFire 7.0 */
   String DS_CONFIG_NAME = "ds-config";
-  
+
   /**
    * The name of an internal property that specifies whether
    * the distributed system is reconnecting after a forced-
@@ -2013,22 +2013,33 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    */
   int MAX_ASYNC_MAX_QUEUE_SIZE = 1024;
 
-  /** The name of the "asyncMaxQueueSize" property */
-  @ConfigAttribute(type=Integer.class, min=MIN_ASYNC_MAX_QUEUE_SIZE, max=MAX_ASYNC_MAX_QUEUE_SIZE)
-  String ASYNC_MAX_QUEUE_SIZE_NAME = "async-max-queue-size";
-  /** @since GemFire 5.7 */
-  @ConfigAttribute(type=String.class)
-  String CLIENT_CONFLATION_PROP_NAME = "conflate-events";
-  /** @since GemFire 5.7 */
+  /**
+   * The name of the "asyncMaxQueueSize" property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_ASYNC_MAX_QUEUE_SIZE, max = MAX_ASYNC_MAX_QUEUE_SIZE)
+  String ASYNC_MAX_QUEUE_SIZE_NAME = ASYNC_MAX_QUEUE_SIZE;
+  /**
+   * @since GemFire 5.7
+   */
+  @ConfigAttribute(type = String.class)
+  String CLIENT_CONFLATION_PROP_NAME = CONFLATE_EVENTS;
+  /**
+   * @since GemFire 5.7
+   */
   String CLIENT_CONFLATION_PROP_VALUE_DEFAULT = "server";
-  /** @since GemFire 5.7 */
+  /**
+   * @since GemFire 5.7
+   */
   String CLIENT_CONFLATION_PROP_VALUE_ON = "true";
-  /** @since GemFire 5.7 */
+  /**
+   * @since GemFire 5.7
+   */
   String CLIENT_CONFLATION_PROP_VALUE_OFF = "false";
 
-
-  /** @since Geode 1.0 */
-  @ConfigAttribute(type=Boolean.class)
+  /**
+   * @since Geode 1.0
+   */
+  @ConfigAttribute(type = Boolean.class)
   String DISTRIBUTED_TRANSACTIONS_NAME = DISTRIBUTED_TRANSACTIONS;
   boolean DEFAULT_DISTRIBUTED_TRANSACTIONS = false;
 
@@ -2144,7 +2155,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * Returns user module name authenticating client credentials in <a
    * href="../DistributedSystem.html#security-client-authenticator">"security-client-authenticator"</a>
    */
-  @ConfigAttributeGetter(name = SECURITY_CLIENT_AUTHENTICATOR_NAME)
+  @ConfigAttributeGetter(name = SECURITY_CLIENT_AUTHENTICATOR)
   String getSecurityClientAuthenticator();
 
   /**
@@ -2152,7 +2163,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#security-client-authenticator">"security-client-authenticator"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = SECURITY_CLIENT_AUTHENTICATOR_NAME)
+  @ConfigAttributeSetter(name = SECURITY_CLIENT_AUTHENTICATOR)
   void setSecurityClientAuthenticator(String attValue);
 
   /**
@@ -2171,7 +2182,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * Returns name of algorithm to use for Diffie-Hellman key exchange <a
    * href="../DistributedSystem.html#security-client-dhalgo">"security-client-dhalgo"</a>
    */
-  @ConfigAttributeGetter(name = SECURITY_CLIENT_DHALGO_NAME)
+  @ConfigAttributeGetter(name = SECURITY_CLIENT_DHALGO)
   String getSecurityClientDHAlgo();
 
   /**
@@ -2179,7 +2190,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#security-client-dhalgo">"security-client-dhalgo"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = SECURITY_CLIENT_DHALGO_NAME)
+  @ConfigAttributeSetter(name = SECURITY_CLIENT_DHALGO)
   void setSecurityClientDHAlgo(String attValue);
 
   /**
@@ -2201,7 +2212,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * Returns user defined method name for peer authentication initializer in <a
    * href="../DistributedSystem.html#security-peer-auth-init">"security-peer-auth-init"</a>
    */
-  @ConfigAttributeGetter(name = SECURITY_PEER_AUTH_INIT_NAME)
+  @ConfigAttributeGetter(name = SECURITY_PEER_AUTH_INIT)
   String getSecurityPeerAuthInit();
 
   /**
@@ -2209,7 +2220,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#security-peer-auth-init">"security-peer-auth-init"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = SECURITY_PEER_AUTH_INIT_NAME)
+  @ConfigAttributeSetter(name = SECURITY_PEER_AUTH_INIT)
   void setSecurityPeerAuthInit(String attValue);
 
   /**
@@ -2228,7 +2239,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * Returns user defined method name authenticating peer's credentials in <a
    * href="../DistributedSystem.html#security-peer-authenticator">"security-peer-authenticator"</a>
    */
-  @ConfigAttributeGetter(name = SECURITY_PEER_AUTHENTICATOR_NAME)
+  @ConfigAttributeGetter(name = SECURITY_PEER_AUTHENTICATOR)
   String getSecurityPeerAuthenticator();
 
   /**
@@ -2236,7 +2247,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#security-peer-authenticator">"security-peer-authenticator"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = SECURITY_PEER_AUTHENTICATOR_NAME)
+  @ConfigAttributeSetter(name = SECURITY_PEER_AUTHENTICATOR)
   void setSecurityPeerAuthenticator(String attValue);
 
   /**
@@ -2255,7 +2266,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * Returns user module name authorizing client credentials in <a
    * href="../DistributedSystem.html#security-client-accessor">"security-client-accessor"</a>
    */
-  @ConfigAttributeGetter(name = SECURITY_CLIENT_ACCESSOR_NAME)
+  @ConfigAttributeGetter(name = SECURITY_CLIENT_ACCESSOR)
   String getSecurityClientAccessor();
 
   /**
@@ -2263,7 +2274,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#security-client-accessor">"security-client-accessor"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = SECURITY_CLIENT_ACCESSOR_NAME)
+  @ConfigAttributeSetter(name = SECURITY_CLIENT_ACCESSOR)
   void setSecurityClientAccessor(String attValue);
 
   /**
@@ -2282,7 +2293,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * Returns user module name authorizing client credentials in <a
    * href="../DistributedSystem.html#security-client-accessor-pp">"security-client-accessor-pp"</a>
    */
-  @ConfigAttributeGetter(name = SECURITY_CLIENT_ACCESSOR_PP_NAME)
+  @ConfigAttributeGetter(name = SECURITY_CLIENT_ACCESSOR_PP)
   String getSecurityClientAccessorPP();
 
   /**
@@ -2290,7 +2301,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#security-client-accessor-pp">"security-client-accessor-pp"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = SECURITY_CLIENT_ACCESSOR_PP_NAME)
+  @ConfigAttributeSetter(name = SECURITY_CLIENT_ACCESSOR_PP)
   void setSecurityClientAccessorPP(String attValue);
 
   /**
@@ -2310,7 +2321,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    *
    * @return the current security log-level
    */
-  @ConfigAttributeGetter(name = SECURITY_LOG_LEVEL_NAME)
+  @ConfigAttributeGetter(name = SECURITY_LOG_LEVEL)
   int getSecurityLogLevel();
 
   /**
@@ -2318,7 +2329,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    *
    * @param level the new security log-level
    */
-  @ConfigAttributeSetter(name = SECURITY_LOG_LEVEL_NAME)
+  @ConfigAttributeSetter(name = SECURITY_LOG_LEVEL)
   void setSecurityLogLevel(int level);
 
   /**
@@ -2335,7 +2346,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    *
    * @return <code>null</code> if logging information goes to standard out
    */
-  @ConfigAttributeGetter(name = SECURITY_LOG_FILE_NAME)
+  @ConfigAttributeGetter(name = SECURITY_LOG_FILE)
   File getSecurityLogFile();
 
   /**
@@ -2350,7 +2361,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @throws com.gemstone.gemfire.GemFireIOException    if the set failure is caused by an error when writing to
    *                                                    the system's configuration file.
    */
-  @ConfigAttributeSetter(name = SECURITY_LOG_FILE_NAME)
+  @ConfigAttributeSetter(name = SECURITY_LOG_FILE)
   void setSecurityLogFile(File value);
 
   /**
@@ -2374,7 +2385,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    *
    * @return Timeout in milliseconds.
    */
-  @ConfigAttributeGetter(name = SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME)
+  @ConfigAttributeGetter(name = SECURITY_PEER_VERIFY_MEMBER_TIMEOUT)
   int getSecurityPeerMembershipTimeout();
 
   /**
@@ -2383,7 +2394,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    *
    * @param attValue
    */
-  @ConfigAttributeSetter(name = SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME)
+  @ConfigAttributeSetter(name = SECURITY_PEER_VERIFY_MEMBER_TIMEOUT)
   void setSecurityPeerMembershipTimeout(int attValue);
 
   /**
@@ -2476,7 +2487,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    *
    * @since GemFire 6.0
    */
-  @ConfigAttributeGetter(name = REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME)
+  @ConfigAttributeGetter(name = REMOVE_UNRESPONSIVE_CLIENT)
   boolean getRemoveUnresponsiveClient();
 
   /**
@@ -2486,7 +2497,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    *
    * @since GemFire 6.0
    */
-  @ConfigAttributeSetter(name = REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME)
+  @ConfigAttributeSetter(name = REMOVE_UNRESPONSIVE_CLIENT)
   void setRemoveUnresponsiveClient(boolean value);
 
   /**
@@ -2496,14 +2507,15 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
   String DELTA_PROPAGATION_PROP_NAME = DELTA_PROPAGATION;
 
   boolean DEFAULT_DELTA_PROPAGATION = true;
-   /**
-    * Returns the value of the <a
-    * href="../DistributedSystem.html#delta-propagation">"delta-propagation"</a>
-    * property.
-    * @since GemFire 6.3
-    */
-   @ConfigAttributeGetter(name=DELTA_PROPAGATION_PROP_NAME)
-   boolean getDeltaPropagation();
+
+  /**
+   * Returns the value of the <a
+   * href="../DistributedSystem.html#delta-propagation">"delta-propagation"</a>
+   * property.
+   * @since GemFire 6.3
+   */
+  @ConfigAttributeGetter(name = DELTA_PROPAGATION)
+  boolean getDeltaPropagation();
 
   /**
    * Sets the value of the <a
@@ -2512,7 +2524,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    *
    * @since GemFire 6.3
    */
-  @ConfigAttributeSetter(name = DELTA_PROPAGATION_PROP_NAME)
+  @ConfigAttributeSetter(name = DELTA_PROPAGATION)
   void setDeltaPropagation(boolean value);
 
   int MIN_DISTRIBUTED_SYSTEM_ID = -1;
@@ -2524,6 +2536,20 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
   String DISTRIBUTED_SYSTEM_ID_NAME = DISTRIBUTED_SYSTEM_ID;
   int DEFAULT_DISTRIBUTED_SYSTEM_ID = -1;
 
+  /**
+   * @since GemFire 6.6
+   */
+  @ConfigAttributeSetter(name = DISTRIBUTED_SYSTEM_ID)
+  void setDistributedSystemId(int distributedSystemId);
+  /**
+   * @since GemFire 6.6
+   */
+  @ConfigAttributeGetter(name = DISTRIBUTED_SYSTEM_ID)
+  int getDistributedSystemId();
+
+  /**
+   * @since GemFire 6.6
+   */
   @ConfigAttribute(type = String.class)
   String REDUNDANCY_ZONE_NAME = REDUNDANCY_ZONE;
   String DEFAULT_REDUNDANCY_ZONE = "";
@@ -2531,19 +2557,12 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
   /**
    * @since GemFire 6.6
    */
-  @ConfigAttributeSetter(name = DISTRIBUTED_SYSTEM_ID_NAME)
-  void setDistributedSystemId(int distributedSystemId);
-
-  @ConfigAttributeSetter(name = REDUNDANCY_ZONE_NAME)
+  @ConfigAttributeSetter(name = REDUNDANCY_ZONE)
   void setRedundancyZone(String redundancyZone);
-
   /**
    * @since GemFire 6.6
    */
-  @ConfigAttributeGetter(name = DISTRIBUTED_SYSTEM_ID_NAME)
-  int getDistributedSystemId();
-
-  @ConfigAttributeGetter(name = REDUNDANCY_ZONE_NAME)
+  @ConfigAttributeGetter(name = REDUNDANCY_ZONE)
   String getRedundancyZone();
 
   /**
@@ -2567,17 +2586,17 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @since GemFire 6.6
    */
   @ConfigAttribute(type = Boolean.class)
-  String ENFORCE_UNIQUE_HOST_NAME = ENFORE_UNIQUE_HOST;
+  String ENFORCE_UNIQUE_HOST_NAME = ENFORCE_UNIQUE_HOST;
   /**
    * Using the system property to set the default here to retain backwards compatibility
    * with customers that are already using this system property.
    */
   boolean DEFAULT_ENFORCE_UNIQUE_HOST = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "EnforceUniqueHostStorageAllocation");
 
-  @ConfigAttributeSetter(name = ENFORCE_UNIQUE_HOST_NAME)
+  @ConfigAttributeSetter(name = ENFORCE_UNIQUE_HOST)
   void setEnforceUniqueHost(boolean enforceUniqueHost);
 
-  @ConfigAttributeGetter(name = ENFORCE_UNIQUE_HOST_NAME)
+  @ConfigAttributeGetter(name = ENFORCE_UNIQUE_HOST)
   boolean getEnforceUniqueHost();
 
   Properties getUserDefinedProps();
@@ -2590,7 +2609,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @return the value of the property
    * @since GemFire 7.0
    */
-  @ConfigAttributeGetter(name = GROUPS_NAME)
+  @ConfigAttributeGetter(name = GROUPS)
   String getGroups();
 
   /**
@@ -2603,7 +2622,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    *                                                    when writing to the system's configuration file.
    * @since GemFire 7.0
    */
-  @ConfigAttributeSetter(name = GROUPS_NAME)
+  @ConfigAttributeSetter(name = GROUPS)
   void setGroups(String value);
 
   /**
@@ -2626,10 +2645,10 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    */
   void close();
 
-  @ConfigAttributeSetter(name = REMOTE_LOCATORS_NAME)
+  @ConfigAttributeSetter(name = REMOTE_LOCATORS)
   void setRemoteLocators(String locators);
 
-  @ConfigAttributeGetter(name = REMOTE_LOCATORS_NAME)
+  @ConfigAttributeGetter(name = REMOTE_LOCATORS)
   String getRemoteLocators();
 
   /**
@@ -2642,30 +2661,30 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    */
   String DEFAULT_REMOTE_LOCATORS = "";
 
-  @ConfigAttributeGetter(name = JMX_MANAGER_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER)
   boolean getJmxManager();
 
-  @ConfigAttributeSetter(name = JMX_MANAGER_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER)
   void setJmxManager(boolean value);
 
   @ConfigAttribute(type = Boolean.class)
   String JMX_MANAGER_NAME = JMX_MANAGER;
   boolean DEFAULT_JMX_MANAGER = false;
 
-  @ConfigAttributeGetter(name = JMX_MANAGER_START_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_START)
   boolean getJmxManagerStart();
 
-  @ConfigAttributeSetter(name = JMX_MANAGER_START_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_START)
   void setJmxManagerStart(boolean value);
 
   @ConfigAttribute(type = Boolean.class)
   String JMX_MANAGER_START_NAME = JMX_MANAGER_START;
   boolean DEFAULT_JMX_MANAGER_START = false;
 
-  @ConfigAttributeGetter(name = JMX_MANAGER_PORT_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_PORT)
   int getJmxManagerPort();
 
-  @ConfigAttributeSetter(name = JMX_MANAGER_PORT_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_PORT)
   void setJmxManagerPort(int value);
 
   @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
@@ -2676,13 +2695,13 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
   /**
    * @deprecated as of 8.0 use {@link #getJmxManagerSSLEnabled} instead.
    */
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL)
   boolean getJmxManagerSSL();
 
   /**
    * @deprecated as of 8.0 use {@link #setJmxManagerSSLEnabled} instead.
    */
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL)
   void setJmxManagerSSL(boolean value);
 
   /**
@@ -2701,7 +2720,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-enabled">"jmx-manager-ssl-enabled"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_ENABLED_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_ENABLED)
   boolean getJmxManagerSSLEnabled();
 
   /**
@@ -2721,7 +2740,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-enabled">"jmx-manager-ssl-enabled"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_ENABLED_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_ENABLED)
   void setJmxManagerSSLEnabled(boolean enabled);
 
   /**
@@ -2730,7 +2749,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeGetter(name = OFF_HEAP_MEMORY_SIZE_NAME)
+  @ConfigAttributeGetter(name = OFF_HEAP_MEMORY_SIZE)
   String getOffHeapMemorySize();
 
   /**
@@ -2739,10 +2758,10 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * property.
    * @since Geode 1.0
    */
-  @ConfigAttributeSetter(name = OFF_HEAP_MEMORY_SIZE_NAME)
+  @ConfigAttributeSetter(name = OFF_HEAP_MEMORY_SIZE)
   void setOffHeapMemorySize(String value);
-  /** 
-   * The name of the "off-heap-memory-size" property 
+  /**
+   * The name of the "off-heap-memory-size" property
    * @since Geode 1.0
    */
   @ConfigAttribute(type = String.class)
@@ -2750,7 +2769,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
   /**
    * The default <a
    * href="../DistributedSystem.html#off-heap-memory-size">"off-heap-memory-size"</a>
-   * value of <code>""</code>. 
+   * value of <code>""</code>.
    * @since Geode 1.0
    */
   String DEFAULT_OFF_HEAP_MEMORY_SIZE = "";
@@ -2760,7 +2779,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-protocols">"jmx-manager-ssl-protocols"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_PROTOCOLS_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_PROTOCOLS)
   String getJmxManagerSSLProtocols();
 
   /**
@@ -2768,7 +2787,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-protocols">"jmx-manager-ssl-protocols"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_PROTOCOLS_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_PROTOCOLS)
   void setJmxManagerSSLProtocols(String protocols);
 
   /**
@@ -2787,7 +2806,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-ciphers">"jmx-manager-ssl-ciphers"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_CIPHERS_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_CIPHERS)
   String getJmxManagerSSLCiphers();
 
   /**
@@ -2795,7 +2814,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-ciphers">"jmx-manager-ssl-ciphers"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_CIPHERS_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_CIPHERS)
   void setJmxManagerSSLCiphers(String ciphers);
 
   /**
@@ -2814,7 +2833,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-require-authentication">"jmx-manager-ssl-require-authentication"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION)
   boolean getJmxManagerSSLRequireAuthentication();
 
   /**
@@ -2822,7 +2841,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-require-authentication">"jmx-manager-ssl-require-authentication"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION)
   void setJmxManagerSSLRequireAuthentication(boolean enabled);
 
   /**
@@ -2841,7 +2860,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-keystore">"jmx-manager-ssl-keystore"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_KEYSTORE_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_KEYSTORE)
   String getJmxManagerSSLKeyStore();
 
   /**
@@ -2849,7 +2868,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-keystore">"jmx-manager-ssl-keystore"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_KEYSTORE_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_KEYSTORE)
   void setJmxManagerSSLKeyStore(String keyStore);
 
   /**
@@ -2869,7 +2888,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-keystore-type">"jmx-manager-ssl-keystore-type"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_KEYSTORE_TYPE)
   String getJmxManagerSSLKeyStoreType();
 
   /**
@@ -2877,7 +2896,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-keystore-type">"jmx-manager-ssl-keystore-type"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_KEYSTORE_TYPE)
   void setJmxManagerSSLKeyStoreType(String keyStoreType);
 
   /**
@@ -2897,7 +2916,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-keystore-password">"jmx-manager-ssl-keystore-password"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_KEYSTORE_PASSWORD)
   String getJmxManagerSSLKeyStorePassword();
 
   /**
@@ -2905,7 +2924,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-keystore-password">"jmx-manager-ssl-keystore-password"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_KEYSTORE_PASSWORD)
   void setJmxManagerSSLKeyStorePassword(String keyStorePassword);
 
   /**
@@ -2925,7 +2944,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-truststore">"jmx-manager-ssl-truststore"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_TRUSTSTORE_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_TRUSTSTORE)
   String getJmxManagerSSLTrustStore();
 
   /**
@@ -2933,7 +2952,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-truststore">"jmx-manager-ssl-truststore"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_TRUSTSTORE_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_TRUSTSTORE)
   void setJmxManagerSSLTrustStore(String trustStore);
 
   /**
@@ -2953,7 +2972,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-truststore-password">"jmx-manager-ssl-truststore-password"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD)
   String getJmxManagerSSLTrustStorePassword();
 
   /**
@@ -2961,7 +2980,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#jmx-manager-ssl-truststore-password">"jmx-manager-ssl-truststore-password"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD)
   void setJmxManagerSSLTrustStorePassword(String trusStorePassword);
 
   /**
@@ -2976,40 +2995,40 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
   @ConfigAttribute(type = String.class)
   String JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME = JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD;
 
-  @ConfigAttributeGetter(name = JMX_MANAGER_BIND_ADDRESS_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_BIND_ADDRESS)
   String getJmxManagerBindAddress();
 
-  @ConfigAttributeSetter(name = JMX_MANAGER_BIND_ADDRESS_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_BIND_ADDRESS)
   void setJmxManagerBindAddress(String value);
 
   @ConfigAttribute(type = String.class)
   String JMX_MANAGER_BIND_ADDRESS_NAME = JMX_MANAGER_BIND_ADDRESS;
   String DEFAULT_JMX_MANAGER_BIND_ADDRESS = "";
 
-  @ConfigAttributeGetter(name = JMX_MANAGER_HOSTNAME_FOR_CLIENTS_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_HOSTNAME_FOR_CLIENTS)
   String getJmxManagerHostnameForClients();
 
-  @ConfigAttributeSetter(name = JMX_MANAGER_HOSTNAME_FOR_CLIENTS_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_HOSTNAME_FOR_CLIENTS)
   void setJmxManagerHostnameForClients(String value);
 
   @ConfigAttribute(type = String.class)
   String JMX_MANAGER_HOSTNAME_FOR_CLIENTS_NAME = JMX_MANAGER_HOSTNAME_FOR_CLIENTS;
   String DEFAULT_JMX_MANAGER_HOSTNAME_FOR_CLIENTS = "";
 
-  @ConfigAttributeGetter(name = JMX_MANAGER_PASSWORD_FILE_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_PASSWORD_FILE)
   String getJmxManagerPasswordFile();
 
-  @ConfigAttributeSetter(name = JMX_MANAGER_PASSWORD_FILE_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_PASSWORD_FILE)
   void setJmxManagerPasswordFile(String value);
 
   @ConfigAttribute(type = String.class)
   String JMX_MANAGER_PASSWORD_FILE_NAME = JMX_MANAGER_PASSWORD_FILE;
   String DEFAULT_JMX_MANAGER_PASSWORD_FILE = "";
 
-  @ConfigAttributeGetter(name = JMX_MANAGER_ACCESS_FILE_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_ACCESS_FILE)
   String getJmxManagerAccessFile();
 
-  @ConfigAttributeSetter(name = JMX_MANAGER_ACCESS_FILE_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_ACCESS_FILE)
   void setJmxManagerAccessFile(String value);
 
   @ConfigAttribute(type = String.class)
@@ -3022,7 +3041,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    *
    * @deprecated as of 8.0 use {@link #getHttpServicePort()} instead.
    */
-  @ConfigAttributeGetter(name = JMX_MANAGER_HTTP_PORT_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_HTTP_PORT)
   int getJmxManagerHttpPort();
 
   /**
@@ -3031,13 +3050,13 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @param value the port number for jmx-manager HTTP service
    * @deprecated as of 8.0 use {@link #setHttpServicePort(int)} instead.
    */
-  @ConfigAttributeSetter(name = JMX_MANAGER_HTTP_PORT_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_HTTP_PORT)
   void setJmxManagerHttpPort(int value);
 
   /**
    * The name of the "jmx-manager-http-port" property.
    *
-   * @deprecated as of 8.0 use {@link #HTTP_SERVICE_PORT_NAME} instead.
+   * @deprecated as of 8.0 use {@link #HTTP_SERVICE_PORT} instead.
    */
   @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
   String JMX_MANAGER_HTTP_PORT_NAME = JMX_MANAGER_HTTP_PORT;
@@ -3050,10 +3069,10 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    */
   int DEFAULT_JMX_MANAGER_HTTP_PORT = 7070;
 
-  @ConfigAttributeGetter(name = JMX_MANAGER_UPDATE_RATE_NAME)
+  @ConfigAttributeGetter(name = JMX_MANAGER_UPDATE_RATE)
   int getJmxManagerUpdateRate();
 
-  @ConfigAttributeSetter(name = JMX_MANAGER_UPDATE_RATE_NAME)
+  @ConfigAttributeSetter(name = JMX_MANAGER_UPDATE_RATE)
   void setJmxManagerUpdateRate(int value);
 
   int DEFAULT_JMX_MANAGER_UPDATE_RATE = 2000;
@@ -3069,10 +3088,10 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @return the port on which GemFireMemcachedServer should be started
    * @since GemFire 7.0
    */
-  @ConfigAttributeGetter(name = MEMCACHED_PORT_NAME)
+  @ConfigAttributeGetter(name = MEMCACHED_PORT)
   int getMemcachedPort();
 
-  @ConfigAttributeSetter(name = MEMCACHED_PORT_NAME)
+  @ConfigAttributeSetter(name = MEMCACHED_PORT)
   void setMemcachedPort(int value);
 
   @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
@@ -3086,10 +3105,10 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @return the protocol for GemFireMemcachedServer
    * @since GemFire 7.0
    */
-  @ConfigAttributeGetter(name = MEMCACHED_PROTOCOL_NAME)
+  @ConfigAttributeGetter(name = MEMCACHED_PROTOCOL)
   String getMemcachedProtocol();
 
-  @ConfigAttributeSetter(name = MEMCACHED_PROTOCOL_NAME)
+  @ConfigAttributeSetter(name = MEMCACHED_PROTOCOL)
   void setMemcachedProtocol(String protocol);
 
   @ConfigAttribute(type = String.class)
@@ -3103,10 +3122,10 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @return the bind address for GemFireMemcachedServer
    * @since GemFire 7.0
    */
-  @ConfigAttributeGetter(name = MEMCACHED_BIND_ADDRESS_NAME)
+  @ConfigAttributeGetter(name = MEMCACHED_BIND_ADDRESS)
   String getMemcachedBindAddress();
 
-  @ConfigAttributeSetter(name = MEMCACHED_BIND_ADDRESS_NAME)
+  @ConfigAttributeSetter(name = MEMCACHED_BIND_ADDRESS)
   void setMemcachedBindAddress(String bindAddress);
 
   @ConfigAttribute(type = String.class)
@@ -3120,10 +3139,10 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @return the port on which GemFireRedisServer should be started
    * @since GemFire 8.0
    */
-  @ConfigAttributeGetter(name = REDIS_PORT_NAME)
+  @ConfigAttributeGetter(name = REDIS_PORT)
   int getRedisPort();
 
-  @ConfigAttributeSetter(name = REDIS_PORT_NAME)
+  @ConfigAttributeSetter(name = REDIS_PORT)
   void setRedisPort(int value);
 
   @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
@@ -3137,10 +3156,10 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @return the bind address for GemFireRedisServer
    * @since GemFire 8.0
    */
-  @ConfigAttributeGetter(name = REDIS_BIND_ADDRESS_NAME)
+  @ConfigAttributeGetter(name = REDIS_BIND_ADDRESS)
   String getRedisBindAddress();
 
-  @ConfigAttributeSetter(name = REDIS_BIND_ADDRESS_NAME)
+  @ConfigAttributeSetter(name = REDIS_BIND_ADDRESS)
   void setRedisBindAddress(String bindAddress);
 
   @ConfigAttribute(type = String.class)
@@ -3154,10 +3173,10 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @return the authentication password for GemFireRedisServer
    * @since GemFire 8.0
    */
-  @ConfigAttributeGetter(name = REDIS_PASSWORD_NAME)
+  @ConfigAttributeGetter(name = REDIS_PASSWORD)
   String getRedisPassword();
 
-  @ConfigAttributeSetter(name = REDIS_PASSWORD_NAME)
+  @ConfigAttributeSetter(name = REDIS_PASSWORD)
   void setRedisPassword(String password);
 
   @ConfigAttribute(type = String.class)
@@ -3173,7 +3192,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @return the HTTP service port
    * @since GemFire 8.0
    */
-  @ConfigAttributeGetter(name = HTTP_SERVICE_PORT_NAME)
+  @ConfigAttributeGetter(name = HTTP_SERVICE_PORT)
   int getHttpServicePort();
 
   /**
@@ -3182,7 +3201,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @param value the port number for HTTP service
    * @since GemFire 8.0
    */
-  @ConfigAttributeSetter(name = HTTP_SERVICE_PORT_NAME)
+  @ConfigAttributeSetter(name = HTTP_SERVICE_PORT)
   void setHttpServicePort(int value);
 
   /**
@@ -3206,7 +3225,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @return the bind-address for HTTP service
    * @since GemFire 8.0
    */
-  @ConfigAttributeGetter(name = HTTP_SERVICE_BIND_ADDRESS_NAME)
+  @ConfigAttributeGetter(name = HTTP_SERVICE_BIND_ADDRESS)
   String getHttpServiceBindAddress();
 
   /**
@@ -3215,7 +3234,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @param value the bind-address for HTTP service
    * @since GemFire 8.0
    */
-  @ConfigAttributeSetter(name = HTTP_SERVICE_BIND_ADDRESS_NAME)
+  @ConfigAttributeSetter(name = HTTP_SERVICE_BIND_ADDRESS)
   void setHttpServiceBindAddress(String value);
 
   /**
@@ -3239,7 +3258,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-enabled">"http-service-ssl-enabled"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_ENABLED_NAME)
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_ENABLED)
   boolean getHttpServiceSSLEnabled();
 
   /**
@@ -3247,7 +3266,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-enabled">"http-service-ssl-enabled"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_ENABLED_NAME)
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_ENABLED)
   void setHttpServiceSSLEnabled(boolean httpServiceSSLEnabled);
 
   /**
@@ -3267,7 +3286,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-require-authentication">"http-service-ssl-require-authentication"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME)
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION)
   boolean getHttpServiceSSLRequireAuthentication();
 
   /**
@@ -3275,7 +3294,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-require-authentication">"http-service-ssl-require-authentication"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME)
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION)
   void setHttpServiceSSLRequireAuthentication(boolean httpServiceSSLRequireAuthentication);
 
   /**
@@ -3295,7 +3314,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-protocols">"http-service-ssl-protocols"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_PROTOCOLS_NAME)
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_PROTOCOLS)
   String getHttpServiceSSLProtocols();
 
   /**
@@ -3303,7 +3322,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-protocols">"http-service-ssl-protocols"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_PROTOCOLS_NAME)
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_PROTOCOLS)
   void setHttpServiceSSLProtocols(String protocols);
 
   /**
@@ -3323,7 +3342,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-ciphers">"http-service-ssl-ciphers"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_CIPHERS_NAME)
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_CIPHERS)
   String getHttpServiceSSLCiphers();
 
   /**
@@ -3331,7 +3350,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-ciphers">"http-service-ssl-ciphers"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_CIPHERS_NAME)
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_CIPHERS)
   void setHttpServiceSSLCiphers(String ciphers);
 
   /**
@@ -3351,7 +3370,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-keystore">"http-service-ssl-keystore"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE_NAME)
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE)
   String getHttpServiceSSLKeyStore();
 
   /**
@@ -3359,7 +3378,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-keystore">"http-service-ssl-keystore"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE_NAME)
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE)
   void setHttpServiceSSLKeyStore(String keyStore);
 
   /**
@@ -3379,7 +3398,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-keystore-password">"http-service-ssl-keystore-password"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME)
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE_PASSWORD)
   String getHttpServiceSSLKeyStorePassword();
 
   /**
@@ -3387,7 +3406,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-keystore-password">"http-service-ssl-keystore-password"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME)
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE_PASSWORD)
   void setHttpServiceSSLKeyStorePassword(String keyStorePassword);
 
   /**
@@ -3407,7 +3426,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-keystore-type">"http-service-ssl-keystore-type"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME)
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE_TYPE)
   String getHttpServiceSSLKeyStoreType();
 
   /**
@@ -3415,7 +3434,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-keystore-type">"http-service-ssl-keystore-type"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME)
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE_TYPE)
   void setHttpServiceSSLKeyStoreType(String keyStoreType);
 
   /**
@@ -3435,7 +3454,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-truststore">"http-service-ssl-truststore"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_TRUSTSTORE_NAME)
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_TRUSTSTORE)
   String getHttpServiceSSLTrustStore();
 
   /**
@@ -3443,7 +3462,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-truststore">"http-service-ssl-truststore"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_TRUSTSTORE_NAME)
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_TRUSTSTORE)
   void setHttpServiceSSLTrustStore(String trustStore);
 
   /**
@@ -3463,7 +3482,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-truststore-password">"http-service-ssl-truststore-password"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME)
+  @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD)
   String getHttpServiceSSLTrustStorePassword();
 
   /**
@@ -3471,7 +3490,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#http-service-ssl-truststore-password">"http-service-ssl-truststore-password"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME)
+  @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD)
   void setHttpServiceSSLTrustStorePassword(String trustStorePassword);
 
   /**
@@ -3487,7 +3506,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
   String HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD;
 
   Properties getHttpServiceSSLProperties();
-  
+
   //Added for API REST
 
   /**
@@ -3497,7 +3516,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @return the value of the property
    * @since GemFire 8.0
    */
-  @ConfigAttributeGetter(name = START_DEV_REST_API_NAME)
+  @ConfigAttributeGetter(name = START_DEV_REST_API)
   boolean getStartDevRestApi();
 
   /**
@@ -3506,7 +3525,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @param value for the property
    * @since GemFire 8.0
    */
-  @ConfigAttributeSetter(name = START_DEV_REST_API_NAME)
+  @ConfigAttributeSetter(name = START_DEV_REST_API)
   void setStartDevRestApi(boolean value);
 
   /**
@@ -3538,7 +3557,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
   /**
    * Gets the value of <a href="../DistributedSystem.html#disable-auto-reconnect">"disable-auto-reconnect"</a>
    */
-  @ConfigAttributeGetter(name = DISABLE_AUTO_RECONNECT_NAME)
+  @ConfigAttributeGetter(name = DISABLE_AUTO_RECONNECT)
   boolean getDisableAutoReconnect();
 
   /**
@@ -3546,17 +3565,17 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    *
    * @param value the new setting
    */
-  @ConfigAttributeSetter(name = DISABLE_AUTO_RECONNECT_NAME)
+  @ConfigAttributeSetter(name = DISABLE_AUTO_RECONNECT)
   void setDisableAutoReconnect(boolean value);
 
   Properties getServerSSLProperties();
-  
+
   /**
    * Returns the value of the <a
    * href="../DistributedSystem.html#server-ssl-enabled">"server-ssl-enabled"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = SERVER_SSL_ENABLED_NAME)
+  @ConfigAttributeGetter(name = SERVER_SSL_ENABLED)
   boolean getServerSSLEnabled();
 
   /**
@@ -3575,7 +3594,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-enabled">"server-ssl-enabled"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = SERVER_SSL_ENABLED_NAME)
+  @ConfigAttributeSetter(name = SERVER_SSL_ENABLED)
   void setServerSSLEnabled(boolean enabled);
 
   /**
@@ -3583,7 +3602,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-protocols">"server-ssl-protocols"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = SERVER_SSL_PROTOCOLS_NAME)
+  @ConfigAttributeGetter(name = SERVER_SSL_PROTOCOLS)
   String getServerSSLProtocols();
 
   /**
@@ -3591,7 +3610,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-protocols">"server-ssl-protocols"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = SERVER_SSL_PROTOCOLS_NAME)
+  @ConfigAttributeSetter(name = SERVER_SSL_PROTOCOLS)
   void setServerSSLProtocols(String protocols);
 
   /**
@@ -3610,7 +3629,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-ciphers">"server-ssl-ciphers"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = SERVER_SSL_CIPHERS_NAME)
+  @ConfigAttributeGetter(name = SERVER_SSL_CIPHERS)
   String getServerSSLCiphers();
 
   /**
@@ -3618,7 +3637,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-ciphers">"server-ssl-ciphers"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = SERVER_SSL_CIPHERS_NAME)
+  @ConfigAttributeSetter(name = SERVER_SSL_CIPHERS)
   void setServerSSLCiphers(String ciphers);
 
   /**
@@ -3637,7 +3656,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-require-authentication">"server-ssl-require-authentication"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = SERVER_SSL_REQUIRE_AUTHENTICATION_NAME)
+  @ConfigAttributeGetter(name = SERVER_SSL_REQUIRE_AUTHENTICATION)
   boolean getServerSSLRequireAuthentication();
 
   /**
@@ -3645,7 +3664,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-require-authentication">"server-ssl-require-authentication"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = SERVER_SSL_REQUIRE_AUTHENTICATION_NAME)
+  @ConfigAttributeSetter(name = SERVER_SSL_REQUIRE_AUTHENTICATION)
   void setServerSSLRequireAuthentication(boolean enabled);
 
   /**
@@ -3664,7 +3683,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-keystore">"server-ssl-keystore"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE_NAME)
+  @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE)
   String getServerSSLKeyStore();
 
   /**
@@ -3672,7 +3691,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-keystore">"server-ssl-keystore"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE_NAME)
+  @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE)
   void setServerSSLKeyStore(String keyStore);
 
   /**
@@ -3692,7 +3711,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-keystore-type">"server-ssl-keystore-type"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE_TYPE_NAME)
+  @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE_TYPE)
   String getServerSSLKeyStoreType();
 
   /**
@@ -3700,7 +3719,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-keystore-type">"server-ssl-keystore-type"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE_TYPE_NAME)
+  @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE_TYPE)
   void setServerSSLKeyStoreType(String keyStoreType);
 
   /**
@@ -3720,7 +3739,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-keystore-password">"server-ssl-keystore-password"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE_PASSWORD_NAME)
+  @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE_PASSWORD)
   String getServerSSLKeyStorePassword();
 
   /**
@@ -3728,7 +3747,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-keystore-password">"server-ssl-keystore-password"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE_PASSWORD_NAME)
+  @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE_PASSWORD)
   void setServerSSLKeyStorePassword(String keyStorePassword);
 
   /**
@@ -3748,7 +3767,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-truststore">"server-ssl-truststore"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = SERVER_SSL_TRUSTSTORE_NAME)
+  @ConfigAttributeGetter(name = SERVER_SSL_TRUSTSTORE)
   String getServerSSLTrustStore();
 
   /**
@@ -3756,7 +3775,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-truststore">"server-ssl-truststore"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = SERVER_SSL_TRUSTSTORE_NAME)
+  @ConfigAttributeSetter(name = SERVER_SSL_TRUSTSTORE)
   void setServerSSLTrustStore(String trustStore);
 
   /**
@@ -3776,7 +3795,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-truststore-password">"server-ssl-truststore-password"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = SERVER_SSL_TRUSTSTORE_PASSWORD_NAME)
+  @ConfigAttributeGetter(name = SERVER_SSL_TRUSTSTORE_PASSWORD)
   String getServerSSLTrustStorePassword();
 
   /**
@@ -3784,7 +3803,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#server-ssl-truststore-password">"server-ssl-truststore-password"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = SERVER_SSL_TRUSTSTORE_PASSWORD_NAME)
+  @ConfigAttributeSetter(name = SERVER_SSL_TRUSTSTORE_PASSWORD)
   void setServerSSLTrustStorePassword(String trusStorePassword);
 
   /**
@@ -3804,7 +3823,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#cluster-ssl-enabled">"cluster-ssl-enabled"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = GATEWAY_SSL_ENABLED_NAME)
+  @ConfigAttributeGetter(name = GATEWAY_SSL_ENABLED)
   boolean getGatewaySSLEnabled();
 
   /**
@@ -3823,7 +3842,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-enabled">"gateway-ssl-enabled"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = GATEWAY_SSL_ENABLED_NAME)
+  @ConfigAttributeSetter(name = GATEWAY_SSL_ENABLED)
   void setGatewaySSLEnabled(boolean enabled);
 
   /**
@@ -3831,7 +3850,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-protocols">"gateway-ssl-protocols"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = GATEWAY_SSL_PROTOCOLS_NAME)
+  @ConfigAttributeGetter(name = GATEWAY_SSL_PROTOCOLS)
   String getGatewaySSLProtocols();
 
   /**
@@ -3839,7 +3858,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-protocols">"gateway-ssl-protocols"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = GATEWAY_SSL_PROTOCOLS_NAME)
+  @ConfigAttributeSetter(name = GATEWAY_SSL_PROTOCOLS)
   void setGatewaySSLProtocols(String protocols);
 
   /**
@@ -3858,7 +3877,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-ciphers">"gateway-ssl-ciphers"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = GATEWAY_SSL_CIPHERS_NAME)
+  @ConfigAttributeGetter(name = GATEWAY_SSL_CIPHERS)
   String getGatewaySSLCiphers();
 
   /**
@@ -3866,7 +3885,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-ciphers">"gateway-ssl-ciphers"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = GATEWAY_SSL_CIPHERS_NAME)
+  @ConfigAttributeSetter(name = GATEWAY_SSL_CIPHERS)
   void setGatewaySSLCiphers(String ciphers);
 
   /**
@@ -3885,7 +3904,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-require-authentication">"gateway-ssl-require-authentication"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME)
+  @ConfigAttributeGetter(name = GATEWAY_SSL_REQUIRE_AUTHENTICATION)
   boolean getGatewaySSLRequireAuthentication();
 
   /**
@@ -3893,7 +3912,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-require-authentication">"gateway-ssl-require-authentication"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME)
+  @ConfigAttributeSetter(name = GATEWAY_SSL_REQUIRE_AUTHENTICATION)
   void setGatewaySSLRequireAuthentication(boolean enabled);
 
   /**
@@ -3912,7 +3931,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-keystore">"gateway-ssl-keystore"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE_NAME)
+  @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE)
   String getGatewaySSLKeyStore();
 
   /**
@@ -3920,7 +3939,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-keystore">"gateway-ssl-keystore"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE_NAME)
+  @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE)
   void setGatewaySSLKeyStore(String keyStore);
 
   /**
@@ -3940,7 +3959,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-keystore-type">"gateway-ssl-keystore-type"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE_TYPE_NAME)
+  @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE_TYPE)
   String getGatewaySSLKeyStoreType();
 
   /**
@@ -3948,7 +3967,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-keystore-type">"gateway-ssl-keystore-type"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE_TYPE_NAME)
+  @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE_TYPE)
   void setGatewaySSLKeyStoreType(String keyStoreType);
 
   /**
@@ -3968,7 +3987,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-keystore-password">"gateway-ssl-keystore-password"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE_PASSWORD_NAME)
+  @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE_PASSWORD)
   String getGatewaySSLKeyStorePassword();
 
   /**
@@ -3976,7 +3995,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-keystore-password">"gateway-ssl-keystore-password"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE_PASSWORD_NAME)
+  @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE_PASSWORD)
   void setGatewaySSLKeyStorePassword(String keyStorePassword);
 
   /**
@@ -3996,7 +4015,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-truststore">"gateway-ssl-truststore"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = GATEWAY_SSL_TRUSTSTORE_NAME)
+  @ConfigAttributeGetter(name = GATEWAY_SSL_TRUSTSTORE)
   String getGatewaySSLTrustStore();
 
   /**
@@ -4004,7 +4023,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-truststore">"gateway-ssl-truststore"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = GATEWAY_SSL_TRUSTSTORE_NAME)
+  @ConfigAttributeSetter(name = GATEWAY_SSL_TRUSTSTORE)
   void setGatewaySSLTrustStore(String trustStore);
 
   /**
@@ -4024,7 +4043,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-truststore-password">"gateway-ssl-truststore-password"</a>
    * property.
    */
-  @ConfigAttributeGetter(name = GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME)
+  @ConfigAttributeGetter(name = GATEWAY_SSL_TRUSTSTORE_PASSWORD)
   String getGatewaySSLTrustStorePassword();
 
   /**
@@ -4032,7 +4051,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * href="../DistributedSystem.html#gateway-ssl-truststore-password">"gateway-ssl-truststore-password"</a>
    * property.
    */
-  @ConfigAttributeSetter(name = GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME)
+  @ConfigAttributeSetter(name = GATEWAY_SSL_TRUSTSTORE_PASSWORD)
   void setGatewaySSLTrustStorePassword(String trusStorePassword);
 
   /**
@@ -4064,7 +4083,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * Gets the value of <a href="../DistributedSystem.html#lock-memory">"lock-memory"</a>
    * @since Geode 1.0
    */
-  @ConfigAttributeGetter(name = LOCK_MEMORY_NAME)
+  @ConfigAttributeGetter(name = LOCK_MEMORY)
   boolean getLockMemory();
 
   /**
@@ -4073,16 +4092,16 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * @param value the new setting
    * @since Geode 1.0
    */
-  @ConfigAttributeSetter(name = LOCK_MEMORY_NAME)
+  @ConfigAttributeSetter(name = LOCK_MEMORY)
   void setLockMemory(boolean value);
 
   @ConfigAttribute(type = String.class)
   String SECURITY_SHIRO_INIT_NAME = SECURITY_SHIRO_INIT;
 
-  @ConfigAttributeSetter(name = SECURITY_SHIRO_INIT_NAME)
+  @ConfigAttributeSetter(name = SECURITY_SHIRO_INIT)
   void setShiroInit(String value);
 
-  @ConfigAttributeGetter(name = SECURITY_SHIRO_INIT_NAME)
+  @ConfigAttributeGetter(name = SECURITY_SHIRO_INIT)
   String getShiroInit();
 
   //*************** Initializers to gather all the annotations in this class ************************

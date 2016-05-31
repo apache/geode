@@ -48,6 +48,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 public class GeodeSecurityUtil {
 
   private static Logger logger = LogService.getLogger();
@@ -231,8 +233,8 @@ public class GeodeSecurityUtil {
     if(securityProps==null)
       return;
 
-    String shiroConfig = securityProps.getProperty(DistributionConfig.SECURITY_SHIRO_INIT_NAME);
-    String customAuthenticator =securityProps.getProperty(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
+    String shiroConfig = securityProps.getProperty(DistributionConfig.SECURITY_SHIRO_INIT);
+    String customAuthenticator =securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
     if (!com.gemstone.gemfire.internal.lang.StringUtils.isBlank(shiroConfig)) {
       IniSecurityManagerFactory factory = new IniSecurityManagerFactory("classpath:"+shiroConfig);
 

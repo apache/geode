@@ -241,7 +241,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     props.setProperty(MCAST_PORT, String.valueOf(0));
     props.setProperty(LOCATORS, otherLocators);
     props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-    props.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
+    props.setProperty(JMX_MANAGER_HTTP_PORT, "0");
     props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     File logFile = new File(getUniqueName() + "-locator" + locatorPort + ".log");
     try {

@@ -485,7 +485,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
         localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+        localProps.setProperty(GROUPS, groupName);
         getSystem(localProps);
         assertNotNull(getCache());
       }
@@ -523,7 +523,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
         localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+        localProps.setProperty(GROUPS, groupName);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         getSystem(localProps);
         Cache cache = getCache();
@@ -575,7 +575,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
         localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+        localProps.setProperty(GROUPS, groupName);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         getSystem(localProps);
         Cache cache = getCache();
@@ -821,7 +821,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     final String diskStore2Name = "testCreateDiskStore2";
 
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group0");
+    localProps.setProperty(GROUPS, "Group0");
     setUpJmxManagerOnVm0ThenConnect(localProps);
 
     CommandResult cmdResult = executeCommand(CliStrings.LIST_DISK_STORE);
@@ -841,7 +841,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
         Properties localProps = new Properties();
         localProps.setProperty(SystemConfigurationProperties.NAME, vm1Name);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
+        localProps.setProperty(GROUPS, "Group1");
         getSystem(localProps);
         getCache();
       }
@@ -857,7 +857,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
         Properties localProps = new Properties();
         localProps.setProperty(SystemConfigurationProperties.NAME, vm2Name);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group2");
+        localProps.setProperty(GROUPS, "Group2");
         getSystem(localProps);
         getCache();
       }
@@ -940,7 +940,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     final String region2Name = "testDestroyDiskStoreRegion2";
 
     Properties localProps = new Properties();
-    localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group0");
+    localProps.setProperty(GROUPS, "Group0");
     setUpJmxManagerOnVm0ThenConnect(localProps);
 
     CommandResult cmdResult = executeCommand(CliStrings.LIST_DISK_STORE);
@@ -960,7 +960,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
         Properties localProps = new Properties();
         localProps.setProperty(SystemConfigurationProperties.NAME, vm1Name);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1,Group2");
+        localProps.setProperty(GROUPS, "Group1,Group2");
         getSystem(localProps);
         Cache cache = getCache();
 
@@ -986,7 +986,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
         Properties localProps = new Properties();
         localProps.setProperty(SystemConfigurationProperties.NAME, vm2Name);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group2");
+        localProps.setProperty(GROUPS, "Group2");
         getSystem(localProps);
         Cache cache = getCache();
 

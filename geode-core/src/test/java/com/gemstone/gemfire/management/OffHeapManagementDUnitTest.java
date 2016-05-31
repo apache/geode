@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.offheap.OffHeapMemoryStats;
@@ -36,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Tests the off-heap additions to the RegionMXBean and MemberMXBean JMX interfaces.
@@ -628,10 +629,10 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
   protected Properties getSystemProperties() {
     Properties props = getDistributedSystemProperties();
 
-    props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
-    props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-    props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
-    props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "0");
+    props.setProperty(OFF_HEAP_MEMORY_SIZE, "1m");
+    props.setProperty(JMX_MANAGER, "true");
+    props.setProperty(JMX_MANAGER_START, "true");
+    props.setProperty(JMX_MANAGER_PORT, "0");
 
     return props;
   }

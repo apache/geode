@@ -161,7 +161,7 @@ public abstract class AbstractConfig implements Config {
         }
       }
       // hide the shiro-init configuration for now. Remove after we can allow customer to specify shiro.ini file
-      if(attName.equals(DistributionConfig.SECURITY_SHIRO_INIT_NAME)){
+      if(attName.equals(DistributionConfig.SECURITY_SHIRO_INIT)){
         continue;
       }
       pw.print(attName);
@@ -216,7 +216,7 @@ public abstract class AbstractConfig implements Config {
       return true;
     } else if (attName.equals(SSL_REQUIRE_AUTHENTICATION)) {
       return true;
-    } else if (attName.equals(DistributionConfig.JMX_MANAGER_SSL_NAME)) {
+    } else if (attName.equals(JMX_MANAGER_SSL)) {
       return true;
     }
     return false; 

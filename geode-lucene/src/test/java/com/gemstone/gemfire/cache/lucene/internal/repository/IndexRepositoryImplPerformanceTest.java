@@ -24,6 +24,7 @@ import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.lucene.*;
+import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexStats;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.cache.lucene.internal.directory.RegionDirectory;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntriesCollector;

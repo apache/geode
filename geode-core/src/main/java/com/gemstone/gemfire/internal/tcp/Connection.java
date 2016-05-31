@@ -49,6 +49,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /** <p>Connection is a socket holder that sends and receives serialized
     message objects.  A Connection may be closed to preserve system
     resources and will automatically be reopened when it's needed.</p>
@@ -2335,7 +2337,7 @@ public class Connection implements Runnable {
 
               String authInit = System
                   .getProperty(DistributionConfigImpl.SECURITY_SYSTEM_PREFIX
-                      + DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME);
+                      + SECURITY_PEER_AUTH_INIT);
               boolean isSecure = authInit != null && authInit.length() != 0;
 
               if (isSecure) {
@@ -3855,7 +3857,7 @@ public class Connection implements Runnable {
               try {
                 String authInit = System
                     .getProperty(DistributionConfigImpl.SECURITY_SYSTEM_PREFIX
-                        + DistributionConfig.SECURITY_PEER_AUTH_INIT_NAME);
+                        + SECURITY_PEER_AUTH_INIT);
                 boolean isSecure = authInit!= null && authInit.length() != 0 ;
 
                 if (isSecure) {

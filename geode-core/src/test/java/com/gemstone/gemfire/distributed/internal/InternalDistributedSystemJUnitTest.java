@@ -568,7 +568,7 @@ public class InternalDistributedSystemJUnitTest
     try {
       System.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL, "finest");
       Properties apiProps = new Properties();
-      apiProps.setProperty(DistributionConfig.GROUPS_NAME, "foo, bar");
+      apiProps.setProperty(GROUPS, "foo, bar");
       {
         if (propFileExisted) {
           propFile.renameTo(new File(DistributionConfig.GEMFIRE_PREFIX + "properties.sav"));
@@ -591,7 +591,7 @@ public class InternalDistributedSystemJUnitTest
       }
       DistributionConfigImpl dci = new DistributionConfigImpl(apiProps);
       assertEquals(null, dci.getAttributeSource(MCAST_PORT));
-      assertEquals(ConfigSource.api(), dci.getAttributeSource(DistributionConfig.GROUPS_NAME));
+      assertEquals(ConfigSource.api(), dci.getAttributeSource(GROUPS));
       assertEquals(ConfigSource.sysprop(), dci.getAttributeSource(LOG_LEVEL));
       assertEquals(ConfigSource.Type.FILE, dci.getAttributeSource("name").getType());
       assertEquals(ConfigSource.Type.SECURE_FILE, dci.getAttributeSource(STATISTIC_SAMPLE_RATE).getType());

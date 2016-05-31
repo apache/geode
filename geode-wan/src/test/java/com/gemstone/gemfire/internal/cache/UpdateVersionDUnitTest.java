@@ -768,10 +768,10 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
     props.setProperty(LOCATORS, "localhost[" + port + "]");
     props.setProperty(START_LOCATOR, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    props.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + remoteLocPort + "]");
+    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
     props.setProperty(USE_CLUSTER_CONFIGURATION, "false");
     props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     test.getSystem(props);
@@ -928,7 +928,7 @@ public class UpdateVersionDUnitTest extends DistributedTestCase {
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
     props.setProperty(LOCATORS, "localhost[" + port + "]");
     props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     props.setProperty(USE_CLUSTER_CONFIGURATION, "false");

@@ -17,11 +17,12 @@
 package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.cache.RegionFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Tests PartitionedRegion DataStore currentAllocatedMemory operation.
@@ -34,7 +35,7 @@ public class PRDataStoreMemoryOffHeapJUnitTest extends PRDataStoreMemoryJUnitTes
   @Override
   protected Properties getDistributedSystemProperties() {
     Properties dsProps = super.getDistributedSystemProperties();
-    dsProps.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
+    dsProps.setProperty(OFF_HEAP_MEMORY_SIZE, "1m");
     return dsProps;
   }
   

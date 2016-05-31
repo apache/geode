@@ -271,7 +271,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, locators);
     properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DISABLE_AUTO_RECONNECT, "true");
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
@@ -378,7 +378,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, locators);
     properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
-    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DISABLE_AUTO_RECONNECT, "true");
 
     File logFile = new File("");
     if (logFile.exists()) {
@@ -494,7 +494,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, locators);
     properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
-    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DISABLE_AUTO_RECONNECT, "true");
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     //    properties.put("log-level", "fine");
@@ -627,7 +627,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, locators);
     properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
-    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DISABLE_AUTO_RECONNECT, "true");
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
 
@@ -772,7 +772,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, locators);
     properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
-    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DISABLE_AUTO_RECONNECT, "true");
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
@@ -909,7 +909,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, locators);
     properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
-    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DISABLE_AUTO_RECONNECT, "true");
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
 

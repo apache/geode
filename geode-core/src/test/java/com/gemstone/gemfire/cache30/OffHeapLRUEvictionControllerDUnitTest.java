@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
@@ -25,6 +24,8 @@ import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Tests the basic functionality of the lru eviction 
@@ -57,7 +58,7 @@ public class OffHeapLRUEvictionControllerDUnitTest extends
   @Override
   public Properties getDistributedSystemProperties() {
     Properties properties = super.getDistributedSystemProperties();
-    properties.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "100m");
+    properties.setProperty(OFF_HEAP_MEMORY_SIZE, "100m");
     
     return properties;
   }  

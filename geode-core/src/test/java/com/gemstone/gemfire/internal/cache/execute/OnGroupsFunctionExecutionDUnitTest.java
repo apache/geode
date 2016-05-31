@@ -96,7 +96,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends DistributedTestCase {
       @Override
       public Object call() throws Exception {
         Properties props = new Properties();
-        props.put(DistributionConfig.GROUPS_NAME, groups);
+        props.put(GROUPS, groups);
         if (regionName != null) {
           Cache c = null;
           try {

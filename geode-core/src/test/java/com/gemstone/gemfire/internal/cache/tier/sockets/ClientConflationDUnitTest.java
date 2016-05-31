@@ -140,7 +140,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
    */
   private static Properties createProperties1(String conflation){
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.DELTA_PROPAGATION_PROP_NAME, "false");
+    props.setProperty(DELTA_PROPAGATION, "false");
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     props.setProperty(CONFLATE_EVENTS, conflation);
@@ -390,7 +390,7 @@ public class ClientConflationDUnitTest extends DistributedTestCase
   public static Integer createServerCache() throws Exception
   {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.DELTA_PROPAGATION_PROP_NAME, "false");
+    props.setProperty(DELTA_PROPAGATION, "false");
     ClientConflationDUnitTest test = new ClientConflationDUnitTest("temp");
     cacheServer = test.createCache(props);
     AttributesFactory factory = new AttributesFactory();

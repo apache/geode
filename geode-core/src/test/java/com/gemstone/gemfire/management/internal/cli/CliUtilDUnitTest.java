@@ -20,8 +20,6 @@ import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.execute.*;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.management.DistributedRegionMXBean;
 import com.gemstone.gemfire.management.ManagementService;
@@ -31,6 +29,8 @@ import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.Properties;
 import java.util.Set;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * 
@@ -203,12 +203,12 @@ public class CliUtilDUnitTest extends CacheTestCase {
   
   public void createCacheWithMemberIdAndGroup(String memberName, String groupName){
     Properties localProps = new Properties();
-    localProps.setProperty(SystemConfigurationProperties.NAME, memberName);
-    localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
-    localProps.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-    localProps.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "false");    
+    localProps.setProperty(NAME, memberName);
+    localProps.setProperty(GROUPS, groupName);
+    localProps.setProperty(JMX_MANAGER, "true");
+    localProps.setProperty(JMX_MANAGER_START, "false");
     int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    localProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, ""+jmxPort);
+    localProps.setProperty(JMX_MANAGER_PORT, ""+jmxPort);
     LogWriterUtils.getLogWriter().info("Set jmx-port="+ jmxPort);
     getSystem(localProps);
     getCache();

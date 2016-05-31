@@ -28,7 +28,6 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CqListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
@@ -41,8 +40,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Test client to server flow for delta propogation
@@ -442,7 +440,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
     secondUpdate = null;
     error = false;
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.DELTA_PROPAGATION_PROP_NAME,
+    props.setProperty(DELTA_PROPAGATION,
         enableDelta.toString());
     new ClientToServerDeltaDUnitTest("temp").createCache(props);
     AttributesFactory factory = new AttributesFactory();

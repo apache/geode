@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 public class RestAPITestBase extends DistributedTestCase {
   protected Cache cache = null;
   protected List<String> restURLs = new ArrayList();
@@ -109,12 +111,12 @@ public class RestAPITestBase extends DistributedTestCase {
     Properties props = new Properties();
 
     if (groups != null) {
-      props.put(DistributionConfig.GROUPS_NAME, groups);
+      props.put(GROUPS, groups);
     }
 
-    props.setProperty(DistributionConfig.START_DEV_REST_API_NAME, "true");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_BIND_ADDRESS_NAME, hostName);
-    props.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(servicePort));
+    props.setProperty(START_DEV_REST_API, "true");
+    props.setProperty(HTTP_SERVICE_BIND_ADDRESS, hostName);
+    props.setProperty(HTTP_SERVICE_PORT, String.valueOf(servicePort));
 
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);

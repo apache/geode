@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.client.internal.AbstractOp;
 import com.gemstone.gemfire.cache.client.internal.Connection;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
@@ -60,6 +59,8 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Provides an implementation for the server socket end of the hierarchical
@@ -1035,7 +1036,7 @@ public class ServerConnection implements Runnable {
       
       DistributedSystem system = this.getDistributedSystem();
       String methodName = system.getProperties().getProperty(
-          DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
+          SECURITY_CLIENT_AUTHENTICATOR);
       
       Principal principal = HandShake.verifyCredentials(methodName, credentials,
           system.getSecurityProperties(), (InternalLogWriter)system.getLogWriter(), (InternalLogWriter)system

@@ -1091,7 +1091,7 @@ public class DistributedSystemConfigImpl
     buf.append("  " + DISABLE_TCP + "=");
     buf.append(String.valueOf(this.disableTcp));
     buf.append(lf);
-    buf.append("  " + DistributionConfig.DISABLE_AUTO_RECONNECT_NAME + "=");
+    buf.append("  " + DISABLE_AUTO_RECONNECT + "=");
     buf.append(String.valueOf(this.disableAutoReconnect));
     buf.append(lf);
     buf.append("  " + REMOTE_COMMAND_NAME + "=");

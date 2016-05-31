@@ -34,8 +34,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  *
@@ -672,7 +671,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
       public Object call() throws Exception {
         Properties props = new Properties();
         props.setProperty(LOCATORS, "");
-        props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, dsId);
+        props.setProperty(DISTRIBUTED_SYSTEM_ID, dsId);
         getSystem(props);
         AttributesFactory af = new AttributesFactory();
         af.setScope(Scope.DISTRIBUTED_ACK);

@@ -221,10 +221,10 @@ public class ManagementTestBase extends DistributedTestCase {
   public Cache createCache(boolean management) {
     System.setProperty("dunitLogPerTest", "true");
     if (management) {
-      props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-      props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "false");
-      props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "0");
-      props.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
+      props.setProperty(JMX_MANAGER, "true");
+      props.setProperty(JMX_MANAGER_START, "false");
+      props.setProperty(JMX_MANAGER_PORT, "0");
+      props.setProperty(JMX_MANAGER_HTTP_PORT, "0");
     }
     props.setProperty(ENABLE_TIME_STATISTICS, "true");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");

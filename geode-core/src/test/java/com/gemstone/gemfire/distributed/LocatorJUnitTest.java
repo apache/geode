@@ -49,7 +49,7 @@ import java.net.InetAddress;
 import java.util.*;
 import java.util.function.IntSupplier;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static com.gemstone.gemfire.internal.AvailablePort.SOCKET;
 import static com.gemstone.gemfire.internal.AvailablePort.getRandomAvailablePort;
 import static org.junit.Assert.*;
@@ -105,10 +105,10 @@ public class LocatorJUnitTest {
     Properties dsprops = new Properties();
     int jmxPort = getRandomAvailablePort(SOCKET);
     dsprops.setProperty(MCAST_PORT, "0");
-    dsprops.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "" + jmxPort);
-    dsprops.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
-    dsprops.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
-    dsprops.setProperty(SystemConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
+    dsprops.setProperty(JMX_MANAGER_PORT, "" + jmxPort);
+    dsprops.setProperty(JMX_MANAGER_START, "true");
+    dsprops.setProperty(JMX_MANAGER_HTTP_PORT, "0");
+    dsprops.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "disableManagement", "false"); // not needed
     try {
       locator = Locator.startLocatorAndDS(port, new File("testJmxManager.log"), dsprops);
@@ -135,8 +135,8 @@ public class LocatorJUnitTest {
   public void testNoThreadLeftBehind() throws Exception {
     Properties dsprops = new Properties();
     dsprops.setProperty(MCAST_PORT, "0");
-    dsprops.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "false");
-    dsprops.setProperty(SystemConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
+    dsprops.setProperty(JMX_MANAGER_START, "false");
+    dsprops.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
     JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK = true;
     int threadCount = Thread.activeCount();

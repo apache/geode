@@ -53,7 +53,7 @@ public interface SystemConfigurationProperties {
   String ENABLE_CLUSTER_CONFIGURATION = "enable-cluster-configuration";
   String ENABLE_NETWORK_PARTITION_DETECTION = "enable-network-partition-detection";
   String ENABLE_TIME_STATISTICS = "enable-time-statistics";
-  String ENFORE_UNIQUE_HOST = "enforce-unique-host";
+  String ENFORCE_UNIQUE_HOST = "enforce-unique-host";
   String GATEWAY_SSL_CIPHERS = "gateway-ssl-ciphers";
   String GATEWAY_SSL_ENABLED = "gateway-ssl-enabled";
   String GATEWAY_SSL_KEYSTORE = "gateway-ssl-keystore";
@@ -79,9 +79,19 @@ public interface SystemConfigurationProperties {
   String JMX_MANAGER_ACCESS_FILE = "jmx-manager-access-file";
   String JMX_MANAGER_BIND_ADDRESS = "jmx-manager-bind-address";
   String JMX_MANAGER_HOSTNAME_FOR_CLIENTS = "jmx-manager-hostname-for-clients";
+
+  /**
+   * The name of the "jmx-manager-http-port" property.
+   *
+   * @deprecated as of 8.0 use {@link #HTTP_SERVICE_PORT} instead.
+   */
   String JMX_MANAGER_HTTP_PORT = "jmx-manager-http-port";
   String JMX_MANAGER_PASSWORD_FILE = "jmx-manager-password-file";
   String JMX_MANAGER_PORT = "jmx-manager-port";
+
+  /**
+   * @deprecated as of 8.0 use {@link #JMX_MANAGER_SSL_ENABLED} instead.
+   */
   String JMX_MANAGER_SSL = "jmx-manager-ssl";
   String JMX_MANAGER_START = "jmx-manager-start";
   String JMX_MANAGER_UPDATE_RATE = "jmx-manager-update-rate";
@@ -171,13 +181,34 @@ public interface SystemConfigurationProperties {
   String SECURITY_SHIRO_INIT = SECURITY_PREFIX + "shiro-init";
   String DISTRIBUTED_TRANSACTIONS = "distributed-transactions";
 
-  @Deprecated
+  /**
+   * Returns the value of the <a
+   * href="../DistributedSystem.html#ssl-enabled">"ssl-enabled"</a>
+   * property.
+   *
+   * @deprecated as of 8.0 use {@link #CLUSTER_SSL_ENABLED} instead.
+   */
   String SSL_ENABLED = "ssl-enabled";
-  @Deprecated
+
+  /**
+   * The name of the "SSLProtocols" property
+   *
+   * @deprecated as of 8.0 use {@link #CLUSTER_SSL_PROTOCOLS} instead.
+   */
   String SSL_PROTOCOLS = "ssl-protocols";
-  @Deprecated
+
+  /**
+   * The name of the "SSLCiphers" property
+   *
+   * @deprecated as of 8.0 use {@link #CLUSTER_SSL_CIPHERS} instead.
+   */
   String SSL_CIPHERS = "ssl-ciphers";
-  @Deprecated
+
+  /**
+   * The name of the "SSLRequireAuthentication" property
+   *
+   * @deprecated as of 8.0 use {@link #CLUSTER_SSL_REQUIRE_AUTHENTICATION} instead.
+   */
   String SSL_REQUIRE_AUTHENTICATION = "ssl-require-authentication";
 
 }

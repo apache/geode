@@ -56,6 +56,8 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  * Implements the acceptor thread on the bridge server. Accepts connections from
  * the edge and starts up threads to process requests from these.
@@ -601,13 +603,12 @@ public class AcceptorImpl extends Acceptor implements Runnable
     }
 
     String authenticator = this.cache.getDistributedSystem().getProperties()
-        .getProperty(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
+        .getProperty(SECURITY_CLIENT_AUTHENTICATOR);
     isAuthenticationRequired = (authenticator != null && authenticator.length() > 0) ? true
         : false;
 
     String postAuthzFactoryName = this.cache.getDistributedSystem()
-        .getProperties().getProperty(
-            DistributionConfig.SECURITY_CLIENT_ACCESSOR_PP_NAME);
+        .getProperties().getProperty(SECURITY_CLIENT_ACCESSOR_PP);
 
     isPostAuthzCallbackPresent = (postAuthzFactoryName != null && postAuthzFactoryName
         .length() > 0) ? true : false;

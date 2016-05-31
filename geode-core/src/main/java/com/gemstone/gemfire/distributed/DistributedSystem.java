@@ -1574,12 +1574,6 @@ public abstract class DistributedSystem implements StatisticsFactory {
       // fix for bug 33992
       config = new Properties();
     }
-//     {
-//       LogWriterI18n logger =
-//         new LocalLogWriter(LocalLogWriter.ALL_LEVEL, System.out);
-//       logger.info("DistributedSystem: Connecting with " + config,
-//                   new Exception("Stack trace"));
-//     }
     synchronized (existingSystemsLock) {
       if (DistributionManager.isDedicatedAdminVM) {
         // For a dedicated admin VM, check to see if there is already

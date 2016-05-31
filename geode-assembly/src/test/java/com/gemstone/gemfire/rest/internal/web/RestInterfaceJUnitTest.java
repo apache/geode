@@ -111,10 +111,9 @@ public class RestInterfaceJUnitTest {
         .set("name", getClass().getSimpleName())
           .set(MCAST_PORT, "0")
           .set(LOG_LEVEL, "config")
-          .set(DistributionConfig.HTTP_SERVICE_BIND_ADDRESS_NAME, "localhost")
-          .set(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(getHttpServicePort()))
-        //.set("http-service-ssl-enabled", "false")
-          .set(DistributionConfig.START_DEV_REST_API_NAME, "true")
+          .set(HTTP_SERVICE_BIND_ADDRESS, "localhost")
+          .set(HTTP_SERVICE_PORT, String.valueOf(getHttpServicePort()))
+          .set(START_DEV_REST_API, "true")
         .create();
 
       RegionFactory<String, Object> peopleRegionFactory = gemfireCache.createRegionFactory();
@@ -134,11 +133,11 @@ public class RestInterfaceJUnitTest {
 
   protected synchronized int getHttpServicePort() {
     try {
-      return Integer.parseInt(StringUtils.trimWhitespace(gemfireProperties.getProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME)));
+      return Integer.parseInt(StringUtils.trimWhitespace(gemfireProperties.getProperty(HTTP_SERVICE_PORT)));
     }
     catch (NumberFormatException ignore) {
       int httpServicePort = getHttpServicePort(DEFAULT_HTTP_SERVICE_PORT);
-      gemfireProperties.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(httpServicePort));
+      gemfireProperties.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpServicePort));
       return httpServicePort;
     }
   }

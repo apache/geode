@@ -18,7 +18,6 @@
  */
 package com.vmware.gemfire.tools.pulse.tests;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
 import com.gemstone.gemfire.internal.security.shiro.JMXShiroAuthenticator;
 import com.gemstone.gemfire.management.internal.security.AccessControlMBean;
@@ -45,6 +44,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 public class Server {
   private static final String DEFAULT_HOST = "127.0.0.1"; //"localhost"
   private static final int DEFAULT_PORT = 9999;
@@ -64,8 +65,8 @@ public class Server {
     if (jsonAuthFile != null) {
       System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
       Properties props = new Properties();
-      props.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
-      //props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
+      props.put(SECURITY_CLIENT_AUTHENTICATOR, JSONAuthorization.class.getName() + ".create");
+      //props.put(SECURITY_CLIENT_ACCESSOR, JSONAuthorization.class.getName() + ".create");
       JSONAuthorization.setUpWithJsonFile(jsonAuthFile);
       Map<String, Object> env = new HashMap<String, Object>();
 

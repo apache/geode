@@ -58,7 +58,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     Properties p = super.getDistributedSystemProperties();
     p.put(CONSERVE_SOCKETS, "false");
     if (distributedSystemID > 0) {
-      p.put(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+distributedSystemID);
+      p.put(DISTRIBUTED_SYSTEM_ID, ""+distributedSystemID);
     }
     return p;
   }

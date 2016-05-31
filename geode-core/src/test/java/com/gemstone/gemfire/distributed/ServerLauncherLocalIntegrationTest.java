@@ -92,7 +92,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setForce(true)
         .setMemberName(getUniqueName())
         .setWorkingDirectory(rootFolder)
-        .set(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true")
+        .set(DISABLE_AUTO_RECONNECT, "true")
         .set(LOG_LEVEL, "config")
         .set(MCAST_PORT, "0")
         .build();
@@ -110,7 +110,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
       final DistributedSystem distributedSystem = cache.getDistributedSystem();
   
       assertNotNull(distributedSystem);
-      assertEquals("true", distributedSystem.getProperties().getProperty(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME));
+      assertEquals("true", distributedSystem.getProperties().getProperty(DISABLE_AUTO_RECONNECT));
       assertEquals("config", distributedSystem.getProperties().getProperty(LOG_LEVEL));
       assertEquals("0", distributedSystem.getProperties().getProperty(MCAST_PORT));
       assertEquals(getUniqueName(), distributedSystem.getProperties().getProperty(SystemConfigurationProperties.NAME));

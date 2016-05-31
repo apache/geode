@@ -36,8 +36,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Tests cacheserver ssl support added. See https://svn.gemstone.com/trac/gemfire/ticket/48995 for details
@@ -108,23 +107,18 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     String cacheServerSslprotocols = "any";
     String cacheServerSslciphers = "any";
     boolean cacheServerSslRequireAuth = true;
-    gemFireProps.put(DistributionConfig.SERVER_SSL_ENABLED_NAME,
-            String.valueOf(cacheServerSslenabled));
-    gemFireProps.put(DistributionConfig.SERVER_SSL_PROTOCOLS_NAME,
-            cacheServerSslprotocols);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_CIPHERS_NAME,
-            cacheServerSslciphers);
-    gemFireProps.put(
-            DistributionConfig.SERVER_SSL_REQUIRE_AUTHENTICATION_NAME,
-            String.valueOf(cacheServerSslRequireAuth));
+    gemFireProps.put(SERVER_SSL_ENABLED, String.valueOf(cacheServerSslenabled));
+    gemFireProps.put(SERVER_SSL_PROTOCOLS, cacheServerSslprotocols);
+    gemFireProps.put(SERVER_SSL_CIPHERS, cacheServerSslciphers);
+    gemFireProps.put(SERVER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));
 
     String keyStore = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_KEY_STORE);
     String trustStore = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_TRUST_STORE);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_TYPE_NAME, "jks");
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_NAME, keyStore);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    gemFireProps.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_NAME, trustStore);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_PASSWORD_NAME, "password");
+    gemFireProps.put(SERVER_SSL_KEYSTORE_TYPE, "jks");
+    gemFireProps.put(SERVER_SSL_KEYSTORE, keyStore);
+    gemFireProps.put(SERVER_SSL_KEYSTORE_PASSWORD, "password");
+    gemFireProps.put(SERVER_SSL_TRUSTSTORE, trustStore);
+    gemFireProps.put(SERVER_SSL_TRUSTSTORE_PASSWORD, "password");
 
     StringWriter sw = new StringWriter();
     PrintWriter writer = new PrintWriter(sw);
@@ -149,21 +143,21 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     String keyStorePath = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, keyStore);
     String trustStorePath = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, trustStore);
     //using new server-ssl-* properties
-    gemFireProps.put(DistributionConfig.SERVER_SSL_ENABLED_NAME,
+    gemFireProps.put(SERVER_SSL_ENABLED,
             String.valueOf(cacheServerSslenabled));
-    gemFireProps.put(DistributionConfig.SERVER_SSL_PROTOCOLS_NAME,
+    gemFireProps.put(SERVER_SSL_PROTOCOLS,
             cacheServerSslprotocols);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_CIPHERS_NAME,
+    gemFireProps.put(SERVER_SSL_CIPHERS,
             cacheServerSslciphers);
     gemFireProps.put(
-            DistributionConfig.SERVER_SSL_REQUIRE_AUTHENTICATION_NAME,
+            SERVER_SSL_REQUIRE_AUTHENTICATION,
             String.valueOf(cacheServerSslRequireAuth));
 
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_TYPE_NAME, "jks");
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_NAME, keyStorePath);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    gemFireProps.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_NAME, trustStorePath);
-    gemFireProps.put(DistributionConfig.SERVER_SSL_TRUSTSTORE_PASSWORD_NAME, "password");
+    gemFireProps.put(SERVER_SSL_KEYSTORE_TYPE, "jks");
+    gemFireProps.put(SERVER_SSL_KEYSTORE, keyStorePath);
+    gemFireProps.put(SERVER_SSL_KEYSTORE_PASSWORD, "password");
+    gemFireProps.put(SERVER_SSL_TRUSTSTORE, trustStorePath);
+    gemFireProps.put(SERVER_SSL_TRUSTSTORE_PASSWORD, "password");
 
     StringWriter sw = new StringWriter();
     PrintWriter writer = new PrintWriter(sw);

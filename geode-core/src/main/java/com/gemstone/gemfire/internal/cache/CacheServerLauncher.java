@@ -435,7 +435,7 @@ public class CacheServerLauncher  {
         options.put(DISABLE_DEFAULT_SERVER, Boolean.TRUE);
       }
       else if (arg.startsWith("-lock-memory")) {
-        props.put(DistributionConfig.LOCK_MEMORY_NAME, "true");
+        props.put(LOCK_MEMORY, "true");
       }
       else if (arg.startsWith("-server-port")) {
         options.put(SERVER_PORT, arg.substring(arg.indexOf("=") + 1));

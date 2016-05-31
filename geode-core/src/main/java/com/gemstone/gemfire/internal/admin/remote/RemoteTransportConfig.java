@@ -312,7 +312,7 @@ public class RemoteTransportConfig implements TransportConfig {
     props.setProperty(DISABLE_TCP,
       this.tcpDisabled? "true" : "false");
     
-    props.setProperty(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, this.disableAutoReconnect? "true" : "false");
+    props.setProperty(DISABLE_AUTO_RECONNECT, this.disableAutoReconnect? "true" : "false");
 
     return props;
   }

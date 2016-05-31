@@ -30,6 +30,7 @@ import java.io.FileWriter;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Integration tests for AbstractLauncher class. These tests require file system I/O.
@@ -51,8 +52,8 @@ public class AbstractLauncherIntegrationTest {
     this.gemfirePropertiesFile = this.temporaryFolder.newFile(DistributionConfig.GEMFIRE_PREFIX + "properties");
     
     this.expectedGemfireProperties = new Properties();
-    this.expectedGemfireProperties.setProperty(SystemConfigurationProperties.NAME, "memberOne");
-    this.expectedGemfireProperties.setProperty(DistributionConfig.GROUPS_NAME, "groupOne, groupTwo");
+    this.expectedGemfireProperties.setProperty(NAME, "memberOne");
+    this.expectedGemfireProperties.setProperty(GROUPS, "groupOne, groupTwo");
     this.expectedGemfireProperties.store(new FileWriter(this.gemfirePropertiesFile, false), this.testName.getMethodName());
 
     assertThat(this.gemfirePropertiesFile).isNotNull();

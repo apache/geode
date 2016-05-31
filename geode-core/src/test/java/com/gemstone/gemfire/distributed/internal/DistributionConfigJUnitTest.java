@@ -140,7 +140,7 @@ public class DistributionConfigJUnitTest {
       assertTrue(setter.getName().startsWith("set"));
       assertEquals(setter.getParameterCount(), 1);
 
-      if (!(attr.equalsIgnoreCase(LOG_LEVEL) || attr.equalsIgnoreCase(DistributionConfig.SECURITY_LOG_LEVEL_NAME))) {
+      if (!(attr.equalsIgnoreCase(LOG_LEVEL) || attr.equalsIgnoreCase(SECURITY_LOG_LEVEL))) {
         Class clazz = attributes.get(attr).type();
         try {
           setter.invoke(mock(DistributionConfig.class), any(clazz));
@@ -160,7 +160,7 @@ public class DistributionConfigJUnitTest {
       assertTrue(getter.getName().startsWith("get"));
       assertEquals(getter.getParameterCount(), 0);
 
-      if (!(attr.equalsIgnoreCase(LOG_LEVEL) || attr.equalsIgnoreCase(DistributionConfig.SECURITY_LOG_LEVEL_NAME))) {
+      if (!(attr.equalsIgnoreCase(LOG_LEVEL) || attr.equalsIgnoreCase(SECURITY_LOG_LEVEL))) {
         Class clazz = attributes.get(attr).type();
         Class returnClass = getter.getReturnType();
         if (returnClass.isPrimitive()) {
@@ -208,8 +208,8 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeObject() {
     assertEquals(config.getAttributeObject(LOG_LEVEL), "config");
-    assertEquals(config.getAttributeObject(DistributionConfig.SECURITY_LOG_LEVEL_NAME), "config");
-    assertEquals(config.getAttributeObject(DistributionConfig.REDUNDANCY_ZONE_NAME), "");
+    assertEquals(config.getAttributeObject(SECURITY_LOG_LEVEL), "config");
+    assertEquals(config.getAttributeObject(REDUNDANCY_ZONE), "");
     assertEquals(config.getAttributeObject(ENABLE_CLUSTER_CONFIGURATION).getClass(), Boolean.class);
   }
 
@@ -235,8 +235,8 @@ public class DistributionConfigJUnitTest {
       }
     }
     assertEquals(modifiables.size(), 2);
-    assertEquals(modifiables.get(0), DistributionConfig.HTTP_SERVICE_PORT_NAME);
-    assertEquals(modifiables.get(1), DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME);
+    assertEquals(modifiables.get(0), HTTP_SERVICE_PORT);
+    assertEquals(modifiables.get(1), JMX_MANAGER_HTTP_PORT);
   }
 
   @Test
@@ -254,8 +254,8 @@ public class DistributionConfigJUnitTest {
     assertEquals(modifiables.size(), 10);
     assertEquals(modifiables.get(0), ARCHIVE_DISK_SPACE_LIMIT);
     assertEquals(modifiables.get(1), ARCHIVE_FILE_SIZE_LIMIT);
-    assertEquals(modifiables.get(2), DistributionConfig.HTTP_SERVICE_PORT_NAME);
-    assertEquals(modifiables.get(3), DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME);
+    assertEquals(modifiables.get(2), HTTP_SERVICE_PORT);
+    assertEquals(modifiables.get(3), JMX_MANAGER_HTTP_PORT);
     assertEquals(modifiables.get(4), LOG_DISK_SPACE_LIMIT);
     assertEquals(modifiables.get(5), LOG_FILE_SIZE_LIMIT);
     assertEquals(modifiables.get(6), LOG_LEVEL);
@@ -276,13 +276,13 @@ public class DistributionConfigJUnitTest {
 
   @Test
   public void testValidAttributeObject() {
-    config.setAttributeObject(DistributionConfig.HTTP_SERVICE_PORT_NAME, 8080, ConfigSource.api());
+    config.setAttributeObject(HTTP_SERVICE_PORT, 8080, ConfigSource.api());
     assertEquals(config.getHttpServicePort(), 8080);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testOutOfRangeAttributeObject() {
-    config.setAttributeObject(DistributionConfig.HTTP_SERVICE_PORT_NAME, -1, ConfigSource.api());
+    config.setAttributeObject(HTTP_SERVICE_PORT, -1, ConfigSource.api());
   }
 
   @Test
@@ -291,7 +291,7 @@ public class DistributionConfigJUnitTest {
     config.setAttribute(LOG_LEVEL, "config", ConfigSource.api());
     assertEquals(config.getLogLevel(), 700);
 
-    config.setAttributeObject(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "debug", ConfigSource.api());
+    config.setAttributeObject(SECURITY_LOG_LEVEL, "debug", ConfigSource.api());
     assertEquals(config.getSecurityLogLevel(), 500);
   }
 
@@ -313,21 +313,21 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testAttributesAlwaysModifiable() {
     config.modifiable = false;
-    assertTrue(config.isAttributeModifiable(DistributionConfig.HTTP_SERVICE_PORT_NAME));
-    assertTrue(config.isAttributeModifiable(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME));
+    assertTrue(config.isAttributeModifiable(HTTP_SERVICE_PORT));
+    assertTrue(config.isAttributeModifiable(JMX_MANAGER_HTTP_PORT));
 
     config.modifiable = true;
-    assertTrue(config.isAttributeModifiable(DistributionConfig.HTTP_SERVICE_PORT_NAME));
-    assertTrue(config.isAttributeModifiable(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME));
+    assertTrue(config.isAttributeModifiable(HTTP_SERVICE_PORT));
+    assertTrue(config.isAttributeModifiable(JMX_MANAGER_HTTP_PORT));
   }
 
 
   @Test
   public void testSecurityProps(){
     Properties props = new Properties();
-    props.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
-    props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
-    props.put(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "config");
+    props.put(SECURITY_CLIENT_AUTHENTICATOR, JSONAuthorization.class.getName() + ".create");
+    props.put(SECURITY_CLIENT_ACCESSOR, JSONAuthorization.class.getName() + ".create");
+    props.put(SECURITY_LOG_LEVEL, "config");
     // add another non-security property to verify it won't get put in the security properties
     props.put(ACK_WAIT_THRESHOLD, 2);
 
@@ -338,9 +338,9 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testSecurityPropsWithNoSetter(){
     Properties props = new Properties();
-    props.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
-    props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
-    props.put(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "config");
+    props.put(SECURITY_CLIENT_AUTHENTICATOR, JSONAuthorization.class.getName() + ".create");
+    props.put(SECURITY_CLIENT_ACCESSOR, JSONAuthorization.class.getName() + ".create");
+    props.put(SECURITY_LOG_LEVEL, "config");
     // add another non-security property to verify it won't get put in the security properties
     props.put(ACK_WAIT_THRESHOLD, 2);
     props.put("security-username", "testName");

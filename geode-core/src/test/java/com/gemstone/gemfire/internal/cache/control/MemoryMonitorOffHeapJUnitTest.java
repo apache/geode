@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.cache.control;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
@@ -33,7 +32,7 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 /**
@@ -50,7 +49,7 @@ public class MemoryMonitorOffHeapJUnitTest {
   public void setUp() throws Exception {
     Properties p = new Properties();
     p.setProperty(MCAST_PORT, "0");
-    p.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
+    p.setProperty(OFF_HEAP_MEMORY_SIZE, "1m");
     this.ds = DistributedSystem.connect(p);
     this.cache = (GemFireCacheImpl) CacheFactory.create(this.ds);
     logger.info(addExpectedAbove);

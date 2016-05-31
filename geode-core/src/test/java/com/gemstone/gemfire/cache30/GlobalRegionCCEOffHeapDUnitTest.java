@@ -18,12 +18,13 @@ package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Tests Global Region with ConcurrencyChecksEnabled and OffHeap memory.
@@ -55,7 +56,7 @@ public class GlobalRegionCCEOffHeapDUnitTest extends GlobalRegionCCEDUnitTest {
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "10m");
+    props.setProperty(OFF_HEAP_MEMORY_SIZE, "10m");
     return props;
   }
   

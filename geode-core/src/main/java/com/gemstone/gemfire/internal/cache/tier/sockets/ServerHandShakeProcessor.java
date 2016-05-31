@@ -47,6 +47,8 @@ import java.net.SocketTimeoutException;
 import java.security.Principal;
 import java.util.Properties;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  * A <code>ServerHandShakeProcessor</code> verifies the client's version compatibility with server.
  *
@@ -362,9 +364,9 @@ public class ServerHandShakeProcessor {
       Properties systemProperties = system.getProperties();
       //hitesh:auth callbacks
       String authzFactoryName = systemProperties
-          .getProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME);
+          .getProperty(SECURITY_CLIENT_ACCESSOR);
       String postAuthzFactoryName = systemProperties
-          .getProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_PP_NAME);
+          .getProperty(SECURITY_CLIENT_ACCESSOR_PP);
       AuthorizeRequest authzRequest = null;
       AuthorizeRequestPP postAuthzRequest = null;
       
@@ -377,7 +379,7 @@ public class ServerHandShakeProcessor {
           if (securityLogWriter.warningEnabled()) {
             securityLogWriter.warning(
                 LocalizedStrings.ServerHandShakeProcessor_0_AUTHORIZATION_ENABLED_BUT_AUTHENTICATION_CALLBACK_1_RETURNED_WITH_NULL_CREDENTIALS_FOR_PROXYID_2,
-                new Object[] {connection.getName(), DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, connection.getProxyID()});
+                new Object[] {connection.getName(), SECURITY_CLIENT_AUTHENTICATOR, connection.getProxyID()});
           }
         }
         authzRequest = new AuthorizeRequest(authzFactoryName,
@@ -393,7 +395,7 @@ public class ServerHandShakeProcessor {
           if (securityLogWriter.warningEnabled()) {
             securityLogWriter.warning(
               LocalizedStrings.ServerHandShakeProcessor_0_POSTPROCESS_AUTHORIZATION_ENABLED_BUT_NO_AUTHENTICATION_CALLBACK_2_IS_CONFIGURED,
-              new Object[] {connection.getName(), DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME});
+              new Object[] {connection.getName(), SECURITY_CLIENT_AUTHENTICATOR});
           }      
         }
         postAuthzRequest = new AuthorizeRequestPP(

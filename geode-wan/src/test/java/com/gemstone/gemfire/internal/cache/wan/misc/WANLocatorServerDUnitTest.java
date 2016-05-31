@@ -97,7 +97,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
     WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "" + 1);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
     props.setProperty(LOCATORS, "localhost[" + port1
         + "],localhost[" + port2 + "],localhost[" + port3 + "]");
     props.setProperty(START_LOCATOR, "localhost["

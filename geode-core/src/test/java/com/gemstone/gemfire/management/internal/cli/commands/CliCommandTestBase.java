@@ -18,7 +18,6 @@ package com.gemstone.gemfire.management.internal.cli.commands;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.internal.cli.CommandManager;
@@ -45,6 +44,7 @@ import java.util.regex.Pattern;
 
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Base class for all the CLI/gfsh command dunit tests.
@@ -143,11 +143,11 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
       jmxPort = ports[0];
       httpPort = ports[1];
 
-      localProps.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-      localProps.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
-      localProps.setProperty(DistributionConfig.JMX_MANAGER_BIND_ADDRESS_NAME, String.valueOf(jmxHost));
-      localProps.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, String.valueOf(jmxPort));
-      localProps.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(httpPort));
+      localProps.setProperty(JMX_MANAGER, "true");
+      localProps.setProperty(JMX_MANAGER_START, "true");
+      localProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
+      localProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
+      localProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
 
       getSystem(localProps);
       verifyManagementServiceStarted(getCache());

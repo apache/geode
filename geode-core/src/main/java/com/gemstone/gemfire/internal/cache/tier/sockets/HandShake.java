@@ -240,7 +240,7 @@ public class HandShake implements ClientHandShake
           // Note: credentials should always be the last piece in handshake for
           // Diffie-Hellman key exchange to work
           String authenticator = this.system.getProperties().getProperty(
-              DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
+              SECURITY_CLIENT_AUTHENTICATOR);
           if (clientVersion.compareTo(Version.GFE_603) >= 0) {
             setOverrides(new byte[] { dis.readByte() });
           } else {
@@ -1784,7 +1784,7 @@ public class HandShake implements ClientHandShake
       AuthenticationFailedException {
 
     String methodName = this.system.getProperties().getProperty(
-        DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
+        SECURITY_CLIENT_AUTHENTICATOR);
     return verifyCredentials(methodName, this.credentials, this.system
         .getSecurityProperties(), (InternalLogWriter)this.system.getLogWriter(), (InternalLogWriter)this.system
         .getSecurityLogWriter(), this.id.getDistributedMember());
@@ -1814,7 +1814,7 @@ public class HandShake implements ClientHandShake
       return;
     }
     String authenticator = this.system.getProperties().getProperty(
-        DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
+        SECURITY_CLIENT_AUTHENTICATOR);
     Properties peerWanProps = readCredentials(dis, dos, authenticator,
         this.system);
     verifyCredentials(authenticator, peerWanProps, this.system

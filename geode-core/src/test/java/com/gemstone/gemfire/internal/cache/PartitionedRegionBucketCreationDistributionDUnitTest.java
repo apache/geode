@@ -25,8 +25,7 @@ import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * 
@@ -509,8 +508,8 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends
     Properties props = getDistributedSystemProperties();
     props.put(MCAST_PORT, "0");
     props.put(LOCATORS, "");
-    props.put(DistributionConfig.ENFORCE_UNIQUE_HOST_NAME, "true");
-    props.put(DistributionConfig.REDUNDANCY_ZONE_NAME, "zone1");
+    props.put(ENFORCE_UNIQUE_HOST, "true");
+    props.put(REDUNDANCY_ZONE, "zone1");
     return getSystem(props);
   }
 

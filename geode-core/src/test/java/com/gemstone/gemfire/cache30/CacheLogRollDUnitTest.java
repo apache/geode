@@ -414,8 +414,8 @@ public class CacheLogRollDUnitTest extends CacheTestCase {
     props.put(LOG_FILE, logfile);
     props.put(LOG_FILE_SIZE_LIMIT, "1");
     props.put(LOG_LEVEL, "config");
-    props.put(DistributionConfig.SECURITY_LOG_FILE_NAME, sec_logfile);
-    props.put(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "config");
+    props.put(SECURITY_LOG_FILE, sec_logfile);
+    props.put(SECURITY_LOG_LEVEL, "config");
       
       DistributedSystem ds = getSystem(props);
       InternalDistributedSystem ids = (InternalDistributedSystem) ds;

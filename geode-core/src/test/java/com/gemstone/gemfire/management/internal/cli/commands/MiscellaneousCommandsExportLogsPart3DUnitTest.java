@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.management.cli.Result;
@@ -43,6 +42,7 @@ import java.util.Properties;
 import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
 import static com.gemstone.gemfire.test.dunit.Assert.fail;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Dunit class for testing gemfire function commands : export logs
@@ -87,7 +87,7 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
   public void testExportLogsForGroup() throws IOException {
     Properties localProps = new Properties();
     localProps.setProperty(SystemConfigurationProperties.NAME, "Manager");
-    localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
+    localProps.setProperty(GROUPS, "Group1");
     setUpJmxManagerOnVm0ThenConnect(localProps);
     String dir = getCurrentTimeString();
 

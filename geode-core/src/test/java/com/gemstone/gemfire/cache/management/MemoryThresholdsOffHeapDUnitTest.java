@@ -26,7 +26,6 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.*;
@@ -43,8 +42,7 @@ import org.junit.experimental.categories.Category;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Tests the Off-Heap Memory thresholds of {@link ResourceManager}
@@ -1761,7 +1759,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   private Properties getOffHeapProperties() {
     Properties p = new Properties();
     p.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
-    p.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
+    p.setProperty(OFF_HEAP_MEMORY_SIZE, "1m");
     return p;
   }
   

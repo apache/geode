@@ -107,9 +107,9 @@ public class CqStateDUnitTest extends HelperTestCase {
   public Properties getAuthenticatedServerProperties() {
     Properties props = new Properties();
     props.put(MCAST_PORT, "0");
-    props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, CloseCacheAuthorization.class.getName() + ".create");
-    props.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_PP_NAME, CloseCacheAuthorization.class.getName() + ".create");
-    props.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, DummyAuthenticator.class.getName() + ".create");
+    props.put(SECURITY_CLIENT_ACCESSOR, CloseCacheAuthorization.class.getName() + ".create");
+    props.put(SECURITY_CLIENT_ACCESSOR_PP, CloseCacheAuthorization.class.getName() + ".create");
+    props.put(SECURITY_CLIENT_AUTHENTICATOR, DummyAuthenticator.class.getName() + ".create");
     return props;
   }
   

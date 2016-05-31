@@ -250,7 +250,7 @@ public class DUnitLauncher {
         Properties p = getDistributedSystemProperties();
         // I never want this locator to end up starting a jmx manager
         // since it is part of the unit test framework
-        p.setProperty(DistributionConfig.JMX_MANAGER_NAME, "false");
+        p.setProperty(JMX_MANAGER, "false");
         //Disable the shared configuration on this locator.
         //Shared configuration tests create their own locator
         p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
@@ -259,7 +259,7 @@ public class DUnitLauncher {
         System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
         // disable auto-reconnect - tests fly by so fast that it will never be
         // able to do so successfully anyway
-        p.setProperty(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+        p.setProperty(DISABLE_AUTO_RECONNECT, "true");
         
         try {
           Locator.startLocatorAndDS(locatorPort, locatorLogFile, p);

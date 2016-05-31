@@ -18,13 +18,14 @@ package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 import java.util.Properties;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Performs eviction stat dunit tests for off-heap regions.
@@ -55,7 +56,7 @@ public class OffHeapEvictionStatsDUnitTest extends EvictionStatsDUnitTest {
   @Override
   public Properties getDistributedSystemProperties() {
     Properties properties = super.getDistributedSystemProperties();
-    properties.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "100m");
+    properties.setProperty(OFF_HEAP_MEMORY_SIZE, "100m");
     
     return properties;
   }

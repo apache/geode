@@ -19,7 +19,6 @@ package com.gemstone.gemfire.rest.internal.web.controllers;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.distributed.ServerLauncher;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.SocketCreator;
@@ -40,7 +39,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 @Category(IntegrationTest.class)
 public class RestAPIsQueryAndFEJUnitTest extends TestCase {
@@ -1317,10 +1316,10 @@ public class RestAPIsQueryAndFEJUnitTest extends TestCase {
     ServerLauncher serverLauncher = new ServerLauncher.Builder()
         .set(MCAST_PORT, "0")
     .setServerBindAddress(this.hostName)
-    .setServerPort(AvailablePortHelper.getRandomAvailableTCPPort())
-        .set(DistributionConfig.START_DEV_REST_API_NAME, "true")
-        .set(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(this.restServicePort))
-        .set(DistributionConfig.HTTP_SERVICE_BIND_ADDRESS_NAME, this.hostName)
+    .setServerPort(0)
+        .set(START_DEV_REST_API, "true")
+        .set(HTTP_SERVICE_PORT, String.valueOf(this.restServicePort))
+        .set(HTTP_SERVICE_BIND_ADDRESS, this.hostName)
     .setPdxReadSerialized(true)
     .setWorkingDirectory(workingDirectory)
     .build();

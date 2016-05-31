@@ -187,11 +187,11 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     Properties authProps = new Properties();
     if (clientauthenticator != null) {
       authProps.setProperty(
-        DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME,
+        SECURITY_CLIENT_AUTHENTICATOR,
         clientauthenticator);
     }
     if (accessor != null) {
-      authProps.setProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME,
+      authProps.setProperty(SECURITY_CLIENT_ACCESSOR,
         accessor);
     }
     if (clientAuthInit != null) {

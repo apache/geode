@@ -62,7 +62,7 @@ public class WANBootStrapping_Site1_Add {
     // Create a locator and a cache
     System.out.println("Creating cache ...It will take some time..");
     Cache cache = new CacheFactory().set(MCAST_PORT,
-        "0").set(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "" + 1).set(
+        "0").set(DISTRIBUTED_SYSTEM_ID, "" + 1).set(
         LOCATORS, "localhost[" + 10101 + "]").set(
         START_LOCATOR,
         "localhost[" + 10101

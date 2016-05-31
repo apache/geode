@@ -97,9 +97,9 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, locators);
-    props.setProperty(DistributionConfig.START_DEV_REST_API_NAME, "true");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_BIND_ADDRESS_NAME, hostName);
-    props.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, String.valueOf(restServicePort));
+    props.setProperty(START_DEV_REST_API, "true");
+    props.setProperty(HTTP_SERVICE_BIND_ADDRESS, hostName);
+    props.setProperty(HTTP_SERVICE_PORT, String.valueOf(restServicePort));
 
     System.setProperty("javax.net.debug", "ssl,handshake");
     configureSSL(props, sslProperties, clusterLevel);
@@ -276,16 +276,16 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, locators);
-    props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-    props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
+    props.setProperty(JMX_MANAGER, "true");
+    props.setProperty(JMX_MANAGER_START, "true");
 
     Cache cache = null;
     configureSSL(props, sslProperties, false);
     while (true) {
       try {
         DistributedSystem ds = getSystem(props);
-        System.out.println("Creating cache with http-service-port " + props.getProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, "7070")
-            + " and jmx-manager-port " + props.getProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "1099"));
+        System.out.println("Creating cache with http-service-port " + props.getProperty(HTTP_SERVICE_PORT, "7070")
+            + " and jmx-manager-port " + props.getProperty(JMX_MANAGER_PORT, "1099"));
         cache = CacheFactory.create(ds);
         System.out.println("Successfully created cache.");
         break;
@@ -305,8 +305,8 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
           //try a different port
           int httpServicePort = AvailablePortHelper.getRandomAvailableTCPPort();
           int jmxManagerPort = AvailablePortHelper.getRandomAvailableTCPPort();
-          props.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, Integer.toString(httpServicePort));
-          props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, Integer.toString(jmxManagerPort));
+          props.setProperty(HTTP_SERVICE_PORT, Integer.toString(httpServicePort));
+          props.setProperty(JMX_MANAGER_PORT, Integer.toString(jmxManagerPort));
           System.out.println("Try a different http-service-port " + httpServicePort);
           System.out.println("Try a different jmx-manager-port " + jmxManagerPort);
         } else {
@@ -405,19 +405,19 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
   public void testSimpleSSL() throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME, "JKS");
+    props.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE_TYPE, "JKS");
     String restEndpoint = startInfraWithSSL(props,false);
     validateConnection(restEndpoint, "SSL");
   }
 
   public void testSSLWithoutKeyStoreType() throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
+    props.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "SSL");
@@ -425,10 +425,10 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
   public void testSSLWithSSLProtocol() throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME, "SSL");
+    props.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    props.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "SSL");
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "SSL");
@@ -436,10 +436,10 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
   public void testSSLWithTLSProtocol() throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME, "TLS");
+    props.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    props.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLS");
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "TLS");
@@ -447,10 +447,10 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
   public void testSSLWithTLSv11Protocol() throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME, "TLSv1.1");
+    props.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    props.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.1");
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "TLSv1.1");
@@ -458,10 +458,10 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
   public void testSSLWithTLSv12Protocol() throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME, "TLSv1.2");
+    props.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    props.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.2");
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "TLSv1.2");
@@ -469,10 +469,10 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
   public void testWithMultipleProtocol() throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME, "SSL,TLSv1.2");
+    props.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    props.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "SSL,TLSv1.2");
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "TLSv1.2");
@@ -481,17 +481,17 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
   public void testSSLWithCipherSuite() throws Exception {
     System.setProperty("javax.net.debug", "ssl");
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME, "TLSv1.2");
+    props.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    props.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.2");
 
     SSLContext ssl = SSLContext.getInstance("TLSv1.2");
 
     ssl.init(null, null, new java.security.SecureRandom());
     String[] cipherSuites = ssl.getSocketFactory().getSupportedCipherSuites();
 
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_CIPHERS_NAME, cipherSuites[0]);
+    props.setProperty(HTTP_SERVICE_SSL_CIPHERS, cipherSuites[0]);
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "TLSv1.2");
@@ -499,17 +499,17 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
   public void testSSLWithMultipleCipherSuite() throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME, "TLSv1.2");
+    props.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    props.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.2");
 
     SSLContext ssl = SSLContext.getInstance("TLSv1.2");
 
     ssl.init(null, null, new java.security.SecureRandom());
     String[] cipherSuites = ssl.getSocketFactory().getSupportedCipherSuites();
 
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_CIPHERS_NAME, cipherSuites[0] + "," + cipherSuites[1]);
+    props.setProperty(HTTP_SERVICE_SSL_CIPHERS, cipherSuites[0] + "," + cipherSuites[1]);
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "TLSv1.2");
@@ -517,15 +517,15 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
   public void testMutualAuthentication() throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_ENABLED_NAME, "true");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_NAME, jks.getCanonicalPath());
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_PROTOCOLS_NAME, "SSL");
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME, "true");
+    props.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getCanonicalPath());
+    props.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
+    props.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "SSL");
+    props.setProperty(HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION, "true");
 
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_TRUSTSTORE_NAME, jks.getCanonicalPath());
+    props.setProperty(HTTP_SERVICE_SSL_TRUSTSTORE, jks.getCanonicalPath());
 
-    props.setProperty(DistributionConfig.HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME, "password");
+    props.setProperty(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD, "password");
 
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "SSL");

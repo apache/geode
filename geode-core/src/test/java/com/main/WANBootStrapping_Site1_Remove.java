@@ -49,8 +49,8 @@ public class WANBootStrapping_Site1_Remove {
     //start a stand alone locator with distributed-system-is = -1
     Properties properties = new Properties();
     properties.setProperty(MCAST_PORT, "0");
-    properties.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+ (-1));
-    properties.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + 20202 + "]");
+    properties.setProperty(DISTRIBUTED_SYSTEM_ID, ""+ (-1));
+    properties.setProperty(REMOTE_LOCATORS, "localhost[" + 20202 + "]");
     properties.setProperty(LOG_LEVEL, "warning");
     Locator locator = null;
     try {

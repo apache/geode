@@ -88,10 +88,10 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, host0 + "[" + locPort
         + "]");
-    props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-    props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "false");
-    props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
+    props.setProperty(JMX_MANAGER, "true");
+    props.setProperty(JMX_MANAGER_START, "false");
+    props.setProperty(JMX_MANAGER_PORT, "0");
+    props.setProperty(JMX_MANAGER_HTTP_PORT, "0");
     createCache(managingNode, props);
     startManagingNode(managingNode);
     DistributedMember locatorMember = getMember(locator);
@@ -110,10 +110,10 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, host0 + "[" + locPort
         + "]");
-    props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-    props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "false");
-    props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
+    props.setProperty(JMX_MANAGER, "true");
+    props.setProperty(JMX_MANAGER_START, "false");
+    props.setProperty(JMX_MANAGER_PORT, "0");
+    props.setProperty(JMX_MANAGER_HTTP_PORT, "0");
     createCache(managingNode, props);
     startManagingNode(managingNode);
     DistributedMember locatorMember = getMember(locator);
@@ -165,7 +165,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, host0 + "[" + locPort
         + "]");
-    props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
+    props.setProperty(JMX_MANAGER, "true");
 
     createCache(managedNode2, props);
     createCache(managedNode3, props);
@@ -183,7 +183,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, host0 + "[" + locPort
         + "]");
-    props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
+    props.setProperty(JMX_MANAGER, "true");
 
     createCache(managedNode2, props);
     createCache(managedNode3, props);

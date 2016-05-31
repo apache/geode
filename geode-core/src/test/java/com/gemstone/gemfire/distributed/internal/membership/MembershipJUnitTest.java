@@ -103,7 +103,7 @@ public class MembershipJUnitTest {
       nonDefault.put(MCAST_PORT, String.valueOf(mcastPort));
       nonDefault.put(LOG_FILE, "");
       nonDefault.put(LOG_LEVEL, "fine");
-      nonDefault.put(DistributionConfig.GROUPS_NAME, "red, blue");
+      nonDefault.put(GROUPS, "red, blue");
       nonDefault.put(MEMBER_TIMEOUT, "2000");
       nonDefault.put(LOCATORS, localHost.getHostName() + '[' + port + ']');
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);

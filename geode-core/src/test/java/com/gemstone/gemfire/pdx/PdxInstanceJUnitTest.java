@@ -18,7 +18,6 @@ package com.gemstone.gemfire.pdx;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -38,7 +37,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 /**
@@ -55,7 +54,7 @@ public class PdxInstanceJUnitTest {
     // make it a loner
     this.c = (GemFireCacheImpl) new CacheFactory()
         .set(MCAST_PORT, "0")
-        .set(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "255")
+        .set(DISTRIBUTED_SYSTEM_ID, "255")
         .setPdxReadSerialized(true)
         .create();
   }

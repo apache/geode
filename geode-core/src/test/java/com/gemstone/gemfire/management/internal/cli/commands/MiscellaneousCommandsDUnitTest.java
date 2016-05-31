@@ -72,7 +72,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   public void testGCForGroup() {
     Properties localProps = new Properties();
     localProps.setProperty(SystemConfigurationProperties.NAME, "Manager");
-    localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
+    localProps.setProperty(GROUPS, "Group1");
     setUpJmxManagerOnVm0ThenConnect(localProps);
     String command = "gc --group=Group1";
     CommandResult cmdResult = executeCommand(command);
@@ -442,7 +442,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   public void testChangeLogLevelForGrps() {
     Properties localProps = new Properties();
     localProps.setProperty(SystemConfigurationProperties.NAME, "Manager");
-    localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group0");
+    localProps.setProperty(GROUPS, "Group0");
 
     final VM vm1 = Host.getHost(0).getVM(1);
     final VM vm2 = Host.getHost(0).getVM(2);
@@ -455,7 +455,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, grp1);
+        localProps.setProperty(GROUPS, grp1);
         getSystem(localProps);
         Cache cache = getCache();
         return cache.getDistributedSystem().getDistributedMember().getId();
@@ -466,7 +466,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
         Properties localProps = new Properties();
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, grp2);
+        localProps.setProperty(GROUPS, grp2);
         getSystem(localProps);
         Cache cache = getCache();
         return cache.getDistributedSystem().getDistributedMember().getId();

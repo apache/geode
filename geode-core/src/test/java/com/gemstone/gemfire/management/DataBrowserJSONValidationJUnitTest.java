@@ -95,10 +95,10 @@ public class DataBrowserJSONValidationJUnitTest {
     props.setProperty(ENABLE_TIME_STATISTICS, "true");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
     props.setProperty(STATISTIC_SAMPLE_RATE, "60000");
-    props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-    props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
-    props.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
-    props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "0");
+    props.setProperty(JMX_MANAGER, "true");
+    props.setProperty(JMX_MANAGER_START, "true");
+    props.setProperty(JMX_MANAGER_HTTP_PORT, "0");
+    props.setProperty(JMX_MANAGER_PORT, "0");
 
     this.system = (InternalDistributedSystem) DistributedSystem.connect(props);
 

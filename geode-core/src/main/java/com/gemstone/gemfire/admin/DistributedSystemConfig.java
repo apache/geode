@@ -87,20 +87,17 @@ public interface DistributedSystemConfig extends Cloneable {
   String DEFAULT_NAME = "";
 
   /** The name of the "mcastPort" property */
-  String MCAST_PORT_NAME =
-      MCAST_PORT;
+  String MCAST_PORT_NAME = MCAST_PORT;
 
   /** The default value of the "mcastPort" property (10334) */
   int DEFAULT_MCAST_PORT =
     DistributionConfig.DEFAULT_MCAST_PORT;
 
   /** The minimum mcastPort (0) */
-  int MIN_MCAST_PORT =
-    DistributionConfig.MIN_MCAST_PORT;
+  int MIN_MCAST_PORT = DistributionConfig.MIN_MCAST_PORT;
 
   /** The maximum mcastPort (65535) */
-  int MAX_MCAST_PORT =
-    DistributionConfig.MAX_MCAST_PORT;
+  int MAX_MCAST_PORT = DistributionConfig.MAX_MCAST_PORT;
   
   /** The name of the "mcastAddress" property */
   String MCAST_ADDRESS_NAME = MCAST_ADDRESS;

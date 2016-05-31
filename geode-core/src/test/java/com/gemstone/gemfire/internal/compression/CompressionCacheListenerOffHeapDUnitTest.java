@@ -24,6 +24,8 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 import java.util.Properties;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 @SuppressWarnings("serial")
 public class CompressionCacheListenerOffHeapDUnitTest extends
     CompressionCacheListenerDUnitTest {
@@ -57,7 +59,7 @@ public class CompressionCacheListenerOffHeapDUnitTest extends
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
-    props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "1m");
+    props.setProperty(OFF_HEAP_MEMORY_SIZE, "1m");
     return props;
   }
 

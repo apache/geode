@@ -159,7 +159,7 @@ public class WANTestBase extends DistributedTestCase{
     WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
     StringBuffer localLocatorBuffer = new StringBuffer(localLocatorsList.toString());
     localLocatorBuffer.deleteCharAt(0);
     localLocatorBuffer.deleteCharAt(localLocatorBuffer.lastIndexOf("]"));
@@ -173,7 +173,7 @@ public class WANTestBase extends DistributedTestCase{
     remoteLocatorBuffer.deleteCharAt(remoteLocatorBuffer.lastIndexOf("]"));
     String remoteLocator = remoteLocatorBuffer.toString();
     remoteLocator = remoteLocator.replace(" ", "");
-    props.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, remoteLocator);
+    props.setProperty(REMOTE_LOCATORS, remoteLocator);
     test.getSystem(props);
   }
 
@@ -183,7 +183,7 @@ public class WANTestBase extends DistributedTestCase{
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
     props.setProperty(LOCATORS, "localhost[" + port + "]");
     props.setProperty(START_LOCATOR, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
     test.getSystem(props);
@@ -196,7 +196,7 @@ public class WANTestBase extends DistributedTestCase{
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
     props.setProperty(LOCATORS, "localhost[" + port + "]");
     props.setProperty(START_LOCATOR, "localhost[" + port + "],server=false,peer=true,hostname-for-clients=localhost");
     test.getSystem(props);
@@ -209,7 +209,7 @@ public class WANTestBase extends DistributedTestCase{
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
     props.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
     props.setProperty(START_LOCATOR, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
     test.getSystem(props);
@@ -222,7 +222,7 @@ public class WANTestBase extends DistributedTestCase{
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
     props.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
     props.setProperty(START_LOCATOR, "localhost[" + port + "],server=false,peer=true,hostname-for-clients=localhost");
     test.getSystem(props);
@@ -235,10 +235,10 @@ public class WANTestBase extends DistributedTestCase{
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
     props.setProperty(LOCATORS, "localhost[" + port + "]");
     props.setProperty(START_LOCATOR, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    props.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + remoteLocPort + "]");
+    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
     test.getSystem(props);
     return port;
   }
@@ -248,10 +248,10 @@ public class WANTestBase extends DistributedTestCase{
     Properties props = test.getDistributedSystemProperties();
     props.put(LOG_LEVEL, "fine");
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
     props.setProperty(LOCATORS, "localhost[" + oldPort + "]");
     props.setProperty(START_LOCATOR, "localhost[" + oldPort + "],server=true,peer=true,hostname-for-clients=localhost");
-    props.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + remoteLocPort + "]");
+    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
     test.getSystem(props);
   }
 
@@ -262,10 +262,10 @@ public class WANTestBase extends DistributedTestCase{
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
     props.setProperty(LOCATORS, "localhost[" + port + "]");
     props.setProperty(START_LOCATOR, "localhost[" + port + "],server=false,peer=true,hostname-for-clients=localhost");
-    props.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + remoteLocPort + "]");
+    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
     test.getSystem(props);
     return port;
   }
@@ -277,10 +277,10 @@ public class WANTestBase extends DistributedTestCase{
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
     props.setProperty(LOCATORS, "localhost[" + localPort + "]");
     props.setProperty(START_LOCATOR, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    props.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + remoteLocPort + "]");
+    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
     test.getSystem(props);
     return port;
   }
@@ -292,10 +292,10 @@ public class WANTestBase extends DistributedTestCase{
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
     props.setProperty(LOCATORS, "localhost[" + localPort + "]");
     props.setProperty(START_LOCATOR, "localhost[" + port + "],server=false,peer=true,hostname-for-clients=localhost");
-    props.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + remoteLocPort + "]");
+    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
     test.getSystem(props);
     return port;
   }
@@ -860,10 +860,10 @@ public class WANTestBase extends DistributedTestCase{
     WANTestBase test = new WANTestBase(getTestMethodName());
     Properties props = test.getDistributedSystemProperties();
     if (management) {
-      props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-      props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "false");
-      props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "0");
-      props.setProperty(DistributionConfig.JMX_MANAGER_HTTP_PORT_NAME, "0");
+      props.setProperty(JMX_MANAGER, "true");
+      props.setProperty(JMX_MANAGER_START, "false");
+      props.setProperty(JMX_MANAGER_PORT, "0");
+      props.setProperty(JMX_MANAGER_HTTP_PORT, "0");
     }
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort + "]");
@@ -881,18 +881,18 @@ public class WANTestBase extends DistributedTestCase{
 
     Properties gemFireProps = test.getDistributedSystemProperties();
     gemFireProps.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_ENABLED_NAME, String.valueOf(gatewaySslenabled));
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_PROTOCOLS_NAME, gatewaySslprotocols);
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_CIPHERS_NAME, gatewaySslciphers);
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME, String.valueOf(gatewaySslRequireAuth));
+    gemFireProps.put(GATEWAY_SSL_ENABLED, String.valueOf(gatewaySslenabled));
+    gemFireProps.put(GATEWAY_SSL_PROTOCOLS, gatewaySslprotocols);
+    gemFireProps.put(GATEWAY_SSL_CIPHERS, gatewaySslciphers);
+    gemFireProps.put(GATEWAY_SSL_REQUIRE_AUTHENTICATION, String.valueOf(gatewaySslRequireAuth));
 
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_KEYSTORE_TYPE_NAME, "jks");
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_KEYSTORE_NAME,
+    gemFireProps.put(GATEWAY_SSL_KEYSTORE_TYPE, "jks");
+    gemFireProps.put(GATEWAY_SSL_KEYSTORE,
         TestUtil.getResourcePath(WANTestBase.class, "/com/gemstone/gemfire/cache/client/internal/client.keystore"));
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_TRUSTSTORE_NAME,
+    gemFireProps.put(GATEWAY_SSL_KEYSTORE_PASSWORD, "password");
+    gemFireProps.put(GATEWAY_SSL_TRUSTSTORE,
         TestUtil.getResourcePath(WANTestBase.class, "/com/gemstone/gemfire/cache/client/internal/client.truststore"));
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME, "password");
+    gemFireProps.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD, "password");
 
     gemFireProps.setProperty(MCAST_PORT, "0");
     gemFireProps.setProperty(LOCATORS, "localhost[" + locPort + "]");
@@ -946,8 +946,7 @@ public class WANTestBase extends DistributedTestCase{
   public static Integer createCacheServer() {
     CacheServer server1 = cache.addCacheServer();
     assertNotNull(server1);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    server1.setPort(port);
+    server1.setPort(0);
     try {
       server1.start();
     }
@@ -1975,18 +1974,18 @@ public class WANTestBase extends DistributedTestCase{
     Properties gemFireProps = test.getDistributedSystemProperties();
 
     gemFireProps.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_ENABLED_NAME, String.valueOf(gatewaySslenabled));
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_PROTOCOLS_NAME, gatewaySslprotocols);
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_CIPHERS_NAME, gatewaySslciphers);
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME, String.valueOf(gatewaySslRequireAuth));
+    gemFireProps.put(GATEWAY_SSL_ENABLED, String.valueOf(gatewaySslenabled));
+    gemFireProps.put(GATEWAY_SSL_PROTOCOLS, gatewaySslprotocols);
+    gemFireProps.put(GATEWAY_SSL_CIPHERS, gatewaySslciphers);
+    gemFireProps.put(GATEWAY_SSL_REQUIRE_AUTHENTICATION, String.valueOf(gatewaySslRequireAuth));
 
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_KEYSTORE_TYPE_NAME, "jks");
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_KEYSTORE_NAME,
+    gemFireProps.put(GATEWAY_SSL_KEYSTORE_TYPE, "jks");
+    gemFireProps.put(GATEWAY_SSL_KEYSTORE,
         TestUtil.getResourcePath(WANTestBase.class, "/com/gemstone/gemfire/cache/client/internal/cacheserver.keystore"));
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_KEYSTORE_PASSWORD_NAME, "password");
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_TRUSTSTORE_NAME,
+    gemFireProps.put(GATEWAY_SSL_KEYSTORE_PASSWORD, "password");
+    gemFireProps.put(GATEWAY_SSL_TRUSTSTORE,
         TestUtil.getResourcePath(WANTestBase.class, "/com/gemstone/gemfire/cache/client/internal/cacheserver.truststore"));
-    gemFireProps.put(DistributionConfig.GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME, "password");
+    gemFireProps.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD, "password");
 
     gemFireProps.setProperty(MCAST_PORT, "0");
     gemFireProps.setProperty(LOCATORS, "localhost[" + locPort + "]");
@@ -3685,7 +3684,7 @@ public class WANTestBase extends DistributedTestCase{
     // of WANTestBase (instead of instances of the subclass). So we can't override
     // this method so that only the off-heap subclasses allocate off heap memory.
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "300m");
+    props.setProperty(OFF_HEAP_MEMORY_SIZE, "300m");
     return props;
   }
 

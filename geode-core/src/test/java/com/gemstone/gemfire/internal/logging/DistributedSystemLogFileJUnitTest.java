@@ -85,7 +85,7 @@ public class DistributedSystemLogFileJUnitTest {
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, "");
     properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DISABLE_AUTO_RECONNECT, "true");
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     
@@ -473,7 +473,7 @@ public class DistributedSystemLogFileJUnitTest {
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, "");
     properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DISABLE_AUTO_RECONNECT, "true");
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     
@@ -689,7 +689,7 @@ public class DistributedSystemLogFileJUnitTest {
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, "");
     properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DISABLE_AUTO_RECONNECT, "true");
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     
@@ -903,11 +903,11 @@ public class DistributedSystemLogFileJUnitTest {
     final Properties properties = new Properties();
     properties.put(LOG_FILE, logFileName);
     properties.put(LOG_LEVEL, "fine");
-    properties.put(DistributionConfig.SECURITY_LOG_FILE_NAME, securityLogFileName);
+    properties.put(SECURITY_LOG_FILE, securityLogFileName);
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, "");
     properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DISABLE_AUTO_RECONNECT, "true");
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     
@@ -1021,12 +1021,12 @@ public class DistributedSystemLogFileJUnitTest {
     final Properties properties = new Properties();
     properties.put(LOG_FILE, logFileName);
     properties.put(LOG_LEVEL, "fine");
-    properties.put(DistributionConfig.SECURITY_LOG_FILE_NAME, securityLogFileName);
-    properties.put(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "fine");
+    properties.put(SECURITY_LOG_FILE, securityLogFileName);
+    properties.put(SECURITY_LOG_LEVEL, "fine");
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, "");
     properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DISABLE_AUTO_RECONNECT, "true");
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     
@@ -1200,11 +1200,11 @@ public class DistributedSystemLogFileJUnitTest {
     final Properties properties = new Properties();
     properties.put(LOG_FILE, logFileName);
     properties.put(LOG_LEVEL, "fine");
-    properties.put(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "info");
+    properties.put(SECURITY_LOG_LEVEL, "info");
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, "");
     properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DISABLE_AUTO_RECONNECT, "true");
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     
@@ -1349,11 +1349,11 @@ public class DistributedSystemLogFileJUnitTest {
     final Properties properties = new Properties();
     properties.put(LOG_FILE, logFileName);
     properties.put(LOG_LEVEL, "info");
-    properties.put(DistributionConfig.SECURITY_LOG_LEVEL_NAME, "fine");
+    properties.put(SECURITY_LOG_LEVEL, "fine");
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, "");
     properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DISABLE_AUTO_RECONNECT, "true");
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     

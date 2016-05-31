@@ -54,6 +54,8 @@ import java.security.Principal;
 import java.util.*;
 import java.util.concurrent.*;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  * Class <code>CacheClientNotifier</code> works on the server and manages
  * client socket connections to clients requesting notification of updates and
@@ -312,7 +314,7 @@ public class CacheClientNotifier {
       DistributedSystem system = this.getCache().getDistributedSystem();
       Properties sysProps = system.getProperties();
       String authenticator = sysProps
-          .getProperty(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME);
+          .getProperty(SECURITY_CLIENT_AUTHENTICATOR);
       //TODO;hitesh for conflation
       if (clientVersion.compareTo(Version.GFE_603) >= 0) {
         byte[] overrides = HandShake.extractOverrides(new byte[] { (byte) dis.read() });
@@ -349,13 +351,13 @@ public class CacheClientNotifier {
           securityLogWriter.fine("CacheClientNotifier: successfully verified credentials for proxyID: " + proxyID + " having principal: " + principal.getName());
         }
         String postAuthzFactoryName = sysProps
-            .getProperty(DistributionConfig.SECURITY_CLIENT_ACCESSOR_PP_NAME);
+            .getProperty(SECURITY_CLIENT_ACCESSOR_PP);
         if (postAuthzFactoryName != null && postAuthzFactoryName.length() > 0) {
           if (principal == null) {
             securityLogWriter.warning(
                 LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_POST_PROCESS_AUTHORIZATION_CALLBACK_ENABLED_BUT_AUTHENTICATION_CALLBACK_0_RETURNED_WITH_NULL_CREDENTIALS_FOR_PROXYID_1,
                 new Object[] {
-                    DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, proxyID });
+                    SECURITY_CLIENT_AUTHENTICATOR, proxyID });
           }
           Method authzMethod = ClassLoadUtil
               .methodFromName(postAuthzFactoryName);

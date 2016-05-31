@@ -62,12 +62,12 @@ public class DistributedSystemStatsJUnitTest {
     props.setProperty(ENABLE_TIME_STATISTICS, "true");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
     props.setProperty(STATISTIC_SAMPLE_RATE, "60000");
-    props.setProperty(DistributionConfig.JMX_MANAGER_NAME, "true");
-    props.setProperty(DistributionConfig.JMX_MANAGER_START_NAME, "true");
+    props.setProperty(JMX_MANAGER, "true");
+    props.setProperty(JMX_MANAGER_START, "true");
     // set JMX_MANAGER_UPDATE_RATE to practically an infinite value, so that
     // LocalManager wont try to run ManagementTask
-    props.setProperty(DistributionConfig.JMX_MANAGER_UPDATE_RATE_NAME, "60000");
-    props.setProperty(DistributionConfig.JMX_MANAGER_PORT_NAME, "0");
+    props.setProperty(JMX_MANAGER_UPDATE_RATE, "60000");
+    props.setProperty(JMX_MANAGER_PORT, "0");
 
     this.system = (InternalDistributedSystem) DistributedSystem.connect(props);
     assertNotNull(this.system.getStatSampler());

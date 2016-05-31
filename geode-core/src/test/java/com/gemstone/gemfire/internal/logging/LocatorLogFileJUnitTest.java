@@ -76,7 +76,7 @@ public class LocatorLogFileJUnitTest {
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, locators);
     properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DistributionConfig.DISABLE_AUTO_RECONNECT_NAME, "true");
+    properties.put(DISABLE_AUTO_RECONNECT, "true");
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     

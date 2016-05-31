@@ -20,7 +20,6 @@ import com.gemstone.gemfire.CopyHelper;
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.NanoTimer;
 import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.BucketRegion.RawValue;
@@ -38,6 +37,8 @@ import java.util.Collection;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  *
@@ -337,7 +338,7 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
 
   public Properties getDistributedSystemProperties() {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.DELTA_PROPAGATION_PROP_NAME, "false");
+    props.setProperty(DELTA_PROPAGATION, "false");
     return props;
   }
 

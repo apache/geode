@@ -29,6 +29,8 @@ import java.security.Principal;
 import java.util.Properties;
 import java.util.Random;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 public class LdapUserCredentialGenerator extends CredentialGenerator {
 
   private static final Logger logger = LogService.getLogger();
@@ -97,7 +99,7 @@ public class LdapUserCredentialGenerator extends CredentialGenerator {
     final Properties props = new Properties();
     props.setProperty(UserPasswordAuthInit.USER_NAME, USER_PREFIX + ((index % 10) + 1));
     props.setProperty(UserPasswordAuthInit.PASSWORD, USER_PREFIX + ((index % 10) + 1));
-    props.setProperty(DistributionConfig.SECURITY_CLIENT_DHALGO_NAME, CIPHERS[RANDOM.nextInt(CIPHERS.length)]);
+    props.setProperty(SECURITY_CLIENT_DHALGO, CIPHERS[RANDOM.nextInt(CIPHERS.length)]);
 
     if (serverAuthEnabled) {
       final String keyStoreFile = TestUtil.getResourcePath(PKCSCredentialGenerator.class, PKCSCredentialGenerator.keyStoreDir + "/publickeyfile");
@@ -134,7 +136,7 @@ public class LdapUserCredentialGenerator extends CredentialGenerator {
       throw new IllegalArgumentException("LDAP: [" + userName + "] not a valid user");
     }
 
-    props.setProperty(DistributionConfig.SECURITY_CLIENT_DHALGO_NAME, CIPHERS[RANDOM.nextInt(CIPHERS.length)]);
+    props.setProperty(SECURITY_CLIENT_DHALGO, CIPHERS[RANDOM.nextInt(CIPHERS.length)]);
 
     if (serverAuthEnabled) {
       final String keyStoreFile = TestUtil.getResourcePath(PKCSCredentialGenerator.class, PKCSCredentialGenerator.keyStoreDir + "/publickeyfile");
@@ -150,7 +152,7 @@ public class LdapUserCredentialGenerator extends CredentialGenerator {
     final Properties props = new Properties();
     props.setProperty(UserPasswordAuthInit.USER_NAME, "invalid" + index);
     props.setProperty(UserPasswordAuthInit.PASSWORD, "none");
-    props.setProperty(DistributionConfig.SECURITY_CLIENT_DHALGO_NAME, CIPHERS[RANDOM.nextInt(CIPHERS.length)]);
+    props.setProperty(SECURITY_CLIENT_DHALGO, CIPHERS[RANDOM.nextInt(CIPHERS.length)]);
 
     if (serverAuthEnabled) {
       final String keyStoreFile = TestUtil.getResourcePath(PKCSCredentialGenerator.class, PKCSCredentialGenerator.keyStoreDir + "/publickeyfile");

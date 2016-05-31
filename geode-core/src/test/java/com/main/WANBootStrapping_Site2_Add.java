@@ -61,10 +61,10 @@ public class WANBootStrapping_Site2_Add {
     System.out.println("Creating cache ...It will take some time..");
     Cache cache = new CacheFactory()
         .set(MCAST_PORT, "0")
-    .set(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+2)
+    .set(DISTRIBUTED_SYSTEM_ID, ""+2)
         .set(LOCATORS, "localhost[" + 20202 + "]")
         .set(START_LOCATOR, "localhost[" + 20202 + "],server=true,peer=true,hostname-for-clients=localhost")
-    .set(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + 10101 + "]")
+    .set(REMOTE_LOCATORS, "localhost[" + 10101 + "]")
     .set(LOG_LEVEL, "warning")
     .create();
     System.out.println("Cache Created");

@@ -69,6 +69,7 @@ import com.gemstone.gemfire.management.internal.configuration.domain.SharedConfi
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import com.gemstone.gemfire.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.security.AuthenticationFailedException;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;

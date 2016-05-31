@@ -79,7 +79,7 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
     props.setProperty(LOCATORS, "localhost[" + port + "]");
     props.setProperty(START_LOCATOR, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
     InternalDistributedSystem ds = getSystem(props);
@@ -91,10 +91,10 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, ""+dsId);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
     props.setProperty(LOCATORS, "localhost[" + port + "]");
     props.setProperty(START_LOCATOR, "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    props.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost[" + remoteLocPort + "]");
+    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
     getSystem(props);
     return port;
   }
@@ -111,7 +111,7 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort + "]");
-    props.setProperty(DistributionConfig.GROUPS_NAME, groups);
+    props.setProperty(GROUPS, groups);
     InternalDistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
   }
@@ -244,7 +244,7 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort
         + "]");
-    props.setProperty(DistributionConfig.GROUPS_NAME, groups);
+    props.setProperty(GROUPS, groups);
 
     InternalDistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
@@ -281,7 +281,7 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort
         + "]");
-    props.setProperty(DistributionConfig.GROUPS_NAME, groups);
+    props.setProperty(GROUPS, groups);
 
     InternalDistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);

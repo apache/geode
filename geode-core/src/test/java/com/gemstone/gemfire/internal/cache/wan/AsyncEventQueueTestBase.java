@@ -123,7 +123,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    //props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "" + dsId);
+    //props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
     props.setProperty(LOCATORS, "localhost[" + port
         + "]");
     props.setProperty(START_LOCATOR, "localhost["
@@ -137,13 +137,12 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, "" + dsId);
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
     props.setProperty(LOCATORS, "localhost[" + port
         + "]");
     props.setProperty(START_LOCATOR, "localhost["
         + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    props.setProperty(DistributionConfig.REMOTE_LOCATORS_NAME, "localhost["
-        + remoteLocPort + "]");
+    props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
     test.getSystem(props);
     return port;
   }
@@ -1546,7 +1545,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     // of WANTestBase (instead of instances of the subclass). So we can't override
     // this method so that only the off-heap subclasses allocate off heap memory.
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME, "300m");
+    props.setProperty(OFF_HEAP_MEMORY_SIZE, "300m");
     return props;
   }
   

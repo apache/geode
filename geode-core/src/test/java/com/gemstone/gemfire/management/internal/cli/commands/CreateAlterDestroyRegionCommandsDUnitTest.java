@@ -402,7 +402,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     this.alterVm1.invoke(() -> {
       Properties localProps = new Properties();
       localProps.setProperty(SystemConfigurationProperties.NAME, alterVm1Name);
-      localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1");
+      localProps.setProperty(GROUPS, "Group1");
       getSystem(localProps);
       Cache cache = getCache();
 
@@ -435,7 +435,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     this.alterVm2.invoke(() -> {
       Properties localProps = new Properties();
       localProps.setProperty(SystemConfigurationProperties.NAME, alterVm2Name);
-      localProps.setProperty(DistributionConfig.GROUPS_NAME, "Group1,Group2");
+      localProps.setProperty(GROUPS, "Group1,Group2");
       getSystem(localProps);
       Cache cache = getCache();
 
@@ -796,7 +796,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
       Properties localProps = new Properties();
       localProps.setProperty(MCAST_PORT, "0");
       localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
-      localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+      localProps.setProperty(GROUPS, groupName);
       getSystem(localProps);
       assertNotNull(getCache());
     });
@@ -834,7 +834,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
       Properties localProps = new Properties();
       localProps.setProperty(MCAST_PORT, "0");
       localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
-      localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+      localProps.setProperty(GROUPS, groupName);
       localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
       getSystem(localProps);
       cache = getCache();
@@ -876,7 +876,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
         localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
-        localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+        localProps.setProperty(GROUPS, groupName);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         getSystem(localProps);
         cache = getCache();
@@ -930,7 +930,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
       Properties localProps = new Properties();
       localProps.setProperty(MCAST_PORT, "0");
       localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
-      localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+      localProps.setProperty(GROUPS, groupName);
       getSystem(localProps);
       assertNotNull(getCache());
     });
@@ -986,7 +986,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
       Properties localProps = new Properties();
       localProps.setProperty(MCAST_PORT, "0");
       localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
-      localProps.setProperty(DistributionConfig.GROUPS_NAME, groupName);
+      localProps.setProperty(GROUPS, groupName);
       localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
       getSystem(localProps);
       cache = getCache();

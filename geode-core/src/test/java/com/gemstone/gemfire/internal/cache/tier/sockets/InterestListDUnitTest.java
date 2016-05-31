@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.test.dunit.*;
@@ -36,8 +35,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
 /**
  * Test Scenario :
@@ -501,7 +499,7 @@ public class InterestListDUnitTest extends DistributedTestCase
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(DistributionConfig.DELTA_PROPAGATION_PROP_NAME, "false");
+    props.setProperty(DELTA_PROPAGATION, "false");
 
     new InterestListDUnitTest("temp").createCache(props);
     PoolFactory pfactory = PoolManager.createFactory()
@@ -534,7 +532,7 @@ public class InterestListDUnitTest extends DistributedTestCase
 
   private static void createCache(boolean addReplicatedRegion) throws Exception {
     Properties props = new Properties();
-    props.setProperty(DistributionConfig.DELTA_PROPAGATION_PROP_NAME, "false");
+    props.setProperty(DELTA_PROPAGATION, "false");
     new InterestListDUnitTest("temp").createCache(props);
     if (addReplicatedRegion) {
       addReplicatedRegion();

@@ -25,7 +25,6 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -44,7 +43,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 /**
  *
  */
@@ -563,7 +562,7 @@ public class JSONPdxClientServerDUnitTest extends CacheTestCase {
       public Object call() throws Exception {
         Properties props = new Properties();
         props.setProperty(LOCATORS, "");
-        props.setProperty(DistributionConfig.DISTRIBUTED_SYSTEM_ID_NAME, dsId);
+        props.setProperty(DISTRIBUTED_SYSTEM_ID, dsId);
         getSystem(props);
         AttributesFactory af = new AttributesFactory();
         af.setScope(Scope.DISTRIBUTED_ACK);

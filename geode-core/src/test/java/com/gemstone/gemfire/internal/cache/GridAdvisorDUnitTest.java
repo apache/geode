@@ -630,7 +630,7 @@ public class GridAdvisorDUnitTest extends DistributedTestCase {
         Properties props = new Properties();
         props.setProperty(MCAST_PORT, "0");
         props.setProperty(LOCATORS, locators);
-        props.setProperty(DistributionConfig.GROUPS_NAME, "bs1Group1, bs1Group2");
+        props.setProperty(GROUPS, "bs1Group1, bs1Group2");
         props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         CacheFactory.create(DistributedSystem.connect(props));
       }
@@ -640,7 +640,7 @@ public class GridAdvisorDUnitTest extends DistributedTestCase {
         Properties props = new Properties();
         props.setProperty(MCAST_PORT, "0");
         props.setProperty(LOCATORS, locators);
-        props.setProperty(DistributionConfig.GROUPS_NAME, "bs2Group1, bs2Group2");
+        props.setProperty(GROUPS, "bs2Group1, bs2Group2");
         props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         CacheFactory.create(DistributedSystem.connect(props));
       }

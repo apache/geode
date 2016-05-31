@@ -35,6 +35,8 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.*;
 
+import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+
 /**
  * Provides an implementation of <code>DistributionConfig</code> that
  * knows how to read the configuration file.
@@ -716,13 +718,13 @@ public class DistributionConfigImpl
     initialize(props);
 
     if (securityPeerAuthInit != null && securityPeerAuthInit.length() > 0) {
-      System.setProperty(SECURITY_SYSTEM_PREFIX + SECURITY_PEER_AUTH_INIT_NAME,
+      System.setProperty(SECURITY_SYSTEM_PREFIX + SECURITY_PEER_AUTH_INIT,
           securityPeerAuthInit);
     }
     if (securityPeerAuthenticator != null
         && securityPeerAuthenticator.length() > 0) {
       System.setProperty(SECURITY_SYSTEM_PREFIX
-          + SECURITY_PEER_AUTHENTICATOR_NAME, securityPeerAuthenticator);
+          + SECURITY_PEER_AUTHENTICATOR, securityPeerAuthenticator);
     }
 
     Iterator iter = security.entrySet().iterator();
@@ -843,7 +845,7 @@ public class DistributionConfigImpl
       this.sourceMap.put(JMX_MANAGER_SSL_ENABLED,this.sourceMap.get(CLUSTER_SSL_ENABLED));
       if(this.sourceMap.get(CLUSTER_SSL_CIPHERS)!=null) {
         this.jmxManagerSslCiphers = this.clusterSSLCiphers;
-        this.sourceMap.put(JMX_MANAGER_SSL_CIPHERS_NAME,this.sourceMap.get(CLUSTER_SSL_CIPHERS));
+        this.sourceMap.put(JMX_MANAGER_SSL_CIPHERS,this.sourceMap.get(CLUSTER_SSL_CIPHERS));
       }
       
       if(this.sourceMap.get(CLUSTER_SSL_PROTOCOLS)!=null) {
@@ -909,7 +911,7 @@ public class DistributionConfigImpl
    * if http-service-ssl-*properties are given then use them, and copy the unspecified http-service properties from cluster-properties 
    */
   private void copySSLPropsToHTTPSSLProps() {
-    boolean httpServiceSSLEnabledOverriden = this.sourceMap.get(HTTP_SERVICE_SSL_ENABLED_NAME) != null;
+    boolean httpServiceSSLEnabledOverriden = this.sourceMap.get(HTTP_SERVICE_SSL_ENABLED) != null;
 
     boolean clusterSSLOverRidden = this.sourceMap.get(CLUSTER_SSL_ENABLED) != null;
 
@@ -1312,16 +1314,16 @@ public class DistributionConfigImpl
       this.setAttribute(CLUSTER_SSL_ENABLED, (String) props.get( CLUSTER_SSL_ENABLED ), this.sourceMap.get(CLUSTER_SSL_ENABLED) );
     }
     // now set the security authInit if needed
-    if (props.containsKey(SECURITY_PEER_AUTH_INIT_NAME)) {
-      this.setAttribute(SECURITY_PEER_AUTH_INIT_NAME, (String)props
-          .get(SECURITY_PEER_AUTH_INIT_NAME),
-          this.sourceMap.get(SECURITY_PEER_AUTH_INIT_NAME));
+    if (props.containsKey(SECURITY_PEER_AUTH_INIT)) {
+      this.setAttribute(SECURITY_PEER_AUTH_INIT, (String)props
+          .get(SECURITY_PEER_AUTH_INIT),
+          this.sourceMap.get(SECURITY_PEER_AUTH_INIT));
     }
     // and security authenticator if needed
-    if (props.containsKey(SECURITY_PEER_AUTHENTICATOR_NAME)) {
-      this.setAttribute(SECURITY_PEER_AUTHENTICATOR_NAME, (String)props
-          .get(SECURITY_PEER_AUTHENTICATOR_NAME),
-          this.sourceMap.get(SECURITY_PEER_AUTHENTICATOR_NAME));
+    if (props.containsKey(SECURITY_PEER_AUTHENTICATOR)) {
+      this.setAttribute(SECURITY_PEER_AUTHENTICATOR, (String)props
+          .get(SECURITY_PEER_AUTHENTICATOR),
+          this.sourceMap.get(SECURITY_PEER_AUTHENTICATOR));
     }
 
     // Make attributes read only
@@ -1331,8 +1333,8 @@ public class DistributionConfigImpl
   public void close() {
     // Clear the extra stuff from System properties
     Properties props = System.getProperties();
-    props.remove(SECURITY_SYSTEM_PREFIX + SECURITY_PEER_AUTH_INIT_NAME);
-    props.remove(SECURITY_SYSTEM_PREFIX + SECURITY_PEER_AUTHENTICATOR_NAME);
+    props.remove(SECURITY_SYSTEM_PREFIX + SECURITY_PEER_AUTH_INIT);
+    props.remove(SECURITY_SYSTEM_PREFIX + SECURITY_PEER_AUTHENTICATOR);
 
     Iterator iter = security.keySet().iterator();
     while (iter.hasNext()) {
@@ -1537,7 +1539,7 @@ public class DistributionConfigImpl
   }
 
   public void setHttpServicePort(int value) {
-    this.httpServicePort = (Integer)checkAttribute(HTTP_SERVICE_PORT_NAME, value);
+    this.httpServicePort = (Integer)checkAttribute(HTTP_SERVICE_PORT, value);
   }
   
   public String getHttpServiceBindAddress() {
@@ -1545,7 +1547,7 @@ public class DistributionConfigImpl
   }
   
   public void setHttpServiceBindAddress(String value) {
-    this.httpServiceBindAddress = (String)checkAttribute(HTTP_SERVICE_BIND_ADDRESS_NAME, value);
+    this.httpServiceBindAddress = (String)checkAttribute(HTTP_SERVICE_BIND_ADDRESS, value);
   }
   
   public boolean getStartDevRestApi(){
@@ -1565,7 +1567,7 @@ public class DistributionConfigImpl
   }
 
   public void setDeltaPropagation(boolean value) {
-    this.deltaPropagation = (Boolean)checkAttribute(DELTA_PROPAGATION_PROP_NAME, value);
+    this.deltaPropagation = (Boolean)checkAttribute(DELTA_PROPAGATION, value);
   }
 
   public void setName(String value) {
@@ -1921,7 +1923,7 @@ public class DistributionConfigImpl
   }
 
   public void setSecurityClientAuthenticator(String value) {
-    securityClientAuthenticator = (String)checkAttribute(SECURITY_CLIENT_AUTHENTICATOR_NAME, value);
+    securityClientAuthenticator = (String)checkAttribute(SECURITY_CLIENT_AUTHENTICATOR, value);
   }
 
   public String getSecurityClientDHAlgo() {
@@ -1929,7 +1931,7 @@ public class DistributionConfigImpl
   }
 
   public void setSecurityClientDHAlgo(String value) {
-    securityClientDHAlgo = (String)checkAttribute(SECURITY_CLIENT_DHALGO_NAME, value);
+    securityClientDHAlgo = (String)checkAttribute(SECURITY_CLIENT_DHALGO, value);
   }
 
   public String getSecurityPeerAuthInit() {
@@ -1937,7 +1939,7 @@ public class DistributionConfigImpl
   }
 
   public void setSecurityPeerAuthInit(String value) {
-    securityPeerAuthInit = (String)checkAttribute(SECURITY_PEER_AUTH_INIT_NAME, value);
+    securityPeerAuthInit = (String)checkAttribute(SECURITY_PEER_AUTH_INIT, value);
   }
 
   public String getSecurityPeerAuthenticator() {
@@ -1945,7 +1947,7 @@ public class DistributionConfigImpl
   }
 
   public void setSecurityPeerAuthenticator(String value) {
-    securityPeerAuthenticator = (String)checkAttribute(SECURITY_PEER_AUTHENTICATOR_NAME, value);
+    securityPeerAuthenticator = (String)checkAttribute(SECURITY_PEER_AUTHENTICATOR, value);
   }
 
   public String getSecurityClientAccessor() {
@@ -1953,7 +1955,7 @@ public class DistributionConfigImpl
   }
 
   public void setSecurityClientAccessor(String value) {
-    securityClientAccessor = (String)checkAttribute(SECURITY_CLIENT_ACCESSOR_NAME, value);
+    securityClientAccessor = (String)checkAttribute(SECURITY_CLIENT_ACCESSOR, value);
   }
 
   public String getSecurityClientAccessorPP() {
@@ -1961,7 +1963,7 @@ public class DistributionConfigImpl
   }
 
   public void setSecurityClientAccessorPP(String value) {
-    securityClientAccessorPP = (String)checkAttribute(SECURITY_CLIENT_ACCESSOR_PP_NAME, value);
+    securityClientAccessorPP = (String)checkAttribute(SECURITY_CLIENT_ACCESSOR_PP, value);
   }
 
   public int getSecurityLogLevel() {
@@ -1969,7 +1971,7 @@ public class DistributionConfigImpl
   }
 
   public void setSecurityLogLevel(int value) {
-    securityLogLevel = (Integer)checkAttribute(SECURITY_LOG_LEVEL_NAME, value);
+    securityLogLevel = (Integer)checkAttribute(SECURITY_LOG_LEVEL, value);
   }
 
   public File getSecurityLogFile() {
@@ -1977,7 +1979,7 @@ public class DistributionConfigImpl
   }
 
   public void setSecurityLogFile(File value) {
-    securityLogFile = (File)checkAttribute(SECURITY_LOG_FILE_NAME, value);
+    securityLogFile = (File)checkAttribute(SECURITY_LOG_FILE, value);
   }
 
   public int getSecurityPeerMembershipTimeout() {
@@ -1985,7 +1987,7 @@ public class DistributionConfigImpl
   }
 
   public void setSecurityPeerMembershipTimeout(int value) {
-    securityPeerMembershipTimeout = (Integer)checkAttribute(SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME, value);
+    securityPeerMembershipTimeout = (Integer)checkAttribute(SECURITY_PEER_VERIFY_MEMBER_TIMEOUT, value);
   }
 
   public Properties getSecurityProps() {
@@ -2015,7 +2017,7 @@ public class DistributionConfigImpl
   }
 
   public void setDistributedSystemId(int distributedSystemId) {
-    this.distributedSystemId = (Integer)checkAttribute(DISTRIBUTED_SYSTEM_ID_NAME, distributedSystemId);
+    this.distributedSystemId = (Integer)checkAttribute(DISTRIBUTED_SYSTEM_ID, distributedSystemId);
     
   }
 
@@ -2029,12 +2031,12 @@ public class DistributionConfigImpl
   }
 
   public void setEnforceUniqueHost(boolean enforceUniqueHost) {
-    this.enforceUniqueHost = (Boolean)checkAttribute(ENFORCE_UNIQUE_HOST_NAME, enforceUniqueHost);
+    this.enforceUniqueHost = (Boolean)checkAttribute(ENFORCE_UNIQUE_HOST, enforceUniqueHost);
     
   }
 
   public void setRedundancyZone(String redundancyZone) {
-    this.redundancyZone = (String)checkAttribute(REDUNDANCY_ZONE_NAME, redundancyZone);
+    this.redundancyZone = (String)checkAttribute(REDUNDANCY_ZONE, redundancyZone);
     
   }
 
@@ -2082,7 +2084,7 @@ public class DistributionConfigImpl
     if (value == null) {
       value = DEFAULT_GROUPS;
     }
-    this.groups = (String)checkAttribute(GROUPS_NAME, value);
+    this.groups = (String)checkAttribute(GROUPS, value);
   }
 
   @Override
@@ -2143,27 +2145,27 @@ public class DistributionConfigImpl
   }
   
   public void setJmxManagerSSLKeyStore( String value ) {
-    value = (String)checkAttribute(JMX_MANAGER_SSL_KEYSTORE_NAME, value);
+    value = (String)checkAttribute(JMX_MANAGER_SSL_KEYSTORE, value);
    this.getJmxSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_NAME, value);
    this.jmxManagerSSLKeyStore = value;
   }
   public void setJmxManagerSSLKeyStoreType( String value ) {
-    value =(String)checkAttribute(JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME, value);
+    value =(String)checkAttribute(JMX_MANAGER_SSL_KEYSTORE_TYPE, value);
     this.getJmxSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_TYPE_NAME, value);
     this.jmxManagerSSLKeyStoreType = value;
   }
   public void setJmxManagerSSLKeyStorePassword( String value ) {
-    value = (String)checkAttribute(JMX_MANAGER_SSL_KEYSTORE_PASSWORD_NAME, value);
+    value = (String)checkAttribute(JMX_MANAGER_SSL_KEYSTORE_PASSWORD, value);
     this.getJmxSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_PASSWORD_NAME, value);
     this.jmxManagerSSLKeyStorePassword = value;
   }
   public void setJmxManagerSSLTrustStore( String value ) {
-    value = (String)checkAttribute(JMX_MANAGER_SSL_TRUSTSTORE_NAME, value);
+    value = (String)checkAttribute(JMX_MANAGER_SSL_TRUSTSTORE, value);
     this.getJmxSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + TRUST_STORE_NAME, value);
     this.jmxManagerSSLTrustStore = value;
   }
   public void setJmxManagerSSLTrustStorePassword( String value ) {
-    value = (String)checkAttribute(JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD_NAME, value);
+    value = (String)checkAttribute(JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD, value);
     this.getJmxSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + TRUST_STORE_PASSWORD_NAME, value);
     this.jmxManagerSSLTrustStorePassword =value;
   }
@@ -2193,7 +2195,7 @@ public class DistributionConfigImpl
   }
   @Override
   public void setJmxManagerPort(int value) {
-    this.jmxManagerPort = (Integer)checkAttribute(JMX_MANAGER_PORT_NAME, value);
+    this.jmxManagerPort = (Integer)checkAttribute(JMX_MANAGER_PORT, value);
   }
   @Override
   public String getJmxManagerBindAddress() {
@@ -2204,7 +2206,7 @@ public class DistributionConfigImpl
     if (value == null) {
       value = "";
     }
-    this.jmxManagerBindAddress = (String)checkAttribute(JMX_MANAGER_BIND_ADDRESS_NAME, value);
+    this.jmxManagerBindAddress = (String)checkAttribute(JMX_MANAGER_BIND_ADDRESS, value);
   }
   @Override
   public String getJmxManagerHostnameForClients() {
@@ -2215,7 +2217,7 @@ public class DistributionConfigImpl
     if (value == null) {
       value = "";
     }
-    this.jmxManagerHostnameForClients = (String)checkAttribute(JMX_MANAGER_HOSTNAME_FOR_CLIENTS_NAME, value);
+    this.jmxManagerHostnameForClients = (String)checkAttribute(JMX_MANAGER_HOSTNAME_FOR_CLIENTS, value);
   }
   @Override
   public String getJmxManagerPasswordFile() {
@@ -2226,7 +2228,7 @@ public class DistributionConfigImpl
     if (value == null) {
       value = "";
     }
-    this.jmxManagerPasswordFile = (String)checkAttribute(JMX_MANAGER_PASSWORD_FILE_NAME, value);
+    this.jmxManagerPasswordFile = (String)checkAttribute(JMX_MANAGER_PASSWORD_FILE, value);
   }
   @Override
   public String getJmxManagerAccessFile() {
@@ -2237,7 +2239,7 @@ public class DistributionConfigImpl
     if (value == null) {
       value = "";
     }
-    this.jmxManagerAccessFile = (String)checkAttribute(JMX_MANAGER_ACCESS_FILE_NAME, value);
+    this.jmxManagerAccessFile = (String)checkAttribute(JMX_MANAGER_ACCESS_FILE, value);
   }
   
   @Override
@@ -2257,7 +2259,7 @@ public class DistributionConfigImpl
 
   @Override
   public void setJmxManagerUpdateRate(int value) {
-    this.jmxManagerUpdateRate = (Integer)checkAttribute(JMX_MANAGER_UPDATE_RATE_NAME, value);
+    this.jmxManagerUpdateRate = (Integer)checkAttribute(JMX_MANAGER_UPDATE_RATE, value);
   }
 
   @Override
@@ -3112,7 +3114,7 @@ public class DistributionConfigImpl
    * Set the host-port information of remote site locator 
    */
   public void setRemoteLocators(String value) {
-    this.remoteLocators = (String)checkAttribute(REMOTE_LOCATORS_NAME, value);
+    this.remoteLocators = (String)checkAttribute(REMOTE_LOCATORS, value);
   }
 
   /**
@@ -3133,7 +3135,7 @@ public class DistributionConfigImpl
 
   @Override
   public void setMemcachedPort(int value) {
-    this.memcachedPort = (Integer)checkAttribute(MEMCACHED_PORT_NAME, value);
+    this.memcachedPort = (Integer)checkAttribute(MEMCACHED_PORT, value);
   }
 
   @Override
@@ -3143,7 +3145,7 @@ public class DistributionConfigImpl
 
   @Override
   public void setMemcachedProtocol(String protocol) {
-    this.memcachedProtocol = (String)checkAttribute(MEMCACHED_PROTOCOL_NAME, protocol);
+    this.memcachedProtocol = (String)checkAttribute(MEMCACHED_PROTOCOL, protocol);
   }
   
   @Override
@@ -3153,7 +3155,7 @@ public class DistributionConfigImpl
   
   @Override
   public void setRedisPort(int value) {
-    this.redisPort = (Integer)checkAttribute(REDIS_PORT_NAME, value);
+    this.redisPort = (Integer)checkAttribute(REDIS_PORT, value);
   }
 
   @Override
@@ -3163,7 +3165,7 @@ public class DistributionConfigImpl
   
   @Override
   public void setRedisBindAddress(String bindAddress) {
-    this.redisBindAddress = (String)checkAttribute(REDIS_BIND_ADDRESS_NAME, bindAddress);
+    this.redisBindAddress = (String)checkAttribute(REDIS_BIND_ADDRESS, bindAddress);
   }
   
   @Override
@@ -3183,7 +3185,7 @@ public class DistributionConfigImpl
   
   @Override 
   public void setOffHeapMemorySize(String value) {
-    this.offHeapMemorySize = (String)checkAttribute(OFF_HEAP_MEMORY_SIZE_NAME, value);
+    this.offHeapMemorySize = (String)checkAttribute(OFF_HEAP_MEMORY_SIZE, value);
   }
 
   @Override
@@ -3193,7 +3195,7 @@ public class DistributionConfigImpl
 
   @Override
   public void setMemcachedBindAddress(String bindAddress) {
-    this.memcachedBindAddress = (String)checkAttribute(MEMCACHED_BIND_ADDRESS_NAME, bindAddress);
+    this.memcachedBindAddress = (String)checkAttribute(MEMCACHED_BIND_ADDRESS, bindAddress);
   }
 
   @Override
@@ -3242,7 +3244,7 @@ public class DistributionConfigImpl
 
   @Override
   public void setServerSSLEnabled(boolean value) {
-    this.serverSSLEnabled = (Boolean)checkAttribute(SERVER_SSL_ENABLED_NAME, value);
+    this.serverSSLEnabled = (Boolean)checkAttribute(SERVER_SSL_ENABLED, value);
     
   }
 
@@ -3253,7 +3255,7 @@ public class DistributionConfigImpl
 
   @Override
   public void setServerSSLRequireAuthentication(boolean value) {
-    this.serverSslRequireAuthentication = (Boolean)checkAttribute(SERVER_SSL_REQUIRE_AUTHENTICATION_NAME, value);
+    this.serverSslRequireAuthentication = (Boolean)checkAttribute(SERVER_SSL_REQUIRE_AUTHENTICATION, value);
   }
 
   @Override
@@ -3263,7 +3265,7 @@ public class DistributionConfigImpl
 
   @Override
   public void setServerSSLProtocols(String protocols) {
-    this.serverSslProtocols = (String)checkAttribute(SERVER_SSL_PROTOCOLS_NAME, protocols);
+    this.serverSslProtocols = (String)checkAttribute(SERVER_SSL_PROTOCOLS, protocols);
   }
 
   @Override
@@ -3273,31 +3275,31 @@ public class DistributionConfigImpl
 
   @Override
   public void setServerSSLCiphers(String ciphers) {
-    this.serverSslCiphers = (String)checkAttribute(SERVER_SSL_CIPHERS_NAME, ciphers);
+    this.serverSslCiphers = (String)checkAttribute(SERVER_SSL_CIPHERS, ciphers);
   }
 
   public void setServerSSLKeyStore( String value ) {
-    value = (String)checkAttribute(SERVER_SSL_KEYSTORE_NAME, value);
+    value = (String)checkAttribute(SERVER_SSL_KEYSTORE, value);
    this.getServerSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_NAME, value);
    this.serverSSLKeyStore = value;
   }
   public void setServerSSLKeyStoreType( String value ) {
-    value = (String)checkAttribute(SERVER_SSL_KEYSTORE_TYPE_NAME, value);
+    value = (String)checkAttribute(SERVER_SSL_KEYSTORE_TYPE, value);
     this.getServerSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_TYPE_NAME, value);
     this.serverSSLKeyStoreType = value;
   }
   public void setServerSSLKeyStorePassword( String value ) {
-    value = (String) checkAttribute(SERVER_SSL_KEYSTORE_PASSWORD_NAME,  value );
+    value = (String) checkAttribute(SERVER_SSL_KEYSTORE_PASSWORD,  value );
     this.getServerSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_PASSWORD_NAME, value);
     this.serverSSLKeyStorePassword = value;
   }
   public void setServerSSLTrustStore( String value ) {
-    value = (String)checkAttribute(SERVER_SSL_TRUSTSTORE_NAME, value);
+    value = (String)checkAttribute(SERVER_SSL_TRUSTSTORE, value);
     this.getServerSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + TRUST_STORE_NAME, value);
     this.serverSSLTrustStore = value;
   }
   public void setServerSSLTrustStorePassword( String value ) {
-    value = (String)checkAttribute(SERVER_SSL_TRUSTSTORE_PASSWORD_NAME, value);
+    value = (String)checkAttribute(SERVER_SSL_TRUSTSTORE_PASSWORD, value);
     this.getServerSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + TRUST_STORE_PASSWORD_NAME, value);
     this.serverSSLTrustStorePassword = value;
   }
@@ -3333,7 +3335,7 @@ public class DistributionConfigImpl
 
   @Override
   public void setGatewaySSLEnabled(boolean value) {
-    this.gatewaySSLEnabled = (Boolean)checkAttribute(SERVER_SSL_ENABLED_NAME, value);
+    this.gatewaySSLEnabled = (Boolean)checkAttribute(SERVER_SSL_ENABLED, value);
     
   }
 
@@ -3344,7 +3346,7 @@ public class DistributionConfigImpl
 
   @Override
   public void setGatewaySSLRequireAuthentication(boolean value) {
-    this.gatewaySslRequireAuthentication = (Boolean)checkAttribute(GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME, value);
+    this.gatewaySslRequireAuthentication = (Boolean)checkAttribute(GATEWAY_SSL_REQUIRE_AUTHENTICATION, value);
   }
 
   @Override
@@ -3354,7 +3356,7 @@ public class DistributionConfigImpl
 
   @Override
   public void setGatewaySSLProtocols(String protocols) {
-    this.gatewaySslProtocols = (String)checkAttribute(SERVER_SSL_PROTOCOLS_NAME, protocols);
+    this.gatewaySslProtocols = (String)checkAttribute(SERVER_SSL_PROTOCOLS, protocols);
   }
 
   @Override
@@ -3364,31 +3366,31 @@ public class DistributionConfigImpl
 
   @Override
   public void setGatewaySSLCiphers(String ciphers) {
-    this.gatewaySslCiphers = (String)checkAttribute(GATEWAY_SSL_CIPHERS_NAME, ciphers);
+    this.gatewaySslCiphers = (String)checkAttribute(GATEWAY_SSL_CIPHERS, ciphers);
   }
 
   public void setGatewaySSLKeyStore( String value ) {
-    checkAttribute(GATEWAY_SSL_KEYSTORE_NAME, value);
+    checkAttribute(GATEWAY_SSL_KEYSTORE, value);
    this.getGatewaySSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_NAME, value);
    this.gatewaySSLKeyStore = value;
   }
   public void setGatewaySSLKeyStoreType( String value ) {
-    checkAttribute(GATEWAY_SSL_KEYSTORE_TYPE_NAME, value);
+    checkAttribute(GATEWAY_SSL_KEYSTORE_TYPE, value);
     this.getGatewaySSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_TYPE_NAME, value);
     this.gatewaySSLKeyStoreType = value;
   }
   public void setGatewaySSLKeyStorePassword( String value ) {
-    checkAttribute(GATEWAY_SSL_KEYSTORE_PASSWORD_NAME, value);
+    checkAttribute(GATEWAY_SSL_KEYSTORE_PASSWORD, value);
     this.getGatewaySSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_PASSWORD_NAME, value);
     this.gatewaySSLKeyStorePassword = value;
   }
   public void setGatewaySSLTrustStore( String value ) {
-    checkAttribute(GATEWAY_SSL_TRUSTSTORE_NAME, value);
+    checkAttribute(GATEWAY_SSL_TRUSTSTORE, value);
     this.getGatewaySSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + TRUST_STORE_NAME, value);
     this.gatewaySSLTrustStore = value;
   }
   public void setGatewaySSLTrustStorePassword( String value ) {
-    checkAttribute(GATEWAY_SSL_TRUSTSTORE_PASSWORD_NAME, value);
+    checkAttribute(GATEWAY_SSL_TRUSTSTORE_PASSWORD, value);
     this.getGatewaySSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + TRUST_STORE_PASSWORD_NAME, value);
     this.gatewaySSLTrustStorePassword = value;
   }
@@ -3465,7 +3467,7 @@ public class DistributionConfigImpl
 
   @Override
   public void setHttpServiceSSLKeyStore(String httpServiceSSLKeyStore) {
-    checkAttribute(HTTP_SERVICE_SSL_KEYSTORE_NAME, httpServiceSSLKeyStore);
+    checkAttribute(HTTP_SERVICE_SSL_KEYSTORE, httpServiceSSLKeyStore);
     this.getHttpServiceSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_NAME, httpServiceSSLKeyStore);
     this.httpServiceSSLKeyStore = httpServiceSSLKeyStore;
   }
@@ -3477,7 +3479,7 @@ public class DistributionConfigImpl
 
   @Override
   public void setHttpServiceSSLKeyStoreType(String httpServiceSSLKeyStoreType) {
-    checkAttribute(HTTP_SERVICE_SSL_KEYSTORE_TYPE_NAME, httpServiceSSLKeyStoreType);
+    checkAttribute(HTTP_SERVICE_SSL_KEYSTORE_TYPE, httpServiceSSLKeyStoreType);
     this.getHttpServiceSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_TYPE_NAME, httpServiceSSLKeyStoreType);
     this.httpServiceSSLKeyStoreType = httpServiceSSLKeyStoreType;
   }
@@ -3489,7 +3491,7 @@ public class DistributionConfigImpl
 
   @Override
   public void setHttpServiceSSLKeyStorePassword(String httpServiceSSLKeyStorePassword) {
-    checkAttribute(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME, httpServiceSSLKeyStorePassword);
+    checkAttribute(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, httpServiceSSLKeyStorePassword);
     this.getHttpServiceSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_PASSWORD_NAME,
         httpServiceSSLKeyStorePassword);
     this.httpServiceSSLKeyStorePassword = httpServiceSSLKeyStorePassword;
@@ -3502,7 +3504,7 @@ public class DistributionConfigImpl
 
   @Override
   public void setHttpServiceSSLTrustStore(String httpServiceSSLTrustStore) {
-    checkAttribute(HTTP_SERVICE_SSL_TRUSTSTORE_NAME, httpServiceSSLTrustStore);
+    checkAttribute(HTTP_SERVICE_SSL_TRUSTSTORE, httpServiceSSLTrustStore);
     this.getHttpServiceSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + TRUST_STORE_NAME, httpServiceSSLTrustStore);
     this.httpServiceSSLTrustStore = httpServiceSSLTrustStore;
   }
@@ -3514,7 +3516,7 @@ public class DistributionConfigImpl
   
   @Override
   public void setHttpServiceSSLTrustStorePassword(String httpServiceSSLTrustStorePassword) {
-    checkAttribute(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME, httpServiceSSLTrustStorePassword);
+    checkAttribute(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD, httpServiceSSLTrustStorePassword);
     this.getHttpServiceSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + TRUST_STORE_PASSWORD_NAME,
         httpServiceSSLTrustStorePassword);
     this.httpServiceSSLTrustStorePassword = httpServiceSSLTrustStorePassword;
