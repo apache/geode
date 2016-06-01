@@ -36,6 +36,9 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
+import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.cache.execute.ResultCollector;
+import com.gemstone.gemfire.cache.lucene.internal.directory.DumpDirectoryFiles;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.extension.ExtensionPoint;
@@ -342,6 +345,24 @@ public class LuceneIndexForPartitionedRegionTest {
     spy.initialize();
 
     verify(spy).createFileRegion(eq(RegionShortcut.PARTITION_PERSISTENT), eq(index.createFileRegionName()), any());
+  }
+
+  @Test
+  public void dumpFilesShouldInvokeDumpFunction() {
+    boolean withPersistence = false;
+    String name = "indexName";
+    String regionPath = "regionName";
+    Cache cache = Fakes.cache();
+    initializeScenario(withPersistence, regionPath, cache);
+
+    DumpDirectoryFiles function = new DumpDirectoryFiles();
+    FunctionService.registerFunction(function);
+    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionPath);
+    ResultCollector collector = mock(ResultCollector.class);
+    when(region.executeFunction(eq(function), any(), any(), anyBoolean())).thenReturn(collector);
+    index.dumpFiles("directory");
+    verify(region).executeFunction(eq(function), any(), any(), anyBoolean());
   }
 
 }

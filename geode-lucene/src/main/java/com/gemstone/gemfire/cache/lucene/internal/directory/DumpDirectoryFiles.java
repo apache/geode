@@ -59,6 +59,7 @@ public class DumpDirectoryFiles implements Function, InternalEntity {
   private static final long serialVersionUID = 1L;
 
   private static final Logger logger = LogService.getLogger();
+  public static final String ID = DumpDirectoryFiles.class.getSimpleName();
 
   @Override
   public void execute(FunctionContext context) {
@@ -102,6 +103,10 @@ public class DumpDirectoryFiles implements Function, InternalEntity {
     catch (BucketNotFoundException e) {
       throw new FunctionException(e);
     }
+  }
+
+  @Override public String getId() {
+    return ID;
   }
 
   @Override

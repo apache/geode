@@ -22,18 +22,11 @@ import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneIntegrationTest;
-import com.gemstone.gemfire.cache.lucene.LuceneQuery;
+import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneIndex;
 import com.gemstone.gemfire.cache.lucene.test.TestObject;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.rules.DiskDirRule;
@@ -63,15 +56,11 @@ public class DumpDirectoryFilesIntegrationTest extends LuceneIntegrationTest {
     region.put(2 * 113, new TestObject("title 3", "hello world"));
     region.put(3 * 113, new TestObject("hello world", "hello world"));
 
-    LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    InternalLuceneIndex index = (InternalLuceneIndex) luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
     index.waitUntilFlushed(60000);
 
-    ResultCollector resultCollector= FunctionService
-      .onRegion(region)
-      .withArgs(new String[] {diskDirRule.get().getAbsolutePath(), INDEX_NAME})
-      .execute(new DumpDirectoryFiles().getId());
-    resultCollector.getResult();
+    index.dumpFiles(diskDirRule.get().getAbsolutePath());
 
     //Find the directory for the first bucket
     File bucket0 = diskDirRule.get().listFiles(file -> file.getName().endsWith("_0"))[0];

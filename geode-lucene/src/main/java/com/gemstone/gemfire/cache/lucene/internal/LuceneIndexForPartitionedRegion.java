@@ -29,6 +29,9 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
+import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.cache.execute.ResultCollector;
+import com.gemstone.gemfire.cache.lucene.internal.directory.DumpDirectoryFiles;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.ChunkKey;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.File;
 import com.gemstone.gemfire.cache.lucene.internal.filesystem.FileSystemStats;
@@ -49,7 +52,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   public void initialize() {
     if (!hasInitialized) {
       /* create index region */
-      PartitionedRegion dataRegion = (PartitionedRegion) cache.getRegion(regionPath);
+      PartitionedRegion dataRegion = getDataRegion();
       //assert dataRegion != null;
       RegionAttributes ra = dataRegion.getAttributes();
       DataPolicy dp = ra.getDataPolicy();
@@ -97,6 +100,10 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       addExtension(dataRegion);
       hasInitialized = true;
     }
+  }
+
+  private PartitionedRegion getDataRegion() {
+    return (PartitionedRegion) cache.getRegion(regionPath);
   }
 
   private AsyncEventQueueFactoryImpl createAEQFactory(final Region dataRegion) {
@@ -176,5 +183,12 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     // TODO Auto-generated method stub
     
   }
-  
+
+  @Override
+  public void dumpFiles(final String directory) {
+    ResultCollector results = FunctionService.onRegion(getDataRegion())
+      .withArgs(new String[] {directory, indexName})
+      .execute(DumpDirectoryFiles.ID);
+    results.getResult();
+  }
 }
