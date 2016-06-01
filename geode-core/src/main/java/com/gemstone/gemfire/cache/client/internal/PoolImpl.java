@@ -668,7 +668,7 @@ public class PoolImpl implements InternalPool {
     }
     if (!getLocators().equals(other.getLocators())) {
       throw new RuntimeException(
-          LocalizedStrings.PoolImpl_0_ARE_DIFFERENT.toLocalizedString(LOCATORS));
+          LocalizedStrings.PoolImpl_0_ARE_DIFFERENT.toLocalizedString("locators"));
     }
     if (!getServers().equals(other.getServers())) {
       throw new RuntimeException(

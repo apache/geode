@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
 import com.gemstone.gemfire.test.dunit.DistributedTestCase;
@@ -79,12 +78,13 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     return cache;
   }
 
-  private void createServer() throws IOException{
-    cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+  private int createServer() throws IOException{
     cacheServer = cache.addCacheServer();
-    cacheServer.setPort(cacheServerPort);
+    cacheServer.setPort(0);
     cacheServer.start();
     hostName = cacheServer.getHostnameForClients();
+    cacheServerPort = cacheServer.getPort();
+    return cacheServerPort;
   }
 
   public int getCacheServerPort(){
@@ -143,15 +143,10 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     String keyStorePath = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, keyStore);
     String trustStorePath = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, trustStore);
     //using new server-ssl-* properties
-    gemFireProps.put(SERVER_SSL_ENABLED,
-            String.valueOf(cacheServerSslenabled));
-    gemFireProps.put(SERVER_SSL_PROTOCOLS,
-            cacheServerSslprotocols);
-    gemFireProps.put(SERVER_SSL_CIPHERS,
-            cacheServerSslciphers);
-    gemFireProps.put(
-            SERVER_SSL_REQUIRE_AUTHENTICATION,
-            String.valueOf(cacheServerSslRequireAuth));
+    gemFireProps.put(SERVER_SSL_ENABLED, String.valueOf(cacheServerSslenabled));
+    gemFireProps.put(SERVER_SSL_PROTOCOLS, cacheServerSslprotocols);
+    gemFireProps.put(SERVER_SSL_CIPHERS, cacheServerSslciphers);
+    gemFireProps.put(SERVER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));
 
     gemFireProps.put(SERVER_SSL_KEYSTORE_TYPE, "jks");
     gemFireProps.put(SERVER_SSL_KEYSTORE, keyStorePath);
@@ -191,8 +186,8 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     instance.setUpServerVM(cacheServerSslenabled);
   }
 
-  public static void createServerTask() throws Exception {
-    instance.createServer();
+  public static int createServerTask() throws Exception {
+    return instance.createServer();
   }
 
   public static void setUpClientVMTask(String host, int port,
@@ -245,11 +240,9 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     boolean cacheClientSslRequireAuth = true;
 
     serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled));
-    serverVM.invoke(() -> createServerTask());
+    int port = serverVM.invoke(() -> createServerTask());
 
-    Object array[] = (Object[])serverVM.invoke(() -> getCacheServerEndPointTask());
-    String hostName = (String)array[0];
-    int port = (Integer) array[1];
+    String hostName = host.getHostName();
 
     clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled, cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
     clientVM.invoke(() -> doClientRegionTestTask());

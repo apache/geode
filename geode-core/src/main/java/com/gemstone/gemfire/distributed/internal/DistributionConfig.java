@@ -2457,8 +2457,8 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
   String KEY_STORE_TYPE_NAME = ".keyStoreType";
   String KEY_STORE_NAME = ".keyStore";
   String KEY_STORE_PASSWORD_NAME = ".keyStorePassword";
-  String TRUST_STORE_NAME = "trustStore";
-  String TRUST_STORE_PASSWORD_NAME = "trustStorePassword";
+  String TRUST_STORE_NAME = ".trustStore";
+  String TRUST_STORE_PASSWORD_NAME = ".trustStorePassword";
 
   /**
    * Suffix for ssl keystore and trust store properties for JMX

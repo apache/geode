@@ -17,9 +17,6 @@
 package com.gemstone.gemfire.distributed;
 
 
-/**
- * Created by ukohlmeyer on 26/05/2016.
- */
 public interface SystemConfigurationProperties {
   String ACK_SEVERE_ALERT_THRESHOLD = "ack-severe-alert-threshold";
   String ACK_WAIT_THRESHOLD = "ack-wait-threshold";
