@@ -179,7 +179,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   }
 
   private void verifyQuery(String query, String ... expectedKeys) throws ParseException {
-    final LuceneQuery<Object, Object> queryWithStandardAnalyzer = luceneService.createLuceneQueryFactory().create(
+    final LuceneQuery<String, Object> queryWithStandardAnalyzer = luceneService.createLuceneQueryFactory().create(
       INDEX_NAME, REGION_NAME, query);
 
     verifyQueryKeys(queryWithStandardAnalyzer, expectedKeys);
