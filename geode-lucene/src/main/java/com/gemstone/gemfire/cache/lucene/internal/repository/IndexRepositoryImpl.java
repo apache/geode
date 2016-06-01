@@ -135,6 +135,11 @@ public class IndexRepositoryImpl implements IndexRepository {
     return writer;
   }
 
+  @Override
+  public Region<?, ?> getRegion() {
+    return region;
+  }
+
   public LuceneSerializer getSerializer() {
     return serializer;
   }

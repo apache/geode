@@ -21,6 +21,9 @@ package com.gemstone.gemfire.cache.lucene.internal.repository;
 
 import java.io.IOException;
 
+import com.gemstone.gemfire.cache.Region;
+
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.Query;
 
 /**
@@ -64,11 +67,18 @@ public interface IndexRepository {
    * @throws IOException 
    */
   void commit() throws IOException;
-  
+
+  Region<?, ?> getRegion();
+
   /**
    * Check to see if this repository is closed due to
    * underlying resources being closed or destroyed
    * @return true if this repository is closed.
    */
   public boolean isClosed();
+
+  /**
+   * For debugging purposes, return the underlying IndexWriter
+   */
+  IndexWriter getWriter();
 }

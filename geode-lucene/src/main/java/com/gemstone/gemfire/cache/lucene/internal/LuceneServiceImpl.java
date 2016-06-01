@@ -33,6 +33,7 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
+import com.gemstone.gemfire.cache.lucene.internal.directory.DumpDirectoryFiles;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.EntryScore;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunctionContext;
@@ -80,6 +81,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     this.cache = gfc;
 
     FunctionService.registerFunction(new LuceneFunction());
+    FunctionService.registerFunction(new DumpDirectoryFiles());
     registerDataSerializables();
   }
   
