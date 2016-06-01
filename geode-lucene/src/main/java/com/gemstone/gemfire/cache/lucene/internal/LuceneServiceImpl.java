@@ -28,6 +28,8 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.EvictionAlgorithm;
+import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.execute.FunctionService;
@@ -181,6 +183,15 @@ public class LuceneServiceImpl implements InternalLuceneService {
     
     regionPath = dataregion.getFullPath();
     LuceneIndexImpl index = null;
+
+    //For now we cannot support eviction with local destroy.
+    //Eviction with overflow to disk still needs to be supported
+    EvictionAttributes evictionAttributes = dataregion.getAttributes().getEvictionAttributes();
+    EvictionAlgorithm evictionAlgorithm = evictionAttributes.getAlgorithm();
+    if (evictionAlgorithm != EvictionAlgorithm.NONE && evictionAttributes.getAction().isLocalDestroy()) {
+      throw new UnsupportedOperationException("Lucene indexes on regions with eviction and action local destroy are not supported");
+    }
+
     if (dataregion instanceof PartitionedRegion) {
       // partitioned region
       index = new LuceneIndexForPartitionedRegion(indexName, regionPath, cache);

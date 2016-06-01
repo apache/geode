@@ -33,11 +33,13 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.FixedPartitionAttributes;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
 import com.gemstone.gemfire.cache.lucene.test.TestObject;
@@ -109,18 +111,6 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
   }
 
   @Test
-  public void shouldNotUseEvictionForInternalRegionsWhenUserRegionHasEviction() {
-    createIndex("text");
-    cache.createRegionFactory(RegionShortcut.PARTITION)
-      .setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(1))
-      .create(REGION_NAME);
-
-    verifyInternalRegions(region -> {
-      assertEquals(true, region.getAttributes().getEvictionAttributes().getAction().isNone());
-    });
-  }
-
-  @Test
   public void shouldNotUseIdleTimeoutForInternalRegionsWhenUserRegionHasIdleTimeout() {
     createIndex("text");
     cache.createRegionFactory(RegionShortcut.PARTITION)
@@ -174,6 +164,16 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
     expectedException.expectMessage("Lucene indexes on replicated regions are not supported");
     createIndex("field1", "field2", "field3");
     this.cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+  }
+
+  @Test
+  public void cannotCreateLuceneIndexForRegionWithEviction() throws IOException, ParseException {
+    expectedException.expect(UnsupportedOperationException.class);
+    expectedException.expectMessage("Lucene indexes on regions with eviction and action local destroy are not supported");
+    createIndex("field1", "field2", "field3");
+    RegionFactory regionFactory = this.cache.createRegionFactory(RegionShortcut.PARTITION);
+    regionFactory.setEvictionAttributes(EvictionAttributes.createLIFOEntryAttributes(100, EvictionAction.LOCAL_DESTROY));
+    regionFactory.create(REGION_NAME);
   }
 
   private void verifyInternalRegions(Consumer<LocalRegion> verify) {
