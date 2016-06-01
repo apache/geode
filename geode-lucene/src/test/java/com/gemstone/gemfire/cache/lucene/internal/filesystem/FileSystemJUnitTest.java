@@ -490,7 +490,9 @@ public class FileSystemJUnitTest {
 
     java.io.File parentDir = dirRule.get();
     system.export(dirRule.get());
-    assertArrayEquals(new String[] {"testFile1", "testFile2"}, parentDir.list());
+    String[] foundFiles = parentDir.list();
+    Arrays.sort(foundFiles);
+    assertArrayEquals(new String[] {"testFile1", "testFile2"}, foundFiles);
 
     assertExportedFileContents(file1Data, new java.io.File(parentDir, "testFile1"));
     assertExportedFileContents(file2Data, new java.io.File(parentDir, "testFile2"));
