@@ -75,7 +75,7 @@ public class HelpUtils {
   public static Help getHelp(CommandTarget commandTarget) {
     List<Block> blocks = new ArrayList<Block>();
     // First we will have the block for NAME of the command
-    blocks.add(block(NAME, row(commandTarget.getCommandName())));
+    blocks.add(block(NAME_NAME, row(commandTarget.getCommandName())));
     // Now add synonyms if any
     if (commandTarget.getSynonyms() != null) {
       blocks.add(block(SYNONYMS_NAME, row(commandTarget.getSynonyms())));
@@ -187,7 +187,7 @@ public class HelpUtils {
   public static NewHelp getNewHelp(CommandTarget commandTarget, boolean withinShell) {
     DataNode root = new DataNode(null, new ArrayList<DataNode>());
     // First we will have the block for NAME of the command
-    DataNode name = new DataNode(NAME, new ArrayList<DataNode>());
+    DataNode name = new DataNode(NAME_NAME, new ArrayList<DataNode>());
     name.addChild(new DataNode(commandTarget.getCommandName(), null));
     root.addChild(name);
     if (withinShell) {// include availabilty info
