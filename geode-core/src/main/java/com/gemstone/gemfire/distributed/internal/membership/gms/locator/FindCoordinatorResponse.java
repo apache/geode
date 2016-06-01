@@ -19,6 +19,7 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.locator;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,12 +43,14 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
   private boolean networkPartitionDetectionEnabled;
   private boolean usePreferredCoordinators;
   private boolean isShortForm;
-  
+  private byte[] coordinatorPublicKey;  
+
+  private int requestId;
   
   public FindCoordinatorResponse(InternalDistributedMember coordinator,
       InternalDistributedMember senderId,
       boolean fromView, NetView view, HashSet<InternalDistributedMember> registrants,
-      boolean networkPartitionDectionEnabled, boolean usePreferredCoordinators) {
+      boolean networkPartitionDectionEnabled, boolean usePreferredCoordinators, byte[] pk) {
     this.coordinator = coordinator;
     this.senderId = senderId;
     this.fromView = fromView;
@@ -56,19 +59,30 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
     this.networkPartitionDetectionEnabled = networkPartitionDectionEnabled;
     this.usePreferredCoordinators = usePreferredCoordinators;
     this.isShortForm = false;
+    this.coordinatorPublicKey = pk;
   }
   
   public FindCoordinatorResponse(InternalDistributedMember coordinator,
-      InternalDistributedMember senderId) {
+      InternalDistributedMember senderId, byte[] pk, int requestId) {
     this.coordinator = coordinator;
     this.senderId = senderId;
     this.isShortForm = true;
+    this.coordinatorPublicKey = pk;
+    this.requestId = requestId;
   }
   
   public FindCoordinatorResponse() {
     // no-arg constructor for serialization
   }
 
+  public byte[] getCoordinatorPublicKey() {
+    return coordinatorPublicKey;
+  }
+  
+  public int getRequestId() {
+    return requestId;
+  }
+  
   public boolean isNetworkPartitionDetectionEnabled() {
     return networkPartitionDetectionEnabled;
   }
@@ -131,6 +145,7 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(coordinator, out);
     DataSerializer.writeObject(senderId, out);
+    InternalDataSerializer.writeByteArray(coordinatorPublicKey, out);
     out.writeBoolean(isShortForm);
     out.writeBoolean(fromView);
     out.writeBoolean(networkPartitionDetectionEnabled);
@@ -143,7 +158,8 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     coordinator = DataSerializer.readObject(in);
     senderId = DataSerializer.readObject(in);
-    isShortForm = in.readBoolean();
+    coordinatorPublicKey = InternalDataSerializer.readByteArray(in);
+    isShortForm = in.readBoolean();    
     if (!isShortForm) {
       fromView = in.readBoolean();
       networkPartitionDetectionEnabled = in.readBoolean();
@@ -158,4 +174,50 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
     throw new IllegalStateException("this message should not be executed");
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    FindCoordinatorResponse other = (FindCoordinatorResponse) obj;
+    if (coordinator == null) {
+      if (other.coordinator != null)
+        return false;
+    } else if (!coordinator.equals(other.coordinator))
+      return false;
+    if (!Arrays.equals(coordinatorPublicKey, other.coordinatorPublicKey))
+      return false;
+    if (fromView != other.fromView)
+      return false;
+    if (isShortForm != other.isShortForm)
+      return false;
+    if (networkPartitionDetectionEnabled != other.networkPartitionDetectionEnabled)
+      return false;
+    if (registrants == null) {
+      if (other.registrants != null)
+        return false;
+    } else if (!registrants.equals(other.registrants))
+      return false;
+    //as we are not sending requestId as part of FinDCoordinator resposne
+    /*if (requestId != other.requestId)
+      return false;*/
+    if (senderId == null) {
+      if (other.senderId != null)
+        return false;
+    } else if (!senderId.equals(other.senderId))
+      return false;
+    if (usePreferredCoordinators != other.usePreferredCoordinators)
+      return false;
+    if (view == null) {
+      if (other.view != null)
+        return false;
+    } else if (!view.equals(other.view))
+      return false;
+    return true;
+  }
+
+  
 }

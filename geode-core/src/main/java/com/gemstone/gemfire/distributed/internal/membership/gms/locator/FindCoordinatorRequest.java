@@ -27,6 +27,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.HighPriorityDistributionMessage;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
 
 public class FindCoordinatorRequest extends HighPriorityDistributionMessage
@@ -35,15 +36,20 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
   private InternalDistributedMember memberID;
   private Collection<InternalDistributedMember> rejectedCoordinators;
   private int lastViewId;
-  
+  private byte[] myPublicKey;
+  private int requestId;   
+
   public FindCoordinatorRequest(InternalDistributedMember myId) {
     this.memberID = myId;
   }
   
-  public FindCoordinatorRequest(InternalDistributedMember myId, Collection<InternalDistributedMember> rejectedCoordinators, int lastViewId) {
+  public FindCoordinatorRequest(InternalDistributedMember myId, Collection<InternalDistributedMember> rejectedCoordinators, 
+      int lastViewId, byte[] pk, int requestId) {
     this.memberID = myId;
     this.rejectedCoordinators = rejectedCoordinators;
     this.lastViewId = lastViewId;
+    this.myPublicKey = pk;
+    this.requestId = requestId;
   }
   
   public FindCoordinatorRequest() {
@@ -54,6 +60,10 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     return memberID;
   }
   
+  public byte[] getMyPublicKey() {
+    return myPublicKey;
+  }
+
   public Collection<InternalDistributedMember> getRejectedCoordinators() {
     return rejectedCoordinators;
   }
@@ -81,6 +91,10 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
   public int getDSFID() {
     return FIND_COORDINATOR_REQ;
   }
+  
+  public int getRequestId() {
+    return requestId;
+  }
 
   @Override
   public void toData(DataOutput out) throws IOException {
@@ -94,6 +108,8 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
       out.writeInt(0);
     }
     out.writeInt(lastViewId);
+    out.writeInt(requestId);
+    InternalDataSerializer.writeByteArray(this.myPublicKey, out);
   }
 
   @Override
@@ -105,6 +121,8 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
       this.rejectedCoordinators.add((InternalDistributedMember)DataSerializer.readObject(in));
     }
     this.lastViewId = in.readInt();
+    this.requestId = in.readInt();
+    this.myPublicKey = InternalDataSerializer.readByteArray(in);
   }
 
   @Override

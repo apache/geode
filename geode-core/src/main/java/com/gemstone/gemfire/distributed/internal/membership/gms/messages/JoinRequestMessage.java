@@ -30,25 +30,25 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   private InternalDistributedMember memberID;
   private Object credentials;
   private int failureDetectionPort = -1;
-  private Object publicKey;
-  
+  private int requestId;
+    
   public JoinRequestMessage(InternalDistributedMember coord,
-                            InternalDistributedMember id, Object credentials, int fdPort) {
+                            InternalDistributedMember id, Object credentials, int fdPort, int requestId) {
     super();
     setRecipient(coord);
     this.memberID = id;
     this.credentials = credentials;
-    this.publicKey = null;
     this.failureDetectionPort = fdPort;
+    this.requestId = requestId;
   }
   public JoinRequestMessage() {
     // no-arg constructor for serialization
   }
 
-  public void setPublicKey(Object key) {
-    this.publicKey = key;
+  public int getRequestId() {
+    return requestId;
   }
-
+  
   @Override
   public int getDSFID() {
     return JOIN_REQUEST;
@@ -67,10 +67,6 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
     return credentials;
   }
 
-  public Object getPublicKey() {
-    return publicKey;
-  }
-  
   @Override
   public String toString() {
     return getShortClassName() + "(" + memberID + (credentials==null? ")" : "; with credentials)") + " failureDetectionPort:" + failureDetectionPort;
@@ -85,24 +81,49 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(memberID, out);
     DataSerializer.writeObject(credentials, out);
-    DataSerializer.writeObject(publicKey, out);
     DataSerializer.writePrimitiveInt(failureDetectionPort, out);
     // preserve the multicast setting so the receiver can tell
     // if this is a mcast join request
     out.writeBoolean(getMulticast());
+    out.writeInt(requestId);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     memberID = DataSerializer.readObject(in);
     credentials = DataSerializer.readObject(in);
-    publicKey = DataSerializer.readObject(in);
     failureDetectionPort = DataSerializer.readPrimitiveInt(in);
     setMulticast(in.readBoolean());
+    requestId = in.readInt();
   }
 
   public int getFailureDetectionPort() {
     return failureDetectionPort;
   }
-
+  
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    JoinRequestMessage other = (JoinRequestMessage) obj;
+    if (credentials == null) {
+      if (other.credentials != null)
+        return false;
+    } else if (!credentials.equals(other.credentials))
+      return false;
+    if (failureDetectionPort != other.failureDetectionPort)
+      return false;
+    if (memberID == null) {
+      if (other.memberID != null)
+        return false;
+    } else if (!memberID.equals(other.memberID))
+      return false;
+    if (requestId != other.requestId)
+      return false;
+    return true;
+  }  
 }

@@ -176,7 +176,7 @@ public class GMSJoinLeaveJUnitTest {
     
     // simulate a response being received
     InternalDistributedMember sender = mockMembers[2];
-    FindCoordinatorResponse resp = new FindCoordinatorResponse(coordinator, sender);
+    FindCoordinatorResponse resp = new FindCoordinatorResponse(coordinator, sender, null, 0);
     gmsJoinLeave.processMessage(resp);
     // tell GMSJoinLeave that a unit test is running so it won't clear the
     // responses collection
@@ -193,7 +193,7 @@ public class GMSJoinLeaveJUnitTest {
   public void testProcessJoinMessageRejectOldMemberVersion() throws IOException {
     initMocks();
  
-    gmsJoinLeave.processMessage(new JoinRequestMessage(mockOldMember, mockOldMember, null, -1));
+    gmsJoinLeave.processMessage(new JoinRequestMessage(mockOldMember, mockOldMember, null, -1, 0));
     assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
     verify(messenger).send(any(JoinResponseMessage.class));
   }
@@ -216,7 +216,7 @@ public class GMSJoinLeaveJUnitTest {
     when(authenticator.authenticate(mockMembers[0], credentials)).thenThrow(new AuthenticationFailedException("we want to fail auth here"));
     when(services.getMessenger()).thenReturn(messenger);
          
-    gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], credentials, -1));
+    gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], credentials, -1, 0));
     assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
     verify(messenger).send(any(JoinResponseMessage.class));
   }
@@ -228,7 +228,7 @@ public class GMSJoinLeaveJUnitTest {
     when(authenticator.authenticate(mockMembers[0], null)).thenThrow(new AuthenticationFailedException("we want to fail auth here"));
     when(services.getMessenger()).thenReturn(messenger);
       
-    gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], null, -1));
+    gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], null, -1, 0));
     assertTrue("JoinRequest should not have been added to view request", gmsJoinLeave.getViewRequests().size() == 0);
     verify(messenger).send(any(JoinResponseMessage.class));
   }
@@ -243,9 +243,22 @@ public class GMSJoinLeaveJUnitTest {
       
     JoinResponseMessage[] joinResponse = gmsJoinLeave.getJoinResponseMessage();
     
-    JoinResponseMessage jrm = new JoinResponseMessage();
+    JoinResponseMessage jrm = new JoinResponseMessage(mockMembers[0], new byte[9], 233);
     gmsJoinLeave.processMessage(jrm);
+    //this should NOT logs, this is just to inform member succesful joining
+    Assert.assertEquals(null, joinResponse[0]);
+    
+    jrm = new JoinResponseMessage("rejected...", 0);
+    gmsJoinLeave.processMessage(jrm);
+    //this should log..
     Assert.assertEquals(jrm, joinResponse[0]);
+    
+    gmsJoinLeave.setJoinResponseMessage(null);
+    
+    jrm = new JoinResponseMessage(mockMembers[0], new NetView(), 0);
+    gmsJoinLeave.processMessage(jrm);
+    //this should log..
+    Assert.assertEquals(jrm, joinResponse[0]);       
   }
   
   /**
@@ -461,10 +474,10 @@ public class GMSJoinLeaveJUnitTest {
     prepareAndInstallView(gmsJoinLeaveMemberId, createMemberList(gmsJoinLeaveMemberId,mockMembers[0]));
     gmsJoinLeave.getView().add(mockMembers[1]);
     GMSJoinLeaveTestHelper.becomeCoordinatorForTest(gmsJoinLeave);
-    JoinRequestMessage msg = new JoinRequestMessage(gmsJoinLeaveMemberId, mockMembers[2], null, -1);
+    JoinRequestMessage msg = new JoinRequestMessage(gmsJoinLeaveMemberId, mockMembers[2], null, -1, 0);
     msg.setSender(mockMembers[2]);
     gmsJoinLeave.processMessage(msg);
-    msg = new JoinRequestMessage(gmsJoinLeaveMemberId, mockMembers[2], null, -1);
+    msg = new JoinRequestMessage(gmsJoinLeaveMemberId, mockMembers[2], null, -1, 0);
     msg.setSender(mockMembers[2]);
     gmsJoinLeave.processMessage(msg);
     
@@ -856,7 +869,7 @@ public class GMSJoinLeaveJUnitTest {
     initMocks(false);
     System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
     gmsJoinLeave.join();
-    gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], credentials, -1));
+    gmsJoinLeave.processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], credentials, -1, 0));
     int viewRequests = gmsJoinLeave.getViewRequests().size();
     
     assertTrue( "There should be 1 viewRequest but found " + viewRequests, viewRequests == 1);
@@ -1056,13 +1069,13 @@ public class GMSJoinLeaveJUnitTest {
       initMocks(false);
       HashSet<InternalDistributedMember> registrants = new HashSet<>();
       registrants.add(mockMembers[0]);
-      FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0], false, null, registrants, false, true);
+      FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0], false, null, registrants, false, true, null);
       NetView view = createView();
-      JoinResponseMessage jrm = new JoinResponseMessage(mockMembers[0], view);
+      JoinResponseMessage jrm = new JoinResponseMessage(mockMembers[0], view, 0);
       
       TcpClientWrapper tcpClientWrapper = mock(TcpClientWrapper.class);
       gmsJoinLeave.setTcpClientWrapper(tcpClientWrapper);
-      FindCoordinatorRequest fcreq = new FindCoordinatorRequest(gmsJoinLeaveMemberId, new HashSet<>(), -1);
+      FindCoordinatorRequest fcreq = new FindCoordinatorRequest(gmsJoinLeaveMemberId, new HashSet<>(), -1, null, 0);
       int connectTimeout = (int)services.getConfig().getMemberTimeout() * 2;
       when(tcpClientWrapper.sendCoordinatorFindRequest(new InetSocketAddress("localhost", 12345), fcreq, connectTimeout)).thenReturn(fcr);
       callAsnyc(()->{gmsJoinLeave.installView(view);});
@@ -1083,14 +1096,14 @@ public class GMSJoinLeaveJUnitTest {
       initMocks(false);
       HashSet<InternalDistributedMember> registrants = new HashSet<>();
       registrants.add(mockMembers[0]);
-      FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0], false, null, registrants, false, true);
+      FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0], false, null, registrants, false, true, null);
       NetView view = createView();
-      JoinResponseMessage jrm = new JoinResponseMessage(mockMembers[0], view);
+      JoinResponseMessage jrm = new JoinResponseMessage(mockMembers[0], view, 0);
       gmsJoinLeave.setJoinResponseMessage(jrm);
       
       TcpClientWrapper tcpClientWrapper = mock(TcpClientWrapper.class);
       gmsJoinLeave.setTcpClientWrapper(tcpClientWrapper);
-      FindCoordinatorRequest fcreq = new FindCoordinatorRequest(gmsJoinLeaveMemberId, new HashSet<>(), -1);
+      FindCoordinatorRequest fcreq = new FindCoordinatorRequest(gmsJoinLeaveMemberId, new HashSet<>(), -1, null, 0);
       int connectTimeout = (int)services.getConfig().getMemberTimeout() * 2;
       //passing wrong port here, so ot will fail
       when(tcpClientWrapper.sendCoordinatorFindRequest(new InetSocketAddress("localhost", 12346), fcreq, connectTimeout)).thenReturn(fcr);
@@ -1208,7 +1221,7 @@ public class GMSJoinLeaveJUnitTest {
   }
   
   private void processJoinMessage(InternalDistributedMember coordinator, InternalDistributedMember newMember, int port) {
-    JoinRequestMessage reqMsg = new JoinRequestMessage(coordinator, newMember, null, port);
+    JoinRequestMessage reqMsg = new JoinRequestMessage(coordinator, newMember, null, port, 0);
     gmsJoinLeave.processMessage(reqMsg);
   }
   

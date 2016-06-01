@@ -2644,6 +2644,24 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     }
   }
   
+  public static final int readDSFIDHeader(final DataInput in)
+      throws IOException, ClassNotFoundException
+    {
+      checkIn(in);
+      byte header = in.readByte();
+      if (header == DS_FIXED_ID_BYTE) {
+        return in.readByte();
+      } else if (header == DS_FIXED_ID_SHORT) {
+        return in.readShort();
+      } else if (header == DS_NO_FIXED_ID) {
+        return Integer.MAX_VALUE;//is that correct??
+      } else if (header == DS_FIXED_ID_INT) {
+        return in.readInt();
+      } else {
+        throw new IllegalStateException("unexpected byte: " + header + " while reading dsfid");
+      }
+    }
+  
   /**
    * Reads an instance of <code>String</code> from a
    * <code>DataInput</code> given the header byte already being read.

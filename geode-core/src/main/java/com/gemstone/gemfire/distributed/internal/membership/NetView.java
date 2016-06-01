@@ -579,7 +579,7 @@ public class NetView implements DataSerializableFixedID {
     InternalDataSerializer.writeSet(crashedMembers, out);
     DataSerializer.writeIntArray(failureDetectionPorts, out);
     // TODO expensive serialization
-    DataSerializer.writeObject(publicKeys, out);
+    DataSerializer.writeHashMap(publicKeys, out);
   }
 
   @Override
@@ -592,7 +592,7 @@ public class NetView implements DataSerializableFixedID {
     shutdownMembers = InternalDataSerializer.readHashSet(in);
     crashedMembers = InternalDataSerializer.readHashSet(in);
     failureDetectionPorts = DataSerializer.readIntArray(in);
-    publicKeys = DataSerializer.readObject(in);
+    publicKeys = DataSerializer.readHashMap(in);
   }
 
   /** this will deserialize as an ArrayList */

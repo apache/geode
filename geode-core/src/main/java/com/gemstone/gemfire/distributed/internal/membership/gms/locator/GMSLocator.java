@@ -167,7 +167,7 @@ public class GMSLocator implements Locator, NetLocator {
       }
     } else if (request instanceof FindCoordinatorRequest) {
       FindCoordinatorRequest findRequest = (FindCoordinatorRequest)request;
-      
+      services.getMessenger().setPublicKey(findRequest.getMyPublicKey(), findRequest.getMemberID());
       if (findRequest.getMemberID() != null) {
         InternalDistributedMember coord = null;
 
@@ -227,9 +227,17 @@ public class GMSLocator implements Locator, NetLocator {
         }
         
         synchronized(registrants) {
+          byte[] coordPk = null; 
+          if(view != null) {
+            coordPk = (byte[])view.getPublicKey(coord);            
+          }
+          if (coordPk == null) {
+            coordPk = services.getMessenger().getPublickey(coord);
+          }
           response = new FindCoordinatorResponse(coord, localAddress,
-              fromView, view, new HashSet<>(registrants),
-              this.networkPartitionDetectionEnabled, this.usePreferredCoordinators);
+              fromView, view, new HashSet<InternalDistributedMember>(registrants),
+              this.networkPartitionDetectionEnabled, this.usePreferredCoordinators, 
+              coordPk);
         }
       }
     }

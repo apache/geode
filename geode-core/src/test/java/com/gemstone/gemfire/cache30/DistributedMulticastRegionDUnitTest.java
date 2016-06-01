@@ -33,6 +33,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
@@ -253,6 +254,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     p.put(MCAST_TTL, mcastttl);
     p.put(LOCATORS, "localhost[" + locatorPort + "]");
     p.put(LOG_LEVEL, "info");
+    p.put(DistributionConfig.SECURITY_CLIENT_DHALGO_NAME, "AES:128");
     return p;
   } 
   
@@ -272,30 +274,30 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
   }
   
   private int startLocator() {
-    final int [] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    final int locatorPort = ports[0];
-
-    VM locator1Vm = Host.getHost(0).getVM(locatorVM);
-      locator1Vm.invoke(new SerializableCallable() {
-        @Override
-        public Object call() {
-          final File locatorLogFile = new File(getTestMethodName() + "-locator-" + locatorPort + ".log");
-          final Properties locatorProps = new Properties();
-          locatorProps.setProperty(NAME, "LocatorWithMcast");
-          locatorProps.setProperty(MCAST_PORT, mcastport);
-          locatorProps.setProperty(MCAST_TTL, mcastttl);
-          locatorProps.setProperty(LOG_LEVEL, "info");
-          //locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
-          try {
-            final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, null, null,
-                locatorProps);
-            System.out.println("test Locator started " + locatorPort);
-             } catch (IOException ioex) {
-            fail("Unable to create a locator with a shared configuration");
-          }
-
-          return null;
+  final int [] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+  final int locatorPort = ports[0];
+  
+  VM locator1Vm = Host.getHost(0).getVM(locatorVM);;
+    locator1Vm.invoke(new SerializableCallable() {
+      @Override
+      public Object call() {
+        final File locatorLogFile = new File(getTestMethodName() + "-locator-" + locatorPort + ".log");
+        final Properties locatorProps = new Properties();
+        locatorProps.setProperty(DistributionConfig.NAME_NAME, "LocatorWithMcast");
+        locatorProps.setProperty(DistributionConfig.MCAST_PORT_NAME, mcastport);
+        locatorProps.setProperty(DistributionConfig.MCAST_TTL_NAME, mcastttl);
+        locatorProps.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
+        locatorProps.setProperty(DistributionConfig.SECURITY_CLIENT_DHALGO_NAME, "AES:128");
+        //locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+        try {
+          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, null, null,
+              locatorProps);
+          System.out.println("test Locator started " + locatorPort);
+           } catch (IOException ioex) {
+          fail("Unable to create a locator with a shared configuration");
         }
+        return null;
+      }
     });
     return locatorPort;
   }

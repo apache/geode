@@ -86,4 +86,16 @@ public interface Messenger extends Service {
    * @param state the state of that member's outgoing messaging to this member
    */
   void waitForMessageState(InternalDistributedMember member, Map state) throws InterruptedException;
+  
+  byte[] getPublickey(InternalDistributedMember mbr);
+  
+  void setPublicKey(byte[] publickey, InternalDistributedMember mbr);
+  
+  void setClusterSecretKey(byte[] clusterSecretKey);
+  
+  byte[] getClusterSecretKey();
+  
+  int getRequestId();
+  
+  void initClusterKey();
 }
