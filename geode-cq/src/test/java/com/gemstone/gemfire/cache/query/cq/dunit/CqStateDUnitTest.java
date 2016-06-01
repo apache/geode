@@ -19,7 +19,6 @@ package com.gemstone.gemfire.cache.query.cq.dunit;
 import com.gemstone.gemfire.cache.query.CqQuery;
 import com.gemstone.gemfire.cache.query.dunit.CloseCacheAuthorization;
 import com.gemstone.gemfire.cache.query.dunit.HelperTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.security.templates.DummyAuthenticator;
 import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
@@ -27,7 +26,7 @@ import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class CqStateDUnitTest extends HelperTestCase {
 

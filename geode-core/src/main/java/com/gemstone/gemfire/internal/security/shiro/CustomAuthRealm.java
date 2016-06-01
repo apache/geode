@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static com.gemstone.gemfire.management.internal.security.ResourceConstants.ACCESS_DENIED_MESSAGE;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class CustomAuthRealm extends AuthorizingRealm{
   public static final String REALM_NAME = "CUSTOMAUTHREALM";

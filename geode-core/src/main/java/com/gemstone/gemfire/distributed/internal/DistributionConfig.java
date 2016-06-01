@@ -18,7 +18,7 @@
 package com.gemstone.gemfire.distributed.internal;
 
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
+import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
 import com.gemstone.gemfire.internal.Config;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
@@ -48,7 +48,7 @@ import java.util.*;
  *
  * @since GemFire 2.1
  */
-public interface DistributionConfig extends Config, LogConfig, SystemConfigurationProperties {
+public interface DistributionConfig extends Config, LogConfig, DistributedSystemConfigProperties {
 
   ////////////////////  Instance Methods  ////////////////////
 
@@ -107,7 +107,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
   void setMcastPort(int value);
 
   /**
-   * The default value of the "mcastPort" property
+   * The default value of the "mcast-port" property
    */
   int DEFAULT_MCAST_PORT = 0;
 
@@ -124,7 +124,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
   int MAX_MCAST_PORT = 65535;
 
   /**
-   * The name of the "mcastPort" property
+   * The name of the "mcast-port" property
    */
   @ConfigAttribute(type = Integer.class, min = MIN_MCAST_PORT, max = MAX_MCAST_PORT)
   String MCAST_PORT_NAME = MCAST_PORT;
@@ -389,7 +389,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * The name of the "deploy-working-dir" property.
    */
   @ConfigAttribute(type = File.class)
-  String DEPLOY_WORKING_DIR_NAME = SystemConfigurationProperties.DEPLOY_WORKING_DIR;
+  String DEPLOY_WORKING_DIR_NAME = DEPLOY_WORKING_DIR;
 
   /**
    * Default will be the current working directory as determined by
@@ -419,7 +419,7 @@ public interface DistributionConfig extends Config, LogConfig, SystemConfigurati
    * The name of the "user-command-packages" property.
    */
   @ConfigAttribute(type = String.class)
-  String USER_COMMAND_PACKAGES_NAME = SystemConfigurationProperties.USER_COMMAND_PACKAGES;
+  String USER_COMMAND_PACKAGES_NAME = USER_COMMAND_PACKAGES;
 
   /**
    * The default value of the "user-command-packages" property

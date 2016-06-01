@@ -24,7 +24,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 
 import java.util.Set;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * This is a member representing site 1 who wants to send data to site 2

@@ -26,7 +26,6 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
@@ -38,7 +37,7 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class WANLocatorServerDUnitTest extends WANTestBase {
 

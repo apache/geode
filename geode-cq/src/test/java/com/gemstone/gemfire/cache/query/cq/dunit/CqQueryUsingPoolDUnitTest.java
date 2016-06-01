@@ -40,8 +40,8 @@ import com.gemstone.gemfire.test.dunit.*;
 import java.io.IOException;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 
 /**
  * This class tests the ContiunousQuery mechanism in GemFire.

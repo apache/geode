@@ -29,7 +29,7 @@ import java.security.Principal;
 import java.util.Properties;
 import java.util.Random;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class LdapUserCredentialGenerator extends CredentialGenerator {
 

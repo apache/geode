@@ -31,7 +31,7 @@ import com.gemstone.gemfire.modules.util.RegionConfiguration;
 
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
 
 public class ClientServerRegionFactoryDelegate extends RegionFactoryDelegate {
 

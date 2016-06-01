@@ -38,7 +38,7 @@ import util.TestException;
 import java.io.File;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * This DUnit contains various tests to ensure new implementation of ha region

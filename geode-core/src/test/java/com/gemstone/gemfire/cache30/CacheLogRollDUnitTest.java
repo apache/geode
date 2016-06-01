@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
@@ -27,7 +26,7 @@ import java.io.*;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Test to make sure cache close is working.

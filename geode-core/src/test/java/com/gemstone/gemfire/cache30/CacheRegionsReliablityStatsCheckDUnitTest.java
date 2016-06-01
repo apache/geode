@@ -26,7 +26,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class CacheRegionsReliablityStatsCheckDUnitTest extends CacheTestCase {
   public CacheRegionsReliablityStatsCheckDUnitTest(String name) {

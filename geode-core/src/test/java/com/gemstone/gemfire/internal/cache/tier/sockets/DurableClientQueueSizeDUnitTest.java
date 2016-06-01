@@ -32,7 +32,7 @@ import com.gemstone.gemfire.test.dunit.*;
 import java.util.Iterator;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  *

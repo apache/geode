@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 //import com.gemstone.gemfire.internal.cache.locks.TXLockId;
 

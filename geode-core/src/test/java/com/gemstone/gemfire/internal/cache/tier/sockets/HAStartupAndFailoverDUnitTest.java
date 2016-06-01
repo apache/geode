@@ -37,8 +37,8 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 
 /**
  * Test to verify Startup. and failover during startup.

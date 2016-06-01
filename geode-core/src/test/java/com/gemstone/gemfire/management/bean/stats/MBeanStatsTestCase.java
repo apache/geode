@@ -16,11 +16,10 @@
  */
 package com.gemstone.gemfire.management.bean.stats;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.NanoTimer;
 import org.junit.After;
@@ -28,7 +27,7 @@ import org.junit.Before;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 import static org.junit.Assert.assertNotNull;
 
 /**

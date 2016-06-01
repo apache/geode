@@ -19,8 +19,6 @@ package com.gemstone.gemfire.management.internal.cli.commands;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.management.cli.Result;
@@ -41,7 +39,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 import static com.gemstone.gemfire.test.dunit.NetworkUtils.getServerHostName;

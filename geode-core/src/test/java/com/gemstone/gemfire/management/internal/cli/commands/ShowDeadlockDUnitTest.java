@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.Function;
@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.distributed.DistributedLockService;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.deadlock.GemFireDeadlockDetector;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.management.cli.Result;
@@ -49,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.Invoke.invokeInEveryVM;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;

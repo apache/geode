@@ -28,7 +28,7 @@ import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * This class tests distributed ownership via the DistributedLockService api.

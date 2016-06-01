@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * An implementation of the configuration object for an

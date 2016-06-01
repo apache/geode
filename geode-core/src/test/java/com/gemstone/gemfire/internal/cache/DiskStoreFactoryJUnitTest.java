@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
@@ -30,7 +29,7 @@ import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static org.junit.Assert.*;
 
 /**

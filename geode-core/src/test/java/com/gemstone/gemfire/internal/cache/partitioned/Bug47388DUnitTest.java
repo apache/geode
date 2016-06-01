@@ -35,7 +35,7 @@ import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * The test creates two datastores with a partitioned region, and also running a

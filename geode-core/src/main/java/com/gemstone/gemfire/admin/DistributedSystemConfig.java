@@ -17,12 +17,11 @@
 package com.gemstone.gemfire.admin;
 
 import com.gemstone.gemfire.admin.internal.InetAddressUtil;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 
 /**

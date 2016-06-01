@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.internal.statistics;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.*;

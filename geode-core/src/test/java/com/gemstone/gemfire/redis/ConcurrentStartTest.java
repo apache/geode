@@ -29,8 +29,8 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 import static org.junit.Assert.assertFalse;
 
 @Category(IntegrationTest.class)

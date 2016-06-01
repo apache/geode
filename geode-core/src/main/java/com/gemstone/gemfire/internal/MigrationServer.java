@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.internal;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 import com.gemstone.gemfire.admin.internal.InetAddressUtil;
 import com.gemstone.gemfire.cache.Cache;
@@ -34,8 +34,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 
 /**
  * MigrationServer creates a cache using a supplied cache.xml and then

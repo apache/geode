@@ -35,7 +35,7 @@ import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 
 public class MemberFunctionExecutionDUnitTest extends CacheTestCase {
   private static final String TEST_FUNCTION6 = TestFunction.TEST_FUNCTION6;

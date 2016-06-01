@@ -17,12 +17,11 @@
 package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /** A test of 46438 - missing response to an update attributes message */
 public class ConnectDisconnectDUnitTest extends CacheTestCase {

@@ -38,8 +38,8 @@ import com.gemstone.gemfire.test.dunit.VM;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 
 @SuppressWarnings("serial")
 public class Bug51193DUnitTest extends DistributedTestCase {

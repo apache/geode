@@ -32,7 +32,7 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Implements the actual administration (starting, stopping, etc.) of

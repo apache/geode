@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Tests configured and badly configured cache.xml files with regards to compression.

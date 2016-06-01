@@ -33,7 +33,7 @@ import hydra.Log;
 import java.io.IOException;
 import java.util.HashSet;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Test class for Partitioned Region and CQs

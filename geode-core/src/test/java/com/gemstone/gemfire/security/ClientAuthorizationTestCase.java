@@ -39,7 +39,7 @@ import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import java.util.*;
 import java.util.concurrent.Callable;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static com.gemstone.gemfire.internal.AvailablePort.SOCKET;
 import static com.gemstone.gemfire.internal.AvailablePort.getRandomAvailablePort;
 import static com.gemstone.gemfire.security.SecurityTestUtils.*;

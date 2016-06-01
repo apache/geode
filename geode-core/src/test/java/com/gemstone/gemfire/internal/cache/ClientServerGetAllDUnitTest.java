@@ -29,7 +29,7 @@ import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Class <code>ClientServerGetAllDUnitTest</code> test client/server getAll.

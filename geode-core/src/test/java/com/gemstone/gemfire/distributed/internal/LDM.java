@@ -23,7 +23,7 @@ import util.TestException;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
 
 /**
  * A little class for testing the local DistributionManager

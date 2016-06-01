@@ -43,7 +43,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * A "connection" to a GemFire distributed system.  A

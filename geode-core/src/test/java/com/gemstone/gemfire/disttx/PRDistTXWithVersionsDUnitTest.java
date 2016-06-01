@@ -20,7 +20,7 @@ import com.gemstone.gemfire.internal.cache.execute.PRTransactionWithVersionsDUni
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class PRDistTXWithVersionsDUnitTest extends
     PRTransactionWithVersionsDUnitTest {

@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxReader;
@@ -38,7 +37,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class PdxDeleteFieldDUnitTest  extends CacheTestCase{
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();

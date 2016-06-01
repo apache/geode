@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.cache;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 import org.junit.After;
@@ -31,7 +30,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 

@@ -31,7 +31,7 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 @Category(IntegrationTest.class)
 public class CQJUnitTest extends TestCase {

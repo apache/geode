@@ -30,7 +30,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)

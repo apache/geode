@@ -37,7 +37,7 @@ import java.io.StringWriter;
 import java.security.Principal;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class ExampleJSONAuthorization implements AccessControl, Authenticator {
 

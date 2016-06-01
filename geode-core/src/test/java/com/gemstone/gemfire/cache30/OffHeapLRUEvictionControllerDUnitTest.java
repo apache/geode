@@ -25,7 +25,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Tests the basic functionality of the lru eviction 

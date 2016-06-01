@@ -45,7 +45,7 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.*;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * The ServerLauncherTest class is a test suite of unit tests testing the contract, functionality and invariants

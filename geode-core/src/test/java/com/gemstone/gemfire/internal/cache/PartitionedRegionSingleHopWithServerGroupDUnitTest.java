@@ -43,7 +43,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  *

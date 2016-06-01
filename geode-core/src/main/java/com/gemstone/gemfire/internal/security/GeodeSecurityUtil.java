@@ -48,7 +48,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class GeodeSecurityUtil {
 

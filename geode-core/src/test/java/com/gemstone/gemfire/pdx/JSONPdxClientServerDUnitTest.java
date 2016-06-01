@@ -43,7 +43,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 /**
  *
  */

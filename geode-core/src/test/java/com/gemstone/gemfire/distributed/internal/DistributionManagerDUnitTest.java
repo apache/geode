@@ -21,7 +21,6 @@ import com.gemstone.gemfire.admin.*;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
@@ -36,7 +35,7 @@ import org.junit.Assert;
 import java.net.InetAddress;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * This class tests the functionality of the {@link

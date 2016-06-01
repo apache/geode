@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.ClassBuilder;
 import com.gemstone.gemfire.internal.JarDeployer;
@@ -51,7 +50,7 @@ import java.util.Set;
 
 import static com.gemstone.gemfire.cache.RegionShortcut.PARTITION;
 import static com.gemstone.gemfire.cache.RegionShortcut.REPLICATE;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static com.gemstone.gemfire.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static com.gemstone.gemfire.internal.FileUtil.delete;
 import static com.gemstone.gemfire.internal.FileUtil.deleteMatching;

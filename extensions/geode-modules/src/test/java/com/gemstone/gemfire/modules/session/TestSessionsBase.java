@@ -36,7 +36,7 @@ import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static junit.framework.Assert.*;
 
 public abstract class TestSessionsBase {

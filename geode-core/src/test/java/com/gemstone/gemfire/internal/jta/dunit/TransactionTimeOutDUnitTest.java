@@ -35,7 +35,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
 *This test tests TransactionTimeOut functionality
@@ -63,7 +63,7 @@ public class TransactionTimeOutDUnitTest extends DistributedTestCase {
     wr.close();
 
     props.setProperty(CACHE_XML_FILE, path);
-    //    props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "10321");
+    //    props.setProperty(DistributionConfig.DistributedSystemConfigProperties.MCAST_PORT, "10321");
     try {
 //      ds = DistributedSystem.connect(props);
         ds = (new TransactionTimeOutDUnitTest("temp")).getSystem(props);

@@ -47,7 +47,7 @@ import com.gemstone.gemfire.test.dunit.*;
 import java.io.File;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * @since GemFire 6.1

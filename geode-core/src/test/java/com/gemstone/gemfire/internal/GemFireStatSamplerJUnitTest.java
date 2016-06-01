@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal;
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.GemFireStatSampler.LocalStatListenerImpl;
 import com.gemstone.gemfire.internal.cache.control.HeapMemoryMonitor;
@@ -43,7 +42,7 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeFalse;
 

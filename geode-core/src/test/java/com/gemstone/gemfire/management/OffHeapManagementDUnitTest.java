@@ -36,7 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Tests the off-heap additions to the RegionMXBean and MemberMXBean JMX interfaces.

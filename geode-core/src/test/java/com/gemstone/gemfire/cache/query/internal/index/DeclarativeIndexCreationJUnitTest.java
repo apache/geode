@@ -37,7 +37,7 @@ import org.junit.experimental.categories.Category;
 import java.util.Collection;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * 

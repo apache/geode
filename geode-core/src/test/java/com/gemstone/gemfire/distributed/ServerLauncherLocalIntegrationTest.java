@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
 import com.gemstone.gemfire.distributed.ServerLauncher.Builder;
 import com.gemstone.gemfire.distributed.ServerLauncher.ServerState;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.GemFireVersion;
@@ -50,7 +49,7 @@ import java.lang.management.ManagementFactory;
 import java.net.BindException;
 import java.net.InetAddress;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -416,7 +415,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setForce(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
-        .set(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "0");
+        .set(DistributionConfig.DistributedSystemConfigProperties.MCAST_PORT, "0");
 
     assertTrue(builder.getForce());
     this.launcher = builder.build();
@@ -697,7 +696,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
         .set(logLevel, "config")
-        .set(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "0");
+        .set(DistributionConfig.DistributedSystemConfigProperties.MCAST_PORT, "0");
 
     assertFalse(builder.getForce());
     this.launcher = builder.build();

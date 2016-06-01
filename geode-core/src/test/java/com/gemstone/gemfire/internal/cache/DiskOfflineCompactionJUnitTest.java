@@ -18,7 +18,6 @@ package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
@@ -33,7 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static org.junit.Assert.assertEquals;
 
 /**

@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.wan.*;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
@@ -40,7 +39,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
 import static com.gemstone.gemfire.test.dunit.Assert.fail;
 

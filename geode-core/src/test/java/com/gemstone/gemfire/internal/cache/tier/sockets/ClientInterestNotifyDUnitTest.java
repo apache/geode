@@ -33,7 +33,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * This test verifies the per-client notify-by-subscription (NBS) override

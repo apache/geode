@@ -22,7 +22,7 @@ import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import java.util.Properties;
 
 public class CompressionRegionOperationsOffHeapDUnitTest extends

@@ -62,7 +62,7 @@ public class MapClearGIIDUnitTest extends CacheTestCase {
 /*  public static void createCacheVM0() throws Exception {
     InitialImageOperation.slowImageProcessing = 200;
     Properties mprops = new Properties();
-    // mprops.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "7777");
+    // mprops.setProperty(DistributionConfig.DistributedSystemConfigProperties.MCAST_PORT, "7777");
     
     ds = (new MapClearGIIDUnitTest("Clear")).getSystem(mprops);
     //ds = DistributedSystem.connect(props);
@@ -74,7 +74,7 @@ public class MapClearGIIDUnitTest extends CacheTestCase {
 
   public static void createCacheVM1() throws Exception {
     Properties mprops = new Properties();
-    // mprops.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "7777");
+    // mprops.setProperty(DistributionConfig.DistributedSystemConfigProperties.MCAST_PORT, "7777");
     ds = (new MapClearGIIDUnitTest("Clear")).getSystem(mprops);
     // ds = DistributedSystem.connect(null);
     cache = CacheFactory.create(ds);

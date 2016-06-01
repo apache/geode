@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.util.Arrays;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * This class represents a ConnectionProxy of the CacheClient

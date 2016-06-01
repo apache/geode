@@ -19,7 +19,6 @@ package com.gemstone.gemfire.distributed.internal.tcpserver;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
@@ -38,7 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * This tests the rolling upgrade for locators with

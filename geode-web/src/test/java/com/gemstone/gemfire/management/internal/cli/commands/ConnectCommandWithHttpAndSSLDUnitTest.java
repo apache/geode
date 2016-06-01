@@ -31,7 +31,7 @@ import javax.net.ssl.SSLSession;
 import java.io.File;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static com.gemstone.gemfire.management.internal.cli.i18n.CliStrings.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.util.test.TestUtil.getResourcePath;

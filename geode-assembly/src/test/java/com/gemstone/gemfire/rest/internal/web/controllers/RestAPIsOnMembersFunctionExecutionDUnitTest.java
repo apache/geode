@@ -26,7 +26,7 @@ import com.gemstone.gemfire.rest.internal.web.RestFunctionTemplate;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
 import java.util.Properties;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase {
 

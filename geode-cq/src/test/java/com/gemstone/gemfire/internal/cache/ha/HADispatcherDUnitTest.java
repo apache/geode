@@ -43,8 +43,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 import static com.gemstone.gemfire.internal.AvailablePort.SOCKET;
 import static com.gemstone.gemfire.internal.AvailablePort.getRandomAvailablePort;
 import static com.gemstone.gemfire.test.dunit.Assert.*;

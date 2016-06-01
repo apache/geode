@@ -30,7 +30,7 @@ import org.junit.Ignore;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
 
 public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
 

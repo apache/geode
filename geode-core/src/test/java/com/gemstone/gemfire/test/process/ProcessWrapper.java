@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.test.process;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 import com.gemstone.gemfire.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;

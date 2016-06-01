@@ -44,7 +44,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  *

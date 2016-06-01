@@ -53,7 +53,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 
 import static com.gemstone.gemfire.cache30.ClientServerTestCase.configureConnectionPoolWithNameAndFactory;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static com.gemstone.gemfire.internal.AvailablePort.SOCKET;
 import static com.gemstone.gemfire.internal.AvailablePort.getRandomAvailablePort;
 import static com.gemstone.gemfire.test.dunit.Assert.*;

@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Written to test fix for Bug #47132

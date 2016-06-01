@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.management.internal.cli.commands;
 
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.internal.cli.CommandManager;
@@ -44,7 +43,7 @@ import java.util.regex.Pattern;
 
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Base class for all the CLI/gfsh command dunit tests.

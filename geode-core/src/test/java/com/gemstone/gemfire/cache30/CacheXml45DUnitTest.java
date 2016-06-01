@@ -32,7 +32,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Tests the declarative caching functionality introduced in GemFire

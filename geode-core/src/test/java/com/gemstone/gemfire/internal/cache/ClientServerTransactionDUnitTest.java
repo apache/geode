@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.Region.Entry;
@@ -44,8 +44,8 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getDUnitLogLevel;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 

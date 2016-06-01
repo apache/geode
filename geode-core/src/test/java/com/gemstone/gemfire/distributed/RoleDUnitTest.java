@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.distributed;
 
 import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
@@ -29,7 +28,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Tests the setting of Roles in a DistributedSystem

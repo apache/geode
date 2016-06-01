@@ -24,7 +24,6 @@ import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -45,7 +44,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Authenticates this client (or a user) on a server. This op ideally should get

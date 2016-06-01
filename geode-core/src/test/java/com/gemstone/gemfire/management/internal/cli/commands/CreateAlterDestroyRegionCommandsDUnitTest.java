@@ -22,8 +22,6 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.compression.SnappyCompressor;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 import com.gemstone.gemfire.internal.AvailablePort;
@@ -60,7 +58,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 import static com.jayway.awaitility.Awaitility.waitAtMost;

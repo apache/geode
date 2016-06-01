@@ -34,7 +34,7 @@ import java.io.*;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class ExceptionsDUnitTest extends DistributedTestCase {
 
@@ -128,7 +128,7 @@ public class ExceptionsDUnitTest extends DistributedTestCase {
     wr.close();
     props.setProperty(CACHE_XML_FILE, path);
 //    String tableName = "";
-    //		  props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "10339");
+    //		  props.setProperty(DistributionConfig.DistributedSystemConfigProperties.MCAST_PORT, "10339");
     try {
       //			   ds = DistributedSystem.connect(props);
       ds = (new ExceptionsDUnitTest("temp")).getSystem(props);

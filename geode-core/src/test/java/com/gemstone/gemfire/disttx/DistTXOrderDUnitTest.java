@@ -19,7 +19,7 @@ package com.gemstone.gemfire.disttx;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache30.TXOrderDUnitTest;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import java.util.Properties;
 
 

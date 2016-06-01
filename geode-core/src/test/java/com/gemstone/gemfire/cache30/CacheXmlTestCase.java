@@ -27,7 +27,7 @@ import com.gemstone.gemfire.util.test.TestUtil;
 import java.io.*;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class CacheXmlTestCase extends CacheTestCase {
 

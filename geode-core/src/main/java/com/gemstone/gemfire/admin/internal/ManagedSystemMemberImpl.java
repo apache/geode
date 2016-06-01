@@ -21,7 +21,7 @@ import com.gemstone.gemfire.admin.ConfigurationParameter;
 import com.gemstone.gemfire.admin.ManagedEntityConfig;
 import com.gemstone.gemfire.internal.admin.GemFireVM;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
 
 /**
  * A <code>SystemMember</code> that is also managed (or manageable) by

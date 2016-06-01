@@ -40,7 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends
     PRClientServerTestBase {

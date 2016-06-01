@@ -30,8 +30,8 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 
 /**  This class tests the LRUCapacityController's core clock algorithm.  */
 @Category(IntegrationTest.class)
@@ -43,7 +43,7 @@ public class LRUClockJUnitTest extends junit.framework.TestCase {
 
   static Properties sysProps = new Properties();
   static {
-    //sysProps.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, String.valueOf(unusedPort));
+    //sysProps.setProperty(DistributionConfig.DistributedSystemConfigProperties.MCAST_PORT, String.valueOf(unusedPort));
     // a loner is all this test needs
     sysProps.setProperty(MCAST_PORT, "0");
     sysProps.setProperty(LOCATORS, "");

@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Test to make sure message queuing works.

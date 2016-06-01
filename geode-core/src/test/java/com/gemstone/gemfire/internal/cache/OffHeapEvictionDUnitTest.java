@@ -26,7 +26,7 @@ import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Performs eviction dunit tests for off-heap memory.

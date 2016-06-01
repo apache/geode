@@ -22,7 +22,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * This is a stand alone locator with a distributed-system-id = -2

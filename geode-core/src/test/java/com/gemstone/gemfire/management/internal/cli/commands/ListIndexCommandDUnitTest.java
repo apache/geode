@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexStatistics;
 import com.gemstone.gemfire.cache.query.IndexType;
 import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.internal.lang.MutableIdentifiable;
 import com.gemstone.gemfire.internal.lang.ObjectUtils;
 import com.gemstone.gemfire.internal.lang.StringUtils;
@@ -44,7 +43,7 @@ import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getDUnitLogLevel;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * The ListIndexCommandDUnitTest class is distributed test suite of test cases for testing the index-based GemFire shell

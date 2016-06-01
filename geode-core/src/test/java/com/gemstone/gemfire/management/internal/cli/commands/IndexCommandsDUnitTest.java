@@ -19,8 +19,6 @@ package com.gemstone.gemfire.management.internal.cli.commands;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 import com.gemstone.gemfire.internal.AvailablePort;
@@ -40,7 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 
 @Category(DistributedTest.class)

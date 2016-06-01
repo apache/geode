@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.shell;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
 import com.gemstone.gemfire.internal.util.IOUtils;
@@ -46,7 +45,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * OperationInvoker JMX Implementation

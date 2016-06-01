@@ -53,7 +53,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.gemstone.gemfire.internal.lang.ThrowableUtils.getRootCause;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * This is a test of how persistent distributed

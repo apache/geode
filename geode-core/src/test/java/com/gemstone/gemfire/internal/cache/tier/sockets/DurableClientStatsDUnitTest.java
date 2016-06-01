@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.RejectedExecutionException;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * 

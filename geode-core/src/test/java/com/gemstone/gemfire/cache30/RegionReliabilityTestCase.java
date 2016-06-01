@@ -35,7 +35,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Tests region reliability defined by MembershipAttributes.

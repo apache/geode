@@ -26,7 +26,6 @@ import com.gemstone.gemfire.cache.snapshot.RegionGenerator.SerializationType;
 import com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +37,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)

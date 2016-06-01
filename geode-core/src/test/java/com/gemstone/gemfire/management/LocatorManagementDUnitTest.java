@@ -31,7 +31,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 
 /**

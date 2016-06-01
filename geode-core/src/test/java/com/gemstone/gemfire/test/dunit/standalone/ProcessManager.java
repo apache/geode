@@ -33,7 +33,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  *

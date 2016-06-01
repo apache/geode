@@ -42,7 +42,7 @@ import org.junit.experimental.categories.Category;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Tests the Off-Heap Memory thresholds of {@link ResourceManager}

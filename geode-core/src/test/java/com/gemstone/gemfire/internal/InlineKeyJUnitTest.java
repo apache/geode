@@ -28,8 +28,8 @@ import org.junit.experimental.categories.Category;
 import java.util.Properties;
 import java.util.UUID;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

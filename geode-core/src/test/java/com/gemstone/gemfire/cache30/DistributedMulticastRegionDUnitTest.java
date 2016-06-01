@@ -18,8 +18,6 @@ package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
@@ -33,7 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
 

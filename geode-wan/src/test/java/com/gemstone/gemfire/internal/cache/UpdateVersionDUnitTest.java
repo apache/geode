@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.client.internal.LocatorDiscoveryCallbackAdapter;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.*;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.LocalRegion.NonTXEntry;
@@ -37,7 +36,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * @since GemFire 7.0.1

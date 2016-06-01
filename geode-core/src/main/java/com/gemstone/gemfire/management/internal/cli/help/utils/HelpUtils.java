@@ -29,8 +29,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
-
 /**
  * @since GemFire 7.0
  */

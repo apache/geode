@@ -32,7 +32,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

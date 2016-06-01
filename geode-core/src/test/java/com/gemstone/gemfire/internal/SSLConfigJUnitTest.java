@@ -26,7 +26,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 

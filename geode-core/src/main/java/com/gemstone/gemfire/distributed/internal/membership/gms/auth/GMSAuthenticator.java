@@ -18,7 +18,6 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.auth;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetView;
@@ -38,6 +37,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 // static messages
 
@@ -113,7 +113,7 @@ public class GMSAuthenticator implements Authenticator {
    */
   String authenticate(DistributedMember member, Object credentials, Properties secProps, DistributedMember localMember) throws AuthenticationFailedException {
 
-    String authMethod = secProps.getProperty(SystemConfigurationProperties.SECURITY_PEER_AUTHENTICATOR);
+    String authMethod = secProps.getProperty(SECURITY_PEER_AUTHENTICATOR);
     if (authMethod == null || authMethod.length() == 0) {
       return null;
     }
@@ -180,7 +180,7 @@ public class GMSAuthenticator implements Authenticator {
       return getCredentials(member, securityProps);
 
     } catch (Exception e) {
-      String authMethod = securityProps.getProperty(SystemConfigurationProperties.SECURITY_PEER_AUTH_INIT);
+      String authMethod = securityProps.getProperty(SECURITY_PEER_AUTH_INIT);
       services.getSecurityLogWriter().warning(LocalizedStrings.AUTH_FAILED_TO_OBTAIN_CREDENTIALS_IN_0_USING_AUTHINITIALIZE_1_2, new Object[] { authMethod, e.getLocalizedMessage() });
       return null;
     }
@@ -191,7 +191,7 @@ public class GMSAuthenticator implements Authenticator {
    */
   Properties getCredentials(DistributedMember member, Properties secProps) {
     Properties credentials = null;
-    String authMethod = secProps.getProperty(SystemConfigurationProperties.SECURITY_PEER_AUTH_INIT);
+    String authMethod = secProps.getProperty(SECURITY_PEER_AUTH_INIT);
 
     try {
       if (authMethod != null && authMethod.length() > 0) {

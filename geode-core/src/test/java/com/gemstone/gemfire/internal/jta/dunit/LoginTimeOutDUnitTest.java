@@ -35,7 +35,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class LoginTimeOutDUnitTest extends DistributedTestCase {
   private static final Logger logger = LogService.getLogger();

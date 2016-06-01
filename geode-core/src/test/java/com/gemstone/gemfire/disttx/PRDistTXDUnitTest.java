@@ -17,7 +17,7 @@
 package com.gemstone.gemfire.disttx;
 
 import com.gemstone.gemfire.internal.cache.execute.PRTransactionDUnitTest;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import java.util.Properties;
 
 public class PRDistTXDUnitTest extends PRTransactionDUnitTest {

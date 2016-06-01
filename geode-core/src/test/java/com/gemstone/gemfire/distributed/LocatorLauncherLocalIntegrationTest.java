@@ -19,7 +19,6 @@ package com.gemstone.gemfire.distributed;
 import com.gemstone.gemfire.distributed.AbstractLauncher.Status;
 import com.gemstone.gemfire.distributed.LocatorLauncher.Builder;
 import com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.*;
 import com.gemstone.gemfire.internal.process.ProcessControllerFactory;
@@ -40,7 +39,7 @@ import java.lang.management.ManagementFactory;
 import java.net.BindException;
 import java.net.InetAddress;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static org.junit.Assert.*;
 
 /**

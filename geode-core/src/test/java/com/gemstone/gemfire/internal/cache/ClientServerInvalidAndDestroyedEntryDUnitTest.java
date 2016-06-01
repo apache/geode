@@ -33,7 +33,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * This tests the fix for bug #43407 under a variety of configurations and

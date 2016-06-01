@@ -20,7 +20,7 @@ import com.gemstone.gemfire.admin.CacheServerConfig;
 import com.gemstone.gemfire.admin.CacheVmConfig;
 import com.gemstone.gemfire.internal.admin.GemFireVM;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * An implementation of <code>CacheVmConfig</code>

@@ -32,7 +32,7 @@ import com.gemstone.gemfire.test.dunit.*;
 import java.net.SocketException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class HASlowReceiverDUnitTest extends DistributedTestCase {
   protected static Cache cache = null;

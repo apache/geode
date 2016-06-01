@@ -21,7 +21,6 @@ import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
@@ -34,7 +33,7 @@ import java.util.Properties;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 

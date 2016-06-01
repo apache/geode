@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.security.generator;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import org.apache.logging.log4j.Logger;
@@ -26,7 +25,7 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class SSLCredentialGenerator extends CredentialGenerator {
 

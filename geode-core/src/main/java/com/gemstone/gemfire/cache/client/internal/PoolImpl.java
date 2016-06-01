@@ -54,8 +54,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-
 /**
  * Manages the client side of client to server connections
  * and client queues. 

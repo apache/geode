@@ -50,7 +50,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * A class to build a fake test configuration and launch some DUnit VMS.

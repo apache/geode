@@ -34,7 +34,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 
 public class ProductUseLogDUnitTest extends CacheTestCase {

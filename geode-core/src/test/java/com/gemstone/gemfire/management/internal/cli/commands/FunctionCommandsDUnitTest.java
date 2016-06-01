@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.management.DistributedRegionMXBean;
 import com.gemstone.gemfire.management.ManagementService;
@@ -42,7 +41,7 @@ import java.util.Properties;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Dunit class for testing gemfire function commands : execute function, destroy function, list function

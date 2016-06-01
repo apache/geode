@@ -17,7 +17,7 @@
 package com.gemstone.gemfire.disttx;
 
 import com.gemstone.gemfire.internal.cache.partitioned.PersistentPartitionedRegionWithTransactionDUnitTest;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import java.util.Properties;
 
 

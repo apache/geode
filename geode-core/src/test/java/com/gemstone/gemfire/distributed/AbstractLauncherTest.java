@@ -27,7 +27,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * The AbstractLauncherTest class is a test suite of unit tests testing the contract and functionality

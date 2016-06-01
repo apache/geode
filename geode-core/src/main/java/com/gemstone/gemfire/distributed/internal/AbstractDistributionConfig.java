@@ -19,7 +19,6 @@ package com.gemstone.gemfire.distributed.internal;
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.InvalidValueException;
 import com.gemstone.gemfire.UnmodifiableException;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.internal.AbstractConfig;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.SocketCreator;
@@ -688,7 +687,7 @@ public abstract class AbstractDistributionConfig
       LocalizedStrings.AbstractDistributionConfig_ENABLE_TIME_STATISTICS_NAME
         .toLocalizedString());
 
-    m.put(SystemConfigurationProperties.DEPLOY_WORKING_DIR,
+    m.put(DEPLOY_WORKING_DIR,
         LocalizedStrings.AbstractDistributionConfig_DEPLOY_WORKING_DIR_0 
           .toLocalizedString(DEFAULT_DEPLOY_WORKING_DIR));
 
@@ -996,7 +995,7 @@ public abstract class AbstractDistributionConfig
     m.put(GROUPS, "A comma separated list of all the groups this member belongs to." +
         " Defaults to \"\".");
     
-    m.put(SystemConfigurationProperties.USER_COMMAND_PACKAGES, "A comma separated list of the names of the packages containing classes that implement user commands.");
+    m.put(USER_COMMAND_PACKAGES, "A comma separated list of the names of the packages containing classes that implement user commands.");
     
     m.put(JMX_MANAGER, "If true then this member is willing to be a jmx manager. Defaults to false except on a locator.");
     m.put(JMX_MANAGER_START, "If true then the jmx manager will be started when the cache is created. Defaults to false.");

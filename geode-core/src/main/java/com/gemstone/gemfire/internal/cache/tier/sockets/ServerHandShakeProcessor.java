@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.UnsupportedVersionException;
 import com.gemstone.gemfire.cache.VersionException;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
@@ -47,7 +46,7 @@ import java.net.SocketTimeoutException;
 import java.security.Principal;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * A <code>ServerHandShakeProcessor</code> verifies the client's version compatibility with server.

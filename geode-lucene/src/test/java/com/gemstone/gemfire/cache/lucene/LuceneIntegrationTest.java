@@ -23,11 +23,11 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
+import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
 import org.junit.After;
 import org.junit.Before;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 
 
 public class LuceneIntegrationTest {
@@ -53,8 +53,8 @@ public class LuceneIntegrationTest {
   protected CacheFactory getCacheFactory() {
     CacheFactory cf = new CacheFactory();
     cf.set(MCAST_PORT, "0");
-    cf.set(SystemConfigurationProperties.LOCATORS, "");
-    cf.set(SystemConfigurationProperties.LOG_LEVEL, System.getProperty("logLevel", "info"));
+    cf.set(DistributedSystemConfigProperties.LOCATORS, "");
+    cf.set(DistributedSystemConfigProperties.LOG_LEVEL, System.getProperty("logLevel", "info"));
     return cf;
   }
 

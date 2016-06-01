@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Iterator;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class RegionFactoryDelegate  {
 

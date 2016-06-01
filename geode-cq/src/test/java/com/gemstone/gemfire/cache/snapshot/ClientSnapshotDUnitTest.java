@@ -40,7 +40,7 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class ClientSnapshotDUnitTest extends CacheTestCase {
 

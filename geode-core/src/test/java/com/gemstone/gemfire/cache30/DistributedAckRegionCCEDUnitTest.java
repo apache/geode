@@ -22,7 +22,6 @@ package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.internal.DistributionAdvisor;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.NetMember;
@@ -40,7 +39,7 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitTest {
 

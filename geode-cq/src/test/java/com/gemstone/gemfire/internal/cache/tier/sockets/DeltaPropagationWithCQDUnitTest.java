@@ -36,8 +36,8 @@ import com.gemstone.gemfire.test.dunit.*;
 import java.util.List;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 
 /**
  *
@@ -232,7 +232,7 @@ public class DeltaPropagationWithCQDUnitTest extends DistributedTestCase {
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
 //    Properties props = new Properties();
-    //    props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "10333");
+    //    props.setProperty(DistributionConfig.DistributedSystemConfigProperties.MCAST_PORT, "10333");
 //    cache = new CacheFactory(props).create();
     RegionFactory<Object, Object> rf = ((Cache)cache)
         .createRegionFactory(RegionShortcut.REPLICATE);

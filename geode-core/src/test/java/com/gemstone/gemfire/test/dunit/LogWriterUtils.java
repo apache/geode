@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.test.dunit;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;

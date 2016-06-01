@@ -20,7 +20,6 @@ package com.gemstone.gemfire.rest.internal.web.controllers;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.FunctionService;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.GemFireVersion;
@@ -47,7 +46,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class RestAPITestBase extends DistributedTestCase {
   protected Cache cache = null;

@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.test.dunit.*;

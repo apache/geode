@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class CacheClientNotifierDUnitTest extends WANTestBase {
   private static final int NUM_KEYS = 10;

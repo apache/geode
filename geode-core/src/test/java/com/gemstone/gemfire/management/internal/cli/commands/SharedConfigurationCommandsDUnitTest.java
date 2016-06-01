@@ -20,7 +20,6 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.distributed.internal.SharedConfiguration;
 import com.gemstone.gemfire.internal.ClassBuilder;
@@ -44,7 +43,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static com.gemstone.gemfire.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static com.gemstone.gemfire.management.internal.cli.CliUtil.getAllNormalMembers;
 import static com.gemstone.gemfire.management.internal.cli.i18n.CliStrings.*;

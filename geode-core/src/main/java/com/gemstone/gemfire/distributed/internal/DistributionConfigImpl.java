@@ -20,7 +20,6 @@ package com.gemstone.gemfire.distributed.internal;
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -1141,7 +1140,7 @@ public class DistributionConfigImpl
     // a no-op since multicast discovery has been removed
     // and the default mcast port is now zero
 
-    //    ConfigSource cs = getAttSourceMap().get(SystemConfigurationProperties.MCAST_PORT);
+    //    ConfigSource cs = getAttSourceMap().get(DistributedSystemConfigProperties.MCAST_PORT);
 //    if (cs == null) {
 //      String locators = getLocators();
 //      if (locators != null && !locators.isEmpty()) {
@@ -1557,7 +1556,7 @@ public class DistributionConfigImpl
   }
  
   public void setUserCommandPackages(String value) {
-    this.userCommandPackages = (String)checkAttribute(SystemConfigurationProperties.USER_COMMAND_PACKAGES, value);
+    this.userCommandPackages = (String)checkAttribute(USER_COMMAND_PACKAGES, value);
   }
 
   public boolean getDeltaPropagation() {
@@ -1629,7 +1628,7 @@ public class DistributionConfigImpl
   }
   
   public void setDeployWorkingDir(File value) {
-    this.deployWorkingDir = (File)checkAttribute(SystemConfigurationProperties.DEPLOY_WORKING_DIR, value);
+    this.deployWorkingDir = (File)checkAttribute(DEPLOY_WORKING_DIR, value);
   }
   public void setLogFile(File value) {
     this.logFile = (File)checkAttribute(LOG_FILE, value);

@@ -19,7 +19,6 @@ package com.gemstone.gemfire.distributed.internal;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.Config;
 import com.gemstone.gemfire.internal.ConfigSource;
@@ -38,7 +37,7 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static org.junit.Assert.*;
 
 /**

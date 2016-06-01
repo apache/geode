@@ -26,7 +26,7 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class DistrbutedRegionProfileOffHeapDUnitTest extends CacheTestCase {
   private static final long serialVersionUID = 1L;

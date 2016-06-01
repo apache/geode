@@ -39,7 +39,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 @Category(IntegrationTest.class)
 public class RestAPIsQueryAndFEJUnitTest extends TestCase {

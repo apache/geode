@@ -34,7 +34,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  *

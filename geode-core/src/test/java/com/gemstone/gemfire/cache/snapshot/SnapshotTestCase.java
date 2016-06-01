@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.cache.snapshot;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 import com.examples.snapshot.MyObject;
 import com.gemstone.gemfire.cache.Cache;
@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 
 public class SnapshotTestCase {
   protected File store;

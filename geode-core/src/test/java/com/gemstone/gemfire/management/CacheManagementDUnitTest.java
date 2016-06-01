@@ -35,7 +35,7 @@ import static com.jayway.awaitility.Awaitility.to;
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static org.hamcrest.Matchers.equalTo;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * This class checks and verifies various data and operations exposed through

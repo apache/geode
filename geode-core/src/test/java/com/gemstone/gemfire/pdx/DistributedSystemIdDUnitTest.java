@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.pdx;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
@@ -24,7 +23,7 @@ import com.gemstone.gemfire.test.dunit.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class DistributedSystemIdDUnitTest extends DistributedTestCase {
   

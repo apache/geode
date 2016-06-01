@@ -17,7 +17,6 @@
 
 package com.gemstone.gemfire.management.internal.security;
 
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
@@ -42,7 +41,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class MultiUserDUnitTest extends CliCommandTestBase {

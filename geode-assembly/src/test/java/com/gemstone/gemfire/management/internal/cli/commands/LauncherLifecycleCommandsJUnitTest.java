@@ -19,7 +19,6 @@ package com.gemstone.gemfire.management.internal.cli.commands;
 import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.ServerLauncher;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.DistributionLocator;
 import com.gemstone.gemfire.internal.lang.StringUtils;
@@ -35,7 +34,7 @@ import org.junit.experimental.categories.Category;
 import java.io.File;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static org.junit.Assert.*;
 
 /**

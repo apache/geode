@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.internal;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -24,7 +23,7 @@ import org.junit.experimental.categories.Category;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 

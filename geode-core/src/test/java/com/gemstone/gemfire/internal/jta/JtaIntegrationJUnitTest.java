@@ -28,7 +28,7 @@ import org.junit.experimental.categories.Category;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 import static org.junit.Assert.*;
 
 /**

@@ -49,7 +49,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Represents a GemFire distributed system for remote administration/management.

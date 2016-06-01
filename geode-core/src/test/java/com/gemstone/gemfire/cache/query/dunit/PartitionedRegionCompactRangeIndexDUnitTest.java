@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 @Category(DistributedTest.class)
 public class PartitionedRegionCompactRangeIndexDUnitTest extends DistributedTestCase {

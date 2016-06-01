@@ -27,7 +27,6 @@ import com.gemstone.gemfire.distributed.LocatorLauncher;
 import com.gemstone.gemfire.distributed.LocatorLauncher.LocatorState;
 import com.gemstone.gemfire.distributed.ServerLauncher;
 import com.gemstone.gemfire.distributed.ServerLauncher.ServerState;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.tcpserver.TcpClient;
 import com.gemstone.gemfire.internal.DistributionLocator;
@@ -91,7 +90,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * The LauncherLifecycleCommands class encapsulates all GemFire launcher commands for GemFire tools (like starting
@@ -283,15 +282,15 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
       Properties gemfireProperties = new Properties();
 
-      gemfireProperties.setProperty(SystemConfigurationProperties.GROUPS, StringUtils.valueOf(group, StringUtils.EMPTY_STRING));
-      gemfireProperties.setProperty(SystemConfigurationProperties.LOCATORS, StringUtils.valueOf(locators, StringUtils.EMPTY_STRING));
-      gemfireProperties.setProperty(SystemConfigurationProperties.LOG_LEVEL, StringUtils.valueOf(logLevel, StringUtils.EMPTY_STRING));
-      gemfireProperties.setProperty(SystemConfigurationProperties.MCAST_ADDRESS, StringUtils.valueOf(mcastBindAddress, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(GROUPS, StringUtils.valueOf(group, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(LOCATORS, StringUtils.valueOf(locators, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(LOG_LEVEL, StringUtils.valueOf(logLevel, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(MCAST_ADDRESS, StringUtils.valueOf(mcastBindAddress, StringUtils.EMPTY_STRING));
       gemfireProperties.setProperty(MCAST_PORT, StringUtils.valueOf(mcastPort, StringUtils.EMPTY_STRING));
-      gemfireProperties.setProperty(SystemConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, StringUtils.valueOf(enableSharedConfiguration, StringUtils.EMPTY_STRING));
-      gemfireProperties.setProperty(SystemConfigurationProperties.LOAD_CLUSTER_CONFIGURATION_FROM_DIR,
+      gemfireProperties.setProperty(ENABLE_CLUSTER_CONFIGURATION, StringUtils.valueOf(enableSharedConfiguration, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(LOAD_CLUSTER_CONFIGURATION_FROM_DIR,
           StringUtils.valueOf(loadSharedConfigurationFromDirectory, StringUtils.EMPTY_STRING));
-      gemfireProperties.setProperty(SystemConfigurationProperties.CLUSTER_CONFIGURATION_DIR, StringUtils.valueOf(clusterConfigDir, StringUtils.EMPTY_STRING));
+      gemfireProperties.setProperty(CLUSTER_CONFIGURATION_DIR, StringUtils.valueOf(clusterConfigDir, StringUtils.EMPTY_STRING));
 
       // read the OSProcess enable redirect system property here -- TODO: replace with new GFSH argument
       final boolean redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);

@@ -24,7 +24,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Tranport config for RemoteGfManagerAgent.

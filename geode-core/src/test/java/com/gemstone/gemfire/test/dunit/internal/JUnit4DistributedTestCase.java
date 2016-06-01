@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.test.dunit.internal;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
 import com.gemstone.gemfire.cache.Cache;
@@ -54,8 +54,8 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 import static org.junit.Assert.assertNotNull;
 
 /**

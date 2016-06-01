@@ -17,7 +17,6 @@
 package com.gemstone.gemfire.management.internal.cli.commands;
 
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.management.DistributedRegionMXBean;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.ManagerMXBean;
@@ -41,7 +40,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.Host.getHost;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;

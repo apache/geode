@@ -22,7 +22,6 @@ import com.gemstone.gemfire.cache.Region.Entry;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.tcp.Connection;
 import com.gemstone.gemfire.test.dunit.*;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
@@ -35,7 +34,7 @@ import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Test to make sure slow receiver queuing is working

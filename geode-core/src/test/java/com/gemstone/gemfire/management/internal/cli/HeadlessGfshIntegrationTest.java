@@ -18,7 +18,6 @@ package com.gemstone.gemfire.management.internal.cli;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Rule;
@@ -30,7 +29,7 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static com.gemstone.gemfire.internal.AvailablePort.SOCKET;
 import static com.gemstone.gemfire.internal.AvailablePort.getRandomAvailablePort;
 import static org.junit.Assert.assertNotNull;

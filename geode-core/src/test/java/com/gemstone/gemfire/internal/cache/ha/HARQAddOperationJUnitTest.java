@@ -36,7 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 import static org.junit.Assert.*;
 
 /**

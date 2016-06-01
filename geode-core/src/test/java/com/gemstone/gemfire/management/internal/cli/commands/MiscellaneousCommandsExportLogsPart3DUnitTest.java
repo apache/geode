@@ -20,7 +20,6 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.distributed.SystemConfigurationProperties;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.logging.LogWriterImpl;
 import com.gemstone.gemfire.management.cli.Result;
@@ -42,7 +41,7 @@ import java.util.Properties;
 import static com.gemstone.gemfire.test.dunit.Assert.assertEquals;
 import static com.gemstone.gemfire.test.dunit.Assert.fail;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Dunit class for testing gemfire function commands : export logs

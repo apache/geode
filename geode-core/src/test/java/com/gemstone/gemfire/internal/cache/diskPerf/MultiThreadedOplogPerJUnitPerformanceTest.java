@@ -29,7 +29,7 @@ import org.junit.rules.TestName;
 import java.io.File;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 @Category(IntegrationTest.class)
 public class MultiThreadedOplogPerJUnitPerformanceTest

@@ -39,8 +39,8 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.Random;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.unregisterInstantiatorsInThisVM;
 
 public class InstantiatorPropagationDUnitTest extends DistributedTestCase {

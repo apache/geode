@@ -35,7 +35,7 @@ import com.gemstone.gemfire.test.dunit.*;
 import java.io.*;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Tests for the incremental backup feature.

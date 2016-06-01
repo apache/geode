@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)

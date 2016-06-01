@@ -26,7 +26,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class Bug45934DUnitTest extends CacheTestCase {
   public Bug45934DUnitTest(String name) {

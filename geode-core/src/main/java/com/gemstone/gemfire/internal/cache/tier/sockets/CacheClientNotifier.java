@@ -54,7 +54,7 @@ import java.security.Principal;
 import java.util.*;
 import java.util.concurrent.*;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Class <code>CacheClientNotifier</code> works on the server and manages

@@ -21,7 +21,6 @@
 package com.gemstone.gemfire.cache30;
 
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.RegionClearedException;
 import com.gemstone.gemfire.internal.cache.RegionEntry;
@@ -35,7 +34,7 @@ import org.junit.Ignore;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * This test is only for GLOBAL REPLICATE Regions. Tests are

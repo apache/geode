@@ -22,7 +22,7 @@ import org.junit.Before;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Provides common setUp and tearDown for testing the Admin API.

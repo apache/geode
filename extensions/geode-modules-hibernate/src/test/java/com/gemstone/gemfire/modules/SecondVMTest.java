@@ -35,7 +35,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 @Ignore("Can this test be deleted?")
 @Category(IntegrationTest.class)

@@ -44,7 +44,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Iterator;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  *

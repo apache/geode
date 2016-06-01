@@ -36,7 +36,7 @@ import java.io.FilenameFilter;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 @Category(IntegrationTest.class)
 public class OfflineSnapshotJUnitTest {
