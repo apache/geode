@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.cache.query.cq.dunit;
 
-import hydra.Log;
-
 import java.io.IOException;
 import java.util.HashSet;
 
@@ -1436,8 +1434,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         if (localRegion != null) {
 
           // REGION NULL
-          Log.getLogWriter().info("Local region is NOT null in client 1");
-          
           Wait.pause(5*1000);
           CqQuery[] cqs = getCache().getQueryService().getCqs();
           if (cqs != null && cqs.length > 0) {

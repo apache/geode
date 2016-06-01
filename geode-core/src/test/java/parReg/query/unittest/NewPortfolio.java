@@ -16,7 +16,6 @@
  */
 package parReg.query.unittest;
 
-import hydra.Log;
 
 import java.io.Serializable;
 import java.util.*;
@@ -96,7 +95,7 @@ public class NewPortfolio implements Serializable {
   }
     
   public void init( int i ) {
-    this.name = new Integer(i).toString();
+    this.name = Integer.toString(i);
     this.id = i;
     this.status = i % 2 == 0 ? "active" : "inactive";
     this.type = "type" + (i % NUM_OF_TYPES);
@@ -119,7 +118,7 @@ public class NewPortfolio implements Serializable {
       secId += i * 7;                    
       if (secId > NUM_OF_SECURITIES)
         secId -= NUM_OF_SECURITIES;
-      props.setProperty("secId", new Integer(secId).toString());
+      props.setProperty("secId", Integer.toString(secId));
       
       Position pos = new Position();
       pos.init(props);
@@ -145,8 +144,8 @@ public class NewPortfolio implements Serializable {
    */
   protected Properties getProps() {
    Properties props = new Properties();
-   Double qty = new Double(rng.nextInt(MAX_QTY) * 100.00);
-   Double mktValue = new Double(rng.nextDouble() * MAX_PRICE); 
+   Double qty = rng.nextInt(MAX_QTY) * 100.00;
+   Double mktValue = rng.nextDouble() * MAX_PRICE;
 
    props.setProperty("qty", qty.toString());
    props.setProperty("mktValue", mktValue.toString());
@@ -162,36 +161,27 @@ public class NewPortfolio implements Serializable {
     if (anObj == null) {
        return false;
     }
-//    Log.getLogWriter().info("comparing\n"+this+"\n and "+anObj);
 
     if (anObj.getClass().getName().equals(this.getClass().getName())) { // cannot do class identity check for pdx tets
-//      Log.getLogWriter().info("checkpoint 1,.this class is checked " + this.getClass().getName() );
        NewPortfolio np = (NewPortfolio)anObj;
        if (!np.name.equals(this.name) || (np.id != this.id) || !np.type.equals(this.type) || !np.status.equals(this.status)) {
-//         Log.getLogWriter().info("checkpoint 1,obj " +np.name + " " + np.id + " " + np.type );
          return false;
        }
-//       Log.getLogWriter().info("checkpoint 2, NP name, id checked" );
-       
+
        if (np.positions == null) {
           if (this.positions != null) {
             return false;
           }
        } else {
-//         Log.getLogWriter().info("checkpoint 3, checking position size" );
          if (np.positions.size() != this.positions.size()) {
-           Log.getLogWriter().info("checkpoint 3, position size failed" );
            return false;
          }
          else {                 //loops thru the map of positions
            Iterator itr = np.positions.values().iterator();
            Position pos;
            while (itr.hasNext()) {
-//             Log.getLogWriter().info("checkpoint 4, to check iteration" );
              pos = (Position)itr.next();
-//             Log.getLogWriter().info("checkpoint 4, to check pos" );
              if (!this.positions.containsValue(pos)){
-//               Log.getLogWriter().info("checkpoint 5, check pos failed" );                                            
                return false;
              }            
            }
@@ -199,7 +189,6 @@ public class NewPortfolio implements Serializable {
        }
     } else {
       //not same class
-//      Log.getLogWriter().info("checkpoint 6, not the same class");
        return false;
     }
     return true;
@@ -231,23 +220,7 @@ public class NewPortfolio implements Serializable {
     fieldMap.put("type", type);
     fieldMap.put("positions", positions);
     fieldMap.put("undefinedTestField", undefinedTestField);
-//    Log.getLogWriter().info("created map in tests/parReg.query.NewPortfolio: " + fieldMap);
     return fieldMap;
-  }
-
-  /** Restore the fields of this instance using the values of the Map, created
-   *  by createPdxHelperMap()
-   */
-  public void restoreFromPdxHelperMap(Map aMap) {
-//    Log.getLogWriter().info("restoring from map into " + this.getClass().getName() + ": " + aMap);
-    this.myVersion = (String)aMap.get("myVersion");
-    this.id = (Integer)aMap.get("id");
-    this.name = (String)aMap.get("name");
-    this.status = (String)aMap.get("status");
-    this.type = (String)aMap.get("type");
-    this.positions = (Map)aMap.get("positions");
-    this.undefinedTestField = (String)aMap.get("undefinedTestField");
-//    Log.getLogWriter().info("returning instance from map in tests/parReg.query.NewPortfolio: " + this);
   }
 
   @Override
