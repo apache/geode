@@ -43,26 +43,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.operations.OperationContext;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.security.AccessControl;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.Authenticator;
-import com.gemstone.gemfire.security.NotAuthorizedException;
-import com.gemstone.gemfire.util.test.TestUtil;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import javax.management.remote.JMXPrincipal;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.security.Principal;
-import java.util.*;
 
 import static com.gemstone.gemfire.distributed.SystemConfigurationProperties.*;
 
@@ -116,10 +96,8 @@ public class JSONAuthorization implements AccessControl, Authenticator {
         user.pwd = user.name;
       }
 
-      JSONArray ops = obj.getJSONArray(ROLES);
-      for (int j = 0; j < ops.length(); j++) {
-        String roleName = ops.getString(j);
-        user.roles.add(roleMap.get(roleName));
+      for (JsonNode r : u.get(ROLES)) {
+        user.roles.add(roleMap.get(r.asText()));
       }
       acl.put(user.name, user);
     }

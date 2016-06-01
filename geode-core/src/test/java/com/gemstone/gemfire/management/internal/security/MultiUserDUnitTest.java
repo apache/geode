@@ -51,8 +51,8 @@ public class MultiUserDUnitTest extends CliCommandTestBase {
   public void testMultiUser() throws IOException, JSONException, InterruptedException {
     Properties properties = new Properties();
     properties.put(NAME, MultiUserDUnitTest.class.getSimpleName());
-    properties.put(DistributionConfig.SECURITY_CLIENT_AUTHENTICATOR_NAME, JSONAuthorization.class.getName() + ".create");
-    properties.put(DistributionConfig.SECURITY_CLIENT_ACCESSOR_NAME, JSONAuthorization.class.getName() + ".create");
+    properties.put(SECURITY_CLIENT_AUTHENTICATOR, JSONAuthorization.class.getName() + ".create");
+    properties.put(SECURITY_CLIENT_ACCESSOR, JSONAuthorization.class.getName() + ".create");
 
     // set up vm_0 the secure jmx manager
     Object[] results = setUpJMXManagerOnVM(0, properties, "cacheServer.json");
