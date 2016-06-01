@@ -194,7 +194,7 @@ public class CliStrings {
   public static final String ALTER_DISK_STORE__REGIONNAME__HELP = "Name/Path of the region in the disk store to alter.";
   public static final String ALTER_DISK_STORE__DISKDIRS = "disk-dirs";
   public static final String ALTER_DISK_STORE__DISKDIRS__HELP = "Directories where data for the disk store was previously written.";
-  public static final String ALTER_DISK_STORE__LRU__EVICTION__ALGORITHM = "lru-algorthm";
+  public static final String ALTER_DISK_STORE__LRU__EVICTION__ALGORITHM = "lru-algorithm";
   public static final String ALTER_DISK_STORE__LRU__EVICTION__ALGORITHM__HELP = "Least recently used eviction algorithm.  Valid values are: none, lru-entry-count, lru-heap-percentage and lru-memory-size.";
   public static final String ALTER_DISK_STORE__LRU__EVICTION__ACTION = "lru-action";
   public static final String ALTER_DISK_STORE__LRU__EVICTION__ACTION__HELP = "Action to take when evicting entries from the region. Valid values are: none, overflow-to-disk and local-destroy.";
