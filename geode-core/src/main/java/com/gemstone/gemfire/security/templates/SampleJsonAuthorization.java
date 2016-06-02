@@ -178,11 +178,10 @@ public class SampleJsonAuthorization implements AccessControl, Authenticator {
 
       for (JsonNode op : r.get("operationsAllowed")) {
         String[] parts = op.asText().split(":");
-        if (regionNames == null) {
-          role.permissions.add(new ResourceOperationContext(parts[0], parts[1], "*", false));
-        } else {
-          role.permissions.add(new ResourceOperationContext(parts[0], parts[1], regionNames, false));
-        }
+        String resourcePart = (parts.length > 0) ? parts[0] : null;
+        String operationPart = (parts.length > 1) ? parts[1] : null;
+        String regionPart = (regionNames != null) ? regionNames : "*";
+        role.permissions.add(new ResourceOperationContext(resourcePart, operationPart, regionPart, false));
       }
 
       roleMap.put(role.name, role);
