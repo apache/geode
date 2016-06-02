@@ -5181,7 +5181,13 @@ public class PartitionedRegion extends LocalRegion implements
     }
     
     fillInProfile((PartitionProfile) profile);
-    
+
+    if (cacheServiceProfiles != null) {
+      for (CacheServiceProfile csp : cacheServiceProfiles.values()) {
+        profile.addCacheServiceProfile(csp);
+      }
+    }
+
     profile.isOffHeap = getOffHeap();
   }
 

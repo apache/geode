@@ -3761,7 +3761,15 @@ public class LocalizedStrings {
   public static final StringId SwaggerConfig_DOC_TITLE = new StringId(6621, "Apache Geode Documentation");
   public static final StringId SwaggerConfig_DOC_LINK = new StringId(6622, "http://geode.incubator.apache.org/docs/");
 
-  public static final StringId LuceneXmlParser_CLASS_0_IS_NOT_AN_INSTANCE_OF_ANALYZER = new StringId(6623, "Class \"{0}\" is not an instance of Analyzer.");
+  public static final StringId LuceneXmlParser_CLASS_0_IS_NOT_AN_INSTANCE_OF_ANALYZER = new StringId(6623, "Class {0} is not an instance of Analyzer.");
+  public static final StringId LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_FIELDS_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_FIELDS_3 = new StringId(6624, "Cannot create Lucene index {0} on region {1} with fields {2} because another member defines the same index with fields {3}.");
+  public static final StringId LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_ANALYZER_3 = new StringId(6625, "Cannot create Lucene index {0} on region {1} with analyzer {2} because another member defines the same index with analyzer {3}.");
+  public static final StringId LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_FIELD_ANALYZERS_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_NO_FIELD_ANALYZERS = new StringId(6626, "Cannot create Lucene index {0} on region {1} with field analyzers {2} because another member defines the same index with no field analyzers.");
+  public static final StringId LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_NO_FIELD_ANALYZERS_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_FIELD_ANALYZERS_2 = new StringId(6627, "Cannot create Lucene index {0} on region {1} with no field analyzers because another member defines the same index with field analyzers {2}.");
+  public static final StringId LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_FIELD_ANALYZERS_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_FIELD_ANALYZERS_3 = new StringId(6628, "Cannot create Lucene index {0} on region {1} with field analyzers {2} because another member defines the same index with field analyzers {3}.");
+  public static final StringId LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_NO_ANALYZER_ON_FIELD_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_ANALYZER_3_ON_THAT_FIELD = new StringId(6629, "Cannot create Lucene index {0} on region {1} with no analyzer on field {2} because another member defines the same index with analyzer {3} on that field.");
+  public static final StringId LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_ON_FIELD_3_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_NO_ANALYZER_ON_THAT_FIELD = new StringId(6630, "Cannot create Lucene index {0} on region {1} with analyzer {2} on field {3} because another member defines the same index with no analyzer on that field.");
+  public static final StringId LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_ON_FIELD_3_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_ANALYZER_4_ON_THAT_FIELD = new StringId(6631, "Cannot create Lucene index {0} on region {1} with analyzer {2} on field {3} because another member defines the same index with analyzer {4} on that field.");
 
   /** Testing strings, messageId 90000-99999 **/
   

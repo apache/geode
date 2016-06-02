@@ -43,6 +43,17 @@ public class LuceneTestUtilities {
   public static final String INDEX_NAME = "index";
   public static final String REGION_NAME = "region";
 
+  public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS = "Cannot create Lucene index index on region /region with fields [field1, field2] because another member defines the same index with fields [field1].";
+  public static final String CANNOT_CREATE_LUCENE_INDEX_NO_ANALYZER_FIELD2 = "Cannot create Lucene index index on region /region with no analyzer on field field2 because another member defines the same index with analyzer org.apache.lucene.analysis.core.KeywordAnalyzer on that field.";
+  public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZER_SIZES_1 = "Cannot create Lucene index index on region /region with field analyzers {field2=class org.apache.lucene.analysis.core.KeywordAnalyzer, field1=class org.apache.lucene.analysis.core.KeywordAnalyzer} because another member defines the same index with field analyzers {field1=class org.apache.lucene.analysis.core.KeywordAnalyzer}.";
+  public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZER_SIZES_2 = "Cannot create Lucene index index on region /region with field analyzers {field1=class org.apache.lucene.analysis.core.KeywordAnalyzer, field2=class org.apache.lucene.analysis.core.KeywordAnalyzer} because another member defines the same index with field analyzers {field1=class org.apache.lucene.analysis.core.KeywordAnalyzer}.";
+  public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS = "Cannot create Lucene index index on region /region with analyzer org.apache.lucene.analysis.core.KeywordAnalyzer on field field1 because another member defines the same index with analyzer org.apache.lucene.analysis.standard.StandardAnalyzer on that field.";
+  public static final String CANNOT_CREATE_LUCENE_INDEX_NO_ANALYZER_FIELD1 = "Cannot create Lucene index index on region /region with no analyzer on field field1 because another member defines the same index with analyzer org.apache.lucene.analysis.core.KeywordAnalyzer on that field.";
+  public static final String CANNOT_CREATE_LUCENE_INDEX_NO_ANALYZER_EXISTING_MEMBER = "Cannot create Lucene index index on region /region with analyzer org.apache.lucene.analysis.core.KeywordAnalyzer on field field1 because another member defines the same index with no analyzer on that field.";
+  public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_NAMES = "Cannot create Region /region with [index2#_region] async event ids because another cache has the same region defined with [index1#_region] async event ids";
+  public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_1 = "Cannot create Region /region with [] async event ids because another cache has the same region defined with [index#_region] async event ids";
+  public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_2 = "Cannot create Region /region with [index#_region, index2#_region] async event ids because another cache has the same region defined with [index#_region] async event ids";
+
   public static void verifyInternalRegions(LuceneService luceneService, Cache cache, Consumer<LocalRegion> verify) {
     // Get index
     LuceneIndexForPartitionedRegion index = (LuceneIndexForPartitionedRegion) luceneService.getIndex(INDEX_NAME, REGION_NAME);

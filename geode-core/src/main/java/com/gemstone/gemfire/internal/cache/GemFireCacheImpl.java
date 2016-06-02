@@ -1066,7 +1066,7 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
       this.services.put(service.getInterface(), service);
     }
   }
-  
+
   private boolean isNotJmxManager(){
     return (this.system.getConfig().getJmxManagerStart() != true);
   }

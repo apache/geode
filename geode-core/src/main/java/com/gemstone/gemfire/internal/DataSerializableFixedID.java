@@ -848,7 +848,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short LUCENE_ENTRY_SCORE = 2174;
   public static final short LUCENE_TOP_ENTRIES = 2175;
   public static final short LUCENE_TOP_ENTRIES_COLLECTOR = 2176;
-  
+
   // NOTE, codes > 65535 will take 4 bytes to serialize
   
   /**

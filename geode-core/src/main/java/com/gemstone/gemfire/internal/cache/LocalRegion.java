@@ -452,6 +452,8 @@ public class LocalRegion extends AbstractRegion
     return this.stopper;
   }
 
+  protected Map<String,CacheServiceProfile> cacheServiceProfiles;
+
   ////////////////// Public Methods ///////////////////////////////////////////
 
   static String calcFullPath(String regionName, LocalRegion parentRegion) {
@@ -550,7 +552,10 @@ public class LocalRegion extends AbstractRegion
     this.isUsedForSerialGatewaySenderQueue = internalRegionArgs.isUsedForSerialGatewaySenderQueue();
     this.isUsedForParallelGatewaySenderQueue = internalRegionArgs.isUsedForParallelGatewaySenderQueue();
     this.serialGatewaySender = internalRegionArgs.getSerialGatewaySender();
-    
+    this.cacheServiceProfiles = internalRegionArgs.getCacheServiceProfiles() == null
+        ? null
+        : Collections.unmodifiableMap(internalRegionArgs.getCacheServiceProfiles());
+
     if (!isUsedForMetaRegion && !isUsedForPartitionedRegionAdmin
         && !isUsedForPartitionedRegionBucket
         && !isUsedForSerialGatewaySenderQueue
@@ -10987,6 +10992,10 @@ public class LocalRegion extends AbstractRegion
   final public boolean isInternalRegion(){
     return isSecret() || isUsedForMetaRegion() || isUsedForPartitionedRegionAdmin()
            || isUsedForPartitionedRegionBucket();
+  }
+
+  public CacheServiceProfile getCacheServiceProfile(String id) {
+    return this.cacheServiceProfiles.get(id);
   }
 
   public LoaderHelper createLoaderHelper(Object key, Object callbackArgument,

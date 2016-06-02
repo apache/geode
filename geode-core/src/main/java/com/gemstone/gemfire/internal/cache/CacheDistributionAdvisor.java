@@ -99,6 +99,8 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
 
   private static final int ASYNC_EVENT_QUEUE_IDS_MASK = 0x400000;
   private static final int IS_OFF_HEAP_MASK =           0x800000;
+  private static final int CACHE_SERVICE_PROFILES_MASK = 0x1000000;
+
   
   // moved initializ* to DistributionAdvisor
 
@@ -567,6 +569,8 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
      */
     public boolean hasCacheServer = false;
 
+    public List<CacheServiceProfile> cacheServiceProfiles = new ArrayList<>();
+
     /** for internal use, required for DataSerializer.readObject */
     public CacheProfile() {
     }
@@ -619,6 +623,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       if (!this.gatewaySenderIds.isEmpty()) s |= GATEWAY_SENDER_IDS_MASK;
       if (!this.asyncEventQueueIds.isEmpty()) s |= ASYNC_EVENT_QUEUE_IDS_MASK;
       if (this.isOffHeap) s |= IS_OFF_HEAP_MASK;
+      if (!this.cacheServiceProfiles.isEmpty()) s |= CACHE_SERVICE_PROFILES_MASK;
       Assert.assertTrue(!this.scope.isLocal());
       return s;
     }
@@ -722,6 +727,14 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
      */
     public boolean allEvents() {
       return this.subscriptionAttributes.getInterestPolicy().isAll();
+    }
+
+    public void addCacheServiceProfile(CacheServiceProfile profile) {
+      this.cacheServiceProfiles.add(profile);
+    }
+
+    private boolean hasCacheServiceProfiles(int bits) {
+      return (bits & CACHE_SERVICE_PROFILES_MASK) != 0;
     }
 
     /**
@@ -829,9 +842,12 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
         writeSet(asyncEventQueueIds, out);
       }
       DataSerializer.writeObject(this.filterProfile, out);
+      if (!cacheServiceProfiles.isEmpty()) {
+        DataSerializer.writeObject(cacheServiceProfiles, out);
+      }
     }
 
-    private void writeSet(Set<String> set, DataOutput out) throws IOException {
+    private void writeSet(Set<?> set, DataOutput out) throws IOException {
       // to fix bug 47205 always serialize the Set as a HashSet.
       out.writeByte(DSCODE.HASH_SET);
       InternalDataSerializer.writeSet(set, out);
@@ -853,6 +869,9 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
         asyncEventQueueIds = DataSerializer.readObject(in);
       }
       this.filterProfile = DataSerializer.readObject(in);
+      if (hasCacheServiceProfiles(bits)) {
+        cacheServiceProfiles = DataSerializer.readObject(in);
+      }
     }
 
     @Override
@@ -885,6 +904,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       sb.append("; gatewaySenderIds =" + this.gatewaySenderIds);
       sb.append("; asyncEventQueueIds =" + this.asyncEventQueueIds);
       sb.append("; IsOffHeap=" + this.isOffHeap);
+      sb.append("; cacheServiceProfiles=" + this.cacheServiceProfiles);
     }
   }
 

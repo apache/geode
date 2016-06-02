@@ -28,16 +28,10 @@ import java.util.Map;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneEventListener;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
-import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
-import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 import org.junit.Test;
 
@@ -47,22 +41,16 @@ import org.junit.Test;
   * of different regions types and topologies.
   *
   */
-public abstract class LuceneQueriesBase extends JUnit4CacheTestCase {
+public abstract class LuceneQueriesBase extends LuceneDUnitTest {
 
   private static final long serialVersionUID = 1L;
-  protected VM dataStore1;
-  protected VM dataStore2;
   protected VM accessor;
 
   @Override
   public final void postSetUp() throws Exception {
-    Host host = Host.getHost(0);
-    dataStore1 = host.getVM(0);
-    dataStore2 = host.getVM(1);
-    accessor = host.getVM(3);
+    super.postSetUp();
+    accessor = Host.getHost(0).getVM(3);
   }
-
-  protected abstract void initDataStore(SerializableRunnableIF createIndex) throws Exception;
 
   protected abstract void initAccessor(SerializableRunnableIF createIndex) throws Exception;
 

@@ -17,7 +17,10 @@
 package com.gemstone.gemfire.internal.cache;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -66,6 +69,7 @@ public final class InternalRegionArguments
   private List indexes;
   private boolean declarativeIndexCreation;
 
+  private Map<String,CacheServiceProfile> cacheServiceProfiles;
 
   /* methods that set and retrieve internal state used to configure a Region */
 
@@ -316,5 +320,17 @@ public final class InternalRegionArguments
   
   public boolean getDeclarativeIndexCreation() {
     return this.declarativeIndexCreation;
+  }
+
+  public InternalRegionArguments addCacheServiceProfile(CacheServiceProfile profile) {
+    if(this.cacheServiceProfiles == null) {
+      this.cacheServiceProfiles = new HashMap<>();
+    }
+    this.cacheServiceProfiles.put(profile.getId(), profile);
+    return this;
+  }
+
+  public Map<String,CacheServiceProfile> getCacheServiceProfiles() {
+    return this.cacheServiceProfiles;
   }
 }
