@@ -46,9 +46,13 @@ public class GMSEncryptJUnitTest {
 
   NetView netView;
 
-  private void initMocks() throws Exception {
+  private void initMocks() throws Exception{
+    initMocks("AES:128");
+  }
+  
+  private void initMocks(String algo) throws Exception {
     Properties nonDefault = new Properties();
-    nonDefault.put(DistributionConfig.SECURITY_CLIENT_DHALGO_NAME, "AES:128");
+    nonDefault.put(DistributionConfig.SECURITY_CLIENT_DHALGO_NAME, algo);
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig tconfig = new RemoteTransportConfig(config,
       DistributionManager.NORMAL_DM_TYPE);
@@ -74,45 +78,51 @@ public class GMSEncryptJUnitTest {
 
   }
 
+  String[] algos = new String[]{"AES",
+      "Blowfish",
+      "DES",
+      "DESede"};
 
   @Test
   public void testOneMemberCanDecryptAnothersMessage() throws Exception{
-    initMocks();
+    for (String algo : algos) {
+      initMocks(algo);
 
-    GMSEncrypt gmsEncrypt1 = new GMSEncrypt(services, mockMembers[1]); // this will be the sender
-    GMSEncrypt gmsEncrypt2 = new GMSEncrypt(services, mockMembers[2]); // this will be the receiver
+      GMSEncrypt gmsEncrypt1 = new GMSEncrypt(services, mockMembers[1]); // this will be the sender
+      GMSEncrypt gmsEncrypt2 = new GMSEncrypt(services, mockMembers[2]); // this will be the receiver
 
-    // establish the public keys for the sender and receiver
-    netView.setPublicKey(mockMembers[1], gmsEncrypt1.getPublicKeyBytes());
-    netView.setPublicKey(mockMembers[2], gmsEncrypt2.getPublicKeyBytes());
+      // establish the public keys for the sender and receiver
+      netView.setPublicKey(mockMembers[1], gmsEncrypt1.getPublicKeyBytes());
+      netView.setPublicKey(mockMembers[2], gmsEncrypt2.getPublicKeyBytes());
 
-    gmsEncrypt1.installView(netView, mockMembers[1]);
-    gmsEncrypt2.installView(netView, mockMembers[2]);
+      gmsEncrypt1.installView(netView, mockMembers[1]);
+      gmsEncrypt2.installView(netView, mockMembers[2]);
 
-    // sender encrypts a message, so use receiver's public key
-    String ch = "Hello world";
-    byte[] challenge =  ch.getBytes();
-    byte[]  encryptedChallenge =  gmsEncrypt1.encryptData(challenge, mockMembers[2]);
+      // sender encrypts a message, so use receiver's public key
+      String ch = "Hello world";
+      byte[] challenge = ch.getBytes();
+      byte[] encryptedChallenge = gmsEncrypt1.encryptData(challenge, mockMembers[2]);
 
-    // receiver decrypts the message using the sender's public key
-    byte[] decryptBytes = gmsEncrypt2.decryptData(encryptedChallenge,  mockMembers[1]);
+      // receiver decrypts the message using the sender's public key
+      byte[] decryptBytes = gmsEncrypt2.decryptData(encryptedChallenge, mockMembers[1]);
 
-    // now send a response
-    String response = "Hello yourself!";
-    byte[] responseBytes = response.getBytes();
-    byte[] encryptedResponse = gmsEncrypt2.encryptData(responseBytes, mockMembers[1]);
+      // now send a response
+      String response = "Hello yourself!";
+      byte[] responseBytes = response.getBytes();
+      byte[] encryptedResponse = gmsEncrypt2.encryptData(responseBytes, mockMembers[1]);
 
-    // receiver decodes the response
-    byte[] decryptedResponse = gmsEncrypt1.decryptData(encryptedResponse,  mockMembers[2]);
+      // receiver decodes the response
+      byte[] decryptedResponse = gmsEncrypt1.decryptData(encryptedResponse, mockMembers[2]);
 
-    Assert.assertFalse(Arrays.equals(challenge, encryptedChallenge));
+      Assert.assertFalse(Arrays.equals(challenge, encryptedChallenge));
 
-    Assert.assertTrue(Arrays.equals(challenge, decryptBytes));
+      Assert.assertTrue(Arrays.equals(challenge, decryptBytes));
 
-    Assert.assertFalse(Arrays.equals(responseBytes, encryptedResponse));
+      Assert.assertFalse(Arrays.equals(responseBytes, encryptedResponse));
 
-    Assert.assertTrue(Arrays.equals(responseBytes, decryptedResponse));
+      Assert.assertTrue(Arrays.equals(responseBytes, decryptedResponse));
 
+    }
   }
   
   @Test
@@ -245,6 +255,53 @@ public class GMSEncryptJUnitTest {
     Assert.assertFalse(Arrays.equals(challenge, encryptedChallenge));
 
     Assert.assertTrue(Arrays.equals(challenge, decryptBytes));    
+  }
+  
+  @Test
+  public void testForClusterSecretKeyFromOtherMember() throws Exception{
+    for (String algo : algos) {
+      initMocks(algo);
+
+      final GMSEncrypt gmsEncrypt1 = new GMSEncrypt(services, mockMembers[1]); // this will be the sender
+      Thread.currentThread().sleep(100);
+      gmsEncrypt1.initClusterSecretKey();
+      final GMSEncrypt gmsEncrypt2 = new GMSEncrypt(services, mockMembers[2]); // this will be the sender
+
+      // establish the public keys for the sender and receiver
+      netView.setPublicKey(mockMembers[1], gmsEncrypt1.getPublicKeyBytes());
+      netView.setPublicKey(mockMembers[2], gmsEncrypt2.getPublicKeyBytes());
+
+      gmsEncrypt1.installView(netView, mockMembers[1]);
+
+      byte[] secretBytes = gmsEncrypt1.getClusterSecretKey();
+      gmsEncrypt2.addClusterKey(secretBytes);
+
+      gmsEncrypt2.installView(netView, mockMembers[1]);
+
+      // sender encrypts a message, so use receiver's public key
+      String ch = "Hello world";
+      byte[] challenge = ch.getBytes();
+      byte[] encryptedChallenge = gmsEncrypt1.encryptData(challenge);
+
+      // receiver decrypts the message using the sender's public key
+      byte[] decryptBytes = gmsEncrypt2.decryptData(encryptedChallenge);
+
+      // now send a response
+      String response = "Hello yourself!";
+      byte[] responseBytes = response.getBytes();
+      byte[] encryptedResponse = gmsEncrypt2.encryptData(responseBytes);
+
+      // receiver decodes the response
+      byte[] decryptedResponse = gmsEncrypt1.decryptData(encryptedResponse);
+
+      Assert.assertFalse(Arrays.equals(challenge, encryptedChallenge));
+
+      Assert.assertTrue(Arrays.equals(challenge, decryptBytes));
+
+      Assert.assertFalse(Arrays.equals(responseBytes, encryptedResponse));
+
+      Assert.assertTrue(Arrays.equals(responseBytes, decryptedResponse));
+    }
   }
   
   @Test

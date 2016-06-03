@@ -92,7 +92,7 @@ public class GMSEncrypt implements Cloneable{
   protected byte[] getClusterSecretKey() {
     return this.clusterEncryptor.secretBytes;
   }
-
+  
   protected synchronized void initClusterSecretKey() throws Exception {
     if(this.clusterEncryptor == null) {
       this.clusterEncryptor = new ClusterEncryptor(this);
@@ -104,7 +104,7 @@ public class GMSEncrypt implements Cloneable{
     //TODO we are reseeting here, in case there is some race
     this.clusterEncryptor = new ClusterEncryptor(secretBytes);
   }
-
+  
   protected GMSEncrypt() {
     initEncryptors();
   }
@@ -239,7 +239,7 @@ public class GMSEncrypt implements Cloneable{
 
   private Map<InternalDistributedMember, PeerEncryptor> getPeerEncryptorMap() {
     int h = Math.abs(Thread.currentThread().getName().hashCode() % numberOfPeerEncryptorCopies);
-    ConcurrentHashMap m = copyOfPeerEncryptors[h];
+    ConcurrentHashMap<InternalDistributedMember, PeerEncryptor> m = copyOfPeerEncryptors[h];
     
     if(m == null) {
       synchronized (copyOfPeerEncryptors) {
@@ -439,10 +439,9 @@ public class GMSEncrypt implements Cloneable{
     int blocksize = getBlockSize(dhSKAlgo);
 
     if (keysize == -1 || blocksize == -1) {
-      // TODO how should we do here, should we just throw runtime exception?
-      /* SecretKey sKey = ka.generateSecret(dhSKAlgo);
-       * encrypt = Cipher.getInstance(dhSKAlgo);
-       * encrypt.init(Cipher.ENCRYPT_MODE, sKey); */
+      SecretKeySpec sks = new SecretKeySpec(secretBytes, dhSKAlgo);
+      encrypt = Cipher.getInstance(dhSKAlgo);
+      encrypt.init(Cipher.ENCRYPT_MODE, sks);
     } else {
 
       String dhAlgoStr = getDhAlgoStr(dhSKAlgo);
@@ -491,10 +490,9 @@ public class GMSEncrypt implements Cloneable{
     int blocksize = getBlockSize(dhSKAlgo);
 
     if (keysize == -1 || blocksize == -1) {
-      // TODO: how to do here, should we just throw runtime exception?
-      /* SecretKey sKey = ka.generateSecret(dhSKAlgo);
-       * decrypt = Cipher.getInstance(dhSKAlgo);
-       * decrypt.init(Cipher.DECRYPT_MODE, sKey); */
+      SecretKeySpec sks = new SecretKeySpec(secretBytes, dhSKAlgo);
+      decrypt = Cipher.getInstance(dhSKAlgo);
+      decrypt.init(Cipher.DECRYPT_MODE, sks);
     } else {
       String algoStr = getDhAlgoStr(dhSKAlgo);
 
@@ -515,7 +513,7 @@ public class GMSEncrypt implements Cloneable{
     int blocksize = getBlockSize(dhSKAlgo);
 
     if (keysize == -1 || blocksize == -1) {
-      SecretKey sKey = ka.generateSecret(dhSKAlgo);
+      SecretKey sKey = ka.generateSecret(dhSKAlgo);      
       return sKey.getEncoded();
     } else {
       return ka.generateSecret();
@@ -552,7 +550,7 @@ public class GMSEncrypt implements Cloneable{
     public ClusterEncryptor(byte[] sb) {
       this.secretBytes = sb;
     }
-
+    
     public synchronized byte[] encryptBytes(byte[] data) throws Exception {
       String algo = dhSKAlgo;
       return GMSEncrypt.encryptBytes(data, getEncryptCipher(algo));

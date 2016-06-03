@@ -87,6 +87,7 @@ public class GMSJoinLeaveJUnitTest {
     mockDistConfig = mock(DistributionConfig.class);
     when(mockDistConfig.getEnableNetworkPartitionDetection()).thenReturn(enableNetworkPartition);
     when(mockDistConfig.getLocators()).thenReturn("localhost[8888]");
+    when(mockDistConfig.getSecurityClientDHAlgo()).thenReturn("");
     mockConfig = mock(ServiceConfig.class);
     when(mockDistConfig.getStartLocator()).thenReturn("localhost[12345]");
     when(mockConfig.getDistributionConfig()).thenReturn(mockDistConfig);
