@@ -60,14 +60,6 @@ public class StringQueryProviderJUnitTest {
   }
 
   @Test
-  public void usesSearchableFieldsAsDefaults() throws QueryException {
-    StringQueryProvider provider = new StringQueryProvider("findThis");
-    Query query = provider.getQuery(mockIndex);
-    Assert.assertNotNull(query);
-    assertEquals("field-1:findthis field-2:findthis", query.toString());
-  }
-
-  @Test
   @Ignore("Custom analyzer not yet supported, this is a duplicate test right now")
   public void usesCustomAnalyzer() throws QueryException {
     StringQueryProvider provider = new StringQueryProvider("findThis");
