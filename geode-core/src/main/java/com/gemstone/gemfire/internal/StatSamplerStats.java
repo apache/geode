@@ -27,13 +27,19 @@ public class StatSamplerStats {
   public final static String DELAY_DURATION = "delayDuration"; // int
   public final static String STAT_RESOURCES = "statResources"; // int
   public final static String JVM_PAUSES = "jvmPauses"; // int
-  
+  public final static String SAMPLE_CALLBACKS = "sampleCallbacks"; // int
+  public final static String SAMPLE_CALLBACK_ERRORS = "sampleCallbackErrors"; // int
+  public final static String SAMPLE_CALLBACK_DURATION = "sampleCallbackDuration"; // long
+
   private final static StatisticsType samplerType;
   private final static int sampleCountId;
   private final static int sampleTimeId;
   private final static int delayDurationId;
   private final static int statResourcesId;
   private final static int jvmPausesId;
+  private final static int sampleCallbacksId;
+  private final static int sampleCallbackErrorsId;
+  private final static int sampleCallbackDurationId;
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     samplerType = f.createType("StatSampler",
@@ -54,12 +60,24 @@ public class StatSamplerStats {
                                  f.createIntCounter(JVM_PAUSES,
                                                     "Total number of JVM pauses (which may or may not be full GC pauses) detected by this sampler. A JVM pause is defined as a system event which kept the statistics sampler thread from sampling for 3000 or more milliseconds. This threshold can be customized by setting the system property gemfire.statSamplerDelayThreshold (units are milliseconds).",
                                                     "jvmPauses", false),
+                                 f.createIntGauge(SAMPLE_CALLBACKS,
+                                   "Total number of statistics that are sampled using callbacks.",
+                                   "resources", false),
+                                 f.createIntCounter(SAMPLE_CALLBACK_ERRORS,
+                                   "Total number of exceptions thrown by callbacks when performing sampling",
+                                   "errors", false),
+                                 f.createLongCounter(SAMPLE_CALLBACK_DURATION,
+                                   "Total amount of time invoking sampling callbacks",
+                                   "milliseconds", false),
                                });
     sampleCountId = samplerType.nameToId(SAMPLE_COUNT);
     sampleTimeId = samplerType.nameToId(SAMPLE_TIME);
     delayDurationId = samplerType.nameToId(DELAY_DURATION);
     statResourcesId = samplerType.nameToId(STAT_RESOURCES);
     jvmPausesId = samplerType.nameToId(JVM_PAUSES);
+    sampleCallbacksId = samplerType.nameToId(SAMPLE_CALLBACKS);
+    sampleCallbackErrorsId = samplerType.nameToId(SAMPLE_CALLBACK_ERRORS);
+    sampleCallbackDurationId = samplerType.nameToId(SAMPLE_CALLBACK_DURATION);
   }
 
   private final Statistics samplerStats;
@@ -78,7 +96,19 @@ public class StatSamplerStats {
   public void incJvmPauses() {
     this.samplerStats.incInt(jvmPausesId, 1);
   }
-  
+
+  public void incSampleCallbackErrors(int delta) {
+    this.samplerStats.incInt(sampleCallbackErrorsId, delta);
+  }
+
+  public void setSampleCallbacks(int count) {
+    this.samplerStats.setInt(sampleCallbacksId, count);
+  }
+
+  public void incSampleCallbackDuration(long delta) {
+    this.samplerStats.incLong(sampleCallbackDurationId, delta);
+  }
+
   public int getSampleCount() {
     return this.samplerStats.getInt(SAMPLE_COUNT);
   }

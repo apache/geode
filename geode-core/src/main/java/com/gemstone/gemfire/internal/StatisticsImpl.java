@@ -17,11 +17,23 @@
 package com.gemstone.gemfire.internal;
 
 //import com.gemstone.gemfire.distributed.DistributedSystem;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.DoubleSupplier;
+import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
+import java.util.function.Supplier;
+
 import com.gemstone.gemfire.StatisticDescriptor;
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.internal.concurrent.Atomics;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteHashMap;
+
+import org.apache.logging.log4j.Logger;
 
 // @todo darrel Add statistics instances to archive when they are created. 
 /**
@@ -42,6 +54,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * @since GemFire 3.0
  */
 public abstract class StatisticsImpl implements Statistics {
+  /** logger - not private for tests */
+  static Logger logger = LogService.getLogger();
 
   /** The type of this statistics instance */
   private final StatisticsTypeImpl type;
@@ -60,6 +74,25 @@ public abstract class StatisticsImpl implements Statistics {
 
   /** Uniquely identifies this instance */
   private long uniqueId;
+
+  /**
+   * Suppliers of int sample values to be sampled every sample-interval
+   */
+  private final CopyOnWriteHashMap<Integer, IntSupplier> intSuppliers = new CopyOnWriteHashMap<>();
+  /**
+   * Suppliers of long sample values to be sampled every sample-interval
+   */
+  private final CopyOnWriteHashMap<Integer, LongSupplier> longSuppliers = new CopyOnWriteHashMap<>();
+  /**
+   * Suppliers of double sample values to be sampled every sample-interval
+   */
+  private final CopyOnWriteHashMap<Integer, DoubleSupplier> doubleSuppliers = new CopyOnWriteHashMap<>();
+
+  /**
+   * Suppliers that have previously failed. Tracked to avoid logging many messages about
+   * a failing supplier
+   */
+  private final Set<Object> flakySuppliers = new HashSet<Object>();
 
   ///////////////////////  Constructors  ///////////////////////
 
@@ -362,6 +395,12 @@ public abstract class StatisticsImpl implements Statistics {
   }
 
   /**
+   * Increments the value of the statistic of type <code>double</code> at
+   * the given offset by a given amount, but performs no type checking.
+   */
+  protected abstract void _incDouble(int offset, double delta);
+
+  /**
    * For internal use only.
    * Tells the implementation to prepare the data in this instance
    * for sampling.
@@ -372,10 +411,108 @@ public abstract class StatisticsImpl implements Statistics {
   }
 
   /**
-   * Increments the value of the statistic of type <code>double</code> at
-   * the given offset by a given amount, but performs no type checking.
+   * Invoke sample suppliers to retrieve the current value for
+   * the suppler controlled sets and update the stats to reflect
+   * the supplied values.
+   * @return the number of callback errors that occurred while
+   * sampling stats
    */
-  protected abstract void _incDouble(int offset, double delta);
+  public int invokeSuppliers() {
+    int errors = 0;
+    for(Map.Entry<Integer, IntSupplier> entry: intSuppliers.entrySet()) {
+      try {
+        _setInt(entry.getKey(), entry.getValue().getAsInt());
+      } catch(Throwable t) {
+        logSupplierError(t, entry.getKey(), entry.getValue());
+        errors++;
+      }
+    }
+    for(Map.Entry<Integer, LongSupplier> entry: longSuppliers.entrySet()) {
+      try {
+        _setLong(entry.getKey(), entry.getValue().getAsLong());
+      } catch(Throwable t) {
+        logSupplierError(t, entry.getKey(), entry.getValue());
+        errors++;
+      }
+    }
+    for(Map.Entry<Integer, DoubleSupplier> entry: doubleSuppliers.entrySet()) {
+      try {
+        _setDouble(entry.getKey(), entry.getValue().getAsDouble());
+      } catch(Throwable t) {
+        logSupplierError(t, entry.getKey(), entry.getValue());
+        errors++;
+      }
+    }
+
+    return errors;
+  }
+
+  private void logSupplierError(final Throwable t, int statId, Object supplier) {
+    if(flakySuppliers.add(supplier)) {
+      logger.warn("Error invoking supplier for stat {}, id {}", this.getTextId(), statId, t);
+    }
+  }
+
+  /**
+   * @return the number of statistics that are measured using supplier callbacks
+   */
+  public int getSupplierCount() {
+    return intSuppliers.size() + doubleSuppliers.size() + longSuppliers.size();
+  }
+
+  @Override
+  public IntSupplier setIntSupplier(final int id, final IntSupplier supplier) {
+    if(id >= type.getIntStatCount()) {
+      throw new IllegalArgumentException("Id " + id + " is not in range for stat" + type);
+    }
+    return intSuppliers.put(id, supplier);
+  }
+
+  @Override
+  public IntSupplier setIntSupplier(final String name, final IntSupplier supplier) {
+    return setIntSupplier(nameToId(name), supplier);
+  }
+
+  @Override
+  public IntSupplier setIntSupplier(final StatisticDescriptor descriptor, final IntSupplier supplier) {
+    return setIntSupplier(getIntId(descriptor), supplier);
+  }
+
+  @Override
+  public LongSupplier setLongSupplier(final int id, final LongSupplier supplier) {
+    if(id >= type.getLongStatCount()) {
+      throw new IllegalArgumentException("Id " + id + " is not in range for stat" + type);
+    }
+    return longSuppliers.put(id, supplier);
+  }
+
+  @Override
+  public LongSupplier setLongSupplier(final String name, final LongSupplier supplier) {
+    return setLongSupplier(nameToId(name), supplier);
+  }
+
+  @Override
+  public LongSupplier setLongSupplier(final StatisticDescriptor descriptor, final LongSupplier supplier) {
+    return setLongSupplier(getLongId(descriptor), supplier);
+  }
+
+  @Override
+  public DoubleSupplier setDoubleSupplier(final int id, final DoubleSupplier supplier) {
+    if(id >= type.getDoubleStatCount()) {
+      throw new IllegalArgumentException("Id " + id + " is not in range for stat" + type);
+    }
+    return doubleSuppliers.put(id, supplier);
+  }
+
+  @Override
+  public DoubleSupplier setDoubleSupplier(final String name, final DoubleSupplier supplier) {
+    return setDoubleSupplier(nameToId(name), supplier);
+  }
+
+  @Override
+  public DoubleSupplier setDoubleSupplier(final StatisticDescriptor descriptor, final DoubleSupplier supplier) {
+    return setDoubleSupplier(getDoubleId(descriptor), supplier);
+  }
 
   @Override
   public int hashCode() {

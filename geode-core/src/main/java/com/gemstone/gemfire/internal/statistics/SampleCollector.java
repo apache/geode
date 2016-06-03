@@ -286,7 +286,9 @@ public class SampleCollector {
           handler.close();
         }
       }
-      instance = null;
+      if(instance == this) {
+        instance = null;
+      }
     }
   }
   

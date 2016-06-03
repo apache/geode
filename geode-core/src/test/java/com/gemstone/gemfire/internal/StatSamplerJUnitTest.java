@@ -117,11 +117,20 @@ public class StatSamplerJUnitTest {
         factory.createLongCounter(  "long_counter_9",   "d9",  "u9"),
         factory.createLongCounter(  "long_counter_10",  "d10", "u10", true),
         factory.createLongGauge(    "long_gauge_11",    "d11", "u11"),
-        factory.createLongGauge(    "long_gauge_12",    "d12", "u12", false)
+        factory.createLongGauge(    "long_gauge_12",    "d12", "u12", false),
+        factory.createLongGauge(    "sampled_long",    "d13", "u13", false),
+        factory.createIntGauge(    "sampled_int",    "d14", "u14", false),
+        factory.createDoubleGauge(    "sampled_double",    "d15", "u15", false)
     };
     final StatisticsType ST1 = factory.createType("ST1", "ST1", statsST1);
     final Statistics st1_1 = factory.createAtomicStatistics(ST1, "st1_1", 1);
-    
+    st1_1.setIntSupplier("sampled_int", () -> 5);
+    getOrCreateExpectedValueMap(st1_1).put("sampled_int", 5);
+    st1_1.setLongSupplier("sampled_long", () -> 6);
+    getOrCreateExpectedValueMap(st1_1).put("sampled_long", 6);
+    st1_1.setDoubleSupplier("sampled_double", () -> 7.0);
+    getOrCreateExpectedValueMap(st1_1).put("sampled_double", 7.0);
+
     boolean done = false;
 
     Statistics[] samplerStatsInstances = factory.findStatisticsByTextId("statSampler");
@@ -319,11 +328,7 @@ public class StatSamplerJUnitTest {
   
   private void incDouble(Statistics statistics, String stat, double value) {
     assertFalse(statistics.isClosed());
-    Map<String,Number> statValues = this.allStatistics.get(statistics.getTextId());
-    if (statValues == null) {
-      statValues = new HashMap<String,Number>();
-      this.allStatistics.put(statistics.getTextId(), statValues);
-    }
+    Map<String, Number> statValues = getOrCreateExpectedValueMap(statistics);
     statistics.incDouble(stat, value);
     statValues.put(stat, statistics.getDouble(stat));
     if (this.statisticTypes.get(statistics.getTextId()) == null) {
@@ -333,11 +338,7 @@ public class StatSamplerJUnitTest {
   
   private void incInt(Statistics statistics, String stat, int value) {
     assertFalse(statistics.isClosed());
-    Map<String,Number> statValues = this.allStatistics.get(statistics.getTextId());
-    if (statValues == null) {
-      statValues = new HashMap<String,Number>();
-      this.allStatistics.put(statistics.getTextId(), statValues);
-    }
+    Map<String, Number> statValues = getOrCreateExpectedValueMap(statistics);
     statistics.incInt(stat, value);
     statValues.put(stat, statistics.getInt(stat));
     if (this.statisticTypes.get(statistics.getTextId()) == null) {
@@ -345,13 +346,18 @@ public class StatSamplerJUnitTest {
     }
   }
 
-  private void incLong(Statistics statistics, String stat, long value) {
-    assertFalse(statistics.isClosed());
+  private Map<String, Number> getOrCreateExpectedValueMap(final Statistics statistics) {
     Map<String,Number> statValues = this.allStatistics.get(statistics.getTextId());
     if (statValues == null) {
       statValues = new HashMap<String,Number>();
       this.allStatistics.put(statistics.getTextId(), statValues);
     }
+    return statValues;
+  }
+
+  private void incLong(Statistics statistics, String stat, long value) {
+    assertFalse(statistics.isClosed());
+    Map<String, Number> statValues = getOrCreateExpectedValueMap(statistics);
     statistics.incLong(stat, value);
     statValues.put(stat, statistics.getLong(stat));
     if (this.statisticTypes.get(statistics.getTextId()) == null) {

@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -47,7 +48,6 @@ import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.StatArchiveReader.StatValue;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.PureLogWriter;
-import com.gemstone.gemfire.internal.statistics.DummyStatistics;
 import com.gemstone.gemfire.internal.statistics.ResourceInstance;
 import com.gemstone.gemfire.internal.statistics.ResourceType;
 import com.gemstone.gemfire.internal.statistics.SampleCollector;
@@ -1575,7 +1575,8 @@ public class StatArchiveWriterReaderJUnitTest {
     
     final StatisticsType statsType = createDummyStatisticsType();
     final ResourceType rt = new ResourceType(0, statsType);
-    final Statistics statistics = new ClosedStatistics();
+    final Statistics statistics = mock(Statistics.class);
+    when(statistics.isClosed()).thenReturn(true);
     final ResourceInstance ri = new ResourceInstance(0, statistics, rt);
     
     // if bug #45377 still existed, this call would throw IllegalStateException
@@ -1602,7 +1603,7 @@ public class StatArchiveWriterReaderJUnitTest {
     
     final StatisticsType statsType = createDummyStatisticsType();
     final ResourceType rt = new ResourceType(0, statsType);
-    final Statistics statistics = new DummyStatistics();
+    final Statistics statistics = mock(Statistics.class);
     final ResourceInstance ri = new ResourceInstance(0, statistics, rt);
 
     writer.sampled(TestStatArchiveWriter.WRITER_INITIAL_DATE_MILLIS + 1000,
@@ -1709,14 +1710,7 @@ public class StatArchiveWriterReaderJUnitTest {
       }
     };
   }
-  
-  private static class ClosedStatistics extends DummyStatistics {
-    @Override
-    public boolean isClosed() {
-      return true;
-    }
-  }
-  
+
   /* [KEEP] alternative method for getting an expected golden file:
   Class clazz = getClass();
   assertNotNull(clazz);

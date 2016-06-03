@@ -26,6 +26,7 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.LoggingThreadGroup;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.logging.log4j.LogMarker;
+import com.gemstone.gemfire.internal.statistics.CallbackSampler;
 import com.gemstone.gemfire.internal.statistics.SampleCollector;
 import com.gemstone.gemfire.internal.statistics.StatArchiveHandlerConfig;
 import com.gemstone.gemfire.internal.statistics.StatisticsSampler;
@@ -35,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * HostStatSampler implements a thread which will monitor, sample, and archive
@@ -50,7 +52,7 @@ public abstract class HostStatSampler
   public static final String OS_STATS_DISABLED_PROPERTY = "osStatsDisabled";
 
   protected static final String INITIALIZATION_TIMEOUT_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "statSamplerInitializationTimeout";
-  protected static final int INITIALIZATION_TIMEOUT_DEFAULT = 3000;
+  protected static final int INITIALIZATION_TIMEOUT_DEFAULT = 30000;
   protected static final long INITIALIZATION_TIMEOUT_MILLIS = 
       Long.getLong(INITIALIZATION_TIMEOUT_PROPERTY, INITIALIZATION_TIMEOUT_DEFAULT);
   
@@ -82,6 +84,8 @@ public abstract class HostStatSampler
   private final StoppableCountDownLatch statSamplerInitializedLatch;
 
   private final CancelCriterion stopper;
+
+  private final CallbackSampler callbackSampler;
   
   protected HostStatSampler(CancelCriterion stopper, 
                             StatSamplerStats samplerStats) {
@@ -89,6 +93,7 @@ public abstract class HostStatSampler
     this.statSamplerInitializedLatch = new StoppableCountDownLatch(this.stopper, 1);
     this.samplerStats = samplerStats;
     this.fileSizeLimitInKB = Boolean.getBoolean(TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY);
+    this.callbackSampler = new CallbackSampler(stopper, samplerStats);
   }
   
   public final StatSamplerStats getStatSamplerStats() {
@@ -276,6 +281,8 @@ public abstract class HostStatSampler
       }  
       ThreadGroup group = 
         LoggingThreadGroup.createThreadGroup("StatSampler Threads");
+
+      this.callbackSampler.start(getStatisticsManager(), group, getSampleRate(), TimeUnit.MILLISECONDS);
       statThread = new Thread(group, this);
       statThread.setName(statThread.getName() + " StatSampler");
       statThread.setPriority(Thread.MAX_PRIORITY);
@@ -298,6 +305,7 @@ public abstract class HostStatSampler
   }
   private final void stop(boolean interruptIfAlive) {
     synchronized (HostStatSampler.class) {
+      this.callbackSampler.stop();
       if ( statThread == null) {
         return; 
       }

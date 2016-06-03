@@ -192,19 +192,19 @@ public class StatisticsTypeImpl implements StatisticsType {
   /**
    * Gets the number of statistics in this type that are ints.
    */
-  public final int getIntStatCount() {
+  public int getIntStatCount() {
     return this.intStatCount;
   }
   /**
    * Gets the number of statistics in this type that are longs.
    */
-  public final int getLongStatCount() {
+  public int getLongStatCount() {
     return this.longStatCount;
   }
   /**
    * Gets the number of statistics that are doubles.
    */
-  public final int getDoubleStatCount() {
+  public int getDoubleStatCount() {
     return this.doubleStatCount;
   }
 

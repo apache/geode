@@ -16,6 +16,10 @@
  */
 package com.gemstone.gemfire.internal;
 
+import java.util.function.DoubleSupplier;
+import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
+
 import com.gemstone.gemfire.*;
 
 /**
@@ -194,5 +198,45 @@ public class DummyStatisticsImpl implements Statistics {
   }
 
   public final void incDouble(String name, double delta) {
+  }
+
+  @Override
+  public IntSupplier setIntSupplier(final int id, final IntSupplier supplier) {
+    return null;
+  }
+
+  @Override
+  public IntSupplier setIntSupplier(final String name, final IntSupplier supplier) {
+    return null;
+  }
+
+  @Override
+  public IntSupplier setIntSupplier(final StatisticDescriptor descriptor, final IntSupplier supplier) {
+    return null;
+  }
+
+  @Override public LongSupplier setLongSupplier(final int id, final LongSupplier supplier) {
+    return null;
+  }
+
+  @Override public LongSupplier setLongSupplier(final String name, final LongSupplier supplier) {
+    return null;
+  }
+
+  @Override public LongSupplier setLongSupplier(final StatisticDescriptor descriptor, final LongSupplier supplier) {
+    return null;
+  }
+
+  @Override public DoubleSupplier setDoubleSupplier(final int id, final DoubleSupplier supplier) {
+    return null;
+  }
+
+  @Override public DoubleSupplier setDoubleSupplier(final String name, final DoubleSupplier supplier) {
+    return null;
+  }
+
+  @Override
+  public DoubleSupplier setDoubleSupplier(final StatisticDescriptor descriptor, final DoubleSupplier supplier) {
+    return null;
   }
 }
