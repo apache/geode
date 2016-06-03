@@ -38,6 +38,7 @@ REM echo %scriptdir%
 @set GEMFIRE=%gf%
 
 @set GFSH_JARS=%GEMFIRE%\lib\gfsh-dependencies.jar
+REM if a system level classpath is set, append it to the classes gfsh will need
 @if defined CLASSPATH (
     @set DEPENDENCIES=%GFSH_JARS%;%CLASSPATH%
 ) else (
@@ -45,7 +46,7 @@ REM echo %scriptdir%
 )
 
 @if not defined GF_JAVA (
-@REM %GF_JAVA% is not defined, assume it is on the PATH
+REM %GF_JAVA% is not defined, assume it is on the PATH
     @if defined JAVA_HOME (
     @set GF_JAVA=%JAVA_HOME%\bin\java.exe
 ) else (
@@ -67,7 +68,7 @@ REM @if not exist "%USERPROFILE%\.gemfire" (
 REM @mkdir "%USERPROFILE%\.gemfire"
 REM )
 
-REM  Consider java is from JDK
+REM  Expect to find the tools.jar from the JDK
 @set TOOLS_JAR=%JAVA_HOME%\lib\tools.jar
 @IF EXIST "%TOOLS_JAR%" (
     @set DEPENDENCIES=%DEPENDENCIES%;%TOOLS_JAR%
@@ -79,5 +80,7 @@ REM  Consider java is from JDK
 @if defined JAVA_ARGS (
     @set JAVA_ARGS="%JAVA_ARGS%"
 )
+
+REM Call java with our classpath
 @"%GF_JAVA%" -Dgfsh=true -Dlog4j.configurationFile=classpath:log4j2-cli.xml -classpath %DEPENDENCIES% %JAVA_ARGS% %LAUNCHER% %*
 :done
