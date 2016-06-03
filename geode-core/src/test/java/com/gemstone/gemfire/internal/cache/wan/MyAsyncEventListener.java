@@ -18,13 +18,15 @@ package com.gemstone.gemfire.internal.cache.wan;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.gemstone.gemfire.cache.Declarable;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 
-public class MyAsyncEventListener implements AsyncEventListener {
+public class MyAsyncEventListener implements AsyncEventListener, Declarable {
 
   private final Map eventsMap;
 
@@ -50,4 +52,7 @@ public class MyAsyncEventListener implements AsyncEventListener {
 
   public void close() {
   }
+
+  @Override
+  public void init(Properties props) {}
 }

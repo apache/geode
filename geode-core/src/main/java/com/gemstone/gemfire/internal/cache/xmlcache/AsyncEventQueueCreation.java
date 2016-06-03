@@ -61,7 +61,8 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
     this.dispatcherThreads = senderAttrs.dispatcherThreads;
     this.orderPolicy = senderAttrs.policy;
     this.asyncEventListener = eventListener;
-    this.isBucketSorted = senderAttrs.isBucketSorted; 
+    this.isBucketSorted = senderAttrs.isBucketSorted;
+    this.gatewayEventFilters = senderAttrs.eventFilters;
     this.gatewayEventSubstitutionFilter = senderAttrs.eventSubstitutionFilter;
     this.ignoreEvictionAndExpiration = senderAttrs.ignoreEvictionAndExpiration;
   }
