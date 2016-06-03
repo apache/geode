@@ -61,7 +61,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
  */
 public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
 
-  
   public PartitionedRegionCqQueryDUnitTest(String name) {
     super(name);
   }
