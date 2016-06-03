@@ -366,7 +366,10 @@ public class HeapDataOutputStream extends OutputStream implements
   
   public final void reset() {
     this.size = 0;
-    this.chunks = null;
+    if (this.chunks != null) {
+      this.chunks.clear();
+      this.chunks = null;
+    }
     this.buffer.clear();
     this.writeMode = true;
     this.ignoreWrites = false;

@@ -513,18 +513,21 @@ public class Message  {
       // Keep track of the fact that we are making progress.
       this.sc.updateProcessingMessage();
     }
-    if (this.socket != null) {
+    if (this.socket == null) {
+      throw new IOException(LocalizedStrings.Message_DEAD_CONNECTION.toLocalizedString());
+    }
+    try {
       final ByteBuffer cb = getCommBuffer();
       if (cb == null) {
         throw new IOException("No buffer");
       }
       int msgLen = 0;
-      synchronized(cb) {
+      synchronized (cb) {
         long totalPartLen = 0;
         long headerLen = 0;
         int partsToTransmit = this.numberOfParts;
-        
-        for (int i=0; i < this.numberOfParts; i++) {
+
+        for (int i = 0; i < this.numberOfParts; i++) {
           Part part = this.partsList[i];
           headerLen += PART_HEADER_SIZE;
           totalPartLen += part.getLength();
@@ -540,27 +543,27 @@ public class Message  {
           partsToTransmit++;
         }
 
-        if ( (headerLen + totalPartLen) > Integer.MAX_VALUE ) {
-          throw new MessageTooLargeException("Message size (" + (headerLen + totalPartLen) 
+        if ((headerLen + totalPartLen) > Integer.MAX_VALUE) {
+          throw new MessageTooLargeException("Message size (" + (headerLen + totalPartLen)
               + ") exceeds maximum integer value");
         }
-        
-        msgLen = (int)(headerLen + totalPartLen);
-        
+
+        msgLen = (int) (headerLen + totalPartLen);
+
         if (msgLen > MAX_MESSAGE_SIZE) {
           throw new MessageTooLargeException("Message size (" + msgLen
               + ") exceeds gemfire.client.max-message-size setting (" + MAX_MESSAGE_SIZE + ")");
         }
-        
+
         cb.clear();
         packHeaderInfoForSending(msgLen, (securityPart != null));
-        for (int i=0; i < partsToTransmit; i++) {
+        for (int i = 0; i < partsToTransmit; i++) {
           Part part = (i == this.numberOfParts) ? securityPart : partsList[i];
 
           if (cb.remaining() < PART_HEADER_SIZE) {
             flushBuffer();
           }
-          
+
           int partLen = part.getLength();
           cb.putInt(partLen);
           cb.put(part.getTypeCode());
@@ -586,12 +589,10 @@ public class Message  {
           this.os.flush();
         }
       }
-      if(clearMessage) {
+    } finally {
+      if (clearMessage) {
         clearParts();
       }
-    }
-    else {
-      throw new IOException(LocalizedStrings.Message_DEAD_CONNECTION.toLocalizedString());
     }
   }
 

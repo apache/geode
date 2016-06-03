@@ -102,6 +102,24 @@ public class MessageJUnitTest {
     }
   }
 
+  /**
+   * geode-1468: Message should clear the chunks in its Parts when
+   * performing cleanup.
+   * 
+   * @throws Exception
+   */
+  @Test
+  public void streamBuffersAreClearedDuringCleanup() throws Exception {
+    Part[] parts = new Part[2];
+    Part mockPart1 = mock(Part.class);
+    when(mockPart1.getLength()).thenReturn(100);
+    parts[0] = mockPart1;
+    parts[1] = mockPart1;
+    message.setParts(parts);
+    message.clearParts();
+    verify(mockPart1, times(2)).clear();
+  }
+
   // TODO many more tests are needed
 
 }

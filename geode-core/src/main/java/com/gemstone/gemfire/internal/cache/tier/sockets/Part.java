@@ -67,7 +67,12 @@ public class Part {
 
 
   public void clear() {
-    this.part = null;
+    if (this.part != null) {
+      if (this.part instanceof HeapDataOutputStream) {
+        ((HeapDataOutputStream)this.part).close();
+      }
+      this.part = null;
+    }
     this.typeCode = BYTE_CODE;
   }
 
