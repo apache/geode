@@ -18,12 +18,16 @@ import java.math.BigInteger;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+
 import org.junit.experimental.categories.Category;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.crypto.KeyAgreement;
 import javax.crypto.Mac;
@@ -112,6 +116,71 @@ public class GMSEncryptJUnitTest {
   }
   
   @Test
+  public void testOneMemberCanDecryptAnothersMessageMultithreaded() throws Exception{
+    initMocks();
+    final int runs = 100000;
+    final GMSEncrypt gmsEncrypt1 = new GMSEncrypt(services, mockMembers[1]); // this will be the sender
+    final GMSEncrypt gmsEncrypt2 = new GMSEncrypt(services, mockMembers[2]); // this will be the receiver
+
+    // establish the public keys for the sender and receiver
+    netView.setPublicKey(mockMembers[1], gmsEncrypt1.getPublicKeyBytes());
+    netView.setPublicKey(mockMembers[2], gmsEncrypt2.getPublicKeyBytes());
+
+    gmsEncrypt1.installView(netView, mockMembers[1]);
+    gmsEncrypt2.installView(netView, mockMembers[2]);
+    int nthreads = 20;
+    ExecutorService executorService = Executors.newFixedThreadPool(nthreads);
+    final CountDownLatch countDownLatch = new CountDownLatch(nthreads);
+    
+    for(int j = 0; j < nthreads; j++)
+    executorService.execute(new Runnable() {
+      public void run() {
+        // sender encrypts a message, so use receiver's public key
+        try {
+          int count = 0;
+          for (int i = 0; i < runs; i++) {
+           // System.out.println("another run " + i + " threadid " + Thread.currentThread().getId());
+            String ch = "Hello world";
+            byte[] challenge = ch.getBytes();
+            byte[] encryptedChallenge = gmsEncrypt1.encryptData(challenge, mockMembers[2]);
+
+            // receiver decrypts the message using the sender's public key
+            byte[] decryptBytes = gmsEncrypt2.decryptData(encryptedChallenge, mockMembers[1]);
+
+            // now send a response
+            String response = "Hello yourself!";
+            byte[] responseBytes = response.getBytes();
+            byte[] encryptedResponse = gmsEncrypt2.encryptData(responseBytes, mockMembers[1]);
+
+            // receiver decodes the response
+            byte[] decryptedResponse = gmsEncrypt1.decryptData(encryptedResponse, mockMembers[2]);
+
+            Assert.assertFalse(Arrays.equals(challenge, encryptedChallenge));
+
+            Assert.assertTrue(Arrays.equals(challenge, decryptBytes));
+
+            Assert.assertFalse(Arrays.equals(responseBytes, encryptedResponse));
+
+            Assert.assertTrue(Arrays.equals(responseBytes, decryptedResponse));
+            count++;
+          }
+          Assert.assertEquals(runs, count);
+          countDownLatch.countDown();
+        } catch (Exception e) {
+          e.printStackTrace();
+          
+        }
+       
+      }
+    });
+
+    countDownLatch.await();
+    executorService.shutdown();
+    
+    
+  }
+  
+  @Test
   public void testPublicKeyPrivateKeyFromSameMember() throws Exception{
     initMocks();
 
@@ -179,12 +248,13 @@ public class GMSEncryptJUnitTest {
   }
   
   @Test
-  public void testForClusterSecretKeyFromOtherMember() throws Exception{
+  public void testForClusterSecretKeyFromOtherMemberMultipleThreads() throws Exception{
     initMocks();
 
-    GMSEncrypt gmsEncrypt1 = new GMSEncrypt(services, mockMembers[1]); // this will be the sender
+    final GMSEncrypt gmsEncrypt1 = new GMSEncrypt(services, mockMembers[1]); // this will be the sender
+    Thread.currentThread().sleep(100);
     gmsEncrypt1.initClusterSecretKey();
-    GMSEncrypt gmsEncrypt2 = new GMSEncrypt(services, mockMembers[2]); // this will be the sender
+    final GMSEncrypt gmsEncrypt2 = new GMSEncrypt(services, mockMembers[2]); // this will be the sender
     
     // establish the public keys for the sender and receiver
     netView.setPublicKey(mockMembers[1], gmsEncrypt1.getPublicKeyBytes());
@@ -197,29 +267,57 @@ public class GMSEncryptJUnitTest {
     
     gmsEncrypt2.installView(netView, mockMembers[1]);
     
-    // sender encrypts a message, so use receiver's public key
-    String ch = "Hello world";
-    byte[] challenge =  ch.getBytes();
-    byte[]  encryptedChallenge =  gmsEncrypt1.encryptData(challenge);
-
-    // receiver decrypts the message using the sender's public key
-    byte[] decryptBytes = gmsEncrypt2.decryptData(encryptedChallenge);
+    final int runs  = 100000;
+    int nthreads = 20;
+    ExecutorService executorService = Executors.newFixedThreadPool(nthreads);
+    final CountDownLatch countDownLatch = new CountDownLatch(nthreads);
     
-    // now send a response
-    String response = "Hello yourself!";
-    byte[] responseBytes = response.getBytes();
-    byte[] encryptedResponse = gmsEncrypt2.encryptData(responseBytes);
+    for (int j = 0; j < nthreads; j++)
+      executorService.execute(new Runnable() {
+        public void run() {
+          // sender encrypts a message, so use receiver's public key
+          try {
+            int count = 0;
+            for (int i = 0; i < runs; i++) {
+              //System.out.println("run " + i + " threadid " + Thread.currentThread().getId());
+              String ch = "Hello world";
+              byte[] challenge = ch.getBytes();
+              byte[] encryptedChallenge = gmsEncrypt1.encryptData(challenge);
 
-    // receiver decodes the response
-    byte[] decryptedResponse = gmsEncrypt1.decryptData(encryptedResponse);
+              // receiver decrypts the message using the sender's public key
+              byte[] decryptBytes = gmsEncrypt2.decryptData(encryptedChallenge);
 
-    Assert.assertFalse(Arrays.equals(challenge, encryptedChallenge));
+              // now send a response
+              String response = "Hello yourself!";
+              byte[] responseBytes = response.getBytes();
+              byte[] encryptedResponse = gmsEncrypt2.encryptData(responseBytes);
 
-    Assert.assertTrue(Arrays.equals(challenge, decryptBytes));
+              // receiver decodes the response
+              byte[] decryptedResponse = gmsEncrypt1.decryptData(encryptedResponse);
 
-    Assert.assertFalse(Arrays.equals(responseBytes, encryptedResponse));
+              Assert.assertFalse(Arrays.equals(challenge, encryptedChallenge));
 
-    Assert.assertTrue(Arrays.equals(responseBytes, decryptedResponse));  
+              Assert.assertTrue(Arrays.equals(challenge, decryptBytes));
+
+              Assert.assertFalse(Arrays.equals(responseBytes, encryptedResponse));
+
+              Assert.assertTrue(Arrays.equals(responseBytes, decryptedResponse));
+              
+              count++;
+            }
+            
+            Assert.assertEquals(runs, count);
+            
+            countDownLatch.countDown();
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+          
+        }
+      });
+    
+    countDownLatch.await();
+    executorService.shutdown();
   }
   
     

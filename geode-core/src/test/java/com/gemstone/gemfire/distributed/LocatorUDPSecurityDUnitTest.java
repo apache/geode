@@ -8,13 +8,12 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 
 public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest{
 
-  public LocatorUDPSecurityDUnitTest(String name) {
-    super(name);
+  public LocatorUDPSecurityDUnitTest() {
   }
   
   @Test
   public void testLoop() throws Exception {
-    for(int i=0; i < 2; i++) {
+    for(int i=0; i < 1; i++) {
       testMultipleLocatorsRestartingAtSameTime();
       tearDown();
       setUp();
