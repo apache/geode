@@ -239,15 +239,14 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
   
   private void setupSystem() throws Exception {
     disconnectAllFromDS();
-    final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     setUpJmxManagerOnVm0ThenConnect(getServerProperties());
     
     final VM manager = Host.getHost(0).getVM(0);
     final VM server1 = Host.getHost(0).getVM(1);
     final VM client1 = Host.getHost(0).getVM(2);
     
-    startCacheServer(server1, port[0], false, regionName);
-    startDurableClient(client1, server1, port[0], clientName, "300");
+    int listeningPort = startCacheServer(server1, 0, false, regionName);
+    startDurableClient(client1, server1, listeningPort, clientName, "300");
   }
   
   /**
@@ -303,10 +302,10 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
     });
   }
   
-  private void startCacheServer(VM server, final int port, 
+  private int startCacheServer(VM server, final int port,
       final boolean createPR, final String regionName) throws Exception {
 
-    server.invoke(new SerializableCallable() {
+    Integer listeningPort = (Integer) server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         getSystem(getServerProperties());
         
@@ -331,9 +330,11 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
         cacheServer.setPort(port);
         cacheServer.start();
        
-        return null;
+        return cacheServer.getPort();
       }
     });
+
+    return listeningPort.intValue();
   }
   
   private void startDurableClient(VM client, final VM server, final int port,
