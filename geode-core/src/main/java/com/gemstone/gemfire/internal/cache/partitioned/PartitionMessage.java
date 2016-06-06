@@ -186,7 +186,7 @@ public abstract class PartitionMessage extends DistributionMessage implements
    * (non-Javadoc)
    * @see com.gemstone.gemfire.internal.cache.TransactionMessage#getTXOriginatorClient()
    */
-  public final InternalDistributedMember getTXOriginatorClient() {
+  public InternalDistributedMember getTXOriginatorClient() {
     return txMemberId;
   }
 

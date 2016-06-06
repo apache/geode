@@ -1021,16 +1021,18 @@ public class TXManagerImpl implements CacheTransactionManager,
   }
   
   public boolean isHostedTxRecentlyCompleted(TXId txId) {
-    // if someone is asking to see if we have the txId, they will come
-    // back and ask for the commit message, this could take a long time
-    // specially when called from TXFailoverCommand, so we move
-    // the txId to the front of the queue
-    TXCommitMessage msg = failoverMap.remove(txId);
-    if (msg != null) {
-      failoverMap.put(txId, msg);
-      return true;
+    synchronized(failoverMap) {
+      if (failoverMap.containsKey(txId)) {
+        // if someone is asking to see if we have the txId, they will come
+        // back and ask for the commit message, this could take a long time
+        // specially when called from TXFailoverCommand, so we move
+        // the txId back to the linked map by removing and putting it back.
+        TXCommitMessage msg = failoverMap.remove(txId);
+        failoverMap.put(txId, msg);
+        return true;
+      }
+      return false;
     }
-    return false;
   }
   
   

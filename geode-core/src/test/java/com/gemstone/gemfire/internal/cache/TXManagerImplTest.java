@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.partitioned.DestroyMessage;
 import com.gemstone.gemfire.test.fake.Fakes;
@@ -44,24 +45,29 @@ public class TXManagerImplTest {
   TXId completedTxid;
   TXId notCompletedTxid;
   InternalDistributedMember member;
-  CountDownLatch latch = new CountDownLatch(1);
+  CountDownLatch latch;
   TXStateProxy tx1, tx2;
+  DistributionManager dm;
+  TXRemoteRollbackMessage rollbackMsg;
 
   @Before
   public void setUp() {
     Cache cache = Fakes.cache();
-    txMgr = new TXManagerImpl(null, cache);
+    dm = mock(DistributionManager.class);
+    txMgr = new TXManagerImpl(mock(CachePerfStats.class), cache);
     txid = new TXId(null, 0);
     msg = mock(DestroyMessage.class);    
     txCommitMsg = mock(TXCommitMessage.class);
     member = mock(InternalDistributedMember.class);
     completedTxid = new TXId(member, 1);
     notCompletedTxid = new TXId(member, 2);
+    latch = new CountDownLatch(1);
+    rollbackMsg = new TXRemoteRollbackMessage();
     
     when(this.msg.canStartRemoteTransaction()).thenReturn(true);
     when(this.msg.canParticipateInTransaction()).thenReturn(true);
   }
-  
+
   @Test
   public void getOrSetHostedTXStateAbleToSetTXStateAndGetLock(){    
     TXStateProxy tx = txMgr.getOrSetHostedTXState(txid, msg);
@@ -232,5 +238,61 @@ public class TXManagerImplTest {
     txMgr.saveTXCommitMessageForClientFailover(completedTxid, txCommitMsg); 
     assertTrue(txMgr.hasTxAlreadyFinished(tx, completedTxid));
   }
-  
+
+  @Test
+  public void txRolledbackShouldCompleteTx() throws InterruptedException {
+    when(msg.getTXOriginatorClient()).thenReturn(mock(InternalDistributedMember.class));
+
+    Thread t1 = new Thread(new Runnable() {
+      public void run() {
+        try {
+          tx1 = txMgr.masqueradeAs(msg);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+          throw new RuntimeException(e);
+        }
+        try {
+          msg.process(dm);
+        } finally {
+          txMgr.unmasquerade(tx1);
+        }
+
+        TXStateProxy existingTx = masqueradeToRollback();
+        latch.countDown();
+        Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
+        .atMost(30, TimeUnit.SECONDS).until(() -> tx1.getLock().hasQueuedThreads());
+
+        rollbackTransaction(existingTx);
+      }
+    });
+    t1.start();
+
+    assertTrue(latch.await(60, TimeUnit.SECONDS));
+
+    TXStateProxy tx = txMgr.masqueradeAs(rollbackMsg);
+    assertEquals(tx, tx1);
+    t1.join();
+    rollbackTransaction(tx);
+  }
+
+  private TXStateProxy masqueradeToRollback() {
+    TXStateProxy existingTx;
+    try {
+      existingTx = txMgr.masqueradeAs(rollbackMsg);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+      throw new RuntimeException(e);
+    }
+    return existingTx;
+  }
+
+  private void rollbackTransaction(TXStateProxy existingTx) {
+    try {
+      if (!txMgr.isHostedTxRecentlyCompleted(txid)) {
+        txMgr.rollback();
+      }
+    } finally {
+      txMgr.unmasquerade(existingTx);
+    }
+  }
 }
