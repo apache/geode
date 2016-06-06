@@ -169,6 +169,13 @@ public class GMSEncrypt implements Cloneable{
     try {
       //createPeerEncryptor(mbr, publickey);
       memberToPeerEncryptor.put(mbr, publickey);
+      synchronized (copyOfPeerEncryptors) {
+        //remove all the existing keys..
+        for(Map m : copyOfPeerEncryptors) {
+          if(m != null)
+            m.remove(mbr);
+        }
+      }
     }catch(Exception e) {
       throw new RuntimeException("Unable to create peer encryptor " +  mbr, e);
     }

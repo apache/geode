@@ -122,7 +122,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase
   @Override
   public Properties getDistributedSystemProperties() {
     if (dsProperties == null) {
-      dsProperties = new Properties();
       dsProperties.put(MAX_WAIT_TIME_RECONNECT, "20000");
       dsProperties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
       dsProperties.put(DISABLE_AUTO_RECONNECT, "false");
@@ -131,6 +130,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase
       dsProperties.put(MCAST_PORT, "0");
       dsProperties.put(MEMBER_TIMEOUT, "1000");
       dsProperties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+      addDSProps(dsProperties);
     }
     return dsProperties;
   }
@@ -1273,5 +1273,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase
     public void init(Properties props) {
     }
 
+  }
+
+  protected void addDSProps(Properties p) {
   }
 }

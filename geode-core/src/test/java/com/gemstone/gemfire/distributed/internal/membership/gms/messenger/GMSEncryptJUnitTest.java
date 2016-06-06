@@ -263,7 +263,6 @@ public class GMSEncryptJUnitTest {
       initMocks(algo);
 
       final GMSEncrypt gmsEncrypt1 = new GMSEncrypt(services, mockMembers[1]); // this will be the sender
-      Thread.currentThread().sleep(100);
       gmsEncrypt1.initClusterSecretKey();
       final GMSEncrypt gmsEncrypt2 = new GMSEncrypt(services, mockMembers[2]); // this will be the sender
 
