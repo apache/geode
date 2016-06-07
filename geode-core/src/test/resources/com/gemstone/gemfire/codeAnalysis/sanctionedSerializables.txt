@@ -130,7 +130,6 @@ com/gemstone/gemfire/cache/execute/FunctionException,true,4893171227542647452
 com/gemstone/gemfire/cache/execute/FunctionInvocationTargetException,true,1,id:com/gemstone/gemfire/distributed/DistributedMember
 com/gemstone/gemfire/cache/operations/OperationContext$OperationCode,false
 com/gemstone/gemfire/cache/operations/OperationContext$Resource,false
-com/gemstone/gemfire/cache/operations/internal/ResourceOperationContext,false,isPostOperation:boolean,opResult:java/lang/Object,operation:com/gemstone/gemfire/cache/operations/OperationContext$OperationCode,regionName:java/lang/String,resource:com/gemstone/gemfire/cache/operations/OperationContext$Resource
 com/gemstone/gemfire/cache/partition/PartitionNotAvailableException,true,1
 com/gemstone/gemfire/cache/persistence/ConflictingPersistentDataException,true,-2629287782021455875
 com/gemstone/gemfire/cache/persistence/PartitionOfflineException,true,-6471045959318795870,offlineMembers:java/util/Set
@@ -257,6 +256,7 @@ com/gemstone/gemfire/internal/admin/CompoundRegionSnapshot,true,6295026394298398
 com/gemstone/gemfire/internal/admin/StatAlert,true,5725457607122449170,definitionId:int,time:java/util/Date,values:java/lang/Number[]
 com/gemstone/gemfire/internal/admin/remote/DistributionLocatorId,true,6587390186971937865,bindAddress:java/lang/String,host:java/net/InetAddress,hostnameForClients:java/lang/String,peerLocator:boolean,port:int,serverLocator:boolean
 com/gemstone/gemfire/internal/admin/remote/EntryValueNodeImpl,false,fields:com/gemstone/gemfire/internal/admin/remote/EntryValueNodeImpl[],name:java/lang/String,primitive:boolean,primitiveVal:java/lang/Object,type:java/lang/String
+com/gemstone/gemfire/internal/cache/AbstractRegionMap$1,false,this$0:com/gemstone/gemfire/internal/cache/AbstractRegionMap
 com/gemstone/gemfire/internal/cache/BackupLock,false,backupDone:java/util/concurrent/locks/Condition,backupThread:java/lang/Thread,isBackingUp:boolean
 com/gemstone/gemfire/internal/cache/BucketAdvisor$SetFromMap,true,2454657854757543876,m:java/util/Map
 com/gemstone/gemfire/internal/cache/BucketNotFoundException,false
@@ -281,6 +281,7 @@ com/gemstone/gemfire/internal/cache/ForceableLinkedBlockingQueue,true,-690393397
 com/gemstone/gemfire/internal/cache/GemFireCacheImpl$3,true,1,this$0:com/gemstone/gemfire/internal/cache/GemFireCacheImpl
 com/gemstone/gemfire/internal/cache/GemFireCacheImpl$4,true,1,this$0:com/gemstone/gemfire/internal/cache/GemFireCacheImpl
 com/gemstone/gemfire/internal/cache/GemFireCacheImpl$5,true,1,this$0:com/gemstone/gemfire/internal/cache/GemFireCacheImpl
+com/gemstone/gemfire/internal/cache/GemFireCacheImpl$6,true,1,this$0:com/gemstone/gemfire/internal/cache/GemFireCacheImpl
 com/gemstone/gemfire/internal/cache/IdentityArrayList,true,449125332499184497,size:int,wrapped:boolean
 com/gemstone/gemfire/internal/cache/IncomingGatewayStatus,true,-4579815367602658353,_memberId:java/lang/String,_socketAddress:java/net/InetAddress,_socketPort:int
 com/gemstone/gemfire/internal/cache/InitialImageOperation$GIIStatus,false

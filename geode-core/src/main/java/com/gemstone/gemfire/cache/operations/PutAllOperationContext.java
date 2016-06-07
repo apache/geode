@@ -19,7 +19,7 @@ package com.gemstone.gemfire.cache.operations;
 
 import java.util.Map;
 
-import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
+import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.cache.operations.internal.UpdateOnlyMap;
 
 /**
@@ -28,10 +28,13 @@ import com.gemstone.gemfire.cache.operations.internal.UpdateOnlyMap;
  * 
  * @since GemFire 5.7
  */
-public class PutAllOperationContext extends ResourceOperationContext {
+public class PutAllOperationContext extends OperationContext {
 
   /** The set of keys for the operation */
   private final UpdateOnlyMap map;
+  
+  /** True if this is a post-operation context */
+  private boolean postOperation = false;
   
   private Object callbackArg;
 
@@ -40,8 +43,33 @@ public class PutAllOperationContext extends ResourceOperationContext {
    * 
    */
   public PutAllOperationContext(Map map) {
-    super(Resource.DATA, OperationCode.PUTALL, false);
     this.map = new UpdateOnlyMap(map);
+  }
+
+  /**
+   * Return the operation associated with the <code>OperationContext</code>
+   * object.
+   * 
+   * @return <code>OperationCode.PUTALL</code>.
+   */
+  @Override
+  public OperationCode getOperationCode() {
+    return OperationCode.PUTALL;
+  }
+
+  /**
+   * True if the context is for post-operation.
+   */
+  @Override
+  public boolean isPostOperation() {
+    return this.postOperation;
+  }
+
+  /**
+   * Set the post-operation flag to true.
+   */
+  protected void setPostOperation() {
+    this.postOperation = true;
   }
 
   /**

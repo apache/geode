@@ -21,10 +21,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.operations.OperationContext;
-import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import com.gemstone.gemfire.management.internal.security.ResourceOperationContext;
 import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.Authenticator;
@@ -181,7 +181,7 @@ public class SampleJsonAuthorization implements AccessControl, Authenticator {
         String resourcePart = (parts.length > 0) ? parts[0] : null;
         String operationPart = (parts.length > 1) ? parts[1] : null;
         String regionPart = (regionNames != null) ? regionNames : "*";
-        role.permissions.add(new ResourceOperationContext(resourcePart, operationPart, regionPart, false));
+        role.permissions.add(new ResourceOperationContext(resourcePart, operationPart, regionPart));
       }
 
       roleMap.put(role.name, role);

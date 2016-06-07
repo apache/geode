@@ -17,15 +17,16 @@
 
 package com.gemstone.gemfire.cache.operations;
 
-import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
-
 /**
  * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REGION_CREATE} operation for both the
  * pre-operation and post-operation cases.
  * 
  * @since GemFire 5.5
  */
-public class RegionCreateOperationContext extends ResourceOperationContext {
+public class RegionCreateOperationContext extends OperationContext {
+
+  /** True if this is a post-operation context */
+  private boolean postOperation;
 
   /**
    * Constructor for the region creation operation.
@@ -34,7 +35,26 @@ public class RegionCreateOperationContext extends ResourceOperationContext {
    *                true to set the post-operation flag
    */
   public RegionCreateOperationContext(boolean postOperation) {
-    super(Resource.DATA, OperationCode.REGION_CREATE, postOperation);
+    this.postOperation = postOperation;
+  }
+
+  /**
+   * Return the operation associated with the <code>OperationContext</code>
+   * object.
+   * 
+   * @return <code>OperationCode.REGION_CREATE</code>.
+   */
+  @Override
+  public OperationCode getOperationCode() {
+    return OperationCode.REGION_CREATE;
+  }
+
+  /**
+   * True if the context is for post-operation.
+   */
+  @Override
+  public boolean isPostOperation() {
+    return this.postOperation;
   }
 
 }

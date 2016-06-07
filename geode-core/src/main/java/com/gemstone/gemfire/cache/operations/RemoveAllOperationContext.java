@@ -20,7 +20,7 @@ package com.gemstone.gemfire.cache.operations;
 import java.util.Collection;
 import java.util.Collections;
 
-import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
+import com.gemstone.gemfire.cache.operations.OperationContext;
 
 /**
  * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#REMOVEALL} operation for both the
@@ -28,10 +28,13 @@ import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
  * 
  * @since GemFire 8.1
  */
-public class RemoveAllOperationContext extends ResourceOperationContext {
+public class RemoveAllOperationContext extends OperationContext {
 
   /** The collection of keys for the operation */
   private Collection<?> keys;
+  
+  /** True if this is a post-operation context */
+  private boolean postOperation = false;
   
   private Object callbackArg;
 
@@ -40,8 +43,33 @@ public class RemoveAllOperationContext extends ResourceOperationContext {
    * 
    */
   public RemoveAllOperationContext(Collection<?> keys) {
-    super(Resource.DATA, OperationCode.REMOVEALL);
     this.keys = keys;
+  }
+
+  /**
+   * Return the operation associated with the <code>OperationContext</code>
+   * object.
+   * 
+   * @return <code>OperationCode.RemoveAll</code>.
+   */
+  @Override
+  public OperationCode getOperationCode() {
+    return OperationCode.REMOVEALL;
+  }
+
+  /**
+   * True if the context is for post-operation.
+   */
+  @Override
+  public boolean isPostOperation() {
+    return this.postOperation;
+  }
+
+  /**
+   * Set the post-operation flag to true.
+   */
+  protected void setPostOperation() {
+    this.postOperation = true;
   }
 
   /**

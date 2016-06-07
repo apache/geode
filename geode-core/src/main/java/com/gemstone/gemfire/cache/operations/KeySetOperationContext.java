@@ -20,7 +20,7 @@ package com.gemstone.gemfire.cache.operations;
 import java.util.Set;
 
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
+import com.gemstone.gemfire.cache.operations.OperationContext;
 
 /**
  * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#KEY_SET} operation for both the
@@ -28,10 +28,13 @@ import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
  * 
  * @since GemFire 5.5
  */
-public class KeySetOperationContext extends ResourceOperationContext {
+public class KeySetOperationContext extends OperationContext {
 
   /** The set of keys for the operation */
   private Set keySet;
+
+  /** True if this is a post-operation context */
+  private boolean postOperation;
 
   /**
    * Constructor for the operation.
@@ -40,7 +43,33 @@ public class KeySetOperationContext extends ResourceOperationContext {
    *                true to set the post-operation flag
    */
   public KeySetOperationContext(boolean postOperation) {
-    super(Resource.DATA, OperationCode.KEY_SET, postOperation);
+    this.postOperation = postOperation;
+  }
+
+  /**
+   * Return the operation associated with the <code>OperationContext</code>
+   * object.
+   * 
+   * @return <code>OperationCode.KEY_SET</code>.
+   */
+  @Override
+  public OperationCode getOperationCode() {
+    return OperationCode.KEY_SET;
+  }
+
+  /**
+   * True if the context is for post-operation.
+   */
+  @Override
+  public boolean isPostOperation() {
+    return this.postOperation;
+  }
+
+  /**
+   * Set the post-operation flag to true.
+   */
+  public void setPostOperation() {
+    this.postOperation = true;
   }
 
   /**

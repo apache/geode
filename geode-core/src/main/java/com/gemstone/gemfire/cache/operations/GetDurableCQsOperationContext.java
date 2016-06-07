@@ -17,7 +17,8 @@
 
 package com.gemstone.gemfire.cache.operations;
 
-import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
+import java.util.Set;
+
 
 /**
  * Encapsulates a {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#GET_DURABLE_CQS} operation for the pre-operation
@@ -25,13 +26,34 @@ import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
  * 
  * @since GemFire 7.0
  */
-public class GetDurableCQsOperationContext extends ResourceOperationContext {
+public class GetDurableCQsOperationContext extends OperationContext {
 
   /**
    * Constructor for the GET_DURABLE_CQS operation.
+   * 
+  
    */
   public GetDurableCQsOperationContext() {
-    super(Resource.DATA, OperationCode.GET_DURABLE_CQS, false);
+    super();
+  }
+
+  /**
+   * Return the operation associated with the <code>OperationContext</code>
+   * object.
+   * 
+   * @return <code>OperationCode.GET_DURABLE_CQS</code>.
+   */
+  @Override
+  public OperationCode getOperationCode() {
+    return OperationCode.GET_DURABLE_CQS;
+  }
+
+  /**
+   * True if the context is for post-operation.
+   */
+  @Override
+  public boolean isPostOperation() {
+    return false;
   }
 
 }

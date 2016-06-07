@@ -17,7 +17,6 @@
 
 package com.gemstone.gemfire.cache.operations;
 
-import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
 
 /**
  * Encapsulates a region operation that requires only a key object for the
@@ -27,7 +26,7 @@ import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
  * 
  * @since GemFire 5.5
  */
-public abstract class KeyOperationContext extends ResourceOperationContext {
+public abstract class KeyOperationContext extends OperationContext {
 
   /** The key object of the operation */
   private Object key;
@@ -35,14 +34,19 @@ public abstract class KeyOperationContext extends ResourceOperationContext {
   /** Callback object for the operation (if any) */
   private Object callbackArg;
 
+  /** True if this is a post-operation context */
+  private boolean postOperation;
+
   /**
    * Constructor for the operation.
    * 
    * @param key
    *                the key for this operation
    */
-  public KeyOperationContext(OperationCode code, Object key) {
-    this(code, key, false);
+  public KeyOperationContext(Object key) {
+    this.key = key;
+    this.callbackArg = null;
+    this.postOperation = false;
   }
 
   /**
@@ -53,10 +57,40 @@ public abstract class KeyOperationContext extends ResourceOperationContext {
    * @param postOperation
    *                true to set the post-operation flag
    */
-  protected KeyOperationContext(OperationCode code, Object key, boolean postOperation) {
-    super(Resource.DATA, code, postOperation);
+  public KeyOperationContext(Object key, boolean postOperation) {
     this.key = key;
     this.callbackArg = null;
+    this.postOperation = postOperation;
+  }
+
+  /**
+   * Return the operation associated with the <code>OperationContext</code>
+   * object.
+   * 
+   * @return The <code>OperationCode</code> of this operation. This is one of
+   *         {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#DESTROY} 
+   *         or {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#CONTAINS_KEY}
+   *         for <code>KeyOperationContext</code>, and one of
+   *         {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#GET} or 
+   *         {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode#PUT} for
+   *         <code>KeyValueOperationContext</code>.
+   */
+  @Override
+  public abstract OperationCode getOperationCode();
+
+  /**
+   * True if the context is for post-operation.
+   */
+  @Override
+  public boolean isPostOperation() {
+    return this.postOperation;
+  }
+
+  /**
+   * Set the post-operation flag to true.
+   */
+  protected void setPostOperation() {
+    this.postOperation = true;
   }
 
   /**

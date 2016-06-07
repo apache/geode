@@ -22,7 +22,6 @@ import static org.junit.Assert.*;
 import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.cache.operations.OperationContext.Resource;
-import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.apache.shiro.authz.permission.WildcardPermission;
@@ -50,12 +49,12 @@ public class ResourceOperationContextJUnitTest {
 
   @Test
   public void testConstructor(){
-    context = new ResourceOperationContext();
+    context = new ResourceOperationContext(null, null, null);
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(OperationCode.NULL, context.getOperationCode());
     assertEquals(OperationContext.ALL_REGIONS, context.getRegionName());
 
-    context = new ResourceOperationContext();
+    context = new ResourceOperationContext(null, null);
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(OperationCode.NULL, context.getOperationCode());
     assertEquals(OperationContext.ALL_REGIONS, context.getRegionName());

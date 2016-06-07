@@ -27,13 +27,13 @@ package com.gemstone.gemfire.cache.operations;
 public class InvalidateOperationContext extends KeyOperationContext {
 
   /**
-   * Constructor for the INVALIDATE operation.
+   * Constructor for the operation.
    * 
    * @param key
    *                the key for this operation
    */
   public InvalidateOperationContext(Object key) {
-    super(OperationCode.INVALIDATE, key);
+    super(key);
   }
 
   /**
@@ -46,7 +46,18 @@ public class InvalidateOperationContext extends KeyOperationContext {
    *                sending updates                 
    */
   public InvalidateOperationContext(Object key, boolean isPostOperation) {
-    super(OperationCode.INVALIDATE, key, isPostOperation);
+    super(key, isPostOperation);
+  }
+
+  /**
+   * Return the operation associated with the <code>OperationContext</code>
+   * object.
+   * 
+   * @return <code>OperationCode.INVALIDATE</code>.
+   */
+  @Override
+  public OperationCode getOperationCode() {
+    return OperationCode.INVALIDATE;
   }
 
 }

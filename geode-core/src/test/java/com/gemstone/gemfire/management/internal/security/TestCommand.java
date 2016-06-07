@@ -22,7 +22,6 @@ import java.util.List;
 
 import com.gemstone.gemfire.cache.operations.OperationContext;
 
-import com.gemstone.gemfire.cache.operations.internal.ResourceOperationContext;
 import org.apache.shiro.authz.Permission;
 
 public class TestCommand {
@@ -42,23 +41,23 @@ public class TestCommand {
 
   private static List<TestCommand> testCommands = new ArrayList<>();
 
-  static {
+  static{
     init();
   }
-
+  
   private final String command;
   private final OperationContext permission;
-
+  
   public TestCommand(String command, OperationContext permission) {
     this.command = command;
     this.permission = permission;
   }
-
+  
   private static void createTestCommand(String command, OperationContext permission) {
     TestCommand instance = new TestCommand(command, permission);
     testCommands.add(instance);
   }
-
+  
   public String getCommand() {
     return this.command;
   }
@@ -67,13 +66,13 @@ public class TestCommand {
     return this.permission;
   }
 
-  public static List<TestCommand> getCommands() {
+  public static List<TestCommand> getCommands(){
     return testCommands;
   }
 
-  public static List<TestCommand> getPermittedCommands(Permission permission) {
+  public static List<TestCommand> getPermittedCommands(Permission permission){
     List<TestCommand> result = new ArrayList<>();
-    for (TestCommand testCommand : testCommands) {
+    for(TestCommand testCommand:testCommands){
       OperationContext cPerm = testCommand.getPermission();
       if(cPerm!=null && permission.implies(cPerm)){
         result.add(testCommand);
@@ -226,5 +225,5 @@ public class TestCommand {
     createTestCommand("disconnect", null);
     //Misc commands
     //createTestCommand("shutdown", clusterManage);
-  }
+  };
 }

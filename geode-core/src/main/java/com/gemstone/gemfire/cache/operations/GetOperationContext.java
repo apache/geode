@@ -25,18 +25,37 @@ package com.gemstone.gemfire.cache.operations;
  * 
  * @since GemFire 5.5
  */
-public abstract class GetOperationContext extends KeyValueOperationContext {
+public class GetOperationContext extends KeyValueOperationContext {
 
   /**
    * Constructor for the operation.
-   *
-   * @param code          the {@link com.gemstone.gemfire.cache.operations.OperationContext.OperationCode} for this
-   *                      context
-   * @param key           the key for this operation
-   * @param postOperation true if the context is for the post-operation case
+   * 
+   * @param key
+   *                the key for this operation
+   * @param postOperation
+   *                true if the context is for the post-operation case
    */
-  protected GetOperationContext(OperationCode code, Object key, boolean postOperation) {
-    super(code, key, null, false, postOperation);
+  public GetOperationContext(Object key, boolean postOperation) {
+    super(key, null, false, postOperation);
+  }
+
+  /**
+   * Return the operation associated with the <code>OperationContext</code>
+   * object.
+   * 
+   * @return <code>OperationCode.GET</code>.
+   */
+  @Override
+  public OperationCode getOperationCode() {
+    return OperationCode.GET;
+  }
+
+  /**
+   * Set the post-operation flag to true.
+   */
+  @Override
+  public void setPostOperation() {
+    super.setPostOperation();
   }
 
   /**

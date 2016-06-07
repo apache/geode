@@ -43,8 +43,19 @@ public class RegisterInterestOperationContext extends InterestOperationContext {
    */
   public RegisterInterestOperationContext(Object key,
       InterestType interestType, InterestResultPolicy policy) {
-    super(OperationCode.REGISTER_INTEREST, key, interestType);
+    super(key, interestType);
     this.policy = policy;
+  }
+
+  /**
+   * Return the operation associated with the <code>OperationContext</code>
+   * object.
+   * 
+   * @return <code>OperationCode.REGISTER_INTEREST</code>.
+   */
+  @Override
+  public OperationCode getOperationCode() {
+    return OperationCode.REGISTER_INTEREST;
   }
 
   /**

@@ -32,15 +32,9 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 public class GetOperationContextImpl extends GetOperationContext implements Releasable {
 
   private boolean released;
-
-  /**
-   * Constructor for a concrete {@link GetOperationContext}
-   *
-   * @param key           the key object
-   * @param postOperation boolean indication whether this is a post-operation
-   */
+  
   public GetOperationContextImpl(Object key, boolean postOperation) {
-    super(OperationCode.GET, key, postOperation);
+    super(key, postOperation);
   }
 
   /**

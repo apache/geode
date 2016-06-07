@@ -17,7 +17,7 @@
 
 package com.gemstone.gemfire.cache.operations;
 
-import org.apache.shiro.authz.Permission;
+import org.apache.shiro.authz.permission.WildcardPermission;
 
 /**
  * Encapsulates a cache operation and the data associated with it for both the
@@ -30,17 +30,16 @@ import org.apache.shiro.authz.Permission;
  *
  * @since GemFire 5.5
  */
-public interface OperationContext extends Permission {
+public abstract class OperationContext extends WildcardPermission{
+  public static String ALL_REGIONS="*";
 
-  String ALL_REGIONS = "*";
-
-  enum Resource {
+  public enum Resource {
     NULL,
     CLUSTER,
     DATA
-  }
+  };
 
-  enum OperationCode {
+  public enum OperationCode {
     @Deprecated
     GET,
     @Deprecated
@@ -299,13 +298,13 @@ public interface OperationContext extends Permission {
    * Return the operation code associated with the <code>OperationContext</code>
    * object.
    */
-  OperationCode getOperationCode();
+  public abstract OperationCode getOperationCode();
 
-  default Resource getResource() {
+  public Resource getResource(){
     return Resource.NULL;
   }
 
-  default String getRegionName() {
+  public String getRegionName(){
     return ALL_REGIONS;
   }
 
@@ -319,7 +318,7 @@ public interface OperationContext extends Permission {
    * context object in the pre-processing stage. In the post-processing stage
    * the context object shall contain results of the query.
    */
-  boolean isPostOperation();
+  public abstract boolean isPostOperation();
 
   /**
    * When called post-operation, returns true if the operation was one that performed an update.
@@ -330,7 +329,7 @@ public interface OperationContext extends Permission {
    *
    * @since GemFire 6.6
    */
-  default boolean isClientUpdate() {
+  public boolean isClientUpdate() {
     if (isPostOperation()) {
       switch (getOperationCode()) {
         case PUT:
@@ -351,13 +350,21 @@ public interface OperationContext extends Permission {
    * True if the context is created before sending the updates to a client.
    */
   @Deprecated
-  default boolean isClientUpdate(OperationContext context) {
+  public boolean isClientUpdate(OperationContext context) {
     OperationCode opCode = context.getOperationCode();
     return context.isPostOperation()
         && (opCode.isPut() || opCode.isPutAll() || opCode.isDestroy()
         || opCode.isRemoveAll()
         || opCode.isInvalidate() || opCode.isRegionCreate()
         || opCode.isRegionDestroy() || opCode.isRegionClear());
+  }
+
+  @Override
+  public String toString(){
+    if(ALL_REGIONS.equals(getRegionName()))
+      return getResource()+":"+getOperationCode();
+    else
+      return getResource()+":"+getOperationCode()+":"+getRegionName();
   }
 
 }

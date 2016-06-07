@@ -89,12 +89,11 @@ public class CustomAuthRealm extends AuthorizingRealm{
 
   @Override
   public boolean isPermitted(PrincipalCollection principals, Permission permission) {
-    OperationContext context = (OperationContext) permission;
-    Principal principal = (Principal) principals.getPrimaryPrincipal();
-
+    OperationContext context =(OperationContext)permission;
+    Principal principal = (Principal)principals.getPrimaryPrincipal();
     // if no access control is specified, then we allow all
-    if (StringUtils.isBlank(authzFactoryName)) return true;
-
+    if(StringUtils.isBlank(authzFactoryName))
+      return true;
     AccessControl accessControl = getAccessControl(principal, false);
     return accessControl.authorizeOperation(context.getRegionName(), context);
   }
@@ -140,7 +139,8 @@ public class CustomAuthRealm extends AuthorizingRealm{
       Method instanceGetter = ClassLoadUtil.methodFromName(this.authenticatorFactoryName);
       auth = (Authenticator) instanceGetter.invoke(null, (Object[]) null);
     } catch (Exception ex) {
-      throw new AuthenticationException(ex.toString(), ex);
+      throw new AuthenticationException(
+          ex.toString(), ex);
     }
     if (auth == null) {
       throw new AuthenticationException(
