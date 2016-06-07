@@ -1668,7 +1668,7 @@ public class InternalDistributedSystem
     return sb.toString().trim();
   }
 
-  private final ArrayList<Statistics> statsList = new ArrayList<Statistics>();
+  private final CopyOnWriteArrayList<Statistics> statsList = new CopyOnWriteArrayList<Statistics>();
   private int statsListModCount = 0;
   private long statsListUniqueId = 1;
   private final Object statsListUniqueIdLock = new Object();
@@ -1698,11 +1698,9 @@ public class InternalDistributedSystem
   @Override
   public final Statistics findStatistics(long id) {
     List<Statistics> statsList = this.statsList;
-    synchronized (statsList) {
-      for (Statistics s : statsList) {
-        if (s.getUniqueId() == id) {
-          return s;
-        }
+    for (Statistics s : statsList) {
+      if (s.getUniqueId() == id) {
+        return s;
       }
     }
     throw new RuntimeException(LocalizedStrings.PureStatSampler_COULD_NOT_FIND_STATISTICS_INSTANCE.toLocalizedString());
@@ -1711,11 +1709,9 @@ public class InternalDistributedSystem
   @Override
   public final boolean statisticsExists(long id) {
     List<Statistics> statsList = this.statsList;
-    synchronized (statsList) {
-      for (Statistics s : statsList) {
-        if (s.getUniqueId() == id) {
-          return true;
-        }
+    for (Statistics s : statsList) {
+      if (s.getUniqueId() == id) {
+        return true;
       }
     }
     return false;
@@ -1724,9 +1720,7 @@ public class InternalDistributedSystem
   @Override
   public final Statistics[] getStatistics() {
     List<Statistics> statsList = this.statsList;
-    synchronized (statsList) {
-      return (Statistics[])statsList.toArray(new Statistics[statsList.size()]);
-    }
+    return (Statistics[])statsList.toArray(new Statistics[statsList.size()]);
   }
   
   // StatisticsFactory methods
@@ -1786,10 +1780,8 @@ public class InternalDistributedSystem
    * This method was added to fix bug 40358
    */
   public void visitStatistics(StatisticsVisitor visitor) {
-    synchronized (this.statsList) {
-      for (Statistics s: this.statsList) {
-        visitor.visit(s);
-      }
+    for (Statistics s: this.statsList) {
+      visitor.visit(s);
     }
   }
 
@@ -1844,11 +1836,9 @@ public class InternalDistributedSystem
     return (Statistics[])hits.toArray(result);
   }
   public Statistics findStatisticsByUniqueId(final long uniqueId) {
-    synchronized (this.statsList) {
-      for (Statistics s: this.statsList) {
-        if (uniqueId == s.getUniqueId()) {
-          return s;
-        }
+    for (Statistics s: this.statsList) {
+      if (uniqueId == s.getUniqueId()) {
+        return s;
       }
     }
     return null;

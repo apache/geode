@@ -510,12 +510,10 @@ public abstract class HostStatSampler
    */
   private void sampleSpecialStats(boolean prepareOnly) {
     List<Statistics> statsList = getStatisticsManager().getStatsList();
-    synchronized (statsList) {
-      for (Statistics s : statsList) {
-        if (stopRequested()) return;
-        if (s instanceof StatisticsImpl) {
-          ((StatisticsImpl)s).prepareForSample();
-        }
+    for (Statistics s : statsList) {
+      if (stopRequested()) return;
+      if (s instanceof StatisticsImpl) {
+        ((StatisticsImpl)s).prepareForSample();
       }
     }
 

@@ -304,18 +304,16 @@ public void stopMonitoring() {
       sampler.waitForInitialization();
       String tenuredPoolName = getTenuredMemoryPoolMXBean().getName();
       List list = this.cache.getDistributedSystem().getStatsList();
-      synchronized (list) {
-        for (Object o : list) {
-          if (o instanceof StatisticsImpl) {
-            StatisticsImpl si = (StatisticsImpl) o;
-            if (si.getTextId().contains(tenuredPoolName) && si.getType().getName().contains("PoolStats")) {
-              sampler.addLocalStatListener(this.statListener, si, "currentUsedMemory");
-              if (this.cache.getLoggerI18n().fineEnabled()) {
-                this.cache.getLoggerI18n().fine("Registered stat listener for " + si.getTextId());
-              }
-
-              return true;
+      for (Object o : list) {
+        if (o instanceof StatisticsImpl) {
+          StatisticsImpl si = (StatisticsImpl) o;
+          if (si.getTextId().contains(tenuredPoolName) && si.getType().getName().contains("PoolStats")) {
+            sampler.addLocalStatListener(this.statListener, si, "currentUsedMemory");
+            if (this.cache.getLoggerI18n().fineEnabled()) {
+              this.cache.getLoggerI18n().fine("Registered stat listener for " + si.getTextId());
             }
+
+            return true;
           }
         }
       }

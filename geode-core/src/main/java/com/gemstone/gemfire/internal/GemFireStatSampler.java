@@ -276,14 +276,12 @@ public final class GemFireStatSampler extends HostStatSampler  {
     }
     if (stopRequested()) return;
     HostStatHelper.readyRefreshOSStats();
-    synchronized (l) {
-      Iterator<Statistics> it = l.iterator();
-      while (it.hasNext()) {
-        if (stopRequested()) return;
-        StatisticsImpl s = (StatisticsImpl)it.next();
-        if (s.usesSystemCalls()) {
-          HostStatHelper.refresh((LocalStatisticsImpl)s);
-        }
+    Iterator<Statistics> it = l.iterator();
+    while (it.hasNext()) {
+      if (stopRequested()) return;
+      StatisticsImpl s = (StatisticsImpl)it.next();
+      if (s.usesSystemCalls()) {
+        HostStatHelper.refresh((LocalStatisticsImpl)s);
       }
     }
   }

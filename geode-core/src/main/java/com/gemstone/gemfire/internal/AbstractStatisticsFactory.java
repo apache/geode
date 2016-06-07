@@ -28,6 +28,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * An abstract standalone implementation of {@link StatisticsFactory}.
@@ -41,7 +42,7 @@ public abstract class AbstractStatisticsFactory
 
   private final long id;
   private final String name;
-  private final List<Statistics> statsList;
+  private final CopyOnWriteArrayList<Statistics> statsList;
   private int statsListModCount = 0;
   private long statsListUniqueId = 1;
   private final Object statsListUniqueIdLock;
@@ -53,7 +54,7 @@ public abstract class AbstractStatisticsFactory
     this.name = name;
     this.startTime = startTime;
     
-    this.statsList = new ArrayList<Statistics>();
+    this.statsList = new CopyOnWriteArrayList<Statistics>();
     this.statsListUniqueIdLock = new Object();
     this.tf = StatisticsTypeFactoryImpl.singleton();
   }
@@ -112,11 +113,9 @@ public abstract class AbstractStatisticsFactory
   @Override
   public final boolean statisticsExists(long id) {
     List<Statistics> statsList = this.statsList;
-    synchronized (statsList) {
-      for (Statistics s : statsList) {
-        if (s.getUniqueId() == id) {
-          return true;
-        }
+    for (Statistics s : statsList) {
+      if (s.getUniqueId() == id) {
+        return true;
       }
     }
     return false;
@@ -125,9 +124,7 @@ public abstract class AbstractStatisticsFactory
   @Override
   public final Statistics[] getStatistics() {
     List<Statistics> statsList = this.statsList;
-    synchronized (statsList) {
-      return (Statistics[])statsList.toArray(new Statistics[statsList.size()]);
-    }
+    return (Statistics[])statsList.toArray(new Statistics[statsList.size()]);
   }
   
   // StatisticsFactory methods
@@ -163,13 +160,11 @@ public abstract class AbstractStatisticsFactory
   @Override
   public final Statistics[] findStatisticsByType(StatisticsType type) {
     List<Statistics> hits = new ArrayList<Statistics>();
-    synchronized (statsList) {
-      Iterator<Statistics> it = statsList.iterator();
-      while (it.hasNext()) {
-        Statistics s = (Statistics)it.next();
-        if (type == s.getType()) {
-          hits.add(s);
-        }
+    Iterator<Statistics> it = statsList.iterator();
+    while (it.hasNext()) {
+      Statistics s = (Statistics)it.next();
+      if (type == s.getType()) {
+        hits.add(s);
       }
     }
     Statistics[] result = new Statistics[hits.size()];
@@ -179,13 +174,11 @@ public abstract class AbstractStatisticsFactory
   @Override
   public final Statistics[] findStatisticsByTextId(String textId) {
     List<Statistics> hits = new ArrayList<Statistics>();
-    synchronized (statsList) {
-      Iterator<Statistics> it = statsList.iterator();
-      while (it.hasNext()) {
-        Statistics s = (Statistics)it.next();
-        if (s.getTextId().equals(textId)) {
-          hits.add(s);
-        }
+    Iterator<Statistics> it = statsList.iterator();
+    while (it.hasNext()) {
+      Statistics s = (Statistics)it.next();
+      if (s.getTextId().equals(textId)) {
+        hits.add(s);
       }
     }
     Statistics[] result = new Statistics[hits.size()];
@@ -195,13 +188,11 @@ public abstract class AbstractStatisticsFactory
   @Override
   public final Statistics[] findStatisticsByNumericId(long numericId) {
     List<Statistics> hits = new ArrayList<Statistics>();
-    synchronized (statsList) {
-      Iterator<Statistics> it = statsList.iterator();
-      while (it.hasNext()) {
-        Statistics s = (Statistics)it.next();
-        if (numericId == s.getNumericId()) {
-          hits.add(s);
-        }
+    Iterator<Statistics> it = statsList.iterator();
+    while (it.hasNext()) {
+      Statistics s = (Statistics)it.next();
+      if (numericId == s.getNumericId()) {
+        hits.add(s);
       }
     }
     Statistics[] result = new Statistics[hits.size()];
@@ -209,13 +200,11 @@ public abstract class AbstractStatisticsFactory
   }
   
   public final Statistics findStatisticsByUniqueId(long uniqueId) {
-    synchronized (statsList) {
-      Iterator<Statistics> it = statsList.iterator();
-      while (it.hasNext()) {
-        Statistics s = (Statistics)it.next();
-        if (uniqueId == s.getUniqueId()) {
-          return s;
-        }
+    Iterator<Statistics> it = statsList.iterator();
+    while (it.hasNext()) {
+      Statistics s = (Statistics)it.next();
+      if (uniqueId == s.getUniqueId()) {
+        return s;
       }
     }
     return null;
