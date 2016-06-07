@@ -21,7 +21,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -279,7 +281,12 @@ public class Gfsh extends JLineShell {
   private void initializeEnvironment() {
     env.put(ENV_SYS_USER,              System.getProperty("user.name"));
     env.put(ENV_SYS_USER_HOME,         System.getProperty("user.home"));
-    env.put(ENV_SYS_HOST_NAME,         System.getProperty("user.name"));
+    try {
+      env.put(ENV_SYS_HOST_NAME,       InetAddress.getLocalHost().getHostName());
+    }
+    catch (UnknownHostException e) {
+      env.put(ENV_SYS_HOST_NAME,       "localhost");
+    }
     env.put(ENV_SYS_CLASSPATH,         System.getProperty("java.class.path"));
     env.put(ENV_SYS_JAVA_VERSION,      System.getProperty("java.version"));
     env.put(ENV_SYS_OS,                System.getProperty("os.name"));
