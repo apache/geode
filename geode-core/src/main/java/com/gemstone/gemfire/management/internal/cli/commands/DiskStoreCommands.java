@@ -16,6 +16,25 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.admin.BackupStatus;
@@ -72,31 +91,13 @@ import com.gemstone.gemfire.management.internal.configuration.SharedConfiguratio
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 import com.gemstone.gemfire.management.internal.messages.CompactRequest;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.security.GeodePermission.Operation;
+import com.gemstone.gemfire.security.GeodePermission.Resource;
+
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  * The DiskStoreCommands class encapsulates all GemFire Disk Store commands in Gfsh.
@@ -120,7 +121,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
   
   @CliCommand(value=CliStrings.BACKUP_DISK_STORE, help=CliStrings.BACKUP_DISK_STORE__HELP)
   @CliMetaData(relatedTopic={ CliStrings.TOPIC_GEODE_DISKSTORE })
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
   public Result backupDiskStore(
   
   @CliOption(key=CliStrings.BACKUP_DISK_STORE__DISKDIRS,
@@ -215,7 +216,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.LIST_DISK_STORE, help = CliStrings.LIST_DISK_STORE__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEODE_DISKSTORE })
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listDiskStore() {
     try {
       Set<DistributedMember> dataMembers = getNormalMembers(getCache());
@@ -283,8 +284,8 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value=CliStrings.CREATE_DISK_STORE, help=CliStrings.CREATE_DISK_STORE__HELP)
-  @CliMetaData(shellOnly=false, relatedTopic={CliStrings.TOPIC_GEODE_DISKSTORE }, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @CliMetaData(shellOnly=false, relatedTopic={CliStrings.TOPIC_GEODE_DISKSTORE}, writesToSharedConfiguration=true)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result createDiskStore(@CliOption(key=CliStrings.CREATE_DISK_STORE__NAME,
                                            mandatory=true,
                                            optionContext = ConverterHint.DISKSTORE_ALL, 
@@ -424,8 +425,8 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
     
   @CliCommand(value=CliStrings.COMPACT_DISK_STORE, help=CliStrings.COMPACT_DISK_STORE__HELP)
-  @CliMetaData(shellOnly=false, relatedTopic={CliStrings.TOPIC_GEODE_DISKSTORE })
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @CliMetaData(shellOnly=false, relatedTopic={CliStrings.TOPIC_GEODE_DISKSTORE})
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result compactDiskStore(@CliOption(key=CliStrings.COMPACT_DISK_STORE__NAME,
                                             mandatory=true,
                                             optionContext = ConverterHint.DISKSTORE_ALL, 
@@ -867,7 +868,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.DESCRIBE_DISK_STORE, help = CliStrings.DESCRIBE_DISK_STORE__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEODE_DISKSTORE })
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result describeDiskStore(@CliOption(key = CliStrings.DESCRIBE_DISK_STORE__MEMBER, mandatory = true, optionContext = ConverterHint.MEMBERIDNAME, help = CliStrings.DESCRIBE_DISK_STORE__MEMBER__HELP)
                                   final String memberName,
                                   @CliOption(key = CliStrings.DESCRIBE_DISK_STORE__NAME, mandatory = true, optionContext = ConverterHint.DISKSTORE_ALL, help = CliStrings.DESCRIBE_DISK_STORE__NAME__HELP)
@@ -994,7 +995,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.REVOKE_MISSING_DISK_STORE, help = CliStrings.REVOKE_MISSING_DISK_STORE__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEODE_DISKSTORE })
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result revokeMissingDiskStore(
       @CliOption(key = CliStrings.REVOKE_MISSING_DISK_STORE__ID, mandatory = true, help = CliStrings.REVOKE_MISSING_DISK_STORE__ID__HELP)
       String id) {
@@ -1021,7 +1022,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.SHOW_MISSING_DISK_STORE, help = CliStrings.SHOW_MISSING_DISK_STORE__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEODE_DISKSTORE })
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result showMissingDiskStore() {
 
     try {
@@ -1367,8 +1368,8 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value=CliStrings.DESTROY_DISK_STORE, help=CliStrings.DESTROY_DISK_STORE__HELP)
-  @CliMetaData(shellOnly=false, relatedTopic={CliStrings.TOPIC_GEODE_DISKSTORE }, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @CliMetaData(shellOnly=false, relatedTopic={CliStrings.TOPIC_GEODE_DISKSTORE}, writesToSharedConfiguration=true)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result destroyDiskStore(
       @CliOption  (key=CliStrings.DESTROY_DISK_STORE__NAME, 
           mandatory=true,

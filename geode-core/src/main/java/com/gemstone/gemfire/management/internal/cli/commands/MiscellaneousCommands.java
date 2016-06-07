@@ -16,6 +16,42 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.sql.Time;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.zip.DataFormatException;
+import java.util.zip.GZIPInputStream;
+import javax.management.ObjectName;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -76,49 +112,13 @@ import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.MergeLogs;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.security.GeodePermission.Operation;
+import com.gemstone.gemfire.security.GeodePermission.Resource;
+
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
-
-import javax.management.ObjectName;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.sql.Time;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.zip.DataFormatException;
-import java.util.zip.GZIPInputStream;
-
-import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  *
@@ -185,7 +185,7 @@ public class MiscellaneousCommands implements CommandMarker {
   @CliCommand(value = CliStrings.SHUTDOWN, help = CliStrings.SHUTDOWN__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEODE_LIFECYCLE },
       interceptor = "com.gemstone.gemfire.management.internal.cli.commands.MiscellaneousCommands$Interceptor")
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public Result shutdown(
       @CliOption(key = CliStrings.SHUTDOWN__TIMEOUT, unspecifiedDefaultValue = DEFAULT_TIME_OUT,
           help = CliStrings.SHUTDOWN__TIMEOUT__HELP) int userSpecifiedTimeout,
@@ -326,7 +326,7 @@ public class MiscellaneousCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.GC, help = CliStrings.GC__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEODE_DEBUG_UTIL })
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public Result gc(
       @CliOption(key = CliStrings.GC__GROUP, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.GC__GROUP__HELP)
       String[] groups,
@@ -417,7 +417,7 @@ public class MiscellaneousCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.NETSTAT, help = CliStrings.NETSTAT__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEODE_DEBUG_UTIL })
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   //TODO : Verify the auto-completion for multiple values.
   public Result netstat(
       @CliOption(key = CliStrings.NETSTAT__MEMBER,
@@ -571,7 +571,7 @@ public class MiscellaneousCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.SHOW_DEADLOCK, help = CliStrings.SHOW_DEADLOCK__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEODE_DEBUG_UTIL })
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result showDeadlock(
       @CliOption(key = CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE,
       help = CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE__HELP,
@@ -621,7 +621,7 @@ public class MiscellaneousCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.SHOW_LOG, help = CliStrings.SHOW_LOG_HELP)
   @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEODE_DEBUG_UTIL })
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result showLog(
       @CliOption(key = CliStrings.SHOW_LOG_MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.SHOW_LOG_MEMBER_HELP, mandatory = true) String memberNameOrId,
       @CliOption(key = CliStrings.SHOW_LOG_LINE_NUM, unspecifiedDefaultValue = "0", help = CliStrings.SHOW_LOG_LINE_NUM_HELP, mandatory = false) int numberOfLines) {
@@ -769,7 +769,7 @@ public class MiscellaneousCommands implements CommandMarker {
   }
   @CliCommand(value = CliStrings.EXPORT_LOGS, help = CliStrings.EXPORT_LOGS__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_DEBUG_UTIL })
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result exportLogs(
       @CliOption(key = CliStrings.EXPORT_LOGS__DIR,
           help = CliStrings.EXPORT_LOGS__DIR__HELP, mandatory=true) String dirName,
@@ -991,7 +991,7 @@ public class MiscellaneousCommands implements CommandMarker {
    */
   @CliCommand(value = CliStrings.EXPORT_STACKTRACE, help = CliStrings.EXPORT_STACKTRACE__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEODE_DEBUG_UTIL })
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result exportStackTrace(
       @CliOption(key = CliStrings.EXPORT_STACKTRACE__MEMBER,
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -1092,7 +1092,7 @@ public class MiscellaneousCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.SHOW_METRICS, help = CliStrings.SHOW_METRICS__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEODE_STATISTICS })
-  @ResourceOperation(resource = Resource.CLUSTER, operation= OperationCode.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation= Operation.READ)
   public Result showMetrics(
       @CliOption(key = { CliStrings.SHOW_METRICS__MEMBER }, optionContext = ConverterHint.ALL_MEMBER_IDNAME, help = CliStrings.SHOW_METRICS__MEMBER__HELP) String memberNameOrId,
       @CliOption(key = { CliStrings.SHOW_METRICS__REGION }, optionContext = ConverterHint.REGIONPATH, help = CliStrings.SHOW_METRICS__REGION__HELP) String regionName,
@@ -1996,7 +1996,7 @@ public class MiscellaneousCommands implements CommandMarker {
   
   @CliCommand(value = CliStrings.CHANGE_LOGLEVEL, help = CliStrings.CHANGE_LOGLEVEL__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_CHANGELOGLEVEL })
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.WRITE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.WRITE)
   public Result changeLogLevel(
       @CliOption(key = CliStrings.CHANGE_LOGLEVEL__MEMBER, unspecifiedDefaultValue = "", help = CliStrings.CHANGE_LOGLEVEL__MEMBER__HELP) String[] memberIds, 
       @CliOption(key = CliStrings.CHANGE_LOGLEVEL__GROUPS, unspecifiedDefaultValue = "", help = CliStrings.CHANGE_LOGLEVEL__GROUPS__HELP) String[] grps,

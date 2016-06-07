@@ -47,6 +47,7 @@ import javax.management.remote.MBeanServerForwarder;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.security.GeodePermission;
 
 /**
  * This class intercepts all MBean requests for GemFire MBeans and passed it to
@@ -56,15 +57,8 @@ import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
  */
 public class MBeanServerWrapper implements MBeanServerForwarder {
   private MBeanServer mbs;
-  
+
   public MBeanServerWrapper(){
-  }
-
-  private void doAuthorizationPost(ResourceOperationContext context){
-    if(context == null)
-      return;
-
-    //interceptor.postAuthorize(context);
   }
 
   private void checkDomain(ObjectName name){
@@ -117,7 +111,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   }
 
   @Override
-  public ObjectInstance getObjectInstance(ObjectName name) throws InstanceNotFoundException {    
+  public ObjectInstance getObjectInstance(ObjectName name) throws InstanceNotFoundException {
     return mbs.getObjectInstance(name);
   }
 
@@ -145,14 +139,14 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   }
 
   @Override
-  public Integer getMBeanCount() {    
+  public Integer getMBeanCount() {
     return mbs.getMBeanCount();
   }
 
   @Override
   public Object getAttribute(ObjectName name, String attribute) throws MBeanException, InstanceNotFoundException,
       ReflectionException {
-    ResourceOperationContext ctx = getOperationContext(name, attribute, false);
+    GeodePermission ctx = getOperationContext(name, attribute, false);
     GeodeSecurityUtil.authorize(ctx);
     Object result;
     try {
@@ -160,10 +154,6 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     } catch (AttributeNotFoundException nex) {
       return null;
     }
-    if (ctx != null) {
-      ctx.setPostOperationResult(result);
-    }
-    doAuthorizationPost(ctx);
     return result;
   }
 
@@ -186,7 +176,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   @Override
   public void setAttribute(ObjectName name, Attribute attribute) throws InstanceNotFoundException,
       AttributeNotFoundException, InvalidAttributeValueException, MBeanException, ReflectionException {
-    ResourceOperationContext ctx = getOperationContext(name, attribute.getName(), false);
+    GeodePermission ctx = getOperationContext(name, attribute.getName(), false);
     GeodeSecurityUtil.authorize(ctx);
     mbs.setAttribute(name, attribute);
   }
@@ -209,18 +199,16 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   public Object invoke(ObjectName name, String operationName, Object[] params, String[] signature)
       throws InstanceNotFoundException, MBeanException, ReflectionException {
 
-    ResourceOperationContext ctx = getOperationContext(name, operationName, true);
+    GeodePermission ctx = getOperationContext(name, operationName, true);
     GeodeSecurityUtil.authorize(ctx);
 
     Object result = mbs.invoke(name, operationName, params, signature);
-    if(ctx!=null)
-      ctx.setPostOperationResult(result);
-    doAuthorizationPost(ctx);
+
     return result;
   }
 
   // TODO: cache this
-  private ResourceOperationContext getOperationContext(ObjectName objectName, String featureName, boolean isOp)
+  private GeodePermission getOperationContext(ObjectName objectName, String featureName, boolean isOp)
       throws InstanceNotFoundException, ReflectionException {
     MBeanInfo beanInfo = null;
     try {
@@ -229,7 +217,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       throw new GemFireSecurityException("error getting beanInfo of "+objectName, e);
     }
     // If there is no annotation defined either in the class level or method level, we should consider this operation/attribute freely accessible
-    ResourceOperationContext result = null;
+    GeodePermission result = null;
 
     // find the context in the beanInfo if defined in the class level
     result = getOperationContext(beanInfo.getDescriptor(), result);
@@ -252,11 +240,11 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     return result;
   }
 
-  private ResourceOperationContext getOperationContext(Descriptor descriptor, ResourceOperationContext defaultValue){
+  private GeodePermission getOperationContext(Descriptor descriptor, GeodePermission defaultValue){
     String resource = (String)descriptor.getFieldValue("resource");
     String operationCode = (String)descriptor.getFieldValue("operation");
     if(resource!=null && operationCode!=null){
-      return new ResourceOperationContext(resource, operationCode, null);
+      return new GeodePermission(resource, operationCode);
     }
     return defaultValue;
   }

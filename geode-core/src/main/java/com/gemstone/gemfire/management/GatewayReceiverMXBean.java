@@ -18,9 +18,8 @@ package com.gemstone.gemfire.management;
 
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-
-import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
+import com.gemstone.gemfire.security.GeodePermission.Operation;
+import com.gemstone.gemfire.security.GeodePermission.Resource;
 
 /**
  * MBean that provides access to information and management functionality for a
@@ -29,7 +28,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * @since GemFire 7.0
  * 
  */
-@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+@ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface GatewayReceiverMXBean {
 
   /**
@@ -92,13 +91,13 @@ public interface GatewayReceiverMXBean {
   /**
    * Starts the gateway receiver.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public void start() throws Exception;
 
   /**
    * Stops the gateway receiver.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public void stop() throws Exception;
 
   /**

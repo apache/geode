@@ -20,49 +20,49 @@ package com.gemstone.gemfire.management.internal.security;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gemstone.gemfire.cache.operations.OperationContext;
+import com.gemstone.gemfire.security.GeodePermission;
 
 import org.apache.shiro.authz.Permission;
 
 public class TestCommand {
-  public static OperationContext none = null;
-  public static OperationContext everyOneAllowed = new ResourceOperationContext();
-  public static OperationContext dataRead = new ResourceOperationContext("DATA", "READ");
-  public static OperationContext dataWrite = new ResourceOperationContext("DATA", "WRITE");
-  public static OperationContext dataManage = new ResourceOperationContext("DATA", "MANAGE");
+  public static GeodePermission none = null;
+  public static GeodePermission everyOneAllowed = new GeodePermission();
+  public static GeodePermission dataRead = new GeodePermission("DATA", "READ");
+  public static GeodePermission dataWrite = new GeodePermission("DATA", "WRITE");
+  public static GeodePermission dataManage = new GeodePermission("DATA", "MANAGE");
 
-  public static OperationContext regionARead = new ResourceOperationContext("DATA", "READ", "RegionA");
-  public static OperationContext regionAWrite = new ResourceOperationContext("DATA", "WRITE", "RegionA");
-  public static OperationContext regionAManage = new ResourceOperationContext("DATA", "MANAGE", "RegionA");
+  public static GeodePermission regionARead = new GeodePermission("DATA", "READ", "RegionA");
+  public static GeodePermission regionAWrite = new GeodePermission("DATA", "WRITE", "RegionA");
+  public static GeodePermission regionAManage = new GeodePermission("DATA", "MANAGE", "RegionA");
 
-  public static OperationContext clusterRead = new ResourceOperationContext("CLUSTER", "READ");
-  public static OperationContext clusterWrite = new ResourceOperationContext("CLUSTER", "WRITE");
-  public static OperationContext clusterManage = new ResourceOperationContext("CLUSTER", "MANAGE");
+  public static GeodePermission clusterRead = new GeodePermission("CLUSTER", "READ");
+  public static GeodePermission clusterWrite = new GeodePermission("CLUSTER", "WRITE");
+  public static GeodePermission clusterManage = new GeodePermission("CLUSTER", "MANAGE");
 
   private static List<TestCommand> testCommands = new ArrayList<>();
 
   static{
     init();
   }
-  
+
   private final String command;
-  private final OperationContext permission;
-  
-  public TestCommand(String command, OperationContext permission) {
+  private final GeodePermission permission;
+
+  public TestCommand(String command, GeodePermission permission) {
     this.command = command;
     this.permission = permission;
   }
-  
-  private static void createTestCommand(String command, OperationContext permission) {
+
+  private static void createTestCommand(String command, GeodePermission permission) {
     TestCommand instance = new TestCommand(command, permission);
     testCommands.add(instance);
   }
-  
+
   public String getCommand() {
     return this.command;
   }
 
-  public OperationContext getPermission() {
+  public GeodePermission getPermission() {
     return this.permission;
   }
 
@@ -72,8 +72,8 @@ public class TestCommand {
 
   public static List<TestCommand> getPermittedCommands(Permission permission){
     List<TestCommand> result = new ArrayList<>();
-    for(TestCommand testCommand:testCommands){
-      OperationContext cPerm = testCommand.getPermission();
+    for (TestCommand testCommand : testCommands) {
+      GeodePermission cPerm = testCommand.getPermission();
       if(cPerm!=null && permission.implies(cPerm)){
         result.add(testCommand);
       }

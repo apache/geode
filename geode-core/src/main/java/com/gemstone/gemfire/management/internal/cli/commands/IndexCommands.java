@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.cache.operations.OperationContext.*;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -59,6 +57,8 @@ import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.security.GeodePermission.Operation;
+import com.gemstone.gemfire.security.GeodePermission.Resource;
 
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -87,8 +87,8 @@ public class IndexCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = CliStrings.LIST_INDEX, help = CliStrings.LIST_INDEX__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA })
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listIndex(@CliOption(key = CliStrings.LIST_INDEX__STATS,
                                      mandatory = false,
                                      specifiedDefaultValue = "true",
@@ -533,8 +533,8 @@ public class IndexCommands extends AbstractCommandsSupport {
   }
   
   @CliCommand(value = CliStrings.CREATE_DEFINED_INDEXES, help = CliStrings.CREATE_DEFINED__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA }, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA}, writesToSharedConfiguration=true)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   //TODO : Add optionContext for indexName
   public Result createDefinedIndexes(
 
@@ -634,8 +634,8 @@ public class IndexCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = CliStrings.CLEAR_DEFINED_INDEXES, help = CliStrings.CLEAR_DEFINED__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA }, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @CliMetaData(shellOnly = false, relatedTopic={CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA}, writesToSharedConfiguration=true)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   //TODO : Add optionContext for indexName
   public Result clearDefinedIndexes() {
     indexDefinitions.clear();

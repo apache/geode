@@ -17,13 +17,12 @@
 
 package com.gemstone.gemfire.security;
 
+import java.security.Principal;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheCallback;
-import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.distributed.DistributedMember;
-
-import java.security.Principal;
 
 /**
  * Specifies the interface to authorize operations at the cache or region level

@@ -16,13 +16,12 @@
  */
 package com.gemstone.gemfire.management;
 
-import com.gemstone.gemfire.cache.operations.OperationContext;
-import com.gemstone.gemfire.distributed.DistributedLockService;
-import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-
 import java.util.Map;
 
-import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
+import com.gemstone.gemfire.distributed.DistributedLockService;
+import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.security.GeodePermission.Operation;
+import com.gemstone.gemfire.security.GeodePermission.Resource;
 
 /**
  * MBean that provides access to information for a named instance of {@link DistributedLockService}.
@@ -32,7 +31,7 @@ import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
  * @since GemFire 7.0
  * 
  */
-@ResourceOperation(resource = Resource.CLUSTER, operation = OperationContext.OperationCode.READ)
+@ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface DistributedLockServiceMXBean {
 
   /**

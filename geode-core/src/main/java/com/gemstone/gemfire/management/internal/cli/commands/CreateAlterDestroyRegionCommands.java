@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.cache.operations.OperationContext.*;
-
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,6 +78,8 @@ import com.gemstone.gemfire.management.internal.cli.util.RegionPath;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.security.GeodePermission.Operation;
+import com.gemstone.gemfire.security.GeodePermission.Resource;
 
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -109,7 +109,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
 
   @CliCommand (value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
   @CliMetaData (relatedTopic = CliStrings.TOPIC_GEODE_REGION, writesToSharedConfiguration = true)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result createRegion(
       @CliOption (key = CliStrings.CREATE_REGION__REGION,
                   mandatory = true,
@@ -998,7 +998,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = { CliStrings.DESTROY_REGION }, help = CliStrings.DESTROY_REGION__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_REGION, writesToSharedConfiguration = true)
-  @ResourceOperation(resource=Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource=Resource.DATA, operation = Operation.MANAGE)
   public Result destroyRegion(
       @CliOption(key = CliStrings.DESTROY_REGION__REGION,
           optionContext = ConverterHint.REGIONPATH,

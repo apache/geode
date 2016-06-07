@@ -25,6 +25,8 @@ import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 
+import org.apache.shiro.subject.Subject;
+
 public class ClientUserAuths
 {
  // private AtomicLong counter = new AtomicLong(1);
@@ -34,6 +36,7 @@ public class ClientUserAuths
 
   private ConcurrentHashMap<Long, UserAuthAttributes> uniqueIdVsUserAuth = new ConcurrentHashMap<Long, UserAuthAttributes>();
   private ConcurrentHashMap<String, UserAuthAttributes> cqNameVsUserAuth = new ConcurrentHashMap<String, UserAuthAttributes>();
+  private ConcurrentHashMap<Long, Subject> uniqueIdVsSubject = new ConcurrentHashMap<Long, Subject>();
 
   public long putUserAuth(UserAuthAttributes userAuthAttr)
   {
@@ -41,6 +44,12 @@ public class ClientUserAuths
     //long newId = counter.getAndIncrement();
     long newId = getNextID();
     uniqueIdVsUserAuth.put(newId, userAuthAttr);
+    return newId;
+  }
+
+  public long putSubject(Subject subject){
+    long newId = getNextID();
+    uniqueIdVsSubject.put(newId, subject);
     return newId;
   }
   
@@ -69,6 +78,19 @@ public class ClientUserAuths
   public UserAuthAttributes getUserAuthAttributes(long userId)
   {
     return uniqueIdVsUserAuth.get(userId);
+  }
+
+  public Subject getSubject(long userId){
+    return uniqueIdVsSubject.get(userId);
+  }
+
+  public boolean removeSubject(long userId) {
+    Subject subject = uniqueIdVsSubject.remove(userId);
+    if(subject == null)
+      return false;
+
+    subject.logout();
+    return true;
   }
   
   public UserAuthAttributes getUserAuthAttributes(String cqName)
@@ -133,6 +155,8 @@ public class ClientUserAuths
     }
     return false;
   }
+
+
   
   public void cleanUserAuth(UserAuthAttributes userAuth)
   {

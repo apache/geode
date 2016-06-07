@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.management;
 
-import static com.gemstone.gemfire.cache.operations.OperationContext.*;
-
 import java.util.Map;
 import javax.management.ObjectName;
 
@@ -26,6 +24,8 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.security.GeodePermission.Operation;
+import com.gemstone.gemfire.security.GeodePermission.Resource;
 
 /**
  * MBean that provides access to information and management operations for a
@@ -72,7 +72,7 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperation;
  * @since GemFire 7.0
  *
  */
-@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+@ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface DistributedSystemMXBean {
 
   /**
@@ -152,7 +152,7 @@ public interface DistributedSystemMXBean {
    *          Minimum level for alerts to be delivered.
    *          Must be one of: WARNING, ERROR, SEVERE or NONE.
    */
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.WRITE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.WRITE)
   public void changeAlertLevel(String alertLevel) throws Exception;
 
   /**
@@ -235,7 +235,7 @@ public interface DistributedSystemMXBean {
    *          path of the directory for baseline backup.
    * @return The results of the backup request.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
   public DiskBackupStatus backupAllMembers(String targetDirPath, String baselineDirPath)
       throws Exception;
 
@@ -320,7 +320,7 @@ public interface DistributedSystemMXBean {
    *
    * @return List of names of all distributed members that were shutdown.
    */
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public String[] shutDownAllMembers() throws Exception;
 
   /**
@@ -340,7 +340,7 @@ public interface DistributedSystemMXBean {
    *          UUID of the disk store to remove
    * @return True if the request is successful, false otherwise.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public boolean revokeMissingDiskStores(String diskStoreId)
       throws Exception;
 
@@ -618,7 +618,7 @@ public interface DistributedSystemMXBean {
    *          will be set.
    * @return a JSON formated string containing data and its type
    */
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
   public String queryData(String queryString, String members, int limit) throws Exception;
   
   /**
@@ -648,7 +648,7 @@ public interface DistributedSystemMXBean {
    *          will be set.
    * @return a byte[] which is a compressed JSON string.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
   public byte[] queryDataForCompressedResult(String queryString, String members, int limit) throws Exception;
   
   
@@ -674,7 +674,7 @@ public interface DistributedSystemMXBean {
    */
   public int getQueryResultSetLimit();
 
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public void setQueryResultSetLimit(int queryResultSetLimit);
 
   /**
@@ -684,6 +684,6 @@ public interface DistributedSystemMXBean {
    */
   public int getQueryCollectionsDepth();
 
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public void setQueryCollectionsDepth(int queryCollectionsDepth);
 }

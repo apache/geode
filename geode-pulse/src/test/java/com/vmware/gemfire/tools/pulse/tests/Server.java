@@ -18,22 +18,6 @@
  */
 package com.vmware.gemfire.tools.pulse.tests;
 
-import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
-import com.gemstone.gemfire.internal.security.shiro.JMXShiroAuthenticator;
-import com.gemstone.gemfire.management.internal.security.AccessControlMBean;
-import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
-import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.realm.Realm;
-
-import javax.management.*;
-import javax.management.remote.JMXConnectorServer;
-import javax.management.remote.JMXConnectorServerFactory;
-import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.Inet4Address;
@@ -42,9 +26,28 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorServer;
+import javax.management.remote.JMXConnectorServerFactory;
+import javax.management.remote.JMXServiceURL;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
+import com.gemstone.gemfire.internal.security.shiro.JMXShiroAuthenticator;
+import com.gemstone.gemfire.management.internal.security.AccessControlMBean;
+import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
+import com.gemstone.gemfire.management.internal.security.MBeanServerWrapper;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import com.vmware.gemfire.tools.pulse.internal.data.PulseConstants;
+
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.realm.Realm;
 
 public class Server {
   private static final String DEFAULT_HOST = "127.0.0.1"; //"localhost"
@@ -64,14 +67,11 @@ public class Server {
 
     if (jsonAuthFile != null) {
       System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
-      Properties props = new Properties();
-      props.put(SECURITY_CLIENT_AUTHENTICATOR, JSONAuthorization.class.getName() + ".create");
-      //props.put(SECURITY_CLIENT_ACCESSOR, JSONAuthorization.class.getName() + ".create");
       JSONAuthorization.setUpWithJsonFile(jsonAuthFile);
       Map<String, Object> env = new HashMap<String, Object>();
 
       // set up Shiro Security Manager
-      Realm realm = new CustomAuthRealm(props);
+      Realm realm = new CustomAuthRealm(JSONAuthorization.class.getName() + ".create");
       SecurityManager securityManager = new DefaultSecurityManager(realm);
       SecurityUtils.setSecurityManager(securityManager);
 

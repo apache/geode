@@ -17,32 +17,7 @@
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.CancelException;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.client.internal.AbstractOp;
-import com.gemstone.gemfire.cache.client.internal.Connection;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.tier.*;
-import com.gemstone.gemfire.internal.cache.tier.sockets.command.Default;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
-import com.gemstone.gemfire.internal.util.Breadcrumbs;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.AuthenticationRequiredException;
-import com.gemstone.gemfire.security.GemFireSecurityException;
-import org.apache.logging.log4j.Logger;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -60,7 +35,41 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import com.gemstone.gemfire.CancelException;
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.client.internal.AbstractOp;
+import com.gemstone.gemfire.cache.client.internal.Connection;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.internal.Assert;
+import com.gemstone.gemfire.internal.HeapDataOutputStream;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.tier.Acceptor;
+import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
+import com.gemstone.gemfire.internal.cache.tier.ClientHandShake;
+import com.gemstone.gemfire.internal.cache.tier.Command;
+import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
+import com.gemstone.gemfire.internal.cache.tier.MessageType;
+import com.gemstone.gemfire.internal.cache.tier.sockets.command.Default;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.security.AuthorizeRequest;
+import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.internal.util.Breadcrumbs;
+import com.gemstone.gemfire.security.AuthenticationFailedException;
+import com.gemstone.gemfire.security.AuthenticationRequiredException;
+import com.gemstone.gemfire.security.GemFireSecurityException;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadState;
 
 /**
  * Provides an implementation for the server socket end of the hierarchical
@@ -749,6 +758,7 @@ public class ServerConnection implements Runnable {
   private void doNormalMsg() {
     Message msg = null;
     msg = BaseCommand.readRequest(this);
+    ThreadState threadState = null;
     try {
       if (msg != null) {
         //this.logger.fine("donormalMsg() msgType " + msg.getMessageType());
@@ -794,6 +804,14 @@ public class ServerConnection implements Runnable {
         if (command == null) {
           command = Default.getCommand();
         }
+
+        // if a subject exists for this uniqueId, binds the subject to this thread so that we can do authorization later
+        if(AcceptorImpl.isIntegratedSecurity()) {
+          long uniqueId = getUniqueId();
+          Subject subject = this.clientUserAuths.getSubject(uniqueId);
+          threadState = GeodeSecurityUtil.bindSubject(subject);
+        }
+
         command.execute(msg, this);
       }
     }
@@ -802,6 +820,9 @@ public class ServerConnection implements Runnable {
       // processed.
       setNotProcessingMessage();
       clearRequestMsg();
+      if(threadState!=null){
+        threadState.clear();
+      }
     }
 
   }
@@ -970,7 +991,14 @@ public class ServerConnection implements Runnable {
       }
       
       try {
-        return this.clientUserAuths.removeUserId(aIds.getUniqueId(), keepalive);
+        // first try integrated security
+        boolean removed = this.clientUserAuths.removeSubject(aIds.getUniqueId());
+
+        // if not successfull, try the old way
+        if(!removed)
+          removed = this.clientUserAuths.removeUserId(aIds.getUniqueId(), keepalive);
+        return removed;
+
       } catch (NullPointerException npe) {
         // Bug #52023.
         logger.debug("Exception {}", npe);
@@ -1008,7 +1036,7 @@ public class ServerConnection implements Runnable {
         return new byte[0];
       }
       if (!msg.isSecureMode()) {
-        //throw exception not authorized 
+        throw new  AuthenticationFailedException("Authentication failed");
       }
       
       byte [] secureBytes = msg.getSecureBytes();
@@ -1032,18 +1060,28 @@ public class ServerConnection implements Runnable {
       ByteArrayInputStream bis = new ByteArrayInputStream(credBytes);
       DataInputStream dinp = new DataInputStream(bis);
       Properties credentials = DataSerializer.readProperties(dinp);
-      
-      
-      DistributedSystem system = this.getDistributedSystem();
-      String methodName = system.getProperties().getProperty(
+
+      String username = credentials.getProperty("security-username");
+      String password = credentials.getProperty("security-password");
+
+      // When here, security is enfored on server, if login returns a subject, then it's the newly integrated security, otherwise, do it the old way.
+      long uniqueId;
+      Subject subject = GeodeSecurityUtil.login(username, password);
+      if(subject!=null){
+        uniqueId = this.clientUserAuths.putSubject(subject);
+      }
+      else {
+        DistributedSystem system = this.getDistributedSystem();
+        String methodName = system.getProperties().getProperty(
           SECURITY_CLIENT_AUTHENTICATOR);
-      
-      Principal principal = HandShake.verifyCredentials(methodName, credentials,
-          system.getSecurityProperties(), (InternalLogWriter)system.getLogWriter(), (InternalLogWriter)system
-              .getSecurityLogWriter(), this.proxyId.getDistributedMember());
-  
-      //this sets principal in map as well....
-      long uniqueId = ServerHandShakeProcessor.getUniqueId(this, principal);
+
+        Principal principal = HandShake.verifyCredentials(methodName, credentials,
+          system.getSecurityProperties(), (InternalLogWriter) system.getLogWriter(), (InternalLogWriter) system
+            .getSecurityLogWriter(), this.proxyId.getDistributedMember());
+
+        //this sets principal in map as well....
+        uniqueId = ServerHandShakeProcessor.getUniqueId(this, principal);
+      }
       
       //create secure part which will be send in respones    
       
@@ -1356,184 +1394,10 @@ public class ServerConnection implements Runnable {
       return LocalizedStrings.ServerConnection_ERROR_IN_GETSOCKETSTRING_0.toLocalizedString(e.getLocalizedMessage());
     }
   }
-
-  
-
-  
-
-  
-
-  
-  
-
-  
-
-//  private void writePingReply(Message origMsg) throws IOException {
-//    replyMsg.setMessageType(MessageType.REPLY);
-//    replyMsg.setNumberOfParts(1);
-//    replyMsg.setTransactionId(origMsg.getTransactionId());
-//    replyMsg.addBytesPart(OK_BYTES);
-//    replyMsg.send(logger, origMsg.getTransactionId());
-//    if (logger.finerEnabled()) {
-//      logger.finer(getName() + ": rpl tx: " + origMsg.getTransactionId());
-//    }
-//  }
-
-  
-
-  
-
-  
-//  private void writeBatchException(Message origMsg, String message, int index) throws IOException {
-//    Exception be = new BatchException(message, index);
-//    errorMsg.setMessageType(MessageType.EXCEPTION);
-//    errorMsg.setNumberOfParts(2);
-//    errorMsg.setTransactionId(origMsg.getTransactionId());
-//    errorMsg.addObjPart(be);
-//    errorMsg.addStringPart(be.toString());
-//    errorMsg.send();
-//    if (logger.fineEnabled()) {
-//      logger.fine(this.name + ": Wrote batch exception: ", be);
-//    }
-//  }
-
  
   void clearRequestMsg() {
     requestMsg.clear();
   }
-
-  
-
-  
-
-//   /**
-//    * Examine an entry, and build an InterestEvent for it
-//    * @param region region we're fetching from
-//    * @param entryKey entry key that we may want the event for
-//    * @return the event or null if entry does not exist
-//    */
-//   private InterestEvent getInterestEvent(Region region, Object entryKey)
-//   {
-//     Region.Entry entry = null;
-//     try {
-//       entry = region.getEntry(entryKey);
-//     } catch (Exception likelyAPartitionedRegion) { // ignore, change when a partitioned region supports getEntry
-//     }
-//     if (entry == null) {
-//       return null;
-//     }
-//     if (entry instanceof LocalRegion.NonTXEntry) {
-//       final LocalRegion.NonTXEntry regionEntry = (LocalRegion.NonTXEntry)entry;
-//       boolean isDeserialized = true;
-//       // Get the value in the VM
-//       Object value = regionEntry.getRegionEntry().getValueInVM();
-//       // If the value in the VM is a CachedDeserializable,
-//       // get its value. If it is Token.REMOVED, Token.DESTROYED,
-//       // Token.INVALID, or Token.LOCAL_INVALID
-//       // set it to null. If it is NOT_AVAILABLE, get the value from
-//       // disk. If it is already a byte[], set isObject to false.
-//       if (value instanceof CachedDeserializable) {
-//         value = ((CachedDeserializable)value).getValue();
-//         isDeserialized = !(value instanceof byte[]);
-//       }
-//       else if (value == Token.REMOVED || value == Token.DESTROYED) {
-//         return null;
-//       }
-//       else if (value == Token.INVALID || value == Token.LOCAL_INVALID) {
-//         return null; // fix for bug 35884
-//       }
-//       else if (value instanceof byte[]) {
-//         // key, value, and isDeserialized already set
-//       }
-//       else if (value == EntryEvent.NOT_AVAILABLE) {
-//         // This will occur with a disk region entry where the value
-//         // is on disk. Currently the getValue call will deserialize
-//         // the value. This means that for disk regions, value classes
-//         // must exist on the server. If this code is changed, look at
-//         // the run method above for similar code to change.
-//         value = regionEntry.getRegionEntry().getValue((LocalRegion)region);
-//         if (value instanceof CachedDeserializable) {
-//           value = ((CachedDeserializable)value).getValue();
-//           isDeserialized = !(value instanceof byte[]);
-//         }
-//       }
-//       return new InterestEvent(entryKey, value, isDeserialized);
-//     } else {
-//       return null;
-//     }
-//   }
-
-//   /**
-//    * Process an interest request of type {@link InterestType#FILTER_CLASS}
-//    * @param region the region
-//    * @param className the key
-//    * @param policy the policy
-//    * @throws IOException
-//    */
-//   private void handleFilter(LocalRegion region, String className,
-//       InterestResultPolicy policy) throws IOException
-//   {
-//     ArrayList keyList = new ArrayList(this.maximumChunkSize);
-
-//     // Handle the filtering class pattern
-
-//     Class filterClass;
-//     InterestFilter filter;
-//     try {
-//       filterClass = ClassLoadUtil.classFromName((String) className);
-//       filter = (InterestFilter) filterClass.newInstance();
-//     } catch(ClassNotFoundException cnfe) {
-//       throw new RuntimeException("Class " + className + " not found in classpath.", cnfe);
-//     } catch(Exception e) {
-//       throw new RuntimeException("Class " + className + " could not be instantiated.", e);
-//     }
-
-// //    if(!(filter instanceof InterestFilter)) {
-// //      throw new RuntimeException("Class " + key + " does not implement InterestFilter.");
-// //    }
-
-//     for (Iterator it = region.keys().iterator(); it.hasNext();) {
-//       Object entryKey = it.next();
-//       InterestEvent ie = getInterestEvent(region, entryKey);
-//       if (ie == null) {
-//         // key no longer existed so skip it
-//         continue;
-//       }
-//       if(!filter.notifyOnRegister(ie)) {
-//         //the filter does not want to know about this entry, so skip it.
-//          continue;
-//       }
-//       appendInterestResponseKey(region, className, entryKey, keyList, "filter list");
-//     }
-//     // Send the last chunk (the only chunk for individual and list keys)
-//     // always send it back, even if the list is of zero size.
-//     sendRegisterInterestResponseChunk(region, className, keyList, true);
-//   }
-
- 
-
-//  /**
-//   * Process an interest request of type {@link InterestType#FILTER_CLASS}
-//   * @param region the region
-//   * @param className the key
-//   * @param policy the policy
-//   * @throws IOException
-//   */
-//  private void handleFilterPR(PartitionedRegion region, String className,
-//      InterestResultPolicy policy) throws IOException
-//  {
-//    // this interest type isn't exposed to the customer yet
-//    throw new UnsupportedOperationException("filter classes not yet supporeted");
-//  }
-
-  
-  
- 
-  
-
-  
-
-  
 
   public void incrementLatestBatchIdReplied(int justProcessed) {
     // not synchronized because it only has a single caller
@@ -1630,17 +1494,6 @@ public class ServerConnection implements Runnable {
         /*|| this.communicationMode == Acceptor.CLIENT_TO_SERVER_FOR_QUEUE*/) {
       getAcceptor().decClientServerCnxCount();
     }
-//       if (logger.fineEnabled()) {
-//         logger.fine (this.name + ": about to close socket");
-//       }
-//       try {
-//         theSocket.shutdownInput();
-//       } catch (Exception e) {
-//       }
-//       try {
-//         theSocket.shutdownOutput();
-//       } catch (Exception e) {
-//       }
     try {
       theSocket.close();
     } catch (Exception e) {
@@ -1944,146 +1797,116 @@ public class ServerConnection implements Runnable {
       hdos.close();
     }
   }
-  
-  public AuthorizeRequest getAuthzRequest() 
-      throws AuthenticationRequiredException, IOException {
-    //look client version and return authzrequest
-    //for backward client it will be store in member variable userAuthId 
-    //for other look "requestMsg" here and get unique-id from this to get the authzrequest
-    
-    if (AcceptorImpl.isAuthenticationRequired()) {
-      long uniqueId = 0;
-      
-      if (this.handshake.getVersion().compareTo(Version.GFE_65) < 0
-          || this.communicationMode == Acceptor.GATEWAY_TO_GATEWAY) {
-        uniqueId = this.userAuthId;
-      } else {
-        try {
-          //this.logger.fine("getAuthzRequest() isSecureMode = " + this.requestMsg.isSecureMode());
-          if (this.requestMsg.isSecureMode()) {
-            //get uniqueID from message
-            byte [] secureBytes = this.requestMsg.getSecureBytes();
 
-            secureBytes =  ((HandShake)this.handshake).decryptBytes(secureBytes);
-            AuthIds aIds = new AuthIds(secureBytes);
+  public long getUniqueId(){
+    long uniqueId = 0;
 
-            if ( /*this.connectionId != Connection.DEFAULT_CONNECTION_ID &&*/ this.connectionId != aIds.getConnectionId()) {
-              throw new AuthenticationRequiredException(
-                  LocalizedStrings.HandShake_NO_SECURITY_PROPERTIES_ARE_PROVIDED
-                    .toLocalizedString());
-            } else {
-              uniqueId = aIds.getUniqueId();
-            }
-            
-          } else {
+    if (this.handshake.getVersion().compareTo(Version.GFE_65) < 0
+      || this.communicationMode == Acceptor.GATEWAY_TO_GATEWAY) {
+      uniqueId = this.userAuthId;
+    } else {
+      try {
+        //this.logger.fine("getAuthzRequest() isSecureMode = " + this.requestMsg.isSecureMode());
+        if (this.requestMsg.isSecureMode()) {
+          //get uniqueID from message
+          byte [] secureBytes = this.requestMsg.getSecureBytes();
+
+          secureBytes =  ((HandShake)this.handshake).decryptBytes(secureBytes);
+          AuthIds aIds = new AuthIds(secureBytes);
+
+          if (this.connectionId != aIds.getConnectionId()) {
             throw new AuthenticationRequiredException(
-                LocalizedStrings.HandShake_NO_SECURITY_PROPERTIES_ARE_PROVIDED
-                  .toLocalizedString());
-          }
-        } catch (AuthenticationRequiredException are) {
-          throw are;
-        }
-        catch(Exception ex ) {
-          throw new AuthenticationRequiredException(
               LocalizedStrings.HandShake_NO_SECURITY_PROPERTIES_ARE_PROVIDED
                 .toLocalizedString());
-        }
-      }
-      UserAuthAttributes uaa = null;
-      try {
-        uaa = this.clientUserAuths.getUserAuthAttributes(uniqueId);
-      } catch (NullPointerException npe) {
-        if (this.isTerminated()) {
-          // Bug #52023.
-          throw new IOException("Server connection is terminated.");
+          } else {
+            uniqueId = aIds.getUniqueId();
+          }
+
         } else {
-          logger.debug("Unexpected exception {}", npe);
+          throw new AuthenticationRequiredException(
+            LocalizedStrings.HandShake_NO_SECURITY_PROPERTIES_ARE_PROVIDED
+              .toLocalizedString());
         }
+      } catch (AuthenticationRequiredException are) {
+        throw are;
       }
-      if (uaa == null) {
+      catch(Exception ex ) {
         throw new AuthenticationRequiredException(
-            "User authorization attributes not found.");
+          LocalizedStrings.HandShake_NO_SECURITY_PROPERTIES_ARE_PROVIDED
+            .toLocalizedString());
       }
-      AuthorizeRequest authReq = uaa.getAuthzRequest();
-      if (logger.isDebugEnabled()) {
-        logger.debug("getAuthzRequest() authrequest: {}", ((authReq == null) ? "NULL (only authentication is required)" : "not null"));
-      }
-      
-      return authReq;
     }
-    else {
+    return uniqueId;
+  }
+
+  public AuthorizeRequest getAuthzRequest()
+      throws AuthenticationRequiredException, IOException {
+    //look client version and return authzrequest
+    //for backward client it will be store in member variable userAuthId
+    //for other look "requestMsg" here and get unique-id from this to get the authzrequest
+
+    if (!AcceptorImpl.isAuthenticationRequired())
       return null;
+
+    if(AcceptorImpl.isIntegratedSecurity())
+      return null;
+
+    long uniqueId = getUniqueId();
+
+    UserAuthAttributes uaa = null;
+    try {
+      uaa = this.clientUserAuths.getUserAuthAttributes(uniqueId);
+    } catch (NullPointerException npe) {
+      if (this.isTerminated()) {
+        // Bug #52023.
+        throw new IOException("Server connection is terminated.");
+      } else {
+        logger.debug("Unexpected exception {}", npe);
+      }
     }
+    if (uaa == null) {
+      throw new AuthenticationRequiredException(
+          "User authorization attributes not found.");
+    }
+    AuthorizeRequest authReq = uaa.getAuthzRequest();
+    if (logger.isDebugEnabled()) {
+      logger.debug("getAuthzRequest() authrequest: {}", ((authReq == null) ? "NULL (only authentication is required)" : "not null"));
+    }
+    return authReq;
   }
 
   public AuthorizeRequestPP getPostAuthzRequest() 
   throws AuthenticationRequiredException, IOException {
-  //look client version and return authzrequest
-  //for backward client it will be store in member variable userAuthId 
-  //for other look "requestMsg" here and get unique-id from this to get the authzrequest
-    if (AcceptorImpl.isAuthenticationRequired()) {
-      long uniqueId = 0;
-      
-      if (this.handshake.getVersion().compareTo(Version.GFE_65) < 0
-          || this.communicationMode == Acceptor.GATEWAY_TO_GATEWAY) {
-        uniqueId = this.userAuthId;
-      } else {
-        try {
-          //this.logger.fine("getPostAuthzRequest() isSecureMode = " + this.requestMsg.isSecureMode());
-          if (this.requestMsg.isSecureMode()) {
-            byte [] secureBytes = this.requestMsg.getSecureBytes();
-            
-            secureBytes =  ((HandShake)this.handshake).decryptBytes(secureBytes);
-            
-            AuthIds aIds = new AuthIds(secureBytes);
-            if ( /*this.connectionId != Connection.DEFAULT_CONNECTION_ID && */this.connectionId != aIds.getConnectionId()) {
-              throw new AuthenticationRequiredException(
-                  LocalizedStrings.HandShake_NO_SECURITY_PROPERTIES_ARE_PROVIDED
-                    .toLocalizedString());
-            } else {
-              uniqueId = aIds.getUniqueId();
-            }
-            
-          } 
-          else{
-            throw new AuthenticationRequiredException(
-                LocalizedStrings.HandShake_NO_SECURITY_PROPERTIES_ARE_PROVIDED
-                  .toLocalizedString());
-          }
-        } catch (AuthenticationRequiredException are) {
-          throw are;
-        }
-        catch(Exception ex) {
-          throw new AuthenticationRequiredException(
-              LocalizedStrings.HandShake_NO_SECURITY_PROPERTIES_ARE_PROVIDED
-                .toLocalizedString());
-        }
-      }
-      
-      UserAuthAttributes uaa = null;
-      try {
-        uaa = this.clientUserAuths.getUserAuthAttributes(uniqueId);
-      } catch (NullPointerException npe) {
-        if (this.isTerminated()) {
-          // Bug #52023.
-          throw new IOException("Server connection is terminated.");
-        } else {
-          logger.debug("Unexpected exception {}", npe);
-        }
-      }
-      if (uaa == null) {
-        throw new AuthenticationRequiredException(
-            "User authorization attributes not found.");
-      }
-      
-      AuthorizeRequestPP postAuthReq = uaa.getPostAuthzRequest();
-      
-      return postAuthReq;
-    }
-    else
+    if (!AcceptorImpl.isAuthenticationRequired())
       return null;
-    
-    //return this.postAuthzRequest;
+
+    if(AcceptorImpl.isIntegratedSecurity())
+      return null;
+
+    //look client version and return authzrequest
+    //for backward client it will be store in member variable userAuthId
+    //for other look "requestMsg" here and get unique-id from this to get the authzrequest
+    long uniqueId = getUniqueId();
+
+    UserAuthAttributes uaa = null;
+    try {
+      uaa = this.clientUserAuths.getUserAuthAttributes(uniqueId);
+    } catch (NullPointerException npe) {
+      if (this.isTerminated()) {
+        // Bug #52023.
+        throw new IOException("Server connection is terminated.");
+      } else {
+        logger.debug("Unexpected exception {}", npe);
+      }
+    }
+    if (uaa == null) {
+      throw new AuthenticationRequiredException(
+          "User authorization attributes not found.");
+    }
+
+    AuthorizeRequestPP postAuthReq = uaa.getPostAuthzRequest();
+
+    return postAuthReq;
   }
 
   /** returns the member ID byte array to be used for creating EventID objects */

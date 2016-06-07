@@ -32,7 +32,7 @@ import com.gemstone.gemfire.internal.offheap.annotations.Unretained;
 public class GetOperationContextImpl extends GetOperationContext implements Releasable {
 
   private boolean released;
-  
+
   public GetOperationContextImpl(Object key, boolean postOperation) {
     super(key, postOperation);
   }

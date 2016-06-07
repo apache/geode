@@ -16,13 +16,13 @@
  */
 package com.gemstone.gemfire.security;
 
-import com.gemstone.gemfire.cache.Region;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.security.SecurityTestUtils.*;
+import static org.junit.Assert.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
-import static com.gemstone.gemfire.security.SecurityTestUtils.*;
-import static org.junit.Assert.assertNotNull;
+import com.gemstone.gemfire.cache.Region;
 
 /**
  * Extracted from ClientAuthenticationDUnitTest
@@ -33,21 +33,18 @@ public abstract class ClientAuthenticationTestUtils {
   }
 
   protected static Integer createCacheServer(final int locatorPort, final String locatorString, final String authenticator, final Properties extraProps, final Properties javaProps) {
-    Properties authProps;
-    if (extraProps == null) {
-      authProps = new Properties();
-    } else {
-      authProps = extraProps;
-    }
-
-    if (authenticator != null) {
-      authProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR, authenticator);
-    }
-
-    return SecurityTestUtils.createCacheServer(authProps, javaProps, locatorPort, locatorString, 0, NO_EXCEPTION);
+    return createCacheServer(locatorPort, locatorString, 0, authenticator, extraProps, javaProps, NO_EXCEPTION);
   }
 
-  protected static void createCacheServer(final int locatorPort, final String locatorString, final int serverPort, final String authenticator, final Properties extraProps, final Properties javaProps) {
+  protected static Integer createCacheServer(final int locatorPort, final String locatorString, final int serverPort, final String authenticator, final Properties extraProps, final Properties javaProps) {
+    return createCacheServer(locatorPort, locatorString, serverPort, authenticator, extraProps, javaProps, NO_EXCEPTION);
+  }
+  protected static Integer createCacheServer(final int locatorPort, final String locatorString, final String authenticator, final Properties extraProps, final Properties javaProps, final int expectedResult) {
+
+    return createCacheServer(locatorPort, locatorString, 0, authenticator, extraProps, javaProps, expectedResult);
+  }
+
+  protected static Integer createCacheServer(final int locatorPort, final String locatorString, final int serverPort, final String authenticator, final Properties extraProps, final Properties javaProps, int expectedResult) {
     Properties authProps;
     if (extraProps == null) {
       authProps = new Properties();
@@ -58,7 +55,7 @@ public abstract class ClientAuthenticationTestUtils {
     if (authenticator != null) {
       authProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR, authenticator);
     }
-    SecurityTestUtils.createCacheServer(authProps, javaProps, locatorPort, locatorString, serverPort, NO_EXCEPTION);
+    return SecurityTestUtils.createCacheServer(authProps, javaProps, locatorPort, locatorString, serverPort, expectedResult);
   }
 
   protected static void createCacheClient(final String authInit, final Properties authProps, final Properties javaProps, final int[] ports, final int numConnections, final boolean multiUserMode, final boolean subscriptionEnabled, final int expectedResult) {

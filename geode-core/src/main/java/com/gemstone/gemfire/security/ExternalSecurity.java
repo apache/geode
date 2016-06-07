@@ -14,25 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gemstone.gemfire.management.internal.security;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import javax.management.DescriptorKey;
+package com.gemstone.gemfire.security;
 
-import com.gemstone.gemfire.security.GeodePermission.Operation;
-import com.gemstone.gemfire.security.GeodePermission.Resource;
+import java.security.Principal;
+import java.util.Properties;
 
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-public @interface ResourceOperation {
-  @DescriptorKey("resource")
-  Resource resource() default Resource.NULL;
+public interface ExternalSecurity {
 
-  @DescriptorKey("operation")
-  Operation operation() default Operation.NULL;
+  void init(Properties securityProps);
+
+  Principal authenticate(Properties props) throws AuthenticationFailedException;
+
+  default boolean authorize(Principal principal, GeodePermission permission) {
+    return true;
+  }
+
+  //post-processing as well if we can find a good way to support it
 }

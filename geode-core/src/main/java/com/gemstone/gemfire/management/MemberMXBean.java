@@ -16,12 +16,12 @@
  */
 package com.gemstone.gemfire.management;
 
-import static com.gemstone.gemfire.cache.operations.OperationContext.*;
-
 import java.util.Map;
 
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.security.GeodePermission.Operation;
+import com.gemstone.gemfire.security.GeodePermission.Resource;
 
 /**
  * MBean that provides access to information and management functionality for a
@@ -138,7 +138,7 @@ import com.gemstone.gemfire.management.internal.security.ResourceOperation;
  *
  * @since GemFire 7.0
  */
-@ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+@ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface MemberMXBean {
 
   /**
@@ -162,7 +162,7 @@ public interface MemberMXBean {
    * 
    * @return A list of names of the disk stores that were compacted.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public String[] compactAllDiskStores();
   
   /**
@@ -170,14 +170,14 @@ public interface MemberMXBean {
    * 
    * @return True if the Manager MBean was successfully created, false otherwise.
    */
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public boolean createManager();
   
   /**
    * Shuts down the member. This is an asynchronous call and it will 
    * return immediately without waiting for a result.
    */
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public void shutDownMember();
   
   /**

@@ -18,6 +18,18 @@ package com.gemstone.gemfire.management.internal.cli.commands;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.execute.FunctionInvocationTargetException;
@@ -36,23 +48,24 @@ import com.gemstone.gemfire.management.internal.cli.functions.CliFunctionResult;
 import com.gemstone.gemfire.management.internal.cli.functions.ExportConfigFunction;
 import com.gemstone.gemfire.management.internal.cli.functions.GetMemberConfigInformationFunction;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
-import com.gemstone.gemfire.management.internal.cli.result.*;
+import com.gemstone.gemfire.management.internal.cli.result.CommandResultException;
+import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData;
 import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData.SectionResultData;
+import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
+import com.gemstone.gemfire.management.internal.cli.result.InfoResultData;
+import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
+import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.security.GeodePermission.Operation;
+import com.gemstone.gemfire.security.GeodePermission.Resource;
+
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
-import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /****
  * @since GemFire 7.0
@@ -68,8 +81,8 @@ public class ConfigCommands implements CommandMarker {
   }
 
   @CliCommand(value = { CliStrings.DESCRIBE_CONFIG }, help = CliStrings.DESCRIBE_CONFIG__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG })
-  @ResourceOperation(resource = Resource.CLUSTER, operation= OperationCode.READ)
+  @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
+  @ResourceOperation(resource = Resource.CLUSTER, operation= Operation.READ)
   public Result describeConfig(
       @CliOption (key = CliStrings.DESCRIBE_CONFIG__MEMBER,
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -182,8 +195,8 @@ public class ConfigCommands implements CommandMarker {
    * @return Results of the attempt to write the configuration
    */
   @CliCommand(value = { CliStrings.EXPORT_CONFIG }, help = CliStrings.EXPORT_CONFIG__HELP)
-  @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.ConfigCommands$Interceptor", relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG })
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.ConfigCommands$Interceptor", relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result exportConfig(
       @CliOption(key = { CliStrings.EXPORT_CONFIG__MEMBER },
                  optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -238,8 +251,8 @@ public class ConfigCommands implements CommandMarker {
 
 
   @CliCommand(value = { CliStrings.ALTER_RUNTIME_CONFIG }, help = CliStrings.ALTER_RUNTIME_CONFIG__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG })
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public Result alterRuntimeConfig(
       @CliOption (key = {CliStrings.ALTER_RUNTIME_CONFIG__MEMBER},
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,

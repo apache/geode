@@ -16,6 +16,21 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.management.ObjectName;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
@@ -45,28 +60,13 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.configuration.domain.XmlEntity;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.security.GeodePermission.Operation;
+import com.gemstone.gemfire.security.GeodePermission.Resource;
+
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
-
-import javax.management.ObjectName;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 public class WanCommands implements CommandMarker {
 
@@ -76,7 +76,7 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.CREATE_GATEWAYSENDER, help = CliStrings.CREATE_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result createGatewaySender(
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
@@ -193,7 +193,7 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.START_GATEWAYSENDER, help = CliStrings.START_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result startGatewaySender(
       @CliOption(key = CliStrings.START_GATEWAYSENDER__ID,
       mandatory = true,
@@ -336,7 +336,7 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.PAUSE_GATEWAYSENDER, help = CliStrings.PAUSE_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result pauseGatewaySender(
       @CliOption(key = CliStrings.PAUSE_GATEWAYSENDER__ID,
       mandatory = true,
@@ -429,7 +429,7 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.RESUME_GATEWAYSENDER, help = CliStrings.RESUME_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource=Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource=Resource.DATA, operation = Operation.MANAGE)
   public Result resumeGatewaySender(
       @CliOption(key = CliStrings.RESUME_GATEWAYSENDER__ID,
       mandatory = true,
@@ -569,7 +569,7 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.STOP_GATEWAYSENDER, help = CliStrings.STOP_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result stopGatewaySender(
       @CliOption(key = CliStrings.STOP_GATEWAYSENDER__ID,
       mandatory = true,
@@ -645,7 +645,7 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.CREATE_GATEWAYRECEIVER, help = CliStrings.CREATE_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation( resource=Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation( resource=Resource.DATA, operation = Operation.MANAGE)
   public Result createGatewayReceiver(
       @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
@@ -725,7 +725,7 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.LOAD_BALANCE_GATEWAYSENDER, help = CliStrings.LOAD_BALANCE_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result loadBalanceGatewaySender(
       @CliOption(key = CliStrings.LOAD_BALANCE_GATEWAYSENDER__ID,
       mandatory = true,
@@ -791,7 +791,7 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.START_GATEWAYRECEIVER, help = CliStrings.START_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result startGatewayReceiver(
       @CliOption(key = CliStrings.START_GATEWAYRECEIVER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
@@ -853,7 +853,7 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.STOP_GATEWAYRECEIVER, help = CliStrings.STOP_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result stopGatewayReceiver(
 
       @CliOption(key = CliStrings.STOP_GATEWAYRECEIVER__GROUP,
@@ -927,7 +927,7 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.LIST_GATEWAY, help = CliStrings.LIST_GATEWAY__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listGateway(
       @CliOption(key = CliStrings.LIST_GATEWAY__MEMBER,
       optionContext = ConverterHint.MEMBERIDNAME,
@@ -1018,7 +1018,7 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.STATUS_GATEWAYSENDER, help = CliStrings.STATUS_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result statusGatewaySender(
       @CliOption(key = CliStrings.STATUS_GATEWAYSENDER__ID,
       mandatory = true,
@@ -1085,7 +1085,7 @@ public class WanCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.STATUS_GATEWAYRECEIVER, help = CliStrings.STATUS_GATEWAYRECEIVER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result statusGatewayReceiver(
       @CliOption(key = CliStrings.STATUS_GATEWAYRECEIVER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,

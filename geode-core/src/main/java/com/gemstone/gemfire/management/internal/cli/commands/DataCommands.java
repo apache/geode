@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.cache.operations.OperationContext.*;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,6 +47,7 @@ import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.partition.PartitionRebalanceInfo;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.management.DistributedRegionMXBean;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.cli.CliMetaData;
@@ -73,7 +72,8 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.security.GeodePermission.Operation;
+import com.gemstone.gemfire.security.GeodePermission.Resource;
 
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
@@ -96,9 +96,8 @@ public class DataCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.REBALANCE, help = CliStrings.REBALANCE__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEODE_DATA,
-      CliStrings.TOPIC_GEODE_REGION
-  })
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+      CliStrings.TOPIC_GEODE_REGION })
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result rebalance(
       @CliOption(key = CliStrings.REBALANCE__INCLUDEREGION, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.REBALANCE__INCLUDEREGION__HELP) String[] includeRegions,
       @CliOption(key = CliStrings.REBALANCE__EXCLUDEREGION, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.REBALANCE__EXCLUDEREGION__HELP) String[] excludeRegions,
@@ -1126,7 +1125,7 @@ public class DataCommands implements CommandMarker {
       CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION
   })
   @CliCommand(value = { CliStrings.REMOVE }, help = CliStrings.REMOVE__HELP)
-  @ResourceOperation(resource=Resource.DATA, operation = OperationCode.MANAGE)
+  @ResourceOperation(resource=Resource.DATA, operation = Operation.MANAGE)
   public Result remove(
       @CliOption(key = { CliStrings.REMOVE__KEY }, help = CliStrings.REMOVE__KEY__HELP) String key,
       @CliOption(key = { CliStrings.REMOVE__REGION }, mandatory = true, help = CliStrings.REMOVE__REGION__HELP, optionContext = ConverterHint.REGIONPATH) String regionPath,

@@ -17,6 +17,16 @@
 
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import javax.management.ObjectName;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.execute.FunctionService;
@@ -37,23 +47,13 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.security.GeodePermission.Operation;
+import com.gemstone.gemfire.security.GeodePermission.Resource;
+
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
-
-import javax.management.ObjectName;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  * 
@@ -68,7 +68,7 @@ public class ClientCommands implements CommandMarker {
 
   @CliCommand(value = CliStrings.LIST_CLIENTS, help = CliStrings.LIST_CLIENT__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_LIST })
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listClient() {
     Result result = null;
 
@@ -152,7 +152,7 @@ public class ClientCommands implements CommandMarker {
   
   @CliCommand(value = CliStrings.DESCRIBE_CLIENT, help = CliStrings.DESCRIBE_CLIENT__HELP)
   @CliMetaData(relatedTopic = { CliStrings.TOPIC_LIST })
-  @ResourceOperation(resource = Resource.CLUSTER, operation= OperationCode.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation= Operation.READ)
   public Result describeClient(
       @CliOption(key = CliStrings.DESCRIBE_CLIENT__ID, mandatory = true, help = CliStrings.DESCRIBE_CLIENT__ID__HELP) String clientId) {
     Result result = null;   

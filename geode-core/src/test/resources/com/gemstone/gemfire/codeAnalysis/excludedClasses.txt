@@ -144,4 +144,6 @@ com/gemstone/gemfire/cache/operations/StopCQOperationContext
 com/gemstone/gemfire/cache/operations/UnregisterInterestOperationContext
 com/gemstone/gemfire/cache/operations/internal/GetOperationContextImpl
 com/gemstone/gemfire/internal/cache/operations/ContainsKeyOperationContext
-com/gemstone/gemfire/management/internal/security/ResourceOperationContext
+com/gemstone/gemfire/security/GeodePermission
+com/gemstone/gemfire/security/GeodePermission$Operation
+com/gemstone/gemfire/security/GeodePermission$Resource

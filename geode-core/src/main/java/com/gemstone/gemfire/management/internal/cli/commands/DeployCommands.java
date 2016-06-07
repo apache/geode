@@ -16,6 +16,13 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -38,20 +45,14 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.configuration.SharedConfigurationWriter;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.security.GeodePermission.Operation;
+import com.gemstone.gemfire.security.GeodePermission.Resource;
+
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import static com.gemstone.gemfire.cache.operations.OperationContext.Resource;
 
 /**
  * Commands for deploying, un-deploying and listing files deployed using the command line shell.
@@ -77,8 +78,8 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
    * @return The result of the attempt to deploy
    */
   @CliCommand(value = { CliStrings.DEPLOY }, help = CliStrings.DEPLOY__HELP)
-  @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.DeployCommands$Interceptor", relatedTopic={CliStrings.TOPIC_GEODE_CONFIG }, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.DeployCommands$Interceptor", relatedTopic={CliStrings.TOPIC_GEODE_CONFIG}, writesToSharedConfiguration=true)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public final Result deploy(
     @CliOption(key = { CliStrings.DEPLOY__GROUP }, help = CliStrings.DEPLOY__GROUP__HELP, optionContext=ConverterHint.MEMBERGROUP)
     @CliMetaData (valueSeparator = ",")
@@ -160,8 +161,8 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
    * @return The result of the attempt to undeploy
    */
   @CliCommand(value = { CliStrings.UNDEPLOY }, help = CliStrings.UNDEPLOY__HELP)
-  @CliMetaData(relatedTopic={CliStrings.TOPIC_GEODE_CONFIG }, writesToSharedConfiguration=true)
-  @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
+  @CliMetaData(relatedTopic={CliStrings.TOPIC_GEODE_CONFIG}, writesToSharedConfiguration=true)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public final Result undeploy(
       @CliOption(key = { CliStrings.UNDEPLOY__GROUP },
                  help = CliStrings.UNDEPLOY__GROUP__HELP, 
@@ -231,8 +232,8 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
    * @return List of deployed JAR files
    */
   @CliCommand(value = { CliStrings.LIST_DEPLOYED }, help = CliStrings.LIST_DEPLOYED__HELP)
-  @CliMetaData(relatedTopic={CliStrings.TOPIC_GEODE_CONFIG })
-  @ResourceOperation(resource = Resource.CLUSTER, operation= OperationCode.READ)
+  @CliMetaData(relatedTopic={CliStrings.TOPIC_GEODE_CONFIG})
+  @ResourceOperation(resource = Resource.CLUSTER, operation= Operation.READ)
   public final Result listDeployed(
       @CliOption(key = { CliStrings.LIST_DEPLOYED__GROUP },
                  help = CliStrings.LIST_DEPLOYED__GROUP__HELP)

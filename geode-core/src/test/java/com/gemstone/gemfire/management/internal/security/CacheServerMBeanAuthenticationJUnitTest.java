@@ -47,7 +47,6 @@ public class CacheServerMBeanAuthenticationJUnitTest {
   @JMXConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testAllAccess() throws Exception {
     bean.removeIndex("foo");
-    bean.executeContinuousQuery("bar");
     bean.fetchLoadProbe();
     bean.getActiveCQCount();
     bean.stopContinuousQuery("bar");

@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.cache.operations.OperationContext.*;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -52,6 +50,8 @@ import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.RegionAttributesNames;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.security.GeodePermission.Operation;
+import com.gemstone.gemfire.security.GeodePermission.Resource;
 
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
@@ -77,7 +77,7 @@ public class RegionCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.LIST_REGION }, help = CliStrings.LIST_REGION__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_REGION)
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listRegion(
       @CliOption(key = { CliStrings.LIST_REGION__GROUP },
       optionContext = ConverterHint.MEMBERGROUP,
@@ -155,7 +155,7 @@ public class RegionCommands implements CommandMarker {
 
   @CliCommand(value = { CliStrings.DESCRIBE_REGION }, help = CliStrings.DESCRIBE_REGION__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_CONFIG } )
-  @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result describeRegion(
       @CliOption(key = CliStrings.DESCRIBE_REGION__NAME,
       optionContext = ConverterHint.REGIONPATH,

@@ -16,22 +16,6 @@
  */
 package com.gemstone.gemfire.security.templates;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.operations.OperationContext;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.management.internal.security.ResourceOperationContext;
-import com.gemstone.gemfire.security.AccessControl;
-import com.gemstone.gemfire.security.AuthenticationFailedException;
-import com.gemstone.gemfire.security.Authenticator;
-import com.gemstone.gemfire.security.NotAuthorizedException;
-import org.apache.commons.io.IOUtils;
-
-import javax.management.remote.JMXPrincipal;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -47,6 +31,21 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import javax.management.remote.JMXPrincipal;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import com.gemstone.gemfire.security.AccessControl;
+import com.gemstone.gemfire.security.AuthenticationFailedException;
+import com.gemstone.gemfire.security.Authenticator;
+import com.gemstone.gemfire.security.ExternalSecurity;
+import com.gemstone.gemfire.security.GeodePermission;
+import com.gemstone.gemfire.security.NotAuthorizedException;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.shiro.authz.Permission;
 
 /**
  * This class provides a sample implementation for authentication and authorization via the {@link AccessControl}
@@ -96,10 +95,10 @@ import java.util.stream.StreamSupport;
  * }
  * </pre>
  */
-public class SampleJsonAuthorization implements AccessControl, Authenticator {
+public class SampleJsonAuthorization implements ExternalSecurity {
 
   public static class Role {
-    List<OperationContext> permissions = new ArrayList<>();
+    List<GeodePermission> permissions = new ArrayList<>();
     String name;
     String serverGroup;
   }
@@ -181,7 +180,7 @@ public class SampleJsonAuthorization implements AccessControl, Authenticator {
         String resourcePart = (parts.length > 0) ? parts[0] : null;
         String operationPart = (parts.length > 1) ? parts[1] : null;
         String regionPart = (regionNames != null) ? regionNames : "*";
-        role.permissions.add(new ResourceOperationContext(resourcePart, operationPart, regionPart));
+        role.permissions.add(new GeodePermission(resourcePart, operationPart, regionPart));
       }
 
       roleMap.put(role.name, role);
@@ -199,12 +198,9 @@ public class SampleJsonAuthorization implements AccessControl, Authenticator {
 
   private Principal principal = null;
 
-  @Override
-  public void close() {
-  }
 
   @Override
-  public boolean authorizeOperation(String region, OperationContext context) {
+  public boolean authorize(Principal principal, GeodePermission context) {
     if (principal == null) return false;
 
     User user = acl.get(principal.getName());
@@ -212,7 +208,7 @@ public class SampleJsonAuthorization implements AccessControl, Authenticator {
 
     // check if the user has this permission defined in the context
     for (Role role : acl.get(user.name).roles) {
-      for (OperationContext permitted : role.permissions) {
+      for (Permission permitted : role.permissions) {
         if (permitted.implies(context)) {
           return true;
         }
@@ -223,12 +219,11 @@ public class SampleJsonAuthorization implements AccessControl, Authenticator {
   }
 
   @Override
-  public void init(Principal principal, DistributedMember arg1, Cache arg2) throws NotAuthorizedException {
-    this.principal = principal;
+  public void init(Properties props) throws NotAuthorizedException {
   }
 
   @Override
-  public Principal authenticate(Properties props, DistributedMember arg1) throws AuthenticationFailedException {
+  public Principal authenticate(Properties props) throws AuthenticationFailedException {
     String user = props.getProperty(ResourceConstants.USER_NAME);
     String pwd = props.getProperty(ResourceConstants.PASSWORD);
 
@@ -243,10 +238,6 @@ public class SampleJsonAuthorization implements AccessControl, Authenticator {
     }
 
     return new JMXPrincipal(user);
-  }
-
-  @Override
-  public void init(Properties arg0, LogWriter arg1, LogWriter arg2) throws AuthenticationFailedException {
   }
 
   protected static String readFile(String name) throws IOException {
