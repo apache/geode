@@ -1256,8 +1256,6 @@ public class SystemAdmin {
   }
 
   public SystemAdmin() {
-    // no instances allowed
-    // [sumedh] now is overridden by SQLF
     // register DSFID types first; invoked explicitly so that all message type
     // initializations do not happen in first deserialization on a possibly
     // "precious" thread

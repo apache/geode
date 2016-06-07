@@ -24,7 +24,6 @@ import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedM
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.cache.delta.Delta;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.lang.StringUtils;
@@ -82,10 +81,6 @@ public class TXEntryState implements Releasable
    */
   private int nearSideEventOffset = -1;
 
-  //Asif: In case of Sqlfabric, the pending value may be a SerializableDelta object 
-  //which may be containing base value ( in case of Tx create) along with bunch 
-  //of incremental deltas, so for correct behaviour this field should be accessed only 
-  //by its getter. Do not use it directly  
   private Object pendingValue;
   
   /**
@@ -290,24 +285,12 @@ public class TXEntryState implements Releasable
   }
 
   public Object getOriginalValue() {
-    Object value = this.originalValue;
-    
-    if(value instanceof Delta) {
-      value = ((Delta) value).getResultantValue();
-    }
-    
-    return value;
+    return this.originalValue;
   }
 
   public Object getPendingValue()
   {
-    Object value = this.pendingValue;
-    
-    if(value instanceof Delta) {
-      value = ((Delta) value).getResultantValue();
-    }
-    
-    return value;
+    return this.pendingValue;
   }
   
   public Object getCallbackArgument()
@@ -335,12 +318,7 @@ public class TXEntryState implements Releasable
 
   void setPendingValue(Object pv)
   {
-    if(pv instanceof Delta) {
-      Object toMerge = this.pendingValue;      
-      this.pendingValue = ((Delta)pv).merge(toMerge, this.op == OP_CREATE);
-    }else {
-      this.pendingValue = pv;
-    }
+    this.pendingValue = pv;
   }
   
   void setCallbackArgument(Object callbackArgument)
@@ -2001,9 +1979,6 @@ public class TXEntryState implements Releasable
         valueBytes = (byte[])v;
       }
       else {
-        // this value shouldn't be a Delta
-        Assert.assertTrue(!(v instanceof Delta));
-    
         deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_LAZY;
         valueBytes = EntryEventImpl.serialize(v);
       }
@@ -2076,7 +2051,6 @@ public class TXEntryState implements Releasable
   }
   
 
-  // Asif:Add for sql fabric as it has to plug in its own TXEntry object
   private final static TXEntryStateFactory factory = new TXEntryStateFactory() {
 
     public TXEntryState createEntry()

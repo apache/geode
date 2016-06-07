@@ -208,7 +208,6 @@ class ReferenceCountHelperImpl {
           for (int i=0; i < list.size(); i++) {
             RefCountChangeInfo info = list.get(i);
             if (owner instanceof RegionEntry) {
-              // use identity comparison on region entries since sqlf does some wierd stuff in the equals method
               if (owner == info.getOwner()) {
                 if (info.getUseCount() > 0) {
                   info.decUseCount();

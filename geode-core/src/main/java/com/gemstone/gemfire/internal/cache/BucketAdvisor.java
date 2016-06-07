@@ -192,7 +192,6 @@ public class BucketAdvisor extends CacheDistributionAdvisor  {
     return advisor;
   }
 
-  // For SQLFabric ALTER TABLE that may change colocation
   public void resetParentAdvisor(int bucketId) {
     PartitionedRegion colocatedRegion = ColocationHelper
         .getColocatedRegion(this.pRegion);
@@ -1115,11 +1114,6 @@ public class BucketAdvisor extends CacheDistributionAdvisor  {
     synchronized (this) {
       if (isVolunteering() || isClosed() || !isHosting()) {
         // only one thread should be attempting to volunteer at one time
-        return;
-      }
-      // if member is still not initialized then don't volunteer for primary
-      final GemFireCacheImpl cache = (GemFireCacheImpl)getBucket().getCache();
-      if (!cache.doVolunteerForPrimary(this)) {
         return;
       }
       if (this.volunteeringDelegate == null) {

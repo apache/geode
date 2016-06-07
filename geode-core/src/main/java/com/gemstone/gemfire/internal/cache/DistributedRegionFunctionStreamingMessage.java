@@ -231,8 +231,6 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
           }
         }
         // Send the reply if the operateOnPartitionedRegion returned true
-        // Fix for hang in dunits on sqlfabric after merge.
-        //ReplyMessage.send(getSender(), this.processorId, rex, dm);
         sendReply(getSender(), this.processorId, dm, rex, null, 0, true, false);
       }
     }

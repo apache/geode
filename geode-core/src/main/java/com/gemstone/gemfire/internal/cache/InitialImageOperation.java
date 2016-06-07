@@ -23,7 +23,6 @@ import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.query.internal.CqStateImpl;
 import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
-import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache.query.internal.cq.ServerCQ;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -764,10 +763,6 @@ public class InitialImageOperation  {
       if (entryCount <= 1000 && isDebugEnabled) {
         keys = new HashSet();
       }
-      final boolean keyRequiresRegionContext = this.region
-          .keyRequiresRegionContext();
-      // get SQLF index manager for the case of recovery from disk
-      final IndexUpdater indexUpdater = this.region.getIndexUpdater();
       final ByteArrayDataInput in = new ByteArrayDataInput();
       for (int i = 0; i < entryCount; i++) {
         // stream is null-terminated
@@ -816,33 +811,7 @@ public class InitialImageOperation  {
         Object tmpValue = entry.value;
         byte[] tmpBytes = null;
 
-        if (keyRequiresRegionContext) {
-          final KeyWithRegionContext key = (KeyWithRegionContext)entry.key;
-          Object keyObject = tmpValue;
-          if (tmpValue != null) {
-            if (entry.isEagerDeserialize()) {
-              tmpValue = CachedDeserializableFactory.create(tmpValue,
-                  CachedDeserializableFactory.getArrayOfBytesSize(
-                      (byte[][])tmpValue, true));
-              entry.setSerialized(false);
-            }
-            else if (entry.isSerialized()) {
-              tmpBytes = (byte[])tmpValue;
-              // force deserialization for passing to key
-              keyObject = EntryEventImpl.deserialize(tmpBytes,
-                  remoteVersion, in);
-              tmpValue = CachedDeserializableFactory.create(keyObject,
-                  CachedDeserializableFactory.getByteSize(tmpBytes));
-              entry.setSerialized(false);
-            }
-            else {
-              tmpBytes = (byte[])tmpValue;
-            }
-          }
-          key.setRegionContext(this.region);
-          entry.key = key.afterDeserializationWithValue(keyObject);
-        }
-        else {
+        {
           if (tmpValue instanceof byte[]) {
             tmpBytes = (byte[])tmpValue;
           }
@@ -879,32 +848,6 @@ public class InitialImageOperation  {
                 //actually are equal, keep don't put the received
                 //entry into the cache (this avoids writing a record to disk)
                 if(entriesEqual) {
-                  // explicit SQLF index maintenance here since
-                  // it was not done during recovery from disk
-                  if (indexUpdater != null && !Token.isInvalidOrRemoved(tmpValue)) {
-                    boolean success = false;
-                    if (entry.isSerialized()) {
-                      tmpValue = CachedDeserializableFactory
-                          .create((byte[])tmpValue);
-                    }
-                    // dummy EntryEvent to pass for SQLF index maintenance
-                    @Released final EntryEventImpl ev = EntryEventImpl.create(this.region,
-                        Operation.CREATE, null, null, null, true, null, false, false);
-                    try {
-                    ev.setKeyInfo(this.region.getKeyInfo(entry.key,
-                        tmpValue, null));
-                    ev.setNewValue(tmpValue);
-                    try {
-                      indexUpdater.onEvent(this.region, ev, re);
-                      success = true;
-                    } finally {
-                      indexUpdater.postEvent(this.region, ev, re,
-                          success);
-                    }
-                    } finally {
-                      ev.release();
-                    }
-                  }
                   continue;
                 }
                 if (entry.isSerialized() && !Token.isInvalidOrRemoved(tmpValue)) {
@@ -1864,7 +1807,6 @@ public class InitialImageOperation  {
 
       List chunkEntries = null;
       chunkEntries = new InitialImageVersionedEntryList(rgn.concurrencyChecksEnabled, MAX_ENTRIES_PER_CHUNK);
-      final boolean keyRequiresRegionContext = rgn.keyRequiresRegionContext();
       DiskRegion dr = rgn.getDiskRegion();
       if( dr!=null ){
         dr.setClearCountReference();
@@ -1926,9 +1868,6 @@ public class InitialImageOperation  {
                     entry = new InitialImageOperation.Entry();
                     entry.key = key;
                     entry.setVersionTag(stamp.asVersionTag());
-                    if (keyRequiresRegionContext) {
-                      entry.setEagerDeserialize();
-                    }
                     fillRes = mapEntry.fillInValue(rgn, entry, in, rgn.getDistributionManager());
                     if (versionVector != null) {
                       if (logger.isTraceEnabled(LogMarker.GII)) {
@@ -1939,9 +1878,6 @@ public class InitialImageOperation  {
                 } else {
                   entry = new InitialImageOperation.Entry();
                   entry.key = key;
-                  if (keyRequiresRegionContext) {
-                    entry.setEagerDeserialize();
-                  }
                   fillRes = mapEntry.fillInValue(rgn, entry, in, rgn.getDistributionManager());
                 }
               }
@@ -1960,11 +1896,6 @@ public class InitialImageOperation  {
               entry.setLocalInvalid();
               entry.setLastModified(rgn.getDistributionManager(), mapEntry
                   .getLastModified());
-            }
-            if (keyRequiresRegionContext) {
-              entry.key = ((KeyWithRegionContext)key)
-                  .beforeSerializationWithValue(entry.isInvalid()
-                      || entry.isLocalInvalid());
             }
 
             chunkEntries.add(entry);
@@ -2952,18 +2883,6 @@ public class InitialImageOperation  {
       this.entryBits = EntryBits.setSerialized(this.entryBits, isSerialized);
     }
 
-    public boolean isEagerDeserialize() {
-      return EntryBits.isEagerDeserialize(this.entryBits);
-    }
-
-    void setEagerDeserialize() {
-      this.entryBits = EntryBits.setEagerDeserialize(this.entryBits);
-    }
-
-    void clearEagerDeserialize() {
-      this.entryBits = EntryBits.clearEagerDeserialize(this.entryBits);
-    }
-
     public boolean isInvalid() {
       return (this.value == null) && !EntryBits.isLocalInvalid(this.entryBits);
     }
@@ -3005,12 +2924,7 @@ public class InitialImageOperation  {
       out.writeByte(flags);
       DataSerializer.writeObject(this.key, out);
       if (!EntryBits.isTombstone(this.entryBits)) {
-        if (!isEagerDeserialize()) {
-          DataSerializer.writeObjectAsByteArray(this.value, out);
-        }
-        else {
-          DataSerializer.writeArrayOfByteArrays((byte[][])this.value, out);
-        }
+        DataSerializer.writeObjectAsByteArray(this.value, out);
       }
       out.writeLong(this.lastModified);
       if (this.versionTag != null) {
@@ -3030,11 +2944,7 @@ public class InitialImageOperation  {
       if (EntryBits.isTombstone(this.entryBits)) {
         this.value = Token.TOMBSTONE;
       } else {
-        if (!isEagerDeserialize()) {
-          this.value = DataSerializer.readByteArray(in);
-        } else {
-          this.value = DataSerializer.readArrayOfByteArrays(in);
-        }
+        this.value = DataSerializer.readByteArray(in);
       }
       this.lastModified = in.readLong();
       if ((flags & HAS_VERSION) != 0) {

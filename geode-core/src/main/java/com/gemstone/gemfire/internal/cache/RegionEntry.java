@@ -379,16 +379,14 @@ public interface RegionEntry {
   /**
    * Gets the value for this entry. For DiskRegions, unlike
    * {@link #getValue(RegionEntryContext)} this will not fault in the value rather
-   * return a temporary copy. For SQLFabric this is used during table scans in
-   * queries when faulting in every value will be only an unnecessary overhead.
+   * return a temporary copy.
    */
   public Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner);
 
   /**
    * Gets the value for this entry. For DiskRegions, unlike
    * {@link #getValue(RegionEntryContext)} this will not fault in the value rather
-   * return a temporary copy. For SQLFabric this is used during table scans in
-   * queries when faulting in every value will be only an unnecessary overhead.
+   * return a temporary copy.
    * The value returned will be kept off heap (and compressed) if possible.
    */
   @Retained

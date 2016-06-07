@@ -567,13 +567,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           if (isAccessor)
             return; // return from here if accessor node
 
-          // if the current node is marked uninitialized (SQLF DDL replay in
-          // progress) then we cannot wait for buckets to recover, because
-          // bucket creation has been disabled until DDL replay is complete.
-          if(!prQ.getCache().isUnInitializedMember(prQ.getDistributionManager().getId())) {
-            //Wait for buckets to be recovered.
-            prQ.shadowPRWaitForBucketRecovery();
-          }
+          //Wait for buckets to be recovered.
+          prQ.shadowPRWaitForBucketRecovery();
 
         } catch (IOException veryUnLikely) {
           logger.fatal(LocalizedMessage.create(LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,

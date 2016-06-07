@@ -380,8 +380,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
      * {@link PutAllPRMessage#toData(DataOutput)} <br>
      * {@link RemotePutAllMessage#toData(DataOutput)} <br>
      */
-    public final void toData(final DataOutput out, 
-        final boolean requiresRegionContext) throws IOException {
+    public final void toData(final DataOutput out) throws IOException {
       Object key = this.key;
       DataSerializer.writeObject(key, out);
 
@@ -886,11 +885,9 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
      * @param rgn
      *          the region the entry is removed from
      */
-    public void doEntryRemove(RemoveAllEntryData entry, DistributedRegion rgn,
-        boolean requiresRegionContext) {
+    public void doEntryRemove(RemoveAllEntryData entry, DistributedRegion rgn) {
       @Released EntryEventImpl ev = RemoveAllMessage.createEntryEvent(entry, getSender(), 
-          this.context, rgn,
-          requiresRegionContext, this.possibleDuplicate,
+          this.context, rgn, this.possibleDuplicate,
           this.needsRouting, this.callbackArg, true, skipCallbacks);
 //      rgn.getLogWriterI18n().info(LocalizedStrings.DEBUG, "RemoveAllMessage.doEntryRemove sender=" + getSender() +
 //          " event="+ev);
@@ -922,7 +919,6 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
      * @param sender
      * @param context
      * @param rgn
-     * @param requiresRegionContext
      * @param possibleDuplicate
      * @param needsRouting
      * @param callbackArg
@@ -931,13 +927,10 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
     @Retained
     public static EntryEventImpl createEntryEvent(RemoveAllEntryData entry,
         InternalDistributedMember sender, ClientProxyMembershipID context,
-        DistributedRegion rgn, boolean requiresRegionContext, 
+        DistributedRegion rgn,
         boolean possibleDuplicate, boolean needsRouting, Object callbackArg,
         boolean originRemote, boolean skipCallbacks) {
       final Object key = entry.getKey();
-      if (requiresRegionContext) {
-        ((KeyWithRegionContext)key).setRegionContext(rgn);
-      }
       EventID evId = entry.getEventID();
       @Retained EntryEventImpl ev = EntryEventImpl.create(rgn, entry.getOp(),
           key, null/* value */, callbackArg,
@@ -985,13 +978,12 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
       
       rgn.syncBulkOp(new Runnable() {
         public void run() {
-          final boolean requiresRegionContext = rgn.keyRequiresRegionContext();
           for (int i = 0; i < removeAllDataSize; ++i) {
             if (logger.isTraceEnabled()) {
               logger.trace("removeAll processing {} with {}", removeAllData[i], removeAllData[i].versionTag);
             }
             removeAllData[i].setSender(sender);
-            doEntryRemove(removeAllData[i], rgn, requiresRegionContext);
+            doEntryRemove(removeAllData[i], rgn);
           }
         }
       }, ev.getEventId());
@@ -1043,10 +1035,6 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
         EntryVersionsList versionTags = new EntryVersionsList(removeAllDataSize);
 
         boolean hasTags = false;
-        // get the "keyRequiresRegionContext" flag from first element assuming
-        // all key objects to be uniform
-        final boolean requiresRegionContext =
-          (this.removeAllData[0].key instanceof KeyWithRegionContext);
         for (int i = 0; i < this.removeAllDataSize; i++) {
           if (!hasTags && removeAllData[i].versionTag != null) {
             hasTags = true;
@@ -1054,7 +1042,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation // TO
           VersionTag<?> tag = removeAllData[i].versionTag;
           versionTags.add(tag);
           removeAllData[i].versionTag = null;
-          this.removeAllData[i].toData(out, requiresRegionContext);
+          this.removeAllData[i].toData(out);
           this.removeAllData[i].versionTag = tag;
         }
 

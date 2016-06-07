@@ -73,7 +73,6 @@ public class FetchEntriesMessageJUnitTest {
     cache = Fakes.cache();
     PartitionedRegion pr = mock(PartitionedRegion.class);
     InternalDistributedSystem system = cache.getDistributedSystem();
-    when(pr.keyRequiresRegionContext()).thenReturn(false);
 
     FetchEntriesResponse response = new FetchEntriesResponse(system, pr, null, 0);
     HeapDataOutputStream chunkStream = createDummyChunk();

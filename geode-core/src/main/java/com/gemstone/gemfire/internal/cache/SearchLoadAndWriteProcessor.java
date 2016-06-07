@@ -1898,9 +1898,6 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           setClearCountReference(region);		
 	  try {
 	    boolean initialized = region.isInitialized();
-	    if(region.keyRequiresRegionContext()) {
-	      ((KeyWithRegionContext)this.key).setRegionContext(region);
-	    }
             RegionEntry entry = region.basicGetEntry(this.key);
             if (entry != null) {
               synchronized (entry) {

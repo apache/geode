@@ -112,9 +112,6 @@ public class InvalidateOperation extends DistributedCacheOperation
     @Retained
     protected InternalCacheEvent createEvent(DistributedRegion rgn)
         throws EntryNotFoundException {
-      if (rgn.keyRequiresRegionContext()) {
-        ((KeyWithRegionContext)this.key).setRegionContext(rgn);
-      }
       @Retained EntryEventImpl ev = EntryEventImpl.create(
          rgn, getOperation(), this.key,
          null, this.callbackArg, true, getSender());

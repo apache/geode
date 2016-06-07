@@ -192,7 +192,7 @@ public abstract class DistributionMessage
         return true;
       case DistributionManager.REGION_FUNCTION_EXECUTION_EXECUTOR:
         // allow nested distributed functions to be executed from within the
-        // execution of a function; this is required particularly for SQLFabric
+        // execution of a function
         // TODO: this can later be adjusted to use a separate property
         return false;
       default:

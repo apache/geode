@@ -1157,23 +1157,6 @@ public class RegionAdvisor extends CacheDistributionAdvisor
     return result;
   }
 
-  // For SQLFabric ALTER TABLE, need to reset the parentAdvisors if colocated
-  // region changes
-  public void resetBucketAdvisorParents() {
-    if (this.buckets != null) {
-      for (ProxyBucketRegion pbr : this.buckets) {
-        if (pbr.getCreatedBucketRegion() != null) {
-          throw new InternalGemFireException(
-              LocalizedStrings.RegionAdvisor_CANNOT_RESET_EXISTING_BUCKET
-                  .toLocalizedString(new Object[] {
-                      pbr.getPartitionedRegion().getFullPath(),
-                      pbr.getBucketId() }));
-        }
-        pbr.getBucketAdvisor().resetParentAdvisor(pbr.getBucketId());
-      }
-    }
-  }
-
   /**
    * Returns the bucket identified by bucketId after waiting for initialization
    * to finish processing queued profiles. Call synchronizes and waits on 

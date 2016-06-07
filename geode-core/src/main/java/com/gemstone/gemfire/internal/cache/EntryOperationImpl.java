@@ -38,7 +38,7 @@ public class EntryOperationImpl implements EntryOperation {
 
   private final Object key;
 
-  private Object callbackArgument = Token.NOT_AVAILABLE;
+  private final Object callbackArgument;
 
   public EntryOperationImpl(Region region, Operation operation, Object key,
       Object value, Object callbackArgument) {
@@ -101,18 +101,5 @@ public class EntryOperationImpl implements EntryOperation {
 
   public Object getRawNewValue() {
     return this.value;
-  }
-
-  /**
-   * Method for internal use. (Used by SQLFabric)
-   */
-  public void setCallbackArgument(Object newCallbackArgument) {
-    if (this.callbackArgument instanceof WrappedCallbackArgument) {
-      ((WrappedCallbackArgument)this.callbackArgument)
-          .setOriginalCallbackArgument(newCallbackArgument);
-    }
-    else {
-      this.callbackArgument = newCallbackArgument;
-    }
   }
 }

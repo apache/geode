@@ -1035,16 +1035,6 @@ public class PartitionedRegion extends LocalRegion implements
   }
   
   @Override
-  void distributeUpdatedProfileOnHubCreation()
-  {
-    if (!(this.isClosed || this.isLocallyDestroyed)) {
-      // tell others of the change in status
-      this.requiresNotification = true;
-      new UpdateAttributesProcessor(this).distribute(false);      
-    }
-  }
-
-  @Override
   void distributeUpdatedProfileOnSenderCreation()
   {
     if (!(this.isClosed || this.isLocallyDestroyed)) {
@@ -1376,11 +1366,7 @@ public class PartitionedRegion extends LocalRegion implements
     boolean colocatedLockAcquired = false;
     try {
       boolean colocationComplete = false;
-      if (colocatedRegion != null && !prConfig.isColocationComplete() &&
-        // if the current node is marked uninitialized (SQLF DDL replay in
-        // progress) then colocation will definitely not be marked complete so
-        // avoid taking the expensive region lock
-          !getCache().isUnInitializedMember(getDistributionManager().getId())) {
+      if (colocatedRegion != null && !prConfig.isColocationComplete()) {
         colocatedLock = colocatedRegion.getRegionLock();
         colocatedLock.lock();
         colocatedLockAcquired = true;
@@ -1389,16 +1375,7 @@ public class PartitionedRegion extends LocalRegion implements
         if (parentConf.isColocationComplete()
             && parentConf.hasSameDataStoreMembers(prConfig)) {
           colocationComplete = true;
-          // check if all the nodes have been initialized (SQLF bug #42089)
-          for (Node node : nodes) {
-            if (getCache().isUnInitializedMember(node.getMemberId())) {
-              colocationComplete = false;
-              break;
-            }
-          }
-          if (colocationComplete) {
-            prConfig.setColocationComplete();
-          }
+          prConfig.setColocationComplete();
         }
       }
 
@@ -1935,13 +1912,6 @@ public class PartitionedRegion extends LocalRegion implements
       if (targetNode == null) {
         try {
           bucketStorageAssigned=false;
-          // if this is a Delta update, then throw exception since the key doesn't
-          // exist if there is no bucket for it yet
-          if (event.hasDelta()) {
-            throw new EntryNotFoundException(LocalizedStrings.
-              PartitionedRegion_CANNOT_APPLY_A_DELTA_WITHOUT_EXISTING_ENTRY
-                .toLocalizedString());
-          }
           targetNode = createBucket(bucketId.intValue(), event.getNewValSizeForPR(),
               null);
         }
@@ -3462,10 +3432,8 @@ public class PartitionedRegion extends LocalRegion implements
       boolean isBucketSetAsFilter) {
     final Set routingKeys = execution.getFilter();
     final boolean primaryMembersNeeded = function.optimizeForWrite();
-    final boolean hasRoutingObjects = execution.hasRoutingObjects();
     HashMap<Integer, HashSet> bucketToKeysMap = FunctionExecutionNodePruner
-        .groupByBucket(this, routingKeys, primaryMembersNeeded,
-            hasRoutingObjects, isBucketSetAsFilter);
+        .groupByBucket(this, routingKeys, primaryMembersNeeded, false, isBucketSetAsFilter);
     HashMap<InternalDistributedMember, HashSet> memberToKeysMap = new HashMap<InternalDistributedMember, HashSet>();
     HashMap<InternalDistributedMember, HashSet<Integer>> memberToBuckets = FunctionExecutionNodePruner
     .groupByMemberToBuckets(this, bucketToKeysMap.keySet(), primaryMembersNeeded);    
@@ -3555,7 +3523,7 @@ public class PartitionedRegion extends LocalRegion implements
     else {
       localBucketSet = FunctionExecutionNodePruner
       .getBucketSet(PartitionedRegion.this, localKeys,
-                    hasRoutingObjects, isBucketSetAsFilter);
+                    false, isBucketSetAsFilter);
       
       remoteOnly = false;
     }
@@ -3591,7 +3559,7 @@ public class PartitionedRegion extends LocalRegion implements
         FunctionRemoteContext context = new FunctionRemoteContext(function,
             execution.getArgumentsForMember(recip.getId()), memKeys,
             FunctionExecutionNodePruner.getBucketSet(this, memKeys,
-                hasRoutingObjects, isBucketSetAsFilter), execution.isReExecute(),
+                false, isBucketSetAsFilter), execution.isReExecute(),
                 execution.isFnSerializationReqd());
         recipMap.put(recip, context);
       }
@@ -3621,15 +3589,8 @@ public class PartitionedRegion extends LocalRegion implements
     if (isBucketSetAsFilter) {
       bucketId = ((Integer) key).intValue();
     } else {
-      if (execution.hasRoutingObjects()) {
-        bucketId = Integer.valueOf(PartitionedRegionHelper
-            .getHashKey(this, key));
-      } else {
-        // bucketId = Integer.valueOf(PartitionedRegionHelper.getHashKey(this,
-        // Operation.FUNCTION_EXECUTION, key, null));
-        bucketId = Integer.valueOf(PartitionedRegionHelper.getHashKey(this,
+      bucketId = Integer.valueOf(PartitionedRegionHelper.getHashKey(this,
             Operation.FUNCTION_EXECUTION, key, null, null));
-      }
     }
     InternalDistributedMember targetNode = null;
     if (function.optimizeForWrite()) {
@@ -5066,21 +5027,6 @@ public class PartitionedRegion extends LocalRegion implements
   /**
    * generates new partitioned region ID globally.
    */
-  // !!!:ezoerner:20080321 made this function public and static.
-  // @todo should be moved to the Distributed System level as a general service
-  // for getting a unique id, with different "domains" for different
-  // contexts
-  // :soubhik:pr_func merge20914:21056: overloaded static and non-static version of generatePRId.
-  //   static version is used mainly with sqlf & non-static in gfe.
-  public static int generatePRId(InternalDistributedSystem sys, Cache cache) {
-    
-    GemFireCacheImpl gfcache = (GemFireCacheImpl) cache;
-    
-    if(gfcache == null) return 0;
-    
-    return _generatePRId(sys, gfcache.getPartitionedRegionLockService());
-  }
-  
   public int generatePRId(InternalDistributedSystem sys) {
     final DistributedLockService lockService = getPartitionedRegionLockService();
     return _generatePRId(sys, lockService);
@@ -6255,15 +6201,6 @@ public class PartitionedRegion extends LocalRegion implements
     checkReadiness();
     return Collections.unmodifiableSet(new PREntriesSet());
   }
-
-  /**
-   * Currently used by SQLFabric to get a non-wrapped iterator for all entries
-   * for index consistency check.
-   */
-  public Set allEntries() {
-    return new PREntriesSet();
-  }
-
 
   /**
    * Set view of entries. This currently extends the keySet iterator and
@@ -7678,20 +7615,7 @@ public class PartitionedRegion extends LocalRegion implements
   }
         
   @Override
-  public void localDestroyRegion(Object aCallbackArgument) {
-    localDestroyRegion(aCallbackArgument, false);
-  }
-
-  /**
-   * Locally destroy a region.
-   * 
-   * SQLFabric change: The parameter "ignoreParent" has been added to allow
-   * skipping the check for parent colocated region. This is because SQLFabric
-   * DDLs are distributed in any case and are guaranteed to be atomic (i.e. no
-   * concurrent DMLs on that table). Without this it is quite ugly to implement
-   * "TRUNCATE TABLE" which first drops the table and recreates it.
-   */
-  public void localDestroyRegion(Object aCallbackArgument, boolean ignoreParent)
+  public void localDestroyRegion(Object aCallbackArgument)
   {
     getDataView().checkSupportsRegionDestroy();
     String prName = this.getColocatedWith();
@@ -7707,7 +7631,7 @@ public class PartitionedRegion extends LocalRegion implements
       }
     }
 
-    if ((!ignoreParent && prName != null)
+    if ((prName != null)
         || (!childRegionsWithoutSendersList.isEmpty())) {
       throw new UnsupportedOperationException(
           "Any Region in colocation chain cannot be destroyed locally.");
@@ -9430,8 +9354,6 @@ public class PartitionedRegion extends LocalRegion implements
 
   /**
    * This method is intended for testing purposes only.
-   * DO NOT use in product code else it will break SQLFabric that has cases
-   * where routing object is not part of only the key.
    */
   @Override
   public Object getValueOnDisk(Object key) throws EntryNotFoundException {
@@ -9444,8 +9366,6 @@ public class PartitionedRegion extends LocalRegion implements
   
   /**
    * This method is intended for testing purposes only.
-   * DO NOT use in product code else it will break SQLFabric that has cases
-   * where routing object is not part of only the key.
    */
   @Override
   public Object getValueOnDiskOrBuffer(Object key) throws EntryNotFoundException {
@@ -9565,31 +9485,11 @@ public class PartitionedRegion extends LocalRegion implements
   }
 
   public PartitionResolver getPartitionResolver() {
-    // [SQLFabric] use PartitionAttributes to get the the resolver
-    // since it may change after ALTER TABLE
     return this.partitionAttributes.getPartitionResolver();
   }
 
   public String getColocatedWith() {
-    // [SQLFabric] use PartitionAttributes to get colocated region
-    // since it may change after ALTER TABLE
     return this.partitionAttributes.getColocatedWith();
-  }
-
-  // For SQLFabric ALTER TABLE. Need to set the colocated region using
-  // PartitionAttributesImpl and also reset the parentAdvisor for
-  // BucketAdvisors.
-  /**
-   * Set the colocated with region path and adjust the BucketAdvisor's. This
-   * should *only* be invoked when region is just newly created and has no data
-   * or existing buckets else will have undefined behaviour.
-   * 
-   * @since GemFire 6.5
-   */
-  public void setColocatedWith(String colocatedRegionFullPath) {
-    ((PartitionAttributesImpl)this.partitionAttributes)
-        .setColocatedWith(colocatedRegionFullPath);
-    this.getRegionAdvisor().resetBucketAdvisorParents();
   }
 
   /**
@@ -9649,98 +9549,6 @@ public class PartitionedRegion extends LocalRegion implements
     }
   }
   
-  /*
-   * This is an internal API for sqlFabric only <br>
-   * This is usefull to execute a function on set of nodes irrelevant of the
-   * routinKeys <br>
-   * notes : This API uses DefaultResultCollector. If you want your Custome
-   * Result collector, let me know
-   * 
-   * @param functionName
-   * @param args
-   * @param nodes
-   *                Set of DistributedMembers on which this function will be
-   *                executed
-   * @throws Exception
-   *//*
-  public ResultCollector executeFunctionOnNodes(String functionName,
-      Serializable args, Set nodes) throws Exception {
-    Assert.assertTrue(functionName != null, "Error: functionName is null");
-    Assert.assertTrue(nodes != null, "Error: nodes set is null");
-    Assert.assertTrue(nodes.size() != 0, "Error: empty nodes Set");
-    ResultCollector rc = new DefaultResultCollector();
-    boolean isSelf = nodes.remove(getMyId());
-    PartitionedRegionFunctionResponse response = null;
-    //TODO Yogesh: this API is broken after Resultsender implementation
-    //response = new PartitionedRegionFunctionResponse(this.getSystem(), nodes,
-    //    rc);
-    Iterator i = nodes.iterator();
-    while (i.hasNext()) {
-      InternalDistributedMember recip = (InternalDistributedMember)i.next();
-      PartitionedRegionFunctionMessage.send(recip, this, functionName, args,
-          null routingKeys , response, null);
-    }
-    if (isSelf) {
-      // execute locally and collect the result
-      if (this.dataStore != null) {
-        this.dataStore.executeOnDataStore(
-            null routingKeys , functionName, args, 0,null,rc,null);
-      }
-    }
-    return response;
-  }*/
-
-
-  /*
-   * This is an internal API for sqlFabric only <br>
-   * API for invoking a function using primitive ints as the routing objects
-   * (i.e. passing the hashcodes of the routing objects directly). <br>
-   * notes : This API uses DefaultResultCollector. If you want to pass your
-   * Custom Result collector, let me know
-   * 
-   * @param functionName
-   * @param args
-   * @param hashcodes
-   *          hashcodes of the routing objects
-   * @throws Exception
-   *//*
-  public ResultCollector executeFunctionUsingHashCodes(String functionName,
-      Serializable args, int hashcodes[]) throws Exception {
-    Assert.assertTrue(functionName != null, "Error: functionName is null");
-    Assert.assertTrue(hashcodes != null, "Error: hashcodes array is null");
-    Assert.assertTrue(hashcodes.length != 0, "Error: empty hashcodes array");
-    Set nodes = new HashSet();
-    for (int i = 0; i < hashcodes.length; i++) {
-      int bucketId = hashcodes[i] % getTotalNumberOfBuckets();
-      InternalDistributedMember n = getNodeForBucketRead(bucketId);
-      nodes.add(n);
-    }
-    return executeFunctionOnNodes(functionName, args, nodes);
-  }*/
-
-  /**
-   * This is an internal API for sqlFabric only <br>
-   * Given a array of routing objects, returns a set of members on which the (owner of each
-   * buckets)
-   * 
-   * @param routingObjects array of routing objects passed 
-   * @return Set of  InternalDistributedMembers
-   */
-  public Set getMembersFromRoutingObjects(Object[] routingObjects) {
-    Assert.assertTrue(routingObjects != null, "Error: null routingObjects ");
-    Assert.assertTrue(routingObjects.length != 0, "Error: empty routingObjects ");
-    Set nodeSet = new HashSet();
-    int bucketId;
-    for (int i = 0; i < routingObjects.length; i++) {
-      bucketId = PartitionedRegionHelper.getHashKey(routingObjects[i],
-                                                    getTotalNumberOfBuckets());
-      InternalDistributedMember lnode = getOrCreateNodeForBucketRead(bucketId);
-      if (lnode != null) {
-        nodeSet.add(lnode);
-      }
-    }
-    return nodeSet;
-  }
   @Override
   protected RegionEntry basicGetTXEntry(KeyInfo keyInfo) {
     int bucketId = keyInfo.getBucketId();
@@ -10525,9 +10333,7 @@ public class PartitionedRegion extends LocalRegion implements
   }
 
   /**
-   * Returns the local BucketRegion given the key and value. Particularly useful
-   * for SQLFabric where the routing object may be part of value and determining
-   * from key alone will require an expensive global index lookup.
+   * Returns the local BucketRegion given the key and value.
    * Returns null if no BucketRegion exists.
    */
   public BucketRegion getBucketRegion(Object key, Object value) {
@@ -10752,74 +10558,6 @@ public class PartitionedRegion extends LocalRegion implements
         throw new PartitionedRegionException(LocalizedStrings.PartitionedRegion_UPDATE_VERSION_OF_ENTRY_ON_0_FAILED.toLocalizedString(recipient), ce);
       }
     }  
-  }
-
-  /**
-   * Clear local primary buckets.
-   * This is currently only used by gemfirexd truncate table
-   * to clear the partitioned region.
-   */
-  public void clearLocalPrimaries() {
- // rest of it should be done only if this is a store while RecoveryLock
-    // above still required even if this is an accessor
-    if (getLocalMaxMemory() > 0) {
-      // acquire the primary bucket locks
-      // do this in a loop to handle the corner cases where a primary
-      // bucket region ceases to be so when we actually take the lock
-      // (probably not required to do this in loop after the recovery lock)
-      // [sumedh] do we need both recovery lock and bucket locks?
-      boolean done = false;
-      Set<BucketRegion> lockedRegions = null;
-      while (!done) {
-        lockedRegions = getDataStore().getAllLocalPrimaryBucketRegions();
-        done = true;
-        for (BucketRegion br : lockedRegions) {
-          try {
-            br.doLockForPrimary(false);
-          } catch (RegionDestroyedException rde) {
-            done = false;
-            break;
-          } catch (PrimaryBucketException pbe) {
-            done = false;
-            break;
-          } catch (Exception e) {
-            // ignore any other exception
-            logger.debug(
-                "GemFireContainer#clear: ignoring exception "
-                    + "in bucket lock acquire", e);
-          }
-        }
-      }
-      
-      try {
-        // now clear the bucket regions; we go through the primary bucket
-        // regions so there is distribution for every bucket but that
-        // should be performant enough
-        for (BucketRegion br : lockedRegions) {
-          try {
-            br.clear();
-          } catch (Exception e) {
-            // ignore any other exception
-            logger.debug(
-                "GemFireContainer#clear: ignoring exception "
-                    + "in bucket clear", e);
-          }
-        }
-      } finally {
-        // release the bucket locks
-        for (BucketRegion br : lockedRegions) {
-          try {
-            br.doUnlockForPrimary();
-          } catch (Exception e) {
-            // ignore all exceptions at this stage
-            logger.debug(
-                "GemFireContainer#clear: ignoring exception "
-                    + "in bucket lock release", e);
-          }
-        }
-      }
-    }
-    
   }
 
   public void shadowPRWaitForBucketRecovery() {

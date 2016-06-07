@@ -45,7 +45,6 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
@@ -177,9 +176,6 @@ public final class InvalidateMessage extends DestroyMessage {
        eventSender = getSender();
     }
     final Object key = getKey();
-    if (r.keyRequiresRegionContext()) {
-      ((KeyWithRegionContext)key).setRegionContext(r);
-    }
     @Released final EntryEventImpl event = EntryEventImpl.create(
         r,
         getOperation(),

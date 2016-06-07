@@ -150,7 +150,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
         // by the RegionMap. It is unclear why this code is needed. ARM destroy
         // does this also and we are now doing it as phase3 of the ARM destroy.
         removePhase2();
-        rgn.getRegionMap().removeEntry(event.getKey(), this, true, event, rgn, rgn.getIndexUpdater());
+        rgn.getRegionMap().removeEntry(event.getKey(), this, true, event, rgn);
       }
     }
   }
@@ -291,10 +291,6 @@ public abstract class AbstractRegionEntry implements RegionEntry,
       }
     }
 
-    final boolean isEagerDeserialize = dst.isEagerDeserialize();
-    if (isEagerDeserialize) {
-      dst.clearEagerDeserialize();
-    }
     dst.setLastModified(mgr, getLastModified()); // fix for bug 31059
     if (v == Token.INVALID) {
       dst.setInvalid();
@@ -307,17 +303,11 @@ public abstract class AbstractRegionEntry implements RegionEntry,
     }
     else if (v instanceof CachedDeserializable) {
       // don't serialize here if it is not already serialized
-//      if(v instanceof ByteSource && CachedDeserializableFactory.preferObject()) {
-//        // For SQLFire we prefer eager deserialized
-//        dst.setEagerDeserialize();         
-//      }
       CachedDeserializable cd = (CachedDeserializable) v;
       if (!cd.isSerialized()) {
         dst.value = cd.getDeserializedForReading();
       } else {
-        /*if (v instanceof ByteSource && CachedDeserializableFactory.preferObject()) {
-          dst.value = v;
-        } else */ {
+        {
           Object tmp = cd.getValue();
           if (tmp instanceof byte[]) {
             byte[] bb = (byte[]) tmp;
@@ -352,11 +342,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
           return false;
         }
       }
-    if (CachedDeserializableFactory.preferObject()) {
-      dst.value = preparedValue;
-      dst.setEagerDeserialize();
-    }
-    else {
+    {
       try {
         HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
         BlobHelper.serializeTo(preparedValue, hdos);
@@ -412,7 +398,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
       ReferenceCountHelper.setReferenceCountOwner(null);
       return null;
     } else {
-      result = OffHeapHelper.copyAndReleaseIfNeeded(result); // sqlf does not dec ref count in this call
+      result = OffHeapHelper.copyAndReleaseIfNeeded(result);
       ReferenceCountHelper.setReferenceCountOwner(null);
       setRecentlyUsed();
       return result;
@@ -749,9 +735,7 @@ public abstract class AbstractRegionEntry implements RegionEntry,
       } 
       else {
         FilterProfile fp = region.getFilterProfile();
-        // rdubey: Old value also required for SqlfIndexManager.
-        if (fp != null && ((fp.getCqCount() > 0) || expectedOldValue != null
-            || event.getRegion().getIndexUpdater() != null)) {
+        if (fp != null && ((fp.getCqCount() > 0) || expectedOldValue != null)) {
           //curValue = getValue(region); can cause deadlock will fault in the value
           // and will confuse LRU. rdubey.
           curValue = getValueOnDiskOrBuffer(region);
@@ -1393,10 +1377,6 @@ public abstract class AbstractRegionEntry implements RegionEntry,
       }
     }
   }
-  /**
-   * soubhik: this method is overridden in sqlf flavor of entries.
-   * Instead of overriding this method; override areSetValue.
-   */
   protected final void _setValue(Object val) {
     setValueField(val);
   }

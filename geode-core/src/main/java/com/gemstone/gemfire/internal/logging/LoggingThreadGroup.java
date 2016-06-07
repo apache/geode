@@ -106,7 +106,6 @@ public class LoggingThreadGroup extends ThreadGroup {
       if (group == null) {
         group = new LoggingThreadGroup(name, logWriter);
         // force autoclean to false and not inherit from parent group
-        // (happens to be true for SQLFabric started threads as seen in #41438)
         group.setDaemon(false);
         loggingThreadGroups.add(group);
       }
@@ -161,7 +160,6 @@ public class LoggingThreadGroup extends ThreadGroup {
       if (group == null) {
         group = new LoggingThreadGroup(name, logger);
         // force autoclean to false and not inherit from parent group
-        // (happens to be true for SQLFabric started threads as seen in #41438)
         group.setDaemon(false);
         loggingThreadGroups.add(group);
       }

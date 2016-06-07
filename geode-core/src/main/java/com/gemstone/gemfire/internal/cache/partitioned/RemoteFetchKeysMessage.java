@@ -49,7 +49,6 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 import com.gemstone.gemfire.internal.cache.InitialImageOperation;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.RemoteOperationException;
@@ -421,14 +420,9 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
         
         ByteArrayInputStream byteStream = new ByteArrayInputStream(msg.chunk);
         DataInputStream in = new DataInputStream(byteStream);
-        final boolean requiresRegionContext = this.region
-            .keyRequiresRegionContext();
         while (in.available() > 0) {
           Object key = DataSerializer.readObject(in);
           if (key != null) {
-            if (requiresRegionContext) {
-              ((KeyWithRegionContext)key).setRegionContext(this.region);
-            }
             synchronized(returnValue) {
               returnValue.add(key);
             }

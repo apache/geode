@@ -74,11 +74,6 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    */
   private static final ConcurrentHashMap<String, DataSerializer> classesToSerializers = new ConcurrentHashMap<String, DataSerializer>();
   
-  // used by sqlFire
-  public static ConcurrentHashMap<String, DataSerializer> getClassesToSerializers() {
-    return classesToSerializers;
-  }
-
   private static final String serializationVersionTxt = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "serializationVersion");
   /**
    * Any time new serialization format is added then a new enum needs to be added here.
@@ -2791,8 +2786,6 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
       return DSFIDFactory.create(in.readInt(), in);
     case DS_NO_FIXED_ID:
       return readDataSerializableFixedID(in);
-    case SQLF_DVD_ARR:
-      return dvddeserializer.fromData(in);
     case NULL:
       return null;
     case NULL_STRING:

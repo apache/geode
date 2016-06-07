@@ -465,8 +465,7 @@ public class PRCustomPartitioningDUnitTest extends
 
 /**
  * Example implementation of a Partition Resolver which uses part of the value
- * for custom partitioning.  This example is a simplification of what SQLFabric
- * may do when the DDL specifies "partition by"    
+ * for custom partitioning.
 
  */
 class MonthBasedPartitionResolver implements PartitionResolver, Declarable2 {

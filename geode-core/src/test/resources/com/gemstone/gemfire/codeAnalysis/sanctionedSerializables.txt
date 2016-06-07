@@ -245,7 +245,6 @@ com/gemstone/gemfire/internal/AbstractConfig$SortedProperties,true,7156507110684
 com/gemstone/gemfire/internal/ConfigSource,true,-4097017272431018553,description:java/lang/String,type:com/gemstone/gemfire/internal/ConfigSource$Type
 com/gemstone/gemfire/internal/ConfigSource$Type,false
 com/gemstone/gemfire/internal/CopyOnWriteHashSet,true,8591978652141659932
-com/gemstone/gemfire/internal/DSFIDFactory$SqlfSerializationException,true,5076687296705595933
 com/gemstone/gemfire/internal/DSFIDNotFoundException,true,130596009484324655,dsfid:int,versionOrdinal:short
 com/gemstone/gemfire/internal/InternalDataSerializer$SERIALIZATION_VERSION,false
 com/gemstone/gemfire/internal/InternalStatisticsDisabledException,true,4146181546364258311

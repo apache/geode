@@ -357,9 +357,6 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
     if (eventSender == null) {
        eventSender = getSender();
     }
-    if (r.keyRequiresRegionContext()) {
-      ((KeyWithRegionContext)this.key).setRegionContext(r);
-    }
     @Released EntryEventImpl event = null;
     try {
     if (this.bridgeContext != null) {
@@ -468,8 +465,6 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
     if (this.hasOldValue){
       //out.writeBoolean(this.hasOldValue);
       // below boolean is not strictly required, but this is for compatibility
-      // with SQLFire code which writes as byte here to indicate whether
-      // oldValue is an object, serialized object or byte[]
       in.readByte();
       setOldValBytes(DataSerializer.readByteArray(in));
     }
@@ -595,12 +590,8 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply 
   
   private void setOldValueIsSerialized(boolean isSerialized) {
     if (isSerialized) {
-      if (CachedDeserializableFactory.preferObject()) {
-        this.oldValueIsSerialized = true; //VALUE_IS_OBJECT;
-      } else {
-        // Defer serialization until toData is called.
-        this.oldValueIsSerialized = true; //VALUE_IS_SERIALIZED_OBJECT;
-      }
+      // Defer serialization until toData is called.
+      this.oldValueIsSerialized = true; //VALUE_IS_SERIALIZED_OBJECT;
     } else {
       this.oldValueIsSerialized = false; //VALUE_IS_BYTES;
     }

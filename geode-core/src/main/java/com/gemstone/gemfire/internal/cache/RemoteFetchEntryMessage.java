@@ -128,9 +128,6 @@ public final class RemoteFetchEntryMessage extends RemoteOperationMessage
     }
     EntrySnapshot val;
       try {
-        if (r.keyRequiresRegionContext()) {
-          ((KeyWithRegionContext)this.key).setRegionContext(r);
-        }
         final KeyInfo keyInfo = r.getKeyInfo(key);
         Region.Entry re = r.getDataView().getEntry(keyInfo, r, true);
         if(re==null) {

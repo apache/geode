@@ -468,10 +468,6 @@ public abstract class PartitionMessage extends DistributionMessage implements
     this.processorId = processor == null? 0 : processor.getProcessorId();
     this.notificationOnly = true;
         
-    //Set sqlfAsyncListenerRecepients = r.getRegionAdvisor().adviseSqlfAsyncEventListenerHub();
-    //sqlfAsyncListenerRecepients.retainAll(adjunctRecipients);
-    //Now remove those adjunct recepients which are present in SqlfAsyncListenerRecepients
-    //adjunctRecipients.removeAll(sqlfAsyncListenerRecepients);
     this.setFilterInfo(filterRoutingInfo);
     Set failures1= null;
     if(!adjunctRecipients.isEmpty()) {
@@ -482,20 +478,6 @@ public abstract class PartitionMessage extends DistributionMessage implements
       setRecipients(adjunctRecipients);
       failures1 = r.getDistributionManager().putOutgoing(this);
     }
-    /*
-    //Now distribute message with old value to Sqlf Hub nodes
-    if(!sqlfAsyncListenerRecepients.isEmpty()) {
-      //System.out.println("Asif1: sqlf hub  recepients ="+sqlfHubRecepients);
-      resetRecipients();
-      setRecipients(sqlfAsyncListenerRecepients);
-      event.applyDelta(true);
-      Set failures2 = r.getDistributionManager().putOutgoing(this);
-      if(failures1 == null) {
-        failures1 = failures2;
-      }else if(failures2 != null) {
-        failures1.addAll(failures2);
-      }
-    }*/
     
     return failures1;
   }

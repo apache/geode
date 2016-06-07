@@ -384,16 +384,6 @@ public class PartitionAttributesImpl implements PartitionAttributes,
       .append("]") .toString();
   }
 
-  public String getStringForSQLF() {
-    final StringBuilder sb = new StringBuilder();
-    return sb.append("redundantCopies=").append(getRedundantCopies()).append(
-        ",totalMaxMemory=").append(this.totalMaxMemory).append(
-        ",totalNumBuckets=").append(this.totalNumBuckets).append(
-        ",colocatedWith=").append(this.colocatedRegionName).append(
-        ",recoveryDelay=").append(this.recoveryDelay).append(
-        ",startupRecoveryDelay=").append(this.startupRecoveryDelay).toString();
-  }
-
   /**
    * @throws IllegalStateException if off-heap and the actual value is not yet known (because the DistributedSystem has not yet been created)
    */

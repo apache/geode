@@ -19,7 +19,6 @@ package com.gemstone.gemfire.internal.cache;
 import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.partition.PartitionListener;
-import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.AtomicLongWithTerminalState;
@@ -34,8 +33,15 @@ import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.BucketAdvisor.BucketProfile;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
 import com.gemstone.gemfire.internal.cache.control.MemoryEvent;
-import com.gemstone.gemfire.internal.cache.delta.Delta;
-import com.gemstone.gemfire.internal.cache.partitioned.*;
+import com.gemstone.gemfire.internal.cache.partitioned.Bucket;
+import com.gemstone.gemfire.internal.cache.partitioned.DestroyMessage;
+import com.gemstone.gemfire.internal.cache.partitioned.InvalidateMessage;
+import com.gemstone.gemfire.internal.cache.partitioned.LockObject;
+import com.gemstone.gemfire.internal.cache.partitioned.PRTombstoneMessage;
+import com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage;
+import com.gemstone.gemfire.internal.cache.partitioned.PutAllPRMessage;
+import com.gemstone.gemfire.internal.cache.partitioned.PutMessage;
+import com.gemstone.gemfire.internal.cache.partitioned.RemoveAllPRMessage;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientTombstoneMessage;
@@ -1470,7 +1476,6 @@ implements Bucket
     .append("[path='").append(getFullPath())
     .append(";serial=").append(getSerialNumber())
     .append(";primary=").append(getBucketAdvisor().getProxyBucketRegion().isPrimary())
-    .append(";indexUpdater=").append(getIndexUpdater())
     .append("]")
     .toString();
   }
@@ -1695,10 +1700,8 @@ implements Bucket
       setDeltaIfNeeded(event);
     }
     if (msg != null) {
-      // The primary bucket member which is being modified remotely by a GemFire
+      // The primary bucket member which is being modified remotely by a
       // thread via a received PartitionedMessage
-      //Asif: Some of the adjunct recepients include those members which 
-      // are sqlFabricHub & would need old value along with news
       msg = msg.getMessageForRelayToListeners(event, adjunctRecipients);
       msg.setSender(this.partitionedRegion.getDistributionManager()
           .getDistributionManagerId());
@@ -1987,28 +1990,6 @@ implements Bucket
   public CacheWriter basicGetWriter() {
     return this.partitionedRegion.basicGetWriter();
   }
-   @Override
-  void cleanUpOnIncompleteOp(EntryEventImpl event,   RegionEntry re, 
-      boolean eventRecorded, boolean updateStats, boolean isReplace) {
-     
-    
-    if(!eventRecorded || isReplace) {
-      //No indexes updated so safe to remove.
-      this.entries.removeEntry(event.getKey(), re, updateStats) ;      
-    }/*else {
-      //if event recorded is true, that means as per event tracker entry is in
-      //system. As per sqlfabric, indexes have been updated. What is not done
-      // is basicPutPart2( distribution etc). So we do nothing as PR's re-attempt
-      // will do the required basicPutPart2. If we remove the entry here, than 
-      //event tracker will not allow re insertion. So either we do nothing or
-      //if we remove ,than we have to update sqlfindexes as well as undo recording
-      // of event.
-       //TODO:OQL indexes? : Hope they get updated during retry. The issue is that oql indexes
-       // get updated after distribute , so it is entirely possible that oql index are 
-        // not updated. what if retry fails?
-       
-    }*/
-  }
 
   /* (non-Javadoc)
    * @see com.gemstone.gemfire.internal.cache.partitioned.Bucket#getBucketOwners()
@@ -2058,7 +2039,7 @@ implements Bucket
       return 0;
     }
     if (!(value instanceof byte[]) && !(value instanceof CachedDeserializable)
-        && !(value instanceof com.gemstone.gemfire.Delta) && !(value instanceof Delta)
+        && !(value instanceof com.gemstone.gemfire.Delta)
         && !(value instanceof GatewaySenderEventImpl)) {
     // ezoerner:20090401 it's possible this value is a Delta
       throw new InternalGemFireError("DEBUG: calcMemSize: weird value (class " 
@@ -2198,10 +2179,6 @@ implements Bucket
   
 
   public void preDestroyBucket(int bucketId) {
-    final IndexUpdater indexUpdater = getIndexUpdater();
-    if (indexUpdater != null) {
-      indexUpdater.clearIndexes(this, bucketId);
-    }
   }
   @Override
   public void cleanupFailedInitialization()

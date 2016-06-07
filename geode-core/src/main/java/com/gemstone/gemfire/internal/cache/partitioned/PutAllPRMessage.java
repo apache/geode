@@ -59,7 +59,6 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
@@ -101,8 +100,6 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
 
   protected static final short HAS_BRIDGE_CONTEXT = UNRESERVED_FLAGS_START;
   protected static final short SKIP_CALLBACKS = (HAS_BRIDGE_CONTEXT << 1);
-  //using the left most bit for IS_PUT_DML, the last available bit
-  protected static final short IS_PUT_DML = (short) (SKIP_CALLBACKS << 1);
 
   private transient InternalDistributedSystem internalDs;
 
@@ -117,7 +114,6 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
   
   transient VersionedObjectList versions = null;
 
-  private boolean isPutDML;
   /**
    * Empty constructor to satisfy {@link DataSerializer}requirements
    */
@@ -125,7 +121,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
   }
 
   public PutAllPRMessage(int bucketId, int size, boolean notificationOnly,
-      boolean posDup, boolean skipCallbacks, Object callbackArg, boolean isPutDML) {
+      boolean posDup, boolean skipCallbacks, Object callbackArg) {
     this.bucketId = Integer.valueOf(bucketId);
     putAllPRData = new PutAllEntryData[size];
     this.notificationOnly = notificationOnly;
@@ -133,7 +129,6 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
     this.skipCallbacks = skipCallbacks;
     this.callbackArg = callbackArg;
     initTxMemberId();
-    this.isPutDML = isPutDML;
   }
 
   public void addEntry(PutAllEntryData entry) {
@@ -270,10 +265,6 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
       EntryVersionsList versionTags = new EntryVersionsList(putAllPRDataSize);
 
       boolean hasTags = false;
-      // get the "keyRequiresRegionContext" flag from first element assuming
-      // all key objects to be uniform
-      final boolean requiresRegionContext =
-        (this.putAllPRData[0].getKey() instanceof KeyWithRegionContext);
       for (int i = 0; i < this.putAllPRDataSize; i++) {
         // If sender's version is >= 7.0.1 then we can send versions list.
         if (!hasTags && putAllPRData[i].versionTag != null) {
@@ -283,7 +274,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
         VersionTag<?> tag = putAllPRData[i].versionTag;
         versionTags.add(tag);
         putAllPRData[i].versionTag = null;
-        putAllPRData[i].toData(out, requiresRegionContext);
+        putAllPRData[i].toData(out);
         putAllPRData[i].versionTag = tag;
         // PutAllEntryData's toData did not serialize eventID to save
         // performance for DR, but in PR,
@@ -302,7 +293,6 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
     s = super.computeCompressedShort(s);
     if (this.bridgeContext != null) s |= HAS_BRIDGE_CONTEXT;
     if (this.skipCallbacks) s |= SKIP_CALLBACKS;
-    if (this.isPutDML) s |= IS_PUT_DML;
     return s;
   }
 
@@ -311,7 +301,6 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
       ClassNotFoundException {
     super.setBooleans(s, in);
     this.skipCallbacks = ((s & SKIP_CALLBACKS) != 0);
-    this.isPutDML = ((s & IS_PUT_DML) != 0);
   }
 
   @Override
@@ -436,12 +425,8 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
     // Fix the updateMsg misorder issue
     // Lock the keys when doing postPutAll
     Object keys[] = new Object[putAllPRDataSize];
-    final boolean keyRequiresRegionContext = r.keyRequiresRegionContext();
     for (int i = 0; i < putAllPRDataSize; ++i) {
       keys[i] = putAllPRData[i].getKey();
-      if (keyRequiresRegionContext) {
-        ((KeyWithRegionContext)keys[i]).setRegionContext(r);
-      }
     }
 
     if (!notificationOnly) {
@@ -482,7 +467,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
            * in this request, because these request will be blocked by foundKey
            */
           for (int i=0; i<putAllPRDataSize; i++) {
-            @Released EntryEventImpl ev = getEventFromEntry(r, myId, eventSender, i,putAllPRData,notificationOnly,bridgeContext,posDup,skipCallbacks, this.isPutDML);
+            @Released EntryEventImpl ev = getEventFromEntry(r, myId, eventSender, i,putAllPRData,notificationOnly,bridgeContext,posDup,skipCallbacks);
             try {
             key = ev.getKey();
 
@@ -558,7 +543,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
       }
     } else {
       for (int i=0; i<putAllPRDataSize; i++) {
-        EntryEventImpl ev = getEventFromEntry(r, myId, eventSender, i,putAllPRData,notificationOnly,bridgeContext,posDup,skipCallbacks, this.isPutDML);
+        EntryEventImpl ev = getEventFromEntry(r, myId, eventSender, i,putAllPRData,notificationOnly,bridgeContext,posDup,skipCallbacks);
         try {
         ev.setOriginRemote(true);
         if (this.callbackArg != null) {
@@ -594,7 +579,7 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
       InternalDistributedMember myId, InternalDistributedMember eventSender,
       int idx, DistributedPutAllOperation.PutAllEntryData[] data,
       boolean notificationOnly, ClientProxyMembershipID bridgeContext,
-      boolean posDup, boolean skipCallbacks, boolean isPutDML) {
+      boolean posDup, boolean skipCallbacks) {
     PutAllEntryData prd = data[idx];
     //EntryEventImpl ev = EntryEventImpl.create(r, 
        // prd.getOp(),
@@ -633,7 +618,6 @@ public final class PutAllPRMessage extends PartitionMessageWithDirectReply
     } else {
       ev.setTailKey(prd.getTailKey());
     }
-    ev.setPutDML(isPutDML);
     evReturned = true;
     return ev;
     } finally {

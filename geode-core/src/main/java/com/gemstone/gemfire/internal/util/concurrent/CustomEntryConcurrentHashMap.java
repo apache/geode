@@ -24,7 +24,7 @@
  * implementations can be plugged in. These HashEntry objects are now assumed to
  * be immutable in the sense that they cannot and should not be cloned in a
  * rehash, and the rehash mechanism has been recoded using locking for that. For
- * GemFire/SQLFire, this is now used to plugin the RegionEntry implementation
+ * Geode, this is now used to plugin the RegionEntry implementation
  * directly as a HashEntry instead of having it as a value and then HashEntry as
  * a separate object having references to key/value which reduces the entry
  * overhead substantially. Other change is to add a "create" method that creates

@@ -56,7 +56,7 @@ public final class Version implements Comparable<Version> {
 
   /**
    * Set to non-null if the underlying GemFire version is different from product
-   * version (e.g. for SQLFire)
+   * version
    */
   private Version gemfireVersion;
 
@@ -142,19 +142,6 @@ public final class Version implements Comparable<Version> {
   public static final Version GFE_701 = new Version("GFE", "7.0.1", (byte)7,
       (byte)0, (byte)1, (byte)0, GFE_701_ORDINAL);
 
-  /**
-   * SQLFire 1.1 has a separate version since it has changed the RowFormatter
-   * formatting for ALTER TABLE add/drop column support. However, its underlying
-   * GemFire version will remain at GFE_7x.
-   * 
-   * This version is an intermediate one created to test rolling upgrades. It is
-   * compatible with <code>SQLF_11</code> in all respects except for artifical
-   * changes in a couple of P2P messages and marking as compatible with GFE_701.
-   * 
-   * This is the GemFire conterpart of SQLF_1099 for testing rolling upgrades
-   * and it uses the same ordinal as GFE_701 to maintain compatibility with the
-   * ordinals being used on SQLFire branch.
-   */
   private static final byte GFE_7099_ORDINAL = 21;
 
   public static final Version GFE_7099 = new Version("GFE", "7.0.99", (byte)7,
@@ -199,7 +186,7 @@ public final class Version implements Comparable<Version> {
       (byte)0, (byte)0, (byte)0, GFE_90_ORDINAL);
 
   /**
-   * This constant must be set to the most current version of GFE/SQLF.
+   * This constant must be set to the most current version of the product.
    * !!! NOTE: update HIGHEST_VERSION when changing CURRENT !!!
    */
   public static final Version CURRENT = GFE_90;
@@ -261,8 +248,8 @@ public final class Version implements Comparable<Version> {
     if (ordinal == TOKEN_ORDINAL) {
       return TOKEN;
     }
-    // for GFE clients also check that there must be a commands object mapping
-    // for processing (SQLF product versions will not work)
+    // for clients also check that there must be a commands object mapping
+    // for processing
     if ((VALUES.length < ordinal + 1) || VALUES[ordinal] == null
         || (forGFEClients && CommandInitializer.getCommands(VALUES[ordinal]) == null)) {
       throw new UnsupportedVersionException(

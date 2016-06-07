@@ -38,7 +38,6 @@ import com.gemstone.gemfire.distributed.internal.ReplySender;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
 import com.gemstone.gemfire.internal.cache.PrimaryBucketException;
@@ -125,9 +124,6 @@ public final class ContainsKeyValueMessage extends PartitionMessageWithDirectRep
     final boolean replyVal;
     if (ds != null) {
       try {
-        if (r.keyRequiresRegionContext()) {
-          ((KeyWithRegionContext)this.key).setRegionContext(r);
-        }
         if (this.valueCheck) {
           replyVal = ds.containsValueForKeyLocally(this.bucketId, this.key);
         } else {

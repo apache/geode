@@ -322,25 +322,13 @@ public interface DSCODE {
    */
   public static final byte HUGE_STRING = 89;
 
-  /**
-   * A header byte meaning that the next element in the stream is an
-   * SQLFabric DataValueDescriptor array.
-   * 
-   * @since GemFire 6.0
-   */
-  public static final byte SQLF_DVD_ARR = 90;
+  // 90 unused
 
   /** A header byte meaning that the next element in the stream is a
    * <code>byte[][]</code>. */
   public static final byte ARRAY_OF_BYTE_ARRAYS = 91;
 
-  /**
-   * A header byte meaning that the next element in the stream is an
-   * object of SQLFabric XML type.
-   * 
-   * @since GemFire 6.5
-   */
-  public static final byte SQLF_XML = 92;
+  // 92 unused
 
   /**
    * A header byte meaning that the next element in the stream is a

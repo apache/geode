@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.LocalRegion.TestCallable;
 import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor;
@@ -58,8 +57,6 @@ public final class InternalRegionArguments
   private DiskRegion diskRegion;
   private PartitionedRegion partitionedRegion;
   private TestCallable testCallable;
-  private IndexUpdater indexUpdater;
-  private boolean keyRequiresRegionContext;
 
   private AbstractGatewaySender parallelGatewaySender;
   private AbstractGatewaySender serialGatewaySender;
@@ -231,25 +228,6 @@ public final class InternalRegionArguments
 
   public TestCallable getTestCallable() {
     return this.testCallable;
-  }
-
-  // SQLFabric index manager
-  public IndexUpdater getIndexUpdater() {
-    return this.indexUpdater;
-  }
-
-  public InternalRegionArguments setIndexUpdater(IndexUpdater indexUpdater) {
-    this.indexUpdater = indexUpdater;
-    return this;
-  }
-
-  public boolean keyRequiresRegionContext() {
-    return this.keyRequiresRegionContext;
-  }
-
-  public InternalRegionArguments setKeyRequiresRegionContext(boolean v) {
-    this.keyRequiresRegionContext = v;
-    return this;
   }
 
   public InternalRegionArguments setUserAttribute(Object userAttr) {

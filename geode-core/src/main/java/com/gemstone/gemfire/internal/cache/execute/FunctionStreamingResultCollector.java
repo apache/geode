@@ -96,8 +96,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
     this.execution = execution;
     this.fites = Collections.synchronizedList(new ArrayList<FunctionInvocationTargetException>());
     // add a reference to self inside the ResultCollector, if required, to avoid
-    // this ReplyProcessor21 from being GCed; currently is of use for SQLFabric
-    // result collectors to properly implement streaming
+    // this ReplyProcessor21 from being GCed
     if (rc instanceof LocalResultCollector<?, ?>) {
       ((LocalResultCollector<?, ?>)rc).setProcessor(this);
     }

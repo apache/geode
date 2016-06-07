@@ -129,9 +129,6 @@ public class DestroyOperation extends DistributedCacheOperation
     @Retained
     protected final InternalCacheEvent createEvent(DistributedRegion rgn)
         throws EntryNotFoundException {
-      if (rgn.keyRequiresRegionContext()) {
-        ((KeyWithRegionContext)this.key).setRegionContext(rgn);
-      }
       EntryEventImpl ev = createEntryEvent(rgn);
       boolean evReturned = false;
       try {

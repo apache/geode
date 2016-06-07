@@ -48,7 +48,6 @@ import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
@@ -253,9 +252,6 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     }
     @Released EntryEventImpl event = null;
     try {
-    if (r.keyRequiresRegionContext()) {
-      ((KeyWithRegionContext)this.key).setRegionContext(r);
-    }
     if (this.bridgeContext != null) {
       event = EntryEventImpl.create(r, getOperation(), this.key, null/*newValue*/,
           getCallbackArg(), false/*originRemote*/, eventSender, 

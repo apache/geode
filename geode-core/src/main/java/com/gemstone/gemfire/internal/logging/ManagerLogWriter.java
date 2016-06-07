@@ -324,40 +324,6 @@ public class ManagerLogWriter extends LocalLogWriter  {
       }
     }
 
-    /* This method is only used by sqlfabric, use getLogNameForOldMainLog instead - xzhou
-     *  
-     */
-//    public static File getMainLogName(File log) {
-//      /*
-//       * this is just searching for the existing logfile name
-//       * we need to search for meta log file name
-//       *
-//       */
-//      File dir = log.getAbsoluteFile().getParentFile();
-//      int previousMainId = calcNextMainId(dir, true);
-//      // comment out the following to fix bug 31789
-////       if (previousMainId > 1) {
-////         previousMainId--;
-////       }
-//      previousMainId--;
-//      File result = null;
-//      do {
-//        previousMainId++;
-//        StringBuffer buf = new StringBuffer(log.getPath());
-//        int insertIdx = buf.lastIndexOf(".");
-//        if (insertIdx == -1) {
-//          buf
-//            .append(formatId(previousMainId))
-//            .append(formatId(1));
-//        } else {
-//          buf.insert(insertIdx, formatId(1));
-//          buf.insert(insertIdx, formatId(previousMainId));
-//        }
-//        result = new File(buf.toString());
-//      } while (result.exists());
-//      return result;
-//    }
-    
     /**
      * as a fix for bug #41474 we use "." if getParentFile returns null
      */

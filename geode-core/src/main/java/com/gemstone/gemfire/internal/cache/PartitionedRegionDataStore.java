@@ -24,7 +24,6 @@ import com.gemstone.gemfire.cache.execute.Function;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
-import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.cache.query.internal.QCompiler;
 import com.gemstone.gemfire.cache.query.internal.index.IndexCreationData;
 import com.gemstone.gemfire.cache.query.internal.index.PartitionedIndex;
@@ -431,19 +430,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
               Object redundancyLock = lockRedundancyLock(moveSource,
                   possiblyFreeBucketId, replaceOffineData);
               //DAN - I hope this is ok to do without that bucket admin lock
-              // Take SQLF lock to wait for any ongoing index initializations.
-              // The lock is taken here in addition to that in
-              // DistributedRegion#initialize() so as to release only after
-              // assignBucketRegion() has been invoked (see bug #41877).
-              // Assumes that the IndexUpdater#lockForGII() lock is re-entrant.
-              final IndexUpdater indexUpdater = this.partitionedRegion
-              .getIndexUpdater();
-              boolean sqlfIndexLocked = false;
               try {
-                if (indexUpdater != null) {
-                  indexUpdater.lockForGII();
-                  sqlfIndexLocked = true;
-                }
                 buk.initializePrimaryElector(creationRequestor);
                 if (getPartitionedRegion().getColocatedWith() == null) {
                   buk.getBucketAdvisor().setShadowBucketDestroyed(false);
@@ -476,9 +463,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats
                   }
                 }
               } finally {
-                if (sqlfIndexLocked) {
-                  indexUpdater.unlockForGII();
-                }
                 releaseRedundancyLock(redundancyLock);
                 if(bukReg == null) {
                   buk.clearPrimaryElector();

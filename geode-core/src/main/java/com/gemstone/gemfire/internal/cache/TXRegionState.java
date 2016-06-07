@@ -524,12 +524,7 @@ public class TXRegionState {
     return changes;
   }
   
-  public Map<Object,TXEntryState> getEntriesInTxForSqlFabric() {
-    return Collections.unmodifiableMap(this.entryMods);
-  }
-
   public TXState getTXState() {
-    // TODO Auto-generated method stub
     return txState;
   }
 

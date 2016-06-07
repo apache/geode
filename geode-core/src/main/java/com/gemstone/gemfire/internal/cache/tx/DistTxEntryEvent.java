@@ -138,12 +138,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
     EntryVersionsList versionTags = new EntryVersionsList(
         this.putAllOp.putAllDataSize);
     boolean hasTags = false;
-    // get the "keyRequiresRegionContext" flag from first element assuming
-    // all key objects to be uniform
     final PutAllEntryData[] putAllData = this.putAllOp.getPutAllEntryData();
-    // final boolean requiresRegionContext =
-    // (putAllData[0].key instanceof KeyWithRegionContext);
-    final boolean requiresRegionContext = false;
     for (int i = 0; i < this.putAllOp.putAllDataSize; i++) {
       if (!hasTags && putAllData[i].versionTag != null) {
         hasTags = true;
@@ -151,7 +146,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
       VersionTag<?> tag = putAllData[i].versionTag;
       versionTags.add(tag);
       putAllData[i].versionTag = null;
-      putAllData[i].toData(out, requiresRegionContext);
+      putAllData[i].toData(out);
       putAllData[i].versionTag = tag;
     }
     out.writeBoolean(hasTags);
@@ -206,13 +201,8 @@ public class DistTxEntryEvent extends EntryEventImpl {
         this.removeAllOp.removeAllDataSize);
   
     boolean hasTags = false;
-    // get the "keyRequiresRegionContext" flag from first element assuming
-    // all key objects to be uniform
-    // final boolean requiresRegionContext =
-    // (this.removeAllData[0].key instanceof KeyWithRegionContext);
     final RemoveAllEntryData[] removeAllData = this.removeAllOp
         .getRemoveAllEntryData();
-    final boolean requiresRegionContext = false;
     for (int i = 0; i < this.removeAllOp.removeAllDataSize; i++) {
       if (!hasTags && removeAllData[i].versionTag != null) {
         hasTags = true;
@@ -220,7 +210,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
       VersionTag<?> tag = removeAllData[i].versionTag;
       versionTags.add(tag);
       removeAllData[i].versionTag = null;
-      removeAllData[i].toData(out, requiresRegionContext);
+      removeAllData[i].toData(out);
       removeAllData[i].versionTag = tag;
     }
     out.writeBoolean(hasTags);

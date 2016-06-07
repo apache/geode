@@ -188,9 +188,6 @@ public final class RemoteInvalidateMessage extends RemoteDestroyMessage {
        eventSender = getSender();
     }
     final Object key = getKey();
-    if (r.keyRequiresRegionContext()) {
-      ((KeyWithRegionContext)key).setRegionContext(r);
-    }
     @Released final EntryEventImpl event = EntryEventImpl.create(
         r,
         getOperation(),

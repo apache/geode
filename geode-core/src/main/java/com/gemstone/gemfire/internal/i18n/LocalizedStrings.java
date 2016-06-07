@@ -734,7 +734,6 @@ public class LocalizedStrings {
   public static final StringId PartitionedRegion_FAILED_REGISTRATION_PRID_0_NAMED_1 = new StringId(1872, "FAILED_REGISTRATION prId={0} named {1}");
   public static final StringId PartitionedRegion_FORCEREATTEMPT_EXCEPTION___0 = new StringId(1873, "ForceReattempt exception :  {0}");
   public static final StringId PartitionedRegion_NEWLY_ADDED_MEMBER_TO_THE_PR_IS_AN_ACCESSOR_AND_WILL_NOT_RECEIVE_INDEX_INFORMATION_0 = new StringId(1874, "Newly added member to the PR is an accessor and will not receive index information : {0}");
-  public static final StringId FunctionService_ROUTING_OBJECTS_SET_IS_NULL = new StringId(1875, "Set for routing objects passed is null");
 
   public static final StringId PartitionedRegion_NO_VM_AVAILABLE_FOR_CONTAINS_KEY_IN_1_ATTEMPTS = new StringId(1877, "No VM available for contains key in {1} attempts");
   public static final StringId PartitionedRegion_NO_VM_AVAILABLE_FOR_CONTAINS_VALUE_FOR_KEY_IN_1_ATTEMPTS = new StringId(1878, "No VM available for contains value for key in {1} attempts");
@@ -836,8 +835,6 @@ public class LocalizedStrings {
 
   public static final StringId LocalRegion_THE_FOLLOWING_EXCEPTION_OCCURRED_ATTEMPTING_TO_GET_KEY_0 = new StringId(1995, "The following exception occurred attempting to get key={0}");
 
-  public static final StringId RegionAdvisor_CANNOT_RESET_EXISTING_BUCKET = new StringId(
-                                                                                                1997, "For region {0}: RegionAdvisor cannot reset existing bucket with ID {1}");
   public static final StringId SystemAdmin_LRU_OPTION_HELP = new StringId(1998, "-lru=<type> Sets region''s lru algorithm. Valid types are: none, lru-entry-count, lru-heap-percentage, or lru-memory-size");
   public static final StringId SystemAdmin_LRUACTION_OPTION_HELP = new StringId(1999, "-lruAction=<action> Sets the region''s lru action. Valid actions are: none, overflow-to-disk, local-destroy");
   public static final StringId SystemAdmin_LRULIMIT_OPTION_HELP = new StringId(2000, "-lruLimit=<int> Sets the region''s lru limit. Valid values are >= 0");
@@ -2973,9 +2970,6 @@ public class LocalizedStrings {
   public static final StringId GemFireCache_INITIALIZATION_FAILED_FOR_REGION_0 = new StringId(4609, "Initialization failed for Region {0}");
   public static final StringId LocalRegion_INITIALIZATION_FAILED_FOR_REGION_0 = new StringId(4610, "Initialization failed for Region {0}");
   public static final StringId PartitionedRegion_0_EVICTIONATTRIBUTES_1_DO_NOT_MATCH_WITH_OTHER_2 = new StringId(4611, "For Partitioned Region {0} the locally configured EvictionAttributes {1} do not match with other EvictionAttributes {2} and may cause misses during reads from VMs with smaller maximums.");
-  public static final StringId DSFIDFactory_COULD_NOT_INSTANTIATE_SQLFABRIC_MESSAGE_CLASSID_0_1 = new StringId(4616, "Could not instantiate SQLFabric message [classId:{0}]:{1}");
-  public static final StringId DSFIDFactory_ILLEGAL_ACCESS_FOR_SQLFABRIC_MESSAGE_CLASSID_0_1 = new StringId(4617, "Illegal access for SQLFabric message [classId:{0}]:{1}");
-  public static final StringId DSFIDFactory_UNKNOWN_CLASSID_0_FOR_SQLFABRIC_MESSAGE = new StringId(4618, "Unknown ClassId [{0}] for SQLFabric message");
   public static final StringId AbstractRegionMap_THE_CURRENT_VALUE_WAS_NOT_EQUAL_TO_EXPECTED_VALUE = new StringId(4619, "The current value was not equal to expected value.");
   public static final StringId AbstractRegionEntry_THE_CURRENT_VALUE_WAS_NOT_EQUAL_TO_EXPECTED_VALUE = new StringId(4620, "The current value was not equal to expected value.");
   public static final StringId AbstractRegionMap_ENTRY_NOT_FOUND_WITH_EXPECTED_VALUE = new StringId(4621, "entry not found with expected value");
@@ -3112,11 +3106,6 @@ public class LocalizedStrings {
   public static final StringId AttributesFactory_INVALIDATE_REGION_NOT_SUPPORTED_FOR_PR = new StringId(4784,"ExpirationAction INVALIDATE or LOCAL_INVALIDATE for region is not supported for Partitioned Region.");
   public static final StringId AttributesFactory_LOCAL_DESTROY_IS_NOT_SUPPORTED_FOR_PR = new StringId(4785,"ExpirationAction LOCAL_DESTROY is not supported for Partitioned Region.");
   public static final StringId AttributesFactory_LOCAL_INVALIDATE_IS_NOT_SUPPORTED_FOR_PR = new StringId(4786,"ExpirationAction LOCAL_INVALIDATE is not supported for Partitioned Region.");
-  public static final StringId GemFireUtilLauncher_ARGUMENTS = new StringId(4789, "Usage:\n{0} [{1}] <arguments for the utility specified>\n\nThe command to display a particular utility''s usage is:\n{0} <utility name> --help");
-  public static final StringId GemFireUtilLauncher_INVALID_UTILITY_0 = new StringId(4790, "Invalid utility name: {0} was specified.");
-  public static final StringId GemFireUtilLauncher_PROBLEM_STARTING_0 = new StringId(4791, "Problem starting {0}.");
-  public static final StringId GemFireUtilLauncher_MISSING_COMMAND = new StringId(4792, "** Missing command");
-  public static final StringId GemFireUtilLauncher_HELP = new StringId(4793, "** Displaying help information");
   public static final StringId AttributesFactory_DESTROY_REGION_NOT_SUPPORTED_FOR_PR = new StringId(4794,"ExpirationAction DESTROY or LOCAL_DESTROY for region is not supported for Partitioned Region.");
   public static final StringId ExecuteFunction_DS_NOT_CREATED_OR_NOT_READY = new StringId(4795, "DistributedSystem is either not created or not ready");
 

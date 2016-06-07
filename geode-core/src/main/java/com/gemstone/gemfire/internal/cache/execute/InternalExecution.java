@@ -25,7 +25,7 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 
 /**
- * Internal interface for SQLFabric. It has internal methods specific for SQLFabric
+ * Internal interface that adds some internal methods to the Execution interface.
  * 
  * @since GemFire 5.8LA
  * 
@@ -35,31 +35,6 @@ public interface InternalExecution extends Execution {
   public InternalExecution withMemberMappedArgument(
       MemberMappedArgument argument); 
 
-  /**
-   * Specifies a data filter of routing objects for selecting the GemFire
-   * members to execute the function that are not GemFire keys rather routing
-   * objects as determined by resolver. Currently used by SQL fabric for passing
-   * routing objects obtained from the custom resolvers.
-   * <p>
-   * If the set is empty the function is executed on all members that have the
-   * {@linkplain FunctionService#onRegion(com.gemstone.gemfire.cache.Region)
-   * region defined}.
-   * </p>
-   * 
-   * @param routingObjects
-   *          Set defining the routing objects to be used for executing the
-   *          function.
-   * 
-   * @return an Execution with the routing objects
-   * 
-   * @throws IllegalArgumentException
-   *           if the set of routing objects passed is null.
-   * @throws UnsupportedOperationException
-   *           if not called after
-   *           {@link FunctionService#onRegion(com.gemstone.gemfire.cache.Region)}
-   */
-  public InternalExecution withRoutingObjects(Set<Object> routingObjects);
-  
   /**
    * Specifies a  filter of bucketIDs for selecting the GemFire
    * members to execute the function on.

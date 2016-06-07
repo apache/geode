@@ -173,9 +173,6 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
     public void handleValueOverflow(RegionEntryContext context) {throw new IllegalStateException("should never be called");}
     
     @Override
-    public void afterValueOverflow(RegionEntryContext context) {throw new IllegalStateException();}
-    
-    @Override
     public Object prepareValueForCache(RegionEntryContext r, Object val, boolean isEntryUpdate) {
       throw new IllegalStateException("Should never be called");
     }

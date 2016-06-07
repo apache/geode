@@ -17,7 +17,69 @@
 
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.Reader;
+import java.io.StringBufferInputStream;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.InetSocketAddress;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.naming.Context;
+
+import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.CancelCriterion;
+import com.gemstone.gemfire.CancelException;
+import com.gemstone.gemfire.ForcedDisconnectException;
+import com.gemstone.gemfire.GemFireCacheException;
+import com.gemstone.gemfire.InternalGemFireError;
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.admin.internal.SystemMemberCacheEventProcessor;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.TimeoutException;
@@ -107,19 +169,6 @@ import com.gemstone.gemfire.pdx.internal.TypeRegistry;
 import com.gemstone.gemfire.redis.GemFireRedisServer;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
-import org.apache.logging.log4j.Logger;
-
-import javax.naming.Context;
-import java.io.*;
-import java.net.InetSocketAddress;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 // @todo somebody Come up with more reasonable values for {@link #DEFAULT_LOCK_TIMEOUT}, etc.
 /**
@@ -413,18 +462,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
   private final Object clientMetaDatServiceLock = new Object();
 
   private volatile boolean isShutDownAll = false;
-
-  /**
-   * Set of members that are not yet ready. Currently used by SQLFabric during initial DDL replay to indicate that the
-   * member should not be chosen for primary buckets.
-   */
-  private final HashSet<InternalDistributedMember> unInitializedMembers = new HashSet<InternalDistributedMember>();
-
-  /**
-   * Set of {@link BucketAdvisor}s for this node that are pending for volunteer for primary due to uninitialized node
-   * (SQLFabric DDL replay in progress).
-   */
-  private final LinkedHashSet<BucketAdvisor> deferredVolunteerForPrimary = new LinkedHashSet<BucketAdvisor>();
 
   private final ResourceAdvisor resourceAdvisor;
   private final JmxManagerAdvisor jmxAdvisor;
@@ -4909,76 +4946,6 @@ public class GemFireCacheImpl implements InternalCache, ClientCache, HasCachePer
 
   public DistributedRegion getRegionInDestroy(String path) {
     return this.regionsInDestroy.get(path);
-  }
-
-  /**
-   * Mark a node as initialized or not initialized. Used by SQLFabric to avoid creation of buckets or routing of
-   * operations/functions on a node that is still in the DDL replay phase.
-   */
-  public boolean updateNodeStatus(InternalDistributedMember member, boolean initialized) {
-    HashSet<BucketAdvisor> advisors = null;
-    synchronized (this.unInitializedMembers) {
-      if (initialized) {
-        if (this.unInitializedMembers.remove(member)) {
-          if (member.equals(getMyId())) {
-            // don't invoke volunteerForPrimary() inside the lock since
-            // BucketAdvisor will also require the lock after locking itself
-            advisors = new HashSet<BucketAdvisor>(this.deferredVolunteerForPrimary);
-            this.deferredVolunteerForPrimary.clear();
-          }
-        } else {
-          return false;
-        }
-      } else {
-        return this.unInitializedMembers.add(member);
-      }
-    }
-    if (advisors != null) {
-      for (BucketAdvisor advisor : advisors) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Invoking volunteer for primary for deferred bucket " + "post SQLFabric DDL replay for BucketAdvisor: {}",  advisor);
-        }
-        advisor.volunteerForPrimary();
-      }
-    }
-    return true;
-  }
-
-  /**
-   * Return true if this node is still not initialized else false.
-   */
-  public boolean isUnInitializedMember(InternalDistributedMember member) {
-    synchronized (this.unInitializedMembers) {
-      return this.unInitializedMembers.contains(member);
-    }
-  }
-
-  /**
-   * Return false for volunteer primary if this node is not currently initialized. Also adds the {@link BucketAdvisor}
-   * to a list that will be replayed once this node is initialized.
-   */
-  public boolean doVolunteerForPrimary(BucketAdvisor advisor) {
-    synchronized (this.unInitializedMembers) {
-      if (!this.unInitializedMembers.contains(getMyId())) {
-        return true;
-      }
-      if (logger.isDebugEnabled()) {
-        logger.debug("Deferring volunteer for primary due to uninitialized " + "node (SQLFabric DDL replay) for BucketAdvisor: {}", advisor);
-      }
-      this.deferredVolunteerForPrimary.add(advisor);
-      return false;
-    }
-  }
-
-  /**
-   * Remove all the uninitialized members from the given collection.
-   */
-  public final void removeUnInitializedMembers(Collection<InternalDistributedMember> members) {
-    synchronized (this.unInitializedMembers) {
-      for (final InternalDistributedMember m : this.unInitializedMembers) {
-        members.remove(m);
-      }
-    }
   }
 
   public TombstoneService getTombstoneService() {

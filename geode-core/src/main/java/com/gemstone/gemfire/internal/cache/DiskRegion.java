@@ -791,8 +791,6 @@ public class DiskRegion extends AbstractDiskRegion {
           DiskId id = de.getDiskId();
           if (id != null) {
             synchronized (id) {
-              // SQLFabric: give a chance to copy key from value bytes when key
-              // is just a pointer to value row
               re.setValueToNull(); // TODO why call _setValue twice in a row?
               re.removePhase2();
               id.unmarkForWriting();

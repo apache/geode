@@ -27,7 +27,6 @@ import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache.TransactionId;
-import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.internal.cache.lru.LRUMapCallbacks;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -355,16 +354,13 @@ public interface RegionMap extends LRUMapCallbacks {
 
   /**
    * Removes the given key if the enclosing RegionEntry is still in this map for
-   * the given EntryEvent and updating the given {@link IndexUpdater} of the
-   * region ({@link #getIndexUpdater()}) for the event.
+   * the given EntryEvent
    */
   public void removeEntry(Object key, RegionEntry re, boolean updateStat,
-      EntryEventImpl event, LocalRegion owner, IndexUpdater indexUpdater);
+      EntryEventImpl event, LocalRegion owner);
 
   public void copyRecoveredEntries(RegionMap rm);
 
-  public IndexUpdater getIndexUpdater();
-  
   /**
    * Removes an entry that was previously destroyed and made into a tombstone.
    * 

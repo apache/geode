@@ -31,7 +31,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 
 /**
  * 
- * Provides internal methods for sqlFabric product
+ * Provides internal methods for tests
  * 
  * 
  * @since GemFire 6.1

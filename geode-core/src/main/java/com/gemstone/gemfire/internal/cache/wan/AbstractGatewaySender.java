@@ -908,7 +908,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
       }
     } else {
       GatewaySenderEventCallbackArgument geCallbackArg = new GatewaySenderEventCallbackArgument(
-          callbackArg, this.getMyDSId(), allRemoteDSIds, true);
+          callbackArg, this.getMyDSId(), allRemoteDSIds);
       clonedEvent.setCallbackArgument(geCallbackArg);
     }
 

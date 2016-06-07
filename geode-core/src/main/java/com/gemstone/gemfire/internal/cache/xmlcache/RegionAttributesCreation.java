@@ -203,12 +203,10 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes impl
     this(cc, getDefaultAttributes(cc), true);
   }
 
-  // used by sqlfabric
   public RegionAttributesCreation() {
     this(defaultAttributes, true);
   }
 
-  // used by sqlfabric
   public RegionAttributesCreation(RegionAttributes attrs, boolean defaults) {
     this(null, attrs, defaults);
   }

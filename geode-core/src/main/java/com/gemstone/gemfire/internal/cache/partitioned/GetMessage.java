@@ -29,6 +29,18 @@ import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.cache.BucketRegion.RawValue;
+import com.gemstone.gemfire.internal.cache.CachedDeserializableFactory;
+import com.gemstone.gemfire.internal.cache.DataLocationException;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl;
+import com.gemstone.gemfire.internal.cache.ForceReattemptException;
+import com.gemstone.gemfire.internal.cache.KeyInfo;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
+import com.gemstone.gemfire.internal.cache.PrimaryBucketException;
+import com.gemstone.gemfire.internal.cache.TXManagerImpl;
+import com.gemstone.gemfire.internal.cache.TXStateProxy;
+import com.gemstone.gemfire.internal.cache.Token;
+import com.gemstone.gemfire.internal.cache.VersionTagHolder;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
@@ -159,9 +171,6 @@ public final class GetMessage extends PartitionMessageWithDirectReply
     if (ds != null) {
       VersionTagHolder event = new VersionTagHolder();
       try {
-        if (r.keyRequiresRegionContext()) {
-          ((KeyWithRegionContext)this.key).setRegionContext(r);
-        }
         KeyInfo keyInfo = r.getKeyInfo(key, cbArg);
         boolean lockEntry = forceUseOfPRExecutor || isDirectAck();
         
@@ -325,7 +334,6 @@ public final class GetMessage extends PartitionMessageWithDirectReply
     // static values for valueType
     static final byte VALUE_IS_SERIALIZED_OBJECT = 0;
     static final byte VALUE_IS_BYTES = 1;
-    /** came from partial SQLF merge and reconciling with it but not used yet */
     //static final byte VALUE_IS_OBJECT = 2;
     static final byte VALUE_IS_INVALID = 3;
     static final byte VALUE_IS_TOMBSTONE = 4;

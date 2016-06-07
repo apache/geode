@@ -30,7 +30,6 @@ import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache.TransactionId;
-import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.ByteArrayDataInput;
@@ -56,23 +55,10 @@ import com.gemstone.gemfire.internal.offheap.annotations.Released;
  */
 final class ProxyRegionMap implements RegionMap {
 
-  /** An internal Listener for index maintenance for SQLFabric. */
-  private final IndexUpdater indexUpdater;
-
   protected ProxyRegionMap(LocalRegion owner, Attributes attr,
       InternalRegionArguments internalRegionArgs) {
     this.owner = owner;
     this.attr = attr;
-    if (internalRegionArgs != null) {
-      this.indexUpdater = internalRegionArgs.getIndexUpdater();
-    }
-    else {
-      this.indexUpdater = null;
-    }
-  }
-
-  public final IndexUpdater getIndexUpdater() {
-    return this.indexUpdater;
   }
 
   /**
@@ -249,13 +235,6 @@ final class ProxyRegionMap implements RegionMap {
     lastModified = // fix for bug 40129
       this.owner.basicPutPart2(event, markerEntry, true,
         lastModified, false /*Clear conflict occurred */);
-    // invoke SQLFabric index manager if present
-    final IndexUpdater indexUpdater = getIndexUpdater();
-    if (indexUpdater != null) {
-      // postEvent not required to be invoked since this is currently used
-      // only for FK checks
-      indexUpdater.onEvent(this.owner, event, markerEntry);
-    }
     this.owner.basicPutPart3(event, markerEntry, true,
           lastModified, true, ifNew, ifOld, expectedOldValue, requireOldValue);
     return markerEntry;
@@ -399,7 +378,7 @@ final class ProxyRegionMap implements RegionMap {
   }
 
   public void removeEntry(Object key, RegionEntry re, boolean updateStat,
-      EntryEventImpl event, LocalRegion owner, IndexUpdater indexUpdater) {
+      EntryEventImpl event, LocalRegion owner) {
     // nothing to do
   }
 

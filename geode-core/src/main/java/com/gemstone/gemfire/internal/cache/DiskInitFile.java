@@ -2435,8 +2435,6 @@ public class DiskInitFile implements DiskInitFileInterpreter {
 
   /**
    * Additional flags for a disk region that are persisted in its meta-data.
-   * Currently only few for GemFireXD added here but all other boolean flags also
-   * be better moved here.
    * 
    * @since GemFire 7.0
    */

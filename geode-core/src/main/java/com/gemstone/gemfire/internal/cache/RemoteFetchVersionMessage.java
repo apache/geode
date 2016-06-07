@@ -122,9 +122,6 @@ public final class RemoteFetchVersionMessage extends RemoteOperationMessage {
     }
     VersionTag tag;
     try {
-      if (r.keyRequiresRegionContext()) {
-        ((KeyWithRegionContext) this.key).setRegionContext(r);
-      }
       RegionEntry re = r.getRegionEntry(key);
       if (re == null) {
         if (logger.isTraceEnabled(LogMarker.DM)) {

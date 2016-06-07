@@ -115,7 +115,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
   ////////  Test Methods
 
   /**
-   * SQLFire uses a colocated locator in a dm-type=normal VM.  This tests that
+   * This tests that
    * the locator can resume control as coordinator after all locators have been
    * shut down and one is restarted.  It's necessary to have a lock service
    * start so elder failover is forced to happen.  Prior to fixing how this worked

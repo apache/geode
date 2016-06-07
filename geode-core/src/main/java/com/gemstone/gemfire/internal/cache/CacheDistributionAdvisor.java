@@ -87,7 +87,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
   protected static final int REQUIRES_NOTIFICATION_MASK = 0x8000;
   private static final int HAS_CACHE_SERVER_MASK = 0x10000;
   private static final int REQUIRES_OLD_VALUE_MASK = 0x20000;
-  private static final int MEMBER_UNINITIALIZED_MASK = 0x40000;
+  // unused 0x40000;
   private static final int PERSISTENCE_INITIALIZED_MASK = 0x80000;
   //Important below mentioned bit masks are not available 
   /**
@@ -229,8 +229,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
         CacheProfile prof = (CacheProfile)profile;
 
         // if region in cache is not yet initialized, exclude
-        if (!prof.regionInitialized          // fix for bug 41102
-            || prof.memberUnInitialized) {
+        if (!prof.regionInitialized) { // fix for bug 41102
           return false;
         }
 
@@ -267,10 +266,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
           CacheProfile cp = (CacheProfile)profile;
           // if region in cache is not yet initialized, exclude
           if (!cp.regionInitialized) {
-            return false;
-          }
-          // if member is not yet initialized, exclude
-          if (cp.memberUnInitialized) {
             return false;
           }
           if (!cp.cachedOrAllEventsWithListener()) {
@@ -327,8 +322,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       public boolean include(Profile profile) {
         assert profile instanceof CacheProfile;
         CacheProfile cp = (CacheProfile)profile;
-        if (cp.dataPolicy.withReplication() && cp.regionInitialized
-            && !cp.memberUnInitialized) {
+        if (cp.dataPolicy.withReplication() && cp.regionInitialized) {
           return true;
         }
         return false;
@@ -348,10 +342,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
         CacheProfile cp = (CacheProfile)profile;
         // if region in cache is not yet initialized, exclude
         if (!cp.regionInitialized) {
-          return false;
-        }
-        // if member is not yet initialized, exclude
-        if (cp.memberUnInitialized) {
           return false;
         }
         DataPolicy dp = cp.dataPolicy;
@@ -544,14 +534,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
      */
     public boolean regionInitialized;
 
-    /**
-     * True when member is still not ready to receive cache operations. Note
-     * that {@link #regionInitialized} may be still true so other members can
-     * proceed with GII etc. Currently used by SQLFabric to indicate that DDL
-     * replay is in progress and so cache operations/functions should not be
-     * routed to that node.
-     */
-    public boolean memberUnInitialized = false;
     
     /**
      * True when a members persistent store is initialized. Note that
@@ -615,7 +597,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       if (this.isGatewayEnabled) s |= IS_GATEWAY_ENABLED_MASK;
       if (this.isPersistent) s |= PERSISTENT_MASK;
       if (this.regionInitialized) s|= REGION_INITIALIZED_MASK;
-      if (this.memberUnInitialized) s |= MEMBER_UNINITIALIZED_MASK;
       if (this.persistentID != null) s|= PERSISTENT_ID_MASK;
       if (this.hasCacheServer) s|= HAS_CACHE_SERVER_MASK;
       if (this.requiresOldValueInEvents) s|= REQUIRES_OLD_VALUE_MASK;
@@ -693,7 +674,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       this.isGatewayEnabled = (s & IS_GATEWAY_ENABLED_MASK) != 0;
       this.isPersistent = (s & PERSISTENT_MASK) != 0;
       this.regionInitialized = ( (s & REGION_INITIALIZED_MASK) != 0 );
-      this.memberUnInitialized = (s & MEMBER_UNINITIALIZED_MASK) != 0;
       this.hasCacheServer = ( (s & HAS_CACHE_SERVER_MASK) != 0 );
       this.requiresOldValueInEvents = ((s & REQUIRES_OLD_VALUE_MASK) != 0);
       this.persistenceInitialized = (s & PERSISTENCE_INITIALIZED_MASK) != 0;
@@ -890,8 +870,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor  {
       sb.append("; scope=" + this.scope);
       sb.append("; regionInitialized=").append(
           String.valueOf(this.regionInitialized));
-      sb.append("; memberUnInitialized=").append(
-          String.valueOf(this.memberUnInitialized));
       sb.append("; inRecovery=" + this.inRecovery);
       sb.append("; subcription=" + this.subscriptionAttributes);
       sb.append("; isPartitioned=" + this.isPartitioned);

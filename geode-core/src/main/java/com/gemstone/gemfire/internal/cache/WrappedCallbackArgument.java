@@ -40,32 +40,12 @@ public abstract class WrappedCallbackArgument {
    */
   private Object _originalCallbackArg;
   
-  /** If the GatewayEvent is in a Sql Fabric started Hub, in which case
-   * the original callback argument is not serialized
-   * 
-   */
-   private boolean serializeCallbackArg = true; 
-
   /**
    * No arg constructor for DataSerializable.
    */
   public WrappedCallbackArgument() {    
   }
 
-  /**
-   * Constructor.
-   *
-   * @param originalCallbackArg The original callback argument set by the
-   * caller or null if there was not callback arg
-   * @param serializeCBArg  boolean indicating if the event is created by a 
-   * sql fabric system
-   */
-  public WrappedCallbackArgument(Object originalCallbackArg, boolean serializeCBArg) {
-    this._originalCallbackArg = originalCallbackArg;
-    this.serializeCallbackArg = serializeCBArg;
-  }
- 
-  
   /**
    * Constructor.
    *
@@ -86,11 +66,7 @@ public abstract class WrappedCallbackArgument {
   }
 
   public void toData(DataOutput out) throws IOException {
-    if(this.serializeCallbackArg) {
-      DataSerializer.writeObject(this._originalCallbackArg, out);
-    }else {
-      DataSerializer.writeObject(null, out);      
-    }
+    DataSerializer.writeObject(this._originalCallbackArg, out);
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {

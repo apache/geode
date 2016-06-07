@@ -42,7 +42,6 @@ import com.gemstone.gemfire.internal.cache.DataLocationException;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
@@ -126,10 +125,6 @@ public class PRUpdateEntryVersionMessage extends
   protected boolean operateOnPartitionedRegion(DistributionManager dm,
       PartitionedRegion pr, long startTime) throws CacheException,
       QueryException, DataLocationException, InterruptedException, IOException {
-    if (pr.keyRequiresRegionContext()) {
-      ((KeyWithRegionContext) key).setRegionContext(pr);
-    }
-
     // release not needed because disallowOffHeapValues called
     final EntryEventImpl event = EntryEventImpl.create(pr, getOperation(),
         getKey(), null, /* newValue */

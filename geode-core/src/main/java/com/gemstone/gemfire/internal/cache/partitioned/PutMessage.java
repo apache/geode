@@ -56,7 +56,6 @@ import com.gemstone.gemfire.internal.cache.EnumListenerEvent;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
 import com.gemstone.gemfire.internal.cache.PrimaryBucketException;
@@ -119,8 +118,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
   
   /**
    * Indicates if and when the new value should be deserialized on the
-   * the receiver. Distinguishes between Deltas which need to be eagerly
-   * deserialized (DESERIALIZATION_POLICY_EAGER), a non-byte[] value that was
+   * the receiver. Distinguishes between a non-byte[] value that was
    * serialized (DESERIALIZATION_POLICY_LAZY) and a
    * byte[] array value that didn't need to be serialized
    * (DESERIALIZATION_POLICY_NONE). While this seems like an extra data, it
@@ -182,15 +180,11 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
 
   private VersionTag versionTag;
 
-  private transient boolean isPutDML;
-  
   // additional bitmask flags used for serialization/deserialization
 
   protected static final short CACHE_WRITE = UNRESERVED_FLAGS_START;
   protected static final short HAS_EXPECTED_OLD_VAL = (CACHE_WRITE << 1);
   protected static final short HAS_VERSION_TAG = (HAS_EXPECTED_OLD_VAL << 1);
-  //using the left most bit for IS_PUT_DML, the last available bit
-  protected static final short IS_PUT_DML = (short) (HAS_VERSION_TAG << 1);
 
   // extraFlags
   protected static final int HAS_BRIDGE_CONTEXT =
@@ -349,11 +343,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
     this.expectedOldValue = expectedOldValue;
     this.key = event.getKey();
     if (event.hasNewValue()) {
-      if (CachedDeserializableFactory.preferObject() || event.hasDelta()) {
-        this.deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_EAGER;
-      } else {
-        this.deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_LAZY;
-      }
+      this.deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_LAZY;
       event.exportNewValue(this);
     }
     else {
@@ -627,14 +617,7 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
       this.deltaBytes = DataSerializer.readByteArray(in);
     }
     else {
-      // for eager deserialization avoid extra byte array serialization
-      if (this.deserializationPolicy ==
-          DistributedCacheOperation.DESERIALIZATION_POLICY_EAGER) {
-        setValObj(DataSerializer.readObject(in));
-      }
-      else {
-        setValBytes(DataSerializer.readByteArray(in));
-      }
+      setValBytes(DataSerializer.readByteArray(in));
       if ((extraFlags & HAS_DELTA_WITH_FULL_VALUE) != 0) {
         this.deltaBytes = DataSerializer.readByteArray(in);
       }
@@ -642,10 +625,6 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
     if ((flags & HAS_VERSION_TAG) != 0) {
       this.versionTag =  DataSerializer.readObject(in);
     }
-    if ((flags & IS_PUT_DML) != 0) {
-      this.isPutDML = true;
-    }
-    
   }
   
   @Override
@@ -752,7 +731,6 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
       }
     }
     if (this.versionTag != null) s |= HAS_VERSION_TAG;
-    if (this.event.isPutDML()) s |= IS_PUT_DML;
     return s;
   }
 
@@ -788,9 +766,6 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
     if (eventSender == null) {
        eventSender = getSender();
     }
-    if (r.keyRequiresRegionContext()) {
-      ((KeyWithRegionContext)this.key).setRegionContext(r);
-    }
     @Released final EntryEventImpl ev = EntryEventImpl.create(
         r,
         getOperation(),
@@ -814,7 +789,6 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
     ev.setCausedByMessage(this);
     ev.setInvokePRCallbacks(!notificationOnly);
     ev.setPossibleDuplicate(this.posDup);
-    ev.setPutDML(this.isPutDML);
     /*if (this.hasOldValue) {
       if (this.oldValueIsSerialized) {
         ev.setSerializedOldValue(getOldValueBytes());
@@ -838,10 +812,6 @@ public final class PutMessage extends PartitionMessageWithDirectReply implements
           break;
         case DistributedCacheOperation.DESERIALIZATION_POLICY_NONE:
           ev.setNewValue(getValBytes());
-          break;
-        case DistributedCacheOperation.DESERIALIZATION_POLICY_EAGER:
-          // new value is a Delta
-          ev.setNewValue(this.valObj); // sets the delta field
           break;
         default:
           throw new AssertionError("unknown deserialization policy: "

@@ -609,8 +609,7 @@ public class ReplyProcessor21
   }
 
   // start waiting for replies without explicitly waiting for all of them using
-  // waitForReplies* methods; useful for streaming of results in function
-  // execution and SQLFabric
+  // waitForReplies* methods; useful for streaming of results in function execution
   public final void startWait() {
     if (!this.waiting && stillWaiting()) {
       preWait();
@@ -618,8 +617,7 @@ public class ReplyProcessor21
   }
 
   // end waiting for replies without explicitly invoking waitForReplies*
-  // methods; useful for streaming of results in function execution and
-  // SQLFabric
+  // methods; useful for streaming of results in function execution
   public final void endWait(boolean doCleanup) {
     try {
       postWait();

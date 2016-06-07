@@ -28,7 +28,6 @@ import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.cache.persistence.PersistentReplicatesOfflineException;
-import com.gemstone.gemfire.cache.query.internal.IndexUpdater;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.distributed.DistributedLockService;
 import com.gemstone.gemfire.distributed.DistributedMember;
@@ -1136,21 +1135,8 @@ public class DistributedRegion extends LocalRegion implements
       getLockService(); // create lock service eagerly now
     }
 
-    final IndexUpdater indexUpdater = getIndexUpdater();
-    boolean sqlfGIILockTaken = false;
-    // this try block is to release the SQLF GII lock in finally
-    // which should be done after bucket status will be set
-    // properly in LocalRegion#initialize()
-    try {
      try {
       try {
-        // take the GII lock to avoid missing entries while updating the
-        // index list for SQLFabric (#41330 and others)
-        if (indexUpdater != null) {
-          indexUpdater.lockForGII();
-          sqlfGIILockTaken = true;
-        }
-        
         PersistentMemberID persistentId = null;
         boolean recoverFromDisk = isRecoveryNeeded();
         DiskRegion dskRgn = getDiskRegion();
@@ -1194,11 +1180,6 @@ public class DistributedRegion extends LocalRegion implements
         this.eventTracker.setInitialized();
       }
      }
-    } finally {
-      if (sqlfGIILockTaken) {
-        indexUpdater.unlockForGII();
-      }
-    }
   }
 
   @Override
@@ -2273,13 +2254,6 @@ public class DistributedRegion extends LocalRegion implements
     }
     profile.serialNumber = getSerialNumber();
     profile.regionInitialized = this.isInitialized();
-    if (!this.isUsedForPartitionedRegionBucket()) {
-      profile.memberUnInitialized = getCache().isUnInitializedMember(
-          profile.getDistributedMember());
-    }
-    else {
-      profile.memberUnInitialized = false;
-    }
     profile.persistentID = getPersistentID();
     if(getPersistenceAdvisor() != null) {
       profile.persistenceInitialized = getPersistenceAdvisor().isOnline();
@@ -2485,11 +2459,7 @@ public class DistributedRegion extends LocalRegion implements
     }
     
     if (preferCD) {
-      if (event.hasDelta()) {
-        result = event.getNewValue();
-      } else {
         result = event.getRawNewValueAsHeapObject();
-      }    
     } else {
       result = event.getNewValue();     
     }
@@ -3909,12 +3879,10 @@ public class DistributedRegion extends LocalRegion implements
   /**
    * Used to bootstrap txState.
    * @param key
-   * @return  distributedRegions,
-   * member with parimary bucket for partitionedRegions
+   * @return member with primary bucket for partitionedRegions
    */
   @Override
   public DistributedMember getOwnerForKey(KeyInfo key) {
-    //Asif: fix for  sqlfabric bug 42266
     assert !this.isInternalRegion() || this.isMetaRegionWithTransactions();
     if (!this.getAttributes().getDataPolicy().withStorage()
         || (this.concurrencyChecksEnabled && this.getAttributes()
@@ -4032,8 +4000,7 @@ public class DistributedRegion extends LocalRegion implements
       if (this.randIndex < 0) {
         this.randIndex = PartitionedRegion.rand.nextInt(numProfiles);
       }
-      if (cp.dataPolicy.withReplication() && cp.regionInitialized
-          && !cp.memberUnInitialized) {
+      if (cp.dataPolicy.withReplication() && cp.regionInitialized) {
         if (onlyPersistent && !cp.dataPolicy.withPersistence()) {
           return true;
         }

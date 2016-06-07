@@ -186,7 +186,6 @@ public class PureLogWriter extends LogWriterImpl {
         return sw.toString();
     }
 
-    // split out header writing portion for SQLFabric logging
     protected void printHeader(PrintWriter pw, int msgLevel, Date msgDate,
         String connectionName, String threadName, long tid) {
       pw.println();
@@ -208,7 +207,6 @@ public class PureLogWriter extends LogWriterImpl {
       pw.print("] ");
     }
 
-    // made public for use by SQLFabric logging
     public String put(int msgLevel, Date msgDate, String connectionName,
         String threadName, long tid, String msg, String exceptionText) {
         String result = formatLogLine(msgLevel, msgDate, connectionName

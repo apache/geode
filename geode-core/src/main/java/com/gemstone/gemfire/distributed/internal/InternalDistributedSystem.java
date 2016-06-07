@@ -184,9 +184,6 @@ public class InternalDistributedSystem
    * a live locator can be contacted.
    */
   private QuorumChecker quorumChecker;
-  
-  /** sqlfire disconnect listener */
-  private DisconnectListener sqlfDisconnectListener;
 
   /**
    * A Constant that matches the ThreadGroup name of the shutdown hook.
@@ -2115,40 +2112,6 @@ public class InternalDistributedSystem
       }
     }
   }
-  
-  /**
-   * sqlfire's disconnect listener is invoked before the cache is closed when
-   * there is a forced disconnect
-   */
-  public void setSqlfForcedDisconnectListener(DisconnectListener listener) {
-    synchronized(this.listeners) { 
-      this.sqlfDisconnectListener = listener;
-    }
-  }
-  
-  private void notifySqlfForcedDisconnectListener() {
-    if (this.sqlfDisconnectListener != null) {
-      final boolean isDebugEnabled = logger.isDebugEnabled();
-      try {
-        if (isDebugEnabled) {
-          logger.debug("notifying sql disconnect listener");
-        }
-        this.sqlfDisconnectListener.onDisconnect(this);
-      } catch (VirtualMachineError e) {
-        SystemFailure.initiateFailure(e);
-        throw e;
-      } catch (Throwable e) {
-        SystemFailure.checkFailure();
-        // TODO: should these be logged or ignored?  We need to see them
-        logger.info("", e);
-      }
-      if (isDebugEnabled) {
-        logger.debug("finished notifying sql disconnect listener");
-      }
-    }
-  }
-  
-  
 
   /**
    * Makes note of a <code>DisconnectListener</code> whose
@@ -2485,12 +2448,9 @@ public class InternalDistributedSystem
           }
 
           if (isDebugEnabled) {
-            logger.debug("tryReconnect: forcedDisconnect={} sqlf listener={}", forcedDisconnect, this.sqlfDisconnectListener);
+            logger.debug("tryReconnect: forcedDisconnect={}", forcedDisconnect);
           }
           if (forcedDisconnect) {
-            // allow the fabric-service to stop before dismantling everything
-            notifySqlfForcedDisconnectListener();
-
             if (config.getDisableAutoReconnect()) {
               if (isDebugEnabled) {
                 logger.debug("tryReconnect: auto reconnect after forced disconnect is disabled");
@@ -2717,7 +2677,6 @@ public class InternalDistributedSystem
 
         DM newDM = this.reconnectDS.getDistributionManager();
         if (newDM instanceof DistributionManager) {
-          // sqlfire will have already replayed DDL and recovered.
           // Admin systems don't carry a cache, but for others we can now create
           // a cache
           if (((DistributionManager)newDM).getDMType() != DistributionManager.ADMIN_ONLY_DM_TYPE) {

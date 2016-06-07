@@ -123,9 +123,6 @@ public final class RemoteContainsKeyValueMessage extends RemoteOperationMessageW
       r.waitOnInitialization(); // bug #43371 - accessing a region before it's initialized
     }
 
-    if (r.keyRequiresRegionContext()) {
-      ((KeyWithRegionContext)this.key).setRegionContext(r);
-    }
     final boolean replyVal;
         if (this.valueCheck) {
           replyVal = r.containsValueForKey(this.key);

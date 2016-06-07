@@ -33,7 +33,6 @@ public class OffHeapHelper {
   
   /**
    * If o is off-heap then return its heap form; otherwise return o since it is already on the heap.
-   * Note even if o is sqlf off-heap byte[] or byte[][] the heap form will be created.
    */
   public static Object getHeapForm(Object o) {
     if (o instanceof StoredObject) {

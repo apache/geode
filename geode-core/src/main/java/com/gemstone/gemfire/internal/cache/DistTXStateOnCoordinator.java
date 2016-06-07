@@ -359,7 +359,7 @@ public final class DistTXStateOnCoordinator extends DistTXState implements
         postPutAll(dtop.getPutAllOperation(), versions, dtop.region);
       } else {
         result = putEntry(dtop, false/* ifNew */,
-          dtop.hasDelta()/* ifOld */, null/* expectedOldValue */,
+          false/* ifOld */, null/* expectedOldValue */,
           false/* requireOldValue */, 0L/* lastModified */, true/*
                                                                  * overwriteDestroyed
                                                                  * *not*

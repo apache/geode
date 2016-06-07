@@ -159,7 +159,6 @@ public abstract class AbstractExecution implements InternalExecution {
   }
   
   protected AbstractExecution() {
-    this.hasRoutingObjects = false;
   }
 
   protected AbstractExecution(AbstractExecution ae) {
@@ -173,7 +172,6 @@ public abstract class AbstractExecution implements InternalExecution {
       this.memberMappedArg = ae.memberMappedArg;
     }
     this.isMemberMappedArgument = ae.isMemberMappedArgument;
-    this.hasRoutingObjects = ae.hasRoutingObjects;
     this.isClientServerMode = ae.isClientServerMode;
     if (ae.proxyCache != null) {
       this.proxyCache = ae.proxyCache;
@@ -211,24 +209,8 @@ public abstract class AbstractExecution implements InternalExecution {
     return this.rc;
   }
 
-  public AbstractExecution withRoutingObjects(Set<Object> routingObjects) {
-    if (routingObjects == null) {
-      throw new FunctionException(
-          LocalizedStrings.FunctionService_ROUTING_OBJECTS_SET_IS_NULL
-              .toLocalizedString());
-    }
-    this.filter.clear();
-    this.filter.addAll(routingObjects);
-    this.hasRoutingObjects = true;
-    return this;
-  }
-
   public Set getFilter() {
     return this.filter;
-  }
-
-  public boolean hasRoutingObjects() {
-    return this.hasRoutingObjects;
   }
 
   public AbstractExecution setIsReExecute() {

@@ -810,7 +810,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
           }
           GatewaySenderEventCallbackArgument geCallbackArg = new GatewaySenderEventCallbackArgument(
               event.getRawCallbackArgument(), this.sender.getMyDSId(),
-              allRemoteDSIds, true);
+              allRemoteDSIds);
           event.setCallbackArgument(geCallbackArg);
           GatewaySenderEventImpl pdxSenderEvent = new GatewaySenderEventImpl(
               EnumListenerEvent.AFTER_UPDATE, event, null); // OFFHEAP: event for pdx type meta data so it should never be off-heap

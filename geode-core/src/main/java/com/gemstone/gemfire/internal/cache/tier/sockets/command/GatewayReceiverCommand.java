@@ -39,7 +39,6 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.EventIDHolder;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.KeyWithRegionContext;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
@@ -320,9 +319,6 @@ public class GatewayReceiverCommand extends BaseCommand {
             try {
               byte[] value = valuePart.getSerializedForm();
               boolean isObject = valuePart.isObject();
-              if (region.keyRequiresRegionContext()) {
-                ((KeyWithRegionContext)key).setRegionContext(region);
-              }
               // [sumedh] This should be done on client while sending
               // since that is the WAN gateway
               AuthorizeRequest authzRequest = servConn.getAuthzRequest();
@@ -428,9 +424,6 @@ public class GatewayReceiverCommand extends BaseCommand {
             try {
               byte[] value = valuePart.getSerializedForm();
               boolean isObject = valuePart.isObject();
-              if (region.keyRequiresRegionContext()) {
-                ((KeyWithRegionContext)key).setRegionContext(region);
-              }
               AuthorizeRequest authzRequest = servConn.getAuthzRequest();
               if (authzRequest != null) {
                 PutOperationContext putContext = authzRequest.putAuthorize(
@@ -523,9 +516,6 @@ public class GatewayReceiverCommand extends BaseCommand {
             }
             handleMessageRetry(region, clientEvent);
             // Destroy the entry
-            if (region.keyRequiresRegionContext()) {
-              ((KeyWithRegionContext)key).setRegionContext(region);
-            }
             try {
               AuthorizeRequest authzRequest = servConn.getAuthzRequest();
               if (authzRequest != null) {
@@ -606,9 +596,6 @@ public class GatewayReceiverCommand extends BaseCommand {
               }
               
               // Update the version tag
-              if (region.keyRequiresRegionContext()) {
-                ((KeyWithRegionContext) key).setRegionContext(region);
-              }
               try {
 
                 region.basicBridgeUpdateVersionStamp(key, callbackArg, servConn.getProxyID(), false, clientEvent);

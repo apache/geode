@@ -17,7 +17,6 @@
 
 package com.gemstone.gemfire.internal.shared;
 
-import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -38,21 +37,17 @@ import com.gemstone.gemfire.SystemFailure;
  * Encapsulates native C/C++ calls via JNA. To obtain an instance of
  * implementation for a platform, use {@link NativeCalls#getInstance()}.
  * 
- * This class is also referenced by ODBC/.NET drivers so it should not refer to
- * any classes other than standard JDK or those within the same package.
- * 
  * @since GemFire 8.0
  */
 public abstract class NativeCalls {
 
   /**
    * Static instance of NativeCalls implementation. This can be one of JNA
-   * implementations in <code>NativeCallsJNAImpl</code> or can fallback to a
+   * implementations in <code>NativeCallsJNAImpl</code> or can fall back to a
    * generic implementation in case JNA is not available for the platform.
    * 
-   * Note: this variable is deliberately not final since other drivers like
-   * those for ADO.NET or ODBC will plugin their own native implementations of
-   * NativeCalls.
+   * Note: this variable is deliberately not final so that other clients 
+   * can plug in their own native implementations of NativeCalls.
    */
   protected static NativeCalls instance;
 
@@ -60,7 +55,7 @@ public abstract class NativeCalls {
     NativeCalls inst;
     try {
       // try to load JNA implementation first
-      // we do it via reflection since some clients like ADO.NET/ODBC
+      // we do it via reflection since some clients
       // may not have it
       final Class<?> c = Class
           .forName("com.gemstone.gemfire.internal.shared.NativeCallsJNAImpl");
@@ -73,24 +68,8 @@ public abstract class NativeCalls {
       inst = null;
     }
     if (inst == null) {
-      // In case JNA implementations cannot be loaded, fallback to generic
-      // implementations.
-      // Other clients like ADO.NET/ODBC will plugin their own implementations.
-      try {
-        // using reflection to get the implementation based on OSProcess
-        // since this is also used by GemFireXD client; at some point all the
-        // functionality of OSProcess should be folded into the JNA impl
-        final Class<?> c = Class
-            .forName("com.gemstone.gemfire.internal.OSProcess$NativeOSCalls");
-        inst = (NativeCalls)c.newInstance();
-      } catch (VirtualMachineError e) {
-        SystemFailure.initiateFailure(e);
-        throw e;
-      } catch (Throwable t) {
-        SystemFailure.checkFailure();
-        // fallback to generic impl in case of a problem
-        inst = new NativeCallsGeneric();
-      }
+      // fall back to generic implementation in case of a problem
+      inst = new NativeCallsGeneric();
     }
     instance = inst;
   }

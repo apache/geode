@@ -447,7 +447,7 @@ public class DistTXState extends TXState {
         postPutAll(dtop.getPutAllOperation(), versions, dtop.region);
       } else {
         result = putEntryOnRemote(dtop, false/* ifNew */,
-          dtop.hasDelta()/* ifOld */, null/* expectedOldValue */,
+          false/* ifOld */, null/* expectedOldValue */,
           false/* requireOldValue */, 0L/* lastModified */, true/*
                                                                  * overwriteDestroyed
                                                                  * *not*
@@ -572,7 +572,7 @@ public class DistTXState extends TXState {
           @Released EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(theRegion,
               myId, myId, i, putallOp.putAllData, false, putallOp
                   .getBaseEvent().getContext(), false, !putallOp.getBaseEvent()
-                  .isGenerateCallbacks(), false);
+                  .isGenerateCallbacks());
           try {
 //            ev.setPutAllOperation(putallOp);
             

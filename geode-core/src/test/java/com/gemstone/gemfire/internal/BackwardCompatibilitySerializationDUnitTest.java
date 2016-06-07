@@ -167,15 +167,6 @@ public class BackwardCompatibilitySerializationDUnitTest extends CacheTestCase {
     constdsfids.add(new Byte(DataSerializableFixedID.RESULTS_BAG).intValue());
     constdsfids.add(new Byte(DataSerializableFixedID.GATEWAY_EVENT_IMPL_66)
         .intValue());
-    constdsfids.add(new Byte(DataSerializableFixedID.SQLF_TYPE).intValue());
-    constdsfids.add(new Byte(DataSerializableFixedID.SQLF_DVD_OBJECT)
-        .intValue());
-    constdsfids.add(new Byte(DataSerializableFixedID.SQLF_GLOBAL_ROWLOC)
-        .intValue());
-    constdsfids.add(new Byte(DataSerializableFixedID.SQLF_GEMFIRE_KEY)
-        .intValue());
-    constdsfids.add(new Byte(DataSerializableFixedID.SQLF_FORMATIBLEBITSET)
-        .intValue());
     constdsfids
         .add(new Short(DataSerializableFixedID.TOKEN_INVALID).intValue());
     constdsfids.add(new Short(DataSerializableFixedID.TOKEN_LOCAL_INVALID)

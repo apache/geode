@@ -369,14 +369,7 @@ public class UpdateAttributesProcessor {
       // set the processor ID to be able to send reply to sender in case of any
       // unexpected exception during deserialization etc.
       ReplyProcessor21.setMessageRPId(this.processorId);
-      try {
-        this.profile = DataSerializer.readObject(in);
-      } catch (DSFIDFactory.SqlfSerializationException ex) {
-        // Ignore SQLFabric serialization errors and reply with nothing.
-        // This can happen even during normal startup of all SQLFabric VMs
-        // when DS connect is complete but SQLFabric boot is still in progress.
-        this.profile = null;
-      }
+      this.profile = DataSerializer.readObject(in);
       this.exchangeProfiles = in.readBoolean();
       this.removeProfile = in.readBoolean();
     }

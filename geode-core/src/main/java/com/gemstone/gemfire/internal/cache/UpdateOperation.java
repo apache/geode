@@ -100,11 +100,7 @@ public class UpdateOperation extends AbstractUpdateOperation
     m.event = ev;
     m.eventId = ev.getEventId();
     m.key = ev.getKey();
-    if (CachedDeserializableFactory.preferObject() || ev.hasDelta()) {
-      m.deserializationPolicy = DESERIALIZATION_POLICY_EAGER;
-    } else {
-      m.deserializationPolicy = DESERIALIZATION_POLICY_LAZY;
-    }
+    m.deserializationPolicy = DESERIALIZATION_POLICY_LAZY;
     ev.exportNewValue(m);
   }
 
@@ -297,8 +293,7 @@ public class UpdateOperation extends AbstractUpdateOperation
      */
     static void setNewValueInEvent(byte[] newValue, Object newValueObj,
         EntryEventImpl event, byte deserializationPolicy) {
-      if (newValue == null
-          && deserializationPolicy != DESERIALIZATION_POLICY_EAGER) {
+      if (newValue == null) {
         // in an UpdateMessage this results from a create(key, null) call,
         // set local invalid flag in event if this is a normal region. Otherwise
         // it should be a distributed invalid.
@@ -317,9 +312,6 @@ public class UpdateOperation extends AbstractUpdateOperation
         case DESERIALIZATION_POLICY_NONE:
           event.setNewValue(newValue);
           break;
-        case DESERIALIZATION_POLICY_EAGER:
-          event.setNewValue(newValueObj);
-          break;
         default:
           throw new InternalGemFireError(LocalizedStrings
               .UpdateOperation_UNKNOWN_DESERIALIZATION_POLICY_0
@@ -332,10 +324,6 @@ public class UpdateOperation extends AbstractUpdateOperation
     {
       Object argNewValue = null;
       final boolean originRemote = true, generateCallbacks = true;
-
-      if (rgn.keyRequiresRegionContext()) {
-        ((KeyWithRegionContext)this.key).setRegionContext(rgn);
-      }
       @Retained EntryEventImpl result = EntryEventImpl.create(rgn, getOperation(), this.key,
           argNewValue, // oldValue,
           this.callbackArg, originRemote, getSender(), generateCallbacks);
@@ -413,13 +401,7 @@ public class UpdateOperation extends AbstractUpdateOperation
         this.deltaBytes = DataSerializer.readByteArray(in);
       }
       else {
-        if (this.deserializationPolicy
-            == DistributedCacheOperation.DESERIALIZATION_POLICY_EAGER) {
-          this.newValueObj = DataSerializer.readObject(in);
-        }
-        else {
-          this.newValue = DataSerializer.readByteArray(in);
-        }
+        this.newValue = DataSerializer.readByteArray(in);
         if ((extraFlags & HAS_DELTA_WITH_FULL_VALUE) != 0) {
           this.deltaBytes = DataSerializer.readByteArray(in);
         }
@@ -500,13 +482,7 @@ public class UpdateOperation extends AbstractUpdateOperation
       byte[] valueBytes = null;
       Object valueObj = null;
       if (this.newValueObj != null) {
-        if (this.deserializationPolicy ==
-          DistributedCacheOperation.DESERIALIZATION_POLICY_EAGER) {
-          valueObj = this.newValueObj;
-        }
-        else {
-          valueBytes = EntryEventImpl.serialize(this.newValueObj);
-        }
+        valueBytes = EntryEventImpl.serialize(this.newValueObj);
       }
       else {
         valueBytes = this.newValue;
@@ -576,10 +552,6 @@ public class UpdateOperation extends AbstractUpdateOperation
       // boolean localLoad = false, netLoad = false, netSearch = false,
       // distributed = true;
       final boolean originRemote = true, generateCallbacks = true;
-
-      if (rgn.keyRequiresRegionContext()) {
-        ((KeyWithRegionContext)this.key).setRegionContext(rgn);
-      }
       @Retained EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), this.key,
           argNewValue, this.callbackArg, originRemote, getSender(),
           generateCallbacks);

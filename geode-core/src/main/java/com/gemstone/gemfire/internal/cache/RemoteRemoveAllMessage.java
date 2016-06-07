@@ -267,10 +267,6 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
       EntryVersionsList versionTags = new EntryVersionsList(removeAllDataCount);
 
       boolean hasTags = false;
-      // get the "keyRequiresRegionContext" flag from first element assuming
-      // all key objects to be uniform
-      final boolean requiresRegionContext =
-        (this.removeAllData[0].key instanceof KeyWithRegionContext);
       for (int i = 0; i < this.removeAllDataCount; i++) {
         if (!hasTags && removeAllData[i].versionTag != null) {
           hasTags = true;
@@ -278,7 +274,7 @@ public final class RemoteRemoveAllMessage extends RemoteOperationMessageWithDire
         VersionTag<?> tag = removeAllData[i].versionTag;
         versionTags.add(tag);
         removeAllData[i].versionTag = null;
-        this.removeAllData[i].toData(out, requiresRegionContext);
+        this.removeAllData[i].toData(out);
         this.removeAllData[i].versionTag = tag;
       }
 

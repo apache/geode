@@ -118,9 +118,6 @@ public final class RemoteGetMessage extends RemoteOperationMessageWithDirectRepl
     RawValue valueBytes;
     Object val = null;
       try {
-        if (r.keyRequiresRegionContext()) {
-          ((KeyWithRegionContext)this.key).setRegionContext(r);
-        }
         KeyInfo keyInfo = r.getKeyInfo(key, cbArg);
         val = r.getDataView().getSerializedValue(r, keyInfo, false, this.context, null, false /*for replicate regions*/);
         valueBytes = val instanceof RawValue ? (RawValue)val : new RawValue(val);

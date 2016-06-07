@@ -96,14 +96,10 @@ WrappedCallbackArgument implements DataSerializableFixedID {
    * @param originalReceivers
    *          The list of <code>Gateway</code> s to which the event has been
    *          originally sent
-   * @param serializeCBArg
-   *          boolean indicating whether to serialize callback argument
-   * 
    */
   public GatewaySenderEventCallbackArgument(Object originalCallbackArg,
-      int originatingDSId, List<Integer> originalReceivers,
-      boolean serializeCBArg) {
-    super(originalCallbackArg, serializeCBArg);
+      int originatingDSId, List<Integer> originalReceivers) {
+    super(originalCallbackArg);
     this.originatingDSId = originatingDSId;
     initializeReceipientDSIds(originalReceivers);
   }
