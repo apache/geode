@@ -1150,11 +1150,9 @@ public class EntryEventImpl
       if (getCachedSerializedNewValue() != null) {
         importer.importNewBytes(getCachedSerializedNewValue(), true);
         return;
-      } else {
-      if (this.newValueBytes != null && this.newValue instanceof CachedDeserializable) {
+      } else if (this.newValueBytes != null && this.newValue instanceof CachedDeserializable) {
         importer.importNewBytes(this.newValueBytes, true);
         return;
-      }
       }
     }
     @Unretained(ENTRY_EVENT_NEW_VALUE) 
@@ -1163,22 +1161,16 @@ public class EntryEventImpl
       @Unretained(ENTRY_EVENT_NEW_VALUE)
       final StoredObject so = (StoredObject) nv;
       final boolean isSerialized = so.isSerialized();
-      if (so.hasRefCount()) {
-        if (importer.isUnretainedNewReferenceOk()) {
-          importer.importNewObject(nv, isSerialized);
-        } else {
-          if (!isSerialized || prefersSerialized) {
-            byte[] bytes = so.getValueAsHeapByteArray();
-            importer.importNewBytes(bytes, isSerialized);
-            if (isSerialized) {
-              setCachedSerializedNewValue(bytes);
-            }
-          } else {
-            importer.importNewObject(so.getValueAsDeserializedHeapObject(), true);
-          }
+      if (importer.isUnretainedNewReferenceOk()) {
+        importer.importNewObject(nv, isSerialized);
+      } else if (!isSerialized || prefersSerialized) {
+        byte[] bytes = so.getValueAsHeapByteArray();
+        importer.importNewBytes(bytes, isSerialized);
+        if (isSerialized) {
+          setCachedSerializedNewValue(bytes);
         }
       } else {
-        importer.importNewObject(nv, isSerialized);
+        importer.importNewObject(so.getValueAsDeserializedHeapObject(), true);
       }
     } else if (nv instanceof byte[]) {
       importer.importNewBytes((byte[])nv, false);
@@ -1248,18 +1240,12 @@ public class EntryEventImpl
     if (ov instanceof StoredObject) {
       final StoredObject so = (StoredObject) ov;
       final boolean isSerialized = so.isSerialized();
-      if (so.hasRefCount()) {
-        if (importer.isUnretainedOldReferenceOk()) {
-          importer.importOldObject(ov, isSerialized);
-        } else {
-          if (!isSerialized || prefersSerialized) {
-            importer.importOldBytes(so.getValueAsHeapByteArray(), isSerialized);
-          } else {
-           importer.importOldObject(so.getValueAsDeserializedHeapObject(), true);
-          }
-        }
-      } else {
+      if (importer.isUnretainedOldReferenceOk()) {
         importer.importOldObject(ov, isSerialized);
+      } else if (!isSerialized || prefersSerialized) {
+        importer.importOldBytes(so.getValueAsHeapByteArray(), isSerialized);
+      } else {
+        importer.importOldObject(so.getValueAsDeserializedHeapObject(), true);
       }
     } else if (ov instanceof byte[]) {
       importer.importOldBytes((byte[])ov, false);
