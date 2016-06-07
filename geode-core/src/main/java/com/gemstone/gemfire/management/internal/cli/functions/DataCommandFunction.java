@@ -77,6 +77,7 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.JsonUtil;
 import com.gemstone.gemfire.pdx.PdxInstance;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 
@@ -947,13 +948,9 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
     }
 
     private String addLimit(String query) {
-      boolean containsLimitOrAggregate = query.contains(" limit")
-          || query.contains(" LIMIT") || query.contains("count(*)");
-      if(!containsLimitOrAggregate){
-        String limitQuery = query + " limit " + getFetchSize();
-        return limitQuery;
-      }
-      else  return query;
+      if (StringUtils.containsIgnoreCase(query, " limit") || StringUtils.containsIgnoreCase(query, "count(*)"))
+        return query;
+      return query + " limit " + getFetchSize();
     }
   };
 
