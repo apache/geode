@@ -5,6 +5,7 @@ import java.util.Properties;
 import org.junit.Test;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest{
 
@@ -22,6 +23,6 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest{
   
   @Override
   protected void addDSProps(Properties p) {
-    p.setProperty(DistributionConfig.SECURITY_CLIENT_DHALGO_NAME, "AES:128");
+    p.setProperty(SECURITY_UDP_DHALGO, "AES:128");
   }
 }

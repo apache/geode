@@ -876,17 +876,15 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
   private void addPublickeysToView(NetView view) {
     //TODO: is this check is correct
-    if (services != null && services.getConfig() != null && services.getConfig().getDistributionConfig() != null) {
-      String sDHAlgo = services.getConfig().getDistributionConfig().getSecurityClientDHAlgo();
-      if (sDHAlgo != null && !sDHAlgo.isEmpty()) {
-        List<InternalDistributedMember> mbrs = view.getMembers();
-        Iterator<InternalDistributedMember> itr = mbrs.iterator();
+    String sDHAlgo = services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo();
+    if (sDHAlgo != null && !sDHAlgo.isEmpty()) {
+      List<InternalDistributedMember> mbrs = view.getMembers();
+      Iterator<InternalDistributedMember> itr = mbrs.iterator();
 
-        while (itr.hasNext()) {
-          InternalDistributedMember mbr = itr.next();
-          byte[] pk = services.getMessenger().getPublickey(mbr);
-          view.setPublicKey(mbr, pk);
-        }
+      while (itr.hasNext()) {
+        InternalDistributedMember mbr = itr.next();
+        byte[] pk = services.getMessenger().getPublickey(mbr);
+        view.setPublicKey(mbr, pk);
       }
     }
   }
@@ -1123,7 +1121,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         state.responses.clear();
       }
       
-      if (!services.getConfig().getDistributionConfig().getSecurityClientDHAlgo().isEmpty()) {
+      if (!services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo().isEmpty()) {
         for (InternalDistributedMember mbr : v.getMembers()) {
           Set<InternalDistributedMember> r = new HashSet<>();
           r.add(mbr);

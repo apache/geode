@@ -1202,6 +1202,11 @@ public interface ConfigurationProperties {
    */
   String SECURITY_CLIENT_DHALGO = SECURITY_PREFIX + "client-dhalgo";
   /**
+   * The static String definition of the <i>"security-udp-dhalgo"</i>
+   * property
+   */
+  String SECURITY_UDP_DHALGO = SECURITY_PREFIX + "udp-dhalgo";
+  /**
    * The static String definition of the <i>"security-log-file"</i>
    * property
    */

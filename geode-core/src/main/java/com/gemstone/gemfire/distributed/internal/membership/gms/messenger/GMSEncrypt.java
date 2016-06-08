@@ -76,7 +76,7 @@ public class GMSEncrypt implements Cloneable{
   private ConcurrentHashMap<InternalDistributedMember, PeerEncryptor>[] copyOfPeerEncryptors;
   private ClusterEncryptor[] clusterEncryptors;
   
-  private Map<InternalDistributedMember, byte[]> memberToPeerEncryptor = new ConcurrentHashMap<>();
+  private Map<GMSEncrypt.InternalDistrubtedMemberWrapper, byte[]> memberToPeerEncryptor = new ConcurrentHashMap<>();
 
   private ClusterEncryptor clusterEncryptor;
 
@@ -168,7 +168,7 @@ public class GMSEncrypt implements Cloneable{
   protected void setPublicKey(byte[] publickey, InternalDistributedMember mbr) {
     try {
       //createPeerEncryptor(mbr, publickey);
-      memberToPeerEncryptor.put(mbr, publickey);
+      memberToPeerEncryptor.put(new InternalDistrubtedMemberWrapper(mbr), publickey);
       synchronized (copyOfPeerEncryptors) {
         //remove all the existing keys..
         for(Map m : copyOfPeerEncryptors) {
@@ -211,7 +211,7 @@ public class GMSEncrypt implements Cloneable{
    */
   private void initDHKeys(DistributionConfig config) throws Exception {
 
-    dhSKAlgo = config.getSecurityClientDHAlgo();
+    dhSKAlgo = config.getSecurityUDPDHAlgo();
     // Initialize the keys when either the host is a peer that has
     // non-blank setting for DH symmetric algo, or this is a server
     // that has authenticator defined.
@@ -227,6 +227,34 @@ public class GMSEncrypt implements Cloneable{
     }
   }
 
+  static class InternalDistrubtedMemberWrapper {
+    InternalDistributedMember mbr;
+    
+    public InternalDistrubtedMemberWrapper(InternalDistributedMember m) {
+      this.mbr = m;
+    }
+
+    public InternalDistributedMember getMbr() {
+      return mbr;
+    }
+
+    @Override
+    public int hashCode() {
+      return mbr.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      InternalDistributedMember other = ((InternalDistrubtedMemberWrapper)obj).mbr;
+      return mbr.compareTo(other, false, false) == 0;
+    }
+
+    @Override
+    public String toString() {
+      return "InternalDistrubtedMemberWrapper [mbr=" + mbr + "]";
+    }        
+  }
+  
   protected PeerEncryptor getPeerEncryptor(InternalDistributedMember member) throws Exception {
     Map<InternalDistributedMember, PeerEncryptor> m = getPeerEncryptorMap();
 
@@ -235,7 +263,7 @@ public class GMSEncrypt implements Cloneable{
       synchronized (this) {
         result = m.get(member);
         if (result == null) {
-          byte[] pk = (byte[])memberToPeerEncryptor.get(member);
+          byte[] pk = (byte[])memberToPeerEncryptor.get(new InternalDistrubtedMemberWrapper(member));
           result = createPeerEncryptor(member, pk != null ? pk : (byte[]) view.getPublicKey(member));
           m.put(member, result);
         }

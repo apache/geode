@@ -581,6 +581,10 @@ public class InternalDistributedMember
   }
   
   public int compareTo(DistributedMember o, boolean checkNetMembersIfEqual) {
+    return compareTo(o, checkNetMembersIfEqual, true);
+  }
+  
+  public int compareTo(DistributedMember o, boolean checkNetMembersIfEqual, boolean verifyViewId) {
     if (this == o) {
       return 0;
     }
@@ -647,13 +651,15 @@ public class InternalDistributedMember
     }
 
     if (this.uniqueTag == null && other.uniqueTag == null) {
-      // not loners, so look at P2P view ID
-      if (this.vmViewId >= 0 && other.vmViewId >= 0) {
-        if (this.vmViewId < other.vmViewId) {
-          return -1;
-        } else if (this.vmViewId > other.vmViewId) {
-          return 1;
-        } // else they're the same, so continue
+      if (verifyViewId) {
+        // not loners, so look at P2P view ID
+        if (this.vmViewId >= 0 && other.vmViewId >= 0) {
+          if (this.vmViewId < other.vmViewId) {
+            return -1;
+          } else if (this.vmViewId > other.vmViewId) {
+            return 1;
+          } // else they're the same, so continue
+        }
       }
     } else if (this.uniqueTag == null) {
       return -1;
