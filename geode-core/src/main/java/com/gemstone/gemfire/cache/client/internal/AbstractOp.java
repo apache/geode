@@ -382,8 +382,6 @@ public abstract class AbstractOp implements Op {
         this.failed = false;
         this.timedOut = true;
         throw ste;
-      } catch(Exception e) {
-        throw e;
       }
     } finally {
       endAttempt(cnx.getStats(), start);

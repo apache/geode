@@ -265,8 +265,11 @@ public class ConnectionImpl implements Connection {
           || op instanceof ExecuteRegionFunctionSingleHopOpImpl) {
         int earliertimeout = this.getSocket().getSoTimeout();
         this.getSocket().setSoTimeout(GemFireCacheImpl.getClientFunctionTimeout());
-        result = op.attempt(this);
-        this.getSocket().setSoTimeout(earliertimeout);
+        try {
+          result = op.attempt(this);
+        } finally {
+          this.getSocket().setSoTimeout(earliertimeout);
+        }
       } else {
         result = op.attempt(this);
       }
