@@ -40,12 +40,9 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 
 /* wrapper of IndexWriter */
 public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
-  FileSystemStats fileSystemStats;
 
   public LuceneIndexForPartitionedRegion(String indexName, String regionPath, Cache cache) {
     super(indexName, regionPath, cache);
-    final String statsName = indexName + "-" + regionPath;
-    this.fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), statsName);
   }
 
   @Override
@@ -88,6 +85,9 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       if (!chunkRegionExists(chunkRegionName)) {
         chunkRegion = createChunkRegion(regionShortCut, fileRegionName, partitionAttributes, chunkRegionName);
       }
+      fileSystemStats.setFileSupplier(() -> (int) getFileRegion().getLocalSize());
+      fileSystemStats.setChunkSupplier(() -> (int) getChunkRegion().getLocalSize());
+      fileSystemStats.setBytesSupplier(() -> getChunkRegion().getPrStats().getDataStoreBytesInUse());
 
       // we will create RegionDirectories on the fly when data comes in
       HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(getFieldNames());
@@ -104,6 +104,14 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
   private PartitionedRegion getDataRegion() {
     return (PartitionedRegion) cache.getRegion(regionPath);
+  }
+
+  private PartitionedRegion getFileRegion() {
+    return (PartitionedRegion) fileRegion;
+  }
+
+  private PartitionedRegion getChunkRegion() {
+    return (PartitionedRegion) chunkRegion;
   }
 
   private AsyncEventQueueFactoryImpl createAEQFactory(final Region dataRegion) {

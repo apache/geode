@@ -46,28 +46,28 @@ import com.gemstone.gemfire.internal.logging.LogService;
 public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected static final Logger logger = LogService.getLogger();
   
-//  protected HashSet<String> searchableFieldNames = new HashSet<String>();
-  String[] searchableFieldNames;
-  protected RepositoryManager repositoryManager;
-  protected Analyzer analyzer;
-  
-  Region<String, File> fileRegion;
-  Region<ChunkKey, byte[]> chunkRegion;
-  LuceneIndexStats indexStats;
+  protected final String indexName;
+  protected final String regionPath;
+  protected final Cache cache;
+  protected final LuceneIndexStats indexStats;
+  protected final FileSystemStats fileSystemStats;
 
-  protected String indexName;
-  protected String regionPath;
   protected boolean hasInitialized = false;
   protected Map<String, Analyzer> fieldAnalyzers;
+  protected String[] searchableFieldNames;
+  protected RepositoryManager repositoryManager;
+  protected Analyzer analyzer;
+  protected Region<String, File> fileRegion;
+  protected Region<ChunkKey, byte[]> chunkRegion;
 
-  protected final Cache cache;
-  
+
   protected LuceneIndexImpl(String indexName, String regionPath, Cache cache) {
     this.indexName = indexName;
     this.regionPath = regionPath;
     this.cache = cache;
     final String statsName = indexName + "-" + regionPath;
     this.indexStats = new LuceneIndexStats(cache.getDistributedSystem(), statsName);
+    this.fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), statsName);
   }
 
   @Override
@@ -137,6 +137,14 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
 
   public void setFieldAnalyzers(Map<String, Analyzer> fieldAnalyzers) {
     this.fieldAnalyzers = fieldAnalyzers == null ? null : Collections.unmodifiableMap(fieldAnalyzers);
+  }
+
+  public LuceneIndexStats getIndexStats() {
+    return indexStats;
+  }
+
+  public FileSystemStats getFileSystemStats() {
+    return fileSystemStats;
   }
 
   protected abstract void initialize();

@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.IntSupplier;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
@@ -38,6 +39,7 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.gemstone.gemfire.cache.Region;
@@ -151,6 +153,16 @@ public class IndexRepositoryImplJUnitTest {
     checkQuery("Cream", "s", "key2", "key4");
     verify(stats, times(1)).startQuery();
     verify(stats, times(1)).endQuery(anyLong(), eq(2));
+  }
+
+  @Test
+  public void addingDocumentsShouldUpdateDocumentsStat() throws IOException {
+    repo.create("key1", new Type2("bar", 1, 2L, 3.0, 4.0f, "Grape Ape doughnut"));
+    repo.commit();
+    ArgumentCaptor<IntSupplier> captor = ArgumentCaptor.forClass(IntSupplier.class);
+    verify(stats).addDocumentsSuppplier(captor.capture());
+    IntSupplier supplier = captor.getValue();
+    assertEquals(1, supplier.getAsInt());
   }
 
   private void updateAndRemove(Object key1, Object key2, Object key3,

@@ -18,6 +18,9 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal.filesystem;
 
+import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
+
 import com.gemstone.gemfire.StatisticDescriptor;
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsFactory;
@@ -38,6 +41,9 @@ public class FileSystemStats {
   private static final int temporaryFileCreatesId;
   private static final int fileDeletesId;
   private static final int fileRenamesId;
+  private static final int filesId;
+  private static final int chunksId;
+  private static final int bytesId;
 
   static {
     final StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
@@ -47,10 +53,13 @@ public class FileSystemStats {
       new StatisticDescriptor[] {
         f.createLongCounter("readBytes", "Number of bytes written", "bytes"),
         f.createLongCounter("writtenBytes", "Number of bytes read", "bytes"),
-        f.createIntCounter("fileCreates", "Number files created", "files"),
-        f.createIntCounter("temporaryFileCreates", "Number temporary files created", "files"),
-        f.createIntCounter("fileDeletes", "Number files deleted", "files"),
-        f.createIntCounter("fileRenames", "Number files renamed", "files"),
+        f.createIntCounter("fileCreates", "Number of files created", "files"),
+        f.createIntCounter("temporaryFileCreates", "Number of temporary files created", "files"),
+        f.createIntCounter("fileDeletes", "Number of files deleted", "files"),
+        f.createIntCounter("fileRenames", "Number of files renamed", "files"),
+        f.createIntGauge("files", "Number of files on this member", "files"),
+        f.createIntGauge("chunks", "Number of file chunks on this member", "chunks"),
+        f.createLongGauge("bytes", "Number of bytes on this member", "bytes"),
       }
     );
 
@@ -60,6 +69,9 @@ public class FileSystemStats {
     temporaryFileCreatesId = statsType.nameToId("temporaryFileCreates");
     fileDeletesId = statsType.nameToId("fileDeletes");
     fileRenamesId = statsType.nameToId("fileRenames");
+    filesId = statsType.nameToId("files");
+    chunksId = statsType.nameToId("chunks");
+    bytesId = statsType.nameToId("bytes");
   }
 
   public FileSystemStats(StatisticsFactory f, String name) {
@@ -88,5 +100,29 @@ public class FileSystemStats {
 
   public void incFileRenames(final int delta) {
     stats.incInt(fileRenamesId,delta);
+  }
+
+  public void setFileSupplier(IntSupplier supplier) {
+    stats.setIntSupplier(filesId, supplier);
+  }
+
+  public int getFiles() {
+    return stats.getInt(filesId);
+  }
+
+  public void setChunkSupplier(IntSupplier supplier) {
+    stats.setIntSupplier(chunksId, supplier);
+  }
+
+  public int getChunks() {
+    return stats.getInt(chunksId);
+  }
+
+  public void setBytesSupplier(LongSupplier supplier) {
+    stats.setLongSupplier(bytesId, supplier);
+  }
+
+  public long getBytes() {
+    return stats.getLong(bytesId);
   }
 }

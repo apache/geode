@@ -18,11 +18,16 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
+
+import java.util.function.IntSupplier;
 
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.StatisticsType;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystemJUnitTest;
+import com.gemstone.gemfire.management.internal.cli.parser.Argument;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 import org.junit.Before;
@@ -88,9 +93,15 @@ public class LuceneIndexStatsJUnitTest {
   }
 
   @Test
-  public void shouldIncrementDocumentStat() {
-    stats.incDocuments(5);
-    verifyIncInt("documents", 5);
+  public void shouldPollSuppliersForDocumentStat() {
+    stats.addDocumentsSuppplier(() -> 5);
+    stats.addDocumentsSuppplier(() -> 3);
+
+    int documentsId = type.nameToId("documents");
+    ArgumentCaptor<IntSupplier> documentsSupplierCaptor = ArgumentCaptor.forClass(IntSupplier.class);
+    verify(statistics).setIntSupplier(eq(documentsId), documentsSupplierCaptor.capture());
+    IntSupplier documentsSuppler = documentsSupplierCaptor.getValue();
+    assertEquals(8, documentsSuppler.getAsInt());
   }
 
   private void verifyIncInt(final String statName, final int value) {

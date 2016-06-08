@@ -20,11 +20,14 @@ package com.gemstone.gemfire.cache.lucene.internal;
 
 import static com.gemstone.gemfire.distributed.internal.DistributionStats.getStatTime;
 
+import java.util.function.IntSupplier;
+
 import com.gemstone.gemfire.StatisticDescriptor;
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.StatisticsType;
 import com.gemstone.gemfire.StatisticsTypeFactory;
+import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 
 public class LuceneIndexStats {
@@ -46,6 +49,7 @@ public class LuceneIndexStats {
   private static final int documentsId;
 
   private final Statistics stats;
+  private final CopyOnWriteHashSet<IntSupplier> documentsSuppliers = new CopyOnWriteHashSet<>();
 
   static {
     final StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
@@ -82,6 +86,7 @@ public class LuceneIndexStats {
 
   public LuceneIndexStats(StatisticsFactory f, String name) {
     this.stats = f.createAtomicStatistics(statsType, name);
+    stats.setIntSupplier(documentsId, this::computeDocumentCount);
   }
 
   /**
@@ -133,7 +138,22 @@ public class LuceneIndexStats {
     stats.incInt(commitsId, 1);
   }
 
-  public void incDocuments(int delta) {
-    stats.incInt(documentsId, delta);
+  public void addDocumentsSuppplier(IntSupplier supplier) {
+    this.documentsSuppliers.add(supplier);
   }
+
+  public void removeDocumentsSupplier(IntSupplier supplier) {
+    this.documentsSuppliers.remove(supplier);
+  }
+
+  public int getDocuments() {
+    return this.stats.getInt(documentsId);
+  }
+
+  private int computeDocumentCount() {
+    return this.documentsSuppliers.stream()
+      .mapToInt(IntSupplier::getAsInt)
+      .sum();
+  }
+
 }

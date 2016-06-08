@@ -32,6 +32,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
 
 import java.io.IOException;
+import java.util.function.IntSupplier;
 
 /**
  * A repository that writes to a single lucene index writer
@@ -56,6 +57,7 @@ public class IndexRepositoryImpl implements IndexRepository {
     searcherManager = new SearcherManager(writer, APPLY_ALL_DELETES, true, null);
     this.serializer = serializer;
     this.stats = stats;
+    stats.addDocumentsSuppplier(new DocumentCountSupplier());
   }
 
   @Override
@@ -144,5 +146,16 @@ public class IndexRepositoryImpl implements IndexRepository {
   @Override
   public boolean isClosed() {
     return region.isDestroyed();
+  }
+
+  private class DocumentCountSupplier implements IntSupplier {
+    @Override
+    public int getAsInt() {
+      if(isClosed()) {
+        stats.removeDocumentsSupplier(this);
+        return 0;
+      }
+      return writer.numDocs();
+    }
   }
 }
