@@ -18,7 +18,6 @@
 package com.gemstone.gemfire.distributed.internal;
 
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
 import com.gemstone.gemfire.internal.Config;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
@@ -31,6 +30,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.*;
+
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Provides accessor (and in some cases mutator) methods for the
@@ -48,7 +49,7 @@ import java.util.*;
  *
  * @since GemFire 2.1
  */
-public interface DistributionConfig extends Config, LogConfig, DistributedSystemConfigProperties {
+public interface DistributionConfig extends Config, LogConfig {
 
   ////////////////////  Instance Methods  ////////////////////
 
@@ -872,7 +873,7 @@ public interface DistributionConfig extends Config, LogConfig, DistributedSystem
   /**
    * The name of the "SSLEnabled" property
    *
-   * @deprecated as of 8.0 use {@link #CLUSTER_SSL_ENABLED} instead.
+   * @deprecated as of 8.0 use {@link #CLUSTER_SSL_ENABLED_NAME} instead.
    */
   @ConfigAttribute(type = Boolean.class)
   String SSL_ENABLED_NAME = SSL_ENABLED;
@@ -917,7 +918,7 @@ public interface DistributionConfig extends Config, LogConfig, DistributedSystem
   /**
    * The name of the "SSLProtocols" property
    *
-   * @deprecated as of 8.0 use {@link #CLUSTER_SSL_PROTOCOLS} instead.
+   * @deprecated as of 8.0 use {@link #CLUSTER_SSL_PROTOCOLS_NAME} instead.
    */
   @ConfigAttribute(type = String.class)
   String SSL_PROTOCOLS_NAME = SSL_PROTOCOLS;
@@ -952,7 +953,7 @@ public interface DistributionConfig extends Config, LogConfig, DistributedSystem
   /**
    * The name of the "SSLCiphers" property
    *
-   * @deprecated as of 8.0 use {@link #CLUSTER_SSL_CIPHERS} instead.
+   * @deprecated as of 8.0 use {@link #CLUSTER_SSL_CIPHERS_NAME} instead.
    */
   @ConfigAttribute(type = String.class)
   String SSL_CIPHERS_NAME = SSL_CIPHERS;
@@ -987,7 +988,7 @@ public interface DistributionConfig extends Config, LogConfig, DistributedSystem
   /**
    * The name of the "SSLRequireAuthentication" property
    *
-   * @deprecated as of 8.0 use {@link #CLUSTER_SSL_REQUIRE_AUTHENTICATION} instead.
+   * @deprecated as of 8.0 use {@link #CLUSTER_SSL_REQUIRE_AUTHENTICATION_NAME} instead.
    */
   @ConfigAttribute(type = Boolean.class)
   String SSL_REQUIRE_AUTHENTICATION_NAME = SSL_REQUIRE_AUTHENTICATION;
@@ -2434,9 +2435,6 @@ public interface DistributionConfig extends Config, LogConfig, DistributedSystem
    */
   void setSecurity(String attName, String attValue);
 
-  /**
-   * For the "security-" prefixed properties
-   */
   String SECURITY_PREFIX_NAME = SECURITY_PREFIX;
 
   /**
@@ -3056,7 +3054,7 @@ public interface DistributionConfig extends Config, LogConfig, DistributedSystem
   /**
    * The name of the "jmx-manager-http-port" property.
    *
-   * @deprecated as of 8.0 use {@link #HTTP_SERVICE_PORT} instead.
+   * @deprecated as of 8.0 use {{@link #HTTP_SERVICE_PORT_NAME} instead.
    */
   @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
   String JMX_MANAGER_HTTP_PORT_NAME = JMX_MANAGER_HTTP_PORT;

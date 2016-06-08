@@ -233,7 +233,7 @@ public class GeodeSecurityUtil {
     if(securityProps==null)
       return;
 
-    String shiroConfig = securityProps.getProperty(DistributionConfig.SECURITY_SHIRO_INIT);
+    String shiroConfig = securityProps.getProperty(SECURITY_SHIRO_INIT);
     String customAuthenticator =securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
     if (!com.gemstone.gemfire.internal.lang.StringUtils.isBlank(shiroConfig)) {
       IniSecurityManagerFactory factory = new IniSecurityManagerFactory("classpath:"+shiroConfig);
