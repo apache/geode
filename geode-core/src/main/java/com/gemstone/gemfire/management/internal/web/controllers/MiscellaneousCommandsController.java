@@ -208,9 +208,11 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
 
   @RequestMapping(method = RequestMethod.POST, value = "/shutdown")
   @ResponseBody
-  public String shutdown(@RequestParam(value = CliStrings.SHUTDOWN__TIMEOUT, defaultValue = "-1") final Integer timeout) {
+  public String shutdown(@RequestParam(value = CliStrings.SHUTDOWN__TIMEOUT, defaultValue = "-1") final Integer timeout,
+                         @RequestParam(value = CliStrings.INCLUDE_LOCATORS, defaultValue = "false") final boolean includeLocators) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.SHUTDOWN);
     command.addOption(CliStrings.SHUTDOWN__TIMEOUT, String.valueOf(timeout));
+    command.addOption(CliStrings.INCLUDE_LOCATORS, String.valueOf(includeLocators));
     return processCommand(command.toString());
   }
 
