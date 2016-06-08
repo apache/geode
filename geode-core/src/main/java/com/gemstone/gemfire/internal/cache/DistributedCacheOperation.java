@@ -43,6 +43,7 @@ import com.gemstone.gemfire.cache.EntryNotFoundException;
 import com.gemstone.gemfire.cache.Operation;
 import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
+import com.gemstone.gemfire.cache.query.internal.cq.ServerCQ;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.DirectReplyProcessor;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -59,12 +60,14 @@ import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.CopyOnWriteHashSet;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation.PutAllMessage;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl.OldValueImporter;
 import com.gemstone.gemfire.internal.cache.FilterRoutingInfo.FilterInfo;
 import com.gemstone.gemfire.internal.cache.UpdateOperation.UpdateMessage;
 import com.gemstone.gemfire.internal.cache.partitioned.PartitionMessage;
 import com.gemstone.gemfire.internal.cache.persistence.PersistentMemberID;
+import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.versions.DiskVersionTag;
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
@@ -632,6 +635,10 @@ public abstract class DistributedCacheOperation {
         }
       }
 
+      if (region.isUsedForPartitionedRegionBucket() && filterRouting != null) {
+        removeDestroyTokensFromCqResultKeys(filterRouting);
+      }
+
     } catch (CancelException e) {
       if (logger.isDebugEnabled()) {
         logger.debug("distribution of message aborted by shutdown: {}", this);
@@ -650,6 +657,51 @@ public abstract class DistributedCacheOperation {
       }
     }
   }
+
+
+  /**
+   * Cleanup destroyed events in CQ result cache for remote CQs.
+   * While maintaining the CQ results key caching. the destroy event
+   * keys are marked as destroyed instead of removing them, this is
+   * to take care, arrival of duplicate events. The key marked as
+   * destroyed are  removed after the event is placed in clients 
+   * HAQueue or distributed to the peers.
+   *
+   * This is similar to CacheClientNotifier.removeDestroyTokensFromCqResultKeys()
+   * where the destroyed events for local CQs are handled.
+   */
+  private void removeDestroyTokensFromCqResultKeys(FilterRoutingInfo filterRouting) {
+    for (InternalDistributedMember m : filterRouting.getMembers()) {
+      FilterInfo filterInfo = filterRouting.getFilterInfo(m);
+      if (filterInfo.getCQs() == null) {
+        continue;
+      }
+
+      CacheProfile cf = (CacheProfile) ((BucketRegion)getRegion()).getPartitionedRegion()
+          .getCacheDistributionAdvisor().getProfile(m);
+
+      if (cf == null || cf.filterProfile == null || cf.filterProfile.isLocalProfile() 
+          || cf.filterProfile.getCqMap().isEmpty()) {
+        continue;
+      }
+
+
+      for (Object value : cf.filterProfile.getCqMap().values()) {
+        ServerCQ cq = (ServerCQ)value;
+
+        for (Map.Entry<Long, Integer> e: filterInfo.getCQs().entrySet()) {
+          Long cqID = e.getKey();
+          // For the CQs satisfying the event with destroy CQEvent, remove
+          // the entry form CQ cache.
+          if (cq.getFilterID() == cqID && (e.getValue().equals(Integer.valueOf(
+              MessageType.LOCAL_DESTROY)))) {
+            cq.removeFromCqResultKeys(((EntryEventImpl)event).getKey(), true);
+          }
+        }
+      }
+    }
+  }
+
 
   /**
    * Get the adjunct receivers for a partitioned region operation
