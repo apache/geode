@@ -20,10 +20,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
-import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -281,12 +280,7 @@ public class Gfsh extends JLineShell {
   private void initializeEnvironment() {
     env.put(ENV_SYS_USER,              System.getProperty("user.name"));
     env.put(ENV_SYS_USER_HOME,         System.getProperty("user.home"));
-    try {
-      env.put(ENV_SYS_HOST_NAME,       InetAddress.getLocalHost().getHostName());
-    }
-    catch (UnknownHostException e) {
-      env.put(ENV_SYS_HOST_NAME,       "localhost");
-    }
+    env.put(ENV_SYS_HOST_NAME,         determineHostName());
     env.put(ENV_SYS_CLASSPATH,         System.getProperty("java.class.path"));
     env.put(ENV_SYS_JAVA_VERSION,      System.getProperty("java.version"));
     env.put(ENV_SYS_OS,                System.getProperty("os.name"));
@@ -311,6 +305,40 @@ public class Gfsh extends JLineShell {
     env.put(ENV_APP_QUERY_RESULTS_DISPLAY_MODE, DEFAULT_APP_QUERY_RESULTS_DISPLAY_MODE);
     env.put(ENV_APP_QUIET_EXECUTION,            String.valueOf(DEFAULT_APP_QUIET_EXECUTION));
     env.put(ENV_APP_RESULT_VIEWER,            String.valueOf(DEFAULT_APP_RESULT_VIEWER));
+  }
+
+  private static String execReadToString(String execCommand) throws IOException {
+    Process proc = Runtime.getRuntime().exec(execCommand);
+    try (InputStream stream = proc.getInputStream()) {
+      try (Scanner s = new Scanner(stream).useDelimiter("\\A")) {
+        return s.hasNext() ? s.next().trim() : "";
+      }
+    }
+  }
+
+  private String determineHostName()
+  {
+    // Windows
+    String hostname = System.getenv("COMPUTERNAME");
+    if (hostname == null) {
+      // Unix / Mac / Cygwin sometimes has this set
+      hostname = System.getenv("HOSTNAME");
+    }
+    if (hostname == null) {
+      try {
+        // Unix / Mac / Windows / Cygwin
+        hostname = execReadToString("hostname");
+      }
+      catch (IOException io) {
+        // happens if hostname binary is not found.
+        hostname = "unknown";
+      }
+    }
+    if (hostname == null || hostname.isEmpty()) {
+      // if it still isn't set, default it.
+      hostname = "unknown";
+    }
+    return hostname;
   }
 
   public static Gfsh getInstance(boolean launchShell, String[] args, GfshConfig gfshConfig)
