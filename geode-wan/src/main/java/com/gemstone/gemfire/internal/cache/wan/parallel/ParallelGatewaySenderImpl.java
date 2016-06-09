@@ -111,9 +111,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       
       logger.info(LocalizedMessage.create(LocalizedStrings.ParallelGatewaySenderImpl_STARTED__0, this));
       
-      if (!tmpQueuedEvents.isEmpty()) {
-        enqueueTempEvents();
-      }
+      enqueueTempEvents();
     }
     finally {
       this.getLifeCycleLock().writeLock().unlock();

@@ -323,7 +323,11 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.doPuts( getTestMethodName() + "_PR", 200 ));
     
     LogWriterUtils.getLogWriter().info("Done few puts");
-    
+
+    //Make sure the puts make it to the remote side
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 200, 120000));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 200, 120000));
+
     //now, stop all of the senders
     stopSenders();
     
@@ -350,9 +354,6 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     
     async.join();
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 5000, 120000));
-    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 5000, 120000));
-    
     //verify all the buckets on all the sender nodes are drained
     validateParallelSenderQueueAllBucketsDrained();
     
