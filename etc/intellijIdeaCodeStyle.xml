@@ -25,19 +25,12 @@
       <package name="" withSubpackages="true" static="true" />
       <emptyLine />
       <package name="java" withSubpackages="true" static="false" />
+      <emptyLine />
       <package name="javax" withSubpackages="true" static="false" />
       <emptyLine />
       <package name="" withSubpackages="true" static="false" />
       <emptyLine />
-      <package name="batterytest" withSubpackages="true" static="false" />
-      <package name="cacheRunner" withSubpackages="true" static="false" />
-      <package name="hydra" withSubpackages="true" static="false" />
-      <package name="parReg" withSubpackages="true" static="false" />
-      <package name="perffmwk" withSubpackages="true" static="false" />
-      <emptyLine />
       <package name="com.gemstone" withSubpackages="true" static="false" />
-      <package name="com.vmware.gemfire" withSubpackages="true" static="false" />
-      <package name="io.pivotal.geode" withSubpackages="true" static="false" />
     </value>
   </option>
   <option name="JD_ALIGN_PARAM_COMMENTS" value="false" />
