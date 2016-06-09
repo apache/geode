@@ -34,7 +34,7 @@ import org.junit.experimental.categories.Category;
 
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 

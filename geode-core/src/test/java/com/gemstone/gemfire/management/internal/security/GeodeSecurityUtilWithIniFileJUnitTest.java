@@ -31,7 +31,7 @@ import org.junit.experimental.categories.Category;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * this test and ShiroUtilCustomRealmJUunitTest uses the same test body, but initialize the SecurityUtils differently.

@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.assertEquals;
 
 @Category(IntegrationTest.class)

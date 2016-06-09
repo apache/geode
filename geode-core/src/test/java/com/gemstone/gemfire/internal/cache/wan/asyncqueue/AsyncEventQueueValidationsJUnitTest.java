@@ -19,7 +19,7 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.asyncqueue;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static junitparams.JUnitParamsRunner.*;
 import static org.junit.Assert.*;
 

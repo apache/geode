@@ -29,7 +29,7 @@ import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * <code>DistributedTestUtils</code> provides static utility methods that 

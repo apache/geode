@@ -27,7 +27,7 @@ import org.junit.Before;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * Extracted from TXWriterJUnitTest to share with TXWriterOOMEJUnitTest.

@@ -21,7 +21,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 
 /**

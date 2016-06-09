@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.DataInput;
@@ -111,7 +111,7 @@ public class Bug40751DUnitTest extends JUnit4CacheTestCase {
     Properties props = new Properties();
     System.setProperty("p2p.oldIO", "true");
     props.setProperty(CONSERVE_SOCKETS, "true");
-    //    props.setProperty(DistributionConfig.DistributedSystemConfigProperties.MCAST_PORT, "12333");
+    //    props.setProperty(DistributionConfig.ConfigurationProperties.MCAST_PORT, "12333");
     //    props.setProperty(DistributionConfig.DISABLE_TCP_NAME, "true");
     return props;
   }

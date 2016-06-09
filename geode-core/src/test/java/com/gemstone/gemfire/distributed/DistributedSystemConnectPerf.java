@@ -19,7 +19,7 @@ package com.gemstone.gemfire.distributed;
 import java.io.PrintStream;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * This program is used to measure the amount of time it takes to

@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 public class SSLCredentialGenerator extends CredentialGenerator {
 

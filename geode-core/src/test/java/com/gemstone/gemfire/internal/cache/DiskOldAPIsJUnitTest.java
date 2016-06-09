@@ -22,7 +22,6 @@ import java.io.File;
 import java.util.Properties;
 import java.util.Set;
 
-import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
@@ -38,15 +37,8 @@ import com.gemstone.gemfire.cache.DiskWriteAttributesFactory;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-import java.io.File;
-import java.util.Properties;
-import java.util.Set;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-import static org.junit.Assert.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Tests the old disk apis to make sure they do the correct thing.

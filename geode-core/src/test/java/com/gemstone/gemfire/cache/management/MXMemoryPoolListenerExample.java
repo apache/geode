@@ -18,8 +18,8 @@ package com.gemstone.gemfire.cache.management;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
 
 import javax.management.Notification;
 import javax.management.NotificationEmitter;
@@ -33,7 +33,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * An test class for exploring the various notification listener behaviors
@@ -102,10 +102,10 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
 
     Properties dsProps = new Properties();
     dsProps.setProperty(MCAST_PORT, "0"); // Loner
-    dsProps.setProperty(DistributedSystemConfigProperties.LOG_LEVEL, "info");
-    dsProps.setProperty(DistributedSystemConfigProperties.STATISTIC_SAMPLE_RATE, "200");
-    dsProps.setProperty(DistributedSystemConfigProperties.ENABLE_TIME_STATISTICS, "true");
-    dsProps.setProperty(DistributedSystemConfigProperties.STATISTIC_SAMPLING_ENABLED, "true");
+    dsProps.setProperty(ConfigurationProperties.LOG_LEVEL, "info");
+    dsProps.setProperty(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "200");
+    dsProps.setProperty(ConfigurationProperties.ENABLE_TIME_STATISTICS, "true");
+    dsProps.setProperty(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");
     DistributedSystem ds = DistributedSystem.connect(dsProps);  
     final LogWriter logger = ds.getLogWriter();
 

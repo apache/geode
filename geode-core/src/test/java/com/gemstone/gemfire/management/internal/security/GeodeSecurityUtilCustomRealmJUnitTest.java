@@ -21,7 +21,7 @@ import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * this test and ShiroUtilWithIniFileJunitTest uses the same test body, but initialize the SecurityUtils differently.

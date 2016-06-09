@@ -39,7 +39,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)

@@ -31,7 +31,7 @@ import org.junit.experimental.categories.Category;
 import javax.transaction.TransactionManager;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.fail;
 

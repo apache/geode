@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.distributed;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -49,7 +49,7 @@ import java.lang.management.ManagementFactory;
 import java.net.BindException;
 import java.net.InetAddress;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -415,7 +415,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setForce(true)
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
-        .set(DistributionConfig.DistributedSystemConfigProperties.MCAST_PORT, "0");
+        .set(DistributionConfig.ConfigurationProperties.MCAST_PORT, "0");
 
     assertTrue(builder.getForce());
     this.launcher = builder.build();
@@ -696,7 +696,7 @@ public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIn
         .setMemberName(getUniqueName())
         .setRedirectOutput(true)
         .set(logLevel, "config")
-        .set(DistributionConfig.DistributedSystemConfigProperties.MCAST_PORT, "0");
+        .set(DistributionConfig.ConfigurationProperties.MCAST_PORT, "0");
 
     assertFalse(builder.getForce());
     this.launcher = builder.build();

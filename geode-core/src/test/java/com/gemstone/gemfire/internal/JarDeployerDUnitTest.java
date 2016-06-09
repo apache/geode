@@ -44,8 +44,8 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
@@ -463,7 +463,7 @@ public class JarDeployerDUnitTest extends JUnit4CacheTestCase {
     // Add the alternate directory to the distributed system, get it back out, and then create
     // a JarDeployer object with it.
     Properties properties = new Properties();
-    properties.put(DistributedSystemConfigProperties.DEPLOY_WORKING_DIR, alternateDir.getAbsolutePath());
+    properties.put(ConfigurationProperties.DEPLOY_WORKING_DIR, alternateDir.getAbsolutePath());
     InternalDistributedSystem distributedSystem = getSystem(properties);
     final JarDeployer jarDeployer = new JarDeployer(distributedSystem.getConfig().getDeployWorkingDir());
 

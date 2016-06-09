@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.internal.compression;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import java.util.Properties;
 

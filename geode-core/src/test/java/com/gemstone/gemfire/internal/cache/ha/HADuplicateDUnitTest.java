@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.util.HashMap;

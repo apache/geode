@@ -38,7 +38,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)

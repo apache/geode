@@ -17,7 +17,7 @@
 package com.gemstone.gemfire.management.internal.cli.commands;
 
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
@@ -35,7 +35,7 @@ import static com.gemstone.gemfire.test.dunit.Assert.assertNotNull;
 import static com.gemstone.gemfire.test.dunit.Host.getHost;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getDUnitLogLevel;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * The ListAndDescribeDiskStoreCommandsDUnitTest class is a test suite of functional tests cases testing the proper
@@ -123,7 +123,7 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
   private Properties createDistributedSystemProperties(final String gemfireName) {
     final Properties distributedSystemProperties = new Properties();
 
-    distributedSystemProperties.setProperty(DistributedSystemConfigProperties.LOG_LEVEL, getDUnitLogLevel());
+    distributedSystemProperties.setProperty(ConfigurationProperties.LOG_LEVEL, getDUnitLogLevel());
     distributedSystemProperties.setProperty(NAME, gemfireName);
 
     return distributedSystemProperties;

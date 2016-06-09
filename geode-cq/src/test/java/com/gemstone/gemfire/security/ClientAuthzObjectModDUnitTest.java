@@ -19,7 +19,7 @@ package com.gemstone.gemfire.security;
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.Instantiator;
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.security.FilterPostAuthorization;
 import com.gemstone.gemfire.internal.security.FilterPreAuthorization;
@@ -212,13 +212,13 @@ public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestCase {
   private Properties buildProperties(final String authenticator, final Properties extraProps, final String preAccessor, final String postAccessor) {
     Properties authProps = new Properties();
     if (authenticator != null) {
-      authProps.setProperty(DistributedSystemConfigProperties.SECURITY_CLIENT_AUTHENTICATOR, authenticator);
+      authProps.setProperty(ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR, authenticator);
     }
     if (preAccessor != null) {
-      authProps.setProperty(DistributedSystemConfigProperties.SECURITY_CLIENT_ACCESSOR, preAccessor);
+      authProps.setProperty(ConfigurationProperties.SECURITY_CLIENT_ACCESSOR, preAccessor);
     }
     if (postAccessor != null) {
-      authProps.setProperty(DistributedSystemConfigProperties.SECURITY_CLIENT_ACCESSOR_PP, postAccessor);
+      authProps.setProperty(ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP, postAccessor);
     }
     if (extraProps != null) {
       authProps.putAll(extraProps);

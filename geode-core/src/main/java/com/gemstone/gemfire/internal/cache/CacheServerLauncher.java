@@ -22,8 +22,8 @@ import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -43,8 +43,8 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOG_FILE;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.SERVER_BIND_ADDRESS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOG_FILE;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
 
 /**
  * Launcher program to start a cache server.
@@ -263,7 +263,7 @@ public class CacheServerLauncher  {
       "critical-off-heap-percentage";
   public static final String EVICTION_OFF_HEAP_PERCENTAGE =
       "eviction-off-heap-percentage";
-  protected static final String LOCK_MEMORY = DistributedSystemConfigProperties.LOCK_MEMORY;
+  protected static final String LOCK_MEMORY = ConfigurationProperties.LOCK_MEMORY;
 
   protected final File processDirOption(final Map<String, Object> options, final String dirValue) throws FileNotFoundException {
     final File inputWorkingDirectory = new File(dirValue);
@@ -1197,7 +1197,7 @@ public class CacheServerLauncher  {
 
   /**
    * Reads {@link DistributedSystem#PROPERTY_FILE} and determines if the
-   * {@link DistributedSystemConfigProperties#LOG_FILE} property is set to stdout
+   * {@link ConfigurationProperties#LOG_FILE} property is set to stdout
    * @return true if the logging would go to stdout
    */
   private static boolean isLoggingToStdOut() {

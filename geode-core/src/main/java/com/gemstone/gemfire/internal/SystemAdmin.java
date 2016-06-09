@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.internal;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.admin.AdminException;
@@ -47,7 +47,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.START_LOCATOR;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.START_LOCATOR;
 
 /**
  * Provides static methods for various system administation tasks.

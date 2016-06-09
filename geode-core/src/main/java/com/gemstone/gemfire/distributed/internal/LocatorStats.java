@@ -22,7 +22,7 @@ import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
 
 /**
  * This class maintains statistics for the locator

@@ -37,7 +37,7 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 /**

@@ -17,15 +17,15 @@
 package com.gemstone.gemfire.internal.offheap;
 
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 
 @Category(IntegrationTest.class)
@@ -37,7 +37,7 @@ public class TxReleasesOffHeapOnCloseJUnitTest {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(DistributedSystemConfigProperties.OFF_HEAP_MEMORY_SIZE, "1m");
+    props.setProperty(ConfigurationProperties.OFF_HEAP_MEMORY_SIZE, "1m");
     cache = new CacheFactory(props).create();
   }
   

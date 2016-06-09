@@ -21,7 +21,7 @@ package com.gemstone.gemfire.cache.lucene;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -49,7 +49,7 @@ public class LuceneIndexCreationOffHeapIntegrationTest extends LuceneIntegration
   @Override
   protected CacheFactory getCacheFactory() {
     CacheFactory factory = super.getCacheFactory();
-    factory.set(DistributedSystemConfigProperties.OFF_HEAP_MEMORY_SIZE, "100m");
+    factory.set(ConfigurationProperties.OFF_HEAP_MEMORY_SIZE, "100m");
     return factory;
   }
 

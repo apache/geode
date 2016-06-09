@@ -38,7 +38,7 @@ import java.io.File;
 
 import static org.junit.Assert.*;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * These tests are part of assembly as they require the REST war file to be present.

@@ -16,10 +16,10 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
 import static com.gemstone.gemfire.management.internal.cli.i18n.CliStrings.*;
 import static com.gemstone.gemfire.util.test.TestUtil.*;
 import static org.junit.Assert.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import java.io.File;
 import java.util.Properties;

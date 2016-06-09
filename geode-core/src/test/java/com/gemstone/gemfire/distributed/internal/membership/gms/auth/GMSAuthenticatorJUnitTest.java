@@ -39,7 +39,7 @@ import java.util.Properties;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 @Category({ UnitTest.class, SecurityTest.class })
 public class GMSAuthenticatorJUnitTest {

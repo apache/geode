@@ -22,7 +22,7 @@ import org.junit.rules.ExternalResource;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 public class ShiroCacheStartRule extends ExternalResource {
   private Cache cache;

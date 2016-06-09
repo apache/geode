@@ -19,7 +19,7 @@
 package com.gemstone.gemfire.security;
 
 import static com.gemstone.gemfire.cache30.ClientServerTestCase.*;
-import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static com.gemstone.gemfire.internal.AvailablePort.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.*;

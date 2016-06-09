@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.cache.query;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import java.io.File;
 import java.io.IOException;

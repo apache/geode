@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.disttx;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static junit.framework.TestCase.*;
 
 import java.util.Properties;
@@ -26,7 +26,7 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.CacheTransactionManager;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.TXManagerImplJUnitTest;
 import com.gemstone.gemfire.test.junit.categories.DistributedTransactionsTest;
@@ -44,7 +44,7 @@ public class DistTXManagerImplJUnitTest extends TXManagerImplJUnitTest {
     Properties props = new Properties();
     props.put(MCAST_PORT, "0");
     props.put(LOCATORS, "");
-    props.put(DistributedSystemConfigProperties.DISTRIBUTED_TRANSACTIONS, "true");
+    props.put(ConfigurationProperties.DISTRIBUTED_TRANSACTIONS, "true");
     cache = new CacheFactory(props).create();
     region = cache.createRegionFactory(RegionShortcut.REPLICATE).create("testRegion");
     CacheTransactionManager txmgr = cache.getCacheTransactionManager();

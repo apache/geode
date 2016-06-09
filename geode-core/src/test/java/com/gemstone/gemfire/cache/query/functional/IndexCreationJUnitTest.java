@@ -26,7 +26,7 @@
  */
 package com.gemstone.gemfire.cache.query.functional;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.File;

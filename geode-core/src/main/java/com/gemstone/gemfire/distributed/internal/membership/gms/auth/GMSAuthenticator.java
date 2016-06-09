@@ -37,7 +37,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import static com.gemstone.gemfire.internal.i18n.LocalizedStrings.*;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 // static messages
 

@@ -32,8 +32,6 @@ import com.gemstone.gemfire.internal.ClassPathLoader;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.tcp.ConnectionTable;
 import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
-import com.gemstone.gemfire.redis.GemFireRedisServer;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 
 import java.io.File;
@@ -43,7 +41,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * A "connection" to a GemFire distributed system.  A

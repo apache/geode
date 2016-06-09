@@ -83,7 +83,7 @@ import com.gemstone.gemfire.management.internal.configuration.messages.SharedCon
 import com.gemstone.gemfire.management.internal.configuration.utils.XmlUtils;
 import com.gemstone.gemfire.management.internal.configuration.utils.ZipUtils;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 @SuppressWarnings({ "deprecation", "unchecked" })
 public class SharedConfiguration {

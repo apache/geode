@@ -14,12 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.gemstone.gemfire.distributed;
 
 /**
- *
+ * This interface defines all the configuration properties that can be used.
+ * <U>Since</U>: Geode 1.0
  */
-public interface DistributedSystemConfigProperties {
+public interface ConfigurationProperties {
+
   /**
    * The static string definition of the <i>"ack-severe-alert-threshold"</i> property <a name="ack-severe-alert-threshold"/>
    * <p>
@@ -370,7 +373,8 @@ public interface DistributedSystemConfigProperties {
   /**
    * The static String definition of the <i>"enable-cluster-configuration"</i> property
    * <a name="enable-cluster-configuration"/a></p>
-   * <U>Description</U>: "true" causes creation of cluster configuration service on dedicated locators. The cluster configuration service on dedicated locator(s)
+   * <U>Description</U>: "true" causes creation of cluster configuration service on dedicated locators. The cluster configuration service on dedicated
+   * locator(s)
    * would serve the configuration to new members joining the distributed system and also save the configuration changes caused by the Gfsh commands.
    * This property is only applicable to dedicated locators.
    * </p>
@@ -694,7 +698,6 @@ public interface DistributedSystemConfigProperties {
    * </p>
    * <U>Default</U>: "7070"</p>
    * <U>Deprecated</U>: as of GemFire8.0 use <a href="#http-service-port"><code>http-service-port</code></a> instead.
-   *
    * @deprecated as of GemFire 8.0 use {@link #HTTP_SERVICE_PORT} instead.
    */
   String JMX_MANAGER_HTTP_PORT = "jmx-manager-http-port";
@@ -735,7 +738,6 @@ public interface DistributedSystemConfigProperties {
    * </p>
    * <U>Default</U>: "false"</p>
    * <U>Deprecated</U>: as of GemFire 8.0 use <a href="#jmx-manager-ssl-enabled"><code>jmx-manager-ssl-enabled</code></a> instead.
-   *
    * @deprecated as of GemFire 8.0 use {@link #JMX_MANAGER_SSL_ENABLED} instead.
    */
   String JMX_MANAGER_SSL = "jmx-manager-ssl";
@@ -851,10 +853,6 @@ public interface DistributedSystemConfigProperties {
    * <U>Since</U>: GemFire 8.0
    */
   String JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD = "jmx-manager-ssl-truststore-password";
-  String LICENCE_APPLICATION_CACHE = "license-application-cache";
-  String LICENCE_DATA_MANAGEMENT = "license-data-management";
-  String LICENCE_SERVER_TIMEOUT = "license-server-timeout";
-  String LICENCE_WORKING_DIR = "license-working-dir";
   /**
    * The static String definition of the <i>"load-cluster-configuration-from-dir"</i> property
    * <a name="load-cluster-configuration-from-dir"/a></p>
@@ -1140,7 +1138,6 @@ public interface DistributedSystemConfigProperties {
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 5.0</p>
    * <U>Deprecated</U>: This feature is scheduled to be removed.
-   *
    * @deprecated : This feature is scheduled to be removed.
    */
   String ROLES = "roles";
@@ -1547,7 +1544,6 @@ public interface DistributedSystemConfigProperties {
    * </p>
    * <U>Default</U>: "false"</p>
    * <U>Deprecated</U>: as of GemFire 8.0 use <a href="#cluster-ssl-enabled"><code>cluster-ssl-enabled</code></a> instead.
-   *
    * @deprecated as of Gemfire 8.0 use {@link #CLUSTER_SSL_ENABLED} instead.
    */
   String SSL_ENABLED = "ssl-enabled";
@@ -1559,7 +1555,6 @@ public interface DistributedSystemConfigProperties {
    * </p>
    * <U>Default</U>: "any"</p>
    * <U>Deprecated</U>: as of GemFire 8.0 use <a href="#cluster-ssl-protocols"><code>cluster-ssl-protocols</code></a> instead.
-   *
    * @deprecated as of GemFire 8.0 use {@link #CLUSTER_SSL_PROTOCOLS} instead.
    */
   String SSL_PROTOCOLS = "ssl-protocols";
@@ -1571,7 +1566,6 @@ public interface DistributedSystemConfigProperties {
    * </p>
    * <U>Default</U>: "any"</p>
    * <U>Deprecated</U>: as of GemFire 8.0 use <a href="#cluster-ssl-ciphers"><code>cluster-ssl-ciphers</code></a> instead.
-   *
    * @deprecated as of GemFire 8.0 use {@link #CLUSTER_SSL_CIPHERS} instead.
    */
   String SSL_CIPHERS = "ssl-ciphers";
@@ -1583,7 +1577,6 @@ public interface DistributedSystemConfigProperties {
    * </p>
    * <U>Default</U>: "true"</p>
    * <U>Deprecated</U>: as of GemFire 8.0 use <a href="#cluster-ssl-require-authentication"><code>cluster-ssl-require-authentication</code></a> instead.
-   *
    * @deprecated as of GemFire 8.0 use {@link #CLUSTER_SSL_REQUIRE_AUTHENTICATION} instead.
    */
   String SSL_REQUIRE_AUTHENTICATION = "ssl-require-authentication";

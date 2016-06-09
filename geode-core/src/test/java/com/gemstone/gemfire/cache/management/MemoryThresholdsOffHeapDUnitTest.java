@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.cache.management;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 
 import java.util.ArrayList;

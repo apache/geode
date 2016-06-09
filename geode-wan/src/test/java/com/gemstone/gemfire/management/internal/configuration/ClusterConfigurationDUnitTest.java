@@ -62,7 +62,7 @@ import java.net.UnknownHostException;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static com.gemstone.gemfire.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static com.gemstone.gemfire.internal.FileUtil.delete;
 import static com.gemstone.gemfire.internal.FileUtil.deleteMatching;

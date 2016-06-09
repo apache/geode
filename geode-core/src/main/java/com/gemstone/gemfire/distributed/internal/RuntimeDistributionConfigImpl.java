@@ -25,7 +25,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that

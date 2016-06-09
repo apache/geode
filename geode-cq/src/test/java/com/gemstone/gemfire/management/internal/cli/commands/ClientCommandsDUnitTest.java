@@ -58,7 +58,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static com.gemstone.gemfire.test.dunit.Assert.*;
 import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;

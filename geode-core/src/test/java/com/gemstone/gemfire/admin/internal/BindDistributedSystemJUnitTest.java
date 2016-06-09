@@ -25,8 +25,8 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.BIND_ADDRESS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.START_LOCATOR;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.junit.Assert.assertEquals;
 
 /**

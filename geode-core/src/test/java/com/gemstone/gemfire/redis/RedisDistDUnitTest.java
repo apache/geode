@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.redis;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.util.Random;
@@ -26,7 +26,7 @@ import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 
 import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
@@ -89,8 +89,8 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
         CacheFactory cF = new CacheFactory();
         String locator = SocketCreator.getLocalHost().getHostName() + "[" + locatorPort + "]";
         cF.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-        cF.set(DistributedSystemConfigProperties.REDIS_BIND_ADDRESS, localHost);
-        cF.set(DistributedSystemConfigProperties.REDIS_PORT, "" + port);
+        cF.set(ConfigurationProperties.REDIS_BIND_ADDRESS, localHost);
+        cF.set(ConfigurationProperties.REDIS_PORT, "" + port);
         cF.set(MCAST_PORT, "0");
         cF.set(LOCATORS, locator);
         cF.create();

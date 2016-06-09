@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache.persistence;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static com.gemstone.gemfire.internal.lang.ThrowableUtils.*;
 import static org.junit.Assert.*;
 

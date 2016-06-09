@@ -16,7 +16,7 @@
 */
 package com.gemstone.gemfire.modules;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import java.io.IOException;
 import java.util.Iterator;

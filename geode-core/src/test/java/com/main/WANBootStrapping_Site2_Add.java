@@ -22,7 +22,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.wan.GatewayReceiver;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * This is a member representing site 2 who wants to receive data from site 1
