@@ -16,29 +16,33 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.PartitionAttributes;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Tests memory allocation operations on a PartitionedRegion on a single node.
- *
  */
 @Category(IntegrationTest.class)
 public class PRDataStoreMemoryJUnitTest {
   
-  static DistributedSystem sys;
+  private static DistributedSystem sys;
   
-  static Cache cache;
+  private static Cache cache;
 
   @Before
   public void setUp() throws Exception {
@@ -71,8 +75,7 @@ public class PRDataStoreMemoryJUnitTest {
   }
   
   @Test
-  public void testCurrentAllocatedMemory() throws Exception
-  {
+  public void testCurrentAllocatedMemory() throws Exception {
     PartitionedRegion regionAck1 = (PartitionedRegion)defineRegionFactory()
       .create("testCurrentAllocatedemory");
 

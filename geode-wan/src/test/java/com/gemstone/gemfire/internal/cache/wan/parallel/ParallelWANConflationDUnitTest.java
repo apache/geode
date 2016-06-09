@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,11 +36,12 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 /**
  * 
  */
+@Category(DistributedTest.class)
 public class ParallelWANConflationDUnitTest extends WANTestBase {
   private static final long serialVersionUID = 1L;
 
-  public ParallelWANConflationDUnitTest(String name) {
-    super(name);
+  public ParallelWANConflationDUnitTest() {
+    super();
   }
 
   @Override
@@ -39,6 +49,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     IgnoredException.addIgnoredException("java.net.ConnectException");
   }
 
+  @Test
   public void testParallelPropagationConflationDisabled() throws Exception {
     initialSetUp();
 
@@ -75,6 +86,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testParallelPropagationBatchConflation() throws Exception {
     initialSetUp();
     
@@ -128,10 +140,12 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
 
   }
   
+  @Test
   public void testParallelPropagationConflation() throws Exception {
     doTestParallelPropagationConflation(0);
   }
   
+  @Test
   public void testParallelPropagationConflationRedundancy2() throws Exception {
     doTestParallelPropagationConflation(2);
   }
@@ -167,6 +181,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     validateReceiverRegionSize(keyValues);
   }
   
+  @Test
   public void testParallelPropagationConflationOfRandomKeys() throws Exception {
     initialSetUp();
 
@@ -206,6 +221,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     
   }
   
+  @Test
   public void testParallelPropagationColocatedRegionConflation()
       throws Exception {
     initialSetUp();
@@ -275,6 +291,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
   
   //
   //This is the same as the previous test, except for the UsingCustId methods
+  @Test
   public void testParallelPropagationColoatedRegionConflationSameKey()
       throws Exception {
     initialSetUp();

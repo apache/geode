@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.cq.dunit;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Collection;
 
 import com.gemstone.gemfire.cache.CacheException;
@@ -47,12 +56,13 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * This includes the test with different data activities.
  *
  */
-public class CqStatsDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CqStatsDUnitTest extends JUnit4CacheTestCase {
 
-  private CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest("CqStatsDUnitTest");
+  private CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
   
-  public CqStatsDUnitTest(String name) {
-    super(name);
+  public CqStatsDUnitTest() {
+    super();
   }
 
   @Override
@@ -241,6 +251,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
    * Test for CQ and CQ Service Statistics
    * @throws Exception
    */
+  @Test
   public void testCQStatistics() throws Exception {
     
     final Host host = Host.getHost(0);
@@ -330,6 +341,7 @@ public class CqStatsDUnitTest extends CacheTestCase {
    * Test for CQ Service Statistics
    * @throws Exception
    */
+  @Test
   public void testCQServiceStatistics() throws Exception {
     
     final Host host = Host.getHost(0);

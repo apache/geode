@@ -16,19 +16,18 @@
  */
 package com.gemstone.gemfire.distributed.internal.tcpserver;
 
+import static org.junit.Assert.*;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import junit.framework.Assert;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -44,12 +43,12 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 @Category(IntegrationTest.class)
 public class TcpServerJUnitTest {
   
-  protected/*GemStoneAddition*/ InetAddress localhost;
-  protected/*GemStoneAddition*/ int port;
+  private/*GemStoneAddition*/ InetAddress localhost;
+  private/*GemStoneAddition*/ int port;
   private SimpleStats stats;
   private TcpServer server;
 
-  public void start(TcpHandler handler) throws IOException {
+  private void start(TcpHandler handler) throws IOException {
     localhost = InetAddress.getLocalHost();
     port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     
@@ -59,18 +58,18 @@ public class TcpServerJUnitTest {
   }
   
   @Test
-  public void test() throws UnknownHostException, IOException, ClassNotFoundException, InterruptedException {
+  public void test() throws Exception {
     EchoHandler handler = new EchoHandler();
     start(handler);
     
     TestObject test = new TestObject();
     test.id = 5;
     TestObject result = (TestObject) TcpClient.requestToServer(localhost, port, test, 60 * 1000 );
-    Assert.assertEquals(test.id, result.id);
+    assertEquals(test.id, result.id);
     
     String[] info = TcpClient.getInfo(localhost, port);
-    Assert.assertNotNull(info);
-    Assert.assertTrue(info.length > 1);
+    assertNotNull(info);
+    assertTrue(info.length > 1);
    
     try { 
       TcpClient.stop(localhost, port);
@@ -78,16 +77,16 @@ public class TcpServerJUnitTest {
       // must not be running 
     }
     server.join(60 * 1000);
-    Assert.assertFalse(server.isAlive());
-    Assert.assertTrue(handler.shutdown);
+    assertFalse(server.isAlive());
+    assertTrue(handler.shutdown);
     
-    Assert.assertEquals(4, stats.started.get());
-    Assert.assertEquals(4, stats.ended.get());
+    assertEquals(4, stats.started.get());
+    assertEquals(4, stats.ended.get());
     
   }
   
   @Test
-  public void testConcurrency() throws UnknownHostException, IOException, ClassNotFoundException, InterruptedException {
+  public void testConcurrency() throws Exception {
     CountDownLatch latch = new CountDownLatch(1);
     DelayHandler handler = new DelayHandler(latch);
     start(handler);
@@ -109,17 +108,17 @@ public class TcpServerJUnitTest {
     delayedThread.start();
     try {
       Thread.sleep(500);
-      Assert.assertFalse(done.get());
+      assertFalse(done.get());
       TcpClient.requestToServer(localhost, port, Boolean.valueOf(false), 60 * 1000 );
-      Assert.assertFalse(done.get());
+      assertFalse(done.get());
 
       latch.countDown();
       Thread.sleep(500);
-      Assert.assertTrue(done.get());
+      assertTrue(done.get());
     } finally {
       latch.countDown();
       delayedThread.join(60 * 1000);
-      Assert.assertTrue(!delayedThread.isAlive()); // GemStoneAddition
+      assertTrue(!delayedThread.isAlive()); // GemStoneAddition
       try {
         TcpClient.stop(localhost, port);
       } catch ( ConnectException ignore ) {
@@ -128,8 +127,8 @@ public class TcpServerJUnitTest {
       server.join(60 * 1000);
     }
   }
-  
-  public static class TestObject implements DataSerializable {
+
+  private static class TestObject implements DataSerializable {
     int id;
     
     public TestObject() {
@@ -146,7 +145,7 @@ public class TcpServerJUnitTest {
     
   }
 
-  protected/*GemStoneAddition*/ static class EchoHandler implements TcpHandler {
+  private/*GemStoneAddition*/ static class EchoHandler implements TcpHandler {
 
     protected/*GemStoneAddition*/ boolean shutdown;
 
@@ -202,8 +201,8 @@ public class TcpServerJUnitTest {
     public void endRequest(Object request,long startTime) { }
     public void endResponse(Object request,long startTime) { }
   }
-  
-  protected/*GemStoneAddition*/ static class SimpleStats implements PoolStatHelper {
+
+  private/*GemStoneAddition*/ static class SimpleStats implements PoolStatHelper {
     AtomicInteger started = new AtomicInteger();
     AtomicInteger ended = new AtomicInteger();
     

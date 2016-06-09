@@ -16,6 +16,30 @@
  */
 package com.gemstone.gemfire.internal.jta.dunit;
 
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
+import org.junit.FixMethodOrder;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runners.MethodSorters;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -23,54 +47,38 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.jta.CacheUtils;
 import com.gemstone.gemfire.internal.jta.JTAUtils;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.util.test.TestUtil;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-import java.io.*;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * This test case is to test the following test scenarios: 1) Behaviour of
- * Transaction Manager in multy threaded thransactions. We will have around five
+ * Transaction Manager in multithreaded transactions. We will have around five
  * threads doing different activities. The response to those activities by
  * transaction manager is tested.
- * 
- * 
- *  
  */
+@Category(DistributedTest.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
-
-  /////constructor/////
-  public TxnManagerMultiThreadDUnitTest(String name) {
-    super(name);
-  }
+public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
 
   public static DistributedSystem ds;
   public static Cache cache;
 
-  /////Methods for initializations/////
   private static String readFile(String filename) throws IOException {
-//    String lineSep = System.getProperty("\n");
     BufferedReader br = new BufferedReader(new FileReader(filename));
     String nextLine = "";
     StringBuffer sb = new StringBuffer();
     while ((nextLine = br.readLine()) != null) {
       sb.append(nextLine);
     }
-    //getLogWriter().fine("***********\n "+ sb);
     return sb.toString();
-  }//end of readFile
+  }
 
   private static String modifyFile(String str) throws IOException {
     String search = "<jndi-binding type=\"XAPooledDataSource\"";
@@ -118,7 +126,7 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     StringBuffer sbuff = new StringBuffer(str);
     String modified_str = sbuff.replace(n1, n2, new_str).toString();
     return modified_str;
-  }//end of modifyFile
+  }
 
   private static String modifyFile1(String str) throws IOException {
     String search = "<jndi-binding type=\"SimpleDataSource\"";
@@ -166,7 +174,7 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     StringBuffer sbuff = new StringBuffer(str);
     String modified_str = sbuff.replace(n1, n2, new_str).toString();
     return modified_str;
-  }//end of modifyFile
+  }
 
   public static String init(String className) throws Exception {
     DistributedSystem ds;
@@ -187,27 +195,20 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     wr.close();
     props.setProperty(CACHE_XML_FILE, path);
     String tableName = "";
-    //    props.setProperty(DistributionConfig.DistributedSystemConfigProperties.MCAST_PORT, "10339");
-    try {
-      //        ds = DistributedSystem.connect(props);
-      ds = (new TxnManagerMultiThreadDUnitTest("temp")).getSystem(props);
-      CacheUtils.ds = ds;
-      cache = CacheFactory.create(ds);
-      if (className != null && !className.equals("")) {
-        String time = new Long(System.currentTimeMillis()).toString();
-        tableName = className + time;
-        createTable(tableName);
-      }
-    }
-    catch (Exception e) {
-      LogWriterUtils.getLogWriter().info("", e);
-      throw new Exception("" + e);
-    }
-    return tableName;
-  }//end of init method
 
-  public static void createTable(String tblName) throws NamingException,
-      SQLException {
+    ds = (new TxnManagerMultiThreadDUnitTest()).getSystem(props);
+    CacheUtils.ds = ds;
+    cache = CacheFactory.create(ds);
+    if (className != null && !className.equals("")) {
+      String time = new Long(System.currentTimeMillis()).toString();
+      tableName = className + time;
+      createTable(tableName);
+    }
+
+    return tableName;
+  }
+
+  public static void createTable(String tblName) throws NamingException, SQLException {
     String tableName = tblName;
     cache = TxnManagerMultiThreadDUnitTest.getCache();
     Context ctx = cache.getJNDIContext();
@@ -228,17 +229,16 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     }
     sm.executeBatch();
     conn.close();
-  }//end of createTable
+  }
 
-  public static void destroyTable(String tblName) throws NamingException,
-      SQLException {
+  public static void destroyTable(String tblName) throws NamingException, SQLException {
     //the sleep below is given to give the time to threads to start and perform
     // before destroyTable is called.
     try {
       Thread.sleep(10 * 1000);
     }
     catch (InterruptedException ie) {
-      fail("interrupted");
+      fail("interrupted", ie);
     }
     try {
       String tableName = tblName;
@@ -266,11 +266,11 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
       LogWriterUtils.getLogWriter().fine("Closing cache...");
       closeCache();
     }
-  }//end of destroyTable
+  }
 
   public static Cache getCache() {
     return cache;
-  }//end of getCache
+  }
 
   public static void startCache() {
     try {
@@ -281,7 +281,7 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     catch (Exception e) {
       LogWriterUtils.getLogWriter().warning("exception while creating cache", e);
     }
-  }//end of startCache
+  }
 
   public static void closeCache() {
     try {
@@ -300,7 +300,7 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     catch (Exception e) {
       LogWriterUtils.getLogWriter().fine("Error in disconnecting from Distributed System");
     }
-  }//end of closeCache
+  }
 
   @Override
   public final void postSetUp() throws java.lang.Exception {
@@ -337,9 +337,9 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
       /*int rowsDeleted = */jtaObj.deleteRows(tblName_delRows);
     }
     catch (Exception e) {
-      LogWriterUtils.getLogWriter().warning("Error: while deleting rows from database using JTAUtils", e);
+      fail("Error: while deleting rows from database using JTAUtils", e);
     }
-  }//end of delRows
+  }
 
   @Override
   public final void preTearDown() throws Exception {
@@ -352,7 +352,7 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     //that takes care of destroying table, closing cache, disconnecting from
     // DistributedSystem
     vm0.invoke(TxnManagerMultiThreadDUnitTest.class, "destroyTable", o);
-  }//end of tearDown
+  }
 
   /*
    * calldestroyTable method is written to destroyTable, close cache and
@@ -371,7 +371,6 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
    * ("Closing cache..."); getLogWriter().fine("destroyTable is Successful!"); }
    * catch (Exception e) { fail (" failed during tear down of this test..." +
    * e); } finally { closeCache(); ds.disconnect(); } }//end of destroyTable
-   *  
    */
   public static void getNumberOfRows() {
     //the sleep below is given to give the time to threads to start and perform
@@ -380,7 +379,7 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
       Thread.sleep(7 * 1000);
     }
     catch (InterruptedException ie) {
-      fail("interrupted");
+      fail("interrupted", ie);
     }
     Region currRegion = null;
     Cache cache;
@@ -400,15 +399,17 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     }
     catch (Exception e) {
       LogWriterUtils.getLogWriter().warning("Error: while getting rows from database using JTAUtils", e);
+      fail("Error: while getting rows from database using JTAUtils", e);
     }
-  }//end of getNumberOfRows
+  }
 
-  /////test methods/////
-  /*
+  /**
    * The following method testAllCommit test the scenario in which all four
    * threads are committing the transaction
    */
-  public static void test1AllCommit() throws Throwable {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void test1AllCommit() throws Exception {
     VM vm0 = Host.getHost(0).getVM(0);
     AsyncInvocation asyncObj1 = vm0.invokeAsync(() -> TxnManagerMultiThreadDUnitTest.callCommitThreads());
     ThreadUtils.join(asyncObj1, 30 * 1000);
@@ -416,11 +417,10 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
       Assert.fail("asyncObj1 failed", asyncObj1.getException());
     }
     vm0.invoke(() -> TxnManagerMultiThreadDUnitTest.getNumberOfRows());
-  }//end of testAllCommit
+  }
 
-  /*
+  /**
    * This method gives call to CommitThread
-   *  
    */
   public static void callCommitThreads() {
     LogWriterUtils.getLogWriter().fine("This is callCommitThreads method");
@@ -432,15 +432,17 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     }
     catch (Exception e) {
       LogWriterUtils.getLogWriter().warning("Failed in Commit Threads", e);
-      fail("Failed in Commit Threads" + e);
+      fail("Failed in Commit Threads", e);
     }
-  }//end of callCommitTheads
+  }
 
-  /*
+  /**
    * The following method test3Commit2Rollback test the scenario in which 3
    * threads are committing and 2 threads are rolling back the transaction
    */
-  public static void _test3Commit2Rollback() throws Throwable {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void test3Commit2Rollback() throws Exception {
     VM vm0 = Host.getHost(0).getVM(0);
     AsyncInvocation asyncObj1 = vm0.invokeAsync(() -> TxnManagerMultiThreadDUnitTest.callCommitandRollbackThreads());
     ThreadUtils.join(asyncObj1, 30 * 1000);
@@ -448,7 +450,7 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
       Assert.fail("asyncObj1 failed", asyncObj1.getException());
     }
     vm0.invoke(() -> TxnManagerMultiThreadDUnitTest.getNumberOfRows());
-  }//end of test3Commit2Rollback
+  }
 
   public static void callCommitandRollbackThreads() {
     LogWriterUtils.getLogWriter().fine("This is callCommitandRollbackThreads method");
@@ -461,9 +463,11 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
     }
     catch (Exception e) {
       LogWriterUtils.getLogWriter().info("Failed in Commit and Rollback threads", e);
-      fail("Failed in Commit and Rollback Threads" + e);
+      fail("Failed in Commit and Rollback Threads", e);
     }
-  }//end of callCommitandRollbackThreads
+  }
+
+  // TODO: test3Commit2BlockingTimeOut is static and commented out
   /*
    * The following method test3Commit2BlockingTimeOut over test the scenario in
    * which 3 threads are committing and 2 threads are passing blocking time out
@@ -502,5 +506,4 @@ public class TxnManagerMultiThreadDUnitTest extends DistributedTestCase {
    *  
    */
 
-   public void testFoo() {}
 }

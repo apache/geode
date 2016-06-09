@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -32,6 +34,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.LogWriter;
@@ -65,6 +68,7 @@ import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
@@ -80,7 +84,7 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
  *
  * @since GemFire 3.0
  */
-public abstract class RegionTestCase extends CacheTestCase {
+public abstract class RegionTestCase extends JUnit4CacheTestCase {
   
   /** A <code>CacheListener</code> used by a test */
   static TestCacheListener listener;
@@ -106,10 +110,6 @@ public abstract class RegionTestCase extends CacheTestCase {
     subrgnWriter = null;
   }
   
-  public RegionTestCase(String name) {
-    super(name);
-  }
-  
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     cleanup();
@@ -119,8 +119,6 @@ public abstract class RegionTestCase extends CacheTestCase {
   
   protected void postTearDownRegionTestCase() throws Exception {
   }
-  
-  ////////  Helper methods
   
   /**
    * Returns a region with the given name and the attributes for this
@@ -146,7 +144,6 @@ public abstract class RegionTestCase extends CacheTestCase {
    */
   protected abstract RegionAttributes getRegionAttributes();
   
-  
   /** pauses only if no ack */
   protected void pauseIfNecessary() {
   }
@@ -162,14 +159,13 @@ public abstract class RegionTestCase extends CacheTestCase {
     // Only needed for no-ack regions
   }
   
-  //////////////////////  Test Methods  //////////////////////
-  
   /**
    * Tests that creating an entry in a region actually creates it
    *
    * @see Region#containsKey
    * @see Region#containsValueForKey
    */
+  @Test
   public void testContainsKey() throws CacheException {
     String name = this.getUniqueName();
     Region region = createRegion(name);
@@ -204,6 +200,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * @see Region#getEntry
    * @see Region#create
    */
+  @Test
   public void testBadRegionAccess() throws CacheException {
     String name = this.getUniqueName();
     Region region = createRegion(name);
@@ -238,6 +235,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Tests that {@link Region#put} on a previously non-existent region
    * entry creates it.
    */
+  @Test
   public void testPutNonExistentEntry() throws CacheException {
     String name = this.getUniqueName();
     Region region = createRegion(name);
@@ -284,6 +282,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Tests that sending <code>null</code> to various APIs throws the
    * appropriate exception.
    */
+  @Test
   public void testNulls() throws CacheException {
     if (!supportsSubregions()) {
       return;
@@ -388,6 +387,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Region's {@link Region#getStatistics statistics}, so the region
    * must have been created with statistics enabled.
    */
+  @Test
   public void testCreateSubregions() throws CacheException {
     if (!supportsSubregions()) {
       return;
@@ -441,6 +441,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Tests {@link Region#destroy destroying} an entry and attempting
    * to access it afterwards.
    */
+  @Test
   public void testDestroyEntry() throws CacheException {
     String name = this.getUniqueName();
     Object key = name;
@@ -529,6 +530,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    *
    * @see Region#destroyRegion
    */
+  @Test
   public void testDestroyRegion() throws CacheException {
     if (!supportsSubregions()) {
       return;
@@ -828,6 +830,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Tests the {@link Region#entries} method without recursion
    */
+  @Test
   public void testEntries() throws CacheException {
     String name = this.getUniqueName();
     Region region = createRegion(name);
@@ -908,6 +911,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Tests the {@link Region#entries} method with recursion
    */
+  @Test
   public void testEntriesRecursive() throws CacheException {
     if (!supportsSubregions()) {
       return;
@@ -972,6 +976,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Tests the {@link Region#getCache} method (for what it's worth)
    */
+  @Test
   public void testGetCache() throws CacheException {
     String name = this.getUniqueName();
     Region region = createRegion(name);
@@ -981,6 +986,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Tests the {@link Region#getName} method
    */
+  @Test
   public void testGetName() throws CacheException {
     String name = this.getUniqueName();
     Region region = createRegion(name);
@@ -992,6 +998,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Tests the {@link Region#getFullPath} method
    */
+  @Test
   public void testGetPathFromRoot() throws CacheException {
     if (!supportsSubregions()) {
       return;
@@ -1011,6 +1018,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Tests the {@link Region#getParentRegion} method
    */
+  @Test
   public void testGetParentRegion() throws CacheException {
     if (!supportsSubregions()) {
       return;
@@ -1033,6 +1041,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    *
    * @see Region#setUserAttribute
    */
+  @Test
   public void testRegionUserAttribute() throws CacheException {
     String name = this.getUniqueName();
     Object value = "USER_ATTRIBUTE";
@@ -1047,6 +1056,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Tests a region entry's user attribute
    */
+  @Test
   public void testEntryUserAttribute() throws CacheException {
     String name = this.getUniqueName();
     String key = "KEY";
@@ -1067,6 +1077,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Tests invalidating a region entry
    */
+  @Test
   public void testInvalidateEntry() throws CacheException {
     String name = this.getUniqueName();
     Object key = "KEY";
@@ -1094,6 +1105,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Tests invalidating an entire region
    */
+  @Test
   public void testInvalidateRegion() throws CacheException {
     String name = this.getUniqueName();
     
@@ -1131,6 +1143,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Tests the {@link Region#keys} method.
    */
+  @Test
   public void testKeys() throws CacheException {
     String name = this.getUniqueName();
     
@@ -1186,6 +1199,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * attempting to access it afterwards.  (Not too useful with a
    * <code>LOCAL</code> region.)
    */
+  @Test
   public void testLocalDestroyEntry() throws CacheException {
     if (!supportsLocalDestroyAndLocalInvalidate()) {
       return;
@@ -1278,6 +1292,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    *
    * @see Region#localDestroyRegion
    */
+  @Test
   public void testLocalDestroyRegion() throws CacheException {
     String name = this.getUniqueName();
     Object key = "KEY";
@@ -1574,6 +1589,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Tests closing a region, and checks different behavior when this is a disk
    * region with persistBackup.
    */
+  @Test
   public void testCloseRegion() throws CacheException {
     // @todo added a remote region to make sure close just does a localDestroy
     
@@ -1663,6 +1679,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Tests locally invalidating a region entry
    */
+  @Test
   public void testLocalInvalidateEntry() throws CacheException {
     if (!supportsLocalDestroyAndLocalInvalidate()) {
       return;
@@ -1692,6 +1709,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Tests locally invalidating an entire region
    */
+  @Test
   public void testLocalInvalidateRegion() throws CacheException {
     String name = this.getUniqueName();
     
@@ -1729,6 +1747,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Tests the {@link Region#subregions} method without recursion
    */
+  @Test
   public void testSubregions() throws CacheException {
     if (!supportsSubregions()) {
       return;
@@ -1788,6 +1807,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Tests the {@link Region#subregions} method with recursion
    */
+  @Test
   public void testSubregionsRecursive() throws CacheException {
     if (!supportsSubregions()) {
       return;
@@ -1856,6 +1876,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Tests the {@link Region#values} method without recursion
    */
+  @Test
   public void testValues() throws CacheException {
     String name = this.getUniqueName();
     System.err.println("testValues region name is " +  name);
@@ -2116,6 +2137,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Tests that an entry in a region expires with an
    * invalidation after a given time to live.
    */
+  @Test
   public void testEntryTtlInvalidate()
   throws CacheException {
     
@@ -2162,6 +2184,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Verify that special entries expire but other entries in the region don't
    */
+  @Test
   public void testCustomEntryTtl1() {
 
     final String name = this.getUniqueName();
@@ -2218,6 +2241,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Verify that special entries don't expire but other entries in the region do
    */
+  @Test
   public void testCustomEntryTtl2() {
 
     final String name = this.getUniqueName();
@@ -2299,6 +2323,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Expire an entry with a custom expiration.  Set a new custom expiration, create the
    * same entry again, make sure it observes the <em>new</em> expiration
    */
+  @Test
   public void testCustomEntryTtl3() {
 
     final String name = this.getUniqueName();
@@ -2418,6 +2443,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Then mutate the region expiration configuration and confirm
    * that the entry's expiration time is rescheduled.
    */
+  @Test
   public void testEntryTtl3() {
     final String name = this.getUniqueName();
     // test no longer waits for this expiration to happen
@@ -2601,6 +2627,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Tests that an entry whose value is loaded into a region
    * expires with an invalidation after a given time to live.
    */
+  @Test
   public void testEntryFromLoadTtlInvalidate()
   throws CacheException, InterruptedException {
 
@@ -2650,6 +2677,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Tests that an entry in a region expires with a destroy
    * after a given time to live.
    */
+  @Test
   public void testEntryTtlDestroy()
   throws CacheException, InterruptedException {
 
@@ -2693,6 +2721,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Tests that a region expires with an invalidation after a
    * given time to live.
    */
+  @Test
   public void testRegionTtlInvalidate()
   throws CacheException, InterruptedException {
 
@@ -2747,6 +2776,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Tests that a region expires with a destruction after a
    * given time to live.
    */
+  @Test
   public void testRegionTtlDestroy()
   throws CacheException, InterruptedException {
 
@@ -2792,6 +2822,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Tests that an entry in a local region that remains idle for a
    * given amount of time is invalidated.
    */
+  @Test
   public void testEntryIdleInvalidate()
   throws CacheException, InterruptedException {
 
@@ -2891,6 +2922,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Verify that special entries expire but other entries in the region don't
    */
+  @Test
   public void testCustomEntryIdleTimeout1() {
 
     final String name = this.getUniqueName();
@@ -2969,6 +3001,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Verify that special entries don't expire but other entries in the region do
    */
+  @Test
   public void testCustomEntryIdleTimeout2() {
 
     final String name = this.getUniqueName();
@@ -3052,6 +3085,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Then mutate the region expiration configuration and confirm
    * that the entry's expiration time is rescheduled.
    */
+  @Test
   public void testCustomEntryIdleTimeout3() {
     final String name = this.getUniqueName();
     // test no longer waits for this expiration to happen
@@ -3139,6 +3173,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Then mutate the region expiration configuration and confirm
    * that the entry's expiration time is rescheduled.
    */
+  @Test
   public void testEntryIdleTimeout3() {
     final String name = this.getUniqueName();
     // test no longer waits for this expiration to happen
@@ -3370,6 +3405,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Verify that expiry is calculatod only once on an entry
    */
+  @Test
   public void testCustomIdleOnce() {
 
     final String name = this.getUniqueName();
@@ -3445,6 +3481,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   /**
    * Verify that a get or put resets the idle time on an entry
    */
+  @Test
   public void testCustomEntryIdleReset() {
 
     final String name = this.getUniqueName();
@@ -3508,6 +3545,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * given amount of time is destroyed.
    */
   @Category(FlakyTest.class) // GEODE-706: time sensitive, expiration, waitForDestroy, EXPIRY_MS_PROPERTY, short timeout
+  @Test
   public void testEntryIdleDestroy() throws Exception {
 
     final String name = this.getUniqueName();
@@ -3569,6 +3607,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Verify that accessing an entry resets its idle time
    * @throws Exception
    */
+  @Test
   public void testEntryIdleReset() throws Exception {
 
     final String name = this.getUniqueName();
@@ -3624,6 +3663,7 @@ public abstract class RegionTestCase extends CacheTestCase {
     }
   }
   
+  @Test
   public void testEntryExpirationAfterMutate()
   throws CacheException, InterruptedException {
 
@@ -3681,6 +3721,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Verify that accessing an entry does not delay expiration due
    * to TTL
    */
+  @Test
   public void testEntryIdleTtl() {
 
     final String name = this.getUniqueName();
@@ -3720,6 +3761,7 @@ public abstract class RegionTestCase extends CacheTestCase {
     }
   }
   
+  @Test
   public void testRegionExpirationAfterMutate()
   throws CacheException, InterruptedException {
 
@@ -3780,6 +3822,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * time is invalidated.  Also tests that accessing an entry of a
    * region or a subregion counts as an access.
    */
+  @Test
   public void testRegionIdleInvalidate()
   throws InterruptedException, CacheException {
 
@@ -3888,6 +3931,7 @@ public abstract class RegionTestCase extends CacheTestCase {
    * Tests that a region expires with a destruction after a
    * given idle time.
    */
+  @Test
   public void testRegionIdleDestroy()
   throws CacheException, InterruptedException {
 
@@ -3933,6 +3977,7 @@ public abstract class RegionTestCase extends CacheTestCase {
   public static Region preSnapshotRegion = null;
   private final static int MAX_KEYS = 10;
 
+  @Test
   public void testSnapshot() throws IOException, CacheException, ClassNotFoundException {
     final String name = this.getUniqueName();
     
@@ -3997,6 +4042,7 @@ public abstract class RegionTestCase extends CacheTestCase {
     }
   }
 
+  @Test
   public void testRootSnapshot() throws IOException, CacheException, ClassNotFoundException {
     final String name = this.getUniqueName();
     

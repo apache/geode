@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.pdx;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Collection;
 
 import com.examples.snapshot.MyObjectPdx;
@@ -39,12 +48,14 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 
-public class PdxTypeExportDUnitTest extends CacheTestCase {
-  public PdxTypeExportDUnitTest(String name) {
-    super(name);
+@Category(DistributedTest.class)
+public class PdxTypeExportDUnitTest extends JUnit4CacheTestCase {
+  public PdxTypeExportDUnitTest() {
+    super();
   }
 
   
+  @Test
   public void testPeer() throws Exception {
     Region r = getCache().getRegion("pdxtest");
     r.get(1);
@@ -57,6 +68,7 @@ public class PdxTypeExportDUnitTest extends CacheTestCase {
     assertEquals(MyEnumPdx.const1.name(), enums.iterator().next().getEnum().name());
   }
   
+  @Test
   public void testClient() throws Exception {
     SerializableCallable test = new SerializableCallable() {
       @Override

@@ -16,16 +16,19 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+
+import java.util.Properties;
+
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
 import com.gemstone.gemfire.internal.cache.lru.HeapEvictor;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests the basic functionality of the lru eviction 
@@ -33,11 +36,12 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  * 
  * @since Geode 1.0
  */
+@Category(DistributedTest.class)
 public class OffHeapLRUEvictionControllerDUnitTest extends
     LRUEvictionControllerDUnitTest {
 
-  public OffHeapLRUEvictionControllerDUnitTest(String name) {
-    super(name);
+  public OffHeapLRUEvictionControllerDUnitTest() {
+    super();
   }
 
   @Override

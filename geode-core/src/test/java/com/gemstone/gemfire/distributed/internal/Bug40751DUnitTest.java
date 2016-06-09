@@ -16,30 +16,41 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.ToDataException;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.test.dunit.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.DataSerializable;
+import com.gemstone.gemfire.ToDataException;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 	
-public class Bug40751DUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class Bug40751DUnitTest extends JUnit4CacheTestCase {
 	 
-  public Bug40751DUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
 	 
+  @Test
   public void testRR() {
     System.setProperty("p2p.nodirectBuffers", "true");
     try {

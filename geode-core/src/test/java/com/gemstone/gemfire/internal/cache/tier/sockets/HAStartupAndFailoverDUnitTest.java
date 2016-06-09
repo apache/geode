@@ -16,7 +16,26 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import com.jayway.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.NoSubscriptionServersAvailableException;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
@@ -27,24 +46,27 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import com.jayway.awaitility.Awaitility;
-import org.junit.experimental.categories.Category;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 
 /**
  * Test to verify Startup. and failover during startup.
  */
-public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
+
+  private static final String REGION_NAME = HAStartupAndFailoverDUnitTest.class.getSimpleName() + "_region";
+
   protected static Cache cache = null;
+
   VM server1 = null;
   VM server2 = null;
   VM server3 = null;
@@ -59,13 +81,6 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
 
   //To verify the primary identification on client side toggeled after notification on client side
   protected static boolean identifiedPrimary = false;
-
-  private static final String REGION_NAME = "HAStartupAndFailoverDUnitTest_region";
-
-  /** constructor */
-  public HAStartupAndFailoverDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -86,9 +101,9 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
 
     /**
      * Stops primary server one by one to ensure new primary is selected
-     *
      */
-    public void testPrimaryFailover() throws Exception
+  @Test
+  public void testPrimaryFailover() throws Exception
     {
 
       createClientCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
@@ -136,7 +151,8 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
      * new primary will be selected
      *
      */
-    public void testExceptionWhileMakingPrimary()throws Exception
+  @Test
+  public void testExceptionWhileMakingPrimary()throws Exception
     {
 
       createClientCacheWithIncorrectPrimary(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
@@ -165,7 +181,8 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
      * new primary will be selected
      *
      */
-    public void testTwoPrimaryFailedOneAfterTheAnother() throws Exception
+  @Test
+  public void testTwoPrimaryFailedOneAfterTheAnother() throws Exception
     {
 
       createClientCacheWithLargeRetryInterval(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
@@ -194,7 +211,8 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
      * verify that Primary Should Be Null And EPList Should Be Empty When All Servers Are Dead
      */
     @Category(FlakyTest.class) // GEODE-1045: random ports, time senstive, waitForCriterion
-    public void testPrimaryShouldBeNullAndEPListShouldBeEmptyWhenAllServersAreDead() throws Exception {
+  @Test
+  public void testPrimaryShouldBeNullAndEPListShouldBeEmptyWhenAllServersAreDead() throws Exception {
       createClientCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
       verifyPrimaryShouldNotBeNullAndEPListShouldNotBeEmpty();
       server1.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
@@ -208,7 +226,8 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
      * Tests failover initialization by cacheClientUpdater Thread
      * on failure in Primary Server
      */
-    public void testCacheClientUpdatersInitiatesFailoverOnPrimaryFailure() throws Exception
+  @Test
+  public void testCacheClientUpdatersInitiatesFailoverOnPrimaryFailure() throws Exception
     {
       createClientCacheWithLargeRetryInterval(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
       server1.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
@@ -226,7 +245,8 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
      * Tests failover initialization by cacheClientUpdater
      * Thread on failure on Secondary server
      */
-    public void testCacheClientUpdaterInitiatesFailoverOnSecondaryFailure() throws Exception
+  @Test
+  public void testCacheClientUpdaterInitiatesFailoverOnSecondaryFailure() throws Exception
     {
       createClientCacheWithLargeRetryInterval(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
       server1.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
@@ -244,7 +264,8 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
      * Tests failover initialization by cacheClientUpdater Thread failure on both
      * Primary and Secondary server
      */
-    public void testCacheClientUpdaterInitiatesFailoverOnBothPrimaryAndSecondaryFailure() throws Exception
+  @Test
+  public void testCacheClientUpdaterInitiatesFailoverOnBothPrimaryAndSecondaryFailure() throws Exception
     {
 
       createClientCacheWithLargeRetryInterval(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
@@ -262,7 +283,8 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
     /**
      * Tests failover initialization by cacheClientUpdater Thread
      */
-    public void testCacheClientUpdaterInitiatesFailoverOnBothPrimaryAndSecondaryFailureWithServerMonitors() throws Exception
+  @Test
+  public void testCacheClientUpdaterInitiatesFailoverOnBothPrimaryAndSecondaryFailureWithServerMonitors() throws Exception
     {
 
       createClientCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
@@ -278,7 +300,8 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
     /**
      * Tests failover initialization by cache operation Threads on secondary
      */
-    public void testInitiateFailoverByCacheOperationThreads_Secondary() throws Exception {
+  @Test
+  public void testInitiateFailoverByCacheOperationThreads_Secondary() throws Exception {
       //Stop the 3rd server to guarantee the client put will go to the first server
       server3.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
       // create a client with no client updater thread
@@ -537,7 +560,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new HAStartupAndFailoverDUnitTest("temp").createCache(props);
+    new HAStartupAndFailoverDUnitTest().createCache(props);
     PoolImpl p = (PoolImpl)PoolManager.createFactory()
       .addServer(host, PORT1.intValue())
       .addServer(host, PORT2.intValue())
@@ -566,7 +589,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new HAStartupAndFailoverDUnitTest("temp").createCache(props);
+    new HAStartupAndFailoverDUnitTest().createCache(props);
     PoolImpl p = (PoolImpl)PoolManager.createFactory()
       .addServer(host, PORT1.intValue())
       .addServer(host, PORT2.intValue())
@@ -597,7 +620,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new HAStartupAndFailoverDUnitTest("temp").createCache(props);
+    new HAStartupAndFailoverDUnitTest().createCache(props);
 
     CacheServerTestUtil.disableShufflingOfEndpoints();
     PoolImpl p;
@@ -635,7 +658,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new HAStartupAndFailoverDUnitTest("temp").createCache(props);
+    new HAStartupAndFailoverDUnitTest().createCache(props);
     final int INCORRECT_PORT = 1;
     PoolImpl p = (PoolImpl)PoolManager.createFactory()
       .addServer(host, INCORRECT_PORT)
@@ -662,7 +685,7 @@ public class HAStartupAndFailoverDUnitTest extends DistributedTestCase {
 
   public static Integer createServerCache() throws Exception
   {
-    new HAStartupAndFailoverDUnitTest("temp").createCache(new Properties());
+    new HAStartupAndFailoverDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableBridgeConflation(true);

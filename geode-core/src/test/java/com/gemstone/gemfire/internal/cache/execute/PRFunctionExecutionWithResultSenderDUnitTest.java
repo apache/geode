@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,6 +61,7 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 
+@Category(DistributedTest.class)
 public class PRFunctionExecutionWithResultSenderDUnitTest extends
     PartitionedRegionDUnitTestCase {
   private static final String TEST_FUNCTION7 = TestFunction.TEST_FUNCTION7;
@@ -60,8 +70,8 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends
   
   private static final long serialVersionUID = 1L;
 
-  public PRFunctionExecutionWithResultSenderDUnitTest(String name) {
-    super(name);
+  public PRFunctionExecutionWithResultSenderDUnitTest() {
+    super();
   }
 
   /**
@@ -70,6 +80,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends
    * 
    * @throws Exception
    */
+  @Test
   public void testRemoteSingleKeyExecution_byName() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -161,6 +172,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends
    * 
    * @throws Exception
    */
+  @Test
   public void testRemoteExecution_NoLastResult() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -240,6 +252,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends
    * 
    * @throws Exception
    */
+  @Test
   public void testRemoteMultiKeyExecution_byName() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -336,6 +349,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends
    * haveResult = true
    * @throws Exception
    */
+  @Test
   public void testLocalMultiKeyExecution_byName() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -406,6 +420,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends
    * 
    * @throws Exception
    */
+  @Test
   public void testLocalExecution_NoLastResult() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -464,6 +479,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends
    * 
    * @throws Exception
    */
+  @Test
   public void testExecutionOnAllNodes_NoLastResult()
       throws Exception {
     final String rName = getUniqueName();
@@ -532,6 +548,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends
     assertEquals(Boolean.TRUE, o);
   }
   
+  @Test
   public void testExecutionOnAllNodes_byName() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -630,6 +647,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends
     return attr.create();
   }
 
+  @Test
   public void testlonerSystem_Bug41832() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);

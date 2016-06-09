@@ -16,30 +16,35 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.logging.InternalLogWriter;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.logging.InternalLogWriter;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * Test to make sure cache close is working.
  *
  * @since GemFire 6.5
  */
-public class CacheLogRollDUnitTest extends CacheTestCase {
-
-  public CacheLogRollDUnitTest(String name) {
-    super(name);
-  }
-
-  //////////////////////  Test Methods  //////////////////////
+@Category(DistributedTest.class)
+public class CacheLogRollDUnitTest extends JUnit4CacheTestCase {
 
   private void logAndRollAndVerify(String baseLogName,
       DistributedSystem ds,String mainId) throws FileNotFoundException, IOException {
@@ -215,6 +220,7 @@ public class CacheLogRollDUnitTest extends CacheTestCase {
     }
   }
 
+  @Test
   public void testDiskSpace() throws Exception {
     Properties props = new Properties();
     String baseLogName = "diskarito";
@@ -226,14 +232,15 @@ public class CacheLogRollDUnitTest extends CacheTestCase {
     for(int i=0;i<10;i++) {
      ds = this.getSystem(props);
      ds.disconnect();
-     }
+    }
 
-     /*
-      * This was throwing NPEs until my fix...
-      */
+   /*
+    * This was throwing NPEs until my fix...
+    */
   }
 
   @Category(FlakyTest.class) // GEODE-674: possible disk pollution, file size sensitive
+  @Test
   public void testSimpleStartRestartWithRolling() throws Exception {
     Properties props = new Properties();
     String baseLogName = "restarto";
@@ -290,10 +297,10 @@ public class CacheLogRollDUnitTest extends CacheTestCase {
         assertTrue("We are hoping that:"+lfl+" exists",f1l.exists());
         ds.disconnect();
     }
-
   }
 
   @Category(FlakyTest.class) // GEODE-677: possible disk pollution, file size sensitive
+  @Test
   public void testStartWithRollingThenRestartWithRolling() throws Exception {
     Properties props = new Properties();
     String baseLogName = "biscuits";
@@ -370,74 +377,75 @@ public class CacheLogRollDUnitTest extends CacheTestCase {
   }
 
   @Category(FlakyTest.class) // GEODE-676: possible disk pollution, file size sensitive
+  @Test
   public void testLogFileLayoutAndRolling() throws Exception {
     String baseLogName = "tacos";
-      Properties props = new Properties();
-      
-      String logfile = baseLogName+".log";
+    Properties props = new Properties();
+
+    String logfile = baseLogName+".log";
     props.put(LOG_FILE, logfile);
     props.put(LOG_FILE_SIZE_LIMIT, "1");
     props.put(LOG_LEVEL, "config");
       
-      DistributedSystem ds = getSystem(props);
-      InternalDistributedSystem ids = (InternalDistributedSystem) ds;
-      assertEquals(InternalLogWriter.INFO_LEVEL, ((InternalLogWriter)ids.getLogWriter()).getLogWriterLevel());
+    DistributedSystem ds = getSystem(props);
+    InternalDistributedSystem ids = (InternalDistributedSystem) ds;
+    assertEquals(InternalLogWriter.INFO_LEVEL, ((InternalLogWriter)ids.getLogWriter()).getLogWriterLevel());
 
-      // Lets figure out the mainId we start with
-      String mainId;
-      {
-        final Pattern mainIdPattern = Pattern.compile("meta-" + baseLogName + "-\\d+.log");
-        File[] metaLogs = new File(".").listFiles(new FilenameFilter() {
-            public boolean accept(File d, String name) {
-              return mainIdPattern.matcher(name).matches();
-            }
-          });
-        assertEquals(1, metaLogs.length);
-        String f = metaLogs[0].getName();
-        int idx = f.lastIndexOf("-");
-        int idx2 = f.lastIndexOf(".");
-        mainId = f.substring(idx+1, idx2);
-      }
-      ds.getProperties();
-      logAndRollAndVerify(baseLogName, ds, mainId);
-      
+    // Lets figure out the mainId we start with
+    String mainId;
+    {
+      final Pattern mainIdPattern = Pattern.compile("meta-" + baseLogName + "-\\d+.log");
+      File[] metaLogs = new File(".").listFiles(new FilenameFilter() {
+          public boolean accept(File d, String name) {
+            return mainIdPattern.matcher(name).matches();
+          }
+        });
+      assertEquals(1, metaLogs.length);
+      String f = metaLogs[0].getName();
+      int idx = f.lastIndexOf("-");
+      int idx2 = f.lastIndexOf(".");
+      mainId = f.substring(idx+1, idx2);
+    }
+    ds.getProperties();
+    logAndRollAndVerify(baseLogName, ds, mainId);
   }
 
   @Category(FlakyTest.class) // GEODE-675: possible disk pollution, file size sensitive
+  @Test
   public void testSecurityLogFileLayoutAndRolling() throws Exception {
     String baseLogName = "securitytacos";
-      Properties props = new Properties();
-      
-      String logfile = baseLogName+".log";
-      String sec_logfile = "sec_"+baseLogName+".log";
+    Properties props = new Properties();
+
+    String logfile = baseLogName+".log";
+    String sec_logfile = "sec_"+baseLogName+".log";
     props.put(LOG_FILE, logfile);
     props.put(LOG_FILE_SIZE_LIMIT, "1");
     props.put(LOG_LEVEL, "config");
     props.put(SECURITY_LOG_FILE, sec_logfile);
     props.put(SECURITY_LOG_LEVEL, "config");
       
-      DistributedSystem ds = getSystem(props);
-      InternalDistributedSystem ids = (InternalDistributedSystem) ds;
-      assertEquals(InternalLogWriter.INFO_LEVEL, ((InternalLogWriter)ids.getLogWriter()).getLogWriterLevel());
-      assertEquals(InternalLogWriter.INFO_LEVEL, ((InternalLogWriter)ids.getSecurityLogWriter()).getLogWriterLevel());
+    DistributedSystem ds = getSystem(props);
+    InternalDistributedSystem ids = (InternalDistributedSystem) ds;
+    assertEquals(InternalLogWriter.INFO_LEVEL, ((InternalLogWriter)ids.getLogWriter()).getLogWriterLevel());
+    assertEquals(InternalLogWriter.INFO_LEVEL, ((InternalLogWriter)ids.getSecurityLogWriter()).getLogWriterLevel());
 
-      // Lets figure out the mainId we start with
-      String mainId;
-      {
-        final Pattern mainIdPattern = Pattern.compile("meta-" + baseLogName + "-\\d+.log");
-        File[] metaLogs = new File(".").listFiles(new FilenameFilter() {
-            public boolean accept(File d, String name) {
-              return mainIdPattern.matcher(name).matches();
-            }
-          });
-        assertEquals(1, metaLogs.length);
-        String f = metaLogs[0].getName();
-        int idx = f.lastIndexOf("-");
-        int idx2 = f.lastIndexOf(".");
-        mainId = f.substring(idx+1, idx2);
-      }
-      ds.getProperties();
-      SecurityLogAndRollAndVerify(baseLogName, ds, mainId);
+    // Lets figure out the mainId we start with
+    String mainId;
+    {
+      final Pattern mainIdPattern = Pattern.compile("meta-" + baseLogName + "-\\d+.log");
+      File[] metaLogs = new File(".").listFiles(new FilenameFilter() {
+          public boolean accept(File d, String name) {
+            return mainIdPattern.matcher(name).matches();
+          }
+        });
+      assertEquals(1, metaLogs.length);
+      String f = metaLogs[0].getName();
+      int idx = f.lastIndexOf("-");
+      int idx2 = f.lastIndexOf(".");
+      mainId = f.substring(idx+1, idx2);
+    }
+    ds.getProperties();
+    SecurityLogAndRollAndVerify(baseLogName, ds, mainId);
   }
 
   String getLogContents(String logfile) throws FileNotFoundException,IOException {

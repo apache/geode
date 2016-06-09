@@ -16,7 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static org.junit.Assert.*;
+
 import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -32,9 +38,10 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.InternalCacheEvent;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Test to verify EventID generated from a peer is correctly passed on to the
@@ -42,17 +49,15 @@ import com.gemstone.gemfire.test.dunit.VM;
  * GLOBAL scope the EventIDs should be same in P2P for a propagation of given
  * operation. In case of NO-ACK EventIDs should be different.Currently this test
  * is commented because of a bug.
- * 
- * 
  */
+@Category(DistributedTest.class)
+public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase {
 
-public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
-{
   private static Cache cache = null;
 
   static VM vm0 = null;
 
-  private static final String REGION_NAME = "EventIDVerificationInP2PDUnitTest_region";
+  private static final String REGION_NAME = EventIDVerificationInP2PDUnitTest.class.getSimpleName() + "_region";
 
   protected static EventID eventId;
 
@@ -64,12 +69,6 @@ public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
 
   static int GLOBAL = 2;
 
-  /* Constructor */
-
-  public EventIDVerificationInP2PDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
@@ -77,6 +76,7 @@ public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
     receiver = false;
   }
 
+  @Test
   public void testEventIDsDACK() throws Exception
   {
     createServerCache(new Integer(DISTRIBUTED_ACK));
@@ -84,6 +84,7 @@ public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
     verifyOperations();
   }
 
+  @Test
   public void testEventIDsGLOBAL() throws Exception
   {
     createServerCache(new Integer(GLOBAL));
@@ -91,8 +92,9 @@ public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
     verifyOperations();
   }
 
-  public void _testEventIDsNOACK() throws Exception
-  {
+  @Ignore("TODO")
+  @Test
+  public void testEventIDsNOACK() throws Exception {
     createServerCache(new Integer(0));
     vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.createServerCache( new Integer(0) ));
 
@@ -122,7 +124,7 @@ public class EventIDVerificationInP2PDUnitTest extends DistributedTestCase
 
   public static void createServerCache(Integer type) throws Exception
   {
-    new EventIDVerificationInP2PDUnitTest("temp").createCache(new Properties());
+    new EventIDVerificationInP2PDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     if (type.intValue() == DISTRIBUTED_ACK)
       factory.setScope(Scope.DISTRIBUTED_ACK);

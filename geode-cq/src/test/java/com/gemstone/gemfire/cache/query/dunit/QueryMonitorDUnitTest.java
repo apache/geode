@@ -16,7 +16,27 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
-import com.gemstone.gemfire.cache.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.DiskStoreFactory;
+import com.gemstone.gemfire.cache.EvictionAction;
+import com.gemstone.gemfire.cache.EvictionAttributes;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
@@ -34,27 +54,34 @@ import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
 
 /**
  * Tests for QueryMonitoring service.
+ *
  * @since GemFire 6.0
  */
-public class QueryMonitorDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
 
   private static int bridgeServerPort;
 
   private final String exampleRegionName = "exampleRegion";
   private final String exampleRegionName2 = "exampleRegion2";
   private final String poolName = "serverConnectionPool";
-  
-  
+
   /* Some of the queries are commented out as they were taking less time */
   String[]  queryStr = {
       "SELECT ID FROM /root/exampleRegion p WHERE  p.ID > 100",
@@ -117,42 +144,6 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
   
   private int numServers;
 
-  public QueryMonitorDUnitTest(String name) {
-    super(name);
-  }
-
-  public void setup(int numServers) throws Exception {
-    super.setUp();
-    Host host = Host.getHost(0);
-    this.numServers = numServers;
-    
-    // avoid IllegalStateException from HandShake by connecting all vms tor
-    // system before creating connection pools
-    getSystem();
-    
-    SerializableRunnable r = new SerializableRunnable("getSystem") {
-      public void run() {
-        getSystem();
-      }
-    };
-    
-    for (int i=0; i<numServers; i++) {
-      host.getVM(i).invoke(r);
-    }
-    
-    r = new SerializableRunnable("getClientSystem") {
-      public void run() {
-        Properties props = DistributedTestUtils.getAllDistributedSystemProperties(new Properties());
-        props.put(DistributionConfigImpl.LOCATORS, "");
-        getSystem(props);
-      }
-    };
-    
-    for (int i=numServers; i<4; i++) {
-      host.getVM(i).invoke(r);
-    }
-  }
-  
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     Host host = Host.getHost(0);
@@ -162,7 +153,38 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
       host.getVM(i).invoke(() -> CacheTestCase.disconnectFromDS());
     }
   }
-  
+
+  public void setup(int numServers) throws Exception {
+    Host host = Host.getHost(0);
+    this.numServers = numServers;
+
+    // avoid IllegalStateException from HandShake by connecting all vms tor
+    // system before creating connection pools
+    getSystem();
+
+    SerializableRunnable r = new SerializableRunnable("getSystem") {
+      public void run() {
+        getSystem();
+      }
+    };
+
+    for (int i=0; i<numServers; i++) {
+      host.getVM(i).invoke(r);
+    }
+
+    r = new SerializableRunnable("getClientSystem") {
+      public void run() {
+        Properties props = DistributedTestUtils.getAllDistributedSystemProperties(new Properties());
+        props.put(DistributionConfigImpl.LOCATORS, "");
+        getSystem(props);
+      }
+    };
+
+    for (int i=numServers; i<4; i++) {
+      host.getVM(i).invoke(r);
+    }
+  }
+
   public void createRegion(VM vm){
     createRegion(vm, false, null);
   }
@@ -290,6 +312,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
   /**
    * Tests query execution from client to server (single server).
    */
+  @Test
   public void testQueryMonitorClientServer() throws Exception {
 
     setup(1);
@@ -366,6 +389,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
   /**
    * Tests query execution from client to server (multi server).
    */
+  @Test
   public void testQueryMonitorMultiClientMultiServer() throws Exception {
 
     setup(2);
@@ -456,6 +480,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
    * Tests query execution on local vm.
    */
   @Category(FlakyTest.class) // GEODE-577: eats exceptions
+  @Test
   public void testQueryExecutionLocally() throws Exception {
 
     setup(2);
@@ -534,6 +559,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
   /**
    * Tests query execution on local vm.
    */
+  @Test
   public void testQueryExecutionLocallyAndCacheOp() throws Exception {
 
     setup(2);
@@ -620,6 +646,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
   /**
    * Tests query execution from client to server (multiple server) on Partition Region .
    */
+  @Test
   public void testQueryMonitorOnPR() throws Exception {
 
     setup(2);
@@ -703,6 +730,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
   /**
    * Tests query execution on Partition Region, executes query locally.
    */
+  @Test
   public void testQueryMonitorWithLocalQueryOnPR() throws Exception {
 
     setup(2);
@@ -776,7 +804,9 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
   /**
    * Tests query execution from client to server (multiple server) with eviction to disk.
    */
-  public void BUG46770WORKAROUNDtestQueryMonitorRegionWithEviction() throws CacheException {
+  @Ignore("TODO:BUG46770WORKAROUND: test is disabled")
+  @Test
+  public void testQueryMonitorRegionWithEviction() throws CacheException {
 
     final Host host = Host.getHost(0);
     
@@ -858,6 +888,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
   /**
    * Tests query execution on region with indexes.
    */
+  @Test
   public void testQueryMonitorRegionWithIndex() throws Exception {
 
     setup(2);
@@ -984,13 +1015,14 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
   }
   
   
-  protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest("CqDataDUnitTest");
+  protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
 
   /**
    * The following CQ test is added to make sure TEST_MAX_QUERY_EXECUTION_TIME is reset
    * and is not affecting other query related tests.
    * @throws Exception
    */
+  @Test
   public void testCQWithDestroysAndInvalidates() throws Exception
   {
     setup(1);
@@ -1068,6 +1100,7 @@ public class QueryMonitorDUnitTest extends CacheTestCase {
   /**
    * Tests cache operation right after query cancellation.
    */
+  @Test
   public void testCacheOpAfterQueryCancel() throws Exception {
 
     setup(4);

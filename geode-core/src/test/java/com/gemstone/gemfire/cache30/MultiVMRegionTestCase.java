@@ -17,13 +17,13 @@
 package com.gemstone.gemfire.cache30;
 
 import static com.gemstone.gemfire.internal.lang.ThrowableUtils.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static org.junit.Assume.*;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -42,11 +42,10 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import junit.framework.Assert;
-import junit.framework.AssertionFailedError;
-
 import org.apache.logging.log4j.Logger;
+import org.junit.AfterClass;
 import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializable;
@@ -107,26 +106,22 @@ import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.TXStateProxy;
 import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.internal.cache.TombstoneService;
-import com.gemstone.gemfire.internal.cache.versions.RegionVersionHolder;
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionVector;
-import com.gemstone.gemfire.internal.cache.versions.VMRegionVersionVector;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
 import com.gemstone.gemfire.internal.offheap.StoredObject;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
 import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.RMIException;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
@@ -136,37 +131,23 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
   private static final Logger logger = LogService.getLogger();
-  
-  Properties props = new Properties();
 
-  final int putRange_1Start = 1;
+  private Properties props = new Properties();
 
-  final int putRange_1End = 5;
+  private final int putRange_1Start = 1;
+  private final int putRange_1End = 5;
+  private final int putRange_2Start = 6;
+  private final int putRange_2End = 10;
+  private final int putRange_3Start = 11;
+  private final int putRange_3End = 15;
+  private final int putRange_4Start = 16;
+  private final int putRange_4End = 20;
+  private final int removeRange_1Start = 2;
+  private final int removeRange_1End = 4;
+  private final int removeRange_2Start = 7;
+  private final int removeRange_2End = 9;
 
-  final int putRange_2Start = 6;
-
-  final int putRange_2End = 10;
-
-  final int putRange_3Start = 11;
-
-  final int putRange_3End = 15;
-
-  final int putRange_4Start = 16;
-
-  final int putRange_4End = 20;
-
-  final int removeRange_1Start = 2;
-
-  final int removeRange_1End = 4;
-
-  final int removeRange_2Start = 7;
-
-  final int removeRange_2End = 9;
-
-  public MultiVMRegionTestCase(String name) {
-    super(name);
-  }
-  
+  @AfterClass
   public static void caseTearDown() throws Exception {
     disconnectAllFromDS();
   }
@@ -176,27 +157,17 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     CCRegion = null;
   }
 
-  // @todo can be used in tests
-//  protected CacheSerializableRunnable createRegionTask(final String name) {
-//    return new CacheSerializableRunnable("Create Region") {
-//      public void run2() throws CacheException {
-//        assertNotNull(createRegion(name));
-//      }
-//    };
-//  }
-
-
-  ////////  Test Methods
-
   /**
    * This is a for the ConcurrentMap operations.
    * 4 VMs are used to
    * create the region and operations are performed on one of the nodes
    */
+  @Test
   public void testConcurrentOperations() throws Exception {
     SerializableRunnable createRegion = new CacheSerializableRunnable(
     "createRegion") {
 
+      @Override
       public void run2() throws CacheException {
         Cache cache = getCache();
         RegionAttributes regionAttribs = getRegionAttributes();
@@ -227,6 +198,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     //String exceptionStr = "";
     VM vm0 = Host.getHost(0).getVM(0);
     vm0.invoke(new CacheSerializableRunnable("doConcurrentMapOperations") {
+      @Override
       public void run2() throws CacheException {
         Cache cache = getCache();
         final Region pr = cache.getRegion(rName);
@@ -344,6 +316,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
      */
     vm0.invoke(new CacheSerializableRunnable("destroyRegionOp") {
                
+       @Override
        public void run2() {
          Cache cache = getCache();
          Region pr = cache.getRegion(rName);
@@ -359,13 +332,15 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that doing a {@link Region#put put} in a distributed region
    * one VM updates the value in another VM.
    */
-  public void testDistributedUpdate() {
+  @Test
+  public void testDistributedUpdate() throws Exception {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             createRegion(name);
           }
@@ -384,6 +359,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable put =
       new CacheSerializableRunnable("Put key/value") {
+          @Override
           public void run2() throws CacheException {
             Region region =
               getRootRegion().getSubregion(name);
@@ -396,6 +372,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm1.invoke(put);
 
     vm0.invoke(new CacheSerializableRunnable("Update") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(name);
           region.put(key, newValue);
@@ -404,6 +381,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm1.invoke(new CacheSerializableRunnable("Validate update") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(name);
           Region.Entry entry = region.getEntry(key);
@@ -425,11 +403,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * DISABLED 4-16-04 - the current implementation assumes events
    * are processed synchronously, which is no longer true.
    */
-  public void _ttestOrderedUpdates() throws Throwable {
-    if (getRegionAttributes().getScope() ==
-        Scope.DISTRIBUTED_NO_ACK) {
-      return;
-    }
+  @Ignore("TODO: test is DISABLED 4-16-04 - the current implementation assumes events are processed synchronously, which is no longer true")
+  @Test
+  public void testOrderedUpdates() throws Exception {
+    assumeFalse(getRegionAttributes().getScope() == Scope.DISTRIBUTED_NO_ACK);
 
     final String name = this.getUniqueName();
     final Object key = "KEY";
@@ -441,6 +418,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create region entry") {
+          @Override
           public void run2() throws CacheException {
             Region region = createRegion(name);
             region.create(key, null);
@@ -451,11 +429,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm1.invoke(create);
 
     vm1.invoke(new CacheSerializableRunnable("Set listener") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(name);
           region.setUserAttribute(new LinkedBlockingQueue());
           region.getAttributesMutator().addCacheListener(new
             CacheListenerAdapter() {
+              @Override
               public void afterUpdate(EntryEvent e) {
                 Region region2 = e.getRegion();
                 LinkedBlockingQueue queue =
@@ -467,7 +447,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                   queue.put(value);
 
                 } catch (InterruptedException ex) {
-                  com.gemstone.gemfire.test.dunit.Assert.fail("Why was I interrupted?", ex);
+                  fail("Why was I interrupted?", ex);
                 }
               }
             });
@@ -476,6 +456,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
     AsyncInvocation ai1 =
       vm1.invokeAsync(new CacheSerializableRunnable("Verify") {
+          @Override
           public void run2() throws CacheException {
             Region region =
               getRootRegion().getSubregion(name);
@@ -489,7 +470,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                 assertEquals(i, value.intValue());
 
               } catch (InterruptedException ex) {
-                com.gemstone.gemfire.test.dunit.Assert.fail("Why was I interrupted?", ex);
+                fail("Why was I interrupted?", ex);
               }
             }
           }
@@ -497,6 +478,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     AsyncInvocation ai0 =
       vm0.invokeAsync(new CacheSerializableRunnable("Populate") {
+          @Override
           public void run2() throws CacheException {
             Region region =
               getRootRegion().getSubregion(name);
@@ -511,10 +493,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     ThreadUtils.join(ai1, 30 * 1000);
 
     if (ai0.exceptionOccurred()) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("ai0 failed", ai0.getException());
+      fail("ai0 failed", ai0.getException());
 
     } else if (ai1.exceptionOccurred()) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("ai1 failed", ai1.getException());
+      fail("ai1 failed", ai1.getException());
     }
   }
 
@@ -522,7 +504,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that doing a distributed get results in a
    * <code>netSearch</code>.
    */
-  public void testDistributedGet() {
+  @Test
+  public void testDistributedGet() throws Exception {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
@@ -534,6 +517,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     VM vm1 = host.getVM(1);
 
     vm0.invoke(new CacheSerializableRunnable("Populate region") {
+        @Override
         public void run2() throws CacheException {
           Region region = createRegion(name);
           region.put(key, value);
@@ -541,6 +525,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     SerializableRunnable get = new CacheSerializableRunnable("Distributed get") {
+        @Override
         public void run2() throws CacheException {
           Region region = createRegion(name);
           assertEquals(value, region.get(key));
@@ -556,15 +541,15 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * in one VM does not effect a region in a different VM that does
    * not have that key defined.
    */
-  public void testDistributedPutNoUpdate()
-    throws InterruptedException {
-
+  @Test
+  public void testDistributedPutNoUpdate() throws Exception {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             createRegion(name);
           }
@@ -583,6 +568,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object value = "VALUE";
 
     vm0.invoke(new CacheSerializableRunnable("Put key/value") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -593,6 +579,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     Thread.sleep(250);
 
     vm1.invoke(new CacheSerializableRunnable("Verify no update") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(name);
           Region.Entry entry = region.getEntry(key);
@@ -612,7 +599,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * VM defines that entry.  The first VM updates the entry.  The
    * second VM should see the updated value.
    */
-  public void testDefinedEntryUpdated() {
+  @Test
+  public void testDefinedEntryUpdated() throws Exception {
     final String name = this.getUniqueName();
     final Object key = "KEY";
     final Object oldValue = "OLD_VALUE";
@@ -624,6 +612,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             createRegion(name);
           }
@@ -633,6 +622,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm1.invoke(create);
 
     vm0.invoke(new CacheSerializableRunnable("Create and populate") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -640,6 +630,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
     vm1.invoke(new CacheSerializableRunnable("Define entry") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -648,6 +639,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
     vm0.invoke(new CacheSerializableRunnable("Update entry") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -655,6 +647,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
     Invoke.invokeRepeatingIfNecessary(vm1, new CacheSerializableRunnable("Get entry") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -668,13 +661,15 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that {@linkplain Region#destroy destroying} an entry is
    * propagated to all VMs that define that entry.
    */
-  public void testDistributedDestroy() throws InterruptedException {
+  @Test
+  public void testDistributedDestroy() throws Exception {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
 //DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to create region");
             Region region = createRegion(name);
@@ -699,6 +694,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable put =
       new CacheSerializableRunnable("Put key/value") {
+          @Override
           public void run2() throws CacheException {
 //DebuggerSupport.waitForJavaDebugger(getLogWriter(), " about to put");
             Region region =
@@ -716,6 +712,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable verifyPut =
       new CacheSerializableRunnable("Verify Put") {
+          @Override
           public void run2() throws CacheException {
             Region root = getRootRegion();
             assertTrue(!root.isDestroyed());
@@ -731,6 +728,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm2.invoke(verifyPut);
 
     vm0.invoke(new CacheSerializableRunnable("Destroy Entry") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -741,6 +739,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     CacheSerializableRunnable verifyDestroy =
       new CacheSerializableRunnable("Verify entry destruction") {
+          @Override
           public void run2() throws CacheException {
             Region root = getRootRegion();
             assertTrue(!root.isDestroyed());
@@ -758,15 +757,15 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that {@linkplain Region#destroy destroying} a region is
    * propagated to all VMs that define that region.
    */
-  public void testDistributedRegionDestroy()
-    throws InterruptedException {
-
+  @Test
+  public void testDistributedRegionDestroy() throws Exception {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             createRegion(name);
           }
@@ -778,6 +777,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     VM vm0 = host.getVM(0);
 
     vm0.invoke(new CacheSerializableRunnable("Destroy Region") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -787,11 +787,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     Invoke.invokeInEveryVM(new CacheSerializableRunnable("Verify region destruction") {
+      @Override
       public void run2() throws CacheException {
         WaitCriterion ev = new WaitCriterion() {
+          @Override
           public boolean done() {
             return getRootRegion().getSubregion(name) == null;
           }
+          @Override
           public String description() {
             return "Waiting for region " + name + " to be destroyed";
           }
@@ -807,10 +810,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that a {@linkplain Region#localDestroy} does not effect
    * other VMs that define that entry.
    */
-  public void testLocalDestroy() throws InterruptedException {
-    if (!supportsLocalDestroyAndLocalInvalidate()) {
-      return;
-    }
+  @Test
+  public void testLocalDestroy() throws Exception {
+    assumeTrue(supportsLocalDestroyAndLocalInvalidate());
+
     // test not valid for persistBackup region since they have to be
     // mirrored KEYS_VALUES
     if (getRegionAttributes().getDataPolicy().withPersistence()) return;
@@ -821,6 +824,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             createRegion(name);
           }
@@ -840,6 +844,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable put =
       new CacheSerializableRunnable("Put key/value") {
+          @Override
           public void run2() throws CacheException {
             Region region =
               getRootRegion().getSubregion(name);
@@ -853,6 +858,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     Thread.sleep(250);
 
     vm0.invoke(new CacheSerializableRunnable("Local Destroy Entry") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -864,6 +870,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable verify =
       new CacheSerializableRunnable("Verify entry existence") {
+          @Override
           public void run2() throws CacheException {
             Region region = getRootRegion().getSubregion(name);
             assertNotNull(region.getEntry(key));
@@ -876,15 +883,15 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that a {@link Region#localDestroyRegion} is not propagated
    * to other VMs that define that region.
    */
-  public void testLocalRegionDestroy()
-    throws InterruptedException {
-
+  @Test
+  public void testLocalRegionDestroy() throws Exception {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             createRegion(name);
           }
@@ -900,6 +907,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     Thread.sleep(250);
 
     vm0.invoke(new CacheSerializableRunnable("Local Destroy Region") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -911,6 +919,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable verify =
       new CacheSerializableRunnable("Verify region existence") {
+          @Override
           public void run2() throws CacheException {
             Region region =
               getRootRegion().getSubregion(name);
@@ -924,13 +933,15 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that {@linkplain Region#invalidate invalidating} an entry is
    * propagated to all VMs that define that entry.
    */
-  public void testDistributedInvalidate() {
+  @Test
+  public void testDistributedInvalidate() throws Exception {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             createRegion(name);
           }
@@ -952,6 +963,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable put =
       new CacheSerializableRunnable("Put key/value") {
+          @Override
           public void run2() throws CacheException {
             Region region =
               getRootRegion().getSubregion(name);
@@ -965,6 +977,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm2.invoke(put);
 
     vm0.invoke(new CacheSerializableRunnable("Invalidate Entry") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -975,6 +988,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     CacheSerializableRunnable verify =
       new CacheSerializableRunnable("Verify entry invalidation") {
+          @Override
           public void run2() throws CacheException {
             Region region =
               getRootRegion().getSubregion(name);
@@ -999,7 +1013,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that {@linkplain Region#invalidate invalidating} an entry
    * in multiple VMs does not cause any problems.
    */
-  public void testDistributedInvalidate4() throws InterruptedException {
+  @Test
+  public void testDistributedInvalidate4() throws Exception {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
@@ -1008,6 +1023,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             createRegion(name);
           }
@@ -1022,6 +1038,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable put =
         new CacheSerializableRunnable("put entry") {
+            @Override
             public void run2() throws CacheException {
               Region region =
                   getRootRegion().getSubregion(name);
@@ -1037,6 +1054,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
       SerializableRunnable invalidate =
       new CacheSerializableRunnable("Invalidate Entry") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -1052,6 +1070,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable verify =
       new CacheSerializableRunnable("Verify entry invalidation") {
+          @Override
           public void run2() throws CacheException {
             Region region =
               getRootRegion().getSubregion(name);
@@ -1071,17 +1090,17 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that {@linkplain Region#invalidateRegion invalidating} a
    * region is propagated to all VMs that define that entry.
    */
-  public void testDistributedRegionInvalidate()
-    throws InterruptedException {
-    if (!supportsSubregions()) {
-      return;
-    }
+  @Test
+  public void testDistributedRegionInvalidate() throws Exception {
+    assumeTrue(supportsSubregions());
+
     final String name = this.getUniqueName();
     final String subname = "sub";
     final boolean useSubs = getRegionAttributes().getPartitionAttributes() == null;
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             Region region;
             region = createRegion(name);
@@ -1100,6 +1119,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable put =
       new CacheSerializableRunnable("Put key/value") {
+          @Override
           public void run2() throws CacheException {
             Region region =
               getRootRegion().getSubregion(name);
@@ -1122,6 +1142,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     VM vm0 = host.getVM(0);
 
     vm0.invoke(new CacheSerializableRunnable("Invalidate Region") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -1131,6 +1152,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     CacheSerializableRunnable verify =
       new CacheSerializableRunnable("Verify region invalidation") {
+          @Override
           public void run2() throws CacheException {
             Region region =
               getRootRegion().getSubregion(name);
@@ -1165,7 +1187,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that a {@link CacheListener} is invoked in a remote VM.
    */
   @Category(FlakyTest.class) // GEODE-153 & GEODE-932: time sensitive, waitForInvocation (waitForCriterion), 3 second timeouts
-  public void testRemoteCacheListener() throws InterruptedException {
+  @Test
+  public void testRemoteCacheListener() throws Exception {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
@@ -1177,6 +1200,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable populate =
       new CacheSerializableRunnable("Create Region and Put") {
+          @Override
           public void run2() throws CacheException {
             Region region = createRegion(name);
             region.put(key, oldValue);
@@ -1191,10 +1215,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm1.invoke(populate);
 
     vm1.invoke(new CacheSerializableRunnable("Set listener") {
+        @Override
         public void run2() throws CacheException {
           final Region region =
             getRootRegion().getSubregion(name);
           listener = new TestCacheListener() {
+              @Override
               public void afterUpdate2(EntryEvent event) {
                 assertEquals(Operation.UPDATE, event.getOperation());
                 assertEquals(region, event.getRegion());
@@ -1219,7 +1245,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                 try {
                   assertEquals(newValue, DataSerializer.readObject(dis));
                 } catch (Exception e) {
-                  com.gemstone.gemfire.test.dunit.Assert.fail("Unexpected Exception", e);
+                  fail("Unexpected Exception", e);
                 }
               }
             };
@@ -1238,6 +1264,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // If needed then do a flushIfNecessary(region) after adding the cache listener
 
     vm0.invoke(new CacheSerializableRunnable("Update") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -1246,6 +1273,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm1.invoke(new CacheSerializableRunnable("Verify Update") {
+        @Override
         public void run2() throws CacheException {
           listener.waitForInvocation(3000, 10);
 
@@ -1253,6 +1281,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           final Region region =
             getRootRegion().getSubregion(name);
           listener = new TestCacheListener() {
+              @Override
               public void afterInvalidate2(EntryEvent event) {
                 assertEquals(Operation.INVALIDATE, event.getOperation());
                 assertEquals(region, event.getRegion());
@@ -1272,7 +1301,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                 try {
                   assertEquals(newValue, DataSerializer.readObject(dis));
                 } catch (Exception e) {
-                  com.gemstone.gemfire.test.dunit.Assert.fail("Unexpected Exception", e);
+                  fail("Unexpected Exception", e);
                 }
               }
             };
@@ -1281,6 +1310,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Invalidate") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -1289,6 +1319,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm1.invoke(new CacheSerializableRunnable("Verify Invalidate") {
+        @Override
         public void run2() throws CacheException {
           listener.waitForInvocation(3000, 10);
 
@@ -1296,6 +1327,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           final Region region =
             getRootRegion().getSubregion(name);
           listener = new TestCacheListener() {
+              @Override
               public void afterDestroy2(EntryEvent event) {
                 assertTrue(event.getOperation().isDestroy());
                 assertEquals(region, event.getRegion());
@@ -1319,6 +1351,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Destroy") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -1327,6 +1360,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm1.invoke(new CacheSerializableRunnable("Verify Destroy") {
+        @Override
         public void run2() throws CacheException {
           listener.waitForInvocation(3000, 10);
 
@@ -1334,6 +1368,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           final Region region =
             getRootRegion().getSubregion(name);
           listener = new TestCacheListener() {
+              @Override
               public void afterRegionInvalidate2(RegionEvent event) {
                 assertEquals(Operation.REGION_INVALIDATE, event.getOperation());
                 assertEquals(region, event.getRegion());
@@ -1348,6 +1383,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Invalidate Region") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -1356,6 +1392,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm1.invoke(new CacheSerializableRunnable("Verify Invalidate Region") {
+        @Override
         public void run2() throws CacheException {
           listener.waitForInvocation(3000, 10);
 
@@ -1363,6 +1400,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           final Region region =
             getRootRegion().getSubregion(name);
           listener = new TestCacheListener() {
+              @Override
               public void afterRegionDestroy2(RegionEvent event) {
                 assertEquals(Operation.REGION_DESTROY, event.getOperation());
                 assertEquals(region, event.getRegion());
@@ -1377,6 +1415,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Destroy Region") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -1385,26 +1424,27 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm1.invoke(new CacheSerializableRunnable("Verify Destroy Region") {
+        @Override
         public void run2() throws CacheException {
           listener.waitForInvocation(3000, 10);
         }
       });
   }
 
-
   /**
    * Tests that a {@link CacheListener} is invoked in a remote VM.
    */
-  public void testRemoteCacheListenerInSubregion() throws InterruptedException {
-    if (!supportsSubregions()) {
-      return;
-    }
+  @Test
+  public void testRemoteCacheListenerInSubregion() throws Exception {
+    assumeTrue(supportsSubregions());
+
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             createRegion(name);
           }
@@ -1415,6 +1455,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final VM vm1 = host.getVM(1);
 
     vm0.invoke(new CacheSerializableRunnable("Create Root") {
+      @Override
       public void run2() throws CacheException {
         createRootRegion();
       }
@@ -1423,10 +1464,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm1.invoke(create);
 
     vm1.invoke(new CacheSerializableRunnable("Set listener") {
+        @Override
         public void run2() throws CacheException {
           final Region region =
             getRootRegion().getSubregion(name);
           listener = new TestCacheListener() {
+              @Override
               public void afterRegionInvalidate2(RegionEvent event) {
                 assertEquals(Operation.REGION_INVALIDATE, event.getOperation());
                 assertEquals(region, event.getRegion());
@@ -1441,12 +1484,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Invalidate Root Region") {
+        @Override
         public void run2() throws CacheException {
           getRootRegion().invalidateRegion(getSystem().getDistributedMember());
         }
       });
 
     vm1.invoke(new CacheSerializableRunnable("Verify Invalidate Region") {
+        @Override
         public void run2() throws CacheException {
           listener.waitForInvocation(3000, 10);
 
@@ -1454,6 +1499,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           final Region region =
             getRootRegion().getSubregion(name);
           listener = new TestCacheListener() {
+              @Override
               public void afterRegionDestroy2(RegionEvent event) {
                 assertEquals(Operation.REGION_DESTROY, event.getOperation());
                 assertEquals(region, event.getRegion());
@@ -1468,12 +1514,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Destroy Root Region") {
+        @Override
         public void run2() throws CacheException {
           getRootRegion().destroyRegion(getSystem().getDistributedMember());
         }
       });
 
     vm1.invoke(new CacheSerializableRunnable("Verify Destroy Region") {
+        @Override
         public void run2() throws CacheException {
           listener.waitForInvocation(3000, 10);
         }
@@ -1493,10 +1541,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that a {@link CacheLoader} is invoked in a remote VM.  This
    * essentially tests <code>netLoad</code>.
    */
-  public void testRemoteCacheLoader() throws InterruptedException {
-    if (!supportsNetLoad()) {
-      return;
-    }
+  @Test
+  public void testRemoteCacheLoader() throws Exception {
+    assumeTrue(supportsNetLoad());
+
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
@@ -1505,6 +1553,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             createRegion(name);
           }
@@ -1520,10 +1569,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
 
     vm1.invoke(new CacheSerializableRunnable("Set CacheLoader") {
+        @Override
         public void run2() throws CacheException {
           final Region region =
             getRootRegion().getSubregion(name);
           loader = new TestCacheLoader() {
+              @Override
               public Object load2(LoaderHelper helper)
                 throws CacheLoaderException {
                 assertEquals(region, helper.getRegion());
@@ -1538,6 +1589,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Remote load") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -1546,6 +1598,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm1.invoke(new SerializableRunnable("Verify loader") {
+        @Override
         public void run() {
           assertTrue(loader.wasInvoked());
         }
@@ -1556,10 +1609,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that the parameter passed to a remote {@link CacheLoader}
    * is actually passed.
    */
-  public void testRemoteCacheLoaderArg() throws InterruptedException {
-    if (!supportsNetLoad()) {
-      return;
-    }
+  @Test
+  public void testRemoteCacheLoaderArg() throws Exception {
+    assumeTrue(supportsNetLoad());
+
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
@@ -1569,6 +1622,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             createRegion(name);
             // Can't test non-Serializable callback argument here
@@ -1587,10 +1641,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm1.invoke(create);
 
     vm1.invoke(new CacheSerializableRunnable("Set CacheLoader") {
+        @Override
         public void run2() throws CacheException {
           final Region region =
             getRootRegion().getSubregion(name);
           loader = new TestCacheLoader() {
+              @Override
               public Object load2(LoaderHelper helper)
                 throws CacheLoaderException {
                 assertEquals(region, helper.getRegion());
@@ -1606,6 +1662,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Remote load") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -1627,6 +1684,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm1.invoke(new SerializableRunnable("Verify loader") {
+        @Override
         public void run() {
           assertTrue(loader.wasInvoked());
         }
@@ -1637,23 +1695,22 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that a remote {@link CacheLoader} that throws a {@link
    * CacheLoaderException} results is propagated back to the caller.
    */
-  public void testRemoteCacheLoaderException() throws InterruptedException {
-    if (!supportsNetLoad()) {
-      return;
-    }
+  @Test
+  public void testRemoteCacheLoaderException() throws Exception {
+    assumeTrue(supportsNetLoad());
+
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
     final Object key = "KEY";
-//    final Object value = "VALUE";
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             createRegion(name);
           }
         };
-
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -1663,10 +1720,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm1.invoke(create);
 
     vm1.invoke(new CacheSerializableRunnable("Set CacheLoader") {
+        @Override
         public void run2() throws CacheException {
           final Region region =
             getRootRegion().getSubregion(name);
           loader = new TestCacheLoader() {
+              @Override
               public Object load2(LoaderHelper helper)
                 throws CacheLoaderException {
                 assertEquals(region, helper.getRegion());
@@ -1683,6 +1742,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Remote load") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -1697,23 +1757,21 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm1.invoke(new SerializableRunnable("Verify loader") {
+        @Override
         public void run() {
           assertTrue(loader.wasInvoked());
         }
       });
   }
 
+  @Test
+  public void testCacheLoaderWithNetSearch() throws Exception {
+    assumeTrue(supportsNetLoad());
 
-  public void testCacheLoaderWithNetSearch() throws CacheException {
-    if (!supportsNetLoad()) {
-      return;
-    }
     // some tests use mirroring by default (e.g. persistBackup regions)
     // if so, then this test won't work right
-    if (getRegionAttributes().getDataPolicy().withReplication()
-        || getRegionAttributes().getDataPolicy().isPreloaded()) {
-      return;
-    }
+    assumeFalse(getRegionAttributes().getDataPolicy().withReplication());
+    assumeFalse(getRegionAttributes().getDataPolicy().isPreloaded());
 
     final String name = this.getUniqueName();
     final Object key = this.getUniqueName();
@@ -1723,20 +1781,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // use vm on other gemfire system
     VM vm1 = host.getVM(1);
     vm1.invoke(new CacheSerializableRunnable("set remote value") {
+      @Override
       public void run2() throws CacheException {
-//        final TestCacheLoader remoteloader = new TestCacheLoader() {
-//            public Object load2(LoaderHelper helper)
-//              throws CacheLoaderException {
-//
-//              assertIndexDetailsEquals(key, helper.getKey());
-//              assertIndexDetailsEquals(name, helper.getRegion().getName());
-//              return value;
-//            }
-//          };
-//
-//        AttributesFactory factory =
-//          new AttributesFactory(getRegionAttributes());
-//        factory.setCacheLoader(remoteloader);
         Region rgn = createRegion(name);
         rgn.put(key, value);
         flushIfNecessary(rgn);
@@ -1744,6 +1790,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     });
 
     final TestCacheLoader loader1 = new TestCacheLoader() {
+        @Override
         public Object load2(LoaderHelper helper)
           throws CacheLoaderException {
 
@@ -1756,7 +1803,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             assertEquals(value, result);
             return result;
           } catch (TimeoutException ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("Why did I time out?", ex);
+            fail("Why did I time out?", ex);
           }
           return null;
         }
@@ -1779,13 +1826,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     // make sure value is still there in vm1
     vm1.invoke(new CacheSerializableRunnable("verify remote value") {
+      @Override
       public void run2() throws CacheException {
         Region rgn = getRootRegion().getSubregion(name);
         assertEquals(value, rgn.getEntry(key).getValue());
       }
     });
 
-//    com.gemstone.gemfire.internal.util.DebuggerSupport.waitForJavaDebugger(getLogWriter());
     assertEquals(value, region.get(key));
     // if global scope, then a netSearch is done BEFORE the loader is invoked,
     // so we get the value but the loader is never invoked.
@@ -1798,18 +1845,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     assertEquals(value, region.getEntry(key).getValue());
   }
 
-
-  public void testCacheLoaderWithNetLoad() throws CacheException {
-
-
+  @Test
+  public void testCacheLoaderWithNetLoad() throws Exception {
     // replicated regions and partitioned regions make no sense for this
     // test
-    if (getRegionAttributes().getDataPolicy().withReplication() ||
-        getRegionAttributes().getDataPolicy().isPreloaded() ||
-        getRegionAttributes().getPartitionAttributes() != null)
-    {
-      return;
-    }
+    assumeFalse(getRegionAttributes().getDataPolicy().withReplication());
+    assumeFalse(getRegionAttributes().getDataPolicy().isPreloaded());
+    assumeTrue(getRegionAttributes().getPartitionAttributes() == null);
 
     final String name = this.getUniqueName();
     final Object key = this.getUniqueName();
@@ -1819,8 +1861,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // use vm on other gemfire system
     VM vm1 = host.getVM(1);
     vm1.invoke(new CacheSerializableRunnable("set up remote loader") {
+      @Override
       public void run2() throws CacheException {
         final TestCacheLoader remoteloader = new TestCacheLoader() {
+            @Override
             public Object load2(LoaderHelper helper)
               throws CacheLoaderException {
 
@@ -1838,6 +1882,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     });
 
     final TestCacheLoader loader1 = new TestCacheLoader() {
+        @Override
         public Object load2(LoaderHelper helper)
           throws CacheLoaderException {
 
@@ -1850,7 +1895,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             assertEquals(value, result);
             return result;
           } catch (TimeoutException ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("Why did I time out?", ex);
+            fail("Why did I time out?", ex);
           }
           return null;
         }
@@ -1871,7 +1916,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     assertNotNull(entry);
     assertNull(entry.getValue());
 
-//    com.gemstone.gemfire.internal.util.DebuggerSupport.waitForJavaDebugger(getLogWriter());
     assertEquals(value, region.get(key));
 
     assertTrue(loader1.wasInvoked());
@@ -1883,15 +1927,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that {@link Region#get} returns <code>null</code> when
    * there is no remote loader.
    */
-  public void testNoRemoteCacheLoader() throws InterruptedException {
+  @Test
+  public void testNoRemoteCacheLoader() throws Exception {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
     final Object key = "KEY";
-//    final Object value = "VALUE";
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             createRegion(name);
           }
@@ -1904,6 +1949,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm1.invoke(create);
 
     vm0.invoke(new CacheSerializableRunnable("Remote load") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -1917,19 +1963,21 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * the remote region has an invalid entry (that is, a key, but no
    * value).
    */
-  public void testNoLoaderWithInvalidEntry() {
-    if (!supportsNetLoad()) {
-      return;
-    }
+  @Test
+  public void testNoLoaderWithInvalidEntry() throws Exception {
+    assumeTrue(supportsNetLoad());
+
     final String name = this.getUniqueName();
     final Object key = "KEY";
     final Object value = "VALUE";
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             Region region = createRegion(name);
             loader = new TestCacheLoader() {
+                @Override
                 public Object load2(LoaderHelper helper)
                   throws CacheLoaderException {
 
@@ -1949,6 +1997,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm1.invoke(create);
 
     vm1.invoke(new CacheSerializableRunnable("Create invalid entry") {
+      @Override
       public void run2() throws CacheException {
         Region region =
           getRootRegion().getSubregion(name);
@@ -1957,16 +2006,17 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Remote get") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
-// DebuggerSupport.waitForJavaDebugger(getLogWriter());
           assertEquals(value, region.get(key));
           assertTrue(loader.wasInvoked());
         }
       });
 
     vm1.invoke(new SerializableRunnable("Verify loader") {
+        @Override
         public void run() {
           assertFalse(loader.wasInvoked());
         }
@@ -1978,7 +2028,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * <code>CacheWriter</code> arguments and {@link
    * CacheWriterException}s are propagated appropriately.
    */
-  public void testRemoteCacheWriter() throws InterruptedException {
+  @Test
+  public void testRemoteCacheWriter() throws Exception {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
@@ -1993,6 +2044,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             Region region = createRegion(name);
 
@@ -2023,10 +2075,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     ////////  Create
 
     vm1.invoke(new CacheSerializableRunnable("Set Writer") {
+        @Override
         public void run2() throws CacheException {
           final Region region =
             getRootRegion().getSubregion(name);
           writer = new TestCacheWriter() {
+              @Override
               public void beforeCreate2(EntryEvent event)
                 throws CacheWriterException {
 
@@ -2056,6 +2110,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Create with Exception") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2076,12 +2131,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm1.invoke(new SerializableRunnable("Verify callback") {
+        @Override
         public void run() {
           assertTrue(writer.wasInvoked());
         }
       });
 
     vm0.invoke(new CacheSerializableRunnable("Create with Argument") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2099,6 +2156,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
     vm1.invoke(new SerializableRunnable("Verify callback") {
+        @Override
         public void run() {
           assertTrue(writer.wasInvoked());
         }
@@ -2107,10 +2165,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     ////////  Update
 
     vm1.invoke(new CacheSerializableRunnable("Set Writer") {
+        @Override
         public void run2() throws CacheException {
           final Region region =
             getRootRegion().getSubregion(name);
           writer = new TestCacheWriter() {
+              @Override
               public void beforeUpdate2(EntryEvent event)
                 throws CacheWriterException {
 
@@ -2142,6 +2202,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Update with Exception") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2166,12 +2227,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
     vm1.invoke(new SerializableRunnable("Verify callback") {
+        @Override
         public void run() {
           assertTrue(writer.wasInvoked());
         }
       });
 
     vm0.invoke(new CacheSerializableRunnable("Update with Argument") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2185,6 +2248,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
     vm1.invoke(new SerializableRunnable("Verify callback") {
+        @Override
         public void run() {
           assertTrue(writer.wasInvoked());
         }
@@ -2193,10 +2257,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     ////////  Destroy
 
     vm1.invoke(new CacheSerializableRunnable("Set Writer") {
+        @Override
         public void run2() throws CacheException {
           final Region region =
             getRootRegion().getSubregion(name);
           writer = new TestCacheWriter() {
+              @Override
               public void beforeDestroy2(EntryEvent event)
                 throws CacheWriterException {
 
@@ -2227,6 +2293,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Destroy with Exception") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2246,12 +2313,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
     vm1.invoke(new SerializableRunnable("Verify callback") {
+        @Override
         public void run() {
           assertTrue(writer.wasInvoked());
         }
       });
 
     vm0.invoke(new CacheSerializableRunnable("Destroy with Argument") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2265,6 +2334,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
        }
       });
     vm1.invoke(new SerializableRunnable("Verify callback") {
+        @Override
         public void run() {
           assertTrue(writer.wasInvoked());
         }
@@ -2273,10 +2343,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     ////////  Region Destroy
 
     vm1.invoke(new CacheSerializableRunnable("Set Writer") {
+        @Override
         public void run2() throws CacheException {
           final Region region =
             getRootRegion().getSubregion(name);
           writer = new TestCacheWriter() {
+              @Override
               public void beforeRegionDestroy2(RegionEvent event)
                 throws CacheWriterException {
 
@@ -2300,6 +2372,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Destroy with Exception") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2309,7 +2382,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
           } catch (CacheWriterException ex) {
             if (region.isDestroyed()) {
-              com.gemstone.gemfire.test.dunit.Assert.fail("should not have an exception if region is destroyed", ex);
+              fail("should not have an exception if region is destroyed", ex);
             }
             assertEquals(1, region.size());
             if (region.getAttributes().getOffHeap() && !(region instanceof PartitionedRegion)) {
@@ -2321,12 +2394,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
     vm1.invoke(new SerializableRunnable("Verify callback") {
+        @Override
         public void run() {
           assertTrue(writer.wasInvoked());
         }
       });
 
     vm0.invoke(new CacheSerializableRunnable("Destroy with Argument") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2341,9 +2416,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             GemFireCacheImpl gfc = (GemFireCacheImpl) getCache();
             final MemoryAllocatorImpl ma = (MemoryAllocatorImpl) gfc.getOffHeapStore();
             WaitCriterion waitForStatChange = new WaitCriterion() {
+              @Override
               public boolean done() {
                 return ma.getStats().getObjects() == 0;
               }
+              @Override
               public String description() {
                 return "never saw off-heap object count go to zero. Last value was " + ma.getStats().getObjects();
               }
@@ -2353,6 +2430,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
     vm1.invoke(new SerializableRunnable("Verify callback") {
+        @Override
         public void run() {
           assertTrue(writer.wasInvoked());
         }
@@ -2363,9 +2441,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that, when given a choice, a local <code>CacheWriter</code>
    * is invoked instead of a remote one.
    */
-  public void testLocalAndRemoteCacheWriters()
-    throws InterruptedException {
-
+  @Test
+  public void testLocalAndRemoteCacheWriters() throws Exception {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
@@ -2378,18 +2455,23 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     VM vm1 = host.getVM(1);
 
     vm0.invoke(new CacheSerializableRunnable("Create \"Local\" Region") {
+        @Override
         public void run2() throws CacheException {
           Region region = createRegion(name);
           writer = new TestCacheWriter() {
+              @Override
               public void beforeUpdate2(EntryEvent event)
                 throws CacheWriterException { }
 
+              @Override
               public void beforeCreate2(EntryEvent event)
                 throws CacheWriterException { }
 
+              @Override
               public void beforeDestroy2(EntryEvent event)
                 throws CacheWriterException { }
 
+              @Override
               public void beforeRegionDestroy2(RegionEvent event)
                 throws CacheWriterException { }
           };
@@ -2398,6 +2480,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
    SerializableRunnable create = new CacheSerializableRunnable("Create \"Local\" Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = createRegion(name);
         writer = new TestCacheWriter() { };
@@ -2409,12 +2492,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable verify = new
       SerializableRunnable("Verify no callback") {
+        @Override
         public void run() {
           assertFalse(writer.wasInvoked());
         }
       };
 
     vm0.invoke(new CacheSerializableRunnable("Create entry") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2425,6 +2510,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm1.invoke(verify);
 
     vm0.invoke(new CacheSerializableRunnable("Update entry") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2435,6 +2521,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm1.invoke(verify);
 
     vm0.invoke(new CacheSerializableRunnable("Destroy entry") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2445,6 +2532,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm1.invoke(verify);
 
     vm0.invoke(new CacheSerializableRunnable("Destroy region") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2460,9 +2548,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * argument in place, the change is visible to the
    * <code>CacheWriter</code> even if it is in another VM.
    */
-  public void testCacheLoaderModifyingArgument()
-    throws InterruptedException {
-
+  @Test
+  public void testCacheLoaderModifyingArgument() throws Exception {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
@@ -2473,6 +2560,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             createRegion(name);
           }
@@ -2487,10 +2575,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm1.invoke(create);
 
     CacheSerializableRunnable setLoader = new CacheSerializableRunnable("Set CacheLoader") {
+      @Override
       public void run2() throws CacheException {
         final Region region =
           getRootRegion().getSubregion(name);
         loader = new TestCacheLoader() {
+            @Override
             public Object load2(LoaderHelper helper)
               throws CacheLoaderException {
 
@@ -2509,10 +2599,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     // if  this is a partitioned region, we need the loader in both vms
     vm1.invoke(new CacheSerializableRunnable("Conditionally create second loader") {
+      @Override
       public void run2() throws CacheException {
         final Region region = getRootRegion().getSubregion(name);
         if (region.getAttributes().getPartitionAttributes() != null) {
           loader = new TestCacheLoader() {
+            @Override
             public Object load2(LoaderHelper helper)
               throws CacheLoaderException {
 
@@ -2528,9 +2620,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     });
 
     vm1.invoke(new CacheSerializableRunnable("Set CacheWriter") {
+        @Override
         public void run2() throws CacheException {
           final Region region = getRootRegion().getSubregion(name);
           writer = new TestCacheWriter() {
+              @Override
               public void beforeCreate2(EntryEvent event)
                 throws CacheWriterException {
 
@@ -2544,6 +2638,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Create entry") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2555,24 +2650,21 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm1.invoke(new CacheSerializableRunnable("Validate callback") {
+        @Override
         public void run2() throws CacheException {
-//          if (getRootRegion().getSubregion(name).getAttributes()
-//              .getPartitionAttributes() == null) { // bug 36500 - remove check when fixed
-            assertTrue(writer.wasInvoked());
-//          }
+          assertTrue(writer.wasInvoked());
         }
       });
   }
-
 
   /**
    * Tests that invoking <code>netSearch</code> in a remote loader
    * returns <code>null</code> instead of causing infinite recursion.
    */
-  public void testRemoteLoaderNetSearch() throws CacheException {
-    if (!supportsNetLoad()) {
-      return;
-    }
+  @Test
+  public void testRemoteLoaderNetSearch() throws Exception {
+    assumeTrue(supportsNetLoad());
+
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
@@ -2584,6 +2676,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     VM vm1 = host.getVM(1);
 
     SerializableRunnable create = new CacheSerializableRunnable("Get value") {
+        @Override
         public void run2() throws CacheException {
           Region region = createRegion(name);
           assertEquals(value, region.get(key));
@@ -2592,10 +2685,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
 
     vm0.invoke(new CacheSerializableRunnable("Create Region") {
+        @Override
         public void run2() throws CacheException {
           Region region = createRegion(name);
           region.getAttributesMutator().setCacheLoader(new
             TestCacheLoader() {
+              @Override
               public Object load2(LoaderHelper helper)
                 throws CacheLoaderException {
 
@@ -2603,7 +2698,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                   assertNull(helper.netSearch(true));
 
                 } catch (TimeoutException ex) {
-                  com.gemstone.gemfire.test.dunit.Assert.fail("Why did I time out?", ex);
+                  fail("Why did I time out?", ex);
                 }
                 return value;
               }
@@ -2617,7 +2712,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   /**
    * Tests that a local loader is preferred to a remote one
    */
-  public void testLocalCacheLoader() {
+  @Test
+  public void testLocalCacheLoader() throws Exception {
     final String name = this.getUniqueName();
     final Object key = "KEY";
     final Object value = "VALUE";
@@ -2627,9 +2723,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     VM vm1 = host.getVM(1);
 
     SerializableRunnable create = new CacheSerializableRunnable("Create \"remote\" region") {
+        @Override
         public void run2() throws CacheException {
           Region region = createRegion(name);
           loader = new TestCacheLoader() {
+              @Override
               public Object load2(LoaderHelper helper)
                 throws CacheLoaderException {
                 if (helper.getRegion().getAttributes().getPartitionAttributes() == null) {
@@ -2647,10 +2745,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
 
     vm0.invoke(new CacheSerializableRunnable("Create \"local\" region") {
+        @Override
         public void run2() throws CacheException {
           Region region = createRegion(name);
           region.getAttributesMutator().setCacheLoader(new
             TestCacheLoader() {
+              @Override
               public Object load2(LoaderHelper helper)
                 throws CacheLoaderException {
                 return value;
@@ -2663,6 +2763,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
 
     vm0.invoke(new CacheSerializableRunnable("Get") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2670,6 +2771,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
     vm1.invoke(new SerializableRunnable("Verify loader not invoked") {
+        @Override
         public void run() {
           assertFalse(loader.wasInvoked());
         }
@@ -2680,22 +2782,25 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that an entry update is propagated to other caches that
    * have that same entry defined.
    */
+  @Test
   public void testDistributedPut() throws Exception {
     final String rgnName = getUniqueName();
 
     SerializableRunnable create = new SerializableRunnable("testDistributedPut: Create Region") {
+      @Override
       public void run() {
         try {
           createRegion(rgnName);
           getSystem().getLogWriter().info("testDistributedPut: Created Region");
         }
         catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", e);
+          fail("While creating region", e);
         }
       }
     };
 
     SerializableRunnable newKey = new SerializableRunnable("testDistributedPut: Create Key") {
+      @Override
       public void run() {
         try {
           if (!getRegionAttributes().getDataPolicy().withReplication() &&
@@ -2707,7 +2812,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
          }
         }
         catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", e);
+          fail("While creating region", e);
         }
       }
     };
@@ -2738,6 +2843,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       getSystem().getLogWriter().info("testDistributedPut: Put Value");
 
       Invoke.invokeInEveryVMRepeatingIfNecessary(new CacheSerializableRunnable("testDistributedPut: Verify Received Value") {
+        @Override
         public void run2() {
           Region rgn1 = getRootRegion().getSubregion(rgnName);
           assertNotNull("Could not find entry for 'key'", rgn1.getEntry("key"));
@@ -2868,11 +2974,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that keys and values are pushed with {@link
    * DataPolicy#REPLICATE}.
    */
-  public void testReplicate() throws InterruptedException {
-    if (!supportsReplication()) {
-      return;
-    }
-    //pauseIfNecessary(100); // wait for previous tearDown to complete
+  @Test
+  public void testReplicate() throws Exception {
+    assumeTrue(supportsReplication());
 
     final String name = this.getUniqueName();
     final Object key1 = "KEY1";
@@ -2892,6 +2996,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable create = new
       CacheSerializableRunnable("Create Mirrored Region") {
+        @Override
         public void run2() throws CacheException {
           RegionAttributes ra = getRegionAttributes();
           AttributesFactory factory =
@@ -2909,6 +3014,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm2.invoke(create);
 
     vm0.invoke(new CacheSerializableRunnable("Put data") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2920,6 +3026,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     Invoke.invokeRepeatingIfNecessary(vm2, new CacheSerializableRunnable("Wait for update") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         assertNotNull(region.getEntry(key1));
@@ -2931,6 +3038,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // Destroy the local entries so we know that they are not found by
     // a netSearch
     vm0.invoke(new CacheSerializableRunnable("Remove local entries") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2940,6 +3048,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     Invoke.invokeRepeatingIfNecessary(vm2, new CacheSerializableRunnable("Verify keys") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -2966,10 +3075,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that a newly-created mirrored region contains all of the
    * entries of another region.
    */
-  public void testGetInitialImage() {
-    if (!supportsReplication()) {
-      return;
-    }
+  @Test
+  public void testGetInitialImage() throws Exception {
+    assumeTrue(supportsReplication());
+
     final String name = this.getUniqueName();
     final Object key1 = "KEY1";
     final Object value1 = "VALUE1";
@@ -2984,6 +3093,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable create = new
       CacheSerializableRunnable("Create Mirrored Region") {
+        @Override
         public void run2() throws CacheException {
           RegionAttributes ra = getRegionAttributes();
           AttributesFactory factory =
@@ -2997,10 +3107,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       };
 
-
     vm0.invoke(create);
 
     vm0.invoke(new CacheSerializableRunnable("Put data") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -3015,6 +3125,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // Destroy the local entries so we know that they are not found by
     // a netSearch
     vm0.invoke(new CacheSerializableRunnable("Remove local entries") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -3023,6 +3134,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm2.invoke(new CacheSerializableRunnable("Verify keys/values") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -3042,18 +3154,18 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
   }
 
-
   private static final int CHUNK_SIZE = 500 * 1024; // == InitialImageOperation.CHUNK_SIZE_IN_BYTES
   private static final int NUM_ENTRIES = 100;
   private static final int VALUE_SIZE = CHUNK_SIZE * 10 / NUM_ENTRIES;
+
   /**
    * Tests that a newly-created mirrored region contains all of the
    * entries of another region, with a large quantity of data.
    */
-  public void testLargeGetInitialImage() {
-    if (!supportsReplication()) {
-      return;
-    }
+  @Test
+  public void testLargeGetInitialImage() throws Exception {
+    assumeTrue(supportsReplication());
+
     final String name = this.getUniqueName();
     final Integer[] keys = new Integer[NUM_ENTRIES];
     final byte[][] values = new byte[NUM_ENTRIES][];
@@ -3070,6 +3182,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable create = new
       CacheSerializableRunnable("Create Mirrored Region") {
+        @Override
         public void run2() throws CacheException {
           RegionAttributes ra = getRegionAttributes();
           AttributesFactory factory =
@@ -3087,6 +3200,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm0.invoke(create);
 
     vm0.invoke(new CacheSerializableRunnable("Put data") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -3101,6 +3215,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // Destroy the local entries so we know that they are not found by
     // a netSearch
     vm0.invoke(new CacheSerializableRunnable("Remove local entries") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -3109,6 +3224,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm2.invoke(new CacheSerializableRunnable("Verify keys/values") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -3129,11 +3245,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that a mirrored region gets data pushed to it from a
    * non-mirrored region and the afterCreate event is invoked on a listener.
    */
-  public void testMirroredDataFromNonMirrored()
-    throws InterruptedException {
-    if (!supportsReplication()) {
-      return;
-    }
+  @Test
+  public void testMirroredDataFromNonMirrored() throws Exception {
+    assumeTrue(supportsReplication());
 
     final String name = this.getUniqueName();
     final Object key1 = "KEY1";
@@ -3148,6 +3262,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     VM vm2 = host.getVM(2); // use a VM on a different gemfire system
 
     SerializableRunnable create = new CacheSerializableRunnable("Populate non-mirrored region") {
+      @Override
       public void run2() throws CacheException {
         RegionAttributes ra = getRegionAttributes();
         AttributesFactory fac =
@@ -3173,6 +3288,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       List expectedValues = new ArrayList(Arrays.asList(new Object[] {
         value1, value2, value3}));
 
+      @Override
       public synchronized void afterCreate2(EntryEvent event) {
         //getLogWriter().info("Invoking afterCreate2 with key=" + event.getKey());
         int index = expectedKeys.indexOf(event.getKey());
@@ -3185,6 +3301,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     }
 
     vm0.invoke(new CacheSerializableRunnable("Create Mirrored Region") {
+        @Override
         public void run2() throws CacheException {
           RegionAttributes ra = getRegionAttributes();
           AttributesFactory factory =
@@ -3204,6 +3321,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // Destroy the local entries so we know that they are not found by
     // a netSearch
     vm2.invoke(new CacheSerializableRunnable("Remove local entries") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -3215,6 +3333,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Verify keys/values and listener") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -3247,11 +3366,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that a mirrored region does not push data to a non-mirrored
    * region.
    */
-  public void testNoMirroredDataToNonMirrored()
-    throws InterruptedException {
-    if (!supportsReplication()) {
-      return;
-    }
+  @Test
+  public void testNoMirroredDataToNonMirrored() throws Exception {
+    assumeTrue(supportsReplication());
 
     final String name = this.getUniqueName();
     final Object key1 = "KEY1";
@@ -3266,12 +3383,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     VM vm2 = host.getVM(2); // use VM on different gemfire system
 
     vm0.invoke(new CacheSerializableRunnable("Create Non-mirrored Region") {
+        @Override
         public void run2() throws CacheException {
           createRegion(name, getRegionAttributes());
         }
       });
 
     SerializableRunnable create = new CacheSerializableRunnable("Populate mirrored region") {
+      @Override
       public void run2() throws CacheException {
         RegionAttributes ra = getRegionAttributes();
         AttributesFactory factory =
@@ -3294,6 +3413,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     // Make sure that data wasn't pushed
     vm0.invoke(new CacheSerializableRunnable("Verify keys/values") {
+        @Override
         public void run2() throws CacheException {
           final Region region =
             getRootRegion().getSubregion(name);
@@ -3330,10 +3450,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   /**
    * Tests that a local load occurs, even with mirroring
    */
-  public void testMirroredLocalLoad() {
-    if (!supportsReplication()) {
-      return;
-    }
+  @Test
+  public void testMirroredLocalLoad() throws Exception {
+    assumeTrue(supportsReplication());
+
     final String name = this.getUniqueName();
     final Object key = "KEY";
     final Object value = "VALUE";
@@ -3343,6 +3463,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     VM vm2 = host.getVM(2); // use VMs on different gemfire systems
 
     vm0.invoke(new CacheSerializableRunnable("Create region with loader") {
+        @Override
         public void run2() throws CacheException {
           RegionAttributes ra = getRegionAttributes();
           AttributesFactory factory =
@@ -3353,6 +3474,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           }
           factory.setDataPolicy(DataPolicy.REPLICATE);
           factory.setCacheLoader(new TestCacheLoader() {
+              @Override
               public Object load2(LoaderHelper helper)
                 throws CacheLoaderException {
                 return value;
@@ -3363,6 +3485,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     });
 
     SerializableRunnable create = new CacheSerializableRunnable("Create region with bad loader") {
+      @Override
       public void run2() throws CacheException {
         RegionAttributes ra = getRegionAttributes();
         AttributesFactory factory =
@@ -3373,6 +3496,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
         factory.setDataPolicy(DataPolicy.REPLICATE);
         loader = new TestCacheLoader() {
+          @Override
           public Object load2(LoaderHelper helper)
           throws CacheLoaderException {
 
@@ -3389,6 +3513,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm2.invoke(create);
 
     vm0.invoke(new CacheSerializableRunnable("Get") {
+      @Override
       public void run2() throws CacheException {
        Region region =
          getRootRegion().getSubregion(name);
@@ -3397,6 +3522,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     });
 
     vm2.invoke(new CacheSerializableRunnable("Verify no load") {
+      @Override
       public void run2() throws CacheException {
        assertFalse(loader.wasInvoked());
       }
@@ -3407,10 +3533,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests sure that a <code>netLoad</code> occurs, even with
    * mirroring
    */
-  public void testMirroredNetLoad() {
-    if (!supportsReplication()) {
-      return;
-    }
+  @Test
+  public void testMirroredNetLoad() throws Exception {
+    assumeTrue(supportsReplication());
+
     final String name = this.getUniqueName();
     final Object key = "KEY";
     final Object value = "VALUE";
@@ -3420,6 +3546,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     VM vm2 = host.getVM(2); // use VMs on different gemfire systems
 
     SerializableRunnable create = new CacheSerializableRunnable("Create region with loader") {
+      @Override
       public void run2() throws CacheException {
           RegionAttributes ra = getRegionAttributes();
           AttributesFactory factory =
@@ -3430,6 +3557,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           }
           factory.setDataPolicy(DataPolicy.REPLICATE);
           factory.setCacheLoader(new TestCacheLoader() {
+              @Override
               public Object load2(LoaderHelper helper)
                 throws CacheLoaderException {
                 return value;
@@ -3441,6 +3569,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
 
     vm0.invoke(new CacheSerializableRunnable("Create region with bad loader") {
+        @Override
         public void run2() throws CacheException {
           RegionAttributes ra = getRegionAttributes();
           AttributesFactory factory =
@@ -3457,6 +3586,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm2.invoke(create);
 
     vm0.invoke(new CacheSerializableRunnable("Get") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -3465,12 +3595,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
   }
 
-  ////////  Region Keep Alive Tests
-
   /**
    * Tests that a region is not kept alive
    */
-  public void testNoRegionKeepAlive() throws InterruptedException {
+  @Test
+  public void testNoRegionKeepAlive() throws Exception {
     final String name = this.getUniqueName();
     final Object key = "KEEP_ALIVE_KEY";
     final Object value = "VALUE";
@@ -3479,12 +3608,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     VM vm0 = host.getVM(0);
 
     vm0.invoke(new CacheSerializableRunnable("Create region") {
+        @Override
         public void run2() throws CacheException {
           createRegion(name);
         }
       });
 
     vm0.invoke(new CacheSerializableRunnable("Populate region") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -3493,12 +3624,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       });
     vm0.invoke(new CacheSerializableRunnable("Close cache") {
+        @Override
         public void run2() throws CacheException {
           closeCache();
         }
       });
 
     vm0.invoke(new CacheSerializableRunnable("Re-create cache") {
+        @Override
         public void run2() throws CacheException {
           Region region = createRegion(name);
           // if this is a backup region, then it will find the data
@@ -3513,14 +3646,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
   }
 
+  @Test
+  public void testNetSearchObservesTtl() throws Exception {
+    assumeTrue(getRegionAttributes().getPartitionAttributes() == null);
 
-
-  public void testNetSearchObservesTtl()
-  throws InterruptedException
-  {
-    if(getRegionAttributes().getPartitionAttributes() != null)
-      return;
-    
     final String name = this.getUniqueName();
     final int shortTimeout = 10; // ms
     final int longTimeout = 1000000; // ms
@@ -3532,6 +3661,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     VM vm1 = host.getVM(2);  // Other VM is from a different gemfire system
 
     SerializableRunnable create = new CacheSerializableRunnable("Create with TTL") {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory(getRegionAttributes());
         factory.setStatisticsEnabled(true);
@@ -3554,6 +3684,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     // vm0 - Create region, short timeout
     vm0.invoke(new CacheSerializableRunnable("Create with TTL") {
+      @Override
       public void run2() throws CacheException {
         RegionAttributes ra = getRegionAttributes();
         AttributesFactory factory =
@@ -3587,6 +3718,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // Even though netSearch finds vm1's entry is not expired, it is considered
     // expired with respect to vm0's attributes
     vm0.invoke(new CacheSerializableRunnable("get(key), expect null") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         Object got = region.get(key);
@@ -3596,6 +3728,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     // We see the object is actually still there
     vm1.invoke(new CacheSerializableRunnable("get(key), expect value") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         Object got = region.get(key);
@@ -3604,12 +3737,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     });
   }
 
-  public void testNetSearchObservesIdleTime()
-  throws InterruptedException
-  {
-    if(getRegionAttributes().getPartitionAttributes() != null)
-      return;
-    
+  @Test
+  public void testNetSearchObservesIdleTime() throws Exception {
+    assumeTrue(getRegionAttributes().getPartitionAttributes() == null);
+
     final String name = this.getUniqueName();
     final int shortTimeout = 10; // ms
     final int longTimeout = 10000; // ms
@@ -3623,6 +3754,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final VM vm1 = host.getVM(2);
 
     SerializableRunnable create = new CacheSerializableRunnable("Create with IdleTimeout") {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory(getRegionAttributes());
         factory.setStatisticsEnabled(true);
@@ -3645,6 +3777,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     // vm0 - Create region, short timeout
     vm0.invoke(new CacheSerializableRunnable("Create with IdleTimeout") {
+      @Override
       public void run2() throws CacheException {
         RegionAttributes ra = getRegionAttributes();
         AttributesFactory factory =
@@ -3678,6 +3811,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // Even though netSearch finds vm1's entry is not expired, it is considered
     // expired with respect to vm0's attributes
     vm0.invoke(new CacheSerializableRunnable("get(key), expect null") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         Object got = region.get(key);
@@ -3687,6 +3821,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     // We see the object is actually still there
     vm1.invoke(new CacheSerializableRunnable("get(key), expect value") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         Object got = region.get(key);
@@ -3695,425 +3830,452 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     });
   }
 
-
-  static TestCacheListener destroyListener = null;
+  private static TestCacheListener destroyListener = null;
 
   /**
    * Tests that an entry in a distributed region that expires with a distributed
    * destroy causes an event in other VM with isExpiration flag set.
    */
   @Category(FlakyTest.class) // GEODE-583: time sensitive, expiration, waitForCriterion, short timeouts
-  public void testEntryTtlDestroyEvent() throws InterruptedException {
-      
-      if(getRegionAttributes().getPartitionAttributes() != null)
-        return;
-      
-      final String name = this.getUniqueName();
-      final int timeout = 22; // ms
-      final Object key = "KEY";
-      final Object value = "VALUE";
+  @Test
+  public void testEntryTtlDestroyEvent() throws Exception {
+    assumeTrue(getRegionAttributes().getPartitionAttributes() == null);
 
-      Host host = Host.getHost(0);
-      VM vm0 = host.getVM(0);
-      VM vm1 = host.getVM(1);
+    final String name = this.getUniqueName();
+    final int timeout = 22; // ms
+    final Object key = "KEY";
+    final Object value = "VALUE";
 
-      class DestroyListener extends TestCacheListener {
-        boolean eventIsExpiration = false;
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
 
-        public void afterDestroyBeforeAddEvent(EntryEvent event) {
-          eventIsExpiration = event.isExpiration();
+    class DestroyListener extends TestCacheListener {
+      boolean eventIsExpiration = false;
+
+      @Override
+      public void afterDestroyBeforeAddEvent(EntryEvent event) {
+        eventIsExpiration = event.isExpiration();
+      }
+      @Override
+      public void afterDestroy2(EntryEvent event) {
+        if (event.isOriginRemote()) {
+          assertTrue(!event.getDistributedMember().equals(getSystem().getDistributedMember()));
+        } else {
+          assertEquals(getSystem().getDistributedMember(), event.getDistributedMember());
         }
-        public void afterDestroy2(EntryEvent event) {
-          if (event.isOriginRemote()) {
-            assertTrue(!event.getDistributedMember().equals(getSystem().getDistributedMember()));
-          } else {
-            assertEquals(getSystem().getDistributedMember(), event.getDistributedMember());
-          }
-          assertEquals(Operation.EXPIRE_DESTROY, event.getOperation());
-          assertEquals(value, event.getOldValue());
-          eventIsExpiration = event.getOperation().isExpiration();
-        }
-
-        public void afterCreate2(EntryEvent event) {
-          // ignore
-        }
-
-        public void afterUpdate2(EntryEvent event) {
-          // ignore
-        }
+        assertEquals(Operation.EXPIRE_DESTROY, event.getOperation());
+        assertEquals(value, event.getOldValue());
+        eventIsExpiration = event.getOperation().isExpiration();
       }
 
+      @Override
+      public void afterCreate2(EntryEvent event) {
+        // ignore
+      }
 
-      SerializableRunnable createRegion = new CacheSerializableRunnable("Create with Listener") {
+      @Override
+      public void afterUpdate2(EntryEvent event) {
+        // ignore
+      }
+    }
+
+
+    SerializableRunnable createRegion = new CacheSerializableRunnable("Create with Listener") {
+      @Override
+      public void run2() throws CacheException {
+        AttributesFactory fac = new AttributesFactory(getRegionAttributes());
+        fac.addCacheListener(destroyListener = new DestroyListener());
+        createRegion(name, fac.create());
+      }
+    };
+
+    vm1.invoke(createRegion);
+
+    vm0.invoke(new CacheSerializableRunnable("Create with TTL") {
+        @Override
         public void run2() throws CacheException {
-          AttributesFactory fac = new AttributesFactory(getRegionAttributes());
-          fac.addCacheListener(destroyListener = new DestroyListener());
-          createRegion(name, fac.create());
-        }
-      };
-
-      vm1.invoke(createRegion);
-
-      vm0.invoke(new CacheSerializableRunnable("Create with TTL") {
-          public void run2() throws CacheException {
-            AttributesFactory factory = new AttributesFactory(getRegionAttributes());
-            factory.setStatisticsEnabled(true);
-            ExpirationAttributes expire =
-              new ExpirationAttributes(timeout,
-                                       ExpirationAction.DESTROY);
-            factory.setEntryTimeToLive(expire);
-            if (!getRegionAttributes().getDataPolicy().withReplication()) {
-              factory.setDataPolicy(DataPolicy.NORMAL);
-              factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
-            }
-            System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
-            try {
-              createRegion(name, factory.create());
-              ExpiryTask.suspendExpiration();
-              // suspend to make sure we can see that the put is distributed to this member
-            } 
-            finally {
-              System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
-            }
+          AttributesFactory factory = new AttributesFactory(getRegionAttributes());
+          factory.setStatisticsEnabled(true);
+          ExpirationAttributes expire =
+            new ExpirationAttributes(timeout,
+                                     ExpirationAction.DESTROY);
+          factory.setEntryTimeToLive(expire);
+          if (!getRegionAttributes().getDataPolicy().withReplication()) {
+            factory.setDataPolicy(DataPolicy.NORMAL);
+            factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
           }
-        });
-      
-      try {
-
-      // let region create finish before doing put
-      //pause(10);
-
-      vm1.invoke(new SerializableCallable() {
-        public Object call() throws Exception {
-          Region region = getRootRegion().getSubregion(name);
-          DestroyListener dl = (DestroyListener)region.getAttributes().getCacheListeners()[0];
-          dl.enableEventHistory();
-          region.put(key, value);
-          // reset listener after create event
-          assertTrue(dl.wasInvoked());
-          List<CacheEvent> history = dl.getEventHistory();
-          CacheEvent ce = history.get(0);
-          dl.disableEventHistory();
-          assertEquals(Operation.CREATE, ce.getOperation());
-          return null;
+          System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
+          try {
+            createRegion(name, factory.create());
+            ExpiryTask.suspendExpiration();
+            // suspend to make sure we can see that the put is distributed to this member
+          }
+          finally {
+            System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
+          }
         }
       });
-      vm0.invoke(new CacheSerializableRunnable("Check create received from vm1") {
+
+    try {
+
+    // let region create finish before doing put
+    //pause(10);
+
+    vm1.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Region region = getRootRegion().getSubregion(name);
+        DestroyListener dl = (DestroyListener)region.getAttributes().getCacheListeners()[0];
+        dl.enableEventHistory();
+        region.put(key, value);
+        // reset listener after create event
+        assertTrue(dl.wasInvoked());
+        List<CacheEvent> history = dl.getEventHistory();
+        CacheEvent ce = history.get(0);
+        dl.disableEventHistory();
+        assertEquals(Operation.CREATE, ce.getOperation());
+        return null;
+      }
+    });
+    vm0.invoke(new CacheSerializableRunnable("Check create received from vm1") {
+      @Override
+      public void run2() throws CacheException {
+        final Region region = getRootRegion().getSubregion(name);
+        WaitCriterion waitForCreate = new WaitCriterion() {
+          @Override
+          public boolean done() {
+            return region.getEntry(key) != null;
+          }
+          @Override
+          public String description() {
+            return "never saw create of " + key;
+          }
+        };
+        Wait.waitForCriterion(waitForCreate, 3000, 10, true);
+      }
+    });
+
+    } finally {
+      vm0.invoke(new CacheSerializableRunnable("resume expiration") {
+        @Override
+        public void run2() throws CacheException {
+          ExpiryTask.permitExpiration();
+        }
+      });
+    }
+
+    // now wait for it to expire
+    vm0.invoke(new CacheSerializableRunnable("Check local destroy") {
+        @Override
         public void run2() throws CacheException {
           final Region region = getRootRegion().getSubregion(name);
-          WaitCriterion waitForCreate = new WaitCriterion() {
+          WaitCriterion waitForExpire = new WaitCriterion() {
+            @Override
             public boolean done() {
-              return region.getEntry(key) != null;
+              return region.getEntry(key) == null;
             }
+            @Override
             public String description() {
-              return "never saw create of " + key;
+              return "never saw expire of " + key + " entry=" + region.getEntry(key);
             }
           };
-          Wait.waitForCriterion(waitForCreate, 3000, 10, true);
+          Wait.waitForCriterion(waitForExpire, 4000, 10, true);
         }
       });
-      
-      } finally {
-        vm0.invoke(new CacheSerializableRunnable("resume expiration") {
-          public void run2() throws CacheException {
-            ExpiryTask.permitExpiration();
-          }
-        });
-      }
-      
-      // now wait for it to expire
-      vm0.invoke(new CacheSerializableRunnable("Check local destroy") {
-          public void run2() throws CacheException {
-            final Region region = getRootRegion().getSubregion(name);
-            WaitCriterion waitForExpire = new WaitCriterion() {
-              public boolean done() {
-                return region.getEntry(key) == null;
-              }
-              public String description() {
-                return "never saw expire of " + key + " entry=" + region.getEntry(key);
-              }
-            };
-            Wait.waitForCriterion(waitForExpire, 4000, 10, true);
-          }
-        });
 
-      vm1.invoke(new CacheSerializableRunnable("Verify destroyed and event") {
-          public void run2() throws CacheException {
-            final Region region = getRootRegion().getSubregion(name);
-            WaitCriterion waitForExpire = new WaitCriterion() {
-              public boolean done() {
-                return region.getEntry(key) == null;
-              }
-              public String description() {
-                return "never saw expire of " + key + " entry=" + region.getEntry(key);
-              }
-            };
-            Wait.waitForCriterion(waitForExpire, 4000, 10, true);
-            assertTrue(destroyListener.waitForInvocation(555));
-            assertTrue(((DestroyListener)destroyListener).eventIsExpiration);
-          }
-        });
-    }
+    vm1.invoke(new CacheSerializableRunnable("Verify destroyed and event") {
+        @Override
+        public void run2() throws CacheException {
+          final Region region = getRootRegion().getSubregion(name);
+          WaitCriterion waitForExpire = new WaitCriterion() {
+            @Override
+            public boolean done() {
+              return region.getEntry(key) == null;
+            }
+            @Override
+            public String description() {
+              return "never saw expire of " + key + " entry=" + region.getEntry(key);
+            }
+          };
+          Wait.waitForCriterion(waitForExpire, 4000, 10, true);
+          assertTrue(destroyListener.waitForInvocation(555));
+          assertTrue(((DestroyListener)destroyListener).eventIsExpiration);
+        }
+      });
+  }
 
   /**
    * Tests that an entry in a distributed region expires with a local
    * destroy after a given time to live.
    */
   @Category(FlakyTest.class) // GEODE-671: time sensitive, expiration, retry loop, async actions, waitForCriterion
-  public void testEntryTtlLocalDestroy() throws InterruptedException {
-      if(getRegionAttributes().getPartitionAttributes() != null)
-        return;
-      final boolean mirrored = getRegionAttributes().getDataPolicy().withReplication();
-      final boolean partitioned = getRegionAttributes().getPartitionAttributes() != null ||
-           getRegionAttributes().getDataPolicy().withPartitioning();
-      if (!mirrored) {
-        // This test fails intermittently because the DSClock we inherit from the existing
-        // distributed system is stuck in the "stopped" state.
-        // The DSClock is going away when java groups is merged and at that
-        // time this following can be removed.
-        disconnectAllFromDS();
-      }
+  @Test
+  public void testEntryTtlLocalDestroy() throws Exception {
+    assumeTrue(getRegionAttributes().getPartitionAttributes() == null);
 
-      final String name = this.getUniqueName();
-      final int timeout = 10; // ms
-      final Object key = "KEY";
-      final Object value = "VALUE";
-
-      Host host = Host.getHost(0);
-      VM vm0 = host.getVM(0);
-      VM vm1 = host.getVM(1);
-
-      SerializableRunnable create = new CacheSerializableRunnable("Populate") {
-        public void run2() throws CacheException {
-        System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
-        try {
-          Region region = createRegion(name);
-        }
-        finally {
-          System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
-        }
-      }
-      };
-
-      vm1.invoke(create);
-      
-      vm0.invoke(new CacheSerializableRunnable("Create with TTL") {
-          public void run2() throws CacheException {
-            AttributesFactory factory = new AttributesFactory(getRegionAttributes());
-            factory.setStatisticsEnabled(true);
-            ExpirationAttributes expire =
-              new ExpirationAttributes(timeout,
-                                       ExpirationAction.LOCAL_DESTROY);
-            factory.setEntryTimeToLive(expire);
-            if (!mirrored) {
-              // make it cached all events so that remote creates will also
-              // be created here
-              if(!partitioned){
-               factory.setDataPolicy(DataPolicy.NORMAL);
-              }
-              factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
-              factory.addCacheListener(new CountingDistCacheListener());
-            }
-            /**
-             * Crank up the expiration so test runs faster.
-             * This property only needs to be set while the region is created
-             */
-            System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
-            try {
-              createRegion(name, factory.create());
-              if (mirrored) fail("Should have thrown an IllegalStateException");
-            }
-            catch (IllegalStateException e) {
-              if (!mirrored) throw e;
-            } 
-            finally {
-              System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
-            }
-          }
-        });
-      if (mirrored) return;
-
-      vm1.invoke(new SerializableCallable() {
-        public Object call() throws Exception {
-          Region region = getRootRegion().getSubregion(name);
-          region.put(key, value);
-          return null;
-        }
-      });
-      
-      vm0.invoke(new CacheSerializableRunnable("Check local destroy") {
-          public void run2() throws CacheException {
-            final Region region =
-              getRootRegion().getSubregion(name);
-            // make sure we created the entry
-            {
-              CountingDistCacheListener l = (CountingDistCacheListener)
-                region.getAttributes().getCacheListeners()[0];
-              int retry = 1000;
-              while (retry-- > 0) {
-                try {
-                  l.assertCount(1, 0, 0, 0);
-                  // TODO: a race exists in which assertCount may also see a destroyCount of 1
-                  logger.info("DEBUG: saw create");
-                  break;
-                } catch (AssertionFailedError e) {
-                  if (retry > 0) {
-                    Wait.pause(1);
-                  } else {
-                    throw e;
-                  }
-                }
-              }
-            }
-
-            { // now make sure it expires
-              // this should happen really fast since timeout is 10 ms.
-              // But it may take longer in some cases because of thread
-              // scheduling delays and machine load (see GEODE-410).
-              // The previous code would fail after 100ms; now we wait 3000ms.
-              WaitCriterion waitForUpdate = new WaitCriterion() {
-                public boolean done() {
-                  Region.Entry re = region.getEntry(key);
-                  if (re != null) {
-                    EntryExpiryTask eet = getEntryExpiryTask(region, key);
-                    if (eet != null) {
-                      long stopTime = ((InternalDistributedSystem)(region.getCache().getDistributedSystem())).getClock().getStopTime();
-                      logger.info("DEBUG: waiting for expire destroy expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow() + " stopTime=" + stopTime + " currentTimeMillis=" + System.currentTimeMillis());
-                    } else {
-                      logger.info("DEBUG: waiting for expire destroy but expiry task is null");
-                    }
-                  }
-                  return re == null;
-                }
-                public String description() {
-                  String expiryInfo = "";
-                  try {
-                    EntryExpiryTask eet = getEntryExpiryTask(region, key);
-                    if (eet != null) {
-                      expiryInfo = "expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow() + " currentTimeMillis=" + System.currentTimeMillis();
-                    }
-                  } catch (EntryNotFoundException ex) {
-                    expiryInfo ="EntryNotFoundException when getting expiry task";
-                  }
-                  return "Entry for key " + key + " never expired (since it still exists) " + expiryInfo;
-                }
-              };
-              Wait.waitForCriterion(waitForUpdate, 30000, 1, true);
-            }
-            assertNull(region.getEntry(key));
-          }
-        });
-
-      vm1.invoke(new CacheSerializableRunnable("Verify local") {
-          public void run2() throws CacheException {
-            Region region =
-              getRootRegion().getSubregion(name);
-            Region.Entry entry = region.getEntry(key);
-            assertEquals(value, entry.getValue());
-          }
-        });
+    final boolean mirrored = getRegionAttributes().getDataPolicy().withReplication();
+    final boolean partitioned = getRegionAttributes().getPartitionAttributes() != null ||
+         getRegionAttributes().getDataPolicy().withPartitioning();
+    if (!mirrored) {
+      // This test fails intermittently because the DSClock we inherit from the existing
+      // distributed system is stuck in the "stopped" state.
+      // The DSClock is going away when java groups is merged and at that
+      // time this following can be removed.
+      disconnectAllFromDS();
     }
-    
-    private static EntryExpiryTask getEntryExpiryTask(Region r, Object key) {
-      EntryExpiryTask result = null;
+
+    final String name = this.getUniqueName();
+    final int timeout = 10; // ms
+    final Object key = "KEY";
+    final Object value = "VALUE";
+
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+    SerializableRunnable create = new CacheSerializableRunnable("Populate") {
+      @Override
+      public void run2() throws CacheException {
+      System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
       try {
-        LocalRegion lr = (LocalRegion) r;
-        result = lr.getEntryExpiryTask(key);
-      } catch (EntryNotFoundException ignore) {
+        Region region = createRegion(name);
       }
-      return result;
+      finally {
+        System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
+      }
     }
+    };
 
-    /**
-     * Tests to makes sure that a distributed update resets the
-     * expiration timer.
-     */
-    public void testUpdateResetsIdleTime() throws InterruptedException {
+    vm1.invoke(create);
 
-      final String name = this.getUniqueName();
-      // test no longer waits for this timeout to expire
-      final int timeout = 90; // seconds
-      final Object key = "KEY";
-      final Object value = "VALUE";
-
-      Host host = Host.getHost(0);
-      VM vm0 = host.getVM(0);
-      VM vm1 = host.getVM(1);
-
-
-      vm0.invoke(new CacheSerializableRunnable("Create with Idle") {
+    vm0.invoke(new CacheSerializableRunnable("Create with TTL") {
+        @Override
         public void run2() throws CacheException {
           AttributesFactory factory = new AttributesFactory(getRegionAttributes());
           factory.setStatisticsEnabled(true);
           ExpirationAttributes expire =
-              new ExpirationAttributes(timeout,
-                  ExpirationAction.DESTROY);
-          factory.setEntryIdleTimeout(expire);
-          LocalRegion region =
-              (LocalRegion) createRegion(name, factory.create());
-          if (region.getDataPolicy().withPartitioning()) {
-            // Force all buckets to be created locally so the
-            // test will know that the create happens in this vm
-            // and the update (in vm1) is remote.
-            PartitionRegionHelper.assignBucketsToPartitions(region);
+            new ExpirationAttributes(timeout,
+                                     ExpirationAction.LOCAL_DESTROY);
+          factory.setEntryTimeToLive(expire);
+          if (!mirrored) {
+            // make it cached all events so that remote creates will also
+            // be created here
+            if(!partitioned){
+             factory.setDataPolicy(DataPolicy.NORMAL);
+            }
+            factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
+            factory.addCacheListener(new CountingDistCacheListener());
           }
-          region.create(key, null);
-          EntryExpiryTask eet = region.getEntryExpiryTask(key);
-          region.create("createExpiryTime", eet.getExpirationTime());
-          Wait.waitForExpiryClockToChange(region);
-        }
-      });
-
-      vm1.invoke(new CacheSerializableRunnable("Create Region " + name) {
-        public void run2() throws CacheException {
-          AttributesFactory factory = new AttributesFactory(getRegionAttributes());
-          factory.setStatisticsEnabled(true);
-          ExpirationAttributes expire =
-              new ExpirationAttributes(timeout,
-                  ExpirationAction.DESTROY);
-          factory.setEntryIdleTimeout(expire);
-          if(getRegionAttributes().getPartitionAttributes() != null){
-            createRegion(name, factory.create());  
-          } else {
-            createRegion(name);
-          }          
-        }
-      });
-
-      vm1.invoke(new CacheSerializableRunnable("Update entry") {
-        public void run2() throws CacheException {
-          final Region r = getRootRegion().getSubregion(name);
-          assertNotNull(r);
-          r.put(key, value);
-        }
-      });
-
-      vm0.invoke(new CacheSerializableRunnable("Verify reset") {
-        public void run2() throws CacheException {
-          final LocalRegion region =
-              (LocalRegion) getRootRegion().getSubregion(name);
-
-          // wait for update to reach us from vm1 (needed if no-ack)
-          WaitCriterion waitForUpdate = new WaitCriterion() {
-            public boolean done() {
-              return value.equals(region.get(key));
-            }
-            public String description() {
-              return "never saw update of " + key;
-            }
-          };
-          Wait.waitForCriterion(waitForUpdate, 3000, 10, true);
-
-          EntryExpiryTask eet = region.getEntryExpiryTask(key);
-          long createExpiryTime = (Long) region.get("createExpiryTime");
-          long updateExpiryTime = eet.getExpirationTime();
-          if (updateExpiryTime - createExpiryTime <= 0L) {
-            fail("update did not reset the expiration time. createExpiryTime=" + createExpiryTime + " updateExpiryTime=" + updateExpiryTime);
+          /**
+           * Crank up the expiration so test runs faster.
+           * This property only needs to be set while the region is created
+           */
+          System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
+          try {
+            createRegion(name, factory.create());
+            if (mirrored) fail("Should have thrown an IllegalStateException");
+          }
+          catch (IllegalStateException e) {
+            if (!mirrored) throw e;
+          }
+          finally {
+            System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
           }
         }
       });
+    if (mirrored) return;
+
+    vm1.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Region region = getRootRegion().getSubregion(name);
+        region.put(key, value);
+        return null;
+      }
+    });
+
+    vm0.invoke(new CacheSerializableRunnable("Check local destroy") {
+        @Override
+        public void run2() throws CacheException {
+          final Region region =
+            getRootRegion().getSubregion(name);
+          // make sure we created the entry
+          {
+            CountingDistCacheListener l = (CountingDistCacheListener)
+              region.getAttributes().getCacheListeners()[0];
+            int retry = 1000;
+            while (retry-- > 0) {
+              try {
+                l.assertCount(1, 0, 0, 0);
+                // TODO: a race exists in which assertCount may also see a destroyCount of 1
+                logger.info("DEBUG: saw create");
+                break;
+              } catch (AssertionError e) {
+                if (retry > 0) {
+                  Wait.pause(1);
+                } else {
+                  throw e;
+                }
+              }
+            }
+          }
+
+          { // now make sure it expires
+            // this should happen really fast since timeout is 10 ms.
+            // But it may take longer in some cases because of thread
+            // scheduling delays and machine load (see GEODE-410).
+            // The previous code would fail after 100ms; now we wait 3000ms.
+            WaitCriterion waitForUpdate = new WaitCriterion() {
+              @Override
+              public boolean done() {
+                Region.Entry re = region.getEntry(key);
+                if (re != null) {
+                  EntryExpiryTask eet = getEntryExpiryTask(region, key);
+                  if (eet != null) {
+                    long stopTime = ((InternalDistributedSystem)(region.getCache().getDistributedSystem())).getClock().getStopTime();
+                    logger.info("DEBUG: waiting for expire destroy expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow() + " stopTime=" + stopTime + " currentTimeMillis=" + System.currentTimeMillis());
+                  } else {
+                    logger.info("DEBUG: waiting for expire destroy but expiry task is null");
+                  }
+                }
+                return re == null;
+              }
+              @Override
+              public String description() {
+                String expiryInfo = "";
+                try {
+                  EntryExpiryTask eet = getEntryExpiryTask(region, key);
+                  if (eet != null) {
+                    expiryInfo = "expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow() + " currentTimeMillis=" + System.currentTimeMillis();
+                  }
+                } catch (EntryNotFoundException ex) {
+                  expiryInfo ="EntryNotFoundException when getting expiry task";
+                }
+                return "Entry for key " + key + " never expired (since it still exists) " + expiryInfo;
+              }
+            };
+            Wait.waitForCriterion(waitForUpdate, 30000, 1, true);
+          }
+          assertNull(region.getEntry(key));
+        }
+      });
+
+    vm1.invoke(new CacheSerializableRunnable("Verify local") {
+        @Override
+        public void run2() throws CacheException {
+          Region region =
+            getRootRegion().getSubregion(name);
+          Region.Entry entry = region.getEntry(key);
+          assertEquals(value, entry.getValue());
+        }
+      });
+  }
+    
+  private static EntryExpiryTask getEntryExpiryTask(Region r, Object key) {
+    EntryExpiryTask result = null;
+    try {
+      LocalRegion lr = (LocalRegion) r;
+      result = lr.getEntryExpiryTask(key);
+    } catch (EntryNotFoundException ignore) {
     }
+    return result;
+  }
 
+  /**
+   * Tests to makes sure that a distributed update resets the
+   * expiration timer.
+   */
+  @Test
+  public void testUpdateResetsIdleTime() throws Exception {
+    final String name = this.getUniqueName();
+    // test no longer waits for this timeout to expire
+    final int timeout = 90; // seconds
+    final Object key = "KEY";
+    final Object value = "VALUE";
+
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+    vm0.invoke(new CacheSerializableRunnable("Create with Idle") {
+      @Override
+      public void run2() throws CacheException {
+        AttributesFactory factory = new AttributesFactory(getRegionAttributes());
+        factory.setStatisticsEnabled(true);
+        ExpirationAttributes expire =
+            new ExpirationAttributes(timeout,
+                ExpirationAction.DESTROY);
+        factory.setEntryIdleTimeout(expire);
+        LocalRegion region =
+            (LocalRegion) createRegion(name, factory.create());
+        if (region.getDataPolicy().withPartitioning()) {
+          // Force all buckets to be created locally so the
+          // test will know that the create happens in this vm
+          // and the update (in vm1) is remote.
+          PartitionRegionHelper.assignBucketsToPartitions(region);
+        }
+        region.create(key, null);
+        EntryExpiryTask eet = region.getEntryExpiryTask(key);
+        region.create("createExpiryTime", eet.getExpirationTime());
+        Wait.waitForExpiryClockToChange(region);
+      }
+    });
+
+    vm1.invoke(new CacheSerializableRunnable("Create Region " + name) {
+      @Override
+      public void run2() throws CacheException {
+        AttributesFactory factory = new AttributesFactory(getRegionAttributes());
+        factory.setStatisticsEnabled(true);
+        ExpirationAttributes expire =
+            new ExpirationAttributes(timeout,
+                ExpirationAction.DESTROY);
+        factory.setEntryIdleTimeout(expire);
+        if(getRegionAttributes().getPartitionAttributes() != null){
+          createRegion(name, factory.create());
+        } else {
+          createRegion(name);
+        }
+      }
+    });
+
+    vm1.invoke(new CacheSerializableRunnable("Update entry") {
+      @Override
+      public void run2() throws CacheException {
+        final Region r = getRootRegion().getSubregion(name);
+        assertNotNull(r);
+        r.put(key, value);
+      }
+    });
+
+    vm0.invoke(new CacheSerializableRunnable("Verify reset") {
+      @Override
+      public void run2() throws CacheException {
+        final LocalRegion region =
+            (LocalRegion) getRootRegion().getSubregion(name);
+
+        // wait for update to reach us from vm1 (needed if no-ack)
+        WaitCriterion waitForUpdate = new WaitCriterion() {
+          @Override
+          public boolean done() {
+            return value.equals(region.get(key));
+          }
+          @Override
+          public String description() {
+            return "never saw update of " + key;
+          }
+        };
+        Wait.waitForCriterion(waitForUpdate, 3000, 10, true);
+
+        EntryExpiryTask eet = region.getEntryExpiryTask(key);
+        long createExpiryTime = (Long) region.get("createExpiryTime");
+        long updateExpiryTime = eet.getExpirationTime();
+        if (updateExpiryTime - createExpiryTime <= 0L) {
+          fail("update did not reset the expiration time. createExpiryTime=" + createExpiryTime + " updateExpiryTime=" + updateExpiryTime);
+        }
+      }
+    });
+  }
 
   private static final int NB1_CHUNK_SIZE = 500 * 1024; // == InitialImageOperation.CHUNK_SIZE_IN_BYTES
   private static final int NB1_NUM_ENTRIES = 1000;
@@ -4123,15 +4285,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that distributed ack operations do not block while
    * another cache is doing a getInitialImage.
    */
-  public void testNonblockingGetInitialImage() throws Throwable {
-    if (!supportsReplication()) {
-      return;
-    }
+  @Test
+  public void testNonblockingGetInitialImage() throws Exception {
+    assumeTrue(supportsReplication());
     // don't run this test if global scope since its too difficult to predict
     // how many concurrent operations will occur
-    if (getRegionAttributes().getScope().isGlobal()) {
-      return;
-    }
+    assumeFalse(getRegionAttributes().getScope().isGlobal());
 
     final String name = this.getUniqueName();
     final byte[][] values = new byte[NB1_NUM_ENTRIES][];
@@ -4147,6 +4306,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable create = new
       CacheSerializableRunnable("Create Mirrored Region") {
+        @Override
         public void run2() throws CacheException {
           beginCacheXml();
           { // root region must be DACK because its used to sync up async subregions
@@ -4176,6 +4336,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     vm0.invoke(new
       CacheSerializableRunnable("Create Nonmirrored Region") {
+        @Override
         public void run2() throws CacheException {
           { // root region must be DACK because its used to sync up async subregions
             AttributesFactory factory = new AttributesFactory();
@@ -4194,6 +4355,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Put initial data") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -4206,6 +4368,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     // start asynchronous process that does updates to the data
     AsyncInvocation async = vm0.invokeAsync(new CacheSerializableRunnable("Do Nonblocking Operations") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
 
@@ -4214,6 +4377,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           ((com.gemstone.gemfire.internal.cache.DistributedRegion)region).getCacheDistributionAdvisor();
         final int expectedProfiles = 1;
         WaitCriterion ev = new WaitCriterion() {
+          @Override
           public boolean done() {
             DataPolicy currentPolicy = getRegionAttributes().getDataPolicy();
             if (currentPolicy == DataPolicy.PRELOADED) {
@@ -4222,6 +4386,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               return adv.adviseReplicates().size() >= expectedProfiles;              
             }
           }
+          @Override
           public String description() {
             return "replicate count never reached " + expectedProfiles;
           }
@@ -4235,7 +4400,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         } else {
           numProfiles = adv.adviseReplicates().size();              
         }
-        Assert.assertTrue(numProfiles >= expectedProfiles);
+        assertTrue(numProfiles >= expectedProfiles);
         
         // operate on every odd entry with different value, alternating between
         // updates, invalidates, and destroys. These operations are likely
@@ -4292,6 +4457,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // slow down image processing to make it more likely to get async updates
     if (!getRegionAttributes().getScope().isGlobal()) {
       vm2.invoke(new SerializableRunnable("Set slow image processing") {
+          @Override
           public void run() {
             // if this is a no_ack test, then we need to slow down more because of the
             // pauses in the nonblocking operations
@@ -4308,6 +4474,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       // wait for nonblocking operations to complete
       ThreadUtils.join(async, 30 * 1000);
       vm2.invoke(new SerializableRunnable("Set fast image processing") {
+          @Override
           public void run() {
             com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
           }
@@ -4325,15 +4492,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       ThreadUtils.join(async, 30 * 1000);
     }
     if (async.exceptionOccurred()) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("async failed", async.getException());
+      fail("async failed", async.getException());
     }
     if (asyncGII.exceptionOccurred()) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("asyncGII failed", asyncGII.getException());
+      fail("asyncGII failed", asyncGII.getException());
     }
 
     // Locally destroy the region in vm0 so we know that they are not found by
     // a netSearch
     vm0.invoke(new CacheSerializableRunnable("Locally destroy region") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -4346,6 +4514,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm2.invokeRepeatingIfNecessary(new CacheSerializableRunnable("Verify entryCount") {
         boolean entriesDumped = false;
 
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -4380,6 +4549,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
 
     vm2.invoke(new CacheSerializableRunnable("Verify keys/values & Nonblocking") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -4453,19 +4623,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that distributed ack operations do not block while
    * another cache is doing a getInitialImage.
    */
-  public void testTXNonblockingGetInitialImage() throws Throwable {
-    if (!supportsReplication()) {
-      return;
-    }
-    if (!supportsTransactions()) {
-      return;
-    }
+  @Test
+  public void testTXNonblockingGetInitialImage() throws Exception {
+    assumeTrue(supportsReplication());
+    assumeTrue(supportsTransactions());
     // don't run this test if global scope since its too difficult to predict
     // how many concurrent operations will occur
-    if (getRegionAttributes().getScope().isGlobal()
-        || getRegionAttributes().getDataPolicy().withPersistence()) {
-      return;
-    }
+    assumeFalse(getRegionAttributes().getScope().isGlobal());
+    assumeFalse(getRegionAttributes().getDataPolicy().withPersistence());
 
     final String name = this.getUniqueName();
     final byte[][] values = new byte[NB1_NUM_ENTRIES][];
@@ -4481,6 +4646,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable create = new
       CacheSerializableRunnable("Create Mirrored Region") {
+        @Override
         public void run2() throws CacheException {
           beginCacheXml();
           { // root region must be DACK because its used to sync up async subregions
@@ -4508,6 +4674,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     vm0.invoke(new
       CacheSerializableRunnable("Create Nonmirrored Region") {
+        @Override
         public void run2() throws CacheException {
           { // root region must be DACK because its used to sync up async subregions
             AttributesFactory factory = new AttributesFactory();
@@ -4526,6 +4693,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Put initial data") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -4538,6 +4706,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     // start asynchronous process that does updates to the data
     AsyncInvocation async = vm0.invokeAsync(new CacheSerializableRunnable("Do Nonblocking Operations") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
 
@@ -4546,6 +4715,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           ((com.gemstone.gemfire.internal.cache.DistributedRegion)region).getCacheDistributionAdvisor();
         final int expectedProfiles = 1;
         WaitCriterion ev = new WaitCriterion() {
+          @Override
           public boolean done() {
             DataPolicy currentPolicy = getRegionAttributes().getDataPolicy(); 
             if (currentPolicy == DataPolicy.PRELOADED) {
@@ -4554,6 +4724,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               return adv.adviseReplicates().size() >= expectedProfiles;              
             }
           }
+          @Override
           public String description() {
             return "replicate count never reached " + expectedProfiles;
           }
@@ -4622,6 +4793,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // slow down image processing to make it more likely to get async updates
     if (!getRegionAttributes().getScope().isGlobal()) {
       vm2.invoke(new SerializableRunnable("Set slow image processing") {
+          @Override
           public void run() {
             // if this is a no_ack test, then we need to slow down more because of the
             // pauses in the nonblocking operations
@@ -4639,6 +4811,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       ThreadUtils.join(async, 30 * 1000);
 
       vm2.invoke(new SerializableRunnable("Set fast image processing") {
+          @Override
           public void run() {
             com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
           }
@@ -4656,15 +4829,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     }
 
     if (async.exceptionOccurred()) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("async failed", async.getException());
+      fail("async failed", async.getException());
     }
     if (asyncGII.exceptionOccurred()) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("asyncGII failed", asyncGII.getException());
+      fail("asyncGII failed", asyncGII.getException());
     }
 
     // Locally destroy the region in vm0 so we know that they are not found by
     // a netSearch
     vm0.invoke(new CacheSerializableRunnable("Locally destroy region") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -4676,6 +4850,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm2.invokeRepeatingIfNecessary(new CacheSerializableRunnable("Verify entryCount") {
         boolean entriesDumped = false;
 
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -4704,6 +4879,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
 
     vm2.invoke(new CacheSerializableRunnable("Verify keys/values & Nonblocking") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -4768,13 +4944,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
   }
 
+  @Ignore("TODO: test is disabled for 51542")
+  @Test
+  public void testNBRegionInvalidationDuringGetInitialImage() throws Exception {
+    assumeTrue(supportsReplication());
 
-  @Ignore("Disabled for 51542")
-  public void DISABLED_testNBRegionInvalidationDuringGetInitialImage() throws Throwable {
-    DistributedTestCase.disconnectAllFromDS();
-    if (!supportsReplication()) {
-      return;
-    }
+    disconnectAllFromDS();
+
     // don't run this for noAck, too many race conditions
     if (getRegionAttributes().getScope().isDistributedNoAck()) return;
 
@@ -4792,6 +4968,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     SerializableRunnable create = new
       CacheSerializableRunnable("Create Mirrored Region") {
+        @Override
         public void run2() throws CacheException {
           beginCacheXml();
           { // root region must be DACK because its used to sync up async subregions
@@ -4816,6 +4993,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     vm0.invoke(new
       CacheSerializableRunnable("Create Nonmirrored Region") {
+        @Override
         public void run2() throws CacheException {
           { // root region must be DACK because its used to sync up async subregions
             AttributesFactory factory = new AttributesFactory();
@@ -4835,6 +5013,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Put initial data") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -4851,6 +5030,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     // start asynchronous process that does updates to the data
     AsyncInvocation async = vm0.invokeAsync(new CacheSerializableRunnable("Do Nonblocking Operations") {
+      @Override
       public void run2() throws CacheException {
         Region region =
           getRootRegion().getSubregion(name);
@@ -4860,9 +5040,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           ((com.gemstone.gemfire.internal.cache.DistributedRegion)region).getCacheDistributionAdvisor();
         final int expectedProfiles = 1;
         WaitCriterion ev = new WaitCriterion() {
+          @Override
           public boolean done() {
             return adv.adviseReplicates().size() >= expectedProfiles;
           }
+          @Override
           public String description() {
             return "profile count never reached " + expectedProfiles;
           }
@@ -4931,6 +5113,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // slow down image processing to make it more likely to get async updates
     if (!getRegionAttributes().getScope().isGlobal()) {
       vm2.invoke(new SerializableRunnable("Set slow image processing") {
+          @Override
           public void run() {
             // make sure the cache is set up before turning on slow
             // image processing
@@ -4952,6 +5135,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         ThreadUtils.join(async, 30 * 1000);
       } finally {
         vm2.invoke(new SerializableRunnable("Set fast image processing") {
+          @Override
           public void run() {
             com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
           }
@@ -4978,6 +5162,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // Locally destroy the region in vm0 so we know that they are not found by
     // a netSearch
     vm0.invoke(new CacheSerializableRunnable("Locally destroy region") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -4990,6 +5175,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm2.invokeRepeatingIfNecessary(new CacheSerializableRunnable("Verify entryCount") {
         private boolean entriesDumped = false;
 
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -5017,6 +5203,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     }, 3000);
 
     vm2.invoke(new CacheSerializableRunnable("Verify keys/values & Nonblocking") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -5094,10 +5281,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
   }
 
-  public void testNBRegionDestructionDuringGetInitialImage() throws Throwable {
-    if (!supportsReplication()) {
-      return;
-    }
+  @Test
+  public void testNBRegionDestructionDuringGetInitialImage() throws Exception {
+    assumeTrue(supportsReplication());
+
     final String name = this.getUniqueName();
     final byte[][] values = new byte[NB1_NUM_ENTRIES][];
 
@@ -5112,6 +5299,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     vm0.invoke(new
       CacheSerializableRunnable("Create Nonmirrored Region") {
+        @Override
         public void run2() throws CacheException {
           { // root region must be DACK because its used to sync up async subregions
             AttributesFactory factory = new AttributesFactory();
@@ -5130,6 +5318,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     vm0.invoke(new CacheSerializableRunnable("Put initial data") {
+        @Override
         public void run2() throws CacheException {
           Region region =
             getRootRegion().getSubregion(name);
@@ -5146,6 +5335,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     // start asynchronous process that does updates to the data
     AsyncInvocation async = vm0.invokeAsync(new CacheSerializableRunnable("Do Nonblocking Operations") {
+      @Override
       public void run2() throws CacheException {
         Wait.pause(200); // give the gii guy a chance to start
         Region region =
@@ -5157,9 +5347,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 //        int numProfiles;
         final int expectedProfiles = 1;
         WaitCriterion ev = new WaitCriterion() {
+          @Override
           public boolean done() {
             return expectedProfiles == adv.adviseReplicates().size();
           }
+          @Override
           public String description() {
             return "profile count never became exactly " + expectedProfiles;
           }
@@ -5237,6 +5429,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     try {
     // in the meantime, do the get initial image in vm2
     AsyncInvocation asyncGII = vm2.invokeAsync(new CacheSerializableRunnable("Create Mirrored Region") {
+        @Override
         public void run2() throws CacheException {
           if (!getRegionAttributes().getScope().isGlobal()) {
             int pause = 200;
@@ -5274,10 +5467,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       // wait for nonblocking operations to complete
       ThreadUtils.join(async, 30 * 1000);
       if (async.exceptionOccurred()) {
-        com.gemstone.gemfire.test.dunit.Assert.fail("async invocation failed", async.getException());
+        fail("async invocation failed", async.getException());
       }
 
       vm2.invoke(new SerializableRunnable("Set fast image processing") {
+          @Override
           public void run() {
             com.gemstone.gemfire.internal.cache.InitialImageOperation.slowImageProcessing = 0;
           }
@@ -5294,10 +5488,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       ThreadUtils.join(async, 30 * 1000);
     }
     if (async.exceptionOccurred()) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("async failed", async.getException());
+      fail("async failed", async.getException());
     }
     if (asyncGII.exceptionOccurred()) {
-      com.gemstone.gemfire.test.dunit.Assert.fail("asyncGII failed", asyncGII.getException());
+      fail("asyncGII failed", asyncGII.getException());
     }
     } finally { 
       ex.remove();
@@ -5310,18 +5504,19 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    *
    * @since GemFire 3.5
    */
-  public void testNoDataSerializer() {
+  @Test
+  public void testNoDataSerializer() throws Exception {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             createRegion(name);
           }
         };
-
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -5340,6 +5535,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 //    final boolean[] wasInvoked = new boolean[1];
 
     vm2.invoke(new SerializableRunnable("Disconnect from DS") {
+        @Override
         public void run() {
           disconnectFromDS();
         }
@@ -5348,6 +5544,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     try {
     vm0.invoke(new CacheSerializableRunnable("Put int") {
+        @Override
         public void run2() throws CacheException {
           Class c = IntWrapper.IntWrapperSerializer.class;
           IntWrapper.IntWrapperSerializer serializer =
@@ -5366,6 +5563,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm0 put");
 
     SerializableRunnable get = new CacheSerializableRunnable("Get int") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(name);
           // wait a while for the serializer to be registered
@@ -5382,9 +5580,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           InternalDataSerializer.GetMarker.WAIT_MS = 1;
           try {
             WaitCriterion ev = new WaitCriterion() {
+              @Override
               public boolean done() {
                 return InternalDataSerializer.getSerializer((byte)120) != null;
               }
+              @Override
               public String description() {
                 return "DataSerializer with id 120 was never registered";
               }
@@ -5405,6 +5605,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // Make sure that VMs that connect after registration can get the
     // serializer
     vm2.invoke(new SerializableRunnable("Connect to DS") {
+        @Override
         public void run() {
           // Register a DataSerializer before connecting to system
           Class c = LongWrapper.LongWrapperSerializer.class;
@@ -5416,6 +5617,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm2.invoke(create);
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm2 create");
     vm2.invoke(new CacheSerializableRunnable("Put long") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(name);
           region.put(key2, new LongWrapper(longValue));
@@ -5433,6 +5635,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info(name + ": after vm2 get");
 
     SerializableRunnable get2 = new CacheSerializableRunnable("Get long") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(name);
           LongWrapper value = (LongWrapper) region.get(key2);
@@ -5462,18 +5665,19 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    *
    * @since GemFire 3.5
    */
-  public void testNoInstantiator() {
+  @Test
+  public void testNoInstantiator() throws Exception {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
     final String name = this.getUniqueName();
 
     SerializableRunnable create =
       new CacheSerializableRunnable("Create Region") {
+          @Override
           public void run2() throws CacheException {
             createRegion(name);
           }
         };
-
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -5490,12 +5694,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 //    final boolean[] wasInvoked = new boolean[1];
 
     vm2.invoke(new SerializableRunnable("Disconnect from DS") {
+        @Override
         public void run() {
           disconnectFromDS();
         }
       });
 
     vm0.invoke(new CacheSerializableRunnable("Put int") {
+        @Override
         public void run2() throws CacheException {
           Instantiator.register(new DSIntWrapper.DSIntWrapperInstantiator());
 
@@ -5507,6 +5713,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
 
     SerializableRunnable get = new CacheSerializableRunnable("Get int") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(name);
           DSIntWrapper.DSIntWrapperInstantiator inst =
@@ -5523,6 +5730,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // Make sure that VMs that connect after registration can get the
     // serializer
     vm2.invoke(new SerializableRunnable("Connect to DS") {
+        @Override
         public void run() {
           // Register a Instantiator before connecting to system
           Instantiator.register(new DSLongWrapper.DSLongWrapperInstantiator());
@@ -5532,6 +5740,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
     vm2.invoke(create);
     vm2.invoke(new CacheSerializableRunnable("Put long") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(name);
           region.put(key2, new DSLongWrapper(longValue));
@@ -5542,6 +5751,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm2.invoke(get);
 
     SerializableRunnable get2 = new CacheSerializableRunnable("Get long") {
+        @Override
         public void run2() throws CacheException {
           Region region = getRootRegion().getSubregion(name);
           DSLongWrapper.DSLongWrapperInstantiator inst =
@@ -5589,6 +5799,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       this.intValue = intValue;
     }
 
+    @Override
     public boolean equals(Object o) {
       if (o instanceof IntWrapper) {
         return ((IntWrapper) o).intValue == this.intValue;
@@ -5601,13 +5812,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     static class IntWrapperSerializer extends DataSerializer {
       boolean wasInvoked = false;
 
+      @Override
       public int getId() {
         return 120;
       }
+      @Override
       public Class[] getSupportedClasses() {
         return new Class[] { IntWrapper.class };
       }
 
+      @Override
       public boolean toData(Object o, DataOutput out)
         throws IOException {
         if (o instanceof IntWrapper) {
@@ -5621,6 +5835,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       }
 
+      @Override
       public Object fromData(DataInput in)
         throws IOException, ClassNotFoundException {
 
@@ -5644,10 +5859,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       super(0);
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       out.writeInt(intValue);
     }
 
+    @Override
     public void fromData(DataInput in)
       throws IOException, ClassNotFoundException {
       this.intValue = in.readInt();
@@ -5662,6 +5879,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         super(c, id);
       }
 
+      @Override
       public DataSerializable newInstance() {
         return new DSIntWrapper();
       }
@@ -5679,6 +5897,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       this.longValue = longValue;
     }
 
+    @Override
     public boolean equals(Object o) {
       if (o instanceof LongWrapper) {
         return ((LongWrapper) o).longValue == this.longValue;
@@ -5691,13 +5910,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     static class LongWrapperSerializer extends DataSerializer {
       boolean wasInvoked = false;
 
+      @Override
       public int getId() {
         return 121;
       }
+      @Override
       public Class[] getSupportedClasses() {
         return new Class[] { LongWrapper.class };
       }
 
+      @Override
       public boolean toData(Object o, DataOutput out)
         throws IOException {
         if (o instanceof LongWrapper) {
@@ -5711,6 +5933,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
       }
 
+      @Override
       public Object fromData(DataInput in)
         throws IOException, ClassNotFoundException {
 
@@ -5734,10 +5957,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       super(0L);
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       out.writeLong(longValue);
     }
 
+    @Override
     public void fromData(DataInput in)
       throws IOException, ClassNotFoundException {
       this.longValue = in.readLong();
@@ -5754,6 +5979,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         this(DSLongWrapper.class, (byte) 99);
       }
 
+      @Override
       public DataSerializable newInstance() {
         this.wasInvoked = true;
         return new DSLongWrapper();
@@ -5769,6 +5995,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     public volatile int afterRollbackCount;
     public volatile int closeCount;
 
+    @Override
     public void afterCommit(TransactionEvent event) {
       this.lastEvent = event;
       this.afterCommitCount++;
@@ -5779,6 +6006,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 //                                       + " #" + this.afterCommitCount);
     }
 
+    @Override
     public void afterFailedCommit(TransactionEvent event) {
       this.lastEvent = event;
       this.afterFailedCommitCount++;
@@ -5789,6 +6017,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 //                                       + " #" + this.afterFailedCommitCount);
     }
 
+    @Override
     public void afterRollback(TransactionEvent event) {
       this.lastEvent = event;
       this.afterRollbackCount++;
@@ -5798,6 +6027,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 //                                       + event.getTransactionId()
 //                                       + " #" + this.afterRollbackCount);
     }
+    @Override
     public void close() {
       this.closeCount++;
     }
@@ -5831,16 +6061,23 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   class CountingDistCacheListener extends CacheListenerAdapter {
     int aCreateCalls, aUpdateCalls, aInvalidateCalls, aDestroyCalls, aLocalDestroyCalls, regionOps;
     EntryEvent lastEvent;
+    @Override
     public void close() {}
     public synchronized void reset() {
       this.aCreateCalls = this.aUpdateCalls = this.aInvalidateCalls = this.aDestroyCalls = this.regionOps = 0;
       this.lastEvent = null;
     }
+    @Override
     public void afterCreate(EntryEvent e) {if (e.isOriginRemote()) synchronized(this) {++this.aCreateCalls; this.lastEvent = e;}}
+    @Override
     public void afterUpdate(EntryEvent e) {if (e.isOriginRemote()) synchronized(this) {++this.aUpdateCalls;this.lastEvent = e;}}
+    @Override
     public void afterInvalidate(EntryEvent e) {if (e.isOriginRemote()) synchronized(this) {++this.aInvalidateCalls;this.lastEvent = e;}}
+    @Override
     public void afterDestroy(EntryEvent e) {if (e.isOriginRemote()) synchronized(this) {++this.aDestroyCalls;this.lastEvent = e;}}
+    @Override
     public void afterRegionInvalidate(RegionEvent e) {++this.regionOps;}
+    @Override
     public void afterRegionDestroy(RegionEvent e) {++this.regionOps;}
     public synchronized void assertCount(int expectedCreate, int expectedUpdate,
                                          int expectedInvalidate, int expectedDestroy) {
@@ -5865,9 +6102,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       (CountingDistCacheListener) re.getAttributes().getCacheListeners()[0];
     // May need to wait a bit for the event to be received
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return cdcl.getEntryEvent() != null;
       }
+      @Override
       public String description() {
         return "waiting for entry event";
       }
@@ -5892,15 +6131,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     cdcl.setEntryEvent(null);
   }
 
-  ////////////////////////// TX Tests //////////////////////////////
   /**
    * Tests that an entry update is propagated to other caches that
    * have that same entry defined.
    */
+  @Test
   public void testTXSimpleOps() throws Exception {
-    if (!supportsTransactions()) {
-      return;
-    }
+    assumeTrue(supportsTransactions());
+
     assertTrue(getRegionAttributes().getScope().isDistributed());
     CacheTransactionManager txMgr = this.getCache().getCacheTransactionManager();
 
@@ -5918,9 +6156,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       rgn.localDestroyRegion();
       return;
     }
+
     final String rgnName = getUniqueName();
 
     SerializableRunnable create = new SerializableRunnable("testTXSimpleOps: Create Region") {
+      @Override
       public void run() {
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
         MyTransactionListener tl = new MyTransactionListener();
@@ -5938,12 +6178,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           getSystem().getLogWriter().info("testTXSimpleOps: Created region");
         }
         catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", e);
+          fail("While creating region", e);
         }
       }
     };
 
     SerializableRunnable newKey = new SerializableRunnable("testTXSimpleOps: Create Region & Create Key") {
+      @Override
       public void run() {
         try {
           Region root = getRootRegion();
@@ -5955,7 +6196,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           getSystem().getLogWriter().info("testTXSimpleOps: Created Key");
         }
         catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", e);
+          fail("While creating region", e);
         }
       }
     };
@@ -5997,6 +6238,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                       "assertCacheCallbackEvents",
                       new Object[] {rgnName, txId, "key", null, "value"});
       Invoke.invokeInEveryVMRepeatingIfNecessary(new CacheSerializableRunnable("testTXSimpleOps: Verify Received Value") {
+        @Override
         public void run2() {
           Region rgn1 = getRootRegion().getSubregion(rgnName);
           assertNotNull("Could not find entry for 'key'", rgn1.getEntry("key"));
@@ -6050,6 +6292,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                       "assertCacheCallbackEvents",
                       new Object[] {rgnName, txId, "key", "value", "value2"});
       Invoke.invokeInEveryVMRepeatingIfNecessary(new CacheSerializableRunnable("testTXSimpleOps: Verify Received Value") {
+        @Override
         public void run2() {
           Region rgn1 = getRootRegion().getSubregion(rgnName);
           assertNotNull("Could not find entry for 'key'", rgn1.getEntry("key"));
@@ -6094,6 +6337,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                       "assertCacheCallbackEvents",
                       new Object[] {rgnName, txId, "key", "value2", null});
       Invoke.invokeInEveryVMRepeatingIfNecessary(new CacheSerializableRunnable("testTXSimpleOps: Verify Received Value") {
+        @Override
         public void run2() {
           Region rgn1 = getRootRegion().getSubregion(rgnName);
           assertNotNull("Could not find entry for 'key'", rgn1.getEntry("key"));
@@ -6139,6 +6383,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                       "assertCacheCallbackEvents",
                       new Object[] {rgnName, txId, "key", null, null});
       Invoke.invokeInEveryVMRepeatingIfNecessary(new CacheSerializableRunnable("testTXSimpleOps: Verify Received Value") {
+        @Override
         public void run2() {
           Region rgn1 = getRootRegion().getSubregion(rgnName);
           assertTrue(!rgn1.containsKey("key"));
@@ -6192,6 +6437,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that the push of a loaded value does not cause a conflict
    * on the side receiving the update
    */
+  @Ignore("TODO: this test always hits early out")
+  @Test
   public void testTXUpdateLoadNoConflict() throws Exception {
     /*
      * this no longer holds true - we have load conflicts now
@@ -6200,20 +6447,18 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     if(true) {
       return;
     }
-    
-    if (!supportsTransactions()) {
-      return;
-    }
+
+    assumeTrue(supportsTransactions());
+    assumeFalse(getRegionAttributes().getScope().isGlobal());
+    assumeFalse(getRegionAttributes().getDataPolicy().withPersistence());
+
     assertTrue(getRegionAttributes().getScope().isDistributed());
     CacheTransactionManager txMgr = this.getCache().getCacheTransactionManager();
 
-    if (getRegionAttributes().getScope().isGlobal()
-        || getRegionAttributes().getDataPolicy().withPersistence()) {
-      return;
-    }
     final String rgnName = getUniqueName();
 
     SerializableRunnable create = new SerializableRunnable("testTXUpdateLoadNoConflict: Create Region & Load value") {
+      @Override
       public void run() {
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
         MyTransactionListener tl = new MyTransactionListener();
@@ -6223,6 +6468,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           AttributesMutator mutator = rgn.getAttributesMutator();
           mutator.setCacheLoader(new CacheLoader() {
               int count = 0;
+              @Override
               public Object load(LoaderHelper helper)
                 throws CacheLoaderException
               {
@@ -6230,6 +6476,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                 return "LV " + count;
 
               }
+              @Override
               public void close() {}
             });
           Object value = rgn.get("key");
@@ -6238,7 +6485,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           flushIfNecessary(rgn);
         }
         catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", e);
+          fail("While creating region", e);
         }
       }
     };
@@ -6432,25 +6679,24 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       getSystem().getLogWriter().fine("testTXUpdateLoadNoConflict: Caused exception in createRegion");
       throw e;
     }
-
   }
 
+  @Test
   public void testTXMultiRegion() throws Exception {
-    if (!supportsTransactions()) {
-      return;
-    }
+    assumeTrue(supportsTransactions());
+    assumeFalse(getRegionAttributes().getScope().isGlobal());
+    assumeFalse(getRegionAttributes().getDataPolicy().withPersistence());
+
     assertTrue(getRegionAttributes().getScope().isDistributed());
+
     CacheTransactionManager txMgr = this.getCache().getCacheTransactionManager();
 
-    if (getRegionAttributes().getScope().isGlobal()
-        || getRegionAttributes().getDataPolicy().withPersistence()) {
-      return;
-    }
     final String rgnName1 = getUniqueName() + "MR1";
     final String rgnName2 = getUniqueName() + "MR2";
     final String rgnName3 = getUniqueName() + "MR3";
 
     SerializableRunnable create1 = new SerializableRunnable("testTXMultiRegion: Create Region") {
+      @Override
       public void run() {
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
         MyTransactionListener tl = new MyTransactionListener();
@@ -6460,11 +6706,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           getSystem().getLogWriter().info("testTXMultiRegion: Created region1");
         }
         catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", e);
+          fail("While creating region", e);
         }
       }
     };
     SerializableRunnable newKey1 = new SerializableRunnable("testTXMultiRegion: Create Key") {
+      @Override
       public void run() {
         try {
           Region rgn = getRootRegion("root").getSubregion(rgnName1);
@@ -6472,12 +6719,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           getSystem().getLogWriter().info("testTXMultiRegion: Created key");
         }
         catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", e);
+          fail("While creating region", e);
         }
       }
     };
     
     SerializableRunnable create2 = new SerializableRunnable("testTXMultiRegion: Create Region") {
+      @Override
       public void run() {
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
         MyTransactionListener tl = new MyTransactionListener();
@@ -6487,11 +6735,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           getSystem().getLogWriter().info("testTXMultiRegion: Created region2");
         }
         catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", e);
+          fail("While creating region", e);
         }
       }
     };
     SerializableRunnable newKey2 = new SerializableRunnable("testTXMultiRegion: Create Key") {
+      @Override
       public void run() {
         try {
           Region root = getRootRegion("root");
@@ -6500,12 +6749,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           getSystem().getLogWriter().info("testTXMultiRegion: Created Key");
         }
         catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", e);
+          fail("While creating region", e);
         }
       }
     };
     
     SerializableRunnable create3 = new SerializableRunnable("testTXMultiRegion: Create Region") {
+      @Override
       public void run() {
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
         MyTransactionListener tl = new MyTransactionListener();
@@ -6515,11 +6765,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           getSystem().getLogWriter().info("testTXMultiRegion: Created Region");
         }
         catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", e);
+          fail("While creating region", e);
         }
       }
     };
     SerializableRunnable newKey3 = new SerializableRunnable("testTXMultiRegion: Create Key") {
+      @Override
       public void run() {
         try {
           Region root = getRootRegion("root");
@@ -6528,12 +6779,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           getSystem().getLogWriter().info("testTXMultiRegion: Created Key");
         }
         catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", e);
+          fail("While creating region", e);
         }
       }
     };
 
     SerializableRunnable check1_3 = new SerializableRunnable("testTXMultiRegion: check") {
+      @Override
       public void run() {
         Region rgn1 = getRootRegion().getSubregion(rgnName1);
         {
@@ -6564,6 +6816,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           assertEquals(2, events.size());
           ArrayList eventList = new ArrayList(events);
           Collections.sort(eventList, new Comparator() {
+              @Override
               public int compare(Object o1, Object o2) {
                 EntryEvent e1 = (EntryEvent)o1;
                 EntryEvent e2 = (EntryEvent)o2;
@@ -6609,6 +6862,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
     SerializableRunnable check2_3 = new SerializableRunnable("testTXMultiRegion: check") {
+      @Override
       public void run() {
         Region rgn2 = getRootRegion().getSubregion(rgnName2);
         {
@@ -6639,6 +6893,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           assertEquals(2, events.size());
           ArrayList eventList = new ArrayList(events);
           Collections.sort(eventList, new Comparator() {
+              @Override
               public int compare(Object o1, Object o2) {
                 EntryEvent e1 = (EntryEvent)o1;
                 EntryEvent e2 = (EntryEvent)o2;
@@ -6685,6 +6940,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
     SerializableRunnable check1 = new SerializableRunnable("testTXMultiRegion: check") {
+      @Override
       public void run() {
           Region rgn = getRootRegion().getSubregion(rgnName1);
           assertNotNull("Could not find entry for 'key'", rgn.getEntry("key"));
@@ -6725,6 +6981,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
     };
     SerializableRunnable check2 = new SerializableRunnable("testTXMultiRegion: check") {
+      @Override
       public void run() {
           Region rgn = getRootRegion().getSubregion(rgnName2);
           assertNotNull("Could not find entry for 'key'", rgn.getEntry("key"));
@@ -6765,6 +7022,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
     };
     SerializableRunnable check3 = new SerializableRunnable("testTXMultiRegion: check") {
+      @Override
       public void run() {
           Region rgn = getRootRegion().getSubregion(rgnName3);
           assertNotNull("Could not find entry for 'key'", rgn.getEntry("key"));
@@ -7173,23 +7431,21 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       getSystem().getLogWriter().fine("testTXMultiRegion: Caused exception in createRegion");
       throw e;
     }
-
   }
 
+  @Test
   public void testTXRmtMirror() throws Exception {
-    if (!supportsTransactions()) {
-      return;
-    }
+    assumeTrue(supportsTransactions());
+    assumeFalse(getRegionAttributes().getScope().isGlobal());
+    assumeFalse(getRegionAttributes().getDataPolicy().withPersistence());
+
     assertTrue(getRegionAttributes().getScope().isDistributed());
     CacheTransactionManager txMgr = this.getCache().getCacheTransactionManager();
 
-    if (getRegionAttributes().getScope().isGlobal()
-        || getRegionAttributes().getDataPolicy().withPersistence()) {
-      return;
-    }
     final String rgnName = getUniqueName();
 
     SerializableRunnable createMirror = new SerializableRunnable("textTXRmtMirror: Create Mirrored Region") {
+      @Override
       public void run() {
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
         MyTransactionListener tl = new MyTransactionListener();
@@ -7200,12 +7456,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           createRegion(rgnName, rgnAtts.create());
         }
         catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", e);
+          fail("While creating region", e);
         }
       }
     };
 
     SerializableRunnable createNonMirror = new SerializableRunnable("textTXRmtMirror: Create Mirrored Region") {
+      @Override
       public void run() {
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
         MyTransactionListener tl = new MyTransactionListener();
@@ -7216,11 +7473,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           createRegion(rgnName, rgnAtts.create());
         }
         catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", e);
+          fail("While creating region", e);
         }
       }
     };
     SerializableRunnable checkExists = new SerializableRunnable("textTXRmtMirror: checkExists") {
+      @Override
       public void run() {
         Region rgn = getRootRegion().getSubregion(rgnName);
         {
@@ -7256,6 +7514,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
     SerializableRunnable checkNoKey = new SerializableRunnable("textTXRmtMirror: checkNoKey") {
+      @Override
       public void run() {
         Region rgn = getRootRegion().getSubregion(rgnName);
         {
@@ -7307,15 +7566,15 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       getSystem().getLogWriter().fine("textTXRmtMirror: Caused exception in createRegion");
       throw e;
     }
-
   }
 
-  public void todo_testTXAlgebra() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testTXAlgebra() throws Exception {
+    assumeFalse(getRegionAttributes().getScope().isGlobal());
+    assumeFalse(getRegionAttributes().getDataPolicy().withPersistence());
+
     assertTrue(getRegionAttributes().getScope().isDistributed());
-    if (getRegionAttributes().getScope().isGlobal()
-        || getRegionAttributes().getDataPolicy().withPersistence()) {
-      return;
-    }
 
     CacheTransactionManager txMgr = this.getCache().getCacheTransactionManager();
     MyTransactionListener localTl = new MyTransactionListener();
@@ -7326,6 +7585,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final String rgnName = getUniqueName();
 
     SerializableRunnable create = new SerializableRunnable("testTXAlgebra: Create Region") {
+      @Override
       public void run() {
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
         MyTransactionListener tl = new MyTransactionListener();
@@ -7340,7 +7600,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           }
         }
         catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", e);
+          fail("While creating region", e);
         }
       }
     };
@@ -7371,6 +7631,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       // Make sure commit did not trigger callbacks
       //// callbackVal.reAssert();
       Invoke.invokeInEveryVM(new CacheSerializableRunnable("testTXAlgebra: check: C+P->C") {
+          @Override
           public void run2() {
             Region rgn1 = getRootRegion().getSubregion(rgnName);
             CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
@@ -7448,6 +7709,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       txMgr.commit();
       //// callbackVal.reAssert();
       Invoke.invokeInEveryVM(new CacheSerializableRunnable("testTXAlgebra: check: C+DI->C (invalid value)") {
+          @Override
           public void run2() {
             Region rgn1 = getRootRegion().getSubregion(rgnName);
             CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
@@ -7518,6 +7780,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       assertTrue(!rgn.containsValueForKey("key"));
       txMgr.commit();
       Invoke.invokeInEveryVM(new CacheSerializableRunnable("testTXAlgebra: check: committed LI + TX DI-> NOOP") {
+          @Override
           public void run2() {
             Region rgn1 = getRootRegion().getSubregion(rgnName);
             CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
@@ -7548,6 +7811,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         assertTrue(!rgn.containsValueForKey("key"));
         txMgr.commit();
         Invoke.invokeInEveryVM(new CacheSerializableRunnable("testTXAlgebra: check: TX LI + TX DI -> LI") {
+            @Override
             public void run2() {
               Region rgn1 = getRootRegion().getSubregion(rgnName);
               CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
@@ -7600,6 +7864,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       txMgr.commit();
       //// callbackVal.reAssert();
       Invoke.invokeInEveryVM(new CacheSerializableRunnable("testTXAlgebra: check: C+DD->DD") {
+          @Override
           public void run2() {
             Region rgn1 = getRootRegion().getSubregion(rgnName);
             CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
@@ -7636,12 +7901,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       if (!getRegionAttributes().getDataPolicy().withReplication()) {
         // assume that remote regions have same mirror type as local
         Invoke.invokeInEveryVM(new CacheSerializableRunnable("testTXAlgebra: C+LI-> entry creation") {
+            @Override
             public void run2() {
               Region rgn1 = getRootRegion().getSubregion(rgnName);
               try {
                 rgn1.create("key", null);
               } catch (CacheException e) {
-                com.gemstone.gemfire.test.dunit.Assert.fail("While creating key", e);
+                fail("While creating key", e);
               }
             }
           });
@@ -7658,6 +7924,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       txMgr.commit();
       //// callbackVal.reAssert();
       Invoke.invokeInEveryVM(new CacheSerializableRunnable("testTXAlgebra: check: C+LI->C (with value)") {
+          @Override
           public void run2() {
             Region rgn1 = getRootRegion().getSubregion(rgnName);
             CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
@@ -7816,6 +8083,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     
     final String name = this.getUniqueName() + "-CC";
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
+        @Override
         public void run() {
           try {
             RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
@@ -7826,25 +8094,27 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               try {
                 bridge.start();
               } catch (IOException ex) {
-                com.gemstone.gemfire.test.dunit.Assert.fail("While creating bridge", ex);
+                fail("While creating bridge", ex);
               }
             }
           } catch (CacheException ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", ex);
+            fail("While creating region", ex);
           }
         }
       };
       
     SerializableRunnable asserter = new SerializableRunnable("ensure tombstone has been received") {
+      @Override
       public void run() {
         RegionEntry entry = CCRegion.getRegionEntry("object2");
-        Assert.assertTrue(entry != null);
-        Assert.assertTrue(entry.isTombstone());
+        assertTrue(entry != null);
+        assertTrue(entry.isTombstone());
       }
     };
     
     vm0.invoke(createRegion);
     vm0.invoke(new SerializableRunnable("create some tombstones") {
+      @Override
       public void run() {
         CCRegion.put("object1", "value1");
         CCRegion.put("object2", "value2");
@@ -7882,6 +8152,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
   protected void disconnect(VM vm) {
     SerializableRunnable disconnect = new SerializableRunnable("disconnect") {
+      @Override
       public void run() {
 //        GatewayBatchOp.VERSION_WITH_OLD_WAN = false;
         distributedSystemID = -1;
@@ -7908,12 +8179,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     
     final String name = this.getUniqueName() + "-CC";
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
+        @Override
         public void run() {
           try {
             RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
             CCRegion = (LocalRegion)f.create(name);
           } catch (CacheException ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", ex);
+            fail("While creating region", ex);
           }
         }
       };
@@ -7923,6 +8195,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     
     
     SerializableRunnable performOps = new SerializableRunnable("perform concurrent ops") {
+      @Override
       public void run() {
         try {
           doOpsLoop(5000, false);
@@ -7931,7 +8204,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             assertTrue("expected some event conflation", events>0);
           }
         } catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("while performing concurrent operations", e);
+          fail("while performing concurrent operations", e);
         }
 //        } catch (InterruptedException e) {
 //          fail("someone interrupted my sleep");
@@ -7980,6 +8253,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       vm0.invoke(() -> this.clearCCRegion());
       
       performOps = new SerializableRunnable("perform concurrent delta ops") {
+        @Override
         public void run() {
           try {
             long stopTime = System.currentTimeMillis() + 5000;
@@ -7992,7 +8266,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             long events = CCRegion.getCachePerfStats().getDeltaFailedUpdates();
             assertTrue("expected some failed deltas", events>0);
           } catch (CacheException e) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("while performing concurrent operations", e);
+            fail("while performing concurrent operations", e);
           }
         }
       };
@@ -8071,18 +8345,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     }
   }
-  
-  
+
   private RegionVersionVector getVersionVector(VM vm) throws Exception {
     byte[] serializedForm = (byte[])vm.invoke(() -> this.getCCRegionVersionVector());
     DataInputStream dis = new DataInputStream(new ByteArrayInputStream(serializedForm));
     return (RegionVersionVector)DataSerializer.readObject(dis);
   }
-  
-  
-  
-  
-  
+
   /** comparison method that allows one or both arguments to be null */
   private boolean notEqual(Object o1, Object o2) {
     if (o1 == null) {
@@ -8096,12 +8365,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   
   protected AsyncInvocation performOps4ClearWithConcurrentEvents(VM vm, final int msToRun) {
     SerializableRunnable performOps = new SerializableRunnable("perform concurrent ops") {
+      @Override
       public void run() {
         try {
           boolean includeClear = true;
           doOpsLoop(msToRun, includeClear);
         } catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("while performing concurrent operations", e);
+          fail("while performing concurrent operations", e);
         }
       }
     };
@@ -8110,13 +8380,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
   protected void createRegionWithAttribute(VM vm, final String name, final boolean syncDiskWrite) {
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
+      @Override
       public void run() {
         try {
           RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
           f.setDiskSynchronous(syncDiskWrite);
           CCRegion = (LocalRegion)f.create(name);
         } catch (CacheException ex) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", ex);
+          fail("While creating region", ex);
         }
       }
     };
@@ -8155,10 +8426,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     waitForAsyncProcessing(a0, "");
     waitForAsyncProcessing(a1, "");
 
-//    if (a0failed && a1failed) {
-//      fail("neither member saw event conflation - check stats for " + name);
-//    }
-    
     // check consistency of the regions
     Map r0Contents = (Map)vm0.invoke(() -> this.getCCRegionContents());
     Map r1Contents = (Map)vm1.invoke(() -> this.getCCRegionContents());
@@ -8184,12 +8451,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm2.invoke(() -> this.assertNoClearTimeouts());
   }
   
-  
   public void versionTestClearOnNonReplicateWithConcurrentEvents() throws Exception {
-    if ( ! "bruces".equals(System.getProperty("user.name")) ) {
-      // bug #45704, this test fails too often with this problem to be executed in all dunit runs
-      return;
-    }
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -8202,6 +8464,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     
     final String name = this.getUniqueName() + "-CC";
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
+        @Override
         public void run() {
           try {
             RegionFactory f = null;
@@ -8215,7 +8478,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             }
             CCRegion = (LocalRegion)f.create(name);
           } catch (CacheException ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", ex);
+            fail("While creating region", ex);
           }
         }
       };
@@ -8227,15 +8490,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     
     
     SerializableRunnable performOps = new SerializableRunnable("perform concurrent ops") {
+      @Override
       public void run() {
         try {
           doOpsLoop(5000, true);
         } catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("while performing concurrent operations", e);
+          fail("while performing concurrent operations", e);
         }
-//        } catch (InterruptedException e) {
-//          fail("someone interrupted my sleep");
-//        }
         if (CCRegion.getScope().isDistributedNoAck()) {
           sendSerialMessageToAll(); // flush the ops
         }
@@ -8251,7 +8512,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     waitForAsyncProcessing(a1, "");
 
     // check consistency of the regions
-//    Map r0Contents = (Map)vm0.invoke(() -> this.getCCRegionContents()); empty region
     Map r1Contents = (Map)vm1.invoke(() -> this.getCCRegionContents()); // normal region
     Map r2Contents = (Map)vm2.invoke(() -> this.getCCRegionContents()); // replicated
     Map r3Contents = (Map)vm3.invoke(() -> this.getCCRegionContents()); // replicated
@@ -8262,19 +8522,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       // they may miss invalidates/creates/destroys that other VMs see while applying ops
       // that they originate that maybe should have been elided.  For this reason we can't
       // guarantee their consistency and don't check for it here.
-//      if (r1Contents.containsKey(key)) {
-//        assertIndexDetailsEquals("region contents are not consistent", r1Contents.get(key), r2Contents.get(key));
-//      }
       assertEquals("region contents are not consistent for " + key, r2Contents.get(key), r3Contents.get(key));
       for (int subi=1; subi<3; subi++) {
         String subkey = key + "-" + subi;
         if (r2Contents.containsKey(subkey)) {
-//          assertIndexDetailsEquals("region contents are not consistent for " + subkey, r1Contents.get(subkey), r2Contents.get(subkey));
           assertEquals("region contents are not consistent for " + subkey, r2Contents.get(subkey), r3Contents.get(subkey));
         } else {
           // can't assert this because a clear() op will cause non-replicated to start rejecting
           // updates/creates from other members
-//          assertTrue("expected r2 to not contain " + subkey, !r2Contents.containsKey(subkey));
         }
       }
     }
@@ -8286,7 +8541,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm2.invoke(() -> this.assertNoClearTimeouts());
     vm3.invoke(() -> this.assertNoClearTimeouts());
   }
-  
   
   public void versionTestTombstones() {
     disconnectAllFromDS();
@@ -8305,6 +8559,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final double oldLimit = TombstoneService.GC_MEMORY_THRESHOLD;
     try {
       SerializableRunnable setTimeout = new SerializableRunnable() {
+        @Override
         public void run() {
           TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT = 20000;
           TombstoneService.CLIENT_TOMBSTONE_TIMEOUT = 19000;
@@ -8317,6 +8572,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       vm1.invoke(setTimeout);
       final String name = this.getUniqueName() + "-CC";
       SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
+        @Override
         public void run() {
           try {
             RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
@@ -8328,7 +8584,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               sendSerialMessageToAll(); // flush the ops
             }
           } catch (CacheException ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", ex);
+            fail("While creating region", ex);
           }
         }
       };
@@ -8337,6 +8593,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       vm1.invoke(createRegion);
 
       vm0.invoke(new SerializableRunnable("destroy entries and check tombstone count") {
+        @Override
         public void run() {
           try {
             for (int i=0; i<numEntries; i++) {
@@ -8351,13 +8608,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               sendSerialMessageToAll(); // flush the ops
             }
           } catch (CacheException e) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("while performing destroy operations", e);
+            fail("while performing destroy operations", e);
           }
-//          OSProcess.printStacks(0, getLogWriter(), false);
         }
       });
 
       vm1.invoke(new SerializableRunnable("check tombstone count(2)") {
+        @Override
         public void run() {
           final long count = CCRegion.getTombstoneCount();
           assertEquals("expected "+numEntries+" tombstones", numEntries, count);
@@ -8378,7 +8635,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           };
           try {
             Wait.waitForCriterion(waitForExpiration, TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT+10000, 1000, true);
-          } catch (AssertionFailedError e) {
+          } catch (AssertionError e) {
             CCRegion.dumpBackingMap();
             com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("tombstone service state: " + CCRegion.getCache().getTombstoneService());
             throw e;
@@ -8392,6 +8649,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       // the count should fall to zero.
 
       vm0.invoke(new SerializableRunnable("create/destroy entries and check tombstone count") {
+        @Override
         public void run() {
           long count = CCRegion.getTombstoneCount();
           final long origCount = count;
@@ -8428,17 +8686,18 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             if (CCRegion.getScope().isDistributedNoAck()) {
               sendSerialMessageToAll(); // flush the ops
             }
-          } catch (AssertionFailedError e) {
+          } catch (AssertionError e) {
             CCRegion.dumpBackingMap();
             com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("tombstone service state: " + CCRegion.getCache().getTombstoneService());
             throw e;
           } catch (CacheException e) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("while performing create/destroy operations", e);
+            fail("while performing create/destroy operations", e);
           }
         }
       });
 
       vm1.invoke(new SerializableRunnable("check tombstone count and install listener") {
+        @Override
         public void run() {
           long count = CCRegion.getTombstoneCount();
           assertEquals("expected ten tombstones", numEntries, count);
@@ -8453,6 +8712,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }});
 
       vm0.invoke(new SerializableRunnable("create entries and check afterCreate and tombstone count") {
+        @Override
         public void run() {
           try {
             for (int i=0; i<numEntries; i++) {
@@ -8466,33 +8726,23 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               sendSerialMessageToAll(); // flush the ops
             }
           } catch (CacheException e) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("while performing create operations", e);
+            fail("while performing create operations", e);
           }
         }
       });
 
       vm1.invoke(new SerializableRunnable("check afterCreate and tombstone count") {
+        @Override
         public void run() {
           long count = CCRegion.getTombstoneCount();
           assertEquals("expected zero tombstones", 0, count);
           assertEquals("expected "+numEntries+" afterCreates", numEntries, afterCreates);
           assertEquals(numEntries, CCRegion.size());
-          // TODO: It is not clear what this hard sleep is testing since the tombstone count
-          // has already gone to zero. Deadcoding since it always sleeps for no reason.
-//          // make sure the actual removal of the tombstones by the sweeper doesn't mess
-//          // up anything
-//          try {
-//            Thread.sleep(TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT + 5000);
-//          } catch (InterruptedException e) {
-//            fail("sleep was interrupted");
-//          }
-//          count = CCRegion.getTombstoneCount();
-//          assertIndexDetailsEquals("expected zero tombstones", 0, count);
-//          assertIndexDetailsEquals(numEntries, CCRegion.size());
         }
       });
 
       vm0.invoke(new SerializableRunnable("check region size and tombstone count") {
+        @Override
         public void run() {
           long count = CCRegion.getTombstoneCount();
           assertEquals("expected all tombstones to be expired", 0, count);
@@ -8501,6 +8751,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
     } finally {
       SerializableRunnable resetTimeout = new SerializableRunnable() {
+        @Override
         public void run() {
           TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT = oldServerTimeout;
           TombstoneService.CLIENT_TOMBSTONE_TIMEOUT = oldClientTimeout;
@@ -8513,14 +8764,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       vm1.invoke(resetTimeout);
     }
   }
-  
 
-  
-  
-  
-  
-  
-  
   /**
    * This tests the concurrency versioning system to ensure that event conflation
    * happens correctly and that the statistic is being updated properly
@@ -8539,6 +8783,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     
     final String name = this.getUniqueName() + "-CC";
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
+        @Override
         public void run() {
           try {
             final RegionFactory f;
@@ -8549,7 +8794,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             }
             CCRegion = (LocalRegion)f.create(name);
           } catch (CacheException ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", ex);
+            fail("While creating region", ex);
           }
         }
       };
@@ -8560,6 +8805,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     
     
     SerializableRunnable performOps = new SerializableRunnable("perform concurrent ops") {
+      @Override
       public void run() {
         try {
           doOpsLoop(5000, false);
@@ -8569,7 +8815,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             assertTrue("expected some event conflation", events>0);
           }
         } catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("while performing concurrent operations", e);
+          fail("while performing concurrent operations", e);
         }
       }
     };
@@ -8609,9 +8855,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     }
   }
-  
-  
-  
+
   void doOpsLoop(int runTimeMs, boolean includeClear) {
     doOpsLoopNoFlush(runTimeMs, includeClear, true);
     if (CCRegion.getScope().isDistributedNoAck()) {
@@ -8695,11 +8939,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     }
   }
-  
-  
-  
-  
-  
+
   /**
    * This tests the concurrency versioning system to ensure that event conflation
    * happens correctly and that the statistic is being updated properly
@@ -8719,6 +8959,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     
     final String name = this.getUniqueName() + "-CC";
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
+        @Override
         public void run() {
           try {
             final RegionFactory f;
@@ -8730,7 +8971,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             }
             CCRegion = (LocalRegion)f.create(name);
           } catch (CacheException ex) {
-            com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", ex);
+            fail("While creating region", ex);
           }
         }
       };
@@ -8738,9 +8979,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm0.invoke(createRegion);
     vm1.invoke(createRegion);
     vm3.invoke(createRegion);
-    
-    
+
     SerializableRunnable performOps = new SerializableRunnable("perform concurrent ops") {
+      @Override
       public void run() {
         try {
           doOpsLoop(5000, false);
@@ -8750,7 +8991,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             assertTrue("expected some event conflation", events>0);
           }
         } catch (CacheException e) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("while performing concurrent operations", e);
+          fail("while performing concurrent operations", e);
         }
       }
     };
@@ -8779,9 +9020,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       String key = "cckey" + i;
       assertEquals("region contents are not consistent", r1Contents.get(key), r2Contents.get(key));
       assertEquals("region contents are not consistent", r2Contents.get(key), r3Contents.get(key));
-//      if (r0Contents.containsKey(key)) {
-//        assertIndexDetailsEquals("region contents are not consistent", r1Contents.get(key), r0Contents.get(key));
-//      }
       for (int subi=1; subi<3; subi++) {
         String subkey = key + "-" + subi;
         if (r1Contents.containsKey(subkey)) {
@@ -8805,10 +9043,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // the loaded value should have version 3
     final String loadKey = "loadKey";
     vm0.invoke(new SerializableRunnable("add cache loader and create destroyed entry") {
+      @Override
       public void run() {
         CCRegion.getAttributesMutator().setCacheLoader(new CacheLoader() {
+          @Override
           public void close() {
           }
+          @Override
           public Object load(LoaderHelper helper) throws CacheLoaderException {
             com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("The test CacheLoader has been invoked for key '" + helper.getKey() + "'");
             return "loadedValue";
@@ -8826,11 +9067,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     });
     vm1.invoke(new SerializableRunnable("confirm tombstone") {
+      @Override
       public void run() {
         assertTrue(Token.TOMBSTONE == CCRegion.getRegionEntry(loadKey).getValueInVM(CCRegion));
       }
     });
     vm0.invoke(new SerializableRunnable("use cache loader") {
+      @Override
       public void run() {
         assertEquals("loadedValue", CCRegion.get(loadKey));
         assertEquals(3, (CCRegion.getRegionEntry(loadKey)).getVersionStamp().getEntryVersion());
@@ -8838,6 +9081,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     });
     if (!noAck) { // might be 3 or 4 with no-ack
       vm1.invoke(new SerializableRunnable("verify version number") {
+        @Override
         public void run() {
           assertEquals("loadedValue", CCRegion.get(loadKey));
           assertEquals(3, (CCRegion.getRegionEntry(loadKey)).getVersionStamp().getEntryVersion());
@@ -8845,18 +9089,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
     }
   }
-  
-  
+
   public void versionTestGetAllWithVersions() {
-    if (!getRegionAttributes().getScope().isAck()) {
-      // this test has timing issues in no-ack scopes
-      return;
-    }
+    assumeTrue(getRegionAttributes().getScope().isAck()); // this test has timing issues in no-ack scopes
+
     VM vm0 = Host.getHost(0).getVM(0);
     VM vm1 = Host.getHost(0).getVM(1);
     
     final String regionName = getUniqueName() + "CCRegion";
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
+      @Override
       public void run() {
         try {
           final RegionFactory f;
@@ -8868,7 +9110,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           }
           CCRegion = (LocalRegion)f.create(regionName);
         } catch (CacheException ex) {
-          com.gemstone.gemfire.test.dunit.Assert.fail("While creating region", ex);
+          fail("While creating region", ex);
         }
       }
     };
@@ -8876,6 +9118,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm0.invoke(createRegion);
     vm1.invoke(createRegion);
     vm1.invoke(new SerializableRunnable("Populate region and perform some ops") {
+      @Override
       public void run() {
         for (int i=0; i<100; i++) {
           CCRegion.put("cckey"+i, Integer.valueOf(i));
@@ -8887,6 +9130,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     });
     
     vm0.invoke(new SerializableRunnable("Perform getAll") {
+      @Override
       public void run() {
         List keys = new LinkedList();
         for (int i=0; i<100; i++) {
@@ -8906,8 +9150,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     });
   }
 
-  
-  
   protected boolean waitForAsyncProcessing(AsyncInvocation async, String expectedError) {
     boolean failed = false;
     try {
@@ -8920,7 +9162,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   
   /**
    * The number of milliseconds to try repeating validation code in the
-   * event that AssertionFailedError is thrown.  For ACK scopes, no
+   * event that AssertionError is thrown.  For ACK scopes, no
    * repeat should be necessary.
    */
   protected long getRepeatTimeoutMs() {
@@ -8933,8 +9175,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // assertion error.  All ops need to be recorded in the version vector
     assertEquals("expected there to be no timeouts - something is broken", 0, CCRegion.getCachePerfStats().getClearTimeouts());
   }
-  
-  
+
   public static void clearCCRegion() {
     CCRegion.clear();
   }
@@ -8947,8 +9188,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     }
     return result;
   }
-  
-  
+
   /**
    * Since version vectors aren't java.io.Serializable we use DataSerializer
    * to return a serialized form of the vector
@@ -8978,7 +9218,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     return result;
   }
 
-
   public static InternalDistributedMember getMemberId() {
     return CCRegion.getDistributionManager().getDistributionManagerId();
   }
@@ -9007,14 +9246,17 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       this.value = value;
     }
 
+    @Override
     public boolean hasDelta() {
       return true;
     }
 
+    @Override
     public void toDelta(DataOutput out) throws IOException {
       out.writeUTF(this.value);
     }
 
+    @Override
     public void fromDelta(DataInput in) throws IOException,
         InvalidDeltaException {
       this.value = in.readUTF();

@@ -39,7 +39,7 @@ public class ObjectPartListJUnitTest {
     list.addObjectPart("key", "value2", true, null);
     byte[] serializedObjectBytes = BlobHelper.serializeToBlob("value3");
     list.addObjectPart("key", serializedObjectBytes, true, null);
-    list.addExceptionPart("key", new TestException("hello"));
+    list.addExceptionPart("key", new AssertionError("hello"));
     list.addObjectPartForAbsentKey("key", null);
     
     //Create a clone of the this.
@@ -65,7 +65,7 @@ public class ObjectPartListJUnitTest {
     assertEquals("value1", new String((byte[]) values.get(0)));
     assertEquals("value2", values.get(1));
     assertEquals("value3", values.get(2));
-    assertEquals(new TestException("hello"), values.get(3));
+    assertEquals(new AssertionError("hello"), values.get(3));
     assertNull(values.get(4));
   }
 
@@ -77,7 +77,7 @@ public class ObjectPartListJUnitTest {
     list.addObjectPart("key", "value2", true, null);
     byte[] serializedObjectBytes = BlobHelper.serializeToBlob("value3");
     list.addObjectPart("key", serializedObjectBytes, true, null);
-    list.addExceptionPart("key", new TestException("hello"));
+    list.addExceptionPart("key", new AssertionError("hello"));
     list.addObjectPartForAbsentKey("key", null);
     
     //Create a clone of the this list.
@@ -100,22 +100,22 @@ public class ObjectPartListJUnitTest {
     assertEquals("value1", new String((byte[]) values.get(0)));
     assertEquals("value2", BlobHelper.deserializeBlob((byte[])values.get(1)));
     assertEquals("value3", BlobHelper.deserializeBlob((byte[])values.get(2)));
-    assertEquals(new TestException("hello"), values.get(3));
+    assertEquals(new AssertionError("hello"), values.get(3));
     assertNull(values.get(4));
   }
   
-  private static class TestException extends Exception {
+  private static class AssertionError extends Exception {
 
-    public TestException(String message) {
+    public AssertionError(String message) {
       super(message);
     }
 
     @Override
     public boolean equals(Object o) {
-      if(!(o instanceof TestException)) {
+      if(!(o instanceof AssertionError)) {
         return false;
       }
-      if(!((TestException) o ).getMessage().equals(getMessage())) {
+      if(!((AssertionError) o ).getMessage().equals(getMessage())) {
         return false;
       }
       return true;

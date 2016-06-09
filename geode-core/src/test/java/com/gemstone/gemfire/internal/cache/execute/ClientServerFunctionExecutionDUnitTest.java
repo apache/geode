@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
@@ -49,6 +58,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+@Category(DistributedTest.class)
 public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBase {
   private static final String TEST_FUNCTION1 = TestFunction.TEST_FUNCTION1;
 
@@ -58,8 +68,8 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
   static final String retryRegionName = "RetryDataRegion";
   static Region metaDataRegion;
   
-  public ClientServerFunctionExecutionDUnitTest(String name) {
-    super(name);
+  public ClientServerFunctionExecutionDUnitTest() {
+    super();
   }
 
   @Override
@@ -67,6 +77,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     IgnoredException.addIgnoredException("java.net.ConnectException");
   }
 
+  @Test
   public void test_Bug_43126_Function_Not_Registered()
       throws InterruptedException {
     createScenario();
@@ -80,6 +91,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     }
   }
 
+  @Test
   public void test_Bug43126() throws InterruptedException {
     createScenario();
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
@@ -90,6 +102,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
   /*
    * Execution of the function on server using the name of the function
    */   
+  @Test
   public void testServerExecution_byName() {
     createScenario();
 
@@ -105,6 +118,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
   }
   
   
+  @Test
   public void testServerExecution_sendException() {
     createScenario();
 
@@ -122,6 +136,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
   /*
    * Execution of the function on server using the name of the function
    */   
+  @Test
   public void testServerExecution_NoLastResult() {
     createScenario();
 
@@ -136,6 +151,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     client.invoke(() -> ClientServerFunctionExecutionDUnitTest.allServerExecution_NoLastResult( isByName, function, toRegister));
   }
 
+  @Test
   public void testServerExecution_byName_WithoutRegister() {
     createScenario();
 
@@ -152,6 +168,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
   /*
    * Execution of the inline function on server 
    */   
+  @Test
   public void testServerExecution_byInlineFunction() {
     createScenario();
     LogWriterUtils.getLogWriter().info("ClientServerFunctionExecutionDUnitTest#testServerSingleKeyExecution_byName : Starting test");
@@ -163,6 +180,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
   /*
    * Execution of the inline function on server 
    */   
+  @Test
   public void testServerExecution_byInlineFunction_InvalidAttrbiutes() {
     createScenario();
     LogWriterUtils.getLogWriter().info("ClientServerFunctionExecutionDUnitTest#testServerSingleKeyExecution_byName : Starting test");
@@ -172,6 +190,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
   /*
    * Execution of the inline function on server
    */
+  @Test
   public void testBug40714() {
     createScenario();
     LogWriterUtils.getLogWriter()
@@ -247,6 +266,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
   /*
    * Execution of the function on server using the name of the function
    */   
+  @Test
   public void testServerExecution_SocketTimeOut() {
     createScenario();
     function = new TestFunction(true,TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
@@ -259,6 +279,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     client.invoke(() -> ClientServerFunctionExecutionDUnitTest.allServerExecution( isByName, function, toRegister));
   }
 
+  @Test
   public void testServerExecution_SocketTimeOut_WithoutRegister() {
     createScenario();
     function = new TestFunction(true,TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
@@ -277,6 +298,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
    * the execution is failover to other available server
    */
   @SuppressWarnings("rawtypes")
+  @Test
   public void testOnServerFailoverWithOneServerDownHA()
       throws InterruptedException {
     //The test code appears to trigger this because the first
@@ -302,6 +324,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
   }
 
   @SuppressWarnings("rawtypes")
+  @Test
   public void testOnServerFailoverWithTwoServerDownHA()
       throws InterruptedException {
     //The test code appears to trigger this because the first
@@ -332,6 +355,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
    * Ensure that the while executing the function if the servers are down then 
    * the execution shouldn't failover to other available server
    */
+  @Test
   public void testOnServerFailoverNonHA()
       throws InterruptedException {
     //The test code appears to trigger this because the first
@@ -360,6 +384,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
    * As this is the case of HA then system should retry the function execution. After 5th attempt
    * function will send Boolean as last result.
    */
+  @Test
   public void testOnServerExecution_FunctionInvocationTargetException() {
     createScenario();
     function = new TestFunction(true, TestFunction.TEST_FUNCTION_ONSERVER_REEXECUTE_EXCEPTION);

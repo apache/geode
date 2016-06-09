@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -65,19 +74,11 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
-/**
- *
- */
+@Category(DistributedTest.class)
 public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
 
   private static final long  MAX_WAIT = 30 * 1000;
 
-
-
-  public BackupDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     StringBuilder failures = new StringBuilder();
@@ -87,6 +88,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     }
   }
   
+  @Test
   public void testBackupPR() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -155,6 +157,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
    * Test of bug 42419
    * @throws Throwable
    */
+  @Test
   public void testBackupFromMemberWithDiskStore() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -218,6 +221,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
    * Test for bug 42419
    * @throws Throwable
    */
+  @Test
   public void testBackupWhileBucketIsCreated() throws Throwable {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -295,6 +299,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
       checkData(vm0, 0, 1, "A", "region1");
   }
   
+  @Test
   public void testBackupWhileBucketIsMovedBackupBeforeSendDestroy() throws Throwable {
     Host host = Host.getHost(0);
     final VM vm2 = host.getVM(2);
@@ -319,6 +324,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     backupWhileBucketIsMoved(observer);
   }
   
+  @Test
   public void testBackupWhileBucketIsMovedBackupAfterSendDestroy() throws Throwable {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -358,6 +364,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     backupWhileBucketIsMoved(observer);
   }
   
+  @Test
   public void testBackupStatusCleanedUpAfterFailureOnOneMember() throws Throwable {
     IgnoredException.addIgnoredException("Uncaught exception");
     IgnoredException.addIgnoredException("Stop processing");
@@ -511,6 +518,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
    * data as backed up.
    * @throws Throwable
    */
+  @Test
   public void testBackupOverflow() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -535,6 +543,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     
   }
   
+  @Test
   public void testBackupPRWithOfflineMembers() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

@@ -19,6 +19,15 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.IOException;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -55,7 +64,8 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * 
  */
-public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends JUnit4CacheTestCase {
 
   String name;
 
@@ -72,13 +82,14 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase 
   /**
    * @param name
    */
-  public ConcurrentIndexInitOnOverflowRegionDUnitTest(String name) {
-    super(name);
+  public ConcurrentIndexInitOnOverflowRegionDUnitTest() {
+    super();
   }
 
   /**
   *
   */
+  @Test
   public void testAsyncIndexInitDuringEntryDestroyAndQueryOnRR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -187,6 +198,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase 
   /**
   *
   */
+  @Test
   public void testAsyncIndexInitDuringEntryPutUsingClientOnRR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -338,6 +350,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends CacheTestCase 
    * This tests if index updates are blocked while region.clear() is
    * called and indexes are being reinitialized.
    */
+  @Test
   public void testIndexUpdateWithRegionClear() {
     
     Host host = Host.getHost(0);

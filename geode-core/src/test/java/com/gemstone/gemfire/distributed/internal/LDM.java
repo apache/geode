@@ -16,14 +16,14 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
-import util.TestException;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
+import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.logging.LogService;
 
 /**
  * A little class for testing the local DistributionManager
@@ -50,7 +50,7 @@ public class LDM {
       Thread.sleep(5 * 1000);
 
     } catch (InterruptedException ex) {
-      throw new TestException("interrupted");
+      throw new AssertionError("interrupted");
     }
 
     system.disconnect();

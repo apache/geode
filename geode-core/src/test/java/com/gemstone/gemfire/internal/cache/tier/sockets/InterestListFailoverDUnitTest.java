@@ -16,23 +16,28 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-
+import static org.junit.Assert.*;
 
 import java.util.Iterator;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolFactory;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.client.*;
-import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Test Scenario :
@@ -47,11 +52,12 @@ import com.gemstone.gemfire.cache.client.internal.PoolImpl;
  * c2 : put (k1 -> vm2-key-1) and (k6 -> vm2-key-6)
  * c1 :  validate (r.getEntry("key-1").getValue() == "vm2-key-1")
  *                (r.getEntry("key-6").getValue() == "key-6") // as it is not registered *
- *
- *
  */
-public class InterestListFailoverDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
+
+  private static final String REGION_NAME = InterestListFailoverDUnitTest.class.getSimpleName() + "_region";
+
   VM vm0 = null;
 
   VM vm1 = null;
@@ -62,13 +68,6 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
 
   private int PORT1;
   private int PORT2;
-
-  private static final String REGION_NAME = "InterestListFailoverDUnitTest_region";
-
-  /** constructor */
-  public InterestListFailoverDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -113,11 +112,13 @@ public class InterestListFailoverDUnitTest extends DistributedTestCase
  *
  */
 
+  @Test
   public void testInterestListRecoveryHA()
   {
     doTestInterestListRecovery(-1);
   }
 
+  @Test
   public void testInterestListRecoveryNonHA()
   {
     doTestInterestListRecovery(0);

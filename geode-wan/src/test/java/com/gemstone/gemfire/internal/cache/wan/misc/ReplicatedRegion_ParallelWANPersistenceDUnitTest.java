@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
@@ -23,15 +32,17 @@ import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 
+@Category(DistributedTest.class)
 public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBase {
   
-  public ReplicatedRegion_ParallelWANPersistenceDUnitTest(String name) {
-    super(name);
+  public ReplicatedRegion_ParallelWANPersistenceDUnitTest() {
+    super();
     // TODO Auto-generated constructor stub
   }
 
   final String expectedExceptions = null;
 
+  @Test
   public void testNothing() {
     
   }

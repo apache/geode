@@ -16,10 +16,35 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.execute.*;
+import com.gemstone.gemfire.cache.execute.Execution;
+import com.gemstone.gemfire.cache.execute.Function;
+import com.gemstone.gemfire.cache.execute.FunctionAdapter;
+import com.gemstone.gemfire.cache.execute.FunctionContext;
+import com.gemstone.gemfire.cache.execute.FunctionException;
+import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -30,22 +55,22 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionTestHelper;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.io.IOException;
-import java.util.*;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
-
-/*
+/**
  * This is DUnite Test to test the Function Execution stats under various
- * scenarion like Cliet-Server with Region/without Region, P2P with partitioned
+ * scenarios like Client-Server with Region/without Region, P2P with partitioned
  * Region/Distributed Region,member Execution
- * 
  */
-
-public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
+@Category(DistributedTest.class)
+public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
   
   static Boolean isByName = null;
   
@@ -86,16 +111,6 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
   static int resultReceived_TestFunctionException  = 0;
   static int noOfExecutionExceptions_TestFunctionException  = 0;
   
-//  static Object[] VM0Stats;
-//  static Object[] VM1Stats;
-//  static Object[] VM2Stats;
-//  static Object[] VM3tats;
-  
-  
-  public FunctionServiceStatsDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   protected final void postSetUpPRClientServerTestBase() throws Exception {
     //Make sure stats to linger from a previous test
@@ -163,7 +178,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
     }
   }
 
-  /*
+  /**
    * 1-client 3-Servers 
    * Function : TEST_FUNCTION2 
    * Function : TEST_FUNCTION3
@@ -173,6 +188,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
    * On server side, function execution calls should be equal to the no of
    * function executions completed.
    */
+  @Test
   public void testClientServerPartitonedRegionFunctionExecutionStats() {
     createScenario();
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION2);
@@ -332,7 +348,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
     server3.invoke(checkStatsOnServer);
   }
 
-  /*
+  /**
    * 1-client 3-Servers
    * server1 : Replicate
    * server2 : Replicate
@@ -345,6 +361,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
    * On server side, function execution calls should be equal to the no of
    * function executions completed.
    */
+  @Test
   public void testClientServerDistributedRegionFunctionExecutionStats() {
      
     final String regionName = "FunctionServiceStatsDUnitTest";
@@ -540,15 +557,15 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
     };
     client.invoke(checkStatsOnClient);
   }
-  
-  
-  /*
+
+  /**
    * Execution of the function on server using the name of the function
    * TEST_FUNCTION1
    * TEST_FUNCTION5
    * On client side, the no of result received should equal to the no of function execution calls.
    * On server side, function execution calls should be equal to the no of function executions completed. 
    */
+  @Test
   public void testClientServerwithoutRegion() {
     createClientServerScenarionWithoutRegion();
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
@@ -711,6 +728,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
     server3.invoke(checkStatsOnServer);
   }
   
+  @Test
   public void testP2PDummyExecutionStats()
   throws Exception {
     Host host = Host.getHost(0);
@@ -732,16 +750,15 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
     datastore0.invoke(closeDistributedSystem);
     datastore1.invoke(closeDistributedSystem);
     datastore2.invoke(closeDistributedSystem);
-}
+  }
 
-  
   /**
    * Ensure that the execution is happening all the PR as a whole
    * 
    * Function Execution will not take place on accessor, accessor will onlu receive the resultsReceived.
    * On datastore, no of function execution calls should be equal to the no of function execution calls from the accessor.
-   * @throws Exception
    */
+  @Test
   public void testP2PPartitionedRegionsFunctionExecutionStats()
       throws Exception {
     final String rName = getUniqueName();
@@ -932,7 +949,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
    * Test the function execution statistics in case of the distributed Region P2P
    * DataStore0 is with Empty datapolicy 
    */
-  
+  @Test
   public void testP2PDistributedRegionFunctionExecutionStats() {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -1047,10 +1064,8 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
    * Execution should happen on all other members too. so the no of function
    * execution calls and no of function executions completed should be equal tio
    * the no of functions from member 1
-   * 
-   * @throws Exception
    */
-  
+  @Test
   public void testP2PMembersFunctionExecutionStats()
       throws Exception {
     Host host = Host.getHost(0);
@@ -1204,9 +1219,8 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase{
    * 
    * Function throws the Exception,
    * The check is added to for the no of function execution execption in datatostore1
-   *  
-   * @throws Exception
    */
+  @Test
   public void testFunctionExecutionExceptionStatsOnAllNodesPRegion()
       throws Exception {
     final String rName = getUniqueName();

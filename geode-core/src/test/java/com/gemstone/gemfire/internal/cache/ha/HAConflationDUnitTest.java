@@ -16,20 +16,37 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Declarable;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionEvent;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This is Targetted conflation Dunit test.
@@ -42,12 +59,9 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  *  3) Do create , then update, update, invalidate. The client should receive 3 callbacks, one for create one for the last update
  *     and one for the invalidate.
  *  4) Do a create , update , update & destroy. The client should receive 3 callbacks ( craete , conflated update & destroy).
- *
- *
  */
-
-public class HAConflationDUnitTest extends CacheTestCase
-{
+@Category(DistributedTest.class)
+public class HAConflationDUnitTest extends JUnit4CacheTestCase {
 
   VM server1 = null;
 
@@ -55,19 +69,19 @@ public class HAConflationDUnitTest extends CacheTestCase
 
   private static final String regionName = "HAConflationDUnitTest_region";
 
-  final static String KEY1 = "KEY1";
+  static final String KEY1 = "KEY1";
 
-  final static String KEY2 = "KEY2";
+  static final String KEY2 = "KEY2";
 
-  final static String KEY3 = "KEY3";
+  static final String KEY3 = "KEY3";
 
-  final static String VALUE1 = "VALUE1";
+  static final String VALUE1 = "VALUE1";
 
-  final static String VALUE2 = "VALUE2";
+  static final String VALUE2 = "VALUE2";
 
-  final static String VALUE3 = "VALUE3";
+  static final String VALUE3 = "VALUE3";
 
-  final static String LAST_KEY = "lastkey";
+  static final String LAST_KEY = "lastkey";
 
   static final String LAST_VALUE = "lastvalue";
 
@@ -79,8 +93,8 @@ public class HAConflationDUnitTest extends CacheTestCase
 
   static int actualNoEvents = 0;
 
-  public HAConflationDUnitTest(String name) {
-    super(name);
+  public HAConflationDUnitTest() {
+    super();
   }
 
   @Override
@@ -119,6 +133,7 @@ public class HAConflationDUnitTest extends CacheTestCase
    * @throws Exception
    */
 
+  @Test
   public void testConflationCreateUpdate() throws Exception
   {
     server1.invoke(putFromServer(KEY1, VALUE1));
@@ -134,6 +149,7 @@ public class HAConflationDUnitTest extends CacheTestCase
    * The client should receive 2 callbacks , one for create & one for the last update.
    * @throws Exception
    */
+  @Test
   public void testConflationUpdate() throws Exception
   {
 
@@ -158,6 +174,7 @@ public class HAConflationDUnitTest extends CacheTestCase
    * and one for the invalidate.
    * @throws Exception
    */
+  @Test
   public void testConflationCreateUpdateInvalidate() throws Exception
   {
 
@@ -176,6 +193,7 @@ public class HAConflationDUnitTest extends CacheTestCase
    * The client should receive 3 callbacks ( craete , conflated update & destroy).
    * @throws Exception
    */
+  @Test
   public void testConflationCreateUpdateDestroy() throws Exception
   {
 
@@ -297,7 +315,7 @@ public class HAConflationDUnitTest extends CacheTestCase
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new HAConflationDUnitTest("temp").createCache(props);
+    new HAConflationDUnitTest().createCache(props);
     AttributesFactory factory = new AttributesFactory();
     ClientServerTestCase.configureConnectionPool(factory, host, new int[] { PORT1 }, true, -1, -1, null);
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -323,7 +341,7 @@ public class HAConflationDUnitTest extends CacheTestCase
   public static Integer createServerCache(Boolean isListenerPresent)
       throws Exception
   {
-    new HAConflationDUnitTest("temp").createCache(new Properties());
+    new HAConflationDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableConflation(true);

@@ -21,15 +21,10 @@
  */
 package com.gemstone.gemfire.cache.query.functional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.List;
-
-import junit.framework.Assert;
 
 import org.junit.After;
 import org.junit.Before;
@@ -60,9 +55,6 @@ import com.gemstone.gemfire.cache.query.internal.types.ObjectTypeImpl;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-/**
- * 
- */
 @Category(IntegrationTest.class)
 public class LikePredicateJUnitTest {
 
@@ -399,7 +391,7 @@ public class LikePredicateJUnitTest {
    * Tests a simple % terminated like predicate with an AND condition
    * @throws Exception
    */
-  public void likePercentageTerminated_4(boolean useBindPrm) throws Exception {
+  private void likePercentageTerminated_4(boolean useBindPrm) throws Exception {
     Cache cache = CacheUtils.getCache();
     AttributesFactory attributesFactory = new AttributesFactory();
     RegionAttributes regionAttributes = attributesFactory.create();
@@ -1938,8 +1930,8 @@ public class LikePredicateJUnitTest {
   public void testLikeWithNewLineWithIndex() throws Exception {
     likeWithNewLine(true);
   }
-  
-  public void likeWithNewLine(boolean useIndex) throws Exception {
+
+  private void likeWithNewLine(boolean useIndex) throws Exception {
     // setup
     Cache cache = CacheUtils.getCache();
     AttributesFactory attributesFactory = new AttributesFactory();
@@ -1955,38 +1947,38 @@ public class LikePredicateJUnitTest {
     }
     Query query = qs.newQuery("select * from /pos a where a like '%bc%'");
     SelectResults sr = (SelectResults) query.execute();
-    Assert.assertEquals(sr.size(), 1);
+    assertEquals(sr.size(), 1);
     query = qs.newQuery("select * from /pos a where a like '%bc\n%'");
     sr = (SelectResults) query.execute();
-    Assert.assertEquals(sr.size(), 1);
+    assertEquals(sr.size(), 1);
     query = qs.newQuery("select * from /pos a where a like '%bcde%'");
     sr = (SelectResults) query.execute();
-    Assert.assertEquals(sr.size(), 0); // no results as newline is required
+    assertEquals(sr.size(), 0); // no results as newline is required
                                        // whitespace
     query = qs.newQuery("select * from /pos a where a like '%bc\nde%'");
     sr = (SelectResults) query.execute();
-    Assert.assertEquals(sr.size(), 1);
+    assertEquals(sr.size(), 1);
     query = qs.newQuery("select * from /pos a where a like '%de%'");
     sr = (SelectResults) query.execute();
-    Assert.assertEquals(sr.size(), 1);
+    assertEquals(sr.size(), 1);
     query = qs.newQuery("select * from /pos a where a like '%\nde%'");
     sr = (SelectResults) query.execute();
-    Assert.assertEquals(sr.size(), 1);
+    assertEquals(sr.size(), 1);
     query = qs.newQuery("select * from /pos a where a like '%bc%de%'");
     sr = (SelectResults) query.execute();
-    Assert.assertEquals(sr.size(), 1);
+    assertEquals(sr.size(), 1);
     query = qs.newQuery("select * from /pos a where a like '%zyx%'");
     sr = (SelectResults) query.execute();
-    Assert.assertEquals(sr.size(), 0);
+    assertEquals(sr.size(), 0);
     query = qs.newQuery("select * from /pos a where a like '%\n%'");
     sr = (SelectResults) query.execute();
-    Assert.assertEquals(sr.size(), 3); // find newline anywhere in string
+    assertEquals(sr.size(), 3); // find newline anywhere in string
     query = qs.newQuery("select * from /pos a where a like '\n%'");
     sr = (SelectResults) query.execute();
-    Assert.assertEquals(sr.size(), 1);
+    assertEquals(sr.size(), 1);
     query = qs.newQuery("select * from /pos a where a like '%\n'");
     sr = (SelectResults) query.execute();
-    Assert.assertEquals(sr.size(), 1);
+    assertEquals(sr.size(), 1);
   }
   
   
@@ -2007,7 +1999,7 @@ public class LikePredicateJUnitTest {
     removeIndexDuringQuery(true);
   }
 
-  public void removeIndexDuringQuery(boolean isPr) throws Exception {
+  private void removeIndexDuringQuery(boolean isPr) throws Exception {
     String regionName = "exampleRegion";
     String name = "/" + regionName;
 
@@ -2196,7 +2188,7 @@ public class LikePredicateJUnitTest {
     executeInvalidQueryWithLike(true);
   }
   
-  public void executeInvalidQueryWithLike(boolean useBindParam) {
+  private void executeInvalidQueryWithLike(boolean useBindParam) {
     Cache cache = CacheUtils.getCache();
     AttributesFactory attributesFactory = new AttributesFactory();
     RegionAttributes regionAttributes = attributesFactory.create();

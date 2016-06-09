@@ -16,8 +16,40 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
 import com.company.app.DBLoader;
-import com.gemstone.gemfire.cache.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.AttributesMutator;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Declarable;
+import com.gemstone.gemfire.cache.EvictionAction;
+import com.gemstone.gemfire.cache.EvictionAttributes;
+import com.gemstone.gemfire.cache.InterestPolicy;
+import com.gemstone.gemfire.cache.LossAction;
+import com.gemstone.gemfire.cache.MembershipAttributes;
+import com.gemstone.gemfire.cache.MirrorType;
+import com.gemstone.gemfire.cache.PartitionAttributes;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.ResumptionAction;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.SubscriptionAttributes;
+import com.gemstone.gemfire.cache.TransactionListener;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
@@ -26,13 +58,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
-
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests the declarative caching functionality introduced in GemFire
@@ -40,30 +66,20 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  *
  * @since GemFire 5.0
  */
+@Category(DistributedTest.class)
 public class CacheXml45DUnitTest extends CacheXml41DUnitTest {
-
-  ////////  Constructors
-
-  public CacheXml45DUnitTest(String name) {
-    super(name);
-  }
-
-  ////////  Helper methods
 
   protected String getGemFireVersion() {
     return CacheXml.VERSION_5_0;
   }
 
-  ////////  Test methods
-  
-
-  
   public void setBridgeAttributes(CacheServer bridge1)
   {
     super.setBridgeAttributes(bridge1);
     bridge1.setMaxConnections(100);
   }
 
+  @Test
   public void testDataPolicy() throws CacheException {
     CacheCreation cache = new CacheCreation();
 
@@ -125,6 +141,7 @@ public class CacheXml45DUnitTest extends CacheXml41DUnitTest {
   /**
    * Test xml support of MembershipAttributes.
    */
+  @Test
   public void testMembershipAttributes() throws Exception {
     final String MY_ROLES = "Foo, Bip, BAM";
     final String[][] roles = new String[][] {{"Foo"}, {"Bip", "BAM"}};
@@ -184,6 +201,7 @@ public class CacheXml45DUnitTest extends CacheXml41DUnitTest {
    * Tests multiple cache listeners on one region
    * @since GemFire 5.0
    */
+  @Test
   public void testMultipleCacheListener() throws CacheException {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -234,6 +252,7 @@ public class CacheXml45DUnitTest extends CacheXml41DUnitTest {
     }
   }
 
+  @Test
   public void testHeapLRUEviction() throws Exception {
     final String name = getUniqueName();
     beginCacheXml();
@@ -254,6 +273,7 @@ public class CacheXml45DUnitTest extends CacheXml41DUnitTest {
    * Tests multiple transaction listeners
    * @since GemFire 5.0
    */
+  @Test
   public void testMultipleTXListener() throws CacheException {
     CacheCreation cache = new CacheCreation();
     CacheTransactionManagerCreation txMgrCreation = new CacheTransactionManagerCreation();
@@ -303,6 +323,7 @@ public class CacheXml45DUnitTest extends CacheXml41DUnitTest {
    * Tests that a region created with a named attributes has the correct
    * attributes.
    */
+  @Test
   public void testPartitionedRegionXML() throws CacheException
   {
     setXmlFile(findFile("partitionedRegion.xml"));
@@ -376,6 +397,7 @@ public class CacheXml45DUnitTest extends CacheXml41DUnitTest {
    * attributes.
    * 
    */
+  @Test
   public void testPartitionedRegionInstantiation() throws CacheException
   {
     CacheCreation cache = new CacheCreation();

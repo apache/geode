@@ -16,15 +16,18 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 /**
  * Same as parent but uses selector in server
  *
  * @since GemFire 5.1
  */
+@Category(DistributedTest.class)
 public class ClientMembershipSelectorDUnitTest extends ClientMembershipDUnitTest {
-  public ClientMembershipSelectorDUnitTest(String name) {
-    super(name);
-  }
+  @Override
   protected int getMaxThreads() {
     return 2;
   }

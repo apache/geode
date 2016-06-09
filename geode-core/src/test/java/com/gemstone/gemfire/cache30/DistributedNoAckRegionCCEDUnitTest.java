@@ -16,26 +16,42 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.test.dunit.*;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
 
 import java.util.Map;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.EntryNotFoundException;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+
+@Category(DistributedTest.class)
 public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDUnitTest {
   
   static volatile boolean ListenerBlocking;
-
-  public DistributedNoAckRegionCCEDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public Properties getDistributedSystemProperties() {
@@ -47,7 +63,6 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
     p.put(SOCKET_BUFFER_SIZE, ""+2000000);
     return p;
   }
-
 
   /**
    * Returns region attributes for a <code>GLOBAL</code> region
@@ -84,15 +99,18 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
 
 
   @Override
+  @Test
   public void testLocalDestroy() throws InterruptedException {
     // replicates don't allow local destroy
   }
 
   @Override
+  @Test
   public void testEntryTtlLocalDestroy() throws InterruptedException {
     // replicates don't allow local destroy
   }
 
+  @Test
   public void testClearWithManyEventsInFlight() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -224,6 +242,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
    * for register-interest.
    */
 
+  @Test
   public void testGIISendsTombstones() throws Exception {
     versionTestGIISendsTombstones();
   }
@@ -237,24 +256,29 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
    * This tests the concurrency versioning system to ensure that event conflation
    * happens correctly and that the statistic is being updated properly
    */
+  @Test
   public void testConcurrentEvents() throws Exception {
     versionTestConcurrentEvents();
   }
   
   
+  @Test
   public void testClearWithConcurrentEvents() throws Exception {
     // need to figure out how to flush clear() ops for verification steps
   }
 
+  @Test
   public void testClearWithConcurrentEventsAsync() throws Exception {
     // need to figure out how to flush clear() ops for verification steps
   }
 
+  @Test
   public void testClearOnNonReplicateWithConcurrentEvents() throws Exception {
     // need to figure out how to flush clear() ops for verification steps
   }
   
   
+  @Test
   public void testTombstones() throws Exception {
 //    for (int i=0; i<1000; i++) {
 //      System.out.println("starting run #"+i);
@@ -272,6 +296,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
   
   
   
+  @Test
   public void testOneHopKnownIssues() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -349,6 +374,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
    * happens correctly and that the statistic is being updated properly
    */
   @Category(FlakyTest.class) // GEODE-976: time sensitive, thread sleeps, relies on stat values
+  @Test
   public void testConcurrentEventsOnEmptyRegion() {
     versionTestConcurrentEventsOnEmptyRegion();
   }
@@ -357,11 +383,13 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
    * This tests the concurrency versioning system to ensure that event conflation
    * happens correctly and that the statistic is being updated properly
    */
+  @Test
   public void testConcurrentEventsOnNonReplicatedRegion() {
     versionTestConcurrentEventsOnNonReplicatedRegion();
   }
   
   
+  @Test
   public void testGetAllWithVersions() {
     versionTestGetAllWithVersions();
   }

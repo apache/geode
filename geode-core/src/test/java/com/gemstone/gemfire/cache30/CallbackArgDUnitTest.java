@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -44,15 +53,16 @@ import com.gemstone.gemfire.test.dunit.VM;
  *
  * @since GemFire 5.0
  */
-public class CallbackArgDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
 
 //  private transient Region r;
 //  private transient DistributedMember otherId;
   protected transient int invokeCount;
   protected static String callbackArg;
   
-  public CallbackArgDUnitTest(String name) {
-    super(name);
+  public CallbackArgDUnitTest() {
+    super();
   }
 
   private VM getOtherVm() {
@@ -126,9 +136,11 @@ public class CallbackArgDUnitTest extends CacheTestCase {
   /**
    * make sure callback arg is NOT_AVAILABLE in all the places it should be
    */
+  @Test
   public void testForNA_CA() throws CacheException {
     doTest();
   }
+  @Test
   public void testForCA() throws Exception {
     callbackArg = "cbArg";
     getOtherVm().invoke(new SerializableCallable() {

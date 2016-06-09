@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.concurrent;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.internal.cache.wan.AsyncEventQueueTestBase;
@@ -25,14 +34,16 @@ import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 /**
  *
  */
+@Category(DistributedTest.class)
 public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public ConcurrentAsyncEventQueueDUnitTest(String name) {
-    super(name);
+  public ConcurrentAsyncEventQueueDUnitTest() {
+    super();
   }
 
+  @Test
   public void testConcurrentSerialAsyncEventQueueAttributes() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
@@ -45,6 +56,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
   }
   
  
+  @Test
   public void testConcurrentParallelAsyncEventQueueAttributesOrderPolicyKey() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
@@ -56,6 +68,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
     vm1.invoke(() -> AsyncEventQueueTestBase.validateConcurrentAsyncEventQueueAttributes( "ln", 100, 150, AsyncEventQueueFactoryImpl.DEFAULT_BATCH_TIME_INTERVAL, true, "testDS", true, true, 5, OrderPolicy.KEY ));
   }
 
+  @Test
   public void testConcurrentParallelAsyncEventQueueAttributesOrderPolicyPartition() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
@@ -76,6 +89,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
    * Order policy: key based ordering
    */
 
+  @Test
   public void testReplicatedSerialAsyncEventQueueWithMultipleDispatcherThreadsOrderPolicyKey() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
@@ -121,6 +135,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
    * Order policy: Thread ordering
    */
 
+  @Test
   public void testReplicatedSerialAsyncEventQueueWithMultipleDispatcherThreadsOrderPolicyThread() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
@@ -180,6 +195,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
    * Order policy: key based ordering
    */
   // Disabling test for bug #48323
+  @Test
   public void testPartitionedParallelAsyncEventQueueWithMultipleDispatcherThreadsOrderPolicyKey() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
@@ -229,6 +245,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
    * Order policy: PARTITION based ordering
    */
   // Disabled test for bug #48323
+  @Test
   public void testPartitionedParallelAsyncEventQueueWithMultipleDispatcherThreadsOrderPolicyPartition() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 

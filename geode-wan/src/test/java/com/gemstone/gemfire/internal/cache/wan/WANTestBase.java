@@ -16,7 +16,55 @@
  */
 package com.gemstone.gemfire.internal.cache.wan;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import com.jayway.awaitility.Awaitility;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.AttributesMutator;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheClosedException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.DiskStoreFactory;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionDestroyedException;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
@@ -29,8 +77,13 @@ import com.gemstone.gemfire.cache.persistence.PartitionOfflineException;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
-import com.gemstone.gemfire.cache.wan.*;
+import com.gemstone.gemfire.cache.wan.GatewayQueueEvent;
+import com.gemstone.gemfire.cache.wan.GatewayReceiver;
+import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
+import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
+import com.gemstone.gemfire.cache.wan.GatewayTransportFilter;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
@@ -40,11 +93,21 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.admin.remote.DistributionLocatorId;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.internal.cache.execute.data.*;
+import com.gemstone.gemfire.internal.cache.BucketRegion;
+import com.gemstone.gemfire.internal.cache.CacheConfig;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
+import com.gemstone.gemfire.internal.cache.CustomerIDPartitionResolver;
+import com.gemstone.gemfire.internal.cache.ForceReattemptException;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.RegionQueue;
+import com.gemstone.gemfire.internal.cache.execute.data.CustId;
 import com.gemstone.gemfire.internal.cache.execute.data.Customer;
 import com.gemstone.gemfire.internal.cache.execute.data.Order;
+import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
 import com.gemstone.gemfire.internal.cache.execute.data.Shipment;
+import com.gemstone.gemfire.internal.cache.execute.data.ShipmentId;
 import com.gemstone.gemfire.internal.cache.partitioned.PRLocallyDestroyedException;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerStats;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
@@ -56,21 +119,21 @@ import com.gemstone.gemfire.internal.cache.wan.serial.ConcurrentSerialGatewaySen
 import com.gemstone.gemfire.internal.cache.wan.serial.SerialGatewaySenderQueue;
 import com.gemstone.gemfire.pdx.SimpleClass;
 import com.gemstone.gemfire.pdx.SimpleClass1;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.util.test.TestUtil;
-import com.jayway.awaitility.Awaitility;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.InetSocketAddress;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-public class WANTestBase extends DistributedTestCase{
+@Category(DistributedTest.class)
+public class WANTestBase extends JUnit4DistributedTestCase {
 
   protected static Cache cache;
   protected static Region region;
@@ -107,8 +170,15 @@ public class WANTestBase extends DistributedTestCase{
   //this will be set for each test method run with one of the values from above list
   protected static int numDispatcherThreadsForTheRun = 1;
 
-  public WANTestBase(String name) {
-    super(name);
+  public WANTestBase() {
+    super();
+  }
+
+  /**
+   * @deprecated Use the no arg constructor, or better yet, don't construct this class
+   */
+  @Deprecated
+  public WANTestBase(final String ignored) {
   }
 
   @Override
@@ -155,7 +225,7 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   public static void createLocator(int dsId, int port, Set<String> localLocatorsList, Set<String> remoteLocatorsList){
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(DISTRIBUTED_SYSTEM_ID, ""+dsId);
@@ -178,7 +248,7 @@ public class WANTestBase extends DistributedTestCase{
 
   public static Integer createFirstLocatorWithDSId(int dsId) {
     stopOldLocator();
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -191,7 +261,7 @@ public class WANTestBase extends DistributedTestCase{
 
   public static Integer createFirstPeerLocator(int dsId) {
     stopOldLocator();
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -204,7 +274,7 @@ public class WANTestBase extends DistributedTestCase{
 
   public static Integer createSecondLocator(int dsId, int locatorPort) {
     stopOldLocator();
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -217,7 +287,7 @@ public class WANTestBase extends DistributedTestCase{
 
   public static Integer createSecondPeerLocator(int dsId, int locatorPort) {
     stopOldLocator();
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -230,7 +300,7 @@ public class WANTestBase extends DistributedTestCase{
 
   public static Integer createFirstRemoteLocator(int dsId, int remoteLocPort) {
     stopOldLocator();
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -243,7 +313,7 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   public static void bringBackLocatorOnOldPort(int dsId, int remoteLocPort, int oldPort) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.put(LOG_LEVEL, "fine");
     props.setProperty(MCAST_PORT, "0");
@@ -257,7 +327,7 @@ public class WANTestBase extends DistributedTestCase{
 
   public static Integer createFirstRemotePeerLocator(int dsId, int remoteLocPort) {
     stopOldLocator();
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -272,7 +342,7 @@ public class WANTestBase extends DistributedTestCase{
   public static Integer createSecondRemoteLocator(int dsId, int localPort,
       int remoteLocPort) {
     stopOldLocator();
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -287,7 +357,7 @@ public class WANTestBase extends DistributedTestCase{
   public static Integer createSecondRemotePeerLocator(int dsId, int localPort,
       int remoteLocPort) {
     stopOldLocator();
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -846,7 +916,7 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   public static void createCacheConserveSockets(Boolean conserveSockets,Integer locPort){
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort + "]");
@@ -856,7 +926,7 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   protected static void createCache(boolean management, Integer locPort) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     if (management) {
       props.setProperty(JMX_MANAGER, "true");
@@ -871,7 +941,7 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   protected static void createCacheWithSSL(Integer locPort) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
 
     boolean gatewaySslenabled = true;
     String  gatewaySslprotocols = "any";
@@ -903,7 +973,7 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   public static void createCache_PDX(Integer locPort){
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort + "]");
@@ -920,7 +990,7 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   public static void createCache(Integer locPort1, Integer locPort2){
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort1
@@ -930,7 +1000,7 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   public static void createCacheWithoutLocator(Integer mCastPort){
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "" + mCastPort);
     InternalDistributedSystem ds = test.getSystem(props);
@@ -1382,7 +1452,7 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   public static void addListenerOnBucketRegion(String regionName, int numBuckets) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     test.addCacheListenerOnBucketRegion(regionName, numBuckets);
   }
 
@@ -1397,7 +1467,7 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   public static void addListenerOnQueueBucketRegion(String senderId, int numBuckets) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     test.addCacheListenerOnQueueBucketRegion(senderId, numBuckets);
   }
 
@@ -1426,17 +1496,17 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   public static void addQueueListener(String senderId, boolean isParallel){
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     test.addCacheQueueListener(senderId, isParallel);
   }
 
   public static void addSecondQueueListener(String senderId, boolean isParallel){
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     test.addSecondCacheQueueListener(senderId, isParallel);
   }
 
   public static void addListenerOnRegion(String regionName){
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     test.addCacheListenerOnRegion(regionName);
   }
   private void addCacheListenerOnRegion(String regionName){
@@ -1933,7 +2003,7 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   public static void createReceiverWithBindAddress(int locPort) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
@@ -1964,7 +2034,7 @@ public class WANTestBase extends DistributedTestCase{
     }
   }
   public static int createReceiverWithSSL(int locPort) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     boolean gatewaySslenabled = true;
     String  gatewaySslprotocols = "any";
     String  gatewaySslciphers = "any";
@@ -2011,7 +2081,7 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   public static void createReceiverAndServer(int locPort) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort
@@ -2045,7 +2115,7 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   public static int createServer(int locPort) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort
@@ -2067,7 +2137,7 @@ public class WANTestBase extends DistributedTestCase{
 
   public static void createClientWithLocator(int port0,String host,
       String regionName) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -2101,7 +2171,7 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   public static int createReceiver_PDX(int locPort) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort + "]");
@@ -3654,7 +3724,7 @@ public class WANTestBase extends DistributedTestCase{
       cache.getDistributedSystem().disconnect();
       cache = null;
     } else {
-      WANTestBase test = new WANTestBase(getTestMethodName());
+      WANTestBase test = new WANTestBase();
       if (test.isConnectedToDS()) {
         test.getSystem().disconnect();
       }
@@ -3667,7 +3737,7 @@ public class WANTestBase extends DistributedTestCase{
   }
 
   public static void shutdownLocator() {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     test.getSystem().disconnect();
   }
 

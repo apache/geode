@@ -16,20 +16,28 @@
  */
 package com.gemstone.gemfire.internal.logging.log4j;
 
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URL;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.ConfigurationFactory;
+import org.junit.After;
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.internal.logging.LoggingPerformanceTestCase;
 import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.ConfigurationFactory;
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-
-import java.io.*;
-import java.net.URL;
 
 @Category(PerformanceTest.class)
 @Ignore("Tests have no assertions")
@@ -44,13 +52,8 @@ public class LogWriterLoggerPerformanceTest extends LoggingPerformanceTestCase {
   
   private File config = null;
   
-  public LogWriterLoggerPerformanceTest(String name) {
-    super(name);
-  }
-
-  @Override
-  public void tearDown() throws Exception {
-    super.tearDown();
+  @After
+  public void tearDownLogWriterLoggerPerformanceTest() throws Exception {
     this.config = null; // leave this file in place for now
   }
 
@@ -60,7 +63,7 @@ public class LogWriterLoggerPerformanceTest extends LoggingPerformanceTestCase {
     pw.close();
   }
 
-  protected void setPropertySubstitutionValues(final String logFile, 
+  protected void setPropertySubstitutionValues(final String logFile,
                                                final int logFileSizeLimitMB,
                                                final int logFileCountLimit) {
       if (logFileSizeLimitMB < 0) {
@@ -80,7 +83,7 @@ public class LogWriterLoggerPerformanceTest extends LoggingPerformanceTestCase {
       System.setProperty(SYS_LOG_FILE_SIZE_LIMIT, logFileSizeLimitMBValue);
       System.setProperty(SYS_LOG_FILE_COUNT_LIMIT, logFileCountLimitValue);
   }
-  
+
   protected Logger createLogger() throws IOException {
     // create configuration with log-file and log-level
     this.configDirectory = new File(getUniqueName());
@@ -106,7 +109,8 @@ public class LogWriterLoggerPerformanceTest extends LoggingPerformanceTestCase {
     final Logger logger = LogWriterLogger.create(this.getClass().getName(), false);
     return logger;
   }
-  
+
+  @Override
   protected PerformanceLogger createPerformanceLogger() throws IOException {
     final Logger logger = createLogger();
     
@@ -122,25 +126,5 @@ public class LogWriterLoggerPerformanceTest extends LoggingPerformanceTestCase {
     };
     
     return perfLogger;
-  }
-
-  @Override
-  public void testCountBasedLogging() throws Exception {
-    super.testCountBasedLogging();
-  }
-
-  @Override
-  public void testTimeBasedLogging() throws Exception {
-    super.testTimeBasedLogging();
-  }
-
-  @Override
-  public void testCountBasedIsEnabled() throws Exception {
-    super.testCountBasedIsEnabled();
-  }
-
-  @Override
-  public void testTimeBasedIsEnabled() throws Exception {
-    super.testTimeBasedIsEnabled();
   }
 }

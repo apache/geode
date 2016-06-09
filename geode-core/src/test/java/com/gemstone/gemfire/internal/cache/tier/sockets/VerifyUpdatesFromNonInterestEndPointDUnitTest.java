@@ -16,7 +16,21 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
@@ -27,38 +41,36 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * One Client , two servers.
  * Ensure that client 1 has registered interest list on server 2.
  * Now Client does a put on server1 .
  * The Client should not receive callback of his own put.
-
- *
  */
-public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends DistributedTestCase
-{
-  VM vm0 = null;
+@Category(DistributedTest.class)
+public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4DistributedTestCase {
 
-  VM vm1 = null;
-
-  VM vm2 = null;
+  private VM vm0 = null;
+  private VM vm1 = null;
+  private VM vm2 = null;
 
   private int PORT1;
   private int PORT2;
-  private static final String REGION_NAME = "VerifyUpdatesFromNonInterestEndPointDUnitTest_region";
+  private static final String REGION_NAME = VerifyUpdatesFromNonInterestEndPointDUnitTest.class.getSimpleName() + "_region";
 
   private static Cache cache = null;
 
   /** constructor */
-  public VerifyUpdatesFromNonInterestEndPointDUnitTest(String name) {
-    super(name);
+  public VerifyUpdatesFromNonInterestEndPointDUnitTest() {
+    super();
   }
 
   @Override
@@ -87,7 +99,7 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends DistributedTe
     return cache;
   }
 
-
+  @Test
   public void testVerifyUpdatesFromNonInterestEndPoint()
   {
     vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createEntries());
@@ -100,7 +112,6 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends DistributedTe
     Wait.pause(30000);
     vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.verifyPut());
   }
-
 
   public static void acquireConnectionsAndPut(Integer port)
   {
@@ -148,7 +159,7 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends DistributedTe
 
   public static void createClientCache(String host, Integer port1, Integer port2) throws Exception
   {
-    VerifyUpdatesFromNonInterestEndPointDUnitTest test = new VerifyUpdatesFromNonInterestEndPointDUnitTest("temp");
+    VerifyUpdatesFromNonInterestEndPointDUnitTest test = new VerifyUpdatesFromNonInterestEndPointDUnitTest();
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -180,7 +191,7 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends DistributedTe
 
   public static Integer createServerCache() throws Exception
   {
-    cache = new VerifyUpdatesFromNonInterestEndPointDUnitTest("temp").createCache(new Properties());
+    cache = new VerifyUpdatesFromNonInterestEndPointDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -193,7 +204,6 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends DistributedTe
     server1.start();
     return new Integer(server1.getPort());
   }
-
 
   public static void registerKey()
   {

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -44,14 +53,16 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  * 
  * 
  */
-public class QueryParamsAuthorizationDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class QueryParamsAuthorizationDUnitTest extends JUnit4CacheTestCase {
 
   private final String regName = "exampleRegion";
 
-  public QueryParamsAuthorizationDUnitTest(String name) {
-    super(name);
+  public QueryParamsAuthorizationDUnitTest() {
+    super();
   }
 
+  @Test
   public void testNothing() {
     // remove when Bug #51079 is fixed
   }

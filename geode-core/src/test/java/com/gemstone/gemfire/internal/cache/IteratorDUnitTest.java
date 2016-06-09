@@ -19,6 +19,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache30.CacheTestCase;
@@ -32,15 +41,17 @@ import java.util.Iterator;
  * Test that keys iterator do not returned keys with removed token as its values
  *
  */
-public class IteratorDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class IteratorDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * @param name
    */
-  public IteratorDUnitTest(String name) {
-    super(name);
+  public IteratorDUnitTest() {
+    super();
   }
 
+  @Test
   public void testKeysIteratorOnLR() throws Exception {
     final String regionName = getUniqueName();
     Region r = getGemfireCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
@@ -60,6 +71,7 @@ public class IteratorDUnitTest extends CacheTestCase {
     assertEquals(2, numKeys);
   }
   
+  @Test
   public void testKeysIteratorOnPR() {
     Host host = Host.getHost(0);
     VM accessor = host.getVM(0);

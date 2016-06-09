@@ -16,32 +16,40 @@
  */
 package com.gemstone.gemfire.cache.query.cq.dunit;
 
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.query.CqQuery;
 import com.gemstone.gemfire.cache.query.dunit.CloseCacheAuthorization;
 import com.gemstone.gemfire.cache.query.dunit.HelperTestCase;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.security.templates.DummyAuthenticator;
 import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
+@Category(DistributedTest.class)
 public class CqStateDUnitTest extends HelperTestCase {
 
-  
-  public CqStateDUnitTest(String name) {
-    super(name);
-  }
-  
-  public void testNothingBecauseBug51953() {
-    // remove when bug #51953 is fixed
-  }
-  
   // this test is disabled due to a 25% failure rate in
   // CI testing.  See internal ticket #52229
-  public void disabledtestBug51222() throws Exception {
+  @Ignore("TODO: test is disabled due to flickering")
+  @Test
+  public void testBug51222() throws Exception {
     //The client can log this when the server shuts down.
     IgnoredException.addIgnoredException("Could not find any server");
     IgnoredException.addIgnoredException("java.net.ConnectException");
@@ -97,7 +105,6 @@ public class CqStateDUnitTest extends HelperTestCase {
         CqQuery cq = getCache().getQueryService().getCqs()[0];
         return cq.getState().isRunning();
       }
-      
     });
     
     assertTrue("Cq was not running on server" , isRunning);

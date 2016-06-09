@@ -16,8 +16,29 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.DeltaTestImpl;
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.AttributesMutator;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.InterestPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.SubscriptionAttributes;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.query.CqAttributes;
@@ -33,21 +54,21 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest.TestObject1;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Test client to server flow for delta propogation
  * 
  * @since GemFire 6.1
  */
-public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
   /*
    * Test configuration one server one client also 2 server 2 client
    */
@@ -56,11 +77,8 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
   private static LogWriterI18n logger = null;
 
   VM server = null;
-
   VM server2 = null;
-
   VM client = null;
-
   VM client2 = null;
 
   private static final String KEY1 = "DELTA_KEY_1";
@@ -103,11 +121,6 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
 
   public static String LAST_KEY = "LAST_KEY";
   
-  /** constructor */
-  public ClientToServerDeltaDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     disconnectAllFromDS();
@@ -171,6 +184,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
    * resending of full object</b>):<br>
    * 1)Verifies that we donot loose attributes updates when delta fails<br>
    */
+  @Test
   public void testSendingofFullDeltaObjectsWhenFromDeltaFails() {
     initialise(false);
     // set expected value on server
@@ -194,6 +208,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
    * This test does the following for single key</br> 1)Verifies that we donot
    * loose attributes updates when delta fails<br>
    */
+  @Test
   public void testPutForDeltaObjects() {
     initialise(false);
     // set expected value on server
@@ -215,6 +230,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
    * This test does the following for single key (<b> full cycle</b>):<br>
    * 1)Verifies that client-server, peer-peer and server-client processing delta<br>
    */
+  @Test
   public void testClientToClientDeltaPropagation() throws Exception {
     initialise(false);
     // set expected value on s1,s1 and c2
@@ -299,7 +315,6 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
 
   /*
    * put delta ; not previous deltas
-   * 
    */
   private static void putDelta(String key) {
     Region r = cache.getRegion(REGION_NAME);
@@ -340,7 +355,6 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
 
   /*
    * put delta full cycle
-   * 
    */
   private static void put(String key) {
     Region r = cache.getRegion(REGION_NAME);
@@ -442,7 +456,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(DELTA_PROPAGATION,
         enableDelta.toString());
-    new ClientToServerDeltaDUnitTest("temp").createCache(props);
+    new ClientToServerDeltaDUnitTest().createCache(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setConcurrencyChecksEnabled(true);
@@ -462,10 +476,12 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
     AttributesMutator am = region.getAttributesMutator();
     if (attachListener) {
       am.addCacheListener(new CacheListenerAdapter() {
+        @Override
         public void afterCreate(EntryEvent event) {
           create++;
         }
 
+        @Override
         public void afterUpdate(EntryEvent event) {
           switch (updates) {
             case 0:
@@ -486,6 +502,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
       });
     } else if (!isEmpty){
       am.addCacheListener(new CacheListenerAdapter() {
+        @Override
         public void afterCreate(EntryEvent event) {
           switch (create) {
             case 1:
@@ -550,7 +567,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new ClientToServerDeltaDUnitTest("temp").createCache(props);
+    new ClientToServerDeltaDUnitTest().createCache(props);
     pool = (PoolImpl)PoolManager.createFactory().addServer(host, port.intValue())
         .setThreadLocalConnections(true).setMinConnections(2)
         .setSubscriptionEnabled(enableSubscription).setSubscriptionRedundancy(0)
@@ -575,6 +592,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
     region = cache.createRegion(REGION_NAME, attrs);
     if (attachListener) {
       region.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
+        @Override
         public void afterCreate(EntryEvent event) {
           create++;
           if (LAST_KEY.equals(event.getKey())) {          
@@ -582,6 +600,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
           };
         }
 
+        @Override
         public void afterUpdate(EntryEvent event) {
           switch (updates) {
             case 0:
@@ -607,6 +626,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
     if (isCq) {
       CqAttributesFactory cqf = new CqAttributesFactory();
       CqListenerAdapter cqlist = new CqListenerAdapter() {
+        @Override
         public void onEvent(CqEvent cqEvent) {
           Object key = cqEvent.getKey();
           if (LAST_KEY.equals(key)) {
@@ -616,6 +636,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
               + cqEvent.getNewValue() + ")");
         }
         
+        @Override
         public void onError(CqEvent cqEvent) {
           logger.fine("CQ error received for key: " + cqEvent.getKey());
         }
@@ -662,10 +683,12 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
       lastKeyReceived = false;
     }
   }
+
   /**
    * This test does the following for single key:<br>
    * 1)Verifies that cacheless client calls toDelta <br>
    */
+  @Test
   public void testEmptyClientAsFeederToServer() {
     Integer PORT1 = ((Integer)server.invoke(() -> ClientToServerDeltaDUnitTest.createServerCache( Boolean.FALSE,
             Boolean.FALSE ))).intValue();
@@ -691,6 +714,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
    * 1)Verifies that from delta should not called on server with empty data
    * policy just by passed delta to data store<br>
    */
+  @Test
   public void testEmptyServerAsFeederToPeer() {
     Integer PORT1 = ((Integer)server.invoke(() -> ClientToServerDeltaDUnitTest.createServerCache( Boolean.FALSE,
             Boolean.TRUE ))).intValue();
@@ -708,15 +732,14 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
     
     server2.invoke(() -> ClientToServerDeltaDUnitTest.checkTodeltaCounter( new Integer(0)));
     server2.invoke(() -> ClientToServerDeltaDUnitTest.checkFromdeltaCounter());
-    
   }
   
   /**
    * This test does verifies that server with empty data policy sends deltas to 
    * the client which can handle deltas. Server sends full values which can not
    * handle deltas.
-   * 
    */
+  @Test
   public void testClientsConnectedToEmptyServer() {
     Integer PORT1 = ((Integer)server.invoke(() -> ClientToServerDeltaDUnitTest.createServerCache( Boolean.FALSE,
             Boolean.TRUE ))).intValue();
@@ -736,13 +759,13 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
     
     client2.invoke(() -> ClientToServerDeltaDUnitTest.waitForLastKey());    
     client2.invoke(() -> ClientToServerDeltaDUnitTest.checkDeltaInvoked(new Integer(deltaSent)));
-    
   }
   
   /**
    * This test does the following for single key:<br>
    * 1)Verifies that To delta called on client should be equal to fromDeltaCounter on datastore <br>
    */
+  @Test
   public void testClientNonEmptyEmptyServerAsFeederToPeer() {
     Integer PORT1 = ((Integer)server.invoke(() -> ClientToServerDeltaDUnitTest.createServerCache( Boolean.FALSE,
             Boolean.TRUE ))).intValue();
@@ -760,7 +783,6 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
     
     server2.invoke(() -> ClientToServerDeltaDUnitTest.checkTodeltaCounter( new Integer(0)));
     server2.invoke(() -> ClientToServerDeltaDUnitTest.checkFromdeltaCounter());
-    
   }
 
   /**
@@ -771,9 +793,8 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
    * test ensures that the client2 gets the update event. This implies that
    * server2 clones the old value prior to applying delta received from server1
    * and then processes the CQ.
-   * 
-   * @throws Exception
    */
+  @Test
   public void testC2CDeltaPropagationWithCQ() throws Exception {
     initialise(false/* clone */, new String[] { CQs[1] }, true/* CQ */,
         true/* RI */, true/* enable delta */);
@@ -794,9 +815,8 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
    * client is not interested in that event but is getting the event only
    * because the event satisfies a CQ which the client has registered with the
    * server.
-   * 
-   * @throws Exception
    */
+  @Test
   public void testC2CDeltaPropagationWithCQWithoutRI() throws Exception {
     initialise(false/* clone */, new String[] { CQs[1] }, true/* CQ */,
         false/* RI */, true/* enable delta */);
@@ -813,6 +833,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
     server2.invoke(() -> ClientToServerDeltaDUnitTest.verifyDeltaSent( Integer.valueOf(1) ));
   }
 
+  @Test
   public void testClientSendsFullValueToServerWhenDeltaOffAtServer() {
     initialise2(false/* clone */, new String[] { CQs[1] }, false/* CQ */,
         true/* RI */, false/* enable delta */);
@@ -834,6 +855,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
         (Boolean)server.invoke(() -> DeltaTestImpl.isFromDeltaFailure()));
   }
 
+  @Test
   public void testC2SDeltaPropagationWithOldValueInvalidatedAtServer()
       throws Exception {
     String key = "DELTA_KEY";
@@ -925,9 +947,11 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
 
   public static void waitForLastKey() {
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return ClientToServerDeltaDUnitTest.lastKeyReceived;
       }
+      @Override
       public String description() {
         return "Last key NOT received.";
       }
@@ -936,17 +960,20 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
   }
   
   static class CSDeltaTestImpl extends DeltaTestImpl {
+
     int deltaSent = 0;
     int deltaApplied = 0;
 
     public CSDeltaTestImpl() {
     }
 
+    @Override
     public void toDelta(DataOutput out) throws IOException {
       super.toDelta(out);
       deltaSent++;
     }
 
+    @Override
     public void fromDelta(DataInput in) throws IOException {
       super.fromDelta(in);      
       deltaApplied++;
@@ -960,6 +987,7 @@ public class ClientToServerDeltaDUnitTest extends DistributedTestCase {
       return deltaApplied;
     }
 
+    @Override
     public String toString() {
       return "CSDeltaTestImpl[deltaApplied=" + deltaApplied + "]"
           + super.toString();

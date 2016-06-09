@@ -16,7 +16,23 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.util.Properties;
+import java.util.Set;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.DiskStoreFactory;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
 import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
@@ -32,27 +48,15 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
-
-import java.io.File;
-import java.util.Properties;
-import java.util.Set;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * DUnit for ParallelSenderQueue overflow operations.
- * 
- *
  */
+@Category(DistributedTest.class)
 public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
 
-  private static final long serialVersionUID = 1L;
-  
-  public ParallelGatewaySenderQueueOverflowDUnitTest(String name) {
-    super(name);
-  }
-  
+  @Test
   public void testParallelSenderQueueEventsOverflow_NoDiskStoreSpecified() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -126,10 +130,10 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
   
   /**
    * Keep same max memory limit for all the VMs
-   *   
-   * @throws Exception
    */
-  public void _testParallelSenderQueueEventsOverflow() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testParallelSenderQueueEventsOverflow() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
@@ -207,10 +211,10 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
   /**
    * Set a different memory limit for each VM and make sure that all the VMs are utilized to
    * full extent of available memory.
-   * 
-   * @throws Exception
    */
-  public void _testParallelSenderQueueEventsOverflow_2() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testParallelSenderQueueEventsOverflow_2() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
@@ -291,7 +295,9 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.validateRegionSize( getTestMethodName(), 50 ));
   }
 
-  public void _testParallelSenderQueueNoEventsOverflow() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testParallelSenderQueueNoEventsOverflow() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
 
@@ -370,12 +376,14 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
    * Test to validate that ParallelGatewaySenderQueue diskSynchronous attribute
    * when persistence of sender is enabled. 
    */
-  public void _test_ValidateParallelGatewaySenderQueueAttributes_1() {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void test_ValidateParallelGatewaySenderQueueAttributes_1() {
     Integer localLocPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     
     Integer remoteLocPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, localLocPort ));
     
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + localLocPort + "]");
@@ -433,12 +441,14 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
    * Test to validate that ParallelGatewaySenderQueue diskSynchronous attribute
    * when persistence of sender is not enabled. 
    */
-  public void _test_ValidateParallelGatewaySenderQueueAttributes_2() {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void test_ValidateParallelGatewaySenderQueueAttributes_2() {
     Integer localLocPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     
     Integer remoteLocPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, localLocPort ));
     
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + localLocPort + "]");
@@ -481,6 +491,4 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
       ex.remove();
     }
   }
-
-
 }

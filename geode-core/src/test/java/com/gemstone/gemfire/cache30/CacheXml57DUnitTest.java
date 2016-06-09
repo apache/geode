@@ -16,12 +16,17 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
@@ -53,58 +58,40 @@ import com.gemstone.gemfire.internal.cache.xmlcache.Declarable2;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
-import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
-
-import junit.framework.Assert;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests 5.7 cache.xml features.
  * 
  * @since GemFire 5.7
  */
+@Category(DistributedTest.class)
+public class CacheXml57DUnitTest extends CacheXml55DUnitTest {
 
-public class CacheXml57DUnitTest extends CacheXml55DUnitTest
-{
-  //
   private final static String ALIAS1;
   private final static String ALIAS2;
 
   static {
     String tmp_alias1 = "localhost";
     String tmp_alias2 = "localhost";
-//    try {
-//      tmp_alias1 = getServerHostName(Host.getHost(0)); 
-//      InetSocketAddress addr = createINSA(tmp_alias1, 10000);
-//      tmp_alias2 = addr.getHostName();
-//    } catch (IllegalArgumentException suppress) {
-//      //The runnables dont have a Host object initialized, but they dont need 
-//      //access to the aliases so its ok to suppress this.
-//    } finally {
-      ALIAS1 = tmp_alias1;
-      ALIAS2 = tmp_alias2;
-//    }
+    ALIAS1 = tmp_alias1;
+    ALIAS2 = tmp_alias2;
   }
 
-  // ////// Constructors
-
-  public CacheXml57DUnitTest(String name) {
-    super(name);
-  }
-
-  // ////// Helper methods
-
-  protected String getGemFireVersion()
-  {
+  @Override
+  protected String getGemFireVersion() {
     return CacheXml.VERSION_5_7;
   }
 
   /**
    * Tests the groups subelement on bridge-server.
    */
+  @Test
   public void testDefaultCacheServerGroups() throws CacheException {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
@@ -117,6 +104,8 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
     assertNotNull(server);
     assertEquals(CacheServer.DEFAULT_GROUPS, server.getGroups());
   }
+
+  @Test
   public void testOneCacheServerGroups() throws CacheException {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
@@ -130,6 +119,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
     assertNotNull(server);
     assertEquals(Arrays.asList(groups), Arrays.asList(server.getGroups()));
   }
+  @Test
   public void testTwoCacheServerGroups() throws CacheException {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
@@ -143,6 +133,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
     assertNotNull(server);
     assertEquals(Arrays.asList(groups), Arrays.asList(server.getGroups()));
   }
+  @Test
   public void testDefaultCacheServerBindAddress() throws CacheException {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
@@ -154,6 +145,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
     assertNotNull(server);
     assertEquals(CacheServer.DEFAULT_BIND_ADDRESS, server.getBindAddress());
   }
+  @Test
   public void testCacheServerBindAddress() throws CacheException {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
@@ -167,6 +159,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
     assertNotNull(server);
     assertEquals(BA, server.getBindAddress());
   }
+  @Test
   public void testCacheServerHostnameForClients() throws CacheException {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
@@ -182,6 +175,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
     assertEquals(BA, server.getBindAddress());
     assertEquals("clientHostName", server.getHostnameForClients());
   }
+  @Test
   public void testExplicitConnectionPool() throws CacheException {
     getSystem();
     CacheCreation cache = new CacheCreation();
@@ -239,6 +233,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
     assertEquals(12345, cp.getSubscriptionMessageTrackingTimeout());
     assertEquals(333, cp.getSubscriptionAckInterval());
   }
+  @Test
   public void testDefaultConnectionPool() throws CacheException {
     getSystem();
     CacheCreation cache = new CacheCreation();
@@ -276,6 +271,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
     assertEquals(PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT, cp.getSubscriptionMessageTrackingTimeout());
     assertEquals(PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL, cp.getSubscriptionAckInterval());
   }
+  @Test
   public void testTwoConnectionPools() throws CacheException {
     getSystem();
     CacheCreation cache = new CacheCreation();
@@ -322,6 +318,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
       throw ex;
     }
   }
+  @Test
   public void testNoConnectionPools() throws CacheException {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -336,6 +333,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
       expectedException.remove();
     }
   }
+  @Test
   public void testAlreadyExistingPool() throws CacheException {
     getSystem();
     PoolFactoryImpl f = (PoolFactoryImpl)
@@ -358,6 +356,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
     }
   }
 
+  @Test
   public void testDynamicRegionFactoryConnectionPool() throws CacheException, IOException {
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("SocketTimeoutException");
@@ -407,6 +406,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
    * @throws CacheException
    * @since GemFire 5.7
    */
+  @Test
   public void testBridgeAttributesRelatedToHAOverFlow() throws CacheException {
     CacheCreation cache = new CacheCreation();
     cache.setMessageSyncInterval(3445);
@@ -438,6 +438,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
     assertEquals("overFlow", chaqf.getOverflowDirectory());
   }
   
+  @Test
   public void testBridgeLoadProbe() {
     CacheCreation cache = new CacheCreation();
     CacheServer server = cache.addCacheServer();
@@ -448,9 +449,10 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
     
     Cache c= getCache();
     server = c.getCacheServers().get(0);
-    Assert.assertEquals(MyLoadProbe.class,server.getLoadProbe().getClass());
+    assertEquals(MyLoadProbe.class,server.getLoadProbe().getClass());
   }
   
+  @Test
   public void testLoadPollInterval() {
     CacheCreation cache = new CacheCreation();
     CacheServer server = cache.addCacheServer();
@@ -461,7 +463,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
     
     Cache c = getCache();
     server = c.getCacheServers().get(0);
-    Assert.assertEquals(12345, server.getLoadPollInterval());
+    assertEquals(12345, server.getLoadPollInterval());
   }
   
   public static class MyLoadProbe extends ServerLoadProbeAdapter implements Declarable {
@@ -550,6 +552,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
   /**
    * Test both customEntryIdleTime and customEntryTimeToLife
    */
+  @Test
   public void testCustomEntryXml() {
     CacheCreation cache = new CacheCreation();
 
@@ -595,6 +598,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
     testXml(cache);
   }
 
+  @Test
   public void testPreloadDataPolicy() throws CacheException {
     CacheCreation cache = new CacheCreation();
 
@@ -645,6 +649,7 @@ public class CacheXml57DUnitTest extends CacheXml55DUnitTest
    * Test EnableSubscriptionConflation region attribute
    * @since GemFire 5.7
    */
+  @Test
   public void testEnableSubscriptionConflationAttribute() throws CacheException {
 
     CacheCreation cache = new CacheCreation();

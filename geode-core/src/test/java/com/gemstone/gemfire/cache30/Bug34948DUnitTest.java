@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -41,10 +50,11 @@ import com.gemstone.gemfire.test.dunit.VM;
  *
  * @since GemFire 5.0
  */
-public class Bug34948DUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class Bug34948DUnitTest extends JUnit4CacheTestCase {
 
-  public Bug34948DUnitTest(String name) {
-    super(name);
+  public Bug34948DUnitTest() {
+    super();
   }
 
   //////////////////////  Test Methods  //////////////////////
@@ -98,6 +108,7 @@ public class Bug34948DUnitTest extends CacheTestCase {
    * Make sure that value is only deserialized in cache whose application
    * asks for the value.
    */
+  @Test
   public void testBug34948() throws CacheException {
     final AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);

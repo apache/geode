@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.File;
 import java.util.Properties;
 
@@ -48,7 +57,8 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * 
  */
 
-public class Bug37377DUnitTest extends CacheTestCase
+@Category(DistributedTest.class)
+public class Bug37377DUnitTest extends JUnit4CacheTestCase
 {
 
   protected static String regionName = "TestRegion";
@@ -67,17 +77,12 @@ public class Bug37377DUnitTest extends CacheTestCase
 
   private static final int maxEntries = 10000;
 
-  /**
-   * Constructor
-   * 
-   * @param name
-   */
-  public Bug37377DUnitTest(String name) {
-    super(name);
-    File file1 = new File(name + "1");
+  public Bug37377DUnitTest() {
+    super();
+    File file1 = new File(getTestMethodName() + "1");
     file1.mkdir();
     file1.deleteOnExit();
-    File file2 = new File(name + "2");
+    File file2 = new File(getTestMethodName() + "2");
     file2.mkdir();
     file2.deleteOnExit();
     dirs = new File[2];
@@ -112,7 +117,7 @@ public class Bug37377DUnitTest extends CacheTestCase
       {
         try {
 
-          distributedSystem = (new Bug37377DUnitTest("vm0_diskReg"))
+          distributedSystem = (new Bug37377DUnitTest())
               .getSystem(props);
           assertTrue(distributedSystem != null);
           cache = CacheFactory.create(distributedSystem);
@@ -149,7 +154,7 @@ public class Bug37377DUnitTest extends CacheTestCase
       public void run2()
       {
         try {
-          distributedSystem = (new Bug37377DUnitTest("vm1_diskReg"))
+          distributedSystem = (new Bug37377DUnitTest())
               .getSystem(props);
           assertTrue(distributedSystem != null);
           cache = CacheFactory.create(distributedSystem);
@@ -303,6 +308,7 @@ public class Bug37377DUnitTest extends CacheTestCase
    * 
    */
 
+  @Test
   public void testGIIputWithClear()
   {
     vm0.invoke(createCacheForVM0());

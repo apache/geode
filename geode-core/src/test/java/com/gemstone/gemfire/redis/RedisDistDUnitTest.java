@@ -16,20 +16,32 @@
  */
 package com.gemstone.gemfire.redis;
 
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Random;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import redis.clients.jedis.Jedis;
+
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.SocketCreator;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
-import redis.clients.jedis.Jedis;
 
-import java.util.Random;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-public class RedisDistDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
 
   public static final String TEST_KEY = "key";
   public static int pushes = 200;
@@ -43,26 +55,25 @@ public class RedisDistDUnitTest extends DistributedTestCase {
   private int server1Port;
   private int server2Port;
   
-  private String localHost = SocketCreator.getLocalHost().getHostName();
+  private String localHost;
   
   private static final int JEDIS_TIMEOUT = 20 * 1000;
 
   private abstract class ClientTestBase extends SerializableCallable {
 
     int port;
+
     protected ClientTestBase (int port) {
       this.port = port;
     }
-
-  }
-
-  public RedisDistDUnitTest() throws Throwable {
-    super("RedisDistTest");  
   }
 
   @Override
   public final void postSetUp() throws Exception {
     disconnectAllFromDS();
+
+    localHost = SocketCreator.getLocalHost().getHostName();
+
     host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
@@ -71,8 +82,6 @@ public class RedisDistDUnitTest extends DistributedTestCase {
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     final int locatorPort = DistributedTestUtils.getDUnitLocatorPort();
     final SerializableCallable<Object> startRedisAdapter = new SerializableCallable<Object>() {
-
-      private static final long serialVersionUID = 1978017907725504294L;
 
       @Override
       public Object call() throws Exception {
@@ -90,11 +99,7 @@ public class RedisDistDUnitTest extends DistributedTestCase {
     };
     AsyncInvocation i = server1.invokeAsync(startRedisAdapter);
     server2Port = (Integer) server2.invoke(startRedisAdapter);
-    try {
-      server1Port = (Integer) i.getResult();
-    } catch (Throwable e) {
-      throw new Exception(e);
-    }
+    server1Port = (Integer) i.getResult();
   }
 
   @Override
@@ -103,7 +108,8 @@ public class RedisDistDUnitTest extends DistributedTestCase {
   }
 
   @Category(FlakyTest.class) // GEODE-1092: random ports, failure stack involves TCPTransport ConnectionHandler (are we eating BindExceptions somewhere?), uses Random, async actions
-  public void testConcListOps() throws Throwable {
+  @Test
+  public void testConcListOps() throws Exception {
     final Jedis jedis1 = new Jedis(localHost, server1Port, JEDIS_TIMEOUT);
     final Jedis jedis2 = new Jedis(localHost, server2Port, JEDIS_TIMEOUT);
     final int pushes = 20;
@@ -138,7 +144,8 @@ public class RedisDistDUnitTest extends DistributedTestCase {
   }
 
   @Category(FlakyTest.class) // GEODE-717: random ports, BindException in failure stack, async actions
-  public void testConcCreateDestroy() throws Throwable {
+  @Test
+  public void testConcCreateDestroy() throws Exception {
     IgnoredException.addIgnoredException("RegionDestroyedException");
     IgnoredException.addIgnoredException("IndexInvalidException");
     final int ops = 40;
@@ -196,9 +203,9 @@ public class RedisDistDUnitTest extends DistributedTestCase {
 
   /**
    * Just make sure there are no unexpected server crashes
-   * @throws Throwable 
    */
-  public void testConcOps() throws Throwable {
+  @Test
+  public void testConcOps() throws Exception {
 
     final int ops = 100;
     final String hKey = TEST_KEY+"hash";

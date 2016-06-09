@@ -16,7 +16,12 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
+import static org.junit.Assert.*;
+
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -34,13 +39,14 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.HARegion;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This test checks Expiration of events in the regionqueue.
@@ -49,11 +55,9 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 3. Checks size of the regionqueue. Size of the regionqueue should be greater than 0.
  * 4. Waits for the period which is slightly greater than expiration period.
  * 5. Checks size of the regionqueue. Size of the regionqueue should be equal to 0.
- *
  */
-
-public class HAExpiryDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
 
   VM vm0 = null;
 
@@ -73,8 +77,8 @@ public class HAExpiryDUnitTest extends DistributedTestCase
 
   protected static int regionQueueSize = -1;
 
-  public HAExpiryDUnitTest(String name) {
-    super(name);
+  public HAExpiryDUnitTest() {
+    super();
   }
 
   /**
@@ -103,6 +107,7 @@ public class HAExpiryDUnitTest extends DistributedTestCase
     Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
   }
 
+  @Test
   public void testExpiryPeriod() throws Exception
   {
     vm0.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(false)));
@@ -132,6 +137,7 @@ public class HAExpiryDUnitTest extends DistributedTestCase
     vm3.invoke(() -> HAExpiryDUnitTest.checkSizeAfterExpiration());
   }
   
+  @Test
   public void testDurableExpiryPeriod() throws Exception
   {
     vm0.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(true)));
@@ -234,7 +240,7 @@ public class HAExpiryDUnitTest extends DistributedTestCase
 
   public static void createRegionQueue(Boolean isDurable) throws Exception
   {
-    new HAExpiryDUnitTest("temp").createCache(new Properties());
+    new HAExpiryDUnitTest().createCache(new Properties());
     HARegionQueueAttributes hattr = new HARegionQueueAttributes();
     // setting expiry time for the regionqueue.
     hattr.setExpiryTime(4);

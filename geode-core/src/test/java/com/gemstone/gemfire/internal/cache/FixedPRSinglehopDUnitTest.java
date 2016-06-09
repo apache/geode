@@ -16,32 +16,54 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.FixedPartitionAttributes;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.ClientMetadataService;
 import com.gemstone.gemfire.cache.client.internal.ClientPartitionAdvisor;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.partitioned.fixed.QuarterPartitionResolver;
 import com.gemstone.gemfire.internal.cache.partitioned.fixed.SingleHopQuarterPartitionResolver;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallableIF;
+import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-public class FixedPRSinglehopDUnitTest extends CacheTestCase {
-
-  private static final long serialVersionUID = 1L;
+@Category(DistributedTest.class)
+public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
   private static final String PR_NAME = "fixed_single_hop_pr";
 
@@ -75,10 +97,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   
   private static final Date q4dateDec1 = new Date(2010, 11, 1);
   
-  public FixedPRSinglehopDUnitTest(String name) {
-    super(name);
-  }
-  
+  @Test
   public void testNoClientConnected() {
     final Host host = Host.getHost(0);
     VM accessorServer = host.getVM(0);
@@ -135,6 +154,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   // 2 AccessorServers, 2 Peers
   // 1 Client connected to 2 AccessorServers. Hence metadata should not be
   // fetched.
+  @Test
   public void testClientConnectedToAccessors() {
     final Host host = Host.getHost(0);
     VM accessorServer1 = host.getVM(0);
@@ -178,6 +198,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   // Now verify that metadata has all 8 buckets info.
   // Now update and ensure the fetch service is never called.
   @Category(FlakyTest.class) // GEODE-1176: random ports, time sensitive, waitForCriterion
+  @Test
   public void test_MetadataContents() {
     
     final Host host = Host.getHost(0);
@@ -243,6 +264,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
    * the metadata are fetched and then later up one more partition and do some operations on them. It should
    * fetch new fpa. 
    */
+  @Test
   public void test_FPAmetadataFetch() {
     
     final Host host = Host.getHost(0);
@@ -323,8 +345,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   public static int createServer(boolean isAccessor,
       List<FixedPartitionAttributes> fpaList) {
 
-    CacheTestCase test = new FixedPRSinglehopDUnitTest(
-        "FixedPRSinglehopDUnitTest");
+    FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     cache = test.getCache();
     CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
@@ -363,8 +384,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   public static int createServerWithLocator(String locator, boolean isAccessor,
       List<FixedPartitionAttributes> fpaList, boolean simpleFPR) {
 
-    CacheTestCase test = new FixedPRSinglehopDUnitTest(
-    "FixedPRSinglehopDUnitTest");
+    FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     Properties props = new Properties();
     props = new Properties();
     props.setProperty(LOCATORS, locator);
@@ -425,8 +445,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   }
   
   public static int totalNumBucketsCreated () {
-    CacheTestCase test = new FixedPRSinglehopDUnitTest(
-    "FixedPRSinglehopDUnitTest");
+    FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     PartitionedRegion pr = (PartitionedRegion)cache.getRegion(PR_NAME);
     assertNotNull(pr);
     return pr.getLocalPrimaryBucketsListTestOnly().size();
@@ -434,8 +453,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
   
   public static void createPeer(boolean isAccessor,
       List<FixedPartitionAttributes> fpaList) {
-    CacheTestCase test = new FixedPRSinglehopDUnitTest(
-        "FixedPRSinglehopDUnitTest");
+    FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     cache = test.getCache();
 
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -463,8 +481,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
     props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    CacheTestCase test = new FixedPRSinglehopDUnitTest(
-        "FixedPRSinglehopDUnitTest");
+    FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
@@ -489,8 +506,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
     props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    CacheTestCase test = new FixedPRSinglehopDUnitTest(
-        "FixedPRSinglehopDUnitTest");
+    FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
@@ -515,8 +531,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
     props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    CacheTestCase test = new FixedPRSinglehopDUnitTest(
-        "FixedPRSinglehopDUnitTest");
+    FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
@@ -540,8 +555,7 @@ public class FixedPRSinglehopDUnitTest extends CacheTestCase {
     props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    CacheTestCase test = new FixedPRSinglehopDUnitTest(
-        "FixedPRSinglehopDUnitTest");
+    FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);

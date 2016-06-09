@@ -16,7 +16,21 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
@@ -27,24 +41,22 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * TODO This doesn't really test the optimised RI behaviour but only that RI
  * works. But there must be other tests doing the same.
- * 
- * 
  */
+@Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class Bug43684DUnitTest extends DistributedTestCase {
+public class Bug43684DUnitTest extends JUnit4DistributedTestCase {
 
-  private static final String REGION_NAME = "Bug43684DUnitTest";
+  private static final String REGION_NAME = Bug43684DUnitTest.class.getSimpleName();
 
   private static GemFireCacheImpl cache;
 
@@ -59,10 +71,6 @@ public class Bug43684DUnitTest extends DistributedTestCase {
   private static VM client1;
 
   private static int numBuckets = 11;
-
-  public Bug43684DUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -87,17 +95,20 @@ public class Bug43684DUnitTest extends DistributedTestCase {
     if (cache != null && !cache.isClosed()) {
       cache.close();
     }
-    DistributedTestCase.disconnectFromDS();
+    disconnectFromDS();
   }
 
+  @Test
   public void testRIWithSingleKeyOnRR()  throws Exception {
     doRegisterInterest("KEY_1", null, numBuckets, true, false);
   }
 
+  @Test
   public void testRIWithAllKeysOnRR()  throws Exception {
     doRegisterInterest(null, null, numBuckets, true, false);
   }
 
+  @Test
   public void testRIWithKeyListOnRR()  throws Exception {
     ArrayList<String> riKeys = new ArrayList<String>();
     riKeys.add("KEY_0");
@@ -111,18 +122,22 @@ public class Bug43684DUnitTest extends DistributedTestCase {
     doRegisterInterest(riKeys, null, numBuckets, true, false);
   }
 
+  @Test
   public void testRIWithRegularExpressionOnRR()  throws Exception{
     doRegisterInterest(null, "^[X][_].*", numBuckets, true, false);
   }
 
+  @Test
   public void testRIWithSingleKeyOnPR()  throws Exception {
     doRegisterInterest("KEY_1", null);
   }
 
+  @Test
   public void testRIWithAllKeysOnPR()  throws Exception {
     doRegisterInterest(null, null);
   }
 
+  @Test
   public void testRIWithKeyListOnPR()  throws Exception {
     ArrayList<String> riKeys = new ArrayList<String>();
     riKeys.add("KEY_0");
@@ -136,22 +151,27 @@ public class Bug43684DUnitTest extends DistributedTestCase {
     doRegisterInterest(riKeys, null);
   }
 
+  @Test
   public void testRIWithRegularExpressionOnPR()  throws Exception{
     doRegisterInterest(null, "^[X][_].*");
   }
 
+  @Test
   public void testRIWithMoreEntriesOnPR()  throws Exception{
     doRegisterInterest(null, null, 5147, false, false);
   }
 
+  @Test
   public void testRIWithSingleKeyOnEmptyPrimaryOnPR()  throws Exception {
     doRegisterInterest("KEY_1", null, numBuckets, false, true);
   }
 
+  @Test
   public void testRIWithAllKeysOnEmptyPrimaryOnPR()  throws Exception {
     doRegisterInterest(null, null, numBuckets, false, true);
   }
 
+  @Test
   public void testRIWithKeyListOnEmptyPrimaryOnPR()  throws Exception {
     ArrayList<String> riKeys = new ArrayList<String>();
     riKeys.add("KEY_0");
@@ -165,10 +185,12 @@ public class Bug43684DUnitTest extends DistributedTestCase {
     doRegisterInterest(riKeys, null, numBuckets, false, true);
   }
 
+  @Test
   public void testRIWithRegularExpressionOnEmptyPrimaryOnPR()  throws Exception{
     doRegisterInterest(null, "^[X][_].*", numBuckets, false, true);
   }
 
+  @Test
   public void testNativeClientIssueOnPR()  throws Exception{
     ArrayList<String> riKeys = new ArrayList<String>();
     riKeys.add("OPKEY_0");
@@ -229,7 +251,7 @@ public class Bug43684DUnitTest extends DistributedTestCase {
 
   @SuppressWarnings("rawtypes")
   public static Integer createServerCache(Boolean isReplicated, Boolean isPrimaryEmpty) throws Exception {
-    DistributedTestCase.disconnectFromDS();
+    disconnectFromDS();
     Properties props = new Properties();
     props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
     props.setProperty(STATISTIC_ARCHIVE_FILE, "server_" + OSProcess.getId()
@@ -256,7 +278,7 @@ public class Bug43684DUnitTest extends DistributedTestCase {
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
   public static void createClientCache(Host host, Integer port) {
-    DistributedTestCase.disconnectFromDS();
+    disconnectFromDS();
     Properties props = new Properties();
     props.setProperty(STATISTIC_ARCHIVE_FILE, "client_" + OSProcess.getId()
         + ".gfs");

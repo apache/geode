@@ -16,24 +16,34 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.util.*;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.ExpirationAction;
+import com.gemstone.gemfire.cache.ExpirationAttributes;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionEvent;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.RMIException;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-
-import util.TestException;
-
-import junit.framework.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * This class tests the response of GemFire to various
@@ -41,19 +51,15 @@ import junit.framework.Assert;
  * 
  * @since GemFire 5.1
  */
+@Category(DistributedTest.class)
 public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   
   static final String REGION_NAME = "SystemFailureDUnitTest";
   static final Scope SCOPE = Scope.DISTRIBUTED_ACK;
   
   volatile static Object newValue, oldValue;
-  
-  public SystemFailureDUnitTest(String name) {
-    super(name);
-  }
 
-  /////////  Public test methods
-
+  @Test
   public void testNullFailure() {
     com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("TODO: this test needs to use VM#bounce.");
     try {
@@ -68,13 +74,13 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   /**
    * @see StackOverflowError
    */
-  public void _testStackOverflow()
+  @Ignore("TODO")
+  @Test
+  public void testStackOverflow()
     throws CacheException, InterruptedException {
     String exceptions =
       StackOverflowError.class.getName() 
       + "||"
-//      + OutOfMemoryError.class.getName()
-//      + "||"
       + AssertionError.class.getName();
     
     try {
@@ -101,7 +107,9 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
    * @throws CacheException
    * @throws InterruptedException
    */
-  public void _testOutOfMemory()
+  @Ignore("TODO")
+  @Test
+  public void testOutOfMemory()
     throws CacheException, InterruptedException {
   
     String exceptions =
@@ -132,7 +140,9 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
    * @throws CacheException
    * @throws InterruptedException
    */
-  public void _testPersistentOutOfMemory()
+  @Ignore("TODO")
+  @Test
+  public void testPersistentOutOfMemory()
     throws CacheException, InterruptedException {
   
     String exceptions =
@@ -164,7 +174,9 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
    * @throws CacheException
    * @throws InterruptedException
    */
-  public void _testMemoryMonitor()
+  @Ignore("TODO")
+  @Test
+  public void testMemoryMonitor()
     throws CacheException, InterruptedException {
   
     String exceptions =
@@ -196,7 +208,9 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
      * @throws CacheException
      * @throws InterruptedException
      */
-    public void _testInternalError()
+    @Ignore("TODO")
+    @Test
+    public void testInternalError()
     throws CacheException, InterruptedException {
       String exceptions =
         InternalError.class.getName()
@@ -226,7 +240,9 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
    * @throws CacheException
    * @throws InterruptedException
    */
-  public void _testUnknownError()
+  @Ignore("TODO")
+  @Test
+  public void testUnknownError()
       throws CacheException, InterruptedException {
     String exceptions =
       UnknownError.class.getName()
@@ -270,11 +286,13 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   }
   
   /**
-     * Create some sort of horrible failure that is <em>not</em>
-     * a VirtualMachineError.
-     */
-    public void _testError()
-    throws CacheException, InterruptedException {
+   * Create some sort of horrible failure that is <em>not</em>
+   * a VirtualMachineError.
+   */
+  @Ignore("TODO")
+  @Test
+  public void testError()
+  throws CacheException, InterruptedException {
     // In this case we do NOT expect a failure
     String exceptions =
       Error.class.getName();
@@ -282,7 +300,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     try {
       String name = "testError";
       doCreateEntry(name);
-      Assert.assertTrue(doVerifyConnected());
+      assertTrue(doVerifyConnected());
       
        doMessage(
           "<ExpectedException action=add>"
@@ -326,59 +344,37 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   /**
    * Verify that listener gets called, and exactly once.
    */
-  public void _testListener()
+  @Ignore("TODO")
+  @Test
+  public void testListener()
       throws CacheException, InterruptedException {
 
-  String exceptions =
-      Error.class.getName();
-  try {
-    String name = "testListener";
-    doExec("setListener1");
-    
-    doMessage(
-        "<ExpectedException action=add>"
+    String exceptions =
+        Error.class.getName();
+    try {
+      String name = "testListener";
+      doExec("setListener1");
+
+      doMessage(
+          "<ExpectedException action=add>"
+          + exceptions
+          + "</ExpectedException>");
+      doCreateEntry(name);
+
+      Integer count = (Integer)doExec("getListenerCount");
+      assertEquals(1, count.intValue());
+      doVerifyDisconnected();
+    }
+    finally {
+      doMessage(
+        "<ExpectedException action=remove>"
         + exceptions
         + "</ExpectedException>");
-    doCreateEntry(name);
+      resetVM();
+    }
 
-    Integer count = (Integer)doExec("getListenerCount");
-    Assert.assertEquals(1, count.intValue());
-    doVerifyDisconnected();
-  }
-  finally {
-    doMessage(
-      "<ExpectedException action=remove>"
-      + exceptions
-      + "</ExpectedException>");
-    resetVM();
   }
 
-}
-
-//  protected static void doReset() {
-//    // TODO instead of trying to patch up this VM, Lise should create
-//    // me a brand spanking new one
-//    throw new TestException("Sorry, ask Lise to fix this");
-//    
-//    // You'll have to un-comment some methods in order to make
-//    // the following hack work ONCE on a VM...
-////    try {
-////      Thread.sleep(5000);
-////    }
-////    catch (InterruptedException e) {
-////      fail("interrupted");
-////    }
-////    
-////    SystemFailure.reset(); <--- here
-////    DistributedCacheTestCase.cache = null;
-////
-////    // Discard the existing cache instance
-////    GemFireCache.clearInstance(); <--- here
-////    
-////    // This is just to stop the stat sampler thread
-////    HostStatSampler.emergencyStop(); <--- here
-//  }
-  
   private void resetVM() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
@@ -454,7 +450,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     }
     
     // At this point, the cache we peeked earlier should be unavailable
-    Assert.assertTrue(GemFireCacheImpl.getInstance() == null);
+    assertTrue(GemFireCacheImpl.getInstance() == null);
     
     // Ditto for the distributed system
     InternalDistributedSystem ids = (InternalDistributedSystem)
@@ -556,7 +552,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
       private void forceOutOfMemory() {
         peskyMemory = new ArrayList();
         // Allocate this _before_ exhausting memory :-)
-        final TestException whoops = new TestException("Timeout!");
+        final AssertionError whoops = new AssertionError("Timeout!");
         try {
           for (;;) {
             peskyMemory.add(new long[100000]);
@@ -618,7 +614,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
       
       peskyMemory = new ArrayList();
       // Allocate this _before_ exhausting memory :-)
-      final TestException whoops = new TestException("Timeout!");
+      final AssertionError whoops = new AssertionError("Timeout!");
       
       // Fill up a lot of memory
       for (;;) {
@@ -748,7 +744,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
       listener = listener_error;
     }
     else {
-      throw new TestException("don't know which listener: " + which);
+      throw new AssertionError("don't know which listener: " + which);
     }
     return listener;
   }

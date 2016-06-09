@@ -16,29 +16,29 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static org.junit.Assert.*;
+
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Class <code>DurableClientCrashDUnitTest</code> tests durable client
  * functionality when clients crash.
- * 
- * 
+ *
  * @since GemFire 5.2
  */
+@Category(DistributedTest.class)
 public class DurableClientCrashDUnitTest extends DurableClientTestCase {
-
-  public DurableClientCrashDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   protected final void postSetUpDurableClientTestCase() throws Exception {
     configureClientStop1();
   }
   
-  public void configureClientStop1()
-  {
+  public void configureClientStop1() {
     this.durableClientVM.invoke(() -> CacheServerTestUtil.setClientCrash(new Boolean(true)));    
   }
   
@@ -47,11 +47,11 @@ public class DurableClientCrashDUnitTest extends DurableClientTestCase {
     configureClientStop2();
   }
   
-  public void configureClientStop2()
-  {
+  public void configureClientStop2() {
     this.durableClientVM.invoke(() -> CacheServerTestUtil.setClientCrash(new Boolean(false)));    
   }
-  
+
+  @Override
   public void verifySimpleDurableClient() {
     this.server1VM
         .invoke(new CacheSerializableRunnable("Verify durable client") {
@@ -63,9 +63,9 @@ public class DurableClientCrashDUnitTest extends DurableClientTestCase {
           }
         });
   }
-  
-  public void verifySimpleDurableClientMultipleServers() 
-  {
+
+  @Override
+  public void verifySimpleDurableClientMultipleServers()  {
     // Verify the durable client is no longer on server1
     this.server1VM
         .invoke(new CacheSerializableRunnable("Verify durable client") {
@@ -88,11 +88,4 @@ public class DurableClientCrashDUnitTest extends DurableClientTestCase {
           }
         });
   }
-  
-  // AB: Following tests are not relevant for client crash case.
-  
-  public void testCqCloseExceptionDueToActiveConnection() throws Exception {}
-
-  public void testCloseCacheProxy() throws Exception {}
-
 }

@@ -16,9 +16,14 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
@@ -43,18 +48,20 @@ import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests 7.0 cache.xml feature : Fixed Partitioning.
  * 
  * @since GemFire 6.6
  */
+@Category(DistributedTest.class)
 public class CacheXml66DUnitTest extends CacheXml65DUnitTest{
   
 //////// Constructors
 
-  public CacheXml66DUnitTest(String name) {
-    super(name);
+  public CacheXml66DUnitTest() {
+    super();
   }
 
   // ////// Helper methods
@@ -71,6 +78,7 @@ public class CacheXml66DUnitTest extends CacheXml65DUnitTest{
    * FixedPartitionAttributes
    * 
    */
+  @Test
   public void testFixedPartitioning() throws CacheException {
 
     CacheCreation cache = new CacheCreation();
@@ -110,6 +118,7 @@ public class CacheXml66DUnitTest extends CacheXml65DUnitTest{
     validateAttributes(region, fpattrsList, resolver, false);
   }
 
+  @Test
   public void testFixedPartitioning_colocation_WithAttributes()
       throws CacheException {
     CacheCreation cache = new CacheCreation();
@@ -227,6 +236,7 @@ public class CacheXml66DUnitTest extends CacheXml65DUnitTest{
   }
   
   
+  @Test
   public void testPdxDefaults() {
     CacheCreation creation = new CacheCreation();
     testXml(creation);
@@ -242,6 +252,7 @@ public class CacheXml66DUnitTest extends CacheXml65DUnitTest{
     assertEquals(false, c.getPdxIgnoreUnreadFields());
   }
   
+  @Test
   public void testPdxAttributes() {
     CacheCreation creation = new CacheCreation();
     creation.setPdxPersistent(true);
@@ -329,6 +340,7 @@ public class CacheXml66DUnitTest extends CacheXml65DUnitTest{
     
   }
   
+  @Test
   public void testTXManagerOnClientCache() {
     ClientCacheCreation cc = new ClientCacheCreation();
     //CacheCreation cc = new CacheCreation();
@@ -348,6 +360,7 @@ public class CacheXml66DUnitTest extends CacheXml65DUnitTest{
     
   }
   
+  @Test
   public void testNoTXWriterOnClient() {
   //test writer is not created
     ClientCacheCreation cc = new ClientCacheCreation();

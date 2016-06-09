@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheLoader;
@@ -40,12 +49,13 @@ import com.gemstone.gemfire.test.dunit.Wait;
 public abstract class CacheLoaderTestCase
   extends CacheWriterTestCase {
 
-  public CacheLoaderTestCase(String name) {
-    super(name);
+  public CacheLoaderTestCase() {
+    super();
   }
 
   ///////////////////////  Test Methods  ///////////////////////
 
+  @Test
   public void testCacheLoader() throws CacheException {
     final String name = this.getUniqueName();
     final Object key = this.getUniqueName();
@@ -183,6 +193,7 @@ public abstract class CacheLoaderTestCase
    * Tests what happens when a {@link CacheLoader} returns
    * <code>null</code> from its {@link CacheLoader#load load} method.
    */
+  @Test
   public void testCacheLoaderNull() throws CacheException {
     TestCacheLoader loader = new TestCacheLoader() {
         public Object load2(LoaderHelper helper)
@@ -208,6 +219,7 @@ public abstract class CacheLoaderTestCase
    * Tests that a <code>CacheWriter</code> gets invoked on a
    * <code>load</code>.
    */
+  @Test
   public void testCacheWriterOnLoad() throws CacheException {
     final String name = this.getUniqueName();
     final Object key = this.getUniqueName();
@@ -269,6 +281,7 @@ public abstract class CacheLoaderTestCase
    * Tests that a <code>CacheListener</code> gets invoked on a
    * <code>load</code>.
    */
+  @Test
   public void testCacheListenerOnLoad()
     throws CacheException, InterruptedException {
 

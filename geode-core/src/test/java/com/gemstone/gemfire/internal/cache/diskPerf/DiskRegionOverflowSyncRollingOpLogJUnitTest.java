@@ -51,10 +51,8 @@ public class DiskRegionOverflowSyncRollingOpLogJUnitTest extends
 
   DiskRegionProperties diskProps = new DiskRegionProperties();
 
-  @Before
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  protected final void postSetUp() throws Exception {
     diskProps.setDiskDirs(dirs);
     this.log = ds.getLogWriter();
     diskProps.setRolling(true);
@@ -62,16 +60,8 @@ public class DiskRegionOverflowSyncRollingOpLogJUnitTest extends
     diskProps.setCompactionThreshold(100);
     region = DiskRegionHelperFactory
         .getSyncOverFlowOnlyRegion(cache, diskProps);
-
   }
 
-  @After
-  public void tearDown() throws Exception
-  {
-    super.tearDown();
-    
-  }
-  
   @Test
   public void testGetPerfRollingOpog()
   {

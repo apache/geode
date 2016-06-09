@@ -16,7 +16,27 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.LoaderHelper;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -25,28 +45,29 @@ import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.*;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Class <code>ClientServerGetAllDUnitTest</code> test client/server getAll.
  *
  * @since GemFire 5.7
  */
- public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
-
-  public ClientServerGetAllDUnitTest(String name) {
-    super(name);
-  }
+@Category(DistributedTest.class)
+public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
 
+  @Test
   public void testGetAllFromServer() throws Exception {
     final Host host = Host.getHost(0);
     final VM server = host.getVM(0);
@@ -99,6 +120,7 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
     stopBridgeServer(server);
   }
 
+  @Test
   public void testOffHeapGetAllFromServer() throws Exception {
     final Host host = Host.getHost(0);
     final VM server = host.getVM(0);
@@ -151,6 +173,7 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
     stopBridgeServer(server);
   }
 
+  @Test
   public void testLargeOffHeapGetAllFromServer() throws Throwable {
     final Host host = Host.getHost(0);
     final VM server = host.getVM(0);
@@ -261,7 +284,8 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
 
     stopBridgeServer(server);
   }
-  
+
+  @Test
   public void testLargeGetAllFromServer() throws Throwable {
     final Host host = Host.getHost(0);
     final VM server = host.getVM(0);
@@ -374,6 +398,7 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
     stopBridgeServer(server);
   }
 
+  @Test
   public void testGetAllWithCallbackFromServer() throws Exception {
     final Host host = Host.getHost(0);
     final VM server = host.getVM(0);
@@ -425,14 +450,17 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
     stopBridgeServer(server);
   }
 
+  @Test
   public void testGetSomeFromServer() throws Exception {
     testGetFromServer(2);
   }
 
+  @Test
   public void testGetAllFromClient() throws Exception {
     testGetFromServer(5);
   }
 
+  @Test
   public void testGetAllFromServerWithPR() throws Exception {
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
@@ -563,7 +591,8 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
     IgnoredException.addIgnoredException("Server unreachable", client);
     stopBridgeServer(server);
   }
-  
+
+  @Test
   public void testGetAllWithExtraKeyFromServer() throws Exception {
     final Host host = Host.getHost(0);
     final VM server = host.getVM(0);

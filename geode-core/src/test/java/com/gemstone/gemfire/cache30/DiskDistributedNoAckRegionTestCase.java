@@ -16,22 +16,25 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.cache.*;
+import org.junit.Test;
+
+import com.gemstone.gemfire.cache.CacheException;
 
 public abstract class DiskDistributedNoAckRegionTestCase extends DistributedNoAckRegionDUnitTest {
 
-  final protected DiskRegionTestImpl regionTestImpl;
+  protected DiskRegionTestImpl regionTestImpl;
   
-  /** Creates a new instance of DiskDistributedNoAckRegionTest */
-  public DiskDistributedNoAckRegionTestCase(String name) {
-    super(name);
-    regionTestImpl = new DiskRegionTestImpl(this);
+  @Override
+  public final void postSetUp() throws Exception {
+    this.regionTestImpl = new DiskRegionTestImpl(this);
   }
   
+  @Test
   public void testCreateDiskRegion() throws CacheException {
     this.regionTestImpl.testCreateDiskRegion();
   }
   
+  @Test
   public void testBackupFillInValues() throws CacheException {
     this.regionTestImpl.testBackupFillValues();
   }

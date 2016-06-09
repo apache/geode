@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
@@ -27,16 +36,18 @@ import com.gemstone.gemfire.cache30.*;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 
+@Category(DistributedTest.class)
 public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
 
-  public CacheXml80GatewayDUnitTest(String name) {
-    super(name);
+  public CacheXml80GatewayDUnitTest() {
+    super();
   }
 
   protected String getGemFireVersion() {
     return CacheXml.VERSION_8_0;
   }
   
+  @Test
   public void testGatewayReceiverWithManualStartTRUE() throws CacheException{
     //getSystem();
     CacheCreation cache = new CacheCreation();
@@ -68,6 +79,7 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
     }
   }
 
+  @Test
   public void testAsyncEventQueueWithSubstitutionFilter() {
     getSystem();
     CacheCreation cache = new CacheCreation();
@@ -91,6 +103,7 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
     assertNotNull(queueOnCache.getGatewayEventSubstitutionFilter());
   }
 
+  @Test
   public void testGatewaySenderWithSubstitutionFilter() {
     getSystem();
     CacheCreation cache = new CacheCreation();

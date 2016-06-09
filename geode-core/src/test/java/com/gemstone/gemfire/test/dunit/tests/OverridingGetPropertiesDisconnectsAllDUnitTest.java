@@ -16,22 +16,24 @@
  */
 package com.gemstone.gemfire.test.dunit.tests;
 
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.test.dunit.Invoke.*;
+import static org.junit.Assert.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
-import static com.gemstone.gemfire.test.dunit.Invoke.invokeInEveryVM;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Verifies that overriding {@code getDistributedSystemProperties} results
  * in {@code disconnectAllFromDS} during tear down.
  */
-public class OverridingGetPropertiesDisconnectsAllDUnitTest extends DistributedTestCase {
-
-  public OverridingGetPropertiesDisconnectsAllDUnitTest(final String name) {
-    super(name);
-  }
+@Category(DistributedTest.class)
+public class OverridingGetPropertiesDisconnectsAllDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void preTearDownAssertions() throws Exception {
@@ -50,6 +52,7 @@ public class OverridingGetPropertiesDisconnectsAllDUnitTest extends DistributedT
     return props;
   }
 
+  @Test
   public void testDisconnects() throws Exception {
     invokeInEveryVM(() -> assertFalse(getDistributedSystemProperties().isEmpty()));
     invokeInEveryVM(() -> assertNotNull(getSystem()));

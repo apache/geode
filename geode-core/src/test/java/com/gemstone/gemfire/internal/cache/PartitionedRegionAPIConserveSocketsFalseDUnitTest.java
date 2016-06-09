@@ -20,25 +20,23 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
 
 import java.util.Properties;
 
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 /**
  * Test all the PartitionedRegion api calls when ConserveSockets is set to false
+ *
  * @since GemFire 5.0
  * @see com.gemstone.gemfire.distributed.DistributedSystem#setThreadsSocketPolicy(boolean)
  */
-public class PartitionedRegionAPIConserveSocketsFalseDUnitTest extends
-    PartitionedRegionAPIDUnitTest
-{
+@Category(DistributedTest.class)
+public class PartitionedRegionAPIConserveSocketsFalseDUnitTest extends PartitionedRegionAPIDUnitTest {
 
-  public PartitionedRegionAPIConserveSocketsFalseDUnitTest(String name) {
-    super(name);
-  }
-
-
-  public Properties getDistributedSystemProperties()
-  {
+  @Override
+  public Properties getDistributedSystemProperties() {
     Properties ret = new Properties();
     ret.setProperty(CONSERVE_SOCKETS, "false");
     return ret; 
   }
-
 }

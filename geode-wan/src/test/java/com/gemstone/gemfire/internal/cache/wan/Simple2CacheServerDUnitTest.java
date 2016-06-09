@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -45,15 +54,17 @@ import com.gemstone.gemfire.internal.cache.ha.HAContainerRegion;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.jayway.awaitility.Awaitility;
 
+@Category(DistributedTest.class)
 public class Simple2CacheServerDUnitTest extends WANTestBase {
   private static final int NUM_KEYS = 10;
   static int afterPrimaryCount = 0;
   static int afterProxyReinitialized = 0;
   
-  public Simple2CacheServerDUnitTest(String name) {
-    super(name);
+  public Simple2CacheServerDUnitTest() {
+    super();
   }
   
+  @Test
   public void testNormalClient2MultipleCacheServer() throws Exception {
     doMultipleCacheServer(false);
   }

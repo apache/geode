@@ -16,7 +16,20 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.MirrorType;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
@@ -26,12 +39,14 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * The Region Destroy Operation from Cache Client does not pass the Client side
@@ -39,9 +54,8 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  * object in the DestroyRegionMessage. This can cause sender to recieve it own
  * region destruction message.
  */
-
-public class Bug36269DUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class Bug36269DUnitTest extends JUnit4DistributedTestCase {
 
   VM server1 = null;
 
@@ -57,24 +71,16 @@ public class Bug36269DUnitTest extends DistributedTestCase
 
   private static PoolImpl pool = null;
 
-  /** constructor */
-  public Bug36269DUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
-    // Server1 VM
     server1 = host.getVM(0);
-
-    // Server2 VM
     server2 = host.getVM(1);
 
-    PORT1 = ((Integer)server1.invoke(() -> Bug36269DUnitTest.createServerCache())).intValue();
-    PORT2 = ((Integer)server2.invoke(() -> Bug36269DUnitTest.createServerCache())).intValue();
+    PORT1 = server1.invoke(() -> Bug36269DUnitTest.createServerCache());
+    PORT2 = server2.invoke(() -> Bug36269DUnitTest.createServerCache());
   }
 
   private void createCache(Properties props) throws Exception
@@ -84,32 +90,20 @@ public class Bug36269DUnitTest extends DistributedTestCase
     assertNotNull(cache);
   }
 
-//  static private final String WAIT_PROPERTY = "Bug36269DUnitTest.maxWaitTime";
-//
-//  static private final int WAIT_DEFAULT = 60000;
-
   /**
    * This tests whether the region destroy are not received by the sender
-   * 
    */
-  public void testRegionDestroyNotReceivedBySender() throws Exception
-  {
-    try {
-      createClientCache();
-      acquireConnectionsAndDestroyRegion(NetworkUtils.getServerHostName(Host.getHost(0)));
-      server1.invoke(() -> Bug36269DUnitTest.verifyRegionDestroy());
-      server2.invoke(() -> Bug36269DUnitTest.verifyRegionDestroy());
-      Wait.pause(5000);
-      verifyNoRegionDestroyOnOriginator();
-    }
-    catch (Exception ex) {
-      fail("failed gggg testRegionDestroyNotReceivedBySender  " + ex);
-    }
-
+  @Test
+  public void testRegionDestroyNotReceivedBySender() throws Exception {
+    createClientCache();
+    acquireConnectionsAndDestroyRegion(NetworkUtils.getServerHostName(Host.getHost(0)));
+    server1.invoke(() -> Bug36269DUnitTest.verifyRegionDestroy());
+    server2.invoke(() -> Bug36269DUnitTest.verifyRegionDestroy());
+    Wait.pause(5000);
+    verifyNoRegionDestroyOnOriginator();
   }
 
-  public static void acquireConnectionsAndDestroyRegion(String host)
-  {
+  public static void acquireConnectionsAndDestroyRegion(String host) {
     try {
       Connection desCon = pool.acquireConnection(new ServerLocation(host, PORT2));
       ServerRegionProxy srp = new ServerRegionProxy(Region.SEPARATOR + REGION_NAME, pool);
@@ -120,13 +114,11 @@ public class Bug36269DUnitTest extends DistributedTestCase
     }
   }
 
-  public static void createClientCache() throws Exception
-  {
-
+  public static void createClientCache() throws Exception {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new Bug36269DUnitTest("temp").createCache(props);
+    new Bug36269DUnitTest().createCache(props);
     CacheServerTestUtil.disableShufflingOfEndpoints();
     PoolImpl p;
     String host = NetworkUtils.getServerHostName(Host.getHost(0));
@@ -150,12 +142,11 @@ public class Bug36269DUnitTest extends DistributedTestCase
     pool = p;
     assertNotNull(pool);
     cache.createRegion(REGION_NAME, factory.create());
-
   }
 
   public static Integer createServerCache() throws Exception
   {
-    new Bug36269DUnitTest("temp").createCache(new Properties());
+    new Bug36269DUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setMirrorType(MirrorType.KEYS_VALUES);

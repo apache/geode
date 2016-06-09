@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.File;
 import java.util.Properties;
 
@@ -40,12 +49,13 @@ import com.gemstone.gemfire.test.dunit.VM;
  *
  * @since GemFire 4.3
  */
-public class DynamicRegionDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class DynamicRegionDUnitTest extends JUnit4CacheTestCase {
 
   // Specify oplog size in MB
   private static final int OPLOG_SIZE = 1;
-  public DynamicRegionDUnitTest(String name) {
-    super(name);
+  public DynamicRegionDUnitTest() {
+    super();
   }
 
   // this test has special config of its distributed system so
@@ -215,6 +225,7 @@ public class DynamicRegionDUnitTest extends CacheTestCase {
   /**
    * Make sure dynamic regions work on peers
    */
+  @Test
   public void testPeerRegion() {
     assertEquals(true, DynamicRegionFactory.get().isOpen());
     createParentRegion("parent", true);

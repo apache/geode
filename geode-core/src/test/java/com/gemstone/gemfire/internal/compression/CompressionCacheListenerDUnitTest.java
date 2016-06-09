@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.compression;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +49,8 @@ import com.gemstone.gemfire.test.dunit.VM;
  * Asserts that values received in EntryEvents for CacheWriters and CacheListeners are not compressed.
  * 
  */
-public class CompressionCacheListenerDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
   /**
    * The name of our test region.
    */
@@ -156,8 +166,8 @@ public class CompressionCacheListenerDUnitTest extends CacheTestCase {
    * @param name
    *          a test name.
    */
-  public CompressionCacheListenerDUnitTest(String name) {
-    super(name);
+  public CompressionCacheListenerDUnitTest() {
+    super();
   }
 
   @Override
@@ -219,6 +229,7 @@ public class CompressionCacheListenerDUnitTest extends CacheTestCase {
   /**
    * Tests CacheWriter and CacheListener events on the test vm.
    */
+  @Test
   public void testCacheListenerAndWriter() {
     testCacheListenerAndWriterWithVM(getVM(TEST_VM));
   }

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.NoAvailableLocatorsException;
@@ -43,6 +52,7 @@ import java.util.List;
  * - dynamically discovering servers, locators, handling
  * locator disappearance, etc.
  */
+@Category(DistributedTest.class)
 public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
 
   protected static final Object BRIDGE_LISTENER = "BRIDGE_LISTENER";
@@ -53,10 +63,11 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     IgnoredException.addIgnoredException("NoAvailableLocatorsException");
   }
 
-  public AutoConnectionSourceDUnitTest(String name) {
-    super(name);
+  public AutoConnectionSourceDUnitTest() {
+    super();
   }
 
+  @Test
   public void testDiscoverBridgeServers() throws Exception {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -78,6 +89,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     Assert.assertEquals("value", getInVM(vm1, "key"));
   }
 
+  @Test
   public void testNoLocators() {
 
     final Host host = Host.getHost(0);
@@ -93,6 +105,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     }
   }
 
+  @Test
   public void testNoBridgeServer() {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -110,6 +123,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     }
   }
 
+  @Test
   public void testDynamicallyFindBridgeServer() throws Exception {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -138,6 +152,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     Assert.assertEquals("value2", getInVM(vm3, "key2"));
   }
 
+  @Test
   public void testDynamicallyFindLocators() throws Exception {
     try {
       final Host host = Host.getHost(0);
@@ -182,6 +197,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     }
   }
 
+  @Test
   public void testEmbeddedLocator() throws Exception {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -218,6 +234,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     });
   }
 
+  @Test
   public void testServerGroups() throws Exception {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -273,6 +290,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     Assert.assertEquals("value", getInVM(vm1, "B", "key7"));
   }
 
+  @Test
   public void testTwoServersInSameVM() throws Exception {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -300,6 +318,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     checkEndpoints(vm2, new int[] { serverPort1 });
   }
 
+  @Test
   public void testClientMembershipListener() throws Exception {
     final Host host = Host.getHost(0);
     VM locatorVM = host.getVM(0);

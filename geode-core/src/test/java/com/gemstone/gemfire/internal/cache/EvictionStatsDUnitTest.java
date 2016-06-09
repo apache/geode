@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
@@ -46,7 +55,8 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
-public class EvictionStatsDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
 
   protected static Cache cache = null;
 
@@ -62,8 +72,8 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
 
   static int totalNoOfBuckets = 2;
 
-  public EvictionStatsDUnitTest(String name) {
-    super(name);
+  public EvictionStatsDUnitTest() {
+    super();
     // TODO Auto-generated constructor stub
   }
 
@@ -74,6 +84,7 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
     dataStore2 = host.getVM(1);
   }
 
+  @Test
   public void testEntryLruLimitNDestroyLimit() {
     prepareScenario(EvictionAlgorithm.LRU_ENTRY);
     putData("PR1", 100);
@@ -112,6 +123,7 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
     });
   }
 
+  @Test
   public void testMemLruLimitNDestroyLimit() {
     prepareScenario(EvictionAlgorithm.LRU_MEMORY);
     putData("PR1", 100);
@@ -156,6 +168,7 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
 
   }
 
+  @Test
   public void testEntryLruCounter() {
     prepareScenario(EvictionAlgorithm.LRU_ENTRY);
     putData("PR1", 10);
@@ -170,6 +183,7 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
     assertEquals(sizeOfPr2, totalBucketSizeForPR2);
   }
 
+  @Test
   public void testMemLruCounter() {
     prepareScenario(EvictionAlgorithm.LRU_MEMORY);
     putData("PR1", 10);
@@ -184,6 +198,7 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
     assertEquals(sizeOfPr2, totalBucketSizeForPR2);
   }
 
+  @Test
   public void testHeapLruCounter() {
     prepareScenario(EvictionAlgorithm.LRU_HEAP);
     System.setProperty(
@@ -198,6 +213,7 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
     long totalBucketSizeForPR2 = getCounterForBucketsOfPR("PR2");
   }
 
+  @Test
   public void testEntryLruAllCounterMethods() {
     final long ONE_MEG = 1024L * 1024L;
     createCache();
@@ -269,6 +285,7 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
 
   
 
+  @Test
   public void testEntryLRUEvictionNDestroyNNumOverflowOnDiskCount() {
     final int extraEnteries = 24;
     prepareScenario(EvictionAlgorithm.LRU_ENTRY);
@@ -317,6 +334,7 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
     });
   }
 
+  @Test
   public void testMemLRUEvictionNDestroyNNumOverflowOnDiskCount() {
     int localMaxMem=50;
     final int extraEntries = 6;
@@ -400,7 +418,7 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
   }
 
   public static void createCacheInVm() {
-    new EvictionStatsDUnitTest("temp").createCache();
+    new EvictionStatsDUnitTest().createCache();
   }
 
   public void createCache() {

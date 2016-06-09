@@ -17,6 +17,15 @@
 
 package com.gemstone.gemfire.cache.query.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 /**
  * This tests creates partition regions across VM's and a local Region across
  * one of the VM executes Queries both on Local Region & PR's & compare
@@ -53,6 +62,7 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 
+@Category(DistributedTest.class)
 public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
 
 {
@@ -62,8 +72,8 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
    * @param name
    */
 
-  public PRQueryDUnitTest(String name) {
-    super(name);
+  public PRQueryDUnitTest() {
+    super();
   }
 
   public void setCacheInVMs(VM... vms) {
@@ -100,6 +110,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
    * @throws Exception
    */
 
+  @Test
   public void testPRDAckCreationAndQuerying() throws Exception
   {
     LogWriterUtils.getLogWriter()
@@ -184,6 +195,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     * @throws Exception
     */
 
+  @Test
   public void testPRDAckCreationAndQueryingFull() throws Exception
   {
     LogWriterUtils.getLogWriter()
@@ -270,6 +282,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
    * @throws Exception
    */
 
+  @Test
   public void testPRDAckCreationAndQueryingWithConstants() throws Exception
   {
     LogWriterUtils.getLogWriter()
@@ -353,6 +366,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
    * the query loop
    * @throws Exception
    */
+  @Test
   public void testDataLossDuringQueryProcessor() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -431,6 +445,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     }
   }
 
+  @Test
   public void testQueryResultsFromMembers() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -536,6 +551,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     }
   }
 
+  @Test
   public void testQueryResultsFromMembersWithAccessor() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -650,6 +666,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
    * the query loop
    * @throws Exception
    */
+  @Test
   public void testSimulatedDataLossBeforeQueryProcessor() throws Exception
   {
     final String rName = getUniqueName();
@@ -733,6 +750,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
    * @throws Exception
    */
 
+  @Test
   public void testPRAccessorCreationAndQuerying() throws Exception
   {
     LogWriterUtils.getLogWriter()
@@ -824,7 +842,8 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
    * @throws Exception
    */
 
- public void testPRDAckCreationAndQueryingWithOrderBy() throws Exception
+  @Test
+  public void testPRDAckCreationAndQueryingWithOrderBy() throws Exception
  {
    int dataSize = 10;
    int step = 2;
@@ -911,7 +930,8 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
   * @throws Exception
   */
 
- public void testPRDAckCreationAndQueryingWithOrderByVerifyOrder() throws Exception
+  @Test
+  public void testPRDAckCreationAndQueryingWithOrderByVerifyOrder() throws Exception
  {
    int dataSize = 10;
    int step = 2;
@@ -997,6 +1017,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
    *
    * @throws Exception
    */
+  @Test
   public void testPRAccessorCreationAndQueryWithOrderBy() throws Exception
   {
     int dataSize = 10;
@@ -1081,6 +1102,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
             "PRQueryDUnitTest#testPRAccessorCreationAndQuerying : Querying PR's Test ENDED*****");
   }
 
+  @Test
   public void testPRDAckCreationAndQueryingWithOrderByLimit() throws Exception
   {
     int dataSize = 10;
@@ -1169,6 +1191,7 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
    * @throws Exception
    */
 
+  @Test
   public void testPRAccessorCreationAndQueryingWithNoData() throws Exception
   {
     LogWriterUtils.getLogWriter()

@@ -324,6 +324,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    * name of the class as well as the name of the method.
    */
   public final String getUniqueName() {
+    assertNotNull(getName());
     return getTestClass().getSimpleName() + "_" + getName();
   }
 

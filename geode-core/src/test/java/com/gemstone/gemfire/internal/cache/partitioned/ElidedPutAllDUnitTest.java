@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,17 +53,19 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  *
  */
-public class ElidedPutAllDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class ElidedPutAllDUnitTest extends JUnit4CacheTestCase {
   
   private static final long serialVersionUID = -184003583877999750L;
 
-  public ElidedPutAllDUnitTest(String name) {
-    super(name);
+  public ElidedPutAllDUnitTest() {
+    super();
   }
   
   /**
    * bug #47425 - elided putAll event causes PutAllPartialResultException
    */
+  @Test
   public void testElidedPutAllOnPR() throws Exception {
     final String regionName = getUniqueName() + "Region";
     final String key = "key-1";

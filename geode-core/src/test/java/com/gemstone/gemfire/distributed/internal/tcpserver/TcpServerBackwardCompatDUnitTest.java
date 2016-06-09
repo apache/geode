@@ -16,6 +16,16 @@
  */
 package com.gemstone.gemfire.distributed.internal.tcpserver;
 
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.Locator;
@@ -26,34 +36,18 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoor
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * This tests the rolling upgrade for locators with
  * different GOSSIPVERSION.
- *
- *
  */
 @Category(DistributedTest.class)
-public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
-
-  /**
-   * @param name
-   */
-  public TcpServerBackwardCompatDUnitTest(String name) {
-    super(name);
-  }
+public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
@@ -84,6 +78,7 @@ public class TcpServerBackwardCompatDUnitTest extends DistributedTestCase {
    * GOSSIPVERSION and verifies that it has recoverd the system
    * View. Then we upgrade next locator.
    */
+  @Test
   public void testGossipVersionBackwardCompatibility() {
     Host host = Host.getHost(0);
     final VM locator0 = host.getVM(0);

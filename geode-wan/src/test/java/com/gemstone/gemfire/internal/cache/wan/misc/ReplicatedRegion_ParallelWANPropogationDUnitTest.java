@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
@@ -28,10 +37,11 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 
+@Category(DistributedTest.class)
 public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBase{
 
-  public ReplicatedRegion_ParallelWANPropogationDUnitTest(String name) {
-    super(name);
+  public ReplicatedRegion_ParallelWANPropogationDUnitTest() {
+    super();
     // TODO Auto-generated constructor stub
   }
 
@@ -43,6 +53,7 @@ public class ReplicatedRegion_ParallelWANPropogationDUnitTest extends WANTestBas
    */
   private static final long serialVersionUID = 1L;
 
+  @Test
   public void test_DR_PGS_1Nodes_Put_Receiver() throws Exception {
     try {
       Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));

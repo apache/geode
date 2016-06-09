@@ -16,9 +16,41 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+import com.jayway.awaitility.Awaitility;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.ClientMetadataService;
@@ -29,7 +61,6 @@ import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
@@ -39,26 +70,22 @@ import com.gemstone.gemfire.internal.cache.execute.data.CustId;
 import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
 import com.gemstone.gemfire.internal.cache.execute.data.ShipmentId;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import com.jayway.awaitility.Awaitility;
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
-
-  private static final long serialVersionUID = 1L;
+@Category(DistributedTest.class)
+public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
 
   private static final String PR_NAME = "single_hop_pr";
 
@@ -83,10 +110,6 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   private static Cache cache = null;
 
   private static Locator locator = null;
-
-  public PartitionedRegionSingleHopDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -138,7 +161,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
       locator = Locator.startLocatorAndDS(locatorPort, logFile, null, props);
     }
     catch (IOException e) {
-      e.printStackTrace();
+      fail("failed to startLocatorInVM", e);
     }
   }
 
@@ -150,10 +173,8 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
       int redundantCopies, int totalNoofBuckets) {
 
     Properties props = new Properties();
-    props = new Properties();
     props.setProperty(LOCATORS, locString);
-    CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
-        "PartitionedRegionSingleHopDUnitTest");
+    PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
 
@@ -229,7 +250,10 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     cms.getClientPRMetadata_TEST_ONLY().clear();
   }
 
-  // 2 peers 2 servers 1 accessor.No client.Should work without any exceptions.
+  /**
+   * 2 peers 2 servers 1 accessor.No client.Should work without any exceptions.
+   */
+  @Test
   public void test_NoClient() {
     member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
@@ -269,9 +293,12 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     verifyEmptyStaticData();
   }
 
-  // 2 AccessorServers, 2 Peers
-  // 1 Client connected to 2 AccessorServers. Hence metadata should not be
-  // fetched.
+  /**
+   * 2 AccessorServers, 2 Peers
+   * 1 Client connected to 2 AccessorServers. Hence metadata should not be
+   * fetched.
+   */
+  @Test
   public void test_ClientConnectedToAccessors() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createAccessorServer());
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createAccessorServer());
@@ -291,8 +318,11 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     verifyEmptyStaticData();
   }
 
-  // 1 server 2 accesorservers 2 peers.i client connected to the server
-  // Since only 1 server hence Metadata should not be fetched.
+  /**
+   * 1 server 2 accesorservers 2 peers.i client connected to the server
+   * Since only 1 server hence Metadata should not be fetched.
+   */
+  @Test
   public void test_ClientConnectedTo1Server() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
 
@@ -312,10 +342,13 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     verifyEmptyStaticData();
   }
 
-  // 4 servers, 1 client connected to all 4 servers.
-  // Put data, get data and make the metadata stable.
-  // Now verify that metadata has all 8 buckets info.
-  // Now update and ensure the fetch service is never called.
+  /**
+   * 4 servers, 1 client connected to all 4 servers.
+   * Put data, get data and make the metadata stable.
+   * Now verify that metadata has all 8 buckets info.
+   * Now update and ensure the fetch service is never called.
+   */
+  @Test
   public void test_MetadataContents() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
@@ -336,11 +369,14 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     updateIntoSinglePR();
   }
 
-  // 2 servers, 2 clients.One client to one server.
-  // Put from c1 to s1. Now put from c2. So since there will be a hop atleast
-  // once,
-  // fetchservice has to be triggered.
-  // Now put again from c2.There should be no hop at all.
+  /**
+   * 2 servers, 2 clients.One client to one server.
+   * Put from c1 to s1. Now put from c2. So since there will be a hop at least
+   * once,
+   * fetchservice has to be triggered.
+   * Now put again from c2.There should be no hop at all.
+   */
+  @Test
   public void test_MetadataServiceCallAccuracy() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
@@ -375,6 +411,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> cms.isRefreshMetadataTestOnly() == false);
   }
 
+  @Test
   public void test_MetadataServiceCallAccuracy_FromDestroyOp() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
@@ -398,6 +435,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> cms.isRefreshMetadataTestOnly() == true);
   }
 
+  @Test
   public void test_MetadataServiceCallAccuracy_FromGetOp() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
@@ -411,8 +449,6 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
     final ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
-
-
 
     region.get(new Integer(0));
     region.get(new Integer(1));
@@ -429,9 +465,9 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     region.get(new Integer(3));
     Wait.pause(5000);
     assertFalse(cms.isRefreshMetadataTestOnly());
-
   }
 
+  @Test
   public void test_SingleHopWithHA() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 8 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 8 ));
@@ -462,6 +498,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     }
   }
 
+  @Test
   public void test_SingleHopWithHAWithLocator() {
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
@@ -498,7 +535,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     }
   }
 
-
+  @Test
   public void test_NoMetadataServiceCall_ForGetOp() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
@@ -529,8 +566,8 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     assertFalse(cms.isRefreshMetadataTestOnly());
   }
 
-
- public void test_NoMetadataServiceCall() {
+  @Test
+  public void test_NoMetadataServiceCall() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 1, 4 ));
 
@@ -544,7 +581,6 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
 
     member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
-
 
     region.put(new Integer(0), "create0");
     final boolean metadataRefreshed_get1 = cms
@@ -576,9 +612,9 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     region.put(new Integer(3), "create3");
     Wait.pause(5000);
     assertFalse(cms.isRefreshMetadataTestOnly());
-
   }
 
+  @Test
   public void test_NoMetadataServiceCall_ForDestroyOp() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 0, 4 ));
@@ -602,6 +638,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   }
 
   @Category(FlakyTest.class) // GEODE-853: random ports, pause sleeps, time sensitive, 5 second thread sleeps
+  @Test
   public void testServerLocationRemovalThroughPing() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
@@ -633,7 +670,8 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     verifyDeadServer(regionMetaData, region, port0, port1);
   }
 
-  public void testMetadataFetchOnlyThroughFunctions() {
+  @Test
+  public void testMetadataFetchOnlyThroughFunctions() throws Exception {
     //Workaround for 52004
     IgnoredException.addIgnoredException("InternalFunctionInvocationTargetException");
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
@@ -659,11 +697,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     do {
       if ((prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() !=4)) {
         //waiting if there is another thread holding the lock
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          //ignored.
-        }
+        Thread.sleep(1000);
         cms.getClientPRMetadata((LocalRegion)region);
       } else {
         break;
@@ -674,6 +708,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
 //    assertIndexDetailsEquals(4/*numBuckets*/, prMetaData.getBucketServerLocationsMap_TEST_ONLY().size());
   }
 
+  @Test
   public void testMetadataFetchOnlyThroughputAll() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
@@ -692,10 +727,9 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4));
   }
 
-
-
-  @Ignore("Bug 47950")
-  public void DISABLED_testMetadataIsSameOnAllServersAndClients() {
+  @Ignore("TODO: test disabled due to Bug 47950")
+  @Test
+  public void testMetadataIsSameOnAllServersAndClients() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
     Integer port2 = (Integer)member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 3, 4 ));
@@ -706,7 +740,6 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
     member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
     member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
-
 
     ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
     cms.getClientPRMetadata((LocalRegion)region);
@@ -864,9 +897,9 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
       }
 
     }, 20000, 2000, true);
-
   }
 
+  @Test
   public void testMetadataIsSameOnAllServersAndClientsHA() {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 2, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer( 2, 4 ));
@@ -948,11 +981,15 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     });
   }
 
-  //TODO This is failing in WAN_Dev_Dec11 branch after downmerge from trunk revision 34709
-
-  // This test is disabled due to intermittent failures in unit test runs
-  // Please see ticket #52203
-  public void disabledtestClientMetadataForPersistentPrs() throws Exception {
+  /**
+   * TODO This is failing in WAN_Dev_Dec11 branch after downmerge from trunk revision 34709
+   *
+   * This test is disabled due to intermittent failures in unit test runs
+   * Please see ticket #52203
+   */
+  @Ignore("TODO: test is disabled due to #52203")
+  @Test
+  public void testClientMetadataForPersistentPrs() throws Exception {
     Integer port0 = (Integer)member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer( 3, 4 ));
     Integer port1 = (Integer)member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer( 3, 4 ));
     Integer port2 = (Integer)member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer( 3, 4 ));
@@ -982,7 +1019,6 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     m0.join();
     fetchAndValidateMetadata();
   }
-
 
   private void fetchAndValidateMetadata() {
     ClientMetadataService service = ((GemFireCacheImpl)this.cache)
@@ -1079,8 +1115,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
-        "PartitionedRegionSingleHopDUnitTest");
+    PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
@@ -1101,8 +1136,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   }
 
   public static int createAccessorServer() {
-    CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
-        "PartitionedRegionSingleHopDUnitTest");
+    PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
     CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
@@ -1171,8 +1205,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   }
 
   public static int createServer(int redundantCopies, int totalNoofBuckets) {
-    CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
-        "PartitionedRegionSingleHopDUnitTest");
+    PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
     CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
@@ -1245,8 +1278,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   }
 
   public static int createPersistentPrsAndServer(int redundantCopies, int totalNoofBuckets) {
-    CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
-        "PartitionedRegionSingleHopDUnitTest");
+    PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
     DiskStore disk = cache.findDiskStore("disk");
     if(disk == null) {
@@ -1328,9 +1360,9 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     }
     return port;
   }
+
   public static int createPersistentPrsAndServerOnPort(int redundantCopies, int totalNoofBuckets, int port) {
-    CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
-        "PartitionedRegionSingleHopDUnitTest");
+    PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
     DiskStore disk = cache.findDiskStore("disk");
     if(disk == null) {
@@ -1411,9 +1443,9 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     }
     return port;
   }
+
   public static void createServerOnPort(int redundantCopies, int totalNoofBuckets, int port) {
-    CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
-        "PartitionedRegionSingleHopDUnitTest");
+    PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
     CacheServer server = cache.addCacheServer();
     server.setPort(port);
@@ -1480,12 +1512,10 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
             + shipmentRegion.toString());
 
     replicatedRegion = cache.createRegion("rr", new AttributesFactory().create());
-
   }
 
   public static void startServerOnPort(int port) {
-    CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
-        "PartitionedRegionSingleHopDUnitTest");
+    PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
     CacheServer server = cache.addCacheServer();
     server.setPort(port);
@@ -1498,10 +1528,8 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     }
   }
 
-
   public static void createPeer() {
-    CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
-        "PartitionedRegionSingleHopDUnitTest");
+    PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
 
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -1561,8 +1589,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
-        "PartitionedRegionSingleHopDUnitTest");
+    PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
@@ -1587,8 +1614,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
-        "PartitionedRegionSingleHopDUnitTest");
+    PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
@@ -1613,8 +1639,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
-        "PartitionedRegionSingleHopDUnitTest");
+    PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
@@ -1638,8 +1663,7 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
     props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    CacheTestCase test = new PartitionedRegionSingleHopDUnitTest(
-        "PartitionedRegionSingleHopDUnitTest");
+    PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
@@ -1748,10 +1772,12 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   }
 
   static class MyFunctionAdapter extends FunctionAdapter {
+    @Override
     public String getId() {
       return "fid";
     }
 
+    @Override
     public void execute(FunctionContext context) {
       System.out.println("YOGS function called");
       RegionFunctionContext rc = (RegionFunctionContext)context;
@@ -1806,7 +1832,6 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   }
 
   public static void put() {
-
     region.put(new Integer(0), "create0");
     region.put(new Integer(1), "create1");
     region.put(new Integer(2), "create2");
@@ -1843,7 +1868,6 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
           shipmentRegion.get(shipmentId, shipment);
         }
       }
-
     }
 
     region.get(new Integer(0), "create0");
@@ -1961,13 +1985,12 @@ public class PartitionedRegionSingleHopDUnitTest extends CacheTestCase {
   }
 }
 
-class Customer implements DataSerializable {
+class Customer implements DataSerializable { // TODO: move this to be an inner class and make it static
   String name;
 
   String address;
 
   public Customer() {
-
   }
 
   public Customer(String name, String address) {
@@ -1975,21 +1998,25 @@ class Customer implements DataSerializable {
     this.address = address;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = DataSerializer.readString(in);
     this.address = DataSerializer.readString(in);
 
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.name, out);
     DataSerializer.writeString(this.address, out);
   }
 
+  @Override
   public String toString() {
     return "Customer { name=" + this.name + " address=" + this.address + "}";
   }
 
+  @Override
   public boolean equals(Object o) {
     if (this == o)
       return true;
@@ -2006,25 +2033,28 @@ class Order implements DataSerializable {
   String orderName;
 
   public Order() {
-
   }
 
   public Order(String orderName) {
     this.orderName = orderName;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.orderName = DataSerializer.readString(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.orderName, out);
   }
 
+  @Override
   public String toString() {
     return this.orderName;
   }
 
+  @Override
   public boolean equals(Object obj) {
     if (this == obj)
       return true;
@@ -2043,25 +2073,28 @@ class Shipment implements DataSerializable {
   String shipmentName;
 
   public Shipment() {
-
   }
 
   public Shipment(String shipmentName) {
     this.shipmentName = shipmentName;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.shipmentName = DataSerializer.readString(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.shipmentName, out);
   }
 
+  @Override
   public String toString() {
     return this.shipmentName;
   }
 
+  @Override
   public boolean equals(Object obj) {
     if (this == obj)
       return true;

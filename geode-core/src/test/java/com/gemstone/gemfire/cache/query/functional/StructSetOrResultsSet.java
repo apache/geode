@@ -19,8 +19,9 @@
  * Utlity Class : Can be used to compare the results (StructSet OR ResultsSet) under the scenario without/with Index Usage.
  * Created on June 13, 2005, 11:16 AM
  */
-
 package com.gemstone.gemfire.cache.query.functional;
+
+import static org.junit.Assert.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -31,8 +32,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.query.CacheUtils;
@@ -52,23 +51,49 @@ import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
 import com.gemstone.gemfire.cache.query.internal.OrderByComparator;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
-import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
 
 /**
+ * Used by these tests:
+ *
+ * <li/>EquiJoinIntegrationTest
+ * <li/>IUMRCompositeIteratorJUnitTest
+ * <li/>IUMRMultiIndexesMultiRegionJUnitTest
+ * <li/>IUMRShuffleIteratorsJUnitTest
+ * <li/>IUMRSingleRegionJUnitTest
+ * <li/>IndexCreationJUnitTest
+ * <li/>IndexHintJUnitTest
+ * <li/>IndexMaintainceJUnitTest
+ * <li/>IndexUseJUnitTest
+ * <li/>IndexedMergeEquiJoinScenariosJUnitTest
+ * <li/>MultiRegionIndexUsageJUnitTest
+ * <li/>NonDistinctOrderByPartitionedJUnitTest
+ * <li/>NonDistinctOrderByReplicatedJUnitTest
+ * <li/>NonDistinctOrderByTestImplementation
+ * <li/>OrderByPartitionedJUnitTest
+ * <li/>OrderByReplicatedJUnitTest
+ * <li/>OrderByTestImplementation
+ * <li/>QueryIndexUsingXMLDUnitTest
+ * <li/>QueryREUpdateInProgressJUnitTest
+ * <li/>QueryUsingFunctionContextDUnitTest
+ * <li/>QueryUsingPoolDUnitTest
+ * <li/>TestNewFunctionSSorRSIntegrationTest
+ *
+ * Also used by:
+ *
+ * <li/>GroupByTestImpl
+ * <li/>PdxGroupByTestImpl
+ * <li/>PRQueryDUnitHelper
  */
-public class StructSetOrResultsSet extends TestCase {
+public class StructSetOrResultsSet {
 
- 
-  public void CompareQueryResultsWithoutAndWithIndexes(Object[][] r, int len,
-      String queries[]) {
+  public void CompareQueryResultsWithoutAndWithIndexes(Object[][] r, int len, String queries[]) {
     CompareQueryResultsWithoutAndWithIndexes(r, len, false, queries);
   }
 
   /** Creates a new instance of StructSetOrResultsSet */
-  public void CompareQueryResultsWithoutAndWithIndexes(Object[][] r, int len,
-      boolean checkOrder, String queries[]) {
+  public void CompareQueryResultsWithoutAndWithIndexes(Object[][] r, int len, boolean checkOrder, String queries[]) {
 
     Collection coll1 = null;
     Collection coll2 = null;
@@ -87,8 +112,7 @@ public class StructSetOrResultsSet extends TestCase {
     }
   }
 
-  public void compareExternallySortedQueriesWithOrderBy(String[] queries,
-      Object[][] baseResults) throws Exception {
+  public void compareExternallySortedQueriesWithOrderBy(String[] queries, Object[][] baseResults) throws Exception {
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -126,15 +150,12 @@ public class StructSetOrResultsSet extends TestCase {
         }
       } catch (Exception e) {
         e.printStackTrace();
-        fail("query with index=" + i + " has failed. failed query="
-            + queries[i]);
+        throw new AssertionError("query with index=" + i + " has failed. failed query=" + queries[i], e);
       }
-
     }
   }
 
-  private void compareQueryResultsWithExternallySortedResults(SelectResults sr,
-      Object[] externallySorted, String query, Wrapper wrapper) {
+  private void compareQueryResultsWithExternallySortedResults(SelectResults sr, Object[] externallySorted, String query, Wrapper wrapper) {
 
     if (sr.size() == externallySorted.length) {
       CacheUtils.log("Both SelectResults are of Same Size i.e.  Size= "
@@ -187,11 +208,8 @@ public class StructSetOrResultsSet extends TestCase {
     }
   }
 
-  public Wrapper getOrderByComparatorAndLimitForQuery(String orderByQuery,
-      int unorderedResultSize) throws FunctionDomainException,
-      TypeMismatchException, NameResolutionException,
-      QueryInvocationTargetException, NoSuchFieldException, SecurityException,
-      IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+  public Wrapper getOrderByComparatorAndLimitForQuery(String orderByQuery, int unorderedResultSize)
+  throws FunctionDomainException, TypeMismatchException, NameResolutionException, QueryInvocationTargetException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
     DefaultQuery q = (DefaultQuery) CacheUtils.getQueryService().newQuery(
         orderByQuery);
     CompiledSelect cs = q.getSimpleSelect();    
@@ -272,7 +290,6 @@ public class StructSetOrResultsSet extends TestCase {
       }
     }
     return new Wrapper(finalComparator, limit, validationLevel);
-
   }
 
   enum ValidationLevel {
@@ -292,8 +309,7 @@ public class StructSetOrResultsSet extends TestCase {
   }
 
   /** Creates a new instance of StructSetOrResultsSet */
-  public void CompareCountStarQueryResultsWithoutAndWithIndexes(Object[][] r,
-      int len, boolean checkOrder, String queries[]) {
+  public void CompareCountStarQueryResultsWithoutAndWithIndexes(Object[][] r, int len, boolean checkOrder, String queries[]) {
 
     Integer count1, count2;
     Iterator<Integer> itert1, itert2;
@@ -305,7 +321,6 @@ public class StructSetOrResultsSet extends TestCase {
       assertEquals(queries[j], 1, result1.size());
       assertEquals(queries[j], 1, result2.size());
 
-      
       checkSelectResultTypes((SelectResults) r[j][0], (SelectResults) r[j][1], queries[j]);
       checkResultSizes((SelectResults) r[j][0], (SelectResults) r[j][1], queries[j]);
       compareResults(result1, result2, queries[j], true);
@@ -314,22 +329,13 @@ public class StructSetOrResultsSet extends TestCase {
 
   /**
    * Compares two ArrayLists containing query results with/without order.
-   *
-   * @param r
-   *          Array of ArrayLists
-   * @param len
-   *          Length of array of ArrayLists
-   * @param checkOrder
-   * @param queries
    */
-  public void CompareQueryResultsAsListWithoutAndWithIndexes(Object[][] r,
-      int len, boolean checkOrder, String queries[]) {
+  public void CompareQueryResultsAsListWithoutAndWithIndexes(Object[][] r, int len, boolean checkOrder, String queries[]) {
     CompareQueryResultsAsListWithoutAndWithIndexes(r, len, checkOrder, true,
         queries);
   }
 
-  public void CompareQueryResultsAsListWithoutAndWithIndexes(Object[][] r,
-      int len, boolean checkOrder, boolean checkClass, String queries[]) {
+  public void CompareQueryResultsAsListWithoutAndWithIndexes(Object[][] r, int len, boolean checkOrder, boolean checkClass, String queries[]) {
     Integer count1, count2;
     Iterator<Integer> itert1, itert2;
     ArrayList result1, result2;
@@ -344,8 +350,7 @@ public class StructSetOrResultsSet extends TestCase {
     }
   }
   
-  public void compareQueryResultLists(List r1, List r2,
-      int len, boolean checkOrder, boolean checkClass, String query) {
+  public void compareQueryResultLists(List r1, List r2, int len, boolean checkOrder, boolean checkClass, String query) {
     if (checkClass) {
       if ((r1.get(0).getClass().getName()).equals(r2.get(0)
           .getClass().getName())) {
@@ -380,8 +385,7 @@ public class StructSetOrResultsSet extends TestCase {
           + r2.size() + "; failed query=" + query);
     }
   }
-  
-  
+
   private void compareResults(Collection result1, Collection result2, String query, boolean checkOrder) {
     Iterator itert1 = result1.iterator();
     Iterator itert2 = result2.iterator();

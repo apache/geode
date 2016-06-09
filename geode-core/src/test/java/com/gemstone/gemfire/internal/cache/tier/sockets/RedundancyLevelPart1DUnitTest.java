@@ -16,27 +16,29 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static org.junit.Assert.*;
+
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests Redundancy Level Functionality
- * 
- * 
  */
-public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
-{
-    /** constructor */
-  public RedundancyLevelPart1DUnitTest(String name) {
-    super(name);
-  }
-  
+@Category(DistributedTest.class)
+public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase {
+
+  @BeforeClass
   public static void caseSetUp() throws Exception {
-    DistributedTestCase.disconnectAllFromDS();
+    disconnectAllFromDS();
   }
 
   private void waitConnectedServers(final int expected) {
@@ -52,12 +54,12 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
     Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
   }
   
-  /*
+  /**
    * Redundancy level not specifed, an EP which dies of should be removed from
    * the fail over set as well as the live server map
    */
-  public void testRedundancyNotSpecifiedNonPrimaryServerFail()
-  {    
+  @Test
+  public void testRedundancyNotSpecifiedNonPrimaryServerFail() {
     try {
       createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 0);
       verifyOrderOfEndpoints();
@@ -86,13 +88,13 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
     }
   }
 
-  /*
+  /**
    * Redundancy level not specified. If an EP which dies of is a Primary EP ,
    * then the EP should be removed from the live server map, added to dead
    * server map. 
    */
-  public void testRedundancyNotSpecifiedPrimaryServerFails()
-  {
+  @Test
+  public void testRedundancyNotSpecifiedPrimaryServerFails() {
     /*ClientServerObserver oldBo = ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       public void beforeFailoverByCacheClientUpdater(Endpoint epFailed)
       {
@@ -139,14 +141,14 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
     }*/
   }
 
-  /*
+  /**
    * Redundancy level specified & less than total Eps. If an EP dies & was not
    * part of the fail over list , then it should be removed from Live Server Map &
    * added to dead server map. It should not change the current failover set.
    * Failover detection by LSM
    */
-  public void testRedundancySpecifiedNonFailoverEPFails()
-  {
+  @Test
+  public void testRedundancySpecifiedNonFailoverEPFails() {
     try {
       createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1);
       waitConnectedServers(4);
@@ -175,132 +177,111 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
     }
   }
   
-  /*
+  /**
    * Redundancy level specified & less than total Eps. If an EP dies & was not
    * part of the fail over list , then it should be removed from Live Server Map &
    * added to dead server map. It should not change the current failover set.
    * Failover detection by CCU
    */
-  
-  public void _testRedundancySpecifiedNonFailoverEPFailsDetectionByCCU()
-  {
-    try {
-      
-      FailOverDetectionByCCU = true;
-      createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1, 250, 500);
-      waitConnectedServers(4);
-      assertEquals(1, pool.getRedundantNames().size());
-      // assertTrue(pool.getRedundantNames()
-      // .contains(SERVER1));
-      assertTrue(pool.getRedundantNames().contains(SERVER4));
-      //assertIndexDetailsEquals(0, proxy.getDeadServers().size());
-      verifyOrderOfEndpoints();
-      server2.invoke(() -> RedundancyLevelTestBase.stopServer());
-      // pause(5000);
-      verifyDeadServers(1);
-      verifyRedundantServersContain(SERVER4);
-      verifyLiveAndRedundantServers(3, 1);
-      verifyOrderOfEndpoints();
-      // assertTrue(proxy.getDeadServers().contains(SERVER3));
-      // assertIndexDetailsEquals(2, pool.getRedundantNames().size());
-      // assertTrue(pool.getRedundantNames()
-      // .contains(SERVER1));
-      // assertIndexDetailsEquals(3, pool.getConnectedServerCount());
-      //assertIndexDetailsEquals(1, proxy.getDeadServers().size());
-    }
-    catch (Exception ex) {
-      Assert.fail(
-          "test failed due to exception in test testRedundancySpecifiedNonFailoverEPFailsDetectionByCCU ",
-          ex);
-    }
+  @Ignore("TODO")
+  @Test
+  public void testRedundancySpecifiedNonFailoverEPFailsDetectionByCCU() throws Exception {
+    FailOverDetectionByCCU = true;
+    createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1, 250, 500);
+    waitConnectedServers(4);
+    assertEquals(1, pool.getRedundantNames().size());
+    // assertTrue(pool.getRedundantNames()
+    // .contains(SERVER1));
+    assertTrue(pool.getRedundantNames().contains(SERVER4));
+    //assertIndexDetailsEquals(0, proxy.getDeadServers().size());
+    verifyOrderOfEndpoints();
+    server2.invoke(() -> RedundancyLevelTestBase.stopServer());
+    // pause(5000);
+    verifyDeadServers(1);
+    verifyRedundantServersContain(SERVER4);
+    verifyLiveAndRedundantServers(3, 1);
+    verifyOrderOfEndpoints();
+    // assertTrue(proxy.getDeadServers().contains(SERVER3));
+    // assertIndexDetailsEquals(2, pool.getRedundantNames().size());
+    // assertTrue(pool.getRedundantNames()
+    // .contains(SERVER1));
+    // assertIndexDetailsEquals(3, pool.getConnectedServerCount());
+    //assertIndexDetailsEquals(1, proxy.getDeadServers().size());
   }
-  /*
+
+  /**
    * Redundancy level specified & less than total Eps. If an EP dies & was not
    * part of the fail over list , then it should be removed from Live Server Map &
    * added to dead server map. It should not change the current failover set.
    * Failover detection by Register Interest
    */
-  
-  public void _testRedundancySpecifiedNonFailoverEPFailsDetectionByRegisterInterest()
-  {
-    try {
-      createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250, 500);
-      waitConnectedServers(4);
-      assertEquals(1, pool.getRedundantNames().size());
-      // assertTrue(pool.getRedundantNames()
-      // .contains(SERVER1));
-      assertTrue(pool.getRedundantNames().contains(SERVER4));
-      //assertIndexDetailsEquals(0, proxy.getDeadServers().size());
-      verifyOrderOfEndpoints();
-      server2.invoke(() -> RedundancyLevelTestBase.stopServer());
-      // pause(5000);
-      createEntriesK1andK2();
-      registerK1AndK2();
-      verifyDeadServers(1);
-      verifyRedundantServersContain(SERVER4);
-      verifyLiveAndRedundantServers(3, 1);
-      verifyOrderOfEndpoints();
-      // assertTrue(proxy.getDeadServers().contains(SERVER3));
-      // assertIndexDetailsEquals(2, pool.getRedundantNames().size());
-      // assertTrue(pool.getRedundantNames()
-      // .contains(SERVER1));
-      // assertIndexDetailsEquals(3, pool.getConnectedServerCount());
-      //assertIndexDetailsEquals(1, proxy.getDeadServers().size());
-    }
-    catch (Exception ex) {
-      Assert.fail(
-          "test failed due to exception in test testRedundancySpecifiedNonFailoverEPFailsDetectionByRegisterInterest ",
-          ex);
-    }
+  @Ignore("TODO")
+  @Test
+  public void testRedundancySpecifiedNonFailoverEPFailsDetectionByRegisterInterest() throws Exception {
+    createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250, 500);
+    waitConnectedServers(4);
+    assertEquals(1, pool.getRedundantNames().size());
+    // assertTrue(pool.getRedundantNames()
+    // .contains(SERVER1));
+    assertTrue(pool.getRedundantNames().contains(SERVER4));
+    //assertIndexDetailsEquals(0, proxy.getDeadServers().size());
+    verifyOrderOfEndpoints();
+    server2.invoke(() -> RedundancyLevelTestBase.stopServer());
+    // pause(5000);
+    createEntriesK1andK2();
+    registerK1AndK2();
+    verifyDeadServers(1);
+    verifyRedundantServersContain(SERVER4);
+    verifyLiveAndRedundantServers(3, 1);
+    verifyOrderOfEndpoints();
+    // assertTrue(proxy.getDeadServers().contains(SERVER3));
+    // assertIndexDetailsEquals(2, pool.getRedundantNames().size());
+    // assertTrue(pool.getRedundantNames()
+    // .contains(SERVER1));
+    // assertIndexDetailsEquals(3, pool.getConnectedServerCount());
+    //assertIndexDetailsEquals(1, proxy.getDeadServers().size());
   }
   
-  /*
+  /**
    * Redundancy level specified & less than total Eps. If an EP dies & was not
    * part of the fail over list , then it should be removed from Live Server Map &
    * added to dead server map. It should not change the current failover set.
    * Failover detection by Unregister Interest
    */
-  
-  public void _testRedundancySpecifiedNonFailoverEPFailsDetectionByUnregisterInterest()
-  {
-    try {
-      createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250,500);
-      waitConnectedServers(4);
-      assertEquals(1, pool.getRedundantNames().size());
-      // assertTrue(pool.getRedundantNames()
-      // .contains(SERVER1));
-      assertTrue(pool.getRedundantNames().contains(SERVER4));
-      //assertIndexDetailsEquals(0, proxy.getDeadServers().size());
-      verifyOrderOfEndpoints();
-      server2.invoke(() -> RedundancyLevelTestBase.stopServer());
-      // pause(5000);
-      unregisterInterest();
-      verifyDeadServers(1);
-      verifyRedundantServersContain(SERVER4);
-      verifyLiveAndRedundantServers(3, 1);
-      verifyOrderOfEndpoints();
-      // assertTrue(proxy.getDeadServers().contains(SERVER3));
-      // assertIndexDetailsEquals(2, pool.getRedundantNames().size());
-      // assertTrue(pool.getRedundantNames()
-      // .contains(SERVER1));
-      // assertIndexDetailsEquals(3, pool.getConnectedServerCount());
-      //assertIndexDetailsEquals(1, proxy.getDeadServers().size());
-    }
-    catch (Exception ex) {
-      Assert.fail(
-          "test failed due to exception in test testRedundancySpecifiedNonFailoverEPFailsDetectionByUnregisterInterest ",
-          ex);
-    }    
+  @Ignore("TODO")
+  @Test
+  public void testRedundancySpecifiedNonFailoverEPFailsDetectionByUnregisterInterest() throws Exception {
+    createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250,500);
+    waitConnectedServers(4);
+    assertEquals(1, pool.getRedundantNames().size());
+    // assertTrue(pool.getRedundantNames()
+    // .contains(SERVER1));
+    assertTrue(pool.getRedundantNames().contains(SERVER4));
+    //assertIndexDetailsEquals(0, proxy.getDeadServers().size());
+    verifyOrderOfEndpoints();
+    server2.invoke(() -> RedundancyLevelTestBase.stopServer());
+    // pause(5000);
+    unregisterInterest();
+    verifyDeadServers(1);
+    verifyRedundantServersContain(SERVER4);
+    verifyLiveAndRedundantServers(3, 1);
+    verifyOrderOfEndpoints();
+    // assertTrue(proxy.getDeadServers().contains(SERVER3));
+    // assertIndexDetailsEquals(2, pool.getRedundantNames().size());
+    // assertTrue(pool.getRedundantNames()
+    // .contains(SERVER1));
+    // assertIndexDetailsEquals(3, pool.getConnectedServerCount());
+    //assertIndexDetailsEquals(1, proxy.getDeadServers().size());
   }
   
-  /*
+  /**
    * Redundancy level specified & less than total Eps. If an EP dies & was not
    * part of the fail over list , then it should be removed from Live Server Map &
    * added to dead server map. It should not change the current failover set.
    * Failover detection by Put operation.
    */
-  public void testRedundancySpecifiedNonFailoverEPFailsDetectionByPut()
-  {
+  @Test
+  public void testRedundancySpecifiedNonFailoverEPFailsDetectionByPut() {
     try {
       createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,500,1000);
       waitConnectedServers(4);
@@ -331,16 +312,15 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
     }
   }  
   
-  /*
+  /**
    * Redundancy level specified & less than total Eps. If an EP dies & is part
    * of the fail over list , then it should be removed from live server map &
    * added to dead server map. A new EP should be picked from the Live Server
    * Map to compensate for the failure.
    * Failure Detection by LSM.
    */
-
-  public void testRedundancySpecifiedNonPrimaryEPFails()
-  {
+  @Test
+  public void testRedundancySpecifiedNonPrimaryEPFails() {
     try {
       createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1);
       waitConnectedServers(4);
@@ -369,16 +349,15 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
     }
   }
 
-  /*
+  /**
    * Redundancy level specified & less than total Eps. If an EP dies & is part
    * of the fail over list , then it should be removed from live server map &
    * added to dead server map. A new EP should be picked from the Live Server
    * Map to compensate for the failure.
    * Failure Detection by CCU.
    */
-
-  public void testRedundancySpecifiedNonPrimaryEPFailsDetectionByCCU()
-  {
+  @Test
+  public void testRedundancySpecifiedNonPrimaryEPFailsDetectionByCCU() {
     try {
       
       FailOverDetectionByCCU = true;
@@ -409,16 +388,15 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
     }
   }
   
-  /*
+  /**
    * Redundancy level specified & less than total Eps. If an EP dies & is part
    * of the fail over list , then it should be removed from live server map &
    * added to dead server map. A new EP should be picked from the Live Server
    * Map to compensate for the failure.
    * Failure Detection by Register Interest.
    */
-  
-  public void testRedundancySpecifiedNonPrimaryEPFailsDetectionByRegisterInterest()
-  {
+  @Test
+  public void testRedundancySpecifiedNonPrimaryEPFailsDetectionByRegisterInterest() {
     try {
       createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250, 500);
       waitConnectedServers(4);
@@ -449,16 +427,15 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
     }
   }
 
-  /*
+  /**
    * Redundancy level specified & less than total Eps. If an EP dies & is part
    * of the fail over list , then it should be removed from live server map &
    * added to dead server map. A new EP should be picked from the Live Server
    * Map to compensate for the failure.
    * Failure Detection by Unregister Interest.
    */
-
-  public void testRedundancySpecifiedNonPrimaryEPFailsDetectionByUnregisterInterest()
-  {
+  @Test
+  public void testRedundancySpecifiedNonPrimaryEPFailsDetectionByUnregisterInterest() {
     try {
       createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250,500);
       waitConnectedServers(4);
@@ -489,16 +466,15 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase
     }
   }
 
-  /*
+  /**
    * Redundancy level specified & less than total Eps. If an EP dies & is part
    * of the fail over list , then it should be removed from live server map &
    * added to dead server map. A new EP should be picked from the Live Server
    * Map to compensate for the failure.
    * Failure Detection by Put operation.
    */
-
-  public void testRedundancySpecifiedNonPrimaryEPFailsDetectionByPut()
-  {
+  @Test
+  public void testRedundancySpecifiedNonPrimaryEPFailsDetectionByPut() {
     try {
       createClientCache(NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2, PORT3, PORT4, 1,250,500);
       waitConnectedServers(4);

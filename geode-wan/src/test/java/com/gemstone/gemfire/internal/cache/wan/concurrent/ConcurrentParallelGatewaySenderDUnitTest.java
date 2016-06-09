@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.concurrent;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.EntryExistsException;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
@@ -36,10 +45,11 @@ import java.util.Set;
  * Test the functionality of ParallelGatewaySender with multiple dispatchers.
  *
  */
+@Category(DistributedTest.class)
 public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
   
-  public ConcurrentParallelGatewaySenderDUnitTest(String name) {
-    super(name);
+  public ConcurrentParallelGatewaySenderDUnitTest() {
+    super();
   }
   
   /**
@@ -49,6 +59,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testParallelPropagationConcurrentArtifacts() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -129,6 +140,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * Normal happy scenario test case.
    * @throws Exception
    */
+  @Test
   public void testParallelPropagation() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -188,6 +200,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * Normal happy scenario test case when bucket division tests boundary cases.
    * @throws Exception
    */
+  @Test
   public void testParallelPropagationWithUnEqualBucketDivison() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -247,6 +260,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * We verify that 
    * @throws Exception
    */
+  @Test
   public void testParallelPropagation_withoutRemoteSite() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -308,6 +322,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
   /**
    * Testing for colocated region with orderpolicy Partition
    */
+  @Test
   public void testParallelPropogationColocatedPartitionedRegions() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -370,6 +385,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testParallelPropagationWithLocalCacheClosedAndRebuilt() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -480,6 +496,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * Normal scenario 
    * @throws Exception
    */
+  @Test
   public void testParallelColocatedPropagation() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -526,6 +543,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * Normal scenario 
    * @throws Exception
    */
+  @Test
   public void testParallelColocatedPropagationOrderPolicyPartition() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -566,6 +584,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
         getTestMethodName(), 1000 ));
   }
   
+  @Test
   public void testPartitionedParallelPropagationHA() throws Exception {
     IgnoredException.addIgnoredException(SocketException.class.getName()); // for Connection reset
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -627,6 +646,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
         getTestMethodName() + "_PR", 10000 ));
   }
   
+  @Test
   public void testWANPDX_PR_MultipleVM_ConcurrentParallelSender() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -658,6 +678,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
         getTestMethodName() + "_PR", 10 ));
   }
   
+  @Test
   public void testWANPDX_PR_MultipleVM_ConcurrentParallelSender_StartedLater() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

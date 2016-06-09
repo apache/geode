@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import static org.junit.Assert.*;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -24,6 +26,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
@@ -40,7 +45,6 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
@@ -48,8 +52,11 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class ColocationFailoverDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
 
   private static final long serialVersionUID = 1L;
 
@@ -73,10 +80,6 @@ public class ColocationFailoverDUnitTest extends DistributedTestCase {
   public static String orderPR_Name = "ColocationFailoverDUnitTest_OrderPR" ;
   public static String shipmentPR_Name = "ColocationFailoverDUnitTest_ShipmentPR" ;
 
-  public ColocationFailoverDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
@@ -86,6 +89,7 @@ public class ColocationFailoverDUnitTest extends DistributedTestCase {
     dataStore4 = host.getVM(3);
   }
 
+  @Test
   public void testPrimaryColocationFailover() throws Throwable {    
     createCacheInAllVms();
     createCustomerPR();
@@ -97,6 +101,7 @@ public class ColocationFailoverDUnitTest extends DistributedTestCase {
     verifyPrimaryColocationAfterFailover();
   }
   
+  @Test
   public void testColocationFailover() throws Throwable {
     createCacheInAllVms();
     createCustomerPR();
@@ -362,7 +367,7 @@ public class ColocationFailoverDUnitTest extends DistributedTestCase {
   }
 
   public static void createCacheInVm() {
-    new ColocationFailoverDUnitTest("temp").createCache();
+    new ColocationFailoverDUnitTest().createCache();
   }
 
   public void createCache() {

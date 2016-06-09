@@ -16,7 +16,27 @@
  */
 package com.gemstone.gemfire.test.dunit.cache.internal;
 
-import com.gemstone.gemfire.cache.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.logging.log4j.Logger;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheExistsException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.cache.ExpirationAttributes;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionExistsException;
+import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
@@ -30,17 +50,14 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.logging.log4j.Logger;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Properties;
 
 import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 
@@ -50,7 +67,7 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  *
  * TODO: make this class abstract when JUnit3CacheTestCase is deleted
  */
-public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements CacheTestFixture {
+public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements CacheTestFixture {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -66,7 +83,7 @@ public class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements Ca
   private final CacheTestFixture cacheTestFixture;
 
   public JUnit4CacheTestCase() {
-    this((CacheTestFixture)null);
+    this(null);
   }
 
   JUnit4CacheTestCase(final CacheTestFixture cacheTestFixture) {

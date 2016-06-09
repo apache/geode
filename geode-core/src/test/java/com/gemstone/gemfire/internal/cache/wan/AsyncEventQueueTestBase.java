@@ -16,9 +16,48 @@
  */
 package com.gemstone.gemfire.internal.cache.wan;
 
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheClosedException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheLoader;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Declarable;
+import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.DiskStoreFactory;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.LoaderHelper;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
@@ -32,8 +71,13 @@ import com.gemstone.gemfire.cache.control.RebalanceResults;
 import com.gemstone.gemfire.cache.control.ResourceManager;
 import com.gemstone.gemfire.cache.persistence.PartitionOfflineException;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache.wan.*;
+import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
+import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
+import com.gemstone.gemfire.cache.wan.GatewayReceiver;
+import com.gemstone.gemfire.cache.wan.GatewayReceiverFactory;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
+import com.gemstone.gemfire.cache.wan.GatewaySenderFactory;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
@@ -42,20 +86,19 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.RegionQueue;
 import com.gemstone.gemfire.internal.cache.lru.Sizeable;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.File;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-public class AsyncEventQueueTestBase extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
   protected static Cache cache;
 
@@ -84,8 +127,8 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   // list
   protected static int numDispatcherThreadsForTheRun = 1;
 
-  public AsyncEventQueueTestBase(String name) {
-    super(name);
+  public AsyncEventQueueTestBase() {
+    super();
   }
 
   @Override
@@ -118,7 +161,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
     if (Locator.hasLocator()) {
       Locator.getLocator().stop();
     }
-    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
+    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -132,7 +175,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   }
 
   public static Integer createFirstRemoteLocator(int dsId, int remoteLocPort) {
-    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
+    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase();
     int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -651,7 +694,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   }
 
   protected static void createCache(Integer locPort) {
-    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
+    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort
@@ -661,7 +704,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   }
 
   public static void createCacheWithoutLocator(Integer mCastPort) {
-    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
+    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "" + mCastPort);
     InternalDistributedSystem ds = test.getSystem(props);
@@ -872,7 +915,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   }
 
   public static int createReceiver(int locPort) {
-    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
+    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort
@@ -1520,7 +1563,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
       cache = null;
     }
     else {
-      AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
+      AsyncEventQueueTestBase test = new AsyncEventQueueTestBase();
       if (test.isConnectedToDS()) {
         test.getSystem().disconnect();
       }
@@ -1528,7 +1571,7 @@ public class AsyncEventQueueTestBase extends DistributedTestCase {
   }
 
   public static void shutdownLocator() {
-    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase(getTestMethodName());
+    AsyncEventQueueTestBase test = new AsyncEventQueueTestBase();
     test.getSystem().disconnect();
   }
 

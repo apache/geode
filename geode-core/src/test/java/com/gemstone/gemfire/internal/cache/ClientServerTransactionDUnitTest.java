@@ -16,6 +16,30 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import javax.naming.Context;
+import javax.transaction.UserTransaction;
 import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 import com.gemstone.gemfire.cache.*;
@@ -52,6 +76,7 @@ import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
 /**
  * Tests the basic client-server transaction functionality
  */
+@Category(DistributedTest.class)
 public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest {
 
   protected static final int MAX_ENTRIES = 10;
@@ -59,8 +84,8 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
   protected static final String OTHER_REGION = "OtherRegion";
 
-  public ClientServerTransactionDUnitTest(String name) {
-    super(name);
+  public ClientServerTransactionDUnitTest() {
+    super();
   }
 
   @Override
@@ -195,6 +220,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
   
   
 
+  @Test
   public void testTwoPoolsNotAllowed() {
     Host host = Host.getHost(0);
     VM datastore1 = host.getVM(0);
@@ -265,6 +291,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
   }
   
 
+  @Test
   public void testCleanupAfterClientFailure() {
     Host host = Host.getHost(0);
     VM accessor = host.getVM(0);
@@ -343,22 +370,27 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     }
   }
 
+  @Test
   public void testBasicCommitOnEmpty() {
     doBasicTransaction(false, false, true);
   }
   
+  @Test
   public void testBasicCommitOnEmptyUsingJTA() {
     doBasicTransaction(false, true, true);
   }
 
+  @Test
   public void testBasicCommit() {
     doBasicTransaction(true, false, true);
   }
   
+  @Test
   public void testBasicCommitUsingJTA() {
     doBasicTransaction(true, true, true);
   }
   
+  @Test
   public void testBasicRollbackUsingJTA() {
     doBasicTransaction(true, true, false);
   }
@@ -498,10 +530,12 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     verifyVersionTags(client, server, null, null);
   }  
   
+  @Test
   public void testTXCreationAndCleanupAtCommit() throws Exception {
     doBasicChecks(true);
   }
 
+  @Test
   public void testTXCreationAndCleanupAtRollback() throws Exception {
     doBasicChecks(false);
   }
@@ -572,6 +606,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
   }
   
   
+  @Test
   public void testPutallRollbackInServer() throws Exception {
 	    Host host = Host.getHost(0);
 	    VM server = host.getVM(0);
@@ -597,6 +632,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 	    });
 	  }
   
+  @Test
   public void testPutallRollbackInClient() throws Exception {
 	    Host host = Host.getHost(0);
 	    VM server = host.getVM(0);
@@ -691,7 +727,8 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     });
   }
 
-public void testClientCommitAndDataStoreGetsEvent() throws Exception {
+  @Test
+  public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     Host host = Host.getHost(0);
     VM accessor = host.getVM(0);
     VM datastore = host.getVM(1);
@@ -742,6 +779,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
   
   
   
+  @Test
   public void testClientCreateAndTwoInvalidates() throws Exception {
 	    Host host = Host.getHost(0);
 	    VM accessor = host.getVM(0);
@@ -786,6 +824,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
   
   
   
+  @Test
   public void testClientCommitsAndJustGets() throws Exception {
 	    Host host = Host.getHost(0);
 	    VM accessor = host.getVM(0);
@@ -825,6 +864,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
 	  }
   
   
+  @Test
   public void testClientDoesUnsupportedLocalOps() throws Exception {
 	    Host host = Host.getHost(0);
 	    VM accessor = host.getVM(0);
@@ -878,6 +918,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
 	  }
 
   
+  @Test
   public void testClientCommitsWithRIAndOnlyGetsOneEvent() throws Exception {
     Host host = Host.getHost(0);
     VM accessor = host.getVM(0);
@@ -927,6 +968,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     });
   }
   
+  @Test
   public void testDatastoreCommitsWithPutAllAndRI() throws Exception {
 	    Host host = Host.getHost(0);
 	    VM accessor = host.getVM(0);
@@ -994,6 +1036,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
   
   
   
+  @Test
   public void testClientCommitsWithPutAllAndRI() throws Exception {
 	    Host host = Host.getHost(0);
 	    VM accessor = host.getVM(0);
@@ -1048,6 +1091,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
 	  }
   
   
+  @Test
   public void testClientRollsbackWithPutAllAndRI() throws Exception {
 	    Host host = Host.getHost(0);
 	    VM accessor = host.getVM(0);
@@ -1101,6 +1145,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
 	    });
 	  }
   
+  @Test
   public void testClientInitiatedInvalidates() throws Exception {
     Host host = Host.getHost(0);
     VM accessor = host.getVM(0);
@@ -1275,6 +1320,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
   /**
    * client connectes to an accessor and completes a transaction
    */
+  @Test
   public void testServerDelegate() {
     Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -1313,10 +1359,12 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     });
   }
   
+  @Test
   public void testCommitWithPRAccessor() {
     doTxWithPRAccessor(true);
   }
   
+  @Test
   public void testRollbackWithPRAccessor() {
     doTxWithPRAccessor(false);
   }
@@ -1400,6 +1448,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
    * there is one txState and zero or more txProxyStates
    * @throws Exception
    */
+  @Test
   public void testConnectionAffinity() throws Exception {
     Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -1491,6 +1540,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
    * pool connects to the accessor and datastore
    * we then close the server in the accessor and verify failover
    */
+  @Test
   public void testFailover() {
     Host host = Host.getHost(0);
     VM accessor = host.getVM(0);
@@ -1500,6 +1550,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     doFailoverWork(accessor, null, datastore, client, true, false);
   }
   
+  @Test
   public void testFailoverAndCachingProxy() {
     Host host = Host.getHost(0);
     VM accessor = host.getVM(0);
@@ -1513,6 +1564,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
    * pool connects to two accessors.
    * we then close the server in first accessor and verify failover
    */
+  @Test
   public void testFailoverWithP2PMessaging() {
     Host host = Host.getHost(0);
     VM accessor1 = host.getVM(0);
@@ -1523,6 +1575,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     doFailoverWork(accessor1, accessor2, datastore, client, false, false);
   }
   
+  @Test
   public void testFailoverWithP2PMessagingAndCachingProxy() {
     Host host = Host.getHost(0);
     VM accessor1 = host.getVM(0);
@@ -1624,6 +1677,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     });
   }
   
+  @Test
   public void testGetEntry() {
     Host host = Host.getHost(0);
     //VM accessor = host.getVM(0);
@@ -1677,6 +1731,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
   
   
   
+  @Test
   public void testBug42920() {
     Host host = Host.getHost(0);
     VM datastore = host.getVM(1);
@@ -1889,6 +1944,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     });
   }
   
+  @Test
   public void testTXListenerOnRedundant() {
     Host host = Host.getHost(0);
     VM datastore1 = host.getVM(0);
@@ -1937,6 +1993,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     assertEquals(1, listenerInvokedCount);
   }
   
+  @Test
   public void testBasicFunctionExecution() {
     Host host = Host.getHost(0);
     VM datastore = host.getVM(0);
@@ -1944,6 +2001,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     doBasicFunctionExecution(client, null, datastore);
   }
   
+  @Test
   public void testRemotedFunctionExecution() {
     Host host = Host.getHost(0);
     VM datastore = host.getVM(0);
@@ -2026,6 +2084,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     });
   }
   
+  @Test
   public void testEmptyTX() {
     Host host = Host.getHost(0);
     VM datastore = host.getVM(0);
@@ -2045,6 +2104,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     });
   }
   
+  @Test
   public void testSuspendResumeOnDifferentThreads() {
     Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -2103,177 +2163,221 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
   
   
   @Override
+  @Test
   public void testPRTXGet() {
   }
 
   @Override
+  @Test
   public void testPRTXGetOnRemoteWithLoader() {
   }
 
   @Override
+  @Test
   public void testPRTXGetEntryOnRemoteSide() {
   }
 
   @Override
+  @Test
   public void testPRTXGetOnLocalWithLoader() {
   }
 
   @Override
+  @Test
   public void testNonColocatedTX() {
   }
 
   @Override
+  @Test
   public void testRemoteExceptionThrown() {
   }
 
   @Override
+  @Test
   public void testSizeForTXHostedOnRemoteNode() {
   }
 
   @Override
+  @Test
   public void testSizeOnAccessor() {
   }
 
   @Override
+  @Test
   public void testKeysIterator() {
   }
 
   @Override
+  @Test
   public void testValuesIterator() {
   }
 
   @Override
+  @Test
   public void testEntriesIterator() {
   }
 
   @Override
+  @Test
   public void testKeysIterator1() {
   }
 
   @Override
+  @Test
   public void testValuesIterator1() {
   }
 
   @Override
+  @Test
   public void testEntriesIterator1() {
   }
 
   @Override
+  @Test
   public void testKeysIteratorOnDestroy() {
   }
 
   @Override
+  @Test
   public void testValuesIteratorOnDestroy() {
   }
 
   @Override
+  @Test
   public void testEntriesIteratorOnDestroy() {
   }
 
   @Override
+  @Test
   public void testKeysIterator1OnDestroy() {
   }
 
   @Override
+  @Test
   public void testValuesIterator1OnDestroy() {
   }
 
   @Override
+  @Test
   public void testEntriesIterator1OnDestroy() {
   }
 
   @Override
+  @Test
   public void testKeyIterationOnRR() {
   }
 
   @Override
+  @Test
   public void testValuesIterationOnRR() {
   }
 
   @Override
+  @Test
   public void testEntriesIterationOnRR() {
   }
 
   @Override
+  @Test
   public void testIllegalIteration() {
   }
 
   @Override
+  @Test
   public void testTxFunctionOnRegion() {
   }
 
   @Override
+  @Test
   public void testTxFunctionOnMember() {
   }
 
   @Override
+  @Test
   public void testNestedTxFunction() {
   }
 
   @Override
+  @Test
   public void testDRFunctionExecution() {
   }
 
   @Override
+  @Test
   public void testTxFunctionWithOtherOps() {
   }
 
   @Override
+  @Test
   public void testRemoteJTACommit() {
   }
 
   @Override
+  @Test
   public void testRemoteJTARollback() {
   }
 
   @Override
+  @Test
   public void testOriginRemoteIsTrueForRemoteReplicatedRegions() {
   }
 
   @Override
+  @Test
   public void testRemoteCreateInReplicatedRegion() {
   }
 
   @Override
+  @Test
   public void testRemoteTxCleanupOnCrash() {
   }
 
   @Override
+  @Test
   public void testNonColocatedPutAll() {
   }
 
   @Override
+  @Test
   public void testDestroyCreateConflation() {
   }
 
   @Override
+  @Test
   public void testTXWithRI() throws Exception {
   }
 
   @Override
+  @Test
   public void testBug43176() {
   }
 
   @Override
+  @Test
   public void testTXWithRICommitInDatastore() throws Exception {
   }
 
   @Override
+  @Test
   public void testListenersNotInvokedOnSecondary() {
   }
 
   @Override
+  @Test
   public void testBug33073() {
   }
 
   @Override
+  @Test
   public void testBug43081() throws Exception {
   }
 
   @Override
+  @Test
   public void testBug45556() {
   }
 
+  @Test
   public void testBug42942() {
     Host host = Host.getHost(0);
     VM accessor = host.getVM(0);
@@ -2316,6 +2420,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     });
   }
   
+  @Test
   public void testOnlyGet() {
     Host host = Host.getHost(0);
     VM accessor = host.getVM(0);
@@ -2337,6 +2442,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     });
   }
   
+  @Test
   public void testBug43237() {
     Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -2412,6 +2518,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
    * start 3 servers, accessor has r1 and r2; ds1 has r1, ds2 has r2
    * stop server after distributing commit but b4 replying to client
    */
+  @Test
   public void testFailoverAfterCommitDistribution() {
     Host host = Host.getHost(0);
     VM accessor = host.getVM(0);
@@ -2526,6 +2633,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
    * start a tx in a thread, obtain local locks and wait. start
    * another tx and commit, make sure 2nd thread gets CCE
    */
+  @Test
   public void testClientTxLocks() {
     Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -2608,6 +2716,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     }
   }
   
+  @Test
   public void testBasicResumableTX() {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -2649,10 +2758,12 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
    * transactional ops in functions, commit is done using internal
    * ClientCommitFunction.
    */
+  @Test
   public void testClientCommitFunction() {
     doFunctionWork(true);
   }
   
+  @Test
   public void testClientRollbackFunction() {
     doFunctionWork(false);
   }
@@ -2756,9 +2867,11 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     }
   }
   
+  @Test
   public void testClientCommitFunctionWithFailure() {
     doFunctionWithFailureWork(true);
   }
+  @Test
   public void testRollbackFunctionWithFailure() {
     doFunctionWithFailureWork(false);
   }
@@ -2831,9 +2944,11 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
    * start an accessor and two peers, then commit transaction
    * from accessor
    */
+  @Test
   public void testCommitFunctionFromPeer() {
     doTestFunctionFromPeer(true);
   }
+  @Test
   public void testRollbackFunctionFromPeer() {
     doTestFunctionFromPeer(false);
   }
@@ -2888,6 +3003,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     });
   }
   
+  @Test
   public void testBug43752() {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -2917,6 +3033,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     });
   }
   
+  @Test
   public void testSuspendTimeout() throws Exception {
     Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -2971,6 +3088,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
   /**
    * test that re-tried operations from client do not result in multiple ops in tx
    */
+  @Test
   public void testEventTracker() {
     Host host = Host.getHost(0);
     VM delegate = host.getVM(0);
@@ -3081,6 +3199,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
    * verify that the exception does not cause the client to failover to the second server
    * see bug 51666
    */
+  @Test
   public void testTransactionException() {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -3173,6 +3292,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
    * that the client ignores this region.
    * see bug 51922
    */
+  @Test
   public void testNotAllRegionsHaveClient() {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -3239,6 +3359,7 @@ public void testClientCommitAndDataStoreGetsEvent() throws Exception {
     
   }
 
+  @Test
   public void testAdjunctMessage() {
     Host host = Host.getHost(0);
     VM server1 = host.getVM(0);

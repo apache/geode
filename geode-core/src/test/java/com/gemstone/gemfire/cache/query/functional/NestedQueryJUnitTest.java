@@ -22,23 +22,20 @@
  */
 package com.gemstone.gemfire.cache.query.functional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-import junit.framework.AssertionFailedError;
-
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ErrorCollector;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.CacheUtils;
@@ -53,29 +50,28 @@ import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
 import com.gemstone.gemfire.cache.query.internal.StructImpl;
 import com.gemstone.gemfire.cache.query.types.ObjectType;
-//import com.gemstone.gemfire.internal.util.DebuggerSupport;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-/**
- *
- */
 @Category(IntegrationTest.class)
 public class NestedQueryJUnitTest {
-  ObjectType resType1=null;
-  ObjectType resType2= null;
 
-  int resSize1=0;
-  int resSize2=0;
+  private ObjectType resType1=null;
+  private ObjectType resType2= null;
 
-  Iterator itert1=null;
-  Iterator itert2=null;
+  private int resSize1=0;
+  private int resSize2=0;
 
-  Set set1=null;
-  Set set2=null;
+  private Iterator itert1=null;
+  private Iterator itert2=null;
 
-  String s1;
-  String s2;
+  private Set set1=null;
+  private Set set2=null;
 
+  private String s1;
+  private String s2;
+
+  @Rule
+  public ErrorCollector errorCollector = new ErrorCollector(); // used by testQueries
 
   @Before
   public void setUp() throws java.lang.Exception {
@@ -90,7 +86,9 @@ public class NestedQueryJUnitTest {
     CacheUtils.closeCache();
   }
 
-  public void atestQueries() throws Exception{
+  @Ignore("TODO: this test was disabled")
+  @Test
+  public void testQueries2() throws Exception{
     String queryString;
     Query query;
     Object result;
@@ -119,14 +117,14 @@ public class NestedQueryJUnitTest {
     query = CacheUtils.getQueryService().newQuery(queryString);
     result = query.execute();
     CacheUtils.log(Utils.printResult(result));
-
   }
+
   @Test
   public void testQueries() throws Exception {
     String queries[]={
         "SELECT DISTINCT * FROM /Portfolios WHERE NOT(SELECT DISTINCT * FROM positions.values p WHERE p.secId = 'IBM').isEmpty",
         "SELECT DISTINCT * FROM /Portfolios where NOT(SELECT DISTINCT * FROM /Portfolios p where p.ID = 0).isEmpty",
-        "SELECT DISTINCT * FROM /Portfolios where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where ID = 0).status",
+        "SELECT DISTINCT * FROM /Portfolios where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where p.ID = 0).status",
         "SELECT DISTINCT * FROM /Portfolios where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where p.ID = 0).status",
         "SELECT DISTINCT * FROM /Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where x.ID = p.ID).status",
         "SELECT DISTINCT * FROM /Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p where p.ID = x.ID).status",
@@ -136,19 +134,14 @@ public class NestedQueryJUnitTest {
       try{
         Query query = CacheUtils.getQueryService().newQuery(queries[i]);
         query.execute();
-        //CacheUtils.log(Utils.printResult(result));
-        CacheUtils.log("OK "+queries[i]);
       }catch(Exception e){
-        CacheUtils.log("FAILED "+queries[i]);
-        CacheUtils.log(e.getMessage());
-        //e.printStackTrace();
+        errorCollector.addError(e);
       }
     }
   }
+
   @Test
   public void testNestedQueriesEvaluation() throws Exception {
-
-
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] = {
@@ -187,8 +180,7 @@ public class NestedQueryJUnitTest {
         // Iterator iter=set1.iterator();
 
       } catch (Exception e) {
-        e.printStackTrace();
-        fail(q.getQueryString());
+        throw new AssertionError(q.getQueryString(), e);
       }
     }
 
@@ -220,8 +212,7 @@ public class NestedQueryJUnitTest {
         set2=((r[i][1]).asSet());
 
       } catch (Exception e) {
-        e.printStackTrace();
-        fail(q.getQueryString());
+        throw new AssertionError(q.getQueryString(), e);
       }
     }
     for(int j=0;j<=1;j++){
@@ -246,12 +237,10 @@ public class NestedQueryJUnitTest {
         fail("FAILED: In both the Cases the members of ResultsSet are different.");
     }
     CacheUtils.compareResultsOfWithAndWithoutIndex(r, this);
-
   }
 
   @Test
-  public void testNestedQueriesResultsasStructSet() throws Exception {
-
+  public void testNestedQueriesResultsAsStructSet() throws Exception {
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] = {
@@ -309,9 +298,7 @@ public class NestedQueryJUnitTest {
         // Iterator iter=set1.iterator();
 
       } catch (Exception e) {
-        AssertionFailedError afe = new AssertionFailedError(q.getQueryString());
-        afe.initCause(e);
-        throw afe;
+        throw new AssertionError(e);
       }
     }
 
@@ -336,8 +323,7 @@ public class NestedQueryJUnitTest {
         set2=((r[i][1]).asSet());
 
       } catch (Exception e) {
-        e.printStackTrace();
-        fail(q.getQueryString());
+        throw new AssertionError(q.getQueryString(), e);
       }
     }
     for(int j=0;j<queries.length;j++){
@@ -436,7 +422,6 @@ public class NestedQueryJUnitTest {
    * Tests a nested query with shorts converted to integer types in the result 
    * set of the inner query.  The short field in the outer query should be 
    * evaluated against the integer types and match.
-   * @throws Exception
    */
   @Test
   public void testNestedQueryWithShortTypesFromInnerQuery() throws Exception {
@@ -456,8 +441,6 @@ public class NestedQueryJUnitTest {
   /**
    * Tests a nested query that has duplicate results in the inner query
    * Results should not be duplicated in the final result set
-   * 
-   * @throws Exception
    */
   @Test
   public void testNestedQueryWithMultipleMatchingResultsWithIn() throws Exception {
@@ -474,10 +457,8 @@ public class NestedQueryJUnitTest {
     helpTestIndexForQuery("<trace>SELECT * FROM /portfolios1 p where p.ID in (SELECT p.ID FROM /portfolios1 p WHERE p.ID = 1)", "p.ID", "/portfolios1 p");
   }
 
-  /*
+  /**
    * helper method to test against a compact range index
-   * @param query
-   * @throws Exception
    */
   private void helpTestIndexForQuery(String query, String indexedExpression, String regionPath) throws Exception {
     QueryService qs = CacheUtils.getQueryService();
@@ -492,14 +473,17 @@ public class NestedQueryJUnitTest {
     assertTrue(observer.isIndexesUsed);
   }
 
-  class QueryObserverImpl extends QueryObserverAdapter{
-    boolean isIndexesUsed = false;
-    ArrayList indexesUsed = new ArrayList();
+  private static class QueryObserverImpl extends QueryObserverAdapter {
 
+    private boolean isIndexesUsed = false;
+    private ArrayList indexesUsed = new ArrayList();
+
+    @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       indexesUsed.add(index.getName());
     }
 
+    @Override
     public void afterIndexLookup(Collection results) {
       if(results != null){
         isIndexesUsed = true;

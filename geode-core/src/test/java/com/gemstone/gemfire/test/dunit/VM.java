@@ -322,9 +322,9 @@ public class VM implements Serializable {
   
   /**
    * Invokes the {@code run} method of a {@link Runnable} in this {@code VM}.
-   * If the invocation throws AssertionFailedError, and repeatTimeoutMs
+   * If the invocation throws AssertionError, and repeatTimeoutMs
    * is >0, the {@code run} method is invoked repeatedly until it
-   * either succeeds, or repeatTimeoutMs has passed.  The AssertionFailedError
+   * either succeeds, or repeatTimeoutMs has passed.  The AssertionError
    * is thrown back to the sender of this method if {@code run} has not
    * completed successfully before repeatTimeoutMs has passed.
    * 

@@ -17,6 +17,15 @@
 
 package com.gemstone.gemfire.cache.query.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 /**
  * This test tests the PR query behaviour with respect to cache closure
  * happening on one of the data stores. PR is configured with redundantCopies =
@@ -44,6 +53,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 
+@Category(DistributedTest.class)
 public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
 {
 
@@ -53,9 +63,9 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
    * @param name
    */
 
-  public PRQueryCacheCloseDUnitTest(String name) {
+  public PRQueryCacheCloseDUnitTest() {
 
-    super(name);
+    super();
   }
   public void setCacheInVMs(VM... vms) {
     for (VM vm : vms) {
@@ -89,6 +99,7 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
    * 6. then recreates the PR on the same VM <br>
    * 7. Verfies the size , type , contents of both the resultSets Obtained <br>
    */
+  @Test
   public void testPRWithCacheCloseInOneDatastoreWithDelay() throws Exception
   {
 
@@ -222,6 +233,7 @@ public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase
    * 6. then recreates the PR on the same VM <br>
    * 7. Verfies the size , type , contents of both the resultSets Obtained <br>
    */
+  @Test
   public void testPRWithCacheCloseInOneDatastoreWithoutDelay() throws Exception
   {
     LogWriterUtils.getLogWriter()

@@ -22,16 +22,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
 
 import com.gemstone.gemfire.StatisticsFactory;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
@@ -41,19 +40,16 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * Testing methods for SimpleDiskRegion.java api's
  * 
  * @since GemFire 5.1
- *  
  */
 @Category(IntegrationTest.class)
-public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase
-{
+public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
 
-  protected Set keyIds = Collections.synchronizedSet(new HashSet());
+  private Set keyIds = Collections.synchronizedSet(new HashSet());
 
   private DiskRegionProperties diskProps = new DiskRegionProperties();
 
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  protected final void postSetUp() throws Exception {
     diskProps.setDiskDirs(dirs);
   }
 

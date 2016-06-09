@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.*;
 //import com.gemstone.gemfire.cache.util.*;
 //import java.util.*;
@@ -32,8 +41,8 @@ import com.gemstone.gemfire.cache.*;
 public abstract class CacheWriterTestCase
   extends RegionAttributesTestCase {
 
-  public CacheWriterTestCase(String name) {
-    super(name);
+  public CacheWriterTestCase() {
+    super();
   }
 
   ///////////////////////  Test Methods  ///////////////////////
@@ -42,6 +51,7 @@ public abstract class CacheWriterTestCase
    * Tests that the <code>CacheWriter</code> is called before an entry
    * is {@linkplain CacheWriter#beforeCreate created}.
    */
+  @Test
   public void testCacheWriterBeforeCreate() throws CacheException {
     String name = this.getUniqueName();
     final Object key = this.getUniqueName();
@@ -130,6 +140,7 @@ public abstract class CacheWriterTestCase
    * Tests that the <code>CacheWriter</code> is called before an entry
    * is {@linkplain CacheWriter#beforeUpdate updated}.
    */
+  @Test
   public void testCacheWriterBeforeUpdate() throws CacheException {
     String name = this.getUniqueName();
     final Object key = this.getUniqueName();
@@ -238,6 +249,7 @@ public abstract class CacheWriterTestCase
    * Tests that the <code>CacheWriter</code> is called before an entry
    * is {@linkplain CacheWriter#beforeDestroy destroyed}.
    */
+  @Test
   public void testCacheWriterBeforeDestroy() throws CacheException {
     String name = this.getUniqueName();
     final Object key = this.getUniqueName();
@@ -311,6 +323,7 @@ public abstract class CacheWriterTestCase
    * @see CacheWriter#beforeRegionDestroy
    * @see CacheWriter#close
    */
+  @Test
   public void testCacheWriterBeforeRegionDestroy()
     throws CacheException {
 
@@ -392,6 +405,7 @@ public abstract class CacheWriterTestCase
    * Tests that a <code>CacheWriter</code> is <I>not</I> invoked on a
    * {@linkplain Region#localDestroyRegion local destroy}.
    */
+  @Test
   public void testCacheWriterLocalDestroy() throws CacheException {
     final String name = this.getUniqueName();
 
@@ -410,6 +424,7 @@ public abstract class CacheWriterTestCase
    * Tests that a {@link CacheWriter} throwing a {@link
    * CacheWriterException} aborts the operation.
    */
+  @Test
   public void testCacheWriterExceptionAborts() throws CacheException {
     final String name = this.getUniqueName();
     final String exception = "EXCEPTION";

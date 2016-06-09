@@ -19,7 +19,23 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -28,24 +44,19 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.lru.EnableLRU;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientUpdateMessageImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
-
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests the size of clientUpdateMessageImpl with the size calculated by
  * {@link com.gemstone.gemfire.internal.cache.lru.MemLRUCapacityController} for HA overFlow
  * @since GemFire 5.7
  */
-public class HAOverflowMemObjectSizerDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase {
 
   /* entry over head used by memCapacityController */
   private static final int OVERHEAD_PER_ENTRY = 250;
@@ -57,7 +68,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends DistributedTestCase {
   /** The distributedSystem instance */
   static DistributedSystem ds = null;
 
-  static String regionName = "HAOverflowMemObjectSizerDUnitTest-region";
+  static String regionName = HAOverflowMemObjectSizerDUnitTest.class.getSimpleName() + "-region";
 
   /* handler for LRU capacity controller */
   private static EnableLRU cc = null;
@@ -76,11 +87,6 @@ public class HAOverflowMemObjectSizerDUnitTest extends DistributedTestCase {
 
   /* store the reference of Client Messages Region */
   static Region region = null;
-
-  /* Create new instance of HAOverflowMemObjectSizerTest */
-  public HAOverflowMemObjectSizerDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -125,7 +131,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends DistributedTestCase {
    *  @param notification property of BridgeServer
    */
   public static Integer createCacheServer(Boolean notification) throws Exception {
-    new HAOverflowMemObjectSizerDUnitTest("temp").createCache(new Properties());
+    new HAOverflowMemObjectSizerDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.NORMAL);
@@ -158,7 +164,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new HAOverflowMemObjectSizerDUnitTest("temp").createCache(props);
+    new HAOverflowMemObjectSizerDUnitTest().createCache(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.NORMAL);
@@ -175,6 +181,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends DistributedTestCase {
    * 1)Verify size calculated by getSizeInByte() of ClientUpdateMessagesImpl is
    * equal to the size calculated by memCapacity controller <br>
    */
+  @Test
   public void testSizerImplementationofMemCapacityControllerWhenNotificationBySubscriptionIsTrue() {
 
     Integer port1 = (Integer)serverVM.invoke(() -> HAOverflowMemObjectSizerDUnitTest.createCacheServer( new Boolean(true) ));
@@ -194,6 +201,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends DistributedTestCase {
    * 1)Verify size calculated by getSizeInByte() of ClientUpdateMessagesImpl is
    * equal to the size calculated by memCapacity controller <br>
    */
+  @Test
   public void testSizerImplementationofMemCapacityControllerWhenNotificationBySubscriptionIsFalse() {
     Integer port2 = (Integer)serverVM.invoke(() -> HAOverflowMemObjectSizerDUnitTest.createCacheServer( new Boolean(false) ));
     serverPort2 = port2;

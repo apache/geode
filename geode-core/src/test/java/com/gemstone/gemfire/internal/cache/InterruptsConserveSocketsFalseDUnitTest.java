@@ -20,11 +20,15 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
 
 import java.util.Properties;
 
-public class InterruptsConserveSocketsFalseDUnitTest extends
-    InterruptsDUnitTest {
+import org.junit.experimental.categories.Category;
 
-  public InterruptsConserveSocketsFalseDUnitTest(String name) {
-    super(name);
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+@Category(DistributedTest.class)
+public class InterruptsConserveSocketsFalseDUnitTest extends InterruptsDUnitTest {
+
+  public InterruptsConserveSocketsFalseDUnitTest() {
+    super();
   }
 
   @Override
@@ -33,7 +37,4 @@ public class InterruptsConserveSocketsFalseDUnitTest extends
     props.setProperty(CONSERVE_SOCKETS, "false");
     return props;
   }
-  
-  
-
 }

@@ -16,7 +16,23 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -24,24 +40,22 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This tests the fix for bug 73210. Reason for the bug was that HARegionQueue's
  * destroy was not being called on CacheClientProxy's closure. As a result,
  * stats were left open.
- * 
- * 
  */
-public class Bug37210DUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class Bug37210DUnitTest extends JUnit4DistributedTestCase {
+
   /** the cache server */
   VM server = null;
 
@@ -56,16 +70,6 @@ public class Bug37210DUnitTest extends DistributedTestCase
 
   /** name of the test region */
   private static final String REGION_NAME = "Bug37210DUnitTest_Region";
-
-  /**
-   * Constructor
-   * 
-   * @param name -
-   *                name for this test instance
-   */
-  public Bug37210DUnitTest(String name) {
-    super(name);
-  }
 
   /**
    * Creates the cache server and sets the port
@@ -133,6 +137,7 @@ public class Bug37210DUnitTest extends DistributedTestCase
    * @throws Exception -
    *                 thrown if any problem occurs in test execution
    */
+  @Test
   public void testHAStatsCleanup() throws Exception
   {
     Host host = Host.getHost(0);
@@ -159,7 +164,7 @@ public class Bug37210DUnitTest extends DistributedTestCase
    */
   public static Integer createServerCache() throws Exception
   {
-    Bug37210DUnitTest test = new Bug37210DUnitTest("temp");
+    Bug37210DUnitTest test = new Bug37210DUnitTest();
     Properties props = new Properties();
     cache = test.createCache(props);
     AttributesFactory factory = new AttributesFactory();
@@ -191,7 +196,7 @@ public class Bug37210DUnitTest extends DistributedTestCase
    */
   public static void createClientCache(String host, Integer port) throws Exception
   {
-    Bug37210DUnitTest test = new Bug37210DUnitTest("temp");
+    Bug37210DUnitTest test = new Bug37210DUnitTest();
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");

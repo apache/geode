@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.compression.Compressor;
@@ -26,11 +35,12 @@ import com.gemstone.gemfire.compression.SnappyCompressor;
  * 
  * @since GemFire 8.0
  */
+@Category(DistributedTest.class)
 public class PartitionedRegionCompressionDUnitTest extends
     PartitionedRegionDUnitTest {
   
-  public PartitionedRegionCompressionDUnitTest(String name) {
-    super(name);
+  public PartitionedRegionCompressionDUnitTest() {
+    super();
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })

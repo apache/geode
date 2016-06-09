@@ -16,14 +16,12 @@
  */
 package com.vmware.gemfire.tools.pulse.testbed.driver;
 
-import com.gemstone.gemfire.management.internal.JettyHelper;
-import com.gemstone.gemfire.test.junit.categories.UITest;
-import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Locator;
-import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Peer;
-import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Region;
-import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Server;
-import com.vmware.gemfire.tools.pulse.testbed.TestBed;
-import junit.framework.Assert;
+import static com.vmware.gemfire.tools.pulse.tests.PulseAbstractTest.*;
+import static org.junit.Assert.*;
+
+import java.net.InetAddress;
+import java.util.List;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -37,15 +35,15 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.net.InetAddress;
-import java.util.List;
+import com.gemstone.gemfire.management.internal.JettyHelper;
+import com.gemstone.gemfire.test.junit.categories.UITest;
+import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Locator;
+import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Peer;
+import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Region;
+import com.vmware.gemfire.tools.pulse.testbed.GemFireDistributedSystem.Server;
+import com.vmware.gemfire.tools.pulse.testbed.TestBed;
 
-import static com.vmware.gemfire.tools.pulse.tests.PulseAbstractTest.getPulseWarPath;
-
-/**
- *
- */
-@Ignore
+@Ignore("TODO: test is ignored")
 @Category(UITest.class)
 public class PulseUITest {
 
@@ -110,25 +108,25 @@ public class PulseUITest {
             return d.findElement(By.id("userName"));
           }
         });
-    Assert.assertNotNull(userNameOnPulsePage);
+    assertNotNull(userNameOnPulsePage);
   }
   
   
   private void searchByLinkAndClick(String linkText){
     WebElement  dataViewButton= By.linkText(linkText).findElement(driver);
-    Assert.assertNotNull(dataViewButton);   
+    assertNotNull(dataViewButton);   
     dataViewButton.click();
   }
   
   private void searchByIdAndClick(String id){
     WebElement  element = driver.findElement(By.id(id));
-    Assert.assertNotNull(element);
+    assertNotNull(element);
     element.click();    
   }
   
   private void searchByXPathAndClick(String xpath){    
     WebElement  element = driver.findElement(By.xpath(xpath));
-    Assert.assertNotNull(element);
+    assertNotNull(element);
     element.click();    
   }
   
@@ -140,7 +138,7 @@ public class PulseUITest {
         return d.findElement(By.className(className));
       }
     });
-    Assert.assertNotNull(linkTextOnPulsePage1);
+    assertNotNull(linkTextOnPulsePage1);
   }
   
   private void waitForElementById(final String id, int seconds){
@@ -151,7 +149,7 @@ public class PulseUITest {
         return d.findElement(By.id(id));
       }
     });
-    Assert.assertNotNull(element);
+    assertNotNull(element);
   }
   
   @Test
@@ -169,10 +167,10 @@ public class PulseUITest {
         By.id(CLUSTER_VIEW_LOCATORS_ID)).getText());
     int clusterRegions = Integer.parseInt(driver.findElement(
         By.id(CLUSTER_VIEW_REGIONS_ID)).getText());
-    Assert.assertEquals(totalMembers, clusterMembers);
-    Assert.assertEquals(servers.size(), clusterServers);
-    Assert.assertEquals(locators.size(), clusterLocators);
-    Assert.assertEquals(regions.size(), clusterRegions);
+    assertEquals(totalMembers, clusterMembers);
+    assertEquals(servers.size(), clusterServers);
+    assertEquals(locators.size(), clusterLocators);
+    assertEquals(regions.size(), clusterRegions);
   }  
 
 
@@ -194,8 +192,8 @@ public class PulseUITest {
           By.id("regionMembers")).getText());
       int regionEntryCount1 = Integer.parseInt(driver.findElement(
           By.id("regionEntryCount")).getText());
-      Assert.assertEquals(regionMemberscount1.size(), regionMembers1);
-      Assert.assertEquals(regionEntCount1, regionEntryCount1);
+      assertEquals(regionMemberscount1.size(), regionMembers1);
+      assertEquals(regionEntCount1, regionEntryCount1);
     }
   }
 
@@ -227,7 +225,7 @@ public class PulseUITest {
       List<Region> peerRegionscount = testBed.getRootDs().getRegions(peer);
       int peerRegions = Integer.parseInt(driver.findElement(
           By.id("memberRegionsCount")).getText());
-      Assert.assertEquals(peerRegionscount.size(), peerRegions);
+      assertEquals(peerRegionscount.size(), peerRegions);
       prevSelectedMember = peername;
     }
     
@@ -244,7 +242,7 @@ public class PulseUITest {
       List<Region> serverRegionscount = testBed.getRootDs().getRegions(server);
       int serverRegions = Integer.parseInt(driver.findElement(
           By.id("memberRegionsCount")).getText());
-      Assert.assertEquals(serverRegionscount.size(), serverRegions);
+      assertEquals(serverRegionscount.size(), serverRegions);
       prevSelectedMember = peername;            
     }
     /*
@@ -261,7 +259,7 @@ public class PulseUITest {
       List<Region> locatorRegionscount = testBed.getRootDs().getRegions(locator);
       int locatorRegions = Integer.parseInt(driver.findElement(
           By.id("memberRegionsCount")).getText());
-      Assert.assertIndexDetailsEquals(locatorRegionscount.size(), locatorRegions);
+      assertIndexDetailsEquals(locatorRegionscount.size(), locatorRegions);
       prevSelectedMember = peername;
     }*/
   }
@@ -274,6 +272,6 @@ public class PulseUITest {
             return d.findElement(By.id("memberName"));
           }
         });
-    Assert.assertNotNull(memberNameOnPulsePage);    
+    assertNotNull(memberNameOnPulsePage);    
   }  
 }

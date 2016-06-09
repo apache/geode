@@ -16,10 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
@@ -38,6 +43,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.ResourceManagerCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.SerializerCreation;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests 6.0 cache.xml features.
@@ -45,13 +51,14 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
  * @since GemFire 6.0
  */
 
+@Category(DistributedTest.class)
 public class CacheXml60DUnitTest extends CacheXml58DUnitTest
 {
 
   // ////// Constructors
 
-  public CacheXml60DUnitTest(String name) {
-    super(name);
+  public CacheXml60DUnitTest() {
+    super();
   }
 
   // ////// Helper methods
@@ -67,6 +74,7 @@ public class CacheXml60DUnitTest extends CacheXml58DUnitTest
    * for recovery-delay has the correct attributes.
    * 
    */
+  @Test
   public void testRecoveryDelayAttributes() throws CacheException
   {
     CacheCreation cache = new CacheCreation();
@@ -113,6 +121,7 @@ public class CacheXml60DUnitTest extends CacheXml58DUnitTest
    * for recovery-delay has the correct attributes.
    * 
    */
+  @Test
   public void testDefaultRecoveryDelayAttributes() throws CacheException
   {
     CacheCreation cache = new CacheCreation();
@@ -156,6 +165,7 @@ public class CacheXml60DUnitTest extends CacheXml58DUnitTest
    * eviction-heap-percentage attributes
    * @throws Exception
    */
+  @Test
   public void testResourceManagerThresholds() throws Exception {
     CacheCreation cache = new CacheCreation();
     final float low = 90.0f;
@@ -169,8 +179,8 @@ public class CacheXml60DUnitTest extends CacheXml58DUnitTest
     testXml(cache);
     {
       c = getCache();
-      assertEquals(low, c.getResourceManager().getEvictionHeapPercentage());
-      assertEquals(high, c.getResourceManager().getCriticalHeapPercentage());
+      assertEquals(low, c.getResourceManager().getEvictionHeapPercentage(),0);
+      assertEquals(high, c.getResourceManager().getCriticalHeapPercentage(),0);
     }
     closeCache();
     
@@ -182,8 +192,8 @@ public class CacheXml60DUnitTest extends CacheXml58DUnitTest
     testXml(cache);
     {
       c = getCache();
-      assertEquals(low, c.getResourceManager().getEvictionHeapPercentage());
-      assertEquals(low + 1, c.getResourceManager().getCriticalHeapPercentage());
+      assertEquals(low, c.getResourceManager().getEvictionHeapPercentage(),0);
+      assertEquals(low + 1, c.getResourceManager().getCriticalHeapPercentage(),0);
     }
     closeCache();
 
@@ -209,8 +219,8 @@ public class CacheXml60DUnitTest extends CacheXml58DUnitTest
     testXml(cache);
     {
       c = getCache();
-      assertEquals(0f, c.getResourceManager().getEvictionHeapPercentage());
-      assertEquals(low, c.getResourceManager().getCriticalHeapPercentage());
+      assertEquals(0f, c.getResourceManager().getEvictionHeapPercentage(),0);
+      assertEquals(low, c.getResourceManager().getCriticalHeapPercentage(),0);
     }
     closeCache();
 
@@ -222,8 +232,8 @@ public class CacheXml60DUnitTest extends CacheXml58DUnitTest
     testXml(cache);
     {
       c = getCache();
-      assertEquals(low, c.getResourceManager().getEvictionHeapPercentage());
-      assertEquals(0f, c.getResourceManager().getCriticalHeapPercentage());
+      assertEquals(low, c.getResourceManager().getEvictionHeapPercentage(),0);
+      assertEquals(0f, c.getResourceManager().getCriticalHeapPercentage(),0);
     }
     closeCache();
 
@@ -234,8 +244,8 @@ public class CacheXml60DUnitTest extends CacheXml58DUnitTest
     cache.setResourceManagerCreation(rmc);
     testXml(cache);
     c = getCache();
-    assertEquals(0f, c.getResourceManager().getEvictionHeapPercentage());
-    assertEquals(0f, c.getResourceManager().getCriticalHeapPercentage());
+    assertEquals(0f, c.getResourceManager().getEvictionHeapPercentage(),0);
+    assertEquals(0f, c.getResourceManager().getCriticalHeapPercentage(),0);
   }
   
   // A bunch of classes for use in testing the serialization schtuff
@@ -286,6 +296,7 @@ public class CacheXml60DUnitTest extends CacheXml58DUnitTest
     {return false;}      
   }
     
+  @Test
   public void testSerializationRegistration()
   {
     CacheCreation cc = new CacheCreation();

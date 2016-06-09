@@ -22,11 +22,9 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.AssertionFailedError;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
@@ -36,7 +34,6 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
-import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -47,7 +44,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 public class LuceneEventListenerJUnitTest {
 
   @Test
-  public void testProcessBatch() throws IOException, BucketNotFoundException {
+  public void testProcessBatch() throws Exception {
     RepositoryManager manager = Mockito.mock(RepositoryManager.class);
     IndexRepository repo1 = Mockito.mock(IndexRepository.class);
     IndexRepository repo2 = Mockito.mock(IndexRepository.class);
@@ -84,7 +81,7 @@ public class LuceneEventListenerJUnitTest {
         break;
       case 2:
         Mockito.when(event.getOperation()).thenReturn(Operation.DESTROY);
-        Mockito.when(event.getDeserializedValue()).thenThrow(new AssertionFailedError());
+        Mockito.when(event.getDeserializedValue()).thenThrow(new AssertionError());
         break;
       }
 

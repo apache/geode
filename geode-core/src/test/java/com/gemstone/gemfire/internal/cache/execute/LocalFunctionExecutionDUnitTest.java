@@ -16,9 +16,12 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
-import java.util.HashSet;
+import static org.junit.Assert.*;
+
 import java.util.Properties;
-import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -35,14 +38,16 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class LocalFunctionExecutionDUnitTest extends DistributedTestCase{
+@Category(DistributedTest.class)
+public class LocalFunctionExecutionDUnitTest extends JUnit4DistributedTestCase{
   
   protected static Cache cache = null;
 
@@ -50,17 +55,13 @@ public class LocalFunctionExecutionDUnitTest extends DistributedTestCase{
 
   protected static Region region = null;
   
-
-  public LocalFunctionExecutionDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     dataStore1 = host.getVM(0);
   }
 
+  @Test
   public void testLocalDataSetPR(){
     dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.createCacheInVm());
     Object args[] = new Object[] { "testRegion", new Integer(1), new Integer(50),
@@ -70,6 +71,7 @@ public class LocalFunctionExecutionDUnitTest extends DistributedTestCase{
     dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.executeFunction());
   }
   
+  @Test
   public void testLocalDataSetDR(){
     dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.createCacheInVm());
     Object args[] = new Object[] { "testRegion",DataPolicy.REPLICATE };
@@ -78,13 +80,14 @@ public class LocalFunctionExecutionDUnitTest extends DistributedTestCase{
     dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.executeFunction());
   }
   
+  @Test
   public void testLocalMember(){
     dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.createCacheInVm());
     dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.executeFunctionOnMember());
   }
 
   public static void createCacheInVm() {
-    new LocalFunctionExecutionDUnitTest("temp").createCache();
+    new LocalFunctionExecutionDUnitTest().createCache();
   }
 
   public void createCache() {

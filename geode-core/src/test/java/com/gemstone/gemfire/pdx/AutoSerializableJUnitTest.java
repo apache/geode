@@ -48,15 +48,6 @@ import static org.junit.Assert.*;
 
 /**
  * TODO: fails (on Windows 7?)
- * 
-com.gemstone.gemfire.pdx.AutoSerializableJUnitTest > testMultipleClassLoaders FAILED
-    junit.framework.AssertionFailedError
-        at junit.framework.Fail(Assert.java:55)
-        at junit.framework.Assert.assertTrue(Assert.java:22)
-        at junit.framework.Assert.assertFalse(Assert.java:39)
-        at junit.framework.Assert.assertFalse(Assert.java:47)
-        at junit.framework.TestCase.assertFalse(TestCase.java:219)
-        at com.gemstone.gemfire.pdx.AutoSerializableJUnitTest.testMultipleClassLoaders(AutoSerializableJUnitTest.java:1218)
  */
 @Category(IntegrationTest.class)
 public class AutoSerializableJUnitTest {

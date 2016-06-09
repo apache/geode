@@ -16,34 +16,51 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.LossAction;
+import com.gemstone.gemfire.cache.MembershipAttributes;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionRoleListener;
+import com.gemstone.gemfire.cache.ResumptionAction;
+import com.gemstone.gemfire.cache.RoleEvent;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.util.RegionRoleListenerAdapter;
 import com.gemstone.gemfire.distributed.Role;
 import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.Properties;
-import java.util.Set;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 /**
  * Tests the functionality of the {@link RegionRoleListener} class.
  *
  * @since GemFire 5.0
  */
+@Category(DistributedTest.class)
 public class RegionReliabilityListenerDUnitTest extends ReliabilityTestCase {
 
   protected static transient Set rolesGain = null;
   protected static transient Set rolesLoss = null;
   
-  public RegionReliabilityListenerDUnitTest(String name) {
-    super(name);
+  public RegionReliabilityListenerDUnitTest() {
+    super();
   }
   
   /**
    * Tests the notification of afterRoleGain and afterRoleLoss
    */
+  @Test
   public void testRoleGainAndLoss() throws Exception {
     final String name = this.getUniqueName();
     final int vm0 = 0;

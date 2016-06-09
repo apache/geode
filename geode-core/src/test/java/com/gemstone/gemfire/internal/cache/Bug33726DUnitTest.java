@@ -16,7 +16,12 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -28,22 +33,19 @@ import com.gemstone.gemfire.cache.RegionEvent;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class Bug33726DUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class Bug33726DUnitTest extends JUnit4DistributedTestCase {
   
   static boolean[] flags = new boolean[2];
   static Cache cache = null;
   static DistributedSystem ds = null;
   static boolean isOK = false;
   
-
-  public Bug33726DUnitTest(String name){
-	super(name);
-  }
-
   @Override
   public final void preTearDown() throws Exception {
     Host host = Host.getHost(0);
@@ -63,6 +65,7 @@ public class Bug33726DUnitTest extends DistributedTestCase {
 	}
    }
 
+  @Test
   public void testAfterRegionCreate() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -76,7 +79,7 @@ public class Bug33726DUnitTest extends DistributedTestCase {
   
   public static void createCacheAndPopulateRegion1() {
     try {
-      ds = (new Bug33726DUnitTest("temp")).getSystem(new Properties());
+      ds = (new Bug33726DUnitTest()).getSystem(new Properties());
       cache = CacheFactory.create(ds);
       AttributesFactory factory = new AttributesFactory();
       factory.setScope(Scope.GLOBAL);
@@ -97,7 +100,7 @@ public class Bug33726DUnitTest extends DistributedTestCase {
 
   public static void createCacheAndRegion2() {
     try {
-      ds = (new Bug33726DUnitTest("temp")).getSystem(new Properties());
+      ds = (new Bug33726DUnitTest()).getSystem(new Properties());
       cache = CacheFactory.create(ds);
       AttributesFactory factory = new AttributesFactory();
       factory.setCacheListener(new TestCacheListener());

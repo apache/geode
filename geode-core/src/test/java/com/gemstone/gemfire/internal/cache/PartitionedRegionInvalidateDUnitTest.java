@@ -19,6 +19,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheWriterException;
 import com.gemstone.gemfire.cache.EntryEvent;
@@ -36,11 +45,11 @@ import com.gemstone.gemfire.test.dunit.VM;
  * This tests invalidateRegion functionality on partitioned regions
  *
  */
-public class PartitionedRegionInvalidateDUnitTest extends
-    CacheTestCase {
+@Category(DistributedTest.class)
+public class PartitionedRegionInvalidateDUnitTest extends JUnit4CacheTestCase {
 
-  public PartitionedRegionInvalidateDUnitTest(String name) {
-    super(name);
+  public PartitionedRegionInvalidateDUnitTest() {
+    super();
   }
 
   void createRegion(String name, boolean accessor, int redundantCopies) {
@@ -51,6 +60,7 @@ public class PartitionedRegionInvalidateDUnitTest extends
     getCache().createRegion(name, af.create());
   }
     
+  @Test
   public void testSingleVMInvalidate() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
@@ -85,6 +95,7 @@ public class PartitionedRegionInvalidateDUnitTest extends
     });
   }
   
+  @Test
   public void testMultiVMInvalidate() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

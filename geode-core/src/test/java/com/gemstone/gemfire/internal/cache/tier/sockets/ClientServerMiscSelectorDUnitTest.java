@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 
 /**
  * Just like parent but enables server thread pool
@@ -23,10 +32,11 @@ package com.gemstone.gemfire.internal.cache.tier.sockets;
  *
  *
  */
+@Category(DistributedTest.class)
 public class ClientServerMiscSelectorDUnitTest extends ClientServerMiscDUnitTest
 {
-  public ClientServerMiscSelectorDUnitTest(String name) {
-    super(name);
+  public ClientServerMiscSelectorDUnitTest() {
+    super();
   }
 
   protected int getMaxThreads() {

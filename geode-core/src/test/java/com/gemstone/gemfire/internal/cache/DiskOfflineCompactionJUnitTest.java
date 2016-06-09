@@ -16,43 +16,44 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.DiskStoreFactory;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.InternalDataSerializer;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.versions.RegionVersionHolder;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Tests offline compaction
- * 
- *  
  */
 @Category(IntegrationTest.class)
-public class DiskOfflineCompactionJUnitTest
-{
-
-  protected static Cache cache = null;
-
-  protected static DistributedSystem ds = null;
+public class DiskOfflineCompactionJUnitTest {
 
   // In this test, entry version, region version, member id, each will be 1 byte
-  final static int versionsize = 3;
+  private static final int versionsize = 3;
 
-  static {
-  }
+  private static Cache cache = null;
+
+  private static DistributedSystem ds = null;
 
   private int getDSID(LocalRegion lr) {
     return lr.getDistributionManager().getDistributedSystemId();    
@@ -217,8 +218,7 @@ public class DiskOfflineCompactionJUnitTest
   }
 
   @Test
-  public void testTwoEntriesWithUpdateAndDestroy()
-      throws Exception {
+  public void testTwoEntriesWithUpdateAndDestroy() throws Exception {
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     dsf.setAutoCompact(false);
     String name = "testTwoEntriesWithUpdateAndDestroy";
@@ -553,8 +553,7 @@ public class DiskOfflineCompactionJUnitTest
   }
 
   @Test
-  public void testForceRollTwoEntriesWithUpdates()
-      throws Exception {
+  public void testForceRollTwoEntriesWithUpdates() throws Exception {
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     dsf.setAutoCompact(false);
     String name = "testForceRollTwoEntriesWithUpdates";
@@ -639,8 +638,7 @@ public class DiskOfflineCompactionJUnitTest
   }
 
   @Test
-  public void testForceRollTwoEntriesWithUpdateAndDestroy()
-      throws Exception {
+  public void testForceRollTwoEntriesWithUpdateAndDestroy() throws Exception {
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     dsf.setAutoCompact(false);
     String name = "testForceRollTwoEntriesWithUpdateAndDestroy";
@@ -733,7 +731,7 @@ public class DiskOfflineCompactionJUnitTest
   }
   
   // uitl methods for calculation
-  public static int getValueSizeInOplog(Object value) {
+  private  static int getValueSizeInOplog(Object value) {
     if (value instanceof String) {
       return getStrSizeInOplog((String)value);
     } else if (value instanceof byte[]) {
@@ -742,33 +740,40 @@ public class DiskOfflineCompactionJUnitTest
     }
     return -1;
   }
-  public static int getStrSizeInOplog(String str) {
+
+  private static int getStrSizeInOplog(String str) {
     // string saved in UTF format will use 3 bytes extra.
     // 4 is hard-coded overhead in Oplog for each string
     return str.length()+3+4;
   }
-  public static int getSize4Create(int extra_byte_num_per_entry, String key, Object value) {
+
+  static int getSize4Create(int extra_byte_num_per_entry, String key, Object value) {
     int createsize = 1 /* opcode */ + 1 /* userbits */ + versionsize + extra_byte_num_per_entry
       + getStrSizeInOplog(key) + 1 /* drid */ + getValueSizeInOplog(value) + 1 /* END_OF_RECORD_ID */;
     return createsize;
   }
-  public static int getSize4UpdateWithKey(int extra_byte_num_per_entry, String key, Object value) {
+
+  private static int getSize4UpdateWithKey(int extra_byte_num_per_entry, String key, Object value) {
     return getSize4UpdateWithoutKey(extra_byte_num_per_entry, value) + getStrSizeInOplog(key);
   }
-  public static int getSize4UpdateWithoutKey(int extra_byte_num_per_entry, Object value) {
+
+  private static int getSize4UpdateWithoutKey(int extra_byte_num_per_entry, Object value) {
     int updatesize = 1 /* opcode */ + 1 /* userbits */ + versionsize + extra_byte_num_per_entry
     + 1 /* drid */ + getValueSizeInOplog(value) +1 /* delta */ + 1 /* END_OF_RECORD_ID */;
     return updatesize;
   }
-  public static int getSize4TombstoneWithKey(int extra_byte_num_per_entry, String key) {
+
+  static int getSize4TombstoneWithKey(int extra_byte_num_per_entry, String key) {
     return getSize4TombstoneWithoutKey(extra_byte_num_per_entry) + getStrSizeInOplog(key);
   }
-  public static int getSize4TombstoneWithoutKey(int extra_byte_num_per_entry) {
+
+  private static int getSize4TombstoneWithoutKey(int extra_byte_num_per_entry) {
     int tombstonesize = 1 /* opcode */ + 1 /* userbits */ + versionsize + extra_byte_num_per_entry
     + 1 /* drid */ +1 /* delta */ + 1 /* END_OF_RECORD_ID */;
     return tombstonesize;
   }
-  public static int getRVVSize(int drMapSize, int[] numOfMemberPerDR, boolean gcRVV) {
+
+  static int getRVVSize(int drMapSize, int[] numOfMemberPerDR, boolean gcRVV) {
     // if there's one member in rvv, total size is 9 bytes: 
     // 0: OPLOG_RVV. 1: drMap.size()==1, 2: disRegionId, 3: getRVVTrusted 
     // 4: memberToVersion.size()==1, 5: memberid, 6-7: versionHolder 8: END_OF_RECORD_ID

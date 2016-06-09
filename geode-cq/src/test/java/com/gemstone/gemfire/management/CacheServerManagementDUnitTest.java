@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.client.internal.LocatorTestBase;
 import com.gemstone.gemfire.cache.query.*;
@@ -45,6 +54,7 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
 /**
  * Cache Server related management test cases
  */
+@Category(DistributedTest.class)
 public class CacheServerManagementDUnitTest extends LocatorTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -59,12 +69,11 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
 
   private static MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
 
-  protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest(
-      "CqDataDUnitTest");
+  protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
 
-  public CacheServerManagementDUnitTest(String name) {
-    super(name);
-    this.helper = new ManagementTestBase(name);
+  public CacheServerManagementDUnitTest() {
+    super();
+    this.helper = new ManagementTestBase() {{}};
 
   }
 
@@ -81,6 +90,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   /**
    * @throws Exception
    */
+  @Test
   public void testCacheServerMBean() throws Exception {
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -146,6 +156,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
    * @throws Exception
    */
 
+  @Test
   public void testCacheClient() throws Exception {
 
     final Host host = Host.getHost(0);

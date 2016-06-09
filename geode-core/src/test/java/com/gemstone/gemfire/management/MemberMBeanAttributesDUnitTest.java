@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.lang.management.ManagementFactory;
 
 import com.gemstone.gemfire.cache.Region;
@@ -34,6 +43,7 @@ import com.gemstone.gemfire.test.dunit.VM;
  * This test class checks around 89 attributes of Member MBeans
  *
  */
+@Category(DistributedTest.class)
 public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
   
 
@@ -53,8 +63,8 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
 
 
 
-  public MemberMBeanAttributesDUnitTest(String name) {
-    super(name);
+  public MemberMBeanAttributesDUnitTest() {
+    super();
   }
 
   protected void sample(VM vm1) {
@@ -69,6 +79,7 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
  
 
   
+  @Test
   public void testReplRegionAttributes() throws Exception{
     initManagement(false);    
     setupForReplicateRegonAttributes(managedNodeList.get(0), 1);
@@ -79,6 +90,7 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
   }
   
   
+  @Test
   public void testPRRegionAttributes() throws Exception{
     initManagement(false);    
     setupForPartitionedRegonAttributes(managedNodeList.get(0), 1);    
@@ -87,11 +99,13 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
     
   }
   
+  @Test
   public void testOSAttributes() throws Exception{
     initManagement(false);
     isOSRelatedAttrsOK(managedNodeList.get(0));
   }
   
+  @Test
   public void testConfigAttributes() throws Exception {
     initManagement(false);
     isConfigRelatedAttrsOK(managedNodeList.get(0));

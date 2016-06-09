@@ -16,7 +16,28 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.InterestResultPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.QueueStateImpl.SequenceIdAndExpirationObject;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
@@ -27,26 +48,20 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- *
  * Test to verify correct propagation of operations eventID's for put all
- *
  *
  * @since GemFire 5.1
  */
-
-public class PutAllDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class PutAllDUnitTest extends JUnit4DistributedTestCase {
 
   /** server1 VM **/
   VM server1 = null;
@@ -74,8 +89,8 @@ public class PutAllDUnitTest extends DistributedTestCase
   static CacheServerImpl server = null;
 
   /** test constructor **/
-  public PutAllDUnitTest(String name) {
-    super(name);
+  public PutAllDUnitTest() {
+    super();
   }
 
   /** get the hosts and the VMs **/
@@ -132,7 +147,7 @@ public class PutAllDUnitTest extends DistributedTestCase
   /** create the server **/
   public static Integer createServerCache() throws Exception
   {
-    new PutAllDUnitTest("temp").createCache(new Properties());
+    new PutAllDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -169,7 +184,7 @@ public class PutAllDUnitTest extends DistributedTestCase
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new PutAllDUnitTest("temp").createCache(props);
+    new PutAllDUnitTest().createCache(props);
     props.setProperty("retryAttempts", "2");
     props.setProperty("endpoints", "ep1="+host+":" + PORT1);
     props.setProperty("redundancyLevel", "-1");
@@ -200,7 +215,7 @@ public class PutAllDUnitTest extends DistributedTestCase
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new PutAllDUnitTest("temp").createCache(props);
+    new PutAllDUnitTest().createCache(props);
     props.setProperty("retryAttempts", "2");
     props.setProperty("endpoints", "ep1="+host+":" + PORT1);
     props.setProperty("redundancyLevel", "-1");
@@ -334,6 +349,7 @@ public class PutAllDUnitTest extends DistributedTestCase
    *
    * @throws Exception
    */
+  @Test
   public void testPutAll() throws Exception
   {
     setReceivedOperationToFalse();

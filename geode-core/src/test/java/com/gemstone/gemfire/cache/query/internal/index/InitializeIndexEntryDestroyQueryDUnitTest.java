@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import static com.gemstone.gemfire.cache.query.Utils.createPortfolioData;
 
 import java.util.Arrays;
@@ -52,7 +61,8 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
  * Then destroys and puts back entries in separated thread in the same region and runs
  * query parallely and checks for UNDEFINED values in result set of the query.
  */
-public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCase {
 
   PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();
 
@@ -70,14 +80,15 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
   /**
    * @param name
    */
-  public InitializeIndexEntryDestroyQueryDUnitTest(String name) {
-    super(name);
+  public InitializeIndexEntryDestroyQueryDUnitTest() {
+    super();
   }
   public void setCacheInVMs(VM... vms) {
     for (VM vm : vms) {
       vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
     }
   }
+  @Test
   public void testAsyncIndexInitDuringEntryDestroyAndQuery() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -210,6 +221,7 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
   }
 
   @Category(FlakyTest.class) // GEODE-1036: uses PRQueryDUnitHelper, time sensitive, async actions, overly long joins (16+ minutes), eats exceptions (fixed 1), thread sleeps
+  @Test
   public void testAsyncIndexInitDuringEntryDestroyAndQueryOnPR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -334,6 +346,7 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends CacheTestCase {
     }
   }
 
+  @Test
   public void testConcurrentRemoveIndexAndQueryOnPR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

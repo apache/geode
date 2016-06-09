@@ -17,6 +17,15 @@
 package com.gemstone.gemfire.internal.cache.wan.concurrent;
 
 import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.wan.GatewaySender.OrderPolicy;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
@@ -26,11 +35,12 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
+@Category(DistributedTest.class)
 public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTestBase {
   private static final long serialVersionUID = 1L;
   
-  public ConcurrentParallelGatewaySenderOperation_1_DUnitTest(String name) {
-    super(name);
+  public ConcurrentParallelGatewaySenderOperation_1_DUnitTest() {
+    super();
   }
 
   @Override
@@ -40,6 +50,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     IgnoredException.addIgnoredException("Unexpected IOException");
   }
   
+  @Test
   public void testParallelGatewaySenderWithoutStarting() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -86,6 +97,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
   /**
    * Defect 44323 (ParallelGatewaySender should not be started on Accessor node)
    */
+  @Test
   public void testParallelGatewaySenderStartOnAccessorNode() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -138,6 +150,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    * Normal scenario in which the sender is paused in between.
    * @throws Exception
    */
+  @Test
   public void testParallelPropagationSenderPause() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -198,6 +211,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    * Normal scenario in which a paused sender is resumed.
    * @throws Exception
    */
+  @Test
   public void testParallelPropagationSenderResume() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -275,6 +289,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    * 
    * @throws Exception
    */
+  @Test
   public void testParallelPropagationSenderResumeNegativeScenario() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -333,6 +348,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    * Normal scenario in which a sender is stopped.
    * @throws Exception
    */
+  @Test
   public void testParallelPropagationSenderStop() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -391,6 +407,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
   /**
    * Normal scenario in which a sender is stopped and then started again.
    */
+  @Test
   public void testParallelPropagationSenderStartAfterStop() throws Throwable {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -578,6 +595,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    * @throws Exception
    */
   @Category(FlakyTest.class) // GEODE-1011: random ports, time sensitive, waitForCriterion, 5 minute timeouts, 5 second thread sleeps, async actions
+  @Test
   public void testParallelPropagationSenderStartAfterStopOnAccessorNode() throws Throwable {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -668,6 +686,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    * Normal scenario in which a combinations of start, pause, resume operations
    * is tested
    */
+  @Test
   public void testStartPauseResumeParallelGatewaySender() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

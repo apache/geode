@@ -16,13 +16,18 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-
 import javax.naming.Context;
 import javax.transaction.UserTransaction;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.CopyHelper;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -55,21 +60,27 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Test the order of operations done on the farside of a tx.
  *
  * @since GemFire 5.0
  */
-public class TXOrderDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class TXOrderDUnitTest extends JUnit4CacheTestCase {
+
+  private final int TEST_PUT = 0;
+  private final int TEST_INVALIDATE = 1;
+  private final int TEST_DESTROY = 2;
 
   private transient Region r;
   private transient DistributedMember otherId;
   protected transient int invokeCount;
-  
-  public TXOrderDUnitTest(String name) {
-    super(name);
-  }
+
+  List expectedKeys;
+  int clCount = 0;
 
   private VM getOtherVm() {
     Host host = Host.getHost(0);
@@ -85,6 +96,7 @@ public class TXOrderDUnitTest extends CacheTestCase {
       });
     this.otherId = (DistributedMember)vm.invoke(() -> TXOrderDUnitTest.getVMDistributedMember());
   }
+
   private void doCommitOtherVm() {
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("create root") {
@@ -111,19 +123,16 @@ public class TXOrderDUnitTest extends CacheTestCase {
     return InternalDistributedSystem.getAnyInstance().getDistributedMember();
   }
   
-  //////////////////////  Test Methods  //////////////////////
-
-  List expectedKeys;
-  int clCount = 0;
-
   Object getCurrentExpectedKey() {
     Object result = this.expectedKeys.get(this.clCount);
     this.clCount += 1;
     return result;
   }
+
   /**
    * make sure listeners get invoked in correct order on far side of tx
    */
+  @Test
   public void testFarSideOrder() throws CacheException {
     initOtherId();
     AttributesFactory af = new AttributesFactory();
@@ -166,10 +175,11 @@ public class TXOrderDUnitTest extends CacheTestCase {
   }
 
   /**
-   * test bug#40870
-   * @throws Exception
+   * Tests fix for #40870 Remote CacheListeners invoke afterCreate with Operation.LOCAL_LOAD_CREATE when create executed transactionally"
    */
-  public void _testFarSideOpForLoad() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testFarSideOpForLoad() throws Exception {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);
     VM vm2 = host.getVM(1);
@@ -226,6 +236,7 @@ public class TXOrderDUnitTest extends CacheTestCase {
     });
   }
 
+  @Test
   public void testInternalRegionNotExposed() {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);
@@ -279,9 +290,11 @@ public class TXOrderDUnitTest extends CacheTestCase {
     vm1.invoke(verifyListener);
     vm2.invoke(verifyListener);
   }
-  
-  class ExposedRegionTransactionListener extends TransactionListenerAdapter {
+
+  private static class ExposedRegionTransactionListener extends TransactionListenerAdapter {
+
     private boolean exceptionOccurred = false;
+
     @Override
     public void afterCommit(TransactionEvent event) {
       List<CacheEvent<?, ?>> events = event.getEvents();
@@ -292,8 +305,11 @@ public class TXOrderDUnitTest extends CacheTestCase {
       }
     }
   }
-  class ExposedRegionCacheListener extends CacheListenerAdapter {
+
+  private static class ExposedRegionCacheListener extends CacheListenerAdapter {
+
     private boolean exceptionOccurred = false;
+
     @Override
     public void afterCreate(EntryEvent event) {
       verifyRegion(event);
@@ -309,21 +325,20 @@ public class TXOrderDUnitTest extends CacheTestCase {
     }
   }
   
-  private final int TEST_PUT = 0;
-  private final int TEST_INVALIDATE = 1;
-  private final int TEST_DESTROY = 2;
   /**
    * verify that queries on indexes work with transaction
-   * @throws Exception
    */
+  @Test
   public void testFarSideIndexOnPut() throws Exception {
     doTest(TEST_PUT);
   }
 
+  @Test
   public void testFarSideIndexOnInvalidate() throws Exception {
     doTest(TEST_INVALIDATE);
   }
 
+  @Test
   public void testFarSideIndexOnDestroy() throws Exception {
     doTest(TEST_DESTROY);
   }
@@ -392,6 +407,7 @@ public class TXOrderDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testBug43353() {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);

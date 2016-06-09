@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,12 +43,13 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
+@Category(DistributedTest.class)
 public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public SerialGatewaySenderEventListenerDUnitTest(String name) {
-    super(name);
+  public SerialGatewaySenderEventListenerDUnitTest() {
+    super();
   }
 
   /**
@@ -93,6 +103,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
   /**
    * Test validates whether the listener attached receives all the events.
    */
+  @Test
   public void testGatewaySenderEventListenerInvocation() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -151,6 +162,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
    * When there are 2 listeners attcahed to the GatewaySender.
    */
   @Category(FlakyTest.class) // GEODE-1066: random ports, waitForCriterion, time sensitive
+  @Test
   public void testGatewaySender2EventListenerInvocation() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -203,6 +215,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
    * Test vaildates whether the PoolImpl is created. Ideally when a listener is attached
    * pool should not be created.
    */
+  @Test
   public void testGatewaySenderEventListenerPoolImpl() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort ));

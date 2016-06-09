@@ -16,32 +16,40 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.security.AuthenticationRequiredException;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.util.test.TestUtil;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.security.AuthenticationRequiredException;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
  * Tests cacheserver ssl support added. See https://svn.gemstone.com/trac/gemfire/ticket/48995 for details
  */
-public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
-
-  private static final long serialVersionUID = 1L;
+@Category(DistributedTest.class)
+public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String TRUSTED_STORE = "trusted.keystore";
   private static final String CLIENT_KEY_STORE = "client.keystore";
@@ -49,7 +57,7 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
   private static final String SERVER_KEY_STORE = "cacheserver.keystore";
   private static final String SERVER_TRUST_STORE = "cacheserver.truststore";
 
-  private static CacheServerSSLConnectionDUnitTest instance = new CacheServerSSLConnectionDUnitTest("CacheServerSSLConnectionDUnit");
+  private static CacheServerSSLConnectionDUnitTest instance = new CacheServerSSLConnectionDUnitTest(); // TODO: memory leak
 
   private Cache cache;
   private CacheServer cacheServer;
@@ -60,10 +68,6 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
   @Override
   public final void preSetUp() throws Exception {
     disconnectAllFromDS();
-  }
-
-  public CacheServerSSLConnectionDUnitTest(String name) {
-    super(name);
   }
 
   public Cache createCache(Properties props) throws Exception
@@ -97,7 +101,6 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
   public void stopCacheServer(){
     this.cacheServer.stop();
   }
-
 
   @SuppressWarnings("rawtypes")
   public void setUpServerVM(boolean cacheServerSslenabled) throws Exception {
@@ -229,6 +232,7 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     }
   }
 
+  @Test
   public void testCacheServerSSL() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);
@@ -246,10 +250,9 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled, cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
     clientVM.invoke(() -> doClientRegionTestTask());
     serverVM.invoke(() -> doServerRegionTestTask());
-
   }
 
-
+  @Test
   public void testNonSSLClient() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);
@@ -292,6 +295,7 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     }
   }
 
+  @Test
   public void testSSLClientWithNoAuth() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);
@@ -328,6 +332,7 @@ public class CacheServerSSLConnectionDUnitTest extends DistributedTestCase {
     }
   }
 
+  @Test
   public void testSSLClientWithNonSSLServer() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);

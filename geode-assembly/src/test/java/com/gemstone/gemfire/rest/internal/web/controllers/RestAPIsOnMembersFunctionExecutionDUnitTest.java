@@ -16,6 +16,14 @@
  */
 package com.gemstone.gemfire.rest.internal.web.controllers;
 
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+
+import java.util.Properties;
+
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -23,18 +31,10 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.rest.internal.web.RestFunctionTemplate;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.Properties;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
+@Category(DistributedTest.class)
 public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase {
-
-  private static final long serialVersionUID = 1L;
-
-  public RestAPIsOnMembersFunctionExecutionDUnitTest(String name) {
-    super(name);
-  }
 
   private class OnMembersFunction extends RestFunctionTemplate {
     public static final String Id = "OnMembersFunction";
@@ -80,12 +80,12 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
 
     Cache c = null;
     try {
-      c = CacheFactory.getInstance(new RestAPIsOnMembersFunctionExecutionDUnitTest("temp").getSystem(props));
+      c = CacheFactory.getInstance(new RestAPIsOnMembersFunctionExecutionDUnitTest().getSystem(props));
       c.close();
     } catch (CacheClosedException cce) {
     }
 
-    c = CacheFactory.create(new RestAPIsOnMembersFunctionExecutionDUnitTest("temp").getSystem(props));
+    c = CacheFactory.create(new RestAPIsOnMembersFunctionExecutionDUnitTest().getSystem(props));
     FunctionService.registerFunction(new OnMembersFunction());
 
     String restEndPoint = "http://" + hostName + ":" + servicePort + "/gemfire-api/v1";
@@ -98,6 +98,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     return OnMembersFunction.Id;
   }
 
+  @Test
   public void testFunctionExecutionOnAllMembers() {
     createCacheForVMs();
 
@@ -118,6 +119,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     restURLs.add(vm3.invoke("createCacheAndRegisterFunction",() -> createCacheAndRegisterFunction(vm3.getHost().getHostName(), "m4")));
   }
 
+  @Test
   public void testFunctionExecutionEOnSelectedMembers() {
     createCacheForVMs();
 
@@ -131,6 +133,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     restURLs.clear();
   }
 
+  @Test
   public void testFunctionExecutionOnMembersWithFilter() {
     createCacheForVMs();
 

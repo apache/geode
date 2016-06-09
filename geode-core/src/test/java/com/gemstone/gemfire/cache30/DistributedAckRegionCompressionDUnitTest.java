@@ -16,25 +16,23 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.compression.SnappyCompressor;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests Distributed Ack Region with compression.
  * 
  * @since GemFire 8.0
  */
+@Category(DistributedTest.class)
 @SuppressWarnings({ "deprecation", "serial" })
-public class DistributedAckRegionCompressionDUnitTest extends
-    DistributedAckRegionDUnitTest {
+public class DistributedAckRegionCompressionDUnitTest extends DistributedAckRegionDUnitTest {
   
-  public DistributedAckRegionCompressionDUnitTest(String name) {
-    super(name);
-  }
-
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
   protected RegionAttributes getRegionAttributes() {

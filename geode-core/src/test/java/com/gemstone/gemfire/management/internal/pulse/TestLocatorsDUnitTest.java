@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management.internal.pulse;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.ManagementTestBase;
@@ -28,12 +37,13 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 
  */
 
+@Category(DistributedTest.class)
 public class TestLocatorsDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public TestLocatorsDUnitTest(String name) {
-    super(name);
+  public TestLocatorsDUnitTest() {
+    super();
   }
 
   public static int getNumOfLocatorFromMBean() {
@@ -62,6 +72,7 @@ public class TestLocatorsDUnitTest extends ManagementTestBase {
     return bean.getLocatorCount();
   }
 
+  @Test
   public void testLocatorsDUnitTest() throws Exception {
     initManagement(false);
     int locatorCount = ((Number) managingNode.invoke(() -> TestLocatorsDUnitTest.getNumOfLocatorFromMBean())).intValue();

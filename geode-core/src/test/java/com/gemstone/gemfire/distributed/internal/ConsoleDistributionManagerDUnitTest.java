@@ -17,40 +17,57 @@
 package com.gemstone.gemfire.distributed.internal;
 
 import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.DistributedLockService;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.Config;
-import com.gemstone.gemfire.internal.admin.*;
-import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
-import com.gemstone.gemfire.test.dunit.*;
+import static org.junit.Assert.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Set;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.distributed.DistributedLockService;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.internal.Config;
+import com.gemstone.gemfire.internal.admin.Alert;
+import com.gemstone.gemfire.internal.admin.AlertListener;
+import com.gemstone.gemfire.internal.admin.ApplicationVM;
+import com.gemstone.gemfire.internal.admin.DLockInfo;
+import com.gemstone.gemfire.internal.admin.EntryValueNode;
+import com.gemstone.gemfire.internal.admin.GemFireVM;
+import com.gemstone.gemfire.internal.admin.GfManagerAgent;
+import com.gemstone.gemfire.internal.admin.GfManagerAgentConfig;
+import com.gemstone.gemfire.internal.admin.GfManagerAgentFactory;
+import com.gemstone.gemfire.internal.admin.StatResource;
+import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 /**
  * This class tests the functionality of the {@linkplain com.gemstone.gemfire.internal.admin internal
  * admin} API.
  */
-public class ConsoleDistributionManagerDUnitTest 
-  extends CacheTestCase implements AlertListener {
+@Category(DistributedTest.class)
+public class ConsoleDistributionManagerDUnitTest extends JUnit4CacheTestCase implements AlertListener {
 
   protected GfManagerAgent agent = null;
   private static boolean firstTime = true;
   
-  public ConsoleDistributionManagerDUnitTest(String name) {
-    super(name);
-  }
-
-//  private volatile Alert lastAlert = null;
-
   public void alert(Alert alert) {
     LogWriterUtils.getLogWriter().info("DEBUG: alert=" + alert);
-//    this.lastAlert = alert;
   }
 
   @Override
@@ -140,12 +157,14 @@ public class ConsoleDistributionManagerDUnitTest
     }
   }
 
+  @Test
   public void testGetDistributionVMType() {
     DM dm = this.agent.getDM();
     InternalDistributedMember ipaddr = dm.getId();
     assertEquals(DistributionManager.ADMIN_ONLY_DM_TYPE, ipaddr.getVmKind());
   }
 
+  @Test
   public void testAgent() {
     assertEquals("expected empty peer array", 0, agent.listPeers().length);
     int systemCount = 0;
@@ -159,6 +178,7 @@ public class ConsoleDistributionManagerDUnitTest
     assertTrue("agent should have been disconnected", !agent.isConnected());
   }
 
+  @Test
   public void testApplications() throws Exception {
     {
       WaitCriterion ev = new WaitCriterion() {

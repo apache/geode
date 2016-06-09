@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
@@ -32,10 +41,11 @@ import java.util.Properties;
 
 import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
 
-public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
 
-  public ClientServerTimeSyncDUnitTest(String name) {
-    super(name);
+  public ClientServerTimeSyncDUnitTest() {
+    super();
   }
 
   @Ignore("Bug 52327")
@@ -111,6 +121,7 @@ public class ClientServerTimeSyncDUnitTest extends CacheTestCase {
     }
   }
   
+  @Test
   public void testNothing() {
     // place-holder to keep dunit runner from barfing
   }

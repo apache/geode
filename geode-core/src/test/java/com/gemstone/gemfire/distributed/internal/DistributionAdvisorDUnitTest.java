@@ -16,31 +16,31 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- *
- *
- */
-public class DistributionAdvisorDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class DistributionAdvisorDUnitTest extends JUnit4DistributedTestCase {
+
   private transient DistributionAdvisor.Profile profiles[];
   protected transient DistributionAdvisor advisor;
   
-  public DistributionAdvisorDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     // connect to distributed system in every VM
@@ -88,6 +88,7 @@ public class DistributionAdvisorDUnitTest extends DistributedTestCase {
   }
   
     
+  @Test
   public void testGenericAdvice() {
     Set expected = new HashSet();
     for (int i = 0; i < profiles.length; i++) {

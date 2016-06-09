@@ -16,6 +16,18 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -26,32 +38,27 @@ import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.AvailablePort.Keeper;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests the GridAdvisor
  *
  * @since GemFire 5.7
  */
-public class GridAdvisorDUnitTest extends DistributedTestCase {
-
-  public GridAdvisorDUnitTest(String name) {
-    super(name);
-  }
-
-  ////////  Test Methods
+@Category(DistributedTest.class)
+public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Tests 2 controllers and 2 bridge servers
    */
+  @Test
   public void test2by2() throws Exception {
     disconnectAllFromDS();
 
@@ -562,6 +569,7 @@ public class GridAdvisorDUnitTest extends DistributedTestCase {
     vm3.invoke(stopLocator);
   }
 
+  @Test
   public void test2by2usingGroups() throws Exception {
     disconnectAllFromDS();
 

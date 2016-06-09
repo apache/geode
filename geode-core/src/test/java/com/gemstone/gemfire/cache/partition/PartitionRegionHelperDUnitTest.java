@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.partition;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -53,12 +62,14 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.internal.cache.partitioned.fixed.QuarterPartitionResolver;
 
-public class PartitionRegionHelperDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
 
-  public PartitionRegionHelperDUnitTest(String name) {
-    super(name);
+  public PartitionRegionHelperDUnitTest() {
+    super();
   }
 
+  @Test
   public void testAssignBucketsToPartitions() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -124,6 +135,7 @@ public class PartitionRegionHelperDUnitTest extends CacheTestCase {
   }
 
   
+  @Test
   public void testAssignBucketsToPartitions_FPR() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -288,6 +300,7 @@ public class PartitionRegionHelperDUnitTest extends CacheTestCase {
     
   }
   
+  @Test
   public void testMembersForKey() throws Exception {
     Host host = Host.getHost(0);
     VM accessor = host.getVM(0);
@@ -520,6 +533,7 @@ public class PartitionRegionHelperDUnitTest extends CacheTestCase {
     }
   }
   
+  @Test
   public void testMoveSingleBucket() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -618,6 +632,7 @@ public class PartitionRegionHelperDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testMovePercentage() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

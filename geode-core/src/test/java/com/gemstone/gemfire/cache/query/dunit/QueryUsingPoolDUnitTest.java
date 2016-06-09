@@ -16,27 +16,7 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
-import com.gemstone.gemfire.DataSerializable;
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.PoolFactory;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
-import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.dunit.*;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import com.jayway.awaitility.Awaitility;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.*;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -47,6 +27,47 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.jayway.awaitility.Awaitility;
+import org.apache.logging.log4j.Logger;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.DataSerializable;
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
+import com.gemstone.gemfire.cache.client.PoolFactory;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.query.IndexType;
+import com.gemstone.gemfire.cache.query.Query;
+import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.Struct;
+import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
+import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
+import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
+import com.gemstone.gemfire.cache.query.types.ObjectType;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+
 import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
 
 /**
@@ -54,40 +75,37 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  *
  * @since GemFire 5.0.1
  */
-public class QueryUsingPoolDUnitTest extends CacheTestCase {
-
+@Category(DistributedTest.class)
+public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
+  private static final Logger logger = LogService.getLogger();
+  
   /**
    * The port on which the bridge server was started in this VM
    */
   private static int bridgeServerPort;
 
-  final String rootRegionName = "root";
-
-  private final String regionName = this.getName();
-
-  private final String regName = "/" + rootRegionName + "/" + regionName;
+  private String rootRegionName;
+  private String regionName;
+  private String regName;
 
   // Used with compiled queries.
-  private final String[] queryString = new String[] {
-      "SELECT itr.value FROM " + regName + ".entries itr where itr.key = $1", // 0
-      "SELECT DISTINCT * FROM " + regName + " WHERE id < $1 ORDER BY   id", // 1
-      "SELECT DISTINCT * FROM " + regName + " WHERE id < $1 ORDER BY id", // 2
-      "(SELECT DISTINCT * FROM " + regName + " WHERE id < $1).size", // 3
-      "SELECT * FROM " + regName + " WHERE id = $1 and Ticker = $2", // 4
-      "SELECT * FROM " + regName + " WHERE id < $1 and Ticker = $2", // 5
-  };
-
-  /**
-   * Creates a new <code>GemFireMemberStatusDUnitTest</code>
-   */
-  public QueryUsingPoolDUnitTest(String name) {
-    super(name);
-  }
-
-  ////////  Test Methods
+  private String[] queryString;
 
   @Override
   public final void postSetUp() throws Exception {
+    this.rootRegionName = "root";
+    this.regionName = this.getName();
+    this.regName = "/" + this.rootRegionName + "/" + this.regionName;
+
+    this.queryString = new String[] {
+      "SELECT itr.value FROM " + this.regName + ".entries itr where itr.key = $1", // 0
+      "SELECT DISTINCT * FROM " + this.regName + " WHERE id < $1 ORDER BY   id", // 1
+      "SELECT DISTINCT * FROM " + this.regName + " WHERE id < $1 ORDER BY id", // 2
+      "(SELECT DISTINCT * FROM " + this.regName + " WHERE id < $1).size", // 3
+      "SELECT * FROM " + this.regName + " WHERE id = $1 and Ticker = $2", // 4
+      "SELECT * FROM " + this.regName + " WHERE id < $1 and Ticker = $2", // 5
+    };
+
     disconnectAllFromDS();
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("Socket input is shutdown");
@@ -114,7 +132,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
     PoolFactory poolFactory = PoolManager.createFactory();
     poolFactory.setSubscriptionEnabled(subscriptionEnabled);
     for (int i = 0; i < servers.length; i++) {
-      LogService.getLogger().info("### Adding to Pool. ### Server : " + servers[i] + " Port : " + ports[i]);
+      logger.info("### Adding to Pool. ### Server : " + servers[i] + " Port : " + ports[i]);
       poolFactory.addServer(servers[i], ports[i]);
     }
     poolFactory.setMinConnections(1);
@@ -132,6 +150,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
   /**
    * Tests remote import query execution.
    */
+  @Test
   public void testRemoteImportQueries() throws CacheException {
 
     final String name = this.getName();
@@ -250,6 +269,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
   /**
    * Tests remote struct query execution.
    */
+  @Test
   public void testRemoteStructQueries() throws CacheException {
 
     final String name = this.getName();
@@ -372,6 +392,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
   /**
    * Tests remote full region query execution.
    */
+  @Test
   public void testRemoteFullRegionQueries() throws CacheException {
 
     final String name = this.getName();
@@ -541,6 +562,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
   /**
    * Tests client-server query using parameters (compiled queries).
    */
+  @Test
   public void testClientServerQueriesWithParams() throws CacheException {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -564,6 +586,8 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
         1, // 4
         50, // 5
     };
+
+    assertNotNull(this.regionName);//KIRK
 
     // Start server
     final int port = vm0.invoke("Create Bridge Server", () -> {
@@ -632,7 +656,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
   private void executeQueriesForClientServerQueriesWithParams(SelectResults results, QueryService qService, Object[][] params, int[] expectedResults) {
     for (int i = 0; i < queryString.length; i++) {
       try {
-        LogService.getLogger().info("### Executing Query :" + queryString[i]);
+        logger.info("### Executing Query :" + queryString[i]);
         Query query = qService.newQuery(queryString[i]);
         results = (SelectResults) query.execute(params[i]);
       } catch (Exception e) {
@@ -649,6 +673,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
   /**
    * Tests client-server query using parameters (compiled queries).
    */
+  @Test
   public void testMulitipleClientServerQueriesWithParams() throws CacheException {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -764,6 +789,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
   /**
    * Tests client-server compiled query register and cleanup.
    */
+  @Test
   public void testClientServerCompiledQueryRegisterAndCleanup() throws CacheException {
 
     final String name = this.getName();
@@ -822,6 +848,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
   /**
    * Tests client-server compiled query register and cleanup.
    */
+  @Test
   public void testClientServerCompiledQueryTimeBasedCleanup() throws CacheException {
 
     final String name = this.getName();
@@ -905,6 +932,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
    * It creates the client connections without the subscription
    * enabled. This doesn't create any client proxy on the server.
    */
+  @Test
   public void testClientServerCompiledQueryCleanup() throws CacheException {
 
     final String name = this.getName();
@@ -998,6 +1026,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
    * Tests client-server query using parameters (compiled queries).
    */
   @Category(FlakyTest.class) // GEODE-1146: time senstiive, thread sleeps, uses zero port for servers (good!), async actions, AsyncInvocation orphans
+  @Test
   public void testBindParamsWithMulitipleClients() throws CacheException {
 
     final Host host = Host.getHost(0);
@@ -1055,7 +1084,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
         for (int j = 0; j < 5; j++) {
           for (int i = 0; i < 2; i++) {
             try {
-              LogService.getLogger().info("### Executing Query :" + queryString[i]);
+              logger.info("### Executing Query :" + queryString[i]);
               Query query = qService.newQuery(queryString[i]);
               rs[0][0] = (SelectResults) query.execute(params[i]);
               Query query2 = qService.newQuery(querys[i]);
@@ -1064,9 +1093,9 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
             } catch (Exception e) {
               Assert.fail("Failed executing " + queryString[i], e);
             }
-            LogService.getLogger().info("### Comparing results for Query :" + ((i + 1) * (j + 1)) + " : " + queryString[i]);
+            logger.info("### Comparing results for Query :" + ((i + 1) * (j + 1)) + " : " + queryString[i]);
             compareQueryResultsWithoutAndWithIndexes(rs, 1);
-            LogService.getLogger().info("### Done Comparing results for Query :" + ((i + 1) * (j + 1)) + " : " + queryString[i]);
+            logger.info("### Done Comparing results for Query :" + ((i + 1) * (j + 1)) + " : " + queryString[i]);
           }
         }
       }
@@ -1090,7 +1119,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
         for (int j = 0; j < queryString.length; j++) {
           for (int i = 0; i < queryString.length; i++) {
             try {
-              LogService.getLogger().info("### Executing Query :" + queryString[i]);
+              logger.info("### Executing Query :" + queryString[i]);
               Query query = qService.newQuery(queryString[i]);
               rs[0][0] = (SelectResults) query.execute(params[i]);
               Query query2 = qService.newQuery(querys[i]);
@@ -1120,6 +1149,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
   /**
    * Tests remote join query execution.
    */
+  @Test
   public void testRemoteJoinRegionQueries() throws CacheException {
 
     final String name = this.getName();
@@ -1204,6 +1234,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
    * Tests remote query execution using a BridgeClient as the CacheWriter
    * and CacheLoader.
    */
+  @Test
   public void testRemoteBridgeClientQueries() throws CacheException {
 
     final String name = this.getName();
@@ -1297,6 +1328,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
    * @throws Exception
    */
 
+  @Test
   public void testBug36969() throws Exception {
     final String name = this.getName();
     final String rootRegionName = "root";
@@ -1368,6 +1400,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
   /**
    * Tests remote full region query execution.
    */
+  @Test
   public void testRemoteSortQueriesUsingIndex() throws CacheException {
     final String name = this.getName();
     final String rootRegionName = "root";
@@ -1500,6 +1533,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
 
+  @Test
   public void testUnSupportedOps() throws Exception {
     final String name = this.getName();
     final String rootRegionName = "root";
@@ -1635,15 +1669,15 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       type1 = ((SelectResults) r[j][0]).getCollectionType().getElementType();
       type2 = ((SelectResults) r[j][1]).getCollectionType().getElementType();
       if ((type1.getClass().getName()).equals(type2.getClass().getName())) {
-        LogService.getLogger().info("Both SelectResults are of the same Type i.e.--> "
+        logger.info("Both SelectResults are of the same Type i.e.--> "
             + ((SelectResults) r[j][0]).getCollectionType().getElementType());
       } else {
-        LogService.getLogger().info("Classes are : " + type1.getClass().getName() + " "
+        logger.info("Classes are : " + type1.getClass().getName() + " "
             + type2.getClass().getName());
         fail("FAILED:Select result Type is different in both the cases");
       }
       if (((SelectResults) r[j][0]).size() == ((SelectResults) r[j][1]).size()) {
-        LogService.getLogger().info("Both SelectResults are of Same Size i.e.  Size= "
+        logger.info("Both SelectResults are of Same Size i.e.  Size= "
             + ((SelectResults) r[j][1]).size());
       } else {
         fail("FAILED:SelectResults size is different in both the cases. Size1="
@@ -1653,7 +1687,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
       set2 = (((SelectResults) r[j][1]).asSet());
       set1 = (((SelectResults) r[j][0]).asSet());
 
-      LogService.getLogger().info(" SIZE1 = " + set1.size() + " SIZE2 = " + set2.size());
+      logger.info(" SIZE1 = " + set1.size() + " SIZE2 = " + set2.size());
 
       //      boolean pass = true;
       itert1 = set1.iterator();
@@ -1663,10 +1697,10 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
 
         boolean exactMatch = false;
         while (itert2.hasNext()) {
-          LogService.getLogger().info("### Comparing results..");
+          logger.info("### Comparing results..");
           Object p2 = itert2.next();
           if (p1 instanceof Struct) {
-            LogService.getLogger().info("ITS a Set");
+            logger.info("ITS a Set");
             Object[] values1 = ((Struct) p1).getFieldValues();
             Object[] values2 = ((Struct) p2).getFieldValues();
             assertEquals(values1.length, values2.length);
@@ -1678,26 +1712,26 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
             }
             exactMatch = elementEqual;
           } else {
-            LogService.getLogger().info("Not a Set p2:" + p2 + " p1: " + p1);
+            logger.info("Not a Set p2:" + p2 + " p1: " + p1);
             if (p2 instanceof TestObject) {
-              LogService.getLogger().info("An instance of TestObject");
+              logger.info("An instance of TestObject");
               exactMatch = p2.equals(p1);
             } else {
-              LogService.getLogger().info("Not an instance of TestObject" + p2.getClass().getCanonicalName());
+              logger.info("Not an instance of TestObject" + p2.getClass().getCanonicalName());
               exactMatch = p2.equals(p1);
             }
           }
           if (exactMatch) {
-            LogService.getLogger().info("Exact MATCH");
+            logger.info("Exact MATCH");
             break;
           }
         }
         if (!exactMatch) {
-          LogService.getLogger().info("NOT A MATCH");
+          logger.info("NOT A MATCH");
           fail("Atleast one element in the pair of SelectResults supposedly identical, is not equal ");
         }
       }
-      LogService.getLogger().info("### Done Comparing results..");
+      logger.info("### Done Comparing results..");
     }
   }
 
@@ -1712,7 +1746,7 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
 
     for (int i = 0; i < queryString.length; i++) {
       try {
-        LogService.getLogger().info("### Executing Query :" + queryString[i]);
+        logger.info("### Executing Query :" + queryString[i]);
         Query query = qService.newQuery(queryString[i]);
         query.execute(params[i]);
       } catch (Exception e) {
@@ -1749,11 +1783,11 @@ public class QueryUsingPoolDUnitTest extends CacheTestCase {
 
   /* Close Client */
   public void closeClient() {
-    LogService.getLogger().info("### Close Client. ###");
+    logger.info("### Close Client. ###");
     try {
       closeCache();
     } catch (Exception ex) {
-      LogService.getLogger().info("### Failed to get close client. ###");
+      logger.info("### Failed to get close client. ###");
     }
     //    Wait.pause(2 * 1000);
   }

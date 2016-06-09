@@ -16,20 +16,31 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
 @SuppressWarnings("serial")
+@Category(DistributedTest.class)
 public class HAInterestPart1DUnitTest extends HAInterestTestCase {
 
-  public HAInterestPart1DUnitTest(String name) {
-    super(name);
+  public HAInterestPart1DUnitTest() {
+    super();
   }
 
   /**
    * Tests whether interest is registered or not on both primary and secondaries
    */
+  @Test
   public void testInterestRegistrationOnBothPrimaryAndSecondary() throws Exception {
     createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
@@ -47,6 +58,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
    * Tests whether interest is registered on both primary and secondaries and
    * verify their responses
    */
+  @Test
   public void testInterestRegistrationResponseOnBothPrimaryAndSecondary() throws Exception {
     createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
@@ -61,6 +73,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
    * Tests whether re-registration of interest causes duplicates on server side
    * interest map
    */
+  @Test
   public void testRERegistrationWillNotCreateDuplicateKeysOnServerInterstMaps() throws Exception {
     createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
@@ -80,6 +93,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
    * failover and should pick new primary and get server keys in response of
    * registerInterest
    */
+  @Test
   public void testPrimaryFailureInRegisterInterest() throws Exception {
     createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
@@ -101,6 +115,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
    * Tests if Secondary fails during interest registration should add to dead Ep
    * list
    */
+  @Test
   public void testSecondaryFailureInRegisterInterest() throws Exception {
     createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
@@ -123,6 +138,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
    * server to dead ep list and expect serverKeys as a response from
    * registration on newly selected primary
    */
+  @Test
   public void testBothPrimaryAndSecondaryFailureInRegisterInterest() throws Exception {
     createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
@@ -147,6 +163,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
    * expect serverKeys as a response from registration on newly selected primary
    *
    */
+  @Test
   public void testProbablePrimaryFailureInRegisterInterest() throws Exception {
     createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
@@ -167,6 +184,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
    * Tests if DeadServerMonitor on detecting an EP as alive should register
    * client ( create CCP) as welll as register IL
    */
+  @Test
   public void testInterstRegistrationOnRecoveredEPbyDSM() throws Exception {
     IgnoredException.addIgnoredException("SocketException");
     IgnoredException.addIgnoredException("Unexpected IOException");

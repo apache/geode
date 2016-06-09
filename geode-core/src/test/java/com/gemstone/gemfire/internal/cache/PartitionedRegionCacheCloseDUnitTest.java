@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Set;
 
 import com.gemstone.gemfire.LogWriter;
@@ -43,13 +52,14 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 
  *  
  */
+@Category(DistributedTest.class)
 public class PartitionedRegionCacheCloseDUnitTest extends
     PartitionedRegionDUnitTestCase
 {
 
   //////constructor //////////
-  public PartitionedRegionCacheCloseDUnitTest(String name) {
-    super(name);
+  public PartitionedRegionCacheCloseDUnitTest() {
+    super();
   }//end of constructor
 
   final static int MAX_REGIONS = 1;
@@ -57,6 +67,7 @@ public class PartitionedRegionCacheCloseDUnitTest extends
   final int totalNumBuckets = 5;
   
   //////////test methods ////////////////
+  @Test
   public void testCacheClose() throws Exception, Throwable
   {
     final String rName = getUniqueName();

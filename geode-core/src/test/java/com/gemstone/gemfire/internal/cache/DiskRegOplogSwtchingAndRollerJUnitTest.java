@@ -16,16 +16,11 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Arrays;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -39,44 +34,31 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Miscellaneous disk tests
- * 
- * 
- *  
  */
 @Category(IntegrationTest.class)
-public class DiskRegOplogSwtchingAndRollerJUnitTest extends
-    DiskRegionTestingBase
-{
+public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBase {
 
-  DiskRegionProperties diskProps = new DiskRegionProperties();
+  private static File[] dirs1 = null;
 
-  protected boolean encounteredException = false;
+  private static int[] diskDirSize1 = null;
 
-  protected volatile boolean hasBeenNotified = false;
+  private volatile boolean hasBeenNotified = false;
 
-  protected static File[] dirs1 = null;
+  private DiskRegionProperties diskProps = new DiskRegionProperties();
 
-  protected static int[] diskDirSize1 = null;
+  private boolean encounteredException = false;
 
-  @Before
-  public void setUp() throws Exception
-  {
-    super.setUp();
-  }
+  private Object forWaitNotify = new Object();
 
-  @After
-  public void tearDown() throws Exception
-  {
-    super.tearDown();
-  }
+  private boolean gotNotification = false;
+
+  private Object getValOnDsk = null;
 
   /**
-   * tests non occurence of DiskAccessException
-   *  
+   * tests non occurrence of DiskAccessException
    */
   @Test
-  public void testSyncPersistRegionDAExp()
-  {
+  public void testSyncPersistRegionDAExp() {
     File testingDirectory1 = new File("testingDirectory1");
     testingDirectory1.mkdir();
     testingDirectory1.deleteOnExit();
@@ -114,8 +96,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
   }// end of testSyncPersistRegionDAExp
 
   @Test
-  public void testAsyncPersistRegionDAExp()
-  {
+  public void testAsyncPersistRegionDAExp() {
     File testingDirectory1 = new File("testingDirectory1");
     testingDirectory1.mkdir();
     testingDirectory1.deleteOnExit();
@@ -151,8 +132,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
   }// end of testAsyncPersistRegionDAExp
 
-  private void diskAccessExpHelpermethod(final Region region)
-  {
+  private void diskAccessExpHelpermethod(final Region region) {
     final byte[] value = new byte[990];
     Arrays.fill(value, (byte)77);
     try {
@@ -172,18 +152,11 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
     }
   }
 
-  protected Object forWaitNotify = new Object();
-
-  protected boolean gotNotification = false;
-
   /**
    * DiskRegionRollingJUnitTest :
-   * 
-   *  
    */
   @Test
-  public void testSyncRollingHappening()
-  {
+  public void testSyncRollingHappening() {
     try {
       DiskRegionProperties diskRegionProperties = new DiskRegionProperties();
       diskRegionProperties.setDiskDirs(dirs);
@@ -235,8 +208,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
   }
 
   @Test
-  public void testSyncRollingNotHappening()
-  {
+  public void testSyncRollingNotHappening() {
     try {
       DiskRegionProperties diskRegionProperties = new DiskRegionProperties();
       diskRegionProperties.setDiskDirs(dirs);
@@ -277,8 +249,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
   }
 
   @Test
-  public void testAsyncRollingHappening()
-  {
+  public void testAsyncRollingHappening() {
     try {
       DiskRegionProperties diskRegionProperties = new DiskRegionProperties();
       diskRegionProperties.setDiskDirs(dirs);
@@ -334,8 +305,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
   }
 
   @Test
-  public void testAsyncRollingNotHappening()
-  {
+  public void testAsyncRollingNotHappening() {
     try {
       DiskRegionProperties diskRegionProperties = new DiskRegionProperties();
       diskRegionProperties.setDiskDirs(dirs);
@@ -374,8 +344,6 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
   }
 
-  protected Object getValOnDsk = null;
-
   /**
    * DiskRegOplog1OverridingOplog2JUnitTest: Disk Region test : oplog1 flush
    * overriding oplog2 flush
@@ -383,11 +351,9 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
    * This test will hold the flush of oplog1 and flush oplog2 before it. After
    * that oplog1 is allowed to flush. A get of an entry which was first put in
    * oplog1 and then in oplog2 should result in the get being done from oplog2.
-   *  
    */
   @Test
-  public void testOplog1FlushOverridingOplog2Flush()
-  {
+  public void testOplog1FlushOverridingOplog2Flush() {
     hasBeenNotified = false;
     diskProps.setDiskDirs(dirs);
     diskProps.setPersistBackup(true);
@@ -468,8 +434,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
 
   }// end of testOplog1FlushOverridingOplog2Flush
 
-  class DoesFlush implements Runnable
-  {
+  private class DoesFlush implements Runnable {
 
     private Region region;
 
@@ -477,15 +442,14 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
       this.region = region;
     }
 
-    public void run()
-    {
+    @Override
+    public void run() {
       ((LocalRegion)region).getDiskRegion().flushForTesting();
       synchronized (region) {
         region.notify();
         hasBeenNotified = true;
       }
     }
-
   }
 
   /**
@@ -493,8 +457,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
    * the time rolling has started , the entry exists in the current oplog
    */
   @Test
-  public void testEntryExistsinCurrentOplog()
-  {
+  public void testEntryExistsinCurrentOplog() {
     hasBeenNotified = false;
     diskProps.setDiskDirs(dirs);
     diskProps.setPersistBackup(true);
@@ -585,11 +548,9 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
   /**
    * Entries deleted in current Oplog are recorded correctly during the rolling
    * of that oplog
-   *  
    */
   @Test
-  public void testEntryDeletedinCurrentOplog()
-  {
+  public void testEntryDeletedinCurrentOplog() {
     hasBeenNotified = false;
     diskProps.setDiskDirs(dirs);
     diskProps.setPersistBackup(true);
@@ -690,28 +651,15 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
    // region.close();
   }// end of testEntryDeletedinCurrentOplog
 
-
-  /**
-   * 
-   * @param region
-   *          get LRU statistics
-   */
-  protected LRUStatistics getLRUStats(Region region)
-  {
+  private LRUStatistics getLRUStats(Region region) {
     return ((LocalRegion)region).getEvictionController().getLRUHelper()
         .getStats();
   }
 
   /**
    * to validate the get operation performed on a byte array.
-   * 
-   * @param key
-   * @param region
-   * @return
    */
-
-  private boolean getByteArrVal(Long key, Region region)
-  {
+  private boolean getByteArrVal(Long key, Region region) {
     Object val = null;
     byte[] val2 = new byte[1024];
     Arrays.fill(val2, (byte)77);
@@ -742,12 +690,10 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
    * Roller should wait for asynch writer to terminate if asynch flush is going
    * on , before deleting the oplog
    */
-  protected boolean afterWritingBytes = false;
+  private boolean afterWritingBytes = false;
 
   @Test
-  public void testOplogRollerWaitingForAsyncWriter()
-  {
-
+  public void testOplogRollerWaitingForAsyncWriter() {
     hasBeenNotified = false;
     diskProps.setDiskDirs(dirs);
     diskProps.setPersistBackup(true);
@@ -838,8 +784,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
 
   }// end of testOplogRollerWaitingForAsyncWriter
 
-  class DoesFlush1 implements Runnable
-  {
+  private class DoesFlush1 implements Runnable {
 
     private Region region;
 
@@ -847,27 +792,22 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
       this.region = region;
     }
 
-    public void run()
-    {
+    @Override
+    public void run() {
       ((LocalRegion)region).getDiskRegion().flushForTesting();
       synchronized (region) {
         region.notify();
         hasBeenNotified = true;
       }
     }
-
   }
 
   /**
    * Task 125: Ensuring that retrieval of evicted entry data for rolling
    * purposes is correct & does not cause any eviction sort of things
-   * 
-   * @throws EntryNotFoundException
-   *  
    */
   @Test
-  public void testGetEvictedEntry() throws EntryNotFoundException
-  {
+  public void testGetEvictedEntry() throws EntryNotFoundException {
     hasBeenNotified = false;
     diskProps.setDiskDirs(dirs);
     diskProps.setPersistBackup(false);
@@ -969,10 +909,8 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends
    * DiskAccessException doesn't occur even when amount of put data exceeds the
    * max dir sizes.
    */
-
   @Test
-  public void testDiskFullExcep()
-  {
+  public void testDiskFullExcep() {
     boolean exceptionOccured = false;
     int[] diskDirSize1 = new int[4];
     diskDirSize1[0] = 1048576;

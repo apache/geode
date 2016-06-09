@@ -17,6 +17,15 @@
 
 package com.gemstone.gemfire.cache.query.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 /**
  * This tests creates partition regions across VM's executes Queries on PR's so
  * that they generate various Exceptions
@@ -30,6 +39,7 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
+@Category(DistributedTest.class)
 public class PRInvalidQueryDUnitTest extends PartitionedRegionDUnitTestCase
 
 {
@@ -39,9 +49,9 @@ public class PRInvalidQueryDUnitTest extends PartitionedRegionDUnitTestCase
    * @param name
    */
 
-  public PRInvalidQueryDUnitTest(String name) {
+  public PRInvalidQueryDUnitTest() {
 
-    super(name);
+    super();
   }
 
   public void setCacheInVMs(VM... vms) {
@@ -70,6 +80,7 @@ public class PRInvalidQueryDUnitTest extends PartitionedRegionDUnitTestCase
    * @throws Exception
    */
 
+  @Test
   public void testPRDAckCreationAndQueryingWithInvalidQuery() throws Exception
   {
     LogWriterUtils.getLogWriter()

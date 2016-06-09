@@ -16,9 +16,41 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.client.*;
-import com.gemstone.gemfire.cache.query.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.PoolFactory;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.ServerOperationException;
+import com.gemstone.gemfire.cache.query.FunctionDomainException;
+import com.gemstone.gemfire.cache.query.Index;
+import com.gemstone.gemfire.cache.query.IndexInvalidException;
+import com.gemstone.gemfire.cache.query.NameResolutionException;
+import com.gemstone.gemfire.cache.query.Query;
+import com.gemstone.gemfire.cache.query.QueryException;
+import com.gemstone.gemfire.cache.query.QueryExecutionLowMemoryException;
+import com.gemstone.gemfire.cache.query.QueryExecutionTimeoutException;
+import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
+import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.TypeMismatchException;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.query.internal.QueryMonitor;
@@ -30,31 +62,32 @@ import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.DistributedRegion;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.control.*;
+import com.gemstone.gemfire.internal.cache.control.HeapMemoryMonitor;
+import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
+import com.gemstone.gemfire.internal.cache.control.MemoryEvent;
+import com.gemstone.gemfire.internal.cache.control.ResourceListener;
+import com.gemstone.gemfire.internal.cache.control.TestMemoryThresholdListener;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.dunit.*;
-import util.TestException;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
-
+@Category(DistributedTest.class)
 public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCase {
   
   private static int MAX_TEST_QUERY_TIMEOUT = 4000;
   private static int TEST_QUERY_TIMEOUT = 1000;
   private final static int CRITICAL_HEAP_USED = 950;
   private final static int NORMAL_HEAP_USED = 500;
-  public ResourceManagerWithQueryMonitorDUnitTest(String name) {
-    super(name);
-  }
-  
+
   @Override
   public final void postSetUpClientServerTestCase() throws Exception {
     Invoke.invokeInEveryVM(this.setHeapMemoryMonitorTestMode);
@@ -103,98 +136,118 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       return null;
     }
   };
- 
+
+  @Test
   public void testRMAndNoTimeoutSet() throws Exception {
     doCriticalMemoryHitTest("portfolios", false, 85/*crit threshold*/, false, -1, true);
   }
-  
+
+  @Test
   public void testRMAndNoTimeoutSetParReg() throws Exception {
     doCriticalMemoryHitTest("portfolios", true, 85/*crit threshold*/, false, -1, true);
   }
-  
+
+  @Test
   public void testRMButDisabledQueryMonitorForLowMemAndNoTimeoutSet() throws Exception {
     //verify that timeout is not set and that a query can execute properly
     doCriticalMemoryHitTest("portfolios", false, 85/*crit threshold*/, true, -1, true);
   }
-  
+
+  @Test
   public void testRMAndTimeoutSet() throws Exception {
     //verify that we still receive critical heap cancelation
     doCriticalMemoryHitTest("portfolios", false, 85/*crit threshold*/, true, TEST_QUERY_TIMEOUT, true);
   }
-  
+
+  @Test
   public void testRMAndTimeoutSetAndQueryTimesoutInstead() throws Exception {
     //verify that timeout is set correctly and cancel query 
     doCriticalMemoryHitTest("portfolios", false, 85/*crit threshold*/, true, TEST_QUERY_TIMEOUT, false);
   }
-  
+
+  @Test
   public void testRMButDisabledQueryMonitorForLowMemAndTimeoutSet()  throws Exception {
     //verify that timeout is still working properly
     doCriticalMemoryHitTest("portfolios", false, 85/*crit threshold*/, true, TEST_QUERY_TIMEOUT, true);
   }
   
-  
   //Query directly on member with RM and QM set
+  @Test
   public void testRMAndNoTimeoutSetOnServer() throws Exception {
     doCriticalMemoryHitTestOnServer("portfolios", false, 85/*crit threshold*/, false, -1, true);
   }
-  
+
+  @Test
   public void testRMAndNoTimeoutSetParRegOnServer() throws Exception {
     doCriticalMemoryHitTestOnServer("portfolios", true, 85/*crit threshold*/, false, -1, true);
   }
-  
+
+  @Test
   public void testRMButDisabledQueryMonitorForLowMemAndNoTimeoutSetOnServer() throws Exception {
     //verify that timeout is not set and that a query can execute properly
     doCriticalMemoryHitTestOnServer("portfolios", false, 85/*crit threshold*/, true, -1, true);
   }
-  
+
+  @Test
   public void testRMAndTimeoutSetOnServer() throws Exception {
     //verify that we still receive critical heap cancelation
     doCriticalMemoryHitTestOnServer("portfolios", false, 85/*crit threshold*/, true, TEST_QUERY_TIMEOUT, true);
   }
-  
+
+  @Test
   public void testRMAndTimeoutSetAndQueryTimesoutInsteadOnServer() throws Exception {
     //verify that timeout is set correctly and cancel query 
     doCriticalMemoryHitTestOnServer("portfolios", false, 85/*crit threshold*/, true, TEST_QUERY_TIMEOUT, false);
   }
-  
+
+  @Test
   public void testRMButDisabledQueryMonitorForLowMemAndTimeoutSetOnServer()  throws Exception {
     //verify that timeout is still working properly
     doCriticalMemoryHitTestOnServer("portfolios", false, 85/*crit threshold*/, true, TEST_QUERY_TIMEOUT, true);
   }
-  
+
+  @Test
   public void testPRGatherCancellation() throws Exception {
     doCriticalMemoryHitTestWithMultipleServers("portfolios", true, 85/*crit threshold*/, false, -1, true);
   }
 
+  @Test
   public void testPRGatherCancellationWhileGatheringResults() throws Exception {
     doCriticalMemoryHitDuringGatherTestWithMultipleServers("portfolios", true, 85/*crit threshold*/, false, -1, true);
   }
-  
+
+  @Test
   public void testPRGatherCancellationWhileAddingResults() throws Exception {
     doCriticalMemoryHitAddResultsTestWithMultipleServers("portfolios", true, 85/*crit threshold*/, false, -1, true);
   }
-  
+
+  @Test
   public void testIndexCreationCancellationPR() throws Exception {
     doCriticalMemoryHitWithIndexTest("portfolios", true, 85/*crit threshold*/, false, -1, true, "compact");
   }
-  
+
+  @Test
   public void testIndexCreationCancellation() throws Exception {
     doCriticalMemoryHitWithIndexTest("portfolios", false, 85/*crit threshold*/, false, -1, true, "compact");
   }
-  
+
+  @Test
   public void testIndexCreationNoCancellationPR() throws Exception {
     doCriticalMemoryHitWithIndexTest("portfolios", true, 85/*crit threshold*/, true, -1, true, "compact");
   }
-  
+
+  @Test
   public void testHashIndexCreationCancellationPR() throws Exception {
     doCriticalMemoryHitWithIndexTest("portfolios", true, 85/*crit threshold*/, false, -1, true, "hash");
   }
-  
+
+  @Test
   public void testHashIndexCreationCancellation() throws Exception {
     //need to add hook to canceled result set and very it is triggered for multiple servers
     doCriticalMemoryHitWithIndexTest("portfolios", false, 85/*crit threshold*/, false, -1, true, "hash");
   }
-  
+
+  @Test
   public void testHashIndexCreationNoCancellationPR() throws Exception {
     //need to add hook to canceled result set and very it is triggered for multiple servers
     doCriticalMemoryHitWithIndexTest("portfolios", true, 85/*crit threshold*/, true, -1, true, "hash");
@@ -1064,7 +1117,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       if (spot == 1) {
         try {
           if (!latch.await(8, TimeUnit.SECONDS)) {
-            throw new TestException("query was never unlatched");
+            fail("query was never unlatched");
           }
         } catch (InterruptedException e) {
           e.printStackTrace();

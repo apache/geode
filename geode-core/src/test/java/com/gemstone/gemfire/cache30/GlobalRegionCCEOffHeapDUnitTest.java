@@ -16,6 +16,17 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+import java.util.Properties;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
@@ -31,13 +42,10 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  * 
  * @since Geode 1.0
  */
+@Category(DistributedTest.class)
 @SuppressWarnings({ "deprecation", "serial" })
 public class GlobalRegionCCEOffHeapDUnitTest extends GlobalRegionCCEDUnitTest {
 
-  public GlobalRegionCCEOffHeapDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public final void preTearDownAssertions() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {

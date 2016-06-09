@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Map.Entry;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -28,14 +37,16 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
-public class Bug45164DUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class Bug45164DUnitTest extends JUnit4CacheTestCase {
   private static final int count = 10000;
   private static final int stride = 3;
   
-  public Bug45164DUnitTest(String name) {
-    super(name);
+  public Bug45164DUnitTest() {
+    super();
   }
 
+  @Test
   public void testIterateWhileDestroy() throws Throwable {
     SerializableRunnable destroy = new SerializableRunnable() {
       @Override

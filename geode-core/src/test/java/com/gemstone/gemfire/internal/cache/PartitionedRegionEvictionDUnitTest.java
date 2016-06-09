@@ -16,18 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache.util.ObjectSizerImpl;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.OSProcess;
-import com.gemstone.gemfire.internal.cache.control.HeapMemoryMonitor;
-import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
-import com.gemstone.gemfire.internal.cache.lru.HeapEvictor;
-import com.gemstone.gemfire.internal.cache.lru.HeapLRUCapacityController;
-import com.gemstone.gemfire.test.dunit.*;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Iterator;
@@ -35,11 +24,47 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
-  public PartitionedRegionEvictionDUnitTest(final String name) {
-    super(name);
-  }
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.DiskStoreFactory;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.EvictionAction;
+import com.gemstone.gemfire.cache.EvictionAttributes;
+import com.gemstone.gemfire.cache.InterestPolicy;
+import com.gemstone.gemfire.cache.Operation;
+import com.gemstone.gemfire.cache.PartitionAttributes;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.SubscriptionAttributes;
+import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import com.gemstone.gemfire.cache.util.ObjectSizerImpl;
+import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.OSProcess;
+import com.gemstone.gemfire.internal.cache.control.HeapMemoryMonitor;
+import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
+import com.gemstone.gemfire.internal.cache.lru.HeapEvictor;
+import com.gemstone.gemfire.internal.cache.lru.HeapLRUCapacityController;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+@Category(DistributedTest.class)
+public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
+
+  @Test
   public void testHeapLRUWithOverflowToDisk() {
     final Host host = Host.getHost(0);
     final VM vm2 = host.getVM(2);
@@ -186,6 +211,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
     System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance");
   }
   
+  @Test
   public void testHeapLRUWithLocalDestroy() {
     final Host host = Host.getHost(0);
     final VM vm2 = host.getVM(2);
@@ -305,6 +331,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
     assertEquals((3 * bucketsToCreate * (redundantCopies + 1)), totalEvicted);
   }
 
+  @Test
   public void testMemoryLRUWithOverflowToDisk() {
     final Host host = Host.getHost(0);
     final VM vm2 = host.getVM(2);
@@ -413,6 +440,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
     });
   }
 
+  @Test
   public void testMemoryLRUWithLocalDestroy() {
     final Host host = Host.getHost(0);
     final VM vm2 = host.getVM(2);
@@ -491,6 +519,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
     assertTrue(2 *extraEntries<= totalEvicted);
   }
 
+  @Test
   public void testEntryLRUWithOverflowToDisk() {
     final Host host = Host.getHost(0);
     final VM vm2 = host.getVM(2);
@@ -583,6 +612,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
      public boolean verify(long expectedEvictions) { return false; }
   };
   
+  @Test
   public void testEntryLRUWithLocalDestroy() {
     final Host host = Host.getHost(0);
     final VM vm2 = host.getVM(2);
@@ -719,6 +749,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
   }
 
   // Test to validate the Eviction Attribute : LRU Check
+  @Test
   public void testEvictionValidationForLRUEntry() {
     final Host host = Host.getHost(0);
     final VM testAccessor = host.getVM(1);
@@ -863,6 +894,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
   }
 
   // Test to validate the Eviction Attribute : LRU Action
+  @Test
   public void testEvictionValidationForLRUAction() {
     final Host host = Host.getHost(0);
     final VM testDatastore = host.getVM(2);
@@ -953,6 +985,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
   }
 
   // Test to validate the Eviction Attribute : LRU Maximum
+  @Test
   public void testEvictionValidationForLRUMaximum() {
     final Host host = Host.getHost(0);
     final VM testDatastore = host.getVM(2);
@@ -1000,6 +1033,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
   }
 
   // Test to validate the Eviction Attribute for LRUHeap
+  @Test
   public void testEvictionValidationForLRUHeap() {
     final Host host = Host.getHost(0);
     final VM testDatastore = host.getVM(2);
@@ -1122,6 +1156,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
   }
 
   // Test to validate an accessor can set the initial attributes
+  @Test
   public void testEvictionValidationWhenInitializedByAccessor() {
     final Host host = Host.getHost(0);
     final VM testDatastore = host.getVM(2);
@@ -1173,6 +1208,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
   }
 
   // Test to validate the Eviction Attribute : HeapLRU Interval
+  @Test
   public void testEvictionValidationForLRUMemory() {
     final Host host = Host.getHost(0);
     final VM firstDatastore = host.getVM(1);
@@ -1416,6 +1452,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
   }
 
 
+  @Test
   public void testEvictionValidationForLRUEntry_AccessorFirst() {
     final Host host = Host.getHost(0);
     final VM firstAccessor = host.getVM(0);
@@ -1491,6 +1528,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
     testDatastore.invoke(createSecondDataStore);
   }
   
+  @Test
   public void testEvictionValidationForLRUEntry_DatastoreFirst() {
     final Host host = Host.getHost(0);
     final VM firstAccessor = host.getVM(0);
@@ -1566,6 +1604,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
     testAccessor.invoke(createSecondAccessor);
   }
   
+  @Test
   public void testEvictionValidationForLRUEntry_TwoAccessors() {
     final Host host = Host.getHost(0);
     final VM firstAccessor = host.getVM(0);
@@ -1644,6 +1683,7 @@ public class PartitionedRegionEvictionDUnitTest extends CacheTestCase {
    * Test that gets do  not need to acquire a lock on the region
    * entry when LRU is enabled. This is bug 42265
    */
+  @Test
   public void testEntryLRUDeadlock() {
     final Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);

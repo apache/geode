@@ -20,6 +20,17 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Collection;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -28,22 +39,7 @@ import com.gemstone.gemfire.cache.query.CacheUtils;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
-import junit.framework.Assert;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import java.util.Collection;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-/**
- * 
- *         To change the template for this generated type comment go to Window -
- *         Preferences - Java - Code Generation - Code and Comments
- */
 @Category(IntegrationTest.class)
 public class DeclarativeIndexCreationJUnitTest {
 
@@ -76,13 +72,12 @@ public class DeclarativeIndexCreationJUnitTest {
     IndexManager im = IndexUtils.getIndexManager(root, true);
     Collection coll = im.getIndexes();
     if (coll.size() > 0) {
-      Assert.assertTrue(true);
+      assertTrue(true);
       CacheUtils.log("List of indexes= " + im.toString());
       RegionAttributes ra = root.getAttributes();
-      Assert.assertTrue(!ra.getIndexMaintenanceSynchronous());
+      assertTrue(!ra.getIndexMaintenanceSynchronous());
     } else
-      Assert
-          .fail("DeclarativeIndexCreationJUnitTest::testAsynchronousIndexCreatedOnRoot_PortfoliosRegion:No index found in the root region");
+      fail("DeclarativeIndexCreationJUnitTest::testAsynchronousIndexCreatedOnRoot_PortfoliosRegion:No index found in the root region");
   }
 
   @Test
@@ -91,18 +86,16 @@ public class DeclarativeIndexCreationJUnitTest {
     IndexManager im = IndexUtils.getIndexManager(root, true);
     Collection coll = im.getIndexes();
     if (coll.size() > 0) {
-      Assert.assertTrue(true);
+      assertTrue(true);
       CacheUtils.log("List of indexes= " + im.toString());
       RegionAttributes ra = root.getAttributes();
-      Assert.assertTrue(ra.getIndexMaintenanceSynchronous());
+      assertTrue(ra.getIndexMaintenanceSynchronous());
     } else
-      Assert
-          .fail("DeclarativeIndexCreationJUnitTest::testSynchronousIndexCreatedOnRoot_StringRegion Region:No index found in the root region");
+      fail("DeclarativeIndexCreationJUnitTest::testSynchronousIndexCreatedOnRoot_StringRegion Region:No index found in the root region");
     root = cache.getRegion("/root/string1");
     im = IndexUtils.getIndexManager(root, true);
     if (!im.isIndexMaintenanceTypeSynchronous())
-      Assert
-          .fail("DeclarativeIndexCreationJUnitTest::testSynchronousIndexCreatedOnRoot_StringRegion: The index update type not synchronous if no index-update-type attribuet specified in cache.cml");
+      fail("DeclarativeIndexCreationJUnitTest::testSynchronousIndexCreatedOnRoot_StringRegion: The index update type not synchronous if no index-update-type attribuet specified in cache.cml");
   }
 
   @Test
@@ -111,12 +104,11 @@ public class DeclarativeIndexCreationJUnitTest {
     IndexManager im = IndexUtils.getIndexManager(root, true);
     Collection coll = im.getIndexes();
     if (coll.size() > 0) {
-      Assert.assertTrue(true);
+      assertTrue(true);
       CacheUtils.log("List of indexes= " + im.toString());
       RegionAttributes ra = root.getAttributes();
-      Assert.assertTrue(ra.getIndexMaintenanceSynchronous());
+      assertTrue(ra.getIndexMaintenanceSynchronous());
     } else
-      Assert
-          .fail("DeclarativeIndexCreationJUnitTest::testAsynchronousIndexCreatedOnRoot_PortfoliosRegion:No index found in the root region");
+      fail("DeclarativeIndexCreationJUnitTest::testAsynchronousIndexCreatedOnRoot_PortfoliosRegion:No index found in the root region");
   }
 }

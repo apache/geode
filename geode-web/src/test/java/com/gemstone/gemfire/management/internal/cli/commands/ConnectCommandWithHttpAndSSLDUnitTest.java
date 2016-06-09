@@ -16,25 +16,26 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
+import static com.gemstone.gemfire.distributed.internal.DistributionConfig.*;
+import static com.gemstone.gemfire.management.internal.cli.i18n.CliStrings.*;
+import static com.gemstone.gemfire.util.test.TestUtil.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.util.Properties;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSession;
-import java.io.File;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-import static com.gemstone.gemfire.management.internal.cli.i18n.CliStrings.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.util.test.TestUtil.getResourcePath;
 
 /**
  * @since GemFire  8.1
@@ -197,7 +198,7 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
     setUpJmxManagerOnVm0ThenConnect(localProps);
   }
 
-  @Ignore("disabled for unknown reason")
+  @Ignore("TODO: disabled for unknown reason")
   @Test
   public void testSSLWithCipherSuite() throws Exception {
     Properties localProps = new Properties();
@@ -210,7 +211,7 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
     //"https.cipherSuites" which is required to restrict cipher suite with HttpsURLConnection
     //Keeping the below code for further investigation on different Java versions ( 7 & 8) @TODO
     
-   /*SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+    /*SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
     
     sslContext.init(null, null, new java.security.SecureRandom());
     String[] cipherSuites = sslContext.getSocketFactory().getSupportedCipherSuites();*/
@@ -227,7 +228,7 @@ public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
     setUpJmxManagerOnVm0ThenConnect(localProps);
   }
 
-  @Ignore("disabled for unknown reason")
+  @Ignore("TODO: disabled for unknown reason")
   @Test
   public void testSSLWithMultipleCipherSuite() throws Exception {
     System.setProperty("javax.net.debug", "ssl,handshake,failure");

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import static com.gemstone.gemfire.test.dunit.Wait.*;
 import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
 
@@ -28,14 +37,15 @@ import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.jayway.awaitility.Awaitility;
 
+@Category(DistributedTest.class)
 public class SerialWANStatsDUnitTest extends WANTestBase {
   
   private static final long serialVersionUID = 1L;
 
   private String testName;
   
-  public SerialWANStatsDUnitTest(String name) {
-    super(name);
+  public SerialWANStatsDUnitTest() {
+    super();
   }
 
   @Override
@@ -46,6 +56,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     addIgnoredException("Unexpected IOException");
   }
   
+  @Test
   public void testReplicatedSerialPropagation() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -95,6 +106,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     
   }
   
+  @Test
   public void testReplicatedSerialPropagationWithMultipleDispatchers() throws Exception {
 	 Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
 	 Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -144,6 +156,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 	    
 	  }
   
+  @Test
   public void testWANStatsTwoWanSites() throws Exception {
 
     Integer lnPort = createFirstLocatorWithDSId(1);
@@ -215,6 +228,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     
   }
 
+  @Test
   public void testReplicatedSerialPropagationHA() throws Exception {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -273,6 +287,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.checkStats_Failover("ln", 10000));
   }
   
+  @Test
   public void testReplicatedSerialPropagationUNPorcessedEvents() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -368,6 +383,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testReplicatedSerialPropagationWithRemoteRegionDestroy() throws Exception {
   int numEntries = 20000;
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -440,6 +456,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     
   }
   
+  @Test
   public void testSerialPropogationWithFilter() throws Exception {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
@@ -495,6 +512,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.checkUnProcessedStats("ln",900));
   }
   
+  @Test
   public void testSerialPropagationConflation() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

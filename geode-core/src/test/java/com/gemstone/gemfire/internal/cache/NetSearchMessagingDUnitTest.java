@@ -16,22 +16,40 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache30.CacheTestCase;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EvictionAction;
+import com.gemstone.gemfire.cache.EvictionAttributes;
+import com.gemstone.gemfire.cache.InterestPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.SubscriptionAttributes;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.internal.cache.SearchLoadAndWriteProcessor.NetSearchRequestMessage;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
 
-public class NetSearchMessagingDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
 
-  public NetSearchMessagingDUnitTest(String name) {
-    super(name);
-  }
-  
+  @Test
   public void testOneMessageWithReplicates() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -90,6 +108,7 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
   }
 
   @Category(FlakyTest.class) // GEODE-1155: time sensitive, waitForCriterion
+  @Test
   public void testNetSearchNormals() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -147,6 +166,7 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
    * demonstrate that a netsearch that gets the value of an overflow entry
    * does not update the LRU status of that entry.
    */
+  @Test
   public void testNetSearchNoLRU() {
     Host host = Host.getHost(0);
     VM vm2 = host.getVM(2);
@@ -208,6 +228,7 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
    * Make sure that even if we start out by net searching replicates,
    * we'll fall back to net searching normal members.
    */
+  @Test
   public void testNetSearchFailoverFromReplicate() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -259,6 +280,7 @@ public class NetSearchMessagingDUnitTest extends CacheTestCase {
     
   }
   
+  @Test
   public void testNetSearchFailoverFromOneReplicateToAnother() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

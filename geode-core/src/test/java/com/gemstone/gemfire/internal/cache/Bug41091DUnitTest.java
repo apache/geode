@@ -16,18 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.DistributionMessage;
-import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.InitialImageOperation.RequestImageMessage;
-import com.gemstone.gemfire.test.dunit.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,28 +25,41 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.distributed.internal.DistributionMessage;
+import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.cache.InitialImageOperation.RequestImageMessage;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- * 
  * This class tests that bucket regions can handle
  * a failure of the GII target during GII.
- *
  */
-public class Bug41091DUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class Bug41091DUnitTest extends JUnit4CacheTestCase {
 
-  /**
-   * @param name
-   */
-  public Bug41091DUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
   
+  @Test
   public void test() {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -82,9 +85,9 @@ public class Bug41091DUnitTest extends CacheTestCase {
               RequestImageMessage rim = (RequestImageMessage) message;
               Region region = getCache().getRegion(rim.regionPath);
               if(region instanceof BucketRegion) {
-//We can no longer do any puts until the bucket is completely created,
-//so this will hang
-//                getCache().getRegion("region").put(113, "b");
+                //We can no longer do any puts until the bucket is completely created,
+                //so this will hang
+                // getCache().getRegion("region").put(113, "b");
                 getCache().close();
               }
             }
@@ -135,7 +138,6 @@ public class Bug41091DUnitTest extends CacheTestCase {
             }
           };
       vm3.invoke(stopLocator);
-      
     }
   }
   

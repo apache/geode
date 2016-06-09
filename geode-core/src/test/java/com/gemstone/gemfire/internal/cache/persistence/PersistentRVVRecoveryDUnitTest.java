@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.persistence;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -24,8 +33,6 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import util.TestException;
 
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -76,12 +83,13 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
+@Category(DistributedTest.class)
 public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase {
   
   private static final int TEST_REPLICATED_TOMBSTONE_TIMEOUT = 1000;
 
-  public PersistentRVVRecoveryDUnitTest(String name) {
-    super(name);
+  public PersistentRVVRecoveryDUnitTest() {
+    super();
   }
   
   @Override
@@ -89,6 +97,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
     Invoke.invokeInEveryVM(PersistentRecoveryOrderDUnitTest.class, "resetAckWaitThreshold");
   }
   
+  @Test
   public void testNoConcurrencyChecks () {
     Cache cache = getCache();
     RegionFactory rf = new RegionFactory();
@@ -106,6 +115,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
    * Test that we can recover the RVV information with some normal
    * usage.
    */
+  @Test
   public void testRecoveryWithKRF() throws Throwable {
     doTestRecovery(new Runnable() {
       @Override
@@ -118,6 +128,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
   /**
    * Test that we can recover the RVV information if the krf is missing
    */
+  @Test
   public void testRecoveryWithoutKRF() throws Throwable {
     doTestRecovery(new Runnable() {
       @Override
@@ -134,6 +145,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
   /**
    * Test that we correctly recover and expire recovered tombstones, with compaction enabled
    */
+  @Test
   public void testLotsOfTombstones() throws Throwable {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -339,6 +351,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
    * then it must not get applied. Which is Bug #45921.
    *
    */
+  @Test
   public void testConflictChecksDuringConcurrentDeltaGIIAndOtherOp() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -402,7 +415,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
     try {
       async.join(3000);
     } catch (InterruptedException e) {
-      new TestException("VM1 entry destroy did not finish in 3000 ms");
+      new AssertionError("VM1 entry destroy did not finish in 3000 ms");
     }
 
     vm1.invoke(new CacheSerializableRunnable("Verifying entry version in new node VM1") {
@@ -531,6 +544,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
    * Test that we skip conflict checks with entries that are on
    * disk compared to entries that come in as part of a GII
    */
+  @Test
   public void testSkipConflictChecksForGIIdEntries() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -580,6 +594,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
    * Test that we skip conflict checks with entries that are on
    * disk compared to entries that come in as part of a concurrent operation
    */
+  @Test
   public void testSkipConflictChecksForConcurrentOps() throws Throwable {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -653,6 +668,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
    * Test that with concurrent updates to an async disk region,
    * we correctly update the RVV On disk
    */
+  @Test
   public void testUpdateRVVWithAsyncPersistence() throws Throwable {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(1);
@@ -736,6 +752,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
    * Test that when we generate a krf, we write the version tag
    * that matches the entry in the crf.
    */
+  @Test
   public void testWriteCorrectVersionToKrf() throws Throwable {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(1);

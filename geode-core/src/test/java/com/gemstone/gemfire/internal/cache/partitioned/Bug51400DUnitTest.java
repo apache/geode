@@ -19,6 +19,14 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
@@ -33,17 +41,16 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxyStats;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-
-/**
- * 
- * 
- */
-public class Bug51400DUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class Bug51400DUnitTest extends JUnit4DistributedTestCase {
 
   private static VM server0 = null;
   private static VM server1 = null;
@@ -53,13 +60,6 @@ public class Bug51400DUnitTest extends DistributedTestCase {
   private static GemFireCacheImpl cache;
 
   public static final String REGION_NAME = "Bug51400DUnitTest_region";
-
-  /**
-   * @param name
-   */
-  public Bug51400DUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -92,7 +92,7 @@ public class Bug51400DUnitTest extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
 
-    Bug51400DUnitTest test = new Bug51400DUnitTest("Bug51400DUnitTest");
+    Bug51400DUnitTest test = new Bug51400DUnitTest();
     DistributedSystem ds = test.getSystem(props);
     ds.disconnect();
     cache = (GemFireCacheImpl)CacheFactory.create(test.getSystem());
@@ -116,7 +116,7 @@ public class Bug51400DUnitTest extends DistributedTestCase {
       Integer interval) throws Exception {
     Properties props = new Properties();
 
-    DistributedSystem ds = new Bug51400DUnitTest("Bug51400DUnitTest").getSystem(props);
+    DistributedSystem ds = new Bug51400DUnitTest().getSystem(props);
     ds.disconnect();
     ClientCacheFactory ccf = new ClientCacheFactory(props);
     ccf.setPoolSubscriptionEnabled(true);
@@ -148,6 +148,7 @@ public class Bug51400DUnitTest extends DistributedTestCase {
         + (isPrimary ? "primary." : "secondary."), numOfEvents.intValue(), qSize);
   }
 
+  @Test
   public void testNothing() {
     // remove when ticket #51932 is fixed
   }

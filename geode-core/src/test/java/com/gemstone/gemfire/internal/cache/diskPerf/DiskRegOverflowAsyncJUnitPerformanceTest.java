@@ -16,12 +16,10 @@
  */
 package com.gemstone.gemfire.internal.cache.diskPerf;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -40,17 +38,24 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * which will fault in.
  */
 @Category(IntegrationTest.class)
-public class DiskRegOverflowAsyncJUnitPerformanceTest extends DiskRegionTestingBase
-{
+public class DiskRegOverflowAsyncJUnitPerformanceTest extends DiskRegionTestingBase {
 
-  LogWriter log = null;
+  private static int ENTRY_SIZE = 1024 * 5;
 
-  DiskRegionProperties diskProps = new DiskRegionProperties();
+  /**
+   * Do not change the value OP_COUNT = 400
+   * The test case is dependent on this value.
+   */
+  private static int OP_COUNT = 400;
 
-  @Before
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  private static int HALF_OP_COUNT = OP_COUNT / 2;
+
+  private LogWriter log = null;
+
+  private DiskRegionProperties diskProps = new DiskRegionProperties();
+
+  @Override
+  protected final void postSetUp() throws Exception {
     diskProps.setDiskDirs(dirs);
     diskProps.setTimeInterval(1000l);
     diskProps.setBytesThreshold(10000l);
@@ -58,13 +63,10 @@ public class DiskRegOverflowAsyncJUnitPerformanceTest extends DiskRegionTestingB
     region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,
         diskProps);
     log = ds.getLogWriter();
-
   }
 
-  @After
-  public void tearDown() throws Exception
-  {
-    super.tearDown();
+  @Override
+  protected final void postTearDown() throws Exception {
     if (cache != null) {
       cache.close();
     }
@@ -73,20 +75,8 @@ public class DiskRegOverflowAsyncJUnitPerformanceTest extends DiskRegionTestingB
     }
   }
 
- 
-  private static int ENTRY_SIZE = 1024 * 5;
-  
- /* Do not change the value OP_COUNT = 400
-  * The test case is dependent on this value.
-  */
-  
-  private static int OP_COUNT = 400;
-
-  private static int HALF_OP_COUNT = OP_COUNT / 2;
-
   @Test
-  public void testPopulatefor5Kbwrites()
-  {
+  public void testPopulatefor5Kbwrites() {
 //    RegionAttributes ra = region.getAttributes();
     LRUStatistics lruStats = getLRUStats(region);
     // Put in larger stuff until we start evicting
@@ -153,15 +143,10 @@ public class DiskRegOverflowAsyncJUnitPerformanceTest extends DiskRegionTestingB
         + " bytes/sec=" + bytesPerSecGet;
     log.info(statsGet);
     System.out.println("Perf Stats of get which is fauting in :" + statsGet);
-
   }
 
-  protected LRUStatistics getLRUStats(Region region)
-  {
+  private LRUStatistics getLRUStats(Region region) {
     return ((LocalRegion)region).getEvictionController().getLRUHelper()
         .getStats();
-
   }
-
 }
-

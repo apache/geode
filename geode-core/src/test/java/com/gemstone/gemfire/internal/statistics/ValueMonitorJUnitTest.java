@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.statistics;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,8 +33,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
 import com.gemstone.gemfire.StatisticDescriptor;
 import com.gemstone.gemfire.Statistics;
 import com.gemstone.gemfire.StatisticsType;
@@ -43,8 +43,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-import junit.framework.TestCase;
-
 /**
  * Integration test for the SampleCollector class.
  *   
@@ -54,7 +52,6 @@ import junit.framework.TestCase;
 public class ValueMonitorJUnitTest {
 
   private Mockery mockContext;
-  
   
   @Before
   public void setUp() throws Exception {
@@ -300,8 +297,7 @@ public class ValueMonitorJUnitTest {
     assertEquals(1, statCount);
   }
   
-  protected StatisticId createStatisticId(
-      final StatisticDescriptor descriptor, final Statistics stats) {
+  private StatisticId createStatisticId(final StatisticDescriptor descriptor, final Statistics stats) {
     return new StatisticId() {
 
       @Override
@@ -317,8 +313,7 @@ public class ValueMonitorJUnitTest {
     };
   }
   
-  protected StatisticsNotification createStatisticsNotification(
-      final long timeStamp, final Type type, final Number value) {
+  protected StatisticsNotification createStatisticsNotification(final long timeStamp, final Type type, final Number value) {
     return new StatisticsNotification() {
 
       @Override
@@ -333,22 +328,22 @@ public class ValueMonitorJUnitTest {
 
       @Override
       public Iterator<StatisticId> iterator() {
-        return null; // TODO
+        return null;
       }
 
       @Override
       public Iterator<StatisticId> iterator(StatisticDescriptor statDesc) {
-        return null; // TODO
+        return null;
       }
 
       @Override
       public Iterator<StatisticId> iterator(Statistics statistics) {
-        return null; // TODO
+        return null;
       }
 
       @Override
       public Iterator<StatisticId> iterator(StatisticsType statisticsType) {
-        return null; // TODO
+        return null;
       }
 
       @Override
@@ -361,9 +356,11 @@ public class ValueMonitorJUnitTest {
   
   private static void waitForNotification(final List<StatisticsNotification> notifications, long ms, long interval, boolean throwOnTimeout) {
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return notifications.size() > 0;
       }
+      @Override
       public String description() {
         return "waiting for notification";
       }

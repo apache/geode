@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,6 +57,7 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
+@Category(DistributedTest.class)
 public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitTestCase {
 
   private static final String TEST_FUNCTION_TIMEOUT = TestFunction.TEST_FUNCTION_TIMEOUT;
@@ -55,14 +65,15 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
   
   private static final long serialVersionUID = 1L;
 
-  public PRFunctionExecutionTimeOutDUnitTest(String name) {
-    super(name);
+  public PRFunctionExecutionTimeOutDUnitTest() {
+    super();
   }
   
   /**
    * Test remote execution by a pure accessor. Then test it using timeout and multiple getResult.
    * @throws Exception
    */
+  @Test
   public void testRemoteSingleKeyExecution_byName() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -238,6 +249,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
    * 
    * @throws Exception
    */
+  @Test
   public void testRemoteMultiKeyExecution_byName() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -405,6 +417,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
    * 
    * @throws Exception
    */
+  @Test
   public void testRemoteMultiKeyExecutionWithCollector_byName() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -500,6 +513,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
    * Then test it using timeout.
    * @throws Exception
    */
+  @Test
   public void testRemoteMultiKeyExecutionNoResult_byName() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -578,6 +592,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
    * Test multi-key remote execution by a pure accessor.
    * @throws Exception
    */
+  @Test
   public void testRemoteMultiKeyExecution_timeout() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -670,6 +685,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
    * @throws Exception
    */
   @Category(FlakyTest.class) // GEODE-1020: suspect string: BucketMovedException, missing fail in expected exception, eats exceptions
+  @Test
   public void testLocalMultiKeyExecution_byName() throws Exception {
     IgnoredException.addIgnoredException("BucketMovedException");
     final String rName = getUniqueName();
@@ -795,6 +811,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
    * Then test it using timeout and multiple getResult.
    * @throws Exception
    */
+  @Test
   public void testExecutionOnAllNodes_byName()
       throws Exception {
     final String rName = getUniqueName();

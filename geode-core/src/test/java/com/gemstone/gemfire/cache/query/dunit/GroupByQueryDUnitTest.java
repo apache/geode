@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Iterator;
 
 import org.junit.experimental.categories.Category;
@@ -47,12 +56,9 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
  *
  */
 @Category(DistributedTest.class)
-public class GroupByQueryDUnitTest extends CacheTestCase {
+public class GroupByQueryDUnitTest extends JUnit4CacheTestCase {
 
-  public GroupByQueryDUnitTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testConvertibleGroupByNoIndex() throws Exception {
 
     Host host = Host.getHost(0);

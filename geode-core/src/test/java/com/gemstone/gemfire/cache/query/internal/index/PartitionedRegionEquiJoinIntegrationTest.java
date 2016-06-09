@@ -36,7 +36,7 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class PartitionedRegionEquijoinDUnitTest extends EquijoinDUnitTest {
+public class PartitionedRegionEquiJoinIntegrationTest extends EquiJoinIntegrationTest {
  
   @Override
   protected void createRegions() {

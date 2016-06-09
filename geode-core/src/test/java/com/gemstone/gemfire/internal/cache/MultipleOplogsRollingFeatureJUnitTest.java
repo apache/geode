@@ -16,39 +16,39 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import org.junit.After;
+import static org.junit.Assert.*;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * The test will verify <br>
  * 1. Multiple oplogs are being rolled at once <br>
  * 2. The Number of entries getting logged to the HTree are taking care of creation 
- * 
  */
 @Category(IntegrationTest.class)
-public class MultipleOplogsRollingFeatureJUnitTest extends
-    DiskRegionTestingBase
-{
+public class MultipleOplogsRollingFeatureJUnitTest extends DiskRegionTestingBase {
 
-  protected Object mutex = new Object();
+  private volatile boolean FLAG = false;
 
-  protected boolean CALLBACK_SET = false;
+  private Object mutex = new Object();
 
-  protected volatile boolean FLAG = false;
+  private boolean CALLBACK_SET = false;
 
-  DiskRegionProperties diskProps = new DiskRegionProperties();
+  private DiskRegionProperties diskProps = new DiskRegionProperties();
 
-  @After
-  public void tearDown() throws Exception
-  {
+  @Override
+  protected final void preTearDown() throws Exception {
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
-    super.tearDown();
+  }
+
+  @Override
+  protected final void postTearDown() throws Exception {
+    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_COMPACTION");
     diskProps.setDiskDirs(dirs);
   }
 
@@ -58,21 +58,21 @@ public class MultipleOplogsRollingFeatureJUnitTest extends
    * 2. The Number of entries are properly conflated
    */
   @Test
-  public void testMultipleRolling()
-  {
+  public void testMultipleRolling() throws Exception {
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_COMPACTION", "17");
+
+    deleteFiles();
+    diskProps.setMaxOplogSize(450);
+    diskProps.setCompactionThreshold(100);
+    region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache,
+        diskProps, Scope.LOCAL);
+    assertNotNull(region);
+    DiskRegion diskRegion = ((LocalRegion)region).getDiskRegion();
+    assertNotNull(diskRegion);
+    LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
+    CacheObserverHolder.setInstance(getCacheObserver());
+
     try {
-      deleteFiles();
-      diskProps.setMaxOplogSize(450);
-      diskProps.setCompactionThreshold(100);
-      region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache,
-          diskProps, Scope.LOCAL);
-      assertNotNull(region);
-      DiskRegion diskRegion = ((LocalRegion)region).getDiskRegion();
-      assertNotNull(diskRegion);
-      LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
-      CacheObserverHolder.setInstance(getCacheObserver());
-      try {
 
       CALLBACK_SET = true;
 
@@ -85,7 +85,7 @@ public class MultipleOplogsRollingFeatureJUnitTest extends
       waitForCompactor(3000/*wait for forceRolling to finish */);
       logWriter.info("testMultipleRolling after waitForCompactor");
       // the compactor copied two tombstone and 1 entry to oplog #2
-      // The total oplog size will become 429, that why we need to 
+      // The total oplog size will become 429, that why we need to
       // set oplogmaxsize to be 450. After compaction, the size become 151
       // the compactor thread is now stuck waiting for mutex.notify
 
@@ -127,42 +127,33 @@ public class MultipleOplogsRollingFeatureJUnitTest extends
       region.forceRolling();
       assertEquals(3, diskRegion.getOplogToBeCompacted().length);
 
-      } finally {
+    } finally {
       synchronized (mutex) {
         // let the compactor go
         CALLBACK_SET = false;
         FLAG = false;
         logWriter.info("testMultipleRolling letting compactor go");
         mutex.notify();
-
       }
-      }
-      
-      // let the main thread sleep so that rolling gets over
-      waitForCompactor(5000);
-
-      assertTrue(
-          "Number of Oplogs to be rolled is not null : this is unexpected",
-          diskRegion.getOplogToBeCompacted() == null);
-      cache.close();
-      cache = createCache();
-      region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache,
-          diskProps, Scope.LOCAL);
-      assertTrue("Recreated region size is not 1 ", region.size() == 1);
-
-      closeDown();
-      deleteFiles();
     }
-    catch (Exception ex) {
-      ex.printStackTrace();
-      fail("testMultipleRolling: test failed due to " + ex);
-    } finally {
-      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_COMPACTION");
-    }
+
+    // let the main thread sleep so that rolling gets over
+    waitForCompactor(5000);
+
+    assertTrue(
+        "Number of Oplogs to be rolled is not null : this is unexpected",
+        diskRegion.getOplogToBeCompacted() == null);
+    cache.close();
+    cache = createCache();
+    region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache,
+        diskProps, Scope.LOCAL);
+    assertTrue("Recreated region size is not 1 ", region.size() == 1);
+
+    closeDown();
+    deleteFiles();
   }
 
-  private void waitForCompactor(long maxWaitingTime)
-  {
+  private void waitForCompactor(long maxWaitingTime) {
     long maxWaitTime = maxWaitingTime;
     long start = System.currentTimeMillis();
     while (!FLAG) { // wait until
@@ -179,8 +170,7 @@ public class MultipleOplogsRollingFeatureJUnitTest extends
     }
   }
 
-  private void addEntries(int opLogNum, int valueSize)
-  {
+  private void addEntries(int opLogNum, int valueSize) {
     assertNotNull(region);
     byte[] val = new byte[valueSize];
     for (int i = 0; i < valueSize; ++i) {
@@ -217,8 +207,7 @@ public class MultipleOplogsRollingFeatureJUnitTest extends
     }
   }
 
-  private CacheObserver getCacheObserver()
-  {
+  private CacheObserver getCacheObserver() {
     return (new CacheObserverAdapter() {
 
       public void beforeGoingToCompact()
@@ -251,6 +240,5 @@ public class MultipleOplogsRollingFeatureJUnitTest extends
 
       }
     });
-
   }
 }

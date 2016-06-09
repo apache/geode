@@ -22,21 +22,15 @@ import com.gemstone.gemfire.cache.CacheRuntimeException;
 import com.gemstone.gemfire.test.dunit.RepeatableRunnable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 
-import junit.framework.AssertionFailedError;
-
 /**
  * A helper class that provides the {@link SerializableRunnable}
  * class, but uses a {@link #run2} method instead that throws {@link
  * CacheException}.  This way, we don't need to have a lot of
  * try/catch code in the tests.
  *
- *
  * @since GemFire 3.0
  */
-public abstract class CacheSerializableRunnable
-  extends SerializableRunnable 
-  implements RepeatableRunnable 
-{
+public abstract class CacheSerializableRunnable extends SerializableRunnable implements RepeatableRunnable {
 
   /**
    * Creates a new <code>CacheSerializableRunnable</code> with the
@@ -50,7 +44,7 @@ public abstract class CacheSerializableRunnable
    * Creates a new <code>CacheSerializableRunnable</code> with the
    * given name
    */
-  public CacheSerializableRunnable(String name,Object[] args) {
+  public CacheSerializableRunnable(String name, Object[] args) {
     super(name);
     this.args = args;
   }
@@ -74,21 +68,21 @@ public abstract class CacheSerializableRunnable
   }
   
   /**
-   * Invokes the {@link #run} method.  If AssertionFailedError is thrown,
+   * Invokes the {@link #run} method.  If AssertionError is thrown,
    * and repeatTimeoutMs is >0, then repeat the {@link #run} method until
    * it either succeeds or repeatTimeoutMs milliseconds have passed.  The
-   * AssertionFailedError is only thrown to the caller if the last run
+   * AssertionError is only thrown to the caller if the last run
    * still throws it.
    */
   public final void runRepeatingIfNecessary(long repeatTimeoutMs) {
     long start = System.currentTimeMillis();
-    AssertionFailedError lastErr = null;
+    AssertionError lastErr = null;
     do {
       try {
         lastErr = null;
         this.run();
         CacheFactory.getAnyInstance().getLogger().fine("Completed " + this);
-      } catch (AssertionFailedError err) {
+      } catch (AssertionError err) {
         CacheFactory.getAnyInstance().getLogger().fine("Repeating " + this);
         lastErr = err;
         try {
@@ -109,19 +103,13 @@ public abstract class CacheSerializableRunnable
 
   public void run3() throws CacheException{}
 
-  /////////////////////////  Inner Classes  /////////////////////////
-
   /**
    * An exception that wraps a {@link CacheException}
    */
-  public static class CacheSerializableRunnableException 
-    extends CacheRuntimeException {
+  public static class CacheSerializableRunnableException extends CacheRuntimeException {
 
-    public CacheSerializableRunnableException(String message,
-                                              Throwable cause) {
+    public CacheSerializableRunnableException(String message, Throwable cause) {
       super(message, cause);
     }
-
   }
-
 }

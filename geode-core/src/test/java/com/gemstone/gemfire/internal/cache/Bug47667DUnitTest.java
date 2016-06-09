@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.CacheTransactionManager;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
@@ -28,12 +37,13 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 
+@Category(DistributedTest.class)
 public class Bug47667DUnitTest extends LocatorTestBase {
 
   private static final long serialVersionUID = 2859534245283086765L;
 
-  public Bug47667DUnitTest(String name) {
-    super(name);
+  public Bug47667DUnitTest() {
+    super();
   }
 
   @Override
@@ -46,6 +56,7 @@ public class Bug47667DUnitTest extends LocatorTestBase {
     disconnectAllFromDS();
   }
 
+  @Test
   public void testbug47667() {
     Host host = Host.getHost(0);
     VM locator = host.getVM(0);

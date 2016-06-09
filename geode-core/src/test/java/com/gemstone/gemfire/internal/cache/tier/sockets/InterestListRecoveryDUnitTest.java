@@ -16,18 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.client.internal.RegisterInterestTracker;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.test.dunit.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.EOFException;
 import java.net.SocketException;
@@ -36,11 +26,38 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.SystemFailure;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.InterestResultPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.cache.client.internal.RegisterInterestTracker;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- *
  * Test Scenario :
  *
  * one client(c1) two servers(s1,s2)
@@ -52,10 +69,12 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  * see interest list on s1 contains only s4, s5
  * s2 ----> unavaliable // fail over should to s1 with intrest list s4,s5
  * see only k4 and k5 are registerd on s1
- *
  */
-public class InterestListRecoveryDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
+
+  private static final String REGION_NAME = InterestListRecoveryDUnitTest.class.getSimpleName() + "_region";
+
   private static Cache cache = null;
 
   VM server1 = null;
@@ -66,14 +85,6 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
 
   private static int PORT1;
   private static int PORT2;
-
-
-  private static final String REGION_NAME = "InterestListRecoveryDUnitTest_region";
-
-  /** constructor */
-  public InterestListRecoveryDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -92,9 +103,9 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
     createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2));
   }
 
-  // this test fails because of bug# 35352 , hence commented the bug is Deferred to: Danube
-  public void XtestKeyInterestRecoveryWhileServerFailover() throws Exception
-  {
+  @Ignore("TODO: test is disabled because of #35352: proxy.markServerUnavailable() is not causing interestListEndpoint to change")
+  @Test
+  public void testKeyInterestRecoveryWhileServerFailover() throws Exception {
     createEntries();
     server1.invoke(() -> InterestListRecoveryDUnitTest.createEntries());
     registerK1toK5();
@@ -111,6 +122,7 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
 
   }
 
+  @Test
   public void testKeyInterestRecoveryWhileProcessException() throws Exception {
     VM serverFirstRegistered = null;
     VM serverSecondRegistered = null;
@@ -188,8 +200,7 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
 
   public static void createClientCache(String host, Integer port1, Integer port2 ) throws Exception
   {
-    InterestListRecoveryDUnitTest test = new InterestListRecoveryDUnitTest(
-        "temp");
+    InterestListRecoveryDUnitTest test = new InterestListRecoveryDUnitTest();
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -218,8 +229,7 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
 
   public static Integer createServerCache() throws Exception
   {
-    InterestListRecoveryDUnitTest test = new InterestListRecoveryDUnitTest(
-        "temp");
+    InterestListRecoveryDUnitTest test = new InterestListRecoveryDUnitTest();
     cache = test.createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -233,9 +243,6 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
     server1.start();
     return new Integer(server1.getPort());
   }
-
-
-
 
   public static void createEntries()
   {
@@ -290,6 +297,7 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
       Assert.fail("while setting server unavailable  "+ server, ex);
     }
   }
+
   public static void setServerAvailable(String server)
   {
     try {
@@ -316,8 +324,6 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
     }
   }
 
-
-
   public static void put(String key)
   {
     try {
@@ -328,7 +334,6 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
       Assert.fail("failed while r.put()", ex);
     }
   }
-
 
   public static void verifyRegionToProxyMapForFullRegistrationRetry() {
     WaitCriterion ev = new WaitCriterion() {
@@ -355,21 +360,19 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
     Wait.waitForCriterion(ev, 20 * 1000, 200, true);
   }
   
-   public static void verifyRegionToProxyMapForFullRegistration()
-   {
-     Iterator iter = getCacheClientProxies().iterator();
-     if(iter.hasNext()){
-       Set keys = getKeysOfInterestMap((CacheClientProxy)iter.next(), "/" + REGION_NAME);
-       assertNotNull(keys);
+  public static void verifyRegionToProxyMapForFullRegistration() {
+    Iterator iter = getCacheClientProxies().iterator();
+    if(iter.hasNext()){
+      Set keys = getKeysOfInterestMap((CacheClientProxy)iter.next(), "/" + REGION_NAME);
+      assertNotNull(keys);
 
-       assertTrue(keys.contains("key-1"));
-       assertTrue(keys.contains("key-2"));
-       assertTrue(keys.contains("key-3"));
-       assertTrue(keys.contains("key-4"));
-       assertTrue(keys.contains("key-5"));
-     }
-   }
-
+      assertTrue(keys.contains("key-1"));
+      assertTrue(keys.contains("key-2"));
+      assertTrue(keys.contains("key-3"));
+      assertTrue(keys.contains("key-4"));
+      assertTrue(keys.contains("key-5"));
+    }
+  }
 
   public static void verifyRegisterK4toK5Retry() {
     WaitCriterion ev = new WaitCriterion() {
@@ -397,19 +400,19 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
     Wait.waitForCriterion(ev, 20 * 1000, 200, true);
   }
 
-   public static void verifyRegisterK4toK5() {
-     Iterator iter = getCacheClientProxies().iterator();
-     if (iter.hasNext()) {
-       Set keysMap = getKeysOfInterestMap((CacheClientProxy)iter.next(), "/" + REGION_NAME);
-       assertNotNull(keysMap);
+  public static void verifyRegisterK4toK5() {
+    Iterator iter = getCacheClientProxies().iterator();
+    if (iter.hasNext()) {
+      Set keysMap = getKeysOfInterestMap((CacheClientProxy)iter.next(), "/" + REGION_NAME);
+      assertNotNull(keysMap);
 
-       assertFalse(keysMap.contains("key-1"));
-       assertFalse(keysMap.contains("key-2"));
-       assertFalse(keysMap.contains("key-3"));
-       assertTrue(keysMap.contains("key-4"));
-       assertTrue(keysMap.contains("key-5"));
-     }
-   }
+      assertFalse(keysMap.contains("key-1"));
+      assertFalse(keysMap.contains("key-2"));
+      assertFalse(keysMap.contains("key-3"));
+      assertTrue(keysMap.contains("key-4"));
+      assertTrue(keysMap.contains("key-5"));
+    }
+  }
 
   public static void verifyRegionToProxyMapForNoRegistrationRetry() {
     WaitCriterion ev = new WaitCriterion() {
@@ -436,41 +439,40 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
     Wait.waitForCriterion(ev, 20 * 1000, 200, true);
   }
 
- public static void verifyRegionToProxyMapForNoRegistration()
- {
-   Iterator iter = getCacheClientProxies().iterator();
-   if (iter.hasNext()) {
-     Set keysMap = getKeysOfInterestMap((CacheClientProxy)iter.next(), "/" + REGION_NAME);
-     if (keysMap != null) { // its ok not to have an empty map, just means there is no registration
-       assertFalse(keysMap.contains("key-1"));
-       assertFalse(keysMap.contains("key-2"));
-       assertFalse(keysMap.contains("key-3"));
-       assertFalse(keysMap.contains("key-4"));
-       assertFalse(keysMap.contains("key-5"));
-     }
-   }
- }
+  public static void verifyRegionToProxyMapForNoRegistration() {
+    Iterator iter = getCacheClientProxies().iterator();
+    if (iter.hasNext()) {
+      Set keysMap = getKeysOfInterestMap((CacheClientProxy)iter.next(), "/" + REGION_NAME);
+      if (keysMap != null) { // its ok not to have an empty map, just means there is no registration
+        assertFalse(keysMap.contains("key-1"));
+        assertFalse(keysMap.contains("key-2"));
+        assertFalse(keysMap.contains("key-3"));
+        assertFalse(keysMap.contains("key-4"));
+        assertFalse(keysMap.contains("key-5"));
+      }
+    }
+  }
 
- public static Set getCacheClientProxies() {
-   Cache c = CacheFactory.getAnyInstance();
-   assertEquals("More than one CacheServer", 1, c.getCacheServers().size());
-   CacheServerImpl bs = (CacheServerImpl)c.getCacheServers().iterator()
-   .next();
-   assertNotNull(bs);
-   assertNotNull(bs.getAcceptor());
-   assertNotNull(bs.getAcceptor().getCacheClientNotifier());
-   return new HashSet(bs.getAcceptor().getCacheClientNotifier().getClientProxies());
- }
+  public static Set getCacheClientProxies() {
+    Cache c = CacheFactory.getAnyInstance();
+    assertEquals("More than one CacheServer", 1, c.getCacheServers().size());
+    CacheServerImpl bs = (CacheServerImpl)c.getCacheServers().iterator()
+    .next();
+    assertNotNull(bs);
+    assertNotNull(bs.getAcceptor());
+    assertNotNull(bs.getAcceptor().getCacheClientNotifier());
+    return new HashSet(bs.getAcceptor().getCacheClientNotifier().getClientProxies());
+  }
 
- public static Set getKeysOfInterestMap(CacheClientProxy proxy, String regionName) {
-   //assertNotNull(proxy.cils[RegisterInterestTracker.interestListIndex]);
-   //assertNotNull(proxy.cils[RegisterInterestTracker.interestListIndex]._keysOfInterest);
-   return proxy.cils[RegisterInterestTracker.interestListIndex]
-     .getProfile(regionName).getKeysOfInterestFor(proxy.getProxyID());
- }
+  public static Set getKeysOfInterestMap(CacheClientProxy proxy, String regionName) {
+    //assertNotNull(proxy.cils[RegisterInterestTracker.interestListIndex]);
+    //assertNotNull(proxy.cils[RegisterInterestTracker.interestListIndex]._keysOfInterest);
+    return proxy.cils[RegisterInterestTracker.interestListIndex]
+      .getProfile(regionName).getKeysOfInterestFor(proxy.getProxyID());
+  }
 
- @Override
- public final void preTearDown() throws Exception {
+  @Override
+  public final void preTearDown() throws Exception {
     // close the clients first
     server2.invoke(() -> InterestListRecoveryDUnitTest.closeCache());
     closeCache();
@@ -485,8 +487,7 @@ public class InterestListRecoveryDUnitTest extends DistributedTestCase
       cache.getDistributedSystem().disconnect();
     }
   }
-  
-  
+
   public static void verifyDeadAndLiveServers(final int expectedDeadServers, 
       final int expectedLiveServers)
   {

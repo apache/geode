@@ -16,6 +16,14 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.Region;
@@ -25,13 +33,15 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.Properties;
+@Category(DistributedTest.class)
+public class Bug36829DUnitTest extends JUnit4DistributedTestCase {
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-public class Bug36829DUnitTest extends DistributedTestCase {
   private VM serverVM;
 
   private VM ClientVM;
@@ -39,10 +49,6 @@ public class Bug36829DUnitTest extends DistributedTestCase {
   private String regionName;
 
   private int PORT;
-
-  public Bug36829DUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -53,8 +59,8 @@ public class Bug36829DUnitTest extends DistributedTestCase {
     CacheServerTestUtil.disableShufflingOfEndpoints();
   }
 
+  @Test
   public void testBug36829() {
-
     // Step 1: Starting the servers
     final String durableClientId = getName() + "_client";
 
@@ -80,64 +86,36 @@ public class Bug36829DUnitTest extends DistributedTestCase {
     // If exception is not thrown then the test fails.
     this.ClientVM.invoke(() -> Bug36829DUnitTest.registerKey( "Key1" ));
 
-
-    // creating REgion on the Server
+    // creating Region on the Server
 /*    this.serverVM.invoke(() -> CacheServerTestUtil.createRegion( regionName ));
      // should be successful.
     this.ClientVM.invoke(() -> Bug36829DUnitTest.registerKeyAfterRegionCreation( "Key1" ));*/
-
 
     // Stop the durable client
     this.ClientVM.invoke(() -> CacheServerTestUtil.closeCache());
 
     // Stop server 1
     this.serverVM.invoke(() -> CacheServerTestUtil.closeCache());
-
   }
 
-  
   private static void registerKey(String key) throws Exception {
+    // Get the region
+    Region region = CacheServerTestUtil.getCache().getRegion(Bug36829DUnitTest.class.getName() + "_region");
+    assertNotNull(region);
     try {
-      // Get the region
-      Region region = CacheServerTestUtil.getCache().getRegion(
-          Bug36829DUnitTest.class.getName() + "_region");
-      // Region region =
-      // CacheServerTestUtil.getCache().getRegion(regionName);
-      assertNotNull(region);
-      try {
-        region.registerInterest(key, InterestResultPolicy.NONE);
-        fail("expected ServerOperationException");
-      }
-      catch (ServerOperationException expected) {
-      }
+      region.registerInterest(key, InterestResultPolicy.NONE);
+      fail("expected ServerOperationException");
     }
-    catch (Exception ex) {
-      Assert.fail("failed while registering interest in registerKey function", ex);
+    catch (ServerOperationException expected) {
     }
   }
 
-  private static void registerKeyAfterRegionCreation(String key)
-      throws Exception {
-    try {
-      // Get the region
-      Region region = CacheServerTestUtil.getCache().getRegion(
-          Bug36829DUnitTest.class.getName() + "_region");
-      // Region region =
-      // CacheServerTestUtil.getCache().getRegion(regionName);
-      assertNotNull(region);
-      try {
-        region.registerInterest(key, InterestResultPolicy.NONE);
-      }
-      catch (Exception e) {
-        fail("unexpected Exception while registerInterest inspite of region present on the server."
-            + " Details of Exception:" + "\ne.getCause:" + e.getCause()
-            + "\ne.getMessage:" + e.getMessage());
-      }
-    }
+  private static void registerKeyAfterRegionCreation(String key) throws Exception {
+    // Get the region
+    Region region = CacheServerTestUtil.getCache().getRegion(Bug36829DUnitTest.class.getName() + "_region");
+    assertNotNull(region);
 
-    catch (Exception ex) {
-      Assert.fail("failed while registering interest in registerKey function", ex);
-    }
+    region.registerInterest(key, InterestResultPolicy.NONE);
   }
 
   private Pool getClientPool(String host, int server1Port,

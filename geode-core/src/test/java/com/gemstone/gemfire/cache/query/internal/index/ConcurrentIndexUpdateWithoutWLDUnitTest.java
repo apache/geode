@@ -19,7 +19,19 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import com.gemstone.gemfire.cache.*;
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheExistsException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexStatistics;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
@@ -31,22 +43,30 @@ import com.gemstone.gemfire.cache.query.partitioned.PRQueryDUnitHelper;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.cache.*;
+import com.gemstone.gemfire.internal.cache.CachedDeserializable;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.RegionEntry;
+import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.ArrayList;
-import java.util.Collection;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- * 
  * During validation all region operations are paused for a while. Validation
  * happens multiple time during one test run on a fixed time interval.
- * 
- * 
  */
-public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
-    DistributedTestCase {
+@Category(DistributedTest.class)
+public class ConcurrentIndexUpdateWithoutWLDUnitTest extends JUnit4DistributedTestCase {
   
   PRQueryDUnitHelper helper = new PRQueryDUnitHelper();
   private static String regionName = "Portfolios";
@@ -65,13 +85,6 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
 
   int stepSize = 10;
   private int totalDataSize = 50;
-
-  /**
-   * @param name
-   */
-  public ConcurrentIndexUpdateWithoutWLDUnitTest(String name) {
-    super(name);
-  }
 
   public void setCacheInVMs(VM... vms) {
     for (VM vm : vms) {
@@ -115,7 +128,9 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
       if (region != null) region.destroyRegion();
     }
   }
+
   // Tests on Local/Replicated Region
+  @Test
   public void testCompactRangeIndex() {
     // Create a Local Region.
     Host host = Host.getHost(0);
@@ -145,6 +160,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
     
   }
 
+  @Test
   public void testMultiIndexCreation() {
     // Create a Local Region.
     Host host = Host.getHost(0);
@@ -201,6 +217,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
     };
   }
 
+  @Test
   public void testRangeIndex() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -229,6 +246,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
   }
 
   // Tests on Partition Region
+  @Test
   public void testCompactRangeIndexOnPR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -291,6 +309,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
     vm3.invoke(getCacheSerializableRunnableForIndexValidation(regionName, indexName));
   }
 
+  @Test
   public void testRangeIndexOnPR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -352,6 +371,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
     vm3.invoke(getCacheSerializableRunnableForIndexValidation(regionName, rindexName));
   }
 
+  @Test
   public void testMultiIndexOnPR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -427,13 +447,10 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends
   /**
    * This validator will iterate over RegionEntries and verify their corresponding
    * index key and entry presence in index valuesToEntriesMap.
-   * 
-   *
    */
-  public class IndexValidator {
+  private static class IndexValidator {
 
     public IndexValidator() {
-      
     }
 
     private boolean isValidationInProgress;

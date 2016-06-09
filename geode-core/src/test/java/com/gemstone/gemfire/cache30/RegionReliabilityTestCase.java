@@ -16,7 +16,44 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.locks.Lock;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.AttributesMutator;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheLoader;
+import com.gemstone.gemfire.cache.CacheLoaderException;
+import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.cache.CommitDistributionException;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.ExpirationAction;
+import com.gemstone.gemfire.cache.ExpirationAttributes;
+import com.gemstone.gemfire.cache.LoaderHelper;
+import com.gemstone.gemfire.cache.LossAction;
+import com.gemstone.gemfire.cache.MembershipAttributes;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAccessException;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionDistributionException;
+import com.gemstone.gemfire.cache.RegionEvent;
+import com.gemstone.gemfire.cache.RegionMembershipListener;
+import com.gemstone.gemfire.cache.RegionReinitializedException;
+import com.gemstone.gemfire.cache.RequiredRoles;
+import com.gemstone.gemfire.cache.ResumptionAction;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.util.RegionMembershipListenerAdapter;
@@ -25,17 +62,21 @@ import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.distributed.internal.membership.InternalRole;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.internal.cache.AbstractRegion;
+import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.TXManagerImpl;
+import com.gemstone.gemfire.internal.cache.TXState;
+import com.gemstone.gemfire.internal.cache.TXStateInterface;
+import com.gemstone.gemfire.internal.cache.TXStateProxyImpl;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.*;
-import java.util.concurrent.locks.Lock;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Tests region reliability defined by MembershipAttributes.
@@ -44,19 +85,11 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  */
 public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
-  public RegionReliabilityTestCase(String name) {
-    super(name);
-  }
-
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     DistributedCacheOperation.setBeforePutOutgoing(null);
   }
 
-  // -------------------------------------------------------------------------
-  // Configuration and setup methods
-  // -------------------------------------------------------------------------
-  
   /** Returns scope to execute tests under. */
   protected abstract Scope getRegionScope();
   
@@ -416,6 +449,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of NO_ACCESS on region operations.
    */
+  @Test
   public void testNoAccess() throws Exception {
     final String name = this.getUniqueName();
     
@@ -502,6 +536,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of NO_ACCESS on local entry expiration actions.
    */
+  @Test
   public void testNoAccessWithLocalEntryExpiration() throws Exception {
     final String name = this.getUniqueName();
     
@@ -583,6 +618,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of NO_ACCESS on local region expiration actions.
    */
+  @Test
   public void testNoAccessWithLocalRegionExpiration() throws Exception {
     final String name = this.getUniqueName();
     
@@ -641,6 +677,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of LIMITED_ACCESS on region operations.
    */
+  @Test
   public void testLimitedAccess() throws Exception {
     final String name = this.getUniqueName();
     
@@ -724,6 +761,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of LIMITED_ACCESS on local entry expiration actions.
    */
+  @Test
   public void testLimitedAccessWithLocalEntryExpiration() throws Exception {
     final String name = this.getUniqueName();
     
@@ -812,6 +850,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of LIMITED_ACCESS on local region expiration actions.
    */
+  @Test
   public void testLimitedAccessWithLocalRegionExpiration() throws Exception {
     final String name = this.getUniqueName();
     
@@ -855,6 +894,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of FULL_ACCESS on region operations.
    */
+  @Test
   public void testFullAccess() throws Exception {
     final String name = this.getUniqueName();
     
@@ -919,6 +959,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    * Tests affect of FULL_ACCESS on local entry expiration actions.
    */
   @Category(FlakyTest.class) // GEODE-447: time sensitive, expiration, waitForMemberTimeout is unimplemented
+  @Test
   public void testFullAccessWithLocalEntryExpiration() throws Exception {
     final String name = this.getUniqueName();
     
@@ -992,6 +1033,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of FULL_ACCESS on local region expiration actions.
    */
+  @Test
   public void testFullAccessWithLocalRegionExpiration() throws Exception {
     final String name = this.getUniqueName();
     
@@ -1033,6 +1075,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   
   protected static Boolean[] detectedDeparture_testCommitDistributionException = 
     { Boolean.FALSE };
+  @Test
   public void testCommitDistributionException() throws Exception {
     if (getRegionScope().isGlobal()) return; // skip test under Global
     if (getRegionScope().isDistributedNoAck()) return; // skip test under DistributedNoAck
@@ -1156,6 +1199,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   
   protected static Boolean[] detectedDeparture_testRegionDistributionException = 
     { Boolean.FALSE };
+  @Test
   public void testRegionDistributionException() throws Exception {
     if (getRegionScope().isDistributedNoAck()) return; // skip test under DistributedNoAck
     
@@ -1323,6 +1367,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     }
   }
 
+  @Test
   public void testReinitialization() throws Exception {
     final String name = this.getUniqueName();
     final String roleA = name+"-A";

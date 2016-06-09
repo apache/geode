@@ -16,11 +16,11 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
-
-import junit.framework.Assert;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.FunctionAdapter;
@@ -46,7 +46,7 @@ public class PerformanceTestFunction extends FunctionAdapter {
       Region fcd = PartitionRegionHelper.getLocalDataForContext(prContext);
       for (Iterator i = allKeysSet.iterator(); i.hasNext();) {
         Object val = fcd.get(i.next());
-        Assert.assertNotNull(val);
+        assertNotNull(val);
         vals.add(val);
       }
       context.getResultSender().lastResult(vals);

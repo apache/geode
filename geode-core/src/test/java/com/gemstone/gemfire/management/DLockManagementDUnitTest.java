@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -39,6 +48,7 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
+@Category(DistributedTest.class)
 public class DLockManagementDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -50,8 +60,8 @@ public class DLockManagementDUnitTest extends ManagementTestBase {
   // 60 seconds.
   private static final int MAX_WAIT = 70 * 1000;
 
-  public DLockManagementDUnitTest(String name) {
-    super(name);
+  public DLockManagementDUnitTest() {
+    super();
 
   }
 
@@ -61,6 +71,7 @@ public class DLockManagementDUnitTest extends ManagementTestBase {
    * @throws Exception
    */
   @Category(FlakyTest.class) // GEODE-173: eats exceptions, HeadlessGFSH, time sensitive, waitForCriterions
+  @Test
   public void testDLockMBean() throws Throwable {
     
     initManagement(false);
@@ -93,6 +104,7 @@ public class DLockManagementDUnitTest extends ManagementTestBase {
    * @throws Exception
    */
   @Category(FlakyTest.class) // GEODE-553: waitForCriterion, eats exceptions, HeadlessGFSH
+  @Test
   public void testDLockAggregate() throws Throwable {
     initManagement(false);
     VM[] managedNodes = new VM[getManagedNodeList()

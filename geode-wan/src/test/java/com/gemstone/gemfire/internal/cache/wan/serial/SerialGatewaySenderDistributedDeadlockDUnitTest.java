@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.CacheTransactionManager;
 import com.gemstone.gemfire.cache.Region;
@@ -34,14 +43,16 @@ import com.gemstone.gemfire.test.dunit.Wait;
 //
 //currently the 4th test using PR, conserve-sockets=true hangs/fails and is commented
 //out to prevent issues
+@Category(DistributedTest.class)
 public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase {
 
-    public SerialGatewaySenderDistributedDeadlockDUnitTest(String name) {
-        super(name);
+    public SerialGatewaySenderDistributedDeadlockDUnitTest() {
+        super();
     }
 
     //Uses replicated regions and conserve-sockets=false
-    public void testPrimarySendersOnDifferentVMsReplicated() throws Exception {
+  @Test
+  public void testPrimarySendersOnDifferentVMsReplicated() throws Exception {
 
         Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstPeerLocator(1));
 
@@ -79,7 +90,8 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
     }
 
     //Uses partitioned regions and conserve-sockets=false
-    public void testPrimarySendersOnDifferentVMsPR() throws Exception {
+  @Test
+  public void testPrimarySendersOnDifferentVMsPR() throws Exception {
         Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstPeerLocator(1));
 
         Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
@@ -115,7 +127,8 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
     }
 
     //Uses replicated regions and conserve-sockets=true
-    public void testPrimarySendersOnDifferentVMsReplicatedSocketPolicy() throws Exception {
+  @Test
+  public void testPrimarySendersOnDifferentVMsReplicatedSocketPolicy() throws Exception {
 
         Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstPeerLocator(1));
 
@@ -154,7 +167,8 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
 
     //Uses partitioned regions and conserve-sockets=true
     //this always causes a distributed deadlock
-    public void testPrimarySendersOnDifferentVMsPRSocketPolicy() throws Exception {
+  @Test
+  public void testPrimarySendersOnDifferentVMsPRSocketPolicy() throws Exception {
         Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstPeerLocator(1));
 
         Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));

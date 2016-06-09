@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.*;
 
 import com.gemstone.gemfire.*;
@@ -37,12 +46,10 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 
  * 
  */
-public class PRBadToDataDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PRBadToDataDUnitTest extends JUnit4CacheTestCase {
 
-  public PRBadToDataDUnitTest(final String name) {
-    super(name);
-  }
-
+  @Test
   public void testBadToData() {
     final Host host = Host.getHost(0);
     final VM vm1 = host.getVM(0);

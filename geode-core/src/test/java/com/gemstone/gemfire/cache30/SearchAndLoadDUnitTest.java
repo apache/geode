@@ -16,8 +16,13 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
@@ -35,19 +40,20 @@ import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This class tests various search load and write scenarios for distributed regions
  */
+@Category(DistributedTest.class)
 @SuppressWarnings({"deprecation", "unchecked", "rawtypes", "serial"})
-public class SearchAndLoadDUnitTest extends CacheTestCase {
+public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
   static boolean loaderInvoked;
   static boolean  remoteLoaderInvoked;
@@ -71,10 +77,6 @@ public class SearchAndLoadDUnitTest extends CacheTestCase {
   static boolean exceptionThrown;
   static final CountDownLatch readyForExceptionLatch = new CountDownLatch(1);
   static final CountDownLatch loaderInvokedLatch = new CountDownLatch(1);
-
-  public SearchAndLoadDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
@@ -110,6 +112,7 @@ public class SearchAndLoadDUnitTest extends CacheTestCase {
     return factory.create();
   }
 
+  @Test
   public void testNetSearch()
   throws CacheException, InterruptedException {
 
@@ -209,6 +212,7 @@ public class SearchAndLoadDUnitTest extends CacheTestCase {
    * return a value.  Both threads then validate that they received the expected
    * result.
    */
+  @Test
   public void testConcurrentLoad() throws Throwable {
 
     Host host = Host.getHost(0);
@@ -352,6 +356,7 @@ public class SearchAndLoadDUnitTest extends CacheTestCase {
   }
   
   
+  @Test
   public void testNetLoadNoLoaders() throws CacheException, InterruptedException {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -392,10 +397,10 @@ public class SearchAndLoadDUnitTest extends CacheTestCase {
 
   }
 
+  @Test
   public void testNetLoad()
   throws CacheException, InterruptedException {
-    Invoke.invokeInEveryVM(DistributedTestCase.class,
-        "disconnectFromDS");
+    disconnectAllFromDS();
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -487,10 +492,10 @@ public class SearchAndLoadDUnitTest extends CacheTestCase {
    * Confirm that a netLoad that returns null will NOT allow other netLoad methods
    * to be called.
    */
+  @Test
   public void testEmptyNetLoad()
   throws CacheException, InterruptedException {
-    Invoke.invokeInEveryVM(DistributedTestCase.class,
-        "disconnectFromDS");
+    disconnectAllFromDS();
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -607,6 +612,7 @@ public class SearchAndLoadDUnitTest extends CacheTestCase {
     return new Integer(remoteLoaderInvokedCount);
   }
   
+  @Test
   public void testLocalLoad()
   throws CacheException, InterruptedException {
 
@@ -691,6 +697,7 @@ public class SearchAndLoadDUnitTest extends CacheTestCase {
   }
 
 
+  @Test
   public void testNetWrite()
   throws CacheException, InterruptedException {
 
@@ -783,6 +790,7 @@ public class SearchAndLoadDUnitTest extends CacheTestCase {
   }
 
   
+  @Test
   public void testOneHopNetWrite() throws CacheException, InterruptedException {
 
     Host host = Host.getHost(0);
@@ -892,6 +900,7 @@ public class SearchAndLoadDUnitTest extends CacheTestCase {
 
 
   /** same as the previous test but the cache writer is in a third, non-replicated, vm */
+  @Test
   public void testOneHopNetWriteRemoteWriter() throws CacheException, InterruptedException {
 
     Host host = Host.getHost(0);

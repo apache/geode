@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import static com.gemstone.gemfire.cache.query.Utils.createPortfoliosAndPositions;
 
 import java.io.IOException;
@@ -84,6 +93,7 @@ import org.json.JSONObject;
 // ORDER by orders
 // Test all attributes are covered in an complex type
 
+@Category(DistributedTest.class)
 public class QueryDataDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -137,8 +147,8 @@ public class QueryDataDUnitTest extends ManagementTestBase {
   public static String[] queriesForLimit = new String[] { "select * from /" + repRegionName4 };
 
 
-  public QueryDataDUnitTest(String name) {
-    super(name);
+  public QueryDataDUnitTest() {
+    super();
   }
 
   @Override
@@ -315,6 +325,7 @@ public class QueryDataDUnitTest extends ManagementTestBase {
   }
 
   // disabled for bug 49698, serialization problems introduced by r44615
+  @Test
   public void testQueryOnPartitionedRegion() throws Exception {
 
     final DistributedMember member1 = getMember(managedNode1);
@@ -369,6 +380,7 @@ public class QueryDataDUnitTest extends ManagementTestBase {
     });
   }
 
+  @Test
   public void testQueryOnReplicatedRegion() throws Exception {
 
     
@@ -416,6 +428,7 @@ public class QueryDataDUnitTest extends ManagementTestBase {
     });
   }
   
+  @Test
   public void testMemberWise() throws Exception {
 
     final DistributedMember member1 = getMember(managedNode1);
@@ -454,6 +467,7 @@ public class QueryDataDUnitTest extends ManagementTestBase {
 
   
  
+  @Test
   public void testLimitForQuery() throws Exception {
     
     initCommonRegions();
@@ -529,6 +543,7 @@ public class QueryDataDUnitTest extends ManagementTestBase {
     });
   }
 
+  @Test
   public void testErrors() throws Exception{
     
     final DistributedMember member1 = getMember(managedNode1);
@@ -607,7 +622,8 @@ public class QueryDataDUnitTest extends ManagementTestBase {
     });
   }
   
- public void testNormalRegions() throws Exception{
+  @Test
+  public void testNormalRegions() throws Exception{
     
     final DistributedMember member1 = getMember(managedNode1);
     final DistributedMember member2 = getMember(managedNode2);
@@ -659,6 +675,7 @@ public class QueryDataDUnitTest extends ManagementTestBase {
     });
   }
  
+  @Test
   public void testRegionsLocalDataSet() throws Exception {
 
     final DistributedMember member1 = getMember(managedNode1);

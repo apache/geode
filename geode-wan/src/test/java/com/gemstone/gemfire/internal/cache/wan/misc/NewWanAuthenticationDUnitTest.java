@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.util.Properties;
+
+import org.apache.logging.log4j.Logger;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -28,27 +37,21 @@ import com.gemstone.gemfire.security.SecurityTestUtils;
 import com.gemstone.gemfire.security.generator.CredentialGenerator;
 import com.gemstone.gemfire.security.generator.DummyCredentialGenerator;
 import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
-import org.apache.logging.log4j.Logger;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
+@Category(DistributedTest.class)
 public class NewWanAuthenticationDUnitTest extends WANTestBase {
-
-  private static final long serialVersionUID = 1L;
 
   public static final Logger logger = LogService.getLogger();
 
-  public NewWanAuthenticationDUnitTest(String name) {
-    super(name);
-  }
+  public static boolean isDifferentServerInGetCredentialCall = false;
 
   /**
    * Authentication test for new WAN with valid credentials. Although, nothing
    * related to authentication has been changed in new WAN, this test case is
    * added on request from QA for defect 44650.
    */
+  @Test
   public void testWanAuthValidCredentials() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     logger.info("Created locator on local site");
@@ -105,7 +108,6 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.startSender( "ln" ));
     vm2.invoke(() -> WANTestBase.waitForSenderRunningState( "ln" ));
     logger.info("Done successfully.");
-
   }
 
   /**
@@ -113,6 +115,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
    * nothing related to authentication has been changed in new WAN, this test
    * case is added on request from QA for defect 44650.
    */
+  @Test
   public void testWanAuthInvalidCredentials() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     logger.info("Created locator on local site");
@@ -174,7 +177,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
       fail("Authentication Failed: While starting the sender, an exception should have been thrown");
     } catch (Exception e) {
       if (!(e.getCause().getCause() instanceof AuthenticationFailedException)) {
-        fail("Authentication is not working as expected");
+        fail("Authentication is not working as expected", e);
       }
     }
   }
@@ -182,7 +185,6 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
   private static Properties buildProperties(String clientauthenticator,
                                             String clientAuthInit, String accessor, Properties extraAuthProps,
                                             Properties extraAuthzProps) {
-
     Properties authProps = new Properties();
     if (clientauthenticator != null) {
       authProps.setProperty(
@@ -220,11 +222,12 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     assertNotNull(cache);
   }
 
-  public static boolean isDifferentServerInGetCredentialCall = false;
   public static class UserPasswdAI extends UserPasswordAuthInit {
+
     public static AuthInitialize createAI() {
       return new UserPasswdAI();
     }
+
     @Override
     public Properties getCredentials(Properties props,
                                      DistributedMember server, boolean isPeer)
@@ -247,6 +250,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     isDifferentServerInGetCredentialCall = false;
   }
 
+  @Test
   public void testWanAuthValidCredentialsWithServer() {
     disconnectAllFromDS();
     {
@@ -300,7 +304,6 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
       vm2.invoke(() -> verifyDifferentServerInGetCredentialCall());
       vm3.invoke(() -> verifyDifferentServerInGetCredentialCall());
-
     }
   }
 }

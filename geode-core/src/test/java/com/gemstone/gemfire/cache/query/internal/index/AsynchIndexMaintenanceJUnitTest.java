@@ -19,6 +19,17 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
+import static org.junit.Assert.*;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CyclicBarrier;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.CacheUtils;
@@ -31,45 +42,26 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CyclicBarrier;
-
-import static org.junit.Assert.assertFalse;
-
-/**
- *
- */
 @Category(IntegrationTest.class)
 public class AsynchIndexMaintenanceJUnitTest {
+
   private QueryService qs;
 
-  protected Region region;
+  private Region region;
 
-  protected boolean indexUsed = false;
-  protected volatile boolean exceptionOccured = false; 
+  private boolean indexUsed = false;
+  private volatile boolean exceptionOccured = false;
 
   private Set idSet ;
 
-  private void init() {
+  private void init() throws Exception {
     idSet = new HashSet();
-    try {
-      CacheUtils.startCache();
-      Cache cache = CacheUtils.getCache();
-      region = CacheUtils.createRegion("portfolio", Portfolio.class, false);      
-      
-      qs = cache.getQueryService();
+    CacheUtils.startCache();
+    Cache cache = CacheUtils.getCache();
+    region = CacheUtils.createRegion("portfolio", Portfolio.class, false);
 
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-    }
-
+    qs = cache.getQueryService();
   }
 
   @Before
@@ -196,9 +188,7 @@ public class AsynchIndexMaintenanceJUnitTest {
       region.put(""+(i+1), new Portfolio(i+1));
       idSet.add((i+1) + "");
     }    
-    Thread.sleep(10000);
-    //assertIndexDetailsEquals(0, this.getIndexSize(ri));
-        
+    Thread.sleep(10000); // TODO: delete this sleep
   }
   
   @Test

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.Region.Entry;
 
@@ -37,8 +46,8 @@ import java.util.Properties;
 public abstract class RegionAttributesTestCase
   extends RegionTestCase {
 
-  public RegionAttributesTestCase(String name) {
-    super(name);
+  public RegionAttributesTestCase() {
+    super();
   }
 
   protected static class TestExpiry implements CustomExpiry, Declarable {
@@ -76,6 +85,7 @@ public abstract class RegionAttributesTestCase
    * region's attributes.  Also tests the return values of the mutator
    * methods.
    */
+  @Test
   public void testAttributesMutator() throws CacheException {
     String name = this.getUniqueName();
     AttributesFactory fac = new AttributesFactory(getRegionAttributes());
@@ -160,6 +170,7 @@ public abstract class RegionAttributesTestCase
    * Tests sending <code>null</code> or bogus values to an {@link
    * AttributesMutator}.
    */
+  @Test
   public void testAttributesMutatorBogus() throws CacheException {
     String name = this.getUniqueName();
     Region region = createRegion(name);
@@ -233,6 +244,7 @@ public abstract class RegionAttributesTestCase
   }
 
   /** Test to make sure region attributes take */
+  @Test
   public void testRegionAttributes() throws CacheException {
     // @todo for now just test concurrencyLevel, add tests for the rest
     AttributesFactory factory = new AttributesFactory();

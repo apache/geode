@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.File;
 import java.lang.reflect.Array;
 import java.util.BitSet;
@@ -62,13 +71,14 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  *
  * @since GemFire 3.2
  */
-public class DiskRegionDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates a new <code>DiskRegionDUnitTest</code>
    */
-  public DiskRegionDUnitTest(String name) {
-    super(name);
+  public DiskRegionDUnitTest() {
+    super();
   }
 
 //   public RegionAttributes getRegionAttributes() {
@@ -100,6 +110,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
   /**
    * Tests that data overflows correctly to a disk region
    */
+  @Test
   public void testDiskRegionOverflow() throws Exception {
     final String name = this.getUniqueName();
     AttributesFactory factory = new AttributesFactory();
@@ -183,6 +194,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
    * Makes sure that updates from other VMs cause existing entries to
    * be written to disk.
    */
+  @Test
   public void testRemoteUpdates() throws Exception {
     final String name = this.getUniqueName();
 
@@ -287,6 +299,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
    * Overflows a region and makes sure that gets of recently-used
    * objects do not cause faults.
    */
+  @Test
   public void testNoFaults() throws Exception {
     final String name = this.getUniqueName();
     AttributesFactory factory = new AttributesFactory();
@@ -336,6 +349,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
    * the data in the receiver VM, thus cause the two VMs to have
    * different LRU eviction behavior.
    */
+  @Test
   public void testOverflowMirror() throws Exception {
     final String name = this.getUniqueName();
 
@@ -405,6 +419,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
   /**
    * Tests destroying entries in an overflow region
    */
+  @Test
   public void testDestroy() throws Exception {
     final String name = this.getUniqueName();
     AttributesFactory factory = new AttributesFactory();
@@ -465,6 +480,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
    * Tests cache listeners in an overflow region are invoked and that
    * their events are reasonable.
    */
+  @Test
   public void testCacheEvents() throws Exception {
     final String name = this.getUniqueName();
     AttributesFactory factory = new AttributesFactory();
@@ -573,6 +589,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
    * Tests iterating over all of the values when some have been
    * overflowed.
    */
+  @Test
   public void testValues() throws Exception {
     final String name = this.getUniqueName();
     AttributesFactory factory = new AttributesFactory();
@@ -616,6 +633,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
   /**
    * Tests for region.evictValue().
    */
+  @Test
   public void testRegionEvictValue() throws Exception {
     final String name = this.getUniqueName()+ "testRegionEvictValue";
     File d = new File("DiskRegions" + OSProcess.getId());
@@ -662,6 +680,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
   /**
    * Tests calling region.evictValue() on region with eviction-attribute set.
    */
+  @Test
   public void testEvictValueOnRegionWithEvictionAttributes() throws Exception {
     final String name = this.getUniqueName()+ "testRegionEvictValue";
     File d = new File("DiskRegions" + OSProcess.getId());
@@ -699,6 +718,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
    * Tests that the disk region statistics are updated correctly for
    * persist backup regions.
    */
+  @Test
   public void testBackupStatistics() throws CacheException {
     final String name = this.getUniqueName();
     AttributesFactory factory = new AttributesFactory();
@@ -765,6 +785,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
     }
   }
   
+  @Test
   public void testBackup() throws Exception {
     final String name = this.getUniqueName();
     AttributesFactory factory = new AttributesFactory();
@@ -857,6 +878,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
    * com.gemstone.gemfire.cache.Region.Entry#getValue values} of
    * region entries that have been overflowed.
    */
+  @Test
   public void testRegionEntryValues() throws Exception {
     final String name = this.getUniqueName();
     AttributesFactory factory = new AttributesFactory();
@@ -900,6 +922,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
    * Tests that once an overflowed entry is {@linkplain
    * Region#invalidate invalidated} its value is gone.
    */
+  @Test
   public void testInvalidate() throws Exception {
     final String name = this.getUniqueName();
     AttributesFactory factory = new AttributesFactory();
@@ -934,6 +957,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
    * Tests that invalidates and updates received from different VMs
    * are handled appropriately by overflow regions.
    */
+  @Test
   public void testDistributedInvalidate() throws Exception {
     final String name = this.getUniqueName();
 
@@ -1030,6 +1054,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
   /**
    * Tests that the updated value gets overflowed
    */
+  @Test
   public void testOverflowUpdatedValue() throws Exception {
     final String name = this.getUniqueName();
     AttributesFactory factory = new AttributesFactory();
@@ -1083,6 +1108,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
    * Tests that the "test hook" {@link DiskRegionStats} work as
    * advertised. 
    */
+  @Test
   public void testTestHookStatistics() throws Exception {
     final String name = this.getUniqueName();
     AttributesFactory factory = new AttributesFactory();
@@ -1169,6 +1195,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
    * {@link LocalRegion#getValueOnDisk getValueOnDisk} methods that
    * were added for testing.
    */
+  @Test
   public void testLowLevelGetMethods() throws Exception {
     final String name = this.getUniqueName();
     AttributesFactory factory = new AttributesFactory();
@@ -1224,6 +1251,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
    * Tests disk overflow with an entry-based {@link
    * LRUCapacityController}. 
    */
+  @Test
   public void testLRUCapacityController() throws CacheException {
     final String name = this.getUniqueName();
     AttributesFactory factory = new AttributesFactory();
@@ -1301,6 +1329,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
    * Tests a disk-based region with an {@link LRUCapacityController}
    * with size 1 and an eviction action of "overflow".
    */
+  @Test
   public void testLRUCCSizeOne() throws CacheException {
     int threshold = 1;
 
@@ -1359,6 +1388,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
   }
 
 
+  @Test
   public void testPersistentReplicateB4NonPersistent() {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);
@@ -1399,6 +1429,7 @@ public class DiskRegionDUnitTest extends CacheTestCase {
     });
   }
 
+  @Test
   public void testRRProxyWithPersistentReplicates() {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);

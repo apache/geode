@@ -16,11 +16,36 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.admin.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.admin.AdminDistributedSystem;
+import com.gemstone.gemfire.admin.AdminDistributedSystemFactory;
+import com.gemstone.gemfire.admin.AdminException;
+import com.gemstone.gemfire.admin.BackupStatus;
+import com.gemstone.gemfire.admin.DistributedSystemConfig;
 import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.persistence.PersistentID;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.ClassBuilder;
@@ -30,18 +55,22 @@ import com.gemstone.gemfire.internal.JarDeployer;
 import com.gemstone.gemfire.internal.cache.persistence.BackupManager;
 import com.gemstone.gemfire.internal.util.IOUtils;
 import com.gemstone.gemfire.internal.util.TransformUtils;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.io.*;
-import java.util.*;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests for the incremental backup feature.
  */
+@Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class IncrementalBackupDUnitTest extends CacheTestCase {
+public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
   /**
    * Data load increment.
    */
@@ -92,14 +121,6 @@ public class IncrementalBackupDUnitTest extends CacheTestCase {
     }          
   };
   
-  /**
-   * Creates a new IncrementalBackupDUnitTest.
-   * @param name test case name.
-   */
-  public IncrementalBackupDUnitTest(String name) {
-    super(name);
-  }
-
   /**
    * Abstracts the logging mechanism.
    * @param message a message to log.
@@ -658,6 +679,7 @@ public class IncrementalBackupDUnitTest extends CacheTestCase {
    * Additionally, the restore script should reference and copy operation logs from the baseline backup.
    * @throws Exception
    */
+  @Test
   public void testIncrementalBackup() 
   throws Exception {
     String memberId = getMemberId(Host.getHost(0).getVM(1));
@@ -785,6 +807,7 @@ public class IncrementalBackupDUnitTest extends CacheTestCase {
    * incremental backup.  This means that the member peformed a full backup because its oplogs were missing
    * in the baseline.
    */
+  @Test
   public void testMissingMemberInBaseline()
   throws Exception {        
     // Simulate the missing member by forcing a persistent member
@@ -868,6 +891,7 @@ public class IncrementalBackupDUnitTest extends CacheTestCase {
    * Successful if a member performs a full backup if their backup is marked as 
    * incomplete in the baseline.
    */
+  @Test
   public void testIncompleteInBaseline()
   throws Exception {
     /*
@@ -916,6 +940,7 @@ public class IncrementalBackupDUnitTest extends CacheTestCase {
    * Successful if all members perform a full backup when they share the baseline directory
    * and it is missing.
    */
+  @Test
   public void testMissingBaseline()
   throws Exception {
     /*
@@ -987,6 +1012,7 @@ public class IncrementalBackupDUnitTest extends CacheTestCase {
    * Successful if a user deployed jar file is included as part of the backup.
    * @throws Exception
    */
+  @Test
   public void testBackupUserDeployedJarFiles() throws Exception {
     final String jarName = "BackupJarDeploymentDUnit";
     final String jarNameRegex = ".*" + jarName + ".*";

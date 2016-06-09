@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -65,6 +74,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 
  * 
  */
+@Category(DistributedTest.class)
 public class RegionManagementDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -100,8 +110,8 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
   private static Region fixedPrRegion;
 
 
-  public RegionManagementDUnitTest(String name) {
-    super(name);
+  public RegionManagementDUnitTest() {
+    super();
 
   }
 
@@ -116,6 +126,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
    * @throws Exception
    */
 
+  @Test
   public void testDistributedRegion() throws Exception {
 
     initManagement(false);
@@ -157,6 +168,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testPartitionedRegion() throws Exception {
     initManagement(false);
 
@@ -196,6 +208,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testFixedPRRegionMBean() throws Exception {
 
     initManagement(false);
@@ -233,6 +246,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
    * while region is created in a member node asynchronously.
    * @throws Exception
    */
+  @Test
   public void testRegionAggregate() throws Exception{
     initManagement(true);
 
@@ -279,6 +293,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
 
   }
   
+  @Test
   public void testNavigationAPIS() throws Exception {
     initManagement(true);
     for(VM vm : managedNodeList){
@@ -306,6 +321,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
 
  
   
+  @Test
   public void testSubRegions() throws Exception{
     initManagement(false);
     for (VM vm : managedNodeList) {
@@ -327,6 +343,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
   
   
   
+  @Test
   public void testSpecialRegions() throws Exception{
     initManagement(false);
     createSpecialRegion(managedNodeList.get(0));
@@ -387,6 +404,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
 
   }
   
+  @Test
   public void testLruStats() throws Exception{
     initManagement(false);
     for (VM vm : managedNodeList) {
@@ -1346,7 +1364,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
     int initialCapacity = regAttrs.getInitialCapacity();
     assertEquals(initialCapacity, data.getInitialCapacity());
     float loadFactor = regAttrs.getLoadFactor();
-    assertEquals(loadFactor, data.getLoadFactor());
+    assertEquals(loadFactor, data.getLoadFactor(),0);
 
     boolean lockGrantor = regAttrs.isLockGrantor();
     assertEquals(lockGrantor, data.isLockGrantor());

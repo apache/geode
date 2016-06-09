@@ -22,7 +22,12 @@
 
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -37,22 +42,17 @@ import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- *
- */
-public class RemoveGlobalDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: reformat
     
-    /** Creates a new instance of RemoveGlobalDUintTest */
-    public RemoveGlobalDUnitTest(String name) {
-        super(name);
-    }
     static Cache cache;
     static Properties props = new Properties();
     static Properties propsWork = new Properties();
@@ -86,7 +86,7 @@ public class RemoveGlobalDUnitTest extends DistributedTestCase {
     
     public static void createCache(){
         try{
-            ds = (new RemoveGlobalDUnitTest("temp")).getSystem(props);
+            ds = (new RemoveGlobalDUnitTest()).getSystem(props);
             cache = CacheFactory.create(ds);
         } catch (Exception ex){
             ex.printStackTrace();
@@ -105,7 +105,8 @@ public class RemoveGlobalDUnitTest extends DistributedTestCase {
     
     //test methods
     
-    public void testRemoveGlobalSingleVM() throws Throwable{
+  @Test
+  public void testRemoveGlobalSingleVM() throws Throwable{
         
         SerializableRunnable createRegionWithWriter = new CacheSerializableRunnable("create region with cache writer"){
             
@@ -157,8 +158,9 @@ public class RemoveGlobalDUnitTest extends DistributedTestCase {
     }//end of testRemoveGlobalSingleVM
     
     
-    public void testRemoveGlobalMultiVM() throws Throwable{
-        //Commented the Test.As it is failing @ line no 145 : AssertionFailedError
+  @Test
+  public void testRemoveGlobalMultiVM() throws Throwable{
+        //Commented the Test.As it is failing @ line no 145 : AssertionError
        
         SerializableRunnable createSimpleRegion = new CacheSerializableRunnable("create region with cache writer"){
             public void run2() throws CacheException{

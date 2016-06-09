@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.Region;
@@ -32,6 +41,7 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 
  *  
  */
+@Category(DistributedTest.class)
 public class PartitionedRegionMultipleDUnitTest extends
     PartitionedRegionDUnitTestCase
 {
@@ -61,8 +71,8 @@ public class PartitionedRegionMultipleDUnitTest extends
   int localMaxMemory = 200;
 
   /** constructor */
-  public PartitionedRegionMultipleDUnitTest(String name) {
-    super(name);
+  public PartitionedRegionMultipleDUnitTest() {
+    super();
   }
 
   /**
@@ -75,6 +85,7 @@ public class PartitionedRegionMultipleDUnitTest extends
    * 4. Performs get() operations on all partitioned region and check the
    * returned values.</br>
    */
+  @Test
   public void testPartitionedRegionPutAndGet() throws Throwable
   {
     Host host = Host.getHost(0);
@@ -129,6 +140,7 @@ public class PartitionedRegionMultipleDUnitTest extends
    * 4. Performs get() operations for destroyed keys on all partitioned region
    * and checks the returned values is not null .</br>
    */
+  @Test
   public void testPartitionedRegionDestroyKeys() throws Throwable
   {
 
@@ -195,6 +207,7 @@ public class PartitionedRegionMultipleDUnitTest extends
    * partitioned region from all the VM's</br><br>
    * 4. Chekcs containsKey and ContainsValueForKey APIs</br>
    */
+  @Test
   public void testPartitionedRegionDestroyAndContainsAPI() throws Throwable
   {
     Host host = Host.getHost(0);

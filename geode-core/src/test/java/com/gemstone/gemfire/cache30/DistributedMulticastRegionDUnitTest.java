@@ -16,7 +16,22 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.InternalLocator;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
@@ -25,15 +40,16 @@ import com.gemstone.gemfire.pdx.PdxReader;
 import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxSerializationException;
 import com.gemstone.gemfire.pdx.PdxWriter;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
 
   static int locatorVM = 3;
   static String mcastport = "42786";
@@ -41,10 +57,6 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
   
   private int locatorPort;
 
-  public DistributedMulticastRegionDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public final void preSetUp() throws Exception {
     clean();
@@ -65,6 +77,7 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
     Invoke.invokeInEveryVM(cleanVM);    
   }
   
+  @Test
   public void testMulticastEnabled() {
     final String name = "mcastRegion";
     SerializableRunnable create =
@@ -120,7 +133,7 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
       closeLocator();      
   }
   
-  public class TestObjectThrowsException implements PdxSerializable {
+  private static class TestObjectThrowsException implements PdxSerializable {
     String name = "TestObjectThrowsException";
 
     @Override
@@ -130,12 +143,11 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
 
     @Override
     public void fromData(PdxReader reader) {
-      throw new RuntimeException("Unable to desrialize message ");
-      //name = reader.readString("name");
+      throw new RuntimeException("Unable to deserialize message ");
     }
-    
   }
   
+  @Test
   public void testMulticastWithRegionOpsException() {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -260,30 +272,30 @@ public class DistributedMulticastRegionDUnitTest extends CacheTestCase {
   }
   
   private int startLocator() {
-  final int [] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-  final int locatorPort = ports[0];
-  
-  VM locator1Vm = Host.getHost(0).getVM(locatorVM);;
-    locator1Vm.invoke(new SerializableCallable() {
-      @Override
-      public Object call() {
-        final File locatorLogFile = new File(getTestMethodName() + "-locator-" + locatorPort + ".log");
-        final Properties locatorProps = new Properties();
-        locatorProps.setProperty(NAME, "LocatorWithMcast");
-        locatorProps.setProperty(MCAST_PORT, mcastport);
-        locatorProps.setProperty(MCAST_TTL, mcastttl);
-        locatorProps.setProperty(LOG_LEVEL, "info");
-        //locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
-        try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, null, null,
-              locatorProps);
-          System.out.println("test Locator started " + locatorPort);
-           } catch (IOException ioex) {
-          fail("Unable to create a locator with a shared configuration");
+    final int [] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    final int locatorPort = ports[0];
+
+    VM locator1Vm = Host.getHost(0).getVM(locatorVM);
+      locator1Vm.invoke(new SerializableCallable() {
+        @Override
+        public Object call() {
+          final File locatorLogFile = new File(getTestMethodName() + "-locator-" + locatorPort + ".log");
+          final Properties locatorProps = new Properties();
+          locatorProps.setProperty(NAME, "LocatorWithMcast");
+          locatorProps.setProperty(MCAST_PORT, mcastport);
+          locatorProps.setProperty(MCAST_TTL, mcastttl);
+          locatorProps.setProperty(LOG_LEVEL, "info");
+          //locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+          try {
+            final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, null, null,
+                locatorProps);
+            System.out.println("test Locator started " + locatorPort);
+             } catch (IOException ioex) {
+            fail("Unable to create a locator with a shared configuration");
+          }
+
+          return null;
         }
-  
-        return null;
-      }
     });
     return locatorPort;
   }

@@ -16,13 +16,23 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.offheap;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.internal.cache.wan.serial.SerialWANPropogation_PartitionedRegionDUnitTest;
 
 @SuppressWarnings("serial")
+@Category(DistributedTest.class)
 public class SerialWANPropogation_PartitionedRegionOffHeapDUnitTest extends SerialWANPropogation_PartitionedRegionDUnitTest {
 
-  public SerialWANPropogation_PartitionedRegionOffHeapDUnitTest(String name) {
-    super(name);
+  public SerialWANPropogation_PartitionedRegionOffHeapDUnitTest() {
+    super();
   }
 
   @Override

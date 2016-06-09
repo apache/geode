@@ -16,14 +16,34 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.jayway.awaitility.Awaitility.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.logging.log4j.Logger;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.InterestPolicy;
+import com.gemstone.gemfire.cache.InterestResultPolicy;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.SubscriptionAttributes;
 import com.gemstone.gemfire.cache.client.NoAvailableServersException;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.AbstractRegionMap;
@@ -34,22 +54,14 @@ import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
-import org.apache.logging.log4j.Logger;
-
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
-import static com.jayway.awaitility.Awaitility.with;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests client server FORCE_INVALIDATE
  */
-public class ClientServerForceInvalidateDUnitTest extends CacheTestCase
-{
-  private static final long serialVersionUID = 1L;
+@Category(DistributedTest.class)
+public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -62,14 +74,8 @@ public class ClientServerForceInvalidateDUnitTest extends CacheTestCase
   private static VM server1;
   private static VM server2;
 
-  /** constructor */
-  public ClientServerForceInvalidateDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
-  public final void postSetUp() throws Exception
-  {
+  public final void postSetUp() throws Exception {
     host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
@@ -79,27 +85,35 @@ public class ClientServerForceInvalidateDUnitTest extends CacheTestCase
     return vm.invoke(() -> createServerCache(concurrencyChecksEnabled, partitioned, 0));
   }
 
+  @Test
   public void testForceInvalidateOnCachingProxyWithConcurrencyChecks() throws Exception {
     dotestForceInvalidate(true, true, false, true);
   }
+  @Test
   public void testForceInvalidateOnCachingProxyWithConcurrencyChecksOnlyOnServer() throws Exception {
     dotestForceInvalidate(true, false, false, true);
   }
+  @Test
   public void testForceInvalidateOnCachingProxyWithConcurrencyChecksOnlyOnClient() throws Exception {
     dotestForceInvalidate(false, true, false, true);
   }
+  @Test
   public void testForceInvalidateOnProxyWithConcurrencyChecks() throws Exception {
     dotestForceInvalidate(true, true, true, true);
   }
+  @Test
   public void testForceInvalidateOnProxyWithConcurrencyChecksOnlyOnServer() throws Exception {
     dotestForceInvalidate(true, false, true, true);
   }
+  @Test
   public void testForceInvalidateOnProxyWithConcurrencyChecksOnlyOnClient() throws Exception {
     dotestForceInvalidate(false, true, true, true);
   }
+  @Test
   public void testForceInvalidateOnCachingProxyWithConcurrencyChecksServerReplicated() throws Exception {
     dotestForceInvalidate(true, true, false, false);
   }
+  @Test
   public void testForceInvalidateOnProxyWithConcurrencyChecksServerReplicated() throws Exception {
     dotestForceInvalidate(true, true, true, false);
   }
@@ -116,6 +130,7 @@ public class ClientServerForceInvalidateDUnitTest extends CacheTestCase
    *    It will arrive late and not be done because of concurrency checks.
    * 7. verify that afterInvalidate was invoked on the client.
    */
+  @Test
   public void testInvalidateLosingOnConcurrencyChecks() throws Exception {
     try {
       setupServerAndClientVMs(true, true, false, false);
@@ -230,7 +245,6 @@ public class ClientServerForceInvalidateDUnitTest extends CacheTestCase
       }
     }
     return false;
-    
   }
 
   private boolean hasClientListenerAfterInvalidateBeenInvoked() {
@@ -246,11 +260,11 @@ public class ClientServerForceInvalidateDUnitTest extends CacheTestCase
     }
     return false;
   }
-  private static Integer createServerCache(Boolean concurrencyChecksEnabled, Boolean partitioned, Integer maxThreads)
-  throws Exception {
+
+  private static Integer createServerCache(Boolean concurrencyChecksEnabled, Boolean partitioned, Integer maxThreads) throws Exception {
     AbstractRegionMap.FORCE_INVALIDATE_EVENT = true;
     Properties props = new Properties();
-    Cache cache = new ClientServerForceInvalidateDUnitTest("temp").createCacheV(props);
+    Cache cache = new ClientServerForceInvalidateDUnitTest().createCacheV(props);
     RegionFactory<String, String> factory = cache.createRegionFactory();
     if (partitioned) {
       factory.setDataPolicy(DataPolicy.PARTITION);
@@ -277,13 +291,12 @@ public class ClientServerForceInvalidateDUnitTest extends CacheTestCase
 
   }
   
-  public static void createClientCache(String h, int port1, int port2, boolean empty, boolean concurrenctChecksEnabled)
-  throws Exception  {
+  public static void createClientCache(String h, int port1, int port2, boolean empty, boolean concurrenctChecksEnabled) throws Exception  {
     AbstractRegionMap.FORCE_INVALIDATE_EVENT = true;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    Cache cache = new ClientServerForceInvalidateDUnitTest("temp").createCacheV(props);
+    Cache cache = new ClientServerForceInvalidateDUnitTest().createCacheV(props);
     PoolImpl p = (PoolImpl)PoolManager.createFactory()
       .addServer(h, port1)
       .addServer(h, port2)
@@ -342,27 +355,27 @@ public class ClientServerForceInvalidateDUnitTest extends CacheTestCase
   static class ClientListener extends CacheListenerAdapter<String, String> {
     public boolean afterInvalidateInvoked;
     @Override
-      public void afterCreate(EntryEvent<String, String> event) {
-        super.afterCreate(event);
-        logger.info("afterCreate: {" + event.getOldValue() + " -> " + event.getNewValue() + "} at=" + System.currentTimeMillis());
+    public void afterCreate(EntryEvent<String, String> event) {
+      super.afterCreate(event);
+      logger.info("afterCreate: {" + event.getOldValue() + " -> " + event.getNewValue() + "} at=" + System.currentTimeMillis());
+    }
+    @Override
+    public void afterUpdate(EntryEvent<String, String> event) {
+      super.afterUpdate(event);
+      logger.info("afterUpdate: {" + event.getOldValue() + " -> " + event.getNewValue() + "} at=" + System.currentTimeMillis());
+    }
+    @Override
+    public void afterInvalidate(final EntryEvent<String, String> event) {
+      super.afterInvalidate(event);
+      afterInvalidateInvoked = true;
+      String prefix = "";
+      if (!event.isOriginRemote()) {
+        prefix = "    ";
       }
-      @Override
-      public void afterUpdate(EntryEvent<String, String> event) {
-        super.afterUpdate(event);
-        logger.info("afterUpdate: {" + event.getOldValue() + " -> " + event.getNewValue() + "} at=" + System.currentTimeMillis());
-      }
-      @Override
-      public void afterInvalidate(final EntryEvent<String, String> event) {
-        super.afterInvalidate(event);
-        afterInvalidateInvoked = true;
-        String prefix = "";
-        if (!event.isOriginRemote()) {
-          prefix = "    ";
-        }
-        logger.info(prefix + "afterInvalidate: {" + event.getOldValue() + " -> " + event.getNewValue() + "} at=" + System.currentTimeMillis());
-
-      }
+      logger.info(prefix + "afterInvalidate: {" + event.getOldValue() + " -> " + event.getNewValue() + "} at=" + System.currentTimeMillis());
+    }
   }
+
   static class ServerListener extends CacheListenerAdapter<String, String> {
     boolean afterInvalidateInvoked;
     @Override
@@ -396,7 +409,7 @@ public class ClientServerForceInvalidateDUnitTest extends CacheTestCase
   private static void closeForceInvalidateCache()
   {
     AbstractRegionMap.FORCE_INVALIDATE_EVENT = false;
-    Cache cache = new ClientServerForceInvalidateDUnitTest("temp").getCache();
+    Cache cache = new ClientServerForceInvalidateDUnitTest().getCache();
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();

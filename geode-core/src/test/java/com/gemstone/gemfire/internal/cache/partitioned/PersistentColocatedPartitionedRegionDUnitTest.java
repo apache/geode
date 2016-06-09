@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
@@ -56,13 +65,14 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
+@Category(DistributedTest.class)
 public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPartitionedRegionTestBase {
 
   private static final int NUM_BUCKETS = 15;
   private static final int MAX_WAIT = 30 * 1000;
 
-  public PersistentColocatedPartitionedRegionDUnitTest(String name) {
-    super(name);
+  public PersistentColocatedPartitionedRegionDUnitTest() {
+    super();
   }
   
   @Override
@@ -70,6 +80,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     FileUtil.delete(getBackupDir());
   }
   
+  @Test
   public void testColocatedPRAttributes() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(1);
@@ -133,6 +144,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
   /**
    * Testing that we can colocate persistent PRs
    */
+  @Test
   public void testColocatedPRs() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -224,6 +236,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
    * Testing what happens we we recreate colocated persistent PRs by creating
    * one PR everywhere and then the other PR everywhere.
    */
+  @Test
   public void testColocatedPRsRecoveryOnePRAtATime() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -355,6 +368,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     };
   }
   
+  @Test
   public void testColocatedPRsRecoveryOneMemberLater() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -458,6 +472,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     assertEquals(vm2PrimaryBuckets, getPrimaryBucketList(vm2, "region2"));
   }
   
+  @Test
   public void testReplaceOfflineMemberAndRestart() throws Throwable {
     SerializableRunnable createPRs = new SerializableRunnable("region1") {
       public void run() {
@@ -509,6 +524,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
    * in different disk stores, we still keep our metadata consistent.
    * @throws Throwable
    */
+  @Test
   public void testReplaceOfflineMemberAndRestartTwoDiskStores() throws Throwable {
     SerializableRunnable createPRs = new SerializableRunnable("region1") {
       public void run() {
@@ -661,6 +677,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     }
   }
   
+  @Test
   public void testReplaceOfflineMemberAndRestartCreateColocatedPRLate() throws Throwable {
     SerializableRunnable createParentPR = new SerializableRunnable() {
       public void run() {
@@ -720,6 +737,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
     replaceOfflineMemberAndRestartCreateColocatedPRLate(createParentPR, createChildPR);
   }
   
+  @Test
   public void testReplaceOfflineMemberAndRestartCreateColocatedPRLateTwoDiskStores() throws Throwable {
     SerializableRunnable createParentPR = new SerializableRunnable() {
       public void run() {
@@ -907,6 +925,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
   //This test method is disabled because it is failing
   //periodically and causing cruise control failures
   //See bug #46748
+  @Test
   public void testCrashDuringRedundancySatisfaction() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -1042,6 +1061,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
    * Test what happens when we restart persistent members while
    * there is an accessor concurrently performing puts. This is for bug 43899
    */
+  @Test
   public void testRecoverySystemWithConcurrentPutter() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -1181,6 +1201,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
   }
 
   @Category(FlakyTest.class) // GEODE-506: time sensitive, async actions with 30 sec max
+  @Test
   public void testRebalanceWithOfflineChildRegion() throws Throwable {
     SerializableRunnable createParentPR = new SerializableRunnable() {
       public void run() {
@@ -1230,6 +1251,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
    * because in this case all of the regions have been created, but
    * they are in the middle of actually recovering buckets from disk.
    */
+  @Test
   public void testRebalanceDuringRecovery() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -1356,6 +1378,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
   }
 
   @Category(FlakyTest.class) // GEODE-1380: time sensitive, async actions with 30 sec max
+  @Test
   public void testRebalanceWithOfflineChildRegionTwoDiskStores() throws Throwable {
     SerializableRunnable createParentPR = new SerializableRunnable() {
       public void run() {
@@ -1408,6 +1431,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest extends PersistentPar
    * @throws Throwable
    */
   @Category(FlakyTest.class) // GEODE-900: disk dependency, filesystem sensitive
+  @Test
   public void testModifyColocation() throws Throwable {
     //Create PRs where region3 is colocated with region1.
     createColocatedPRs("region1");

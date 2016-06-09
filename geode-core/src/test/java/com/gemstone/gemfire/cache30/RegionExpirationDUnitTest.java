@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.ExpirationAction;
@@ -38,10 +47,11 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  *
  * @since GemFire 3.0
  */
-public class RegionExpirationDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class RegionExpirationDUnitTest extends JUnit4CacheTestCase {
 
-  public RegionExpirationDUnitTest(String name) {
-    super(name);
+  public RegionExpirationDUnitTest() {
+    super();
   }
 
 //  /**
@@ -58,6 +68,7 @@ public class RegionExpirationDUnitTest extends CacheTestCase {
    * Test internal methods that encode & decode time
    */
   /* The encode and decode time methods are now private in MetaMap
+  @Test
   public void testTimeEncoding() throws CacheException {
     Region r = createRegion(getUniqueName(), getRegionAttributes());
     long start = ((InternalDistributedSystem)getCache().getDistributedSystem()).getStartTime();
@@ -74,30 +85,35 @@ public class RegionExpirationDUnitTest extends CacheTestCase {
   }
    */
 
+  @Test
   public void testRegionTTLLocalDestroy()
   throws CacheException, InterruptedException
   {
     _testRegionTTL(getUniqueName(), ExpirationAction.LOCAL_DESTROY);
   }
 
+  @Test
   public void testRegionTTLDestroy()
   throws CacheException, InterruptedException
   {
     _testRegionTTL(getUniqueName(), ExpirationAction.DESTROY);
   }
 
+  @Test
   public void testRegionTTLLocalInvalidate()
   throws CacheException, InterruptedException
   {
     _testRegionTTL(getUniqueName(), ExpirationAction.LOCAL_INVALIDATE);
   }
 
+  @Test
   public void testRegionTTLInvalidate()
   throws CacheException, InterruptedException
   {
     _testRegionTTL(getUniqueName(), ExpirationAction.INVALIDATE);
   }
 
+  @Test
   public void testRegionTTLAfterMutating()
   throws InterruptedException, CacheException
   {
@@ -129,6 +145,7 @@ public class RegionExpirationDUnitTest extends CacheTestCase {
     Wait.waitForCriterion(wc, 30 * 1000, 1000, true);
   }
 
+  @Test
   public void testWhenBothTtlAndIdleAreSet() 
   throws InterruptedException, CacheException
   {

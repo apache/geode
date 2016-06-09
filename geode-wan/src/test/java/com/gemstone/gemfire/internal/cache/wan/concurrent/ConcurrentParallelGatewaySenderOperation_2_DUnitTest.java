@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.concurrent;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.concurrent.TimeUnit;
 
 import com.gemstone.gemfire.cache.Region;
@@ -35,12 +44,13 @@ import com.jayway.awaitility.Awaitility;
 /**
  *
  */
+@Category(DistributedTest.class)
 public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
   
-  public ConcurrentParallelGatewaySenderOperation_2_DUnitTest(String name) {
-    super(name);
+  public ConcurrentParallelGatewaySenderOperation_2_DUnitTest() {
+    super();
   }
 
   @Override
@@ -53,6 +63,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
   
   // to test that when userPR is locally destroyed, shadow Pr is also locally
   // destroyed and on recreation usrePr , shadow Pr is also recreated.
+  @Test
   public void testParallelGatewaySender_SingleNode_UserPR_localDestroy_RecreateRegion() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -92,6 +103,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     }
   }
   
+  @Test
   public void testParallelGatewaySender_SingleNode_UserPR_Destroy_RecreateRegion() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -134,6 +146,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     }
   }
 
+  @Test
   public void testParallelGatewaySender_SingleNode_UserPR_Close_RecreateRegion() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -172,6 +185,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     }
   }
 
+  @Test
   public void testParallelGatewaySender_SingleNode_UserPR_Destroy_SimultenuousPut_RecreateRegion() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -216,6 +230,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     }
   }
   
+  @Test
   public void testParallelGatewaySender_SingleNode_UserPR_Destroy_NodeDown()
       throws Exception {
     IgnoredException.addIgnoredException("Broken pipe");
@@ -257,6 +272,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
   }
   
+  @Test
   public void testParallelGatewaySender_SingleNode_UserPR_Close_SimultenuousPut_RecreateRegion() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -304,6 +320,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     }
   }
 
+  @Test
   public void testParallelGatewaySenders_SingleNode_UserPR_localDestroy_RecreateRegion() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -360,6 +377,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     }
   }
   
+  @Test
   public void testParallelGatewaySender_MultipleNode_UserPR_localDestroy_Recreate() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -400,6 +418,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     }
   }
   
+  @Test
   public void testParallelGatewaySenders_MultiplNode_UserPR_localDestroy_Recreate() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -448,6 +467,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     }
   }
 
+  @Test
   public void testParallelGatewaySender_ColocatedPartitionedRegions_localDestroy() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -486,6 +506,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     }
   }
 
+  @Test
   public void testParallelGatewaySender_ColocatedPartitionedRegions_destroy() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];

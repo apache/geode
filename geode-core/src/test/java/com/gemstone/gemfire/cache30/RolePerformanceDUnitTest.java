@@ -16,25 +16,33 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static org.junit.Assert.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests the performance of Regions when Roles are assigned.
  *
  * @since GemFire 5.0
  */
-public class RolePerformanceDUnitTest extends CacheTestCase {
-
-  public RolePerformanceDUnitTest(String name) {
-    super(name);
-  }
+@Category(DistributedTest.class)
+public class RolePerformanceDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Compares times required for series of puts with Roles assigned to
@@ -42,6 +50,7 @@ public class RolePerformanceDUnitTest extends CacheTestCase {
    * <p>
    * Up to 10 attempts will be made before failing.
    */
+  @Test
   public void testRolePerformance() {
     int maxAttempts = 10;
     for (int i = 1; i <= maxAttempts; i++) {
@@ -54,7 +63,7 @@ public class RolePerformanceDUnitTest extends CacheTestCase {
         break;
       }
       // only catch assertion failures...
-      catch (junit.framework.AssertionFailedError e) {
+      catch (AssertionError e) {
         if (i == maxAttempts) {
           throw e;
         }
