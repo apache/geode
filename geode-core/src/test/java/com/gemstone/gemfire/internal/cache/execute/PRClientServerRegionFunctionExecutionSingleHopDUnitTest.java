@@ -63,7 +63,10 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-  public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest extends PRClientServerTestBase {
+
+@Category(DistributedTest.class)
+public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest extends PRClientServerTestBase {
+
     private static final String TEST_FUNCTION7 = TestFunction.TEST_FUNCTION7;
 
     private static final String TEST_FUNCTION2 = TestFunction.TEST_FUNCTION2;

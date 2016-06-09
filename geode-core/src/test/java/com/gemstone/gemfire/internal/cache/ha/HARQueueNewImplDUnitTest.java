@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -56,6 +57,7 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This DUnit contains various tests to ensure new implementation of ha region
@@ -63,6 +65,7 @@ import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
  * 
  * @since GemFire 5.7
  */
+@Category(DistributedTest.class)
 public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String regionName = HARQueueNewImplDUnitTest.class.getSimpleName();
