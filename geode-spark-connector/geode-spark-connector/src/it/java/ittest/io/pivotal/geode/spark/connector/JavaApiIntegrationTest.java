@@ -17,7 +17,7 @@
 package ittest.io.pivotal.geode.spark.connector;
 
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import io.pivotal.geode.spark.connector.GeodeConnection;
 import io.pivotal.geode.spark.connector.GeodeConnectionConf;
 import io.pivotal.geode.spark.connector.GeodeConnectionConf$;
@@ -58,7 +58,7 @@ public class JavaApiIntegrationTest extends JUnitSuite {
   public static void setUpBeforeClass() throws Exception {
     // start geode cluster, and spark context
     Properties settings = new Properties();
-    settings.setProperty(DistributedSystemConfigProperties.CACHE_XML_FILE, "src/it/resources/test-retrieve-regions.xml");
+    settings.setProperty(ConfigurationProperties.CACHE_XML_FILE, "src/it/resources/test-retrieve-regions.xml");
     settings.setProperty("num-of-servers", Integer.toString(numServers));
     int locatorPort = GeodeCluster$.MODULE$.start(settings);
 
