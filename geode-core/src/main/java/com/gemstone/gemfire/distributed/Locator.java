@@ -31,13 +31,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * Represents a distribution locator server that provides discovery information
  * to members and clients of a GemFire distributed system. In most GemFire
  * distributed cache architectures, distribution locators are run in their own
- * process. A stand-alone locator process is managed using 
- * {@linkplain com.gemstone.gemfire.admin.DistributionLocator administration
- * API} or the <code>gemfire</code> command line utility:
- * 
- * <PRE>
- * $ gemfire start-locator
- * </PRE>
+ * process. A stand-alone locator process is managed using gfsh command line utility. 
  * 
  * The stand-alone locator configuration provides high-availability of
  * membership information.
@@ -47,12 +41,16 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * This class allows a GemFire application VM to host a distribution locator.
  * Such a configuration minimizes the number of processes that are required to
  * run GemFire. However, hosting distribution locators is not generally
- * recommended because if the application VM exits, the primary membership list
- * for the distributed system would be lost and it would not be possible for new
- * applications to connect to the distributed system.
+ * recommended because if the application VM exits it would not be possible for new
+ * applications to connect to the distributed system until it is restarted.
  * 
  * <P>
+ * Locators persist membership information in a locatorXXXview.dat file.  This
+ * file is used to recover information about the cluster when a locator starts
+ * if there are no other currently running locators.  It allows the restarted
+ * locator to rejoin the cluster.
  * 
+ * <P>
  * <b>NOTE:</b> In this release of the product locators log membership views and
  * cache server status in a locatorXXXviews.log file, where XXX is the locator's port.
  * This is a rolling log
@@ -61,8 +59,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
  * or be started so that it creates a DistributedSystem.  This means that it is
  * not possible in this release to use APIs to start a locator and <i>then</i>
  * start a DistributedSystem.
- * 
  * <P>
+ *   
  *  
  * @since GemFire 4.0
  */
