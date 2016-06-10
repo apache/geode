@@ -109,8 +109,10 @@ public abstract class DistributedSystem implements StatisticsFactory {
 
   /**
    * Connects to a GemFire distributed system with a configuration
-   * supplemented by the given properties.
-   * <P>The actual configuration attribute values used to connect comes
+   * supplemented by the given properties.  See {@linkplain ConfigurationProperties}
+   * for available GemFire properties and their meanings.
+   * <P>
+   * The actual configuration attribute values used to connect comes
    * from the following sources:
    * <OL>
    * <LI>System properties. If a system property named
