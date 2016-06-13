@@ -278,10 +278,6 @@ public abstract class PartitionMessage extends DistributionMessage implements
     return (ds == null || ds.isDisconnecting());
   }
   
-  boolean hasTxAlreadyFinished(TXStateProxy tx, TXManagerImpl txMgr, TXId txid) {
-    return txMgr.hasTxAlreadyFinished(tx, txid);
-  }
-  
   PartitionedRegion getPartitionedRegion() throws PRLocallyDestroyedException {
     return PartitionedRegion.getPRFromId(this.regionId);
   }
@@ -343,8 +339,10 @@ public abstract class PartitionMessage extends DistributionMessage implements
         sendReply = operateOnPartitionedRegion(dm, pr, startTime);        
       } else {
         try {
-          TXId txid = new TXId(getMemberToMasqueradeAs(), getTXUniqId());
-          if (!hasTxAlreadyFinished(tx, txMgr, txid)) {
+          if (txMgr.isClosed()) {
+            // NO DISTRIBUTED MESSAGING CAN BE DONE HERE!
+            sendReply = false;
+          } else if (tx.isInProgress()) {
             sendReply = operateOnPartitionedRegion(dm, pr, startTime);        
           }  
         } finally {

@@ -25,7 +25,6 @@ import org.mockito.internal.stubbing.answers.CallsRealMethods;
 
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.TXId;
 import com.gemstone.gemfire.internal.cache.TXManagerImpl;
 import com.gemstone.gemfire.internal.cache.TXStateProxy;
 import com.gemstone.gemfire.internal.cache.TXStateProxyImpl;
@@ -40,7 +39,6 @@ public class RemoteOperationMessageTest {
   private DistributionManager dm;
   private LocalRegion r;
   private TXManagerImpl txMgr;
-  private TXId txid;
   private long startTime = 0;
   TXStateProxy tx;
   
@@ -51,7 +49,6 @@ public class RemoteOperationMessageTest {
     msg = mock(RemoteOperationMessage.class);
     r = mock(LocalRegion.class);
     txMgr = mock(TXManagerImpl.class);
-    txid = new TXId(null, 0);
     tx = mock(TXStateProxyImpl.class);
     
     when(msg.checkCacheClosing(dm)).thenReturn(false);
@@ -59,9 +56,8 @@ public class RemoteOperationMessageTest {
     when(msg.getCache(dm)).thenReturn(cache);
     when(msg.getRegionByPath(cache)).thenReturn(r);
     when(msg.getTXManager(cache)).thenReturn(txMgr);
-    when(txMgr.hasTxAlreadyFinished(tx, txid)).thenCallRealMethod();
 
-    doAnswer(new CallsRealMethods()).when(msg).process(dm);    
+    doAnswer(new CallsRealMethods()).when(msg).process(dm);
   }
   
   @Test
@@ -75,7 +71,7 @@ public class RemoteOperationMessageTest {
   @Test
   public void messageForNotFinishedTXPerformsOnRegion() throws InterruptedException, RemoteOperationException {
     when(txMgr.masqueradeAs(msg)).thenReturn(tx);
-    when(msg.hasTxAlreadyFinished(tx, txMgr, txid)).thenCallRealMethod(); 
+    when(tx.isInProgress()).thenReturn(true);
     msg.process(dm);
 
     verify(msg, times(1)).operateOnRegion(dm, r, startTime);
@@ -84,10 +80,31 @@ public class RemoteOperationMessageTest {
   @Test
   public void messageForFinishedTXDoesNotPerformOnRegion() throws InterruptedException, RemoteOperationException {
     when(txMgr.masqueradeAs(msg)).thenReturn(tx);
-    when(msg.hasTxAlreadyFinished(tx, txMgr, txid)).thenReturn(true); 
+    when(tx.isInProgress()).thenReturn(false); 
     msg.process(dm);
 
     verify(msg, times(0)).operateOnRegion(dm, r, startTime);
   }
 
+  @Test
+  public void noNewTxProcessingAfterTXManagerImplClosed() throws RemoteOperationException {
+    txMgr = new TXManagerImpl(null, cache);
+    
+    when(msg.checkCacheClosing(dm)).thenReturn(false);
+    when(msg.checkDSClosing(dm)).thenReturn(false);
+    when(msg.getCache(dm)).thenReturn(cache);
+    when(msg.getRegionByPath(cache)).thenReturn(r);
+    when(msg.getTXManager(cache)).thenReturn(txMgr);
+
+    when(msg.canParticipateInTransaction()).thenReturn(true);
+    when(msg.canStartRemoteTransaction()).thenReturn(true);
+    
+    msg.process(dm);
+    
+    txMgr.close();
+    
+    msg.process(dm);
+
+    verify(msg, times(1)).operateOnRegion(dm, r, startTime);
+  }
 }

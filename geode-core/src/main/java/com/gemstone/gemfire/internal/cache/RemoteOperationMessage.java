@@ -241,8 +241,10 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
         sendReply = operateOnRegion(dm, r, startTime);        
       } else {
         try {
-          TXId txid = new TXId(getMemberToMasqueradeAs(), getTXUniqId());
-          if (!hasTxAlreadyFinished(tx, txMgr, txid)) {
+          if (txMgr.isClosed()) {
+            // NO DISTRIBUTED MESSAGING CAN BE DONE HERE!
+            sendReply = false;
+          } else if (tx.isInProgress()) {
             sendReply = operateOnRegion(dm, r, startTime);       
           }  
         } finally {
@@ -315,10 +317,6 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
         sendReply(getSender(), this.processorId, dm, rex, r, startTime);
       } 
     }
-  }
-
-  boolean hasTxAlreadyFinished(TXStateProxy tx, TXManagerImpl txMgr, TXId txid) {
-    return txMgr.hasTxAlreadyFinished(tx, txid);
   }
 
   TXManagerImpl getTXManager(GemFireCacheImpl cache) {

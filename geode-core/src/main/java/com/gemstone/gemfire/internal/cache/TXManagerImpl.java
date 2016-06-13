@@ -90,7 +90,7 @@ public class TXManagerImpl implements CacheTransactionManager,
   
   private final ArrayList<TransactionListener> txListeners = new ArrayList<TransactionListener>(8);
   public TransactionWriter writer = null;
-  private boolean closed = false;
+  private volatile boolean closed = false;
 
   private final Map<TXId, TXStateProxy> hostedTXStates;
 
@@ -577,7 +577,12 @@ public class TXManagerImpl implements CacheTransactionManager,
     }
     this.closed = true;
     for (TXStateProxy proxy: this.hostedTXStates.values()) {
-      proxy.close();
+      proxy.getLock().lock();
+      try {
+        proxy.close();
+      } finally {
+        proxy.getLock().unlock();
+      }
     }
     for (TXStateProxy proxy: this.localTxMap.values()) {
       proxy.close();
@@ -646,7 +651,7 @@ public class TXManagerImpl implements CacheTransactionManager,
     }
   }
 
-  private final boolean isClosed() {
+  public final boolean isClosed() {
     return this.closed;
   }
   private final void checkClosed() {
@@ -752,10 +757,13 @@ public class TXManagerImpl implements CacheTransactionManager,
         // Inflight op could be received later than TXFailover operation.
         if (curVal == null) {
           if (!isHostedTxRecentlyCompleted(key)) {
-            this.hostedTXStates.put(key, val);
             // Failover op removed the val
             // It is possible that the same operation can be executed
             // twice by two threads, but data is consistent.
+            this.hostedTXStates.put(key, val);
+          } else {
+            //Another thread should complete the transaction
+            logger.info("{} has already finished." , val.getTxId());
           }
         } else {
           if (val != curVal) {
@@ -768,22 +776,6 @@ public class TXManagerImpl implements CacheTransactionManager,
       }
     }
     return true;
-  }
-  
-  public boolean hasTxAlreadyFinished(TXStateProxy tx, TXId txid) {
-    if (tx == null) {
-      return false;
-    }
-    if (isHostedTxRecentlyCompleted(txid)) {
-      //Should only happen when handling a later arrival of transactional op from proxy,
-      //while the transaction has failed over and already committed or rolled back.
-      //Just send back reply as a success op.
-      //The client connection should be lost from proxy, or
-      //the proxy is closed for failover to occur.
-      logger.info("TxId {} has already finished." , txid);
-      return true;
-    }
-    return false;
   }
   
   /**

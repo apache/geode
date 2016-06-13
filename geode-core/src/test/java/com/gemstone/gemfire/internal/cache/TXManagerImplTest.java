@@ -49,6 +49,7 @@ public class TXManagerImplTest {
   TXStateProxy tx1, tx2;
   DistributionManager dm;
   TXRemoteRollbackMessage rollbackMsg;
+  TXRemoteCommitMessage commitMsg;
 
   @Before
   public void setUp() {
@@ -63,9 +64,11 @@ public class TXManagerImplTest {
     notCompletedTxid = new TXId(member, 2);
     latch = new CountDownLatch(1);
     rollbackMsg = new TXRemoteRollbackMessage();
+    commitMsg = new TXRemoteCommitMessage();
     
     when(this.msg.canStartRemoteTransaction()).thenReturn(true);
     when(this.msg.canParticipateInTransaction()).thenReturn(true);
+
   }
 
   @Test
@@ -142,9 +145,9 @@ public class TXManagerImplTest {
     assertFalse(txMgr.getLock(tx, txid));
     
   }
-  
+
   @Test
-  public void getLockAfterTXStateCommitted() throws InterruptedException{  
+  public void getLockAfterTXStateCommitted() throws InterruptedException{
     TXStateProxy oldtx = txMgr.getOrSetHostedTXState(txid, msg);
     
     assertEquals(oldtx, txMgr.getHostedTXState(txid));  
@@ -157,6 +160,20 @@ public class TXManagerImplTest {
     
     Thread t1 = new Thread(new Runnable() {
       public void run() {
+        when(msg.getTXOriginatorClient()).thenReturn(mock(InternalDistributedMember.class));
+        TXStateProxy tx;
+        try {
+          tx = txMgr.masqueradeAs(commitMsg);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+          throw new RuntimeException(e);
+        }
+        tx.setCommitOnBehalfOfRemoteStub(true);
+        try {
+          tx.commit();
+        } finally {
+          txMgr.unmasquerade(tx);
+        }
         txMgr.removeHostedTXState(txid);
         txMgr.saveTXCommitMessageForClientFailover(txid, txCommitMsg);
       }
@@ -168,11 +185,12 @@ public class TXManagerImplTest {
     TXStateProxy curTx = txMgr.getHostedTXState(txid);
     assertNull(curTx);
     
+    assertFalse(tx.isInProgress());
     //after TXStateProxy committed, getLock will get the lock for the oldtx
     //but caller should not perform ops on this TXStateProxy
     assertTrue(txMgr.getLock(tx, txid));    
   } 
-  
+
   @Test
   public void masqueradeAsCanGetLock() throws InterruptedException{  
     TXStateProxy tx;
@@ -222,21 +240,43 @@ public class TXManagerImplTest {
   }
   
   @Test
-  public void hasTxAlreadyFinishedDetectsNoTx() {   
-    assertFalse(txMgr.hasTxAlreadyFinished(null, txid));
-  }
-  
-  @Test
-  public void hasTxAlreadyFinishedDetectsTxNotFinished() {
+  public void testTxStateWithNotFinishedTx() {
     TXStateProxy tx = txMgr.getOrSetHostedTXState(notCompletedTxid, msg);
-    assertFalse(txMgr.hasTxAlreadyFinished(tx, notCompletedTxid));
+    assertTrue(tx.isInProgress());
+  }
+
+  @Test
+  public void testTxStateWithCommittedTx() throws InterruptedException {
+    when(msg.getTXOriginatorClient()).thenReturn(mock(InternalDistributedMember.class));
+    setupTx(); 
+    
+    TXStateProxy tx = txMgr.masqueradeAs(commitMsg);
+    try {
+      tx.commit();
+    } finally {
+      txMgr.unmasquerade(tx);
+    }
+    assertFalse(tx.isInProgress());
   }
   
   @Test
-  public void hasTxAlreadyFinishedDetectsTxFinished() throws InterruptedException {
-    TXStateProxy tx = txMgr.getOrSetHostedTXState(completedTxid, msg);    
-    txMgr.saveTXCommitMessageForClientFailover(completedTxid, txCommitMsg); 
-    assertTrue(txMgr.hasTxAlreadyFinished(tx, completedTxid));
+  public void testTxStateWithRolledBackTx() throws InterruptedException {
+    when(msg.getTXOriginatorClient()).thenReturn(mock(InternalDistributedMember.class));
+    setupTx();
+    
+    TXStateProxy tx = txMgr.masqueradeAs(rollbackMsg);
+    try {
+      tx.rollback();
+    } finally {
+      txMgr.unmasquerade(tx);
+    }
+    assertFalse(tx.isInProgress());
+  }
+
+  private void setupTx() throws InterruptedException {
+    TXStateProxy tx = txMgr.masqueradeAs(msg);
+    tx.setCommitOnBehalfOfRemoteStub(true);
+    txMgr.unmasquerade(tx);
   }
 
   @Test
@@ -251,11 +291,8 @@ public class TXManagerImplTest {
           e.printStackTrace();
           throw new RuntimeException(e);
         }
-        try {
-          msg.process(dm);
-        } finally {
-          txMgr.unmasquerade(tx1);
-        }
+
+        msg.process(dm);
 
         TXStateProxy existingTx = masqueradeToRollback();
         latch.countDown();
