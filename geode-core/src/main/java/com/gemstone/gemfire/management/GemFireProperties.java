@@ -179,26 +179,26 @@ public class GemFireProperties {
    * deleted. Set to zero to disable automatic log file deletion.
    **/
   private int logDiskSpaceLimit;
-  /**
-   * If true, all gemfire socket communication is configured to use SSL through
-   * JSSE.
-   **/
-  private boolean sslEnabled;
-  /**
-   * A space seperated list of the SSL cipher suites to enable. Those listed
-   * must be supported by the available providers.
-   **/
-  private String sslCiphers;
-  /**
-   * A space seperated list of the SSL protocols to enable. Those listed must be
-   * supported by the available providers.
-   **/
-  private String sslProtocols;
-  /**
-   * If false, allow ciphers that do not require the client side of the
-   * connection to be authenticated.
-   **/
-  private boolean sslRequireAuthentication;
+//  /**
+//   * If true, all gemfire socket communication is configured to use SSL through
+//   * JSSE.
+//   **/
+//  private boolean sslEnabled;
+//  /**
+//   * A space seperated list of the SSL cipher suites to enable. Those listed
+//   * must be supported by the available providers.
+//   **/
+//  private String sslCiphers;
+//  /**
+//   * A space seperated list of the SSL protocols to enable. Those listed must be
+//   * supported by the available providers.
+//   **/
+//  private String sslProtocols;
+//  /**
+//   * If false, allow ciphers that do not require the client side of the
+//   * connection to be authenticated.
+//   **/
+//  private boolean sslRequireAuthentication;
   /**
    * The number of milliseconds a thread can keep exclusive access to a socket
    * that it is not actively using. Once a thread loses its lease to a socket it
@@ -590,21 +590,21 @@ public class GemFireProperties {
     return logDiskSpaceLimit;
   }
 
-  public boolean isSslEnabled() {
-    return sslEnabled;
-  }
-
-  public String getSslCiphers() {
-    return sslCiphers;
-  }
-
-  public String getSslProtocols() {
-    return sslProtocols;
-  }
-
-  public boolean isSslRequireAuthentication() {
-    return sslRequireAuthentication;
-  }
+//  public boolean isSslEnabled() {
+//    return sslEnabled;
+//  }
+//
+//  public String getSslCiphers() {
+//    return sslCiphers;
+//  }
+//
+//  public String getSslProtocols() {
+//    return sslProtocols;
+//  }
+//
+//  public boolean isSslRequireAuthentication() {
+//    return sslRequireAuthentication;
+//  }
 
   public int getSocketLeaseTime() {
     return socketLeaseTime;
@@ -885,25 +885,25 @@ public class GemFireProperties {
     
   }
 
-  public void setSslEnabled(boolean sslEnabled) {
-    this.sslEnabled = sslEnabled;
-    
-  }
-
-  public void setSslCiphers(String sslCiphers) {
-    this.sslCiphers = sslCiphers;
-    
-  }
-
-  public void setSslProtocols(String sslProtocols) {
-    this.sslProtocols = sslProtocols;
-    
-  }
-
-  public void setSslRequireAuthentication(boolean sslRequireAuthentication) {
-    this.sslRequireAuthentication = sslRequireAuthentication;
-    
-  }
+//  public void setSslEnabled(boolean sslEnabled) {
+//    this.sslEnabled = sslEnabled;
+//
+//  }
+//
+//  public void setSslCiphers(String sslCiphers) {
+//    this.sslCiphers = sslCiphers;
+//
+//  }
+//
+//  public void setSslProtocols(String sslProtocols) {
+//    this.sslProtocols = sslProtocols;
+//
+//  }
+//
+//  public void setSslRequireAuthentication(boolean sslRequireAuthentication) {
+//    this.sslRequireAuthentication = sslRequireAuthentication;
+//
+//  }
 
   public void setSocketLeaseTime(int socketLeaseTime) {
     this.socketLeaseTime = socketLeaseTime;

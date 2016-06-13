@@ -104,7 +104,7 @@ public class SSLConfigJUnitTest {
   public void testMCastPortWithSSL() throws Exception {
     Properties props = new Properties( );
     // default mcast-port is not 0.
-    props.setProperty(SSL_ENABLED, "true");
+    props.setProperty(CLUSTER_SSL_ENABLED, "true");
     
     try {
       new DistributionConfigImpl( props );
@@ -144,54 +144,54 @@ public class SSLConfigJUnitTest {
     boolean requireAuth = true;
     
     DistributionConfigImpl config = new DistributionConfigImpl( new Properties() );
-    isEqual( config.getSSLEnabled(), sslenabled );
-    isEqual( config.getSSLProtocols(), sslprotocols );
-    isEqual( config.getSSLCiphers(), sslciphers );
-    isEqual( config.getSSLRequireAuthentication(), requireAuth );
+    isEqual( config.getClusterSSLEnabled(), sslenabled );
+    isEqual( config.getClusterSSLProtocols(), sslprotocols );
+    isEqual( config.getClusterSSLCiphers(), sslciphers );
+    isEqual( config.getClusterSSLRequireAuthentication(), requireAuth );
     
     Properties props = new Properties();
     sslciphers = "RSA_WITH_GARBAGE";
-    props.setProperty(SSL_CIPHERS, sslciphers);
+    props.setProperty(CLUSTER_SSL_CIPHERS, sslciphers);
 
     config = new DistributionConfigImpl( props );
-    isEqual( config.getSSLEnabled(), sslenabled );
-    isEqual( config.getSSLProtocols(), sslprotocols );
-    isEqual( config.getSSLCiphers(), sslciphers );
-    isEqual( config.getSSLRequireAuthentication(), requireAuth );
+    isEqual( config.getClusterSSLEnabled(), sslenabled );
+    isEqual( config.getClusterSSLProtocols(), sslprotocols );
+    isEqual( config.getClusterSSLCiphers(), sslciphers );
+    isEqual( config.getClusterSSLRequireAuthentication(), requireAuth );
     
     sslprotocols = "SSLv7";
-    props.setProperty(SSL_PROTOCOLS, sslprotocols);
+    props.setProperty(CLUSTER_SSL_PROTOCOLS, sslprotocols);
 
     config = new DistributionConfigImpl( props );
-    isEqual( config.getSSLEnabled(), sslenabled );
-    isEqual( config.getSSLProtocols(), sslprotocols );
-    isEqual( config.getSSLCiphers(), sslciphers );
-    isEqual( config.getSSLRequireAuthentication(), requireAuth );
+    isEqual( config.getClusterSSLEnabled(), sslenabled );
+    isEqual( config.getClusterSSLProtocols(), sslprotocols );
+    isEqual( config.getClusterSSLCiphers(), sslciphers );
+    isEqual( config.getClusterSSLRequireAuthentication(), requireAuth );
 
     requireAuth = false;
-    props.setProperty(SSL_REQUIRE_AUTHENTICATION, String.valueOf(requireAuth));
+    props.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(requireAuth));
 
     config = new DistributionConfigImpl( props );
-    isEqual( config.getSSLEnabled(), sslenabled );
-    isEqual( config.getSSLProtocols(), sslprotocols );
-    isEqual( config.getSSLCiphers(), sslciphers );
-    isEqual( config.getSSLRequireAuthentication(), requireAuth );
+    isEqual( config.getClusterSSLEnabled(), sslenabled );
+    isEqual( config.getClusterSSLProtocols(), sslprotocols );
+    isEqual( config.getClusterSSLCiphers(), sslciphers );
+    isEqual( config.getClusterSSLRequireAuthentication(), requireAuth );
 
     sslenabled = true;
-    props.setProperty(SSL_ENABLED, String.valueOf(sslenabled));
+    props.setProperty(CLUSTER_SSL_ENABLED, String.valueOf(sslenabled));
     props.setProperty(MCAST_PORT, "0");
 
     config = new DistributionConfigImpl( props );
-    isEqual( config.getSSLEnabled(), sslenabled );
-    isEqual( config.getSSLProtocols(), sslprotocols );
-    isEqual( config.getSSLCiphers(), sslciphers );
-    isEqual( config.getSSLRequireAuthentication(), requireAuth );
+    isEqual( config.getClusterSSLEnabled(), sslenabled );
+    isEqual( config.getClusterSSLProtocols(), sslprotocols );
+    isEqual( config.getClusterSSLCiphers(), sslciphers );
+    isEqual( config.getClusterSSLRequireAuthentication(), requireAuth );
     
     config = new DistributionConfigImpl( config );
-    isEqual( config.getSSLEnabled(), sslenabled );
-    isEqual( config.getSSLProtocols(), sslprotocols );
-    isEqual( config.getSSLCiphers(), sslciphers );
-    isEqual( config.getSSLRequireAuthentication(), requireAuth );
+    isEqual( config.getClusterSSLEnabled(), sslenabled );
+    isEqual( config.getClusterSSLProtocols(), sslprotocols );
+    isEqual( config.getClusterSSLCiphers(), sslciphers );
+    isEqual( config.getClusterSSLRequireAuthentication(), requireAuth );
   }
   
   @Test
@@ -340,11 +340,12 @@ public class SSLConfigJUnitTest {
     boolean jmxManagerSslRequireAuth = true;
 
     Properties gemFireProps = new Properties();
-    gemFireProps.put(JMX_MANAGER_SSL, String.valueOf(jmxManagerSsl));
-    gemFireProps.put(JMX_MANAGER_SSL_ENABLED, String.valueOf(jmxManagerSslenabled));
-    gemFireProps.put(JMX_MANAGER_SSL_PROTOCOLS, jmxManagerSslprotocols);
-    gemFireProps.put(JMX_MANAGER_SSL_CIPHERS, jmxManagerSslciphers);
-    gemFireProps.put(JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(jmxManagerSslRequireAuth));
+    gemFireProps.put(CLUSTER_SSL_ENABLED, String.valueOf(jmxManagerSslenabled));
+    gemFireProps.put(CLUSTER_SSL_PROTOCOLS, jmxManagerSslprotocols);
+    gemFireProps.put(CLUSTER_SSL_CIPHERS, jmxManagerSslciphers);
+    gemFireProps.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(jmxManagerSslRequireAuth));
+    //TODO -- UDO: We need to potentially have to implement JMX_MANAGER_SSL_ALIAS
+    gemFireProps.put(JMX_MANAGER_SSL_ALIAS, "");
     try{
       DistributionConfigImpl config = new DistributionConfigImpl( gemFireProps );
     }catch(IllegalArgumentException e){
@@ -359,7 +360,6 @@ public class SSLConfigJUnitTest {
     gemFireProps.put(CLUSTER_SSL_CIPHERS, sslciphers);
     gemFireProps.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(requireAuth));
 
-    gemFireProps.put(JMX_MANAGER_SSL, String.valueOf(jmxManagerSsl));
     gemFireProps.put(JMX_MANAGER_SSL_PROTOCOLS, jmxManagerSslprotocols);
     gemFireProps.put(JMX_MANAGER_SSL_CIPHERS, jmxManagerSslciphers);
     gemFireProps.put(JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(jmxManagerSslRequireAuth));
@@ -393,6 +393,7 @@ public class SSLConfigJUnitTest {
     gemFireProps.put(CLUSTER_SSL_PROTOCOLS, sslprotocols);
     gemFireProps.put(CLUSTER_SSL_CIPHERS, sslciphers);
     gemFireProps.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(requireAuth));
+
 
     gemFireProps.put(SERVER_SSL_ENABLED, String.valueOf(cacheServerSslenabled));
     gemFireProps.put(SERVER_SSL_PROTOCOLS, cacheServerSslprotocols);
@@ -444,175 +445,6 @@ public class SSLConfigJUnitTest {
     isEqual( config.getGatewaySSLProtocols(), gatewaySslprotocols );
     isEqual( config.getGatewaySSLCiphers(), gatewaySslciphers );
     isEqual( config.getGatewaySSLRequireAuthentication(), gatewaySslRequireAuth );
-  }
-  
-  @Test
-  public void testCustomizedClusterSslConfig() throws Exception {
-    boolean sslenabled = true;
-    String  sslprotocols = "SSLv1";
-    String  sslciphers = "RSA_WITH_NOTHING";
-    boolean requireAuth = true;
-
-    boolean clusterSslenabled = true;
-    String  clusterSslprotocols = "SSLv7";
-    String  clusterSslciphers = "RSA_WITH_GARBAGE";
-    boolean clusterSslRequireAuth = true;
-    
-    //sslEnabled and clusterSSLEnabled set at the same time
-    Properties gemFireProps = new Properties();
-    gemFireProps.setProperty(MCAST_PORT, "0");
-    gemFireProps.put(SSL_ENABLED, "true");
-    gemFireProps.put(CLUSTER_SSL_ENABLED, "false");
-    DistributionConfigImpl config = null;
-    try{
-      config = new DistributionConfigImpl( gemFireProps );
-      throw new Exception();
-    }catch(IllegalArgumentException e){
-      if (! e.toString().contains( "GemFire properties \'ssl-enabled\' and \'cluster-ssl-enabled\' can not be used at the same time")) {
-        throw new Exception( "did not get expected exception, got this instead...", e );
-      }
-    }
-    
-    //ssl-protocol and cluster-ssl-protocol set at the same time
-    gemFireProps = new Properties();
-    gemFireProps.setProperty(MCAST_PORT, "0");
-    gemFireProps.put(SSL_ENABLED, "true");
-    gemFireProps.put(SSL_PROTOCOLS, sslprotocols);
-    gemFireProps.put(CLUSTER_SSL_ENABLED, "true");
-    gemFireProps.put(CLUSTER_SSL_PROTOCOLS, clusterSslprotocols);
-    try{
-      config = new DistributionConfigImpl( gemFireProps );
-      throw new Exception();
-    }catch(IllegalArgumentException e){
-      if (! e.toString().contains( "GemFire properties \'ssl-protocols\' and \'cluster-ssl-protocols\' can not be used at the same time") ) {
-        throw new Exception( "did not get expected exception, got this instead...", e );
-      }
-    }
-    
-    //ssl-protocol and cluster-ssl-protocol set at the same time with same value
-    gemFireProps = new Properties();
-    gemFireProps.setProperty(MCAST_PORT, "0");
-    gemFireProps.put(SSL_ENABLED, "true");
-    gemFireProps.put(SSL_PROTOCOLS, sslprotocols);
-    gemFireProps.put(CLUSTER_SSL_ENABLED, "true");
-    gemFireProps.put(CLUSTER_SSL_PROTOCOLS, sslprotocols);
-    try{
-      config = new DistributionConfigImpl( gemFireProps );
-    } catch(IllegalArgumentException e){
-      throw new Exception();
-    }
-    
-    //ssl-cipher and cluster-ssl-cipher set at the same time
-    gemFireProps = new Properties();
-    gemFireProps.setProperty(MCAST_PORT, "0");
-    gemFireProps.put(SSL_ENABLED, "true");
-    gemFireProps.put(SSL_CIPHERS, sslciphers);
-    gemFireProps.put(CLUSTER_SSL_ENABLED, "true");
-    gemFireProps.put(CLUSTER_SSL_CIPHERS, clusterSslciphers);
-    try{
-      config = new DistributionConfigImpl( gemFireProps );
-      throw new Exception();
-    } catch(IllegalArgumentException e){
-      if (! e.toString().contains( "GemFire properties \'ssl-cipher\' and \'cluster-ssl-cipher\' can not be used at the same time") ) {
-        throw new Exception( "did not get expected exception, got this instead...", e );
-      }
-    }
-    
-    //ssl-cipher and cluster-ssl-cipher set at the same time with same value
-    gemFireProps = new Properties();
-    gemFireProps.setProperty(MCAST_PORT, "0");
-    gemFireProps.put(SSL_ENABLED, "true");
-    gemFireProps.put(SSL_CIPHERS, sslciphers);
-    gemFireProps.put(CLUSTER_SSL_ENABLED, "true");
-    gemFireProps.put(CLUSTER_SSL_CIPHERS, sslciphers);
-    try{
-      config = new DistributionConfigImpl( gemFireProps );
-    } catch(IllegalArgumentException e){
-      throw new Exception();
-    }
-    
-    //ssl-require-authentication and cluster-ssl-require-authentication set at the same time
-    gemFireProps = new Properties();
-    gemFireProps.setProperty(MCAST_PORT, "0");
-    gemFireProps.put(SSL_ENABLED, "true");
-    gemFireProps.put(SSL_REQUIRE_AUTHENTICATION, "true");
-    gemFireProps.put(CLUSTER_SSL_ENABLED, "true");
-    gemFireProps.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, "false");
-    try{
-      config = new DistributionConfigImpl( gemFireProps );
-      throw new Exception();
-    } catch(IllegalArgumentException e){
-      if (! e.toString().contains( "GemFire properties \'ssl-require-authentication\' and \'cluster-ssl-require-authentication\' can not be used at the same time") ) {
-        throw new Exception( "did not get expected exception, got this instead...", e );
-      }
-    }
-    
-    //ssl-require-authentication and cluster-ssl-require-authentication set at the same time and have the same value
-    gemFireProps = new Properties();
-    gemFireProps.setProperty(MCAST_PORT, "0");
-    gemFireProps.put(SSL_ENABLED, "true");
-    gemFireProps.put(SSL_REQUIRE_AUTHENTICATION, "true");
-    gemFireProps.put(CLUSTER_SSL_ENABLED, "true");
-    gemFireProps.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, "true");
-    try{
-      config = new DistributionConfigImpl( gemFireProps );
-    } catch(IllegalArgumentException e){
-      throw new Exception();
-    }
-    
-    // only ssl-* properties provided. same should reflect in cluster-ssl properties
-    gemFireProps = new Properties();
-    gemFireProps.setProperty(MCAST_PORT, "0");
-    gemFireProps.put(SSL_ENABLED, String.valueOf(sslenabled));
-    gemFireProps.put(SSL_REQUIRE_AUTHENTICATION, String.valueOf(requireAuth));
-    gemFireProps.put(SSL_CIPHERS, sslciphers);
-    gemFireProps.put(SSL_PROTOCOLS, sslprotocols);
-
-    gemFireProps.putAll(getGfSecurityPropertiesSSL());
-    
-    config = new DistributionConfigImpl(gemFireProps);
-
-    isEqual(sslenabled, config.getSSLEnabled());
-    isEqual(sslprotocols, config.getSSLProtocols());
-    isEqual(sslciphers, config.getSSLCiphers());
-    isEqual(requireAuth, config.getSSLRequireAuthentication());
-
-    isEqual(sslenabled, config.getClusterSSLEnabled());
-    isEqual(sslprotocols, config.getClusterSSLProtocols());
-    isEqual(sslciphers, config.getClusterSSLCiphers());
-    isEqual(requireAuth, config.getClusterSSLRequireAuthentication());
-    
-    Properties sslProperties = config.getSSLProperties();
-    isEqual( SSL_PROPS_MAP , sslProperties);
-
-    Properties clusterSSLProperties = config.getClusterSSLProperties();
-    isEqual( SSL_PROPS_MAP, clusterSSLProperties );
-    
-    //only clutser-ssl-properties provided.
-    gemFireProps = new Properties();
-    gemFireProps.setProperty(MCAST_PORT, "0");
-    gemFireProps.put(CLUSTER_SSL_ENABLED, String.valueOf(clusterSslenabled));
-    gemFireProps.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(clusterSslRequireAuth));
-    gemFireProps.put(CLUSTER_SSL_CIPHERS, clusterSslciphers);
-    gemFireProps.put(CLUSTER_SSL_PROTOCOLS, clusterSslprotocols);
-
-    gemFireProps.putAll(getGfSecurityPropertiesCluster(false));
-    
-    config = new DistributionConfigImpl(gemFireProps);
-
-    isEqual(clusterSslenabled, config.getClusterSSLEnabled());
-    isEqual(clusterSslprotocols, config.getClusterSSLProtocols());
-    isEqual(clusterSslciphers, config.getClusterSSLCiphers());
-    isEqual(clusterSslRequireAuth, config.getClusterSSLRequireAuthentication());
-
-    isEqual(CLUSTER_SSL_PROPS_MAP.get(CLUSTER_SSL_KEYSTORE), config.getClusterSSLKeyStore());
-    isEqual(CLUSTER_SSL_PROPS_MAP.get(CLUSTER_SSL_KEYSTORE_TYPE), config.getClusterSSLKeyStoreType());
-    isEqual(CLUSTER_SSL_PROPS_MAP.get(CLUSTER_SSL_KEYSTORE_PASSWORD), config.getClusterSSLKeyStorePassword());
-    isEqual(CLUSTER_SSL_PROPS_MAP.get(CLUSTER_SSL_TRUSTSTORE), config.getClusterSSLTrustStore());
-    isEqual(CLUSTER_SSL_PROPS_MAP.get(CLUSTER_SSL_TRUSTSTORE_PASSWORD), config.getClusterSSLTrustStorePassword());
-    
-    clusterSSLProperties = config.getClusterSSLProperties();
-    isEqual( SSL_PROPS_MAP, clusterSSLProperties );
   }
   
   @Test

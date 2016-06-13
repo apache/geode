@@ -694,7 +694,7 @@ public class InternalDistributedSystemJUnitTest
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    props.setProperty(SSL_ENABLED, "true");
+    props.setProperty(CLUSTER_SSL_ENABLED, "true");
     Config config1 = new DistributionConfigImpl(props, false);
     Properties props1 = config1.toProperties();
     // For the deprecated ssl-* properties a decision was made
@@ -703,12 +703,12 @@ public class InternalDistributedSystemJUnitTest
     // and its use in toProperties.
     // The other thing that is done is the ssl-* props are copied to cluster-ssl-*.
     // The following two assertions demonstrate this.
-    assertEquals(null, props1.getProperty(SSL_ENABLED));
+    assertEquals(null, props1.getProperty(CLUSTER_SSL_ENABLED));
     assertEquals("true", props1.getProperty(CLUSTER_SSL_ENABLED));
     Config config2 = new DistributionConfigImpl(props1, false);
     assertEquals(true, config1.sameAs(config2));
     Properties props3 = new Properties(props1);
-    props3.setProperty(SSL_ENABLED, "false");
+    props3.setProperty(CLUSTER_SSL_ENABLED, "false");
     Config config3 = new DistributionConfigImpl(props3, false);
     assertEquals(false, config1.sameAs(config3));
   }

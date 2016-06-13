@@ -101,10 +101,10 @@ public class JSSESocketJUnitTest {
       LogService.setBaseLogLevel(Level.DEBUG);
       {
         System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + SSL_ENABLED, "true");
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + SSL_REQUIRE_AUTHENTICATION, "true");
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + SSL_CIPHERS, "any");
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + SSL_PROTOCOLS, "TLSv1.2");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + CLUSTER_SSL_ENABLED, "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + CLUSTER_SSL_REQUIRE_AUTHENTICATION, "true");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + CLUSTER_SSL_CIPHERS, "any");
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + CLUSTER_SSL_PROTOCOLS, "TLSv1.2");
 
         File jks = findTestJKS();
         System.setProperty("javax.net.ssl.trustStore", jks.getCanonicalPath());
@@ -164,7 +164,7 @@ public class JSSESocketJUnitTest {
   public void testClientSocketFactory() {
     System.getProperties().put(DistributionConfig.GEMFIRE_PREFIX + "clientSocketFactory",
         TSocketFactory.class.getName());
-    System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + SSL_ENABLED);
+    System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + CLUSTER_SSL_ENABLED);
     SocketCreator.getDefaultInstance(new Properties());
     factoryInvoked = false;
     try {

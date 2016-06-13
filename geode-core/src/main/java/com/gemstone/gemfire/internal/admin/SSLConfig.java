@@ -32,10 +32,10 @@ public class SSLConfig {
   
   //private static final String PREFIX = "javax.net.ssl.";
 
-  private boolean enabled = DistributionConfig.DEFAULT_SSL_ENABLED;
-  private String protocols = DistributionConfig.DEFAULT_SSL_PROTOCOLS;
-  private String ciphers = DistributionConfig.DEFAULT_SSL_CIPHERS;
-  private boolean requireAuth = DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
+  private boolean enabled = DistributionConfig.DEFAULT_CLUSTER_SSL_ENABLED;
+  private String protocols = DistributionConfig.DEFAULT_CLUSTER_SSL_PROTOCOLS;
+  private String ciphers = DistributionConfig.DEFAULT_CLUSTER_SSL_CIPHERS;
+  private boolean requireAuth = DistributionConfig.DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION;
   
   /** 
    * SSL implementation-specific key-value pairs. Each key should be prefixed 
@@ -115,15 +115,15 @@ public class SSLConfig {
    * @since GemFire 4.0
    */
   public void toDSProperties(Properties props) {
-    props.setProperty(SSL_ENABLED,
+    props.setProperty(CLUSTER_SSL_ENABLED,
                       String.valueOf(this.enabled));
 
     if (this.enabled) {
-      props.setProperty(SSL_PROTOCOLS,
+      props.setProperty(CLUSTER_SSL_PROTOCOLS,
                         this.protocols); 
-      props.setProperty(SSL_CIPHERS,
+      props.setProperty(CLUSTER_SSL_CIPHERS,
                         this.ciphers);
-      props.setProperty(SSL_REQUIRE_AUTHENTICATION,
+      props.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION,
                         String.valueOf(this.requireAuth));
     }
   }

@@ -160,10 +160,10 @@ public class DistributedSystemConfigImpl
 
     this.systemName = distConfig.getName();
 
-    this.sslEnabled = distConfig.getSSLEnabled();
-    this.sslCiphers = distConfig.getSSLCiphers();
-    this.sslProtocols = distConfig.getSSLProtocols();
-    this.sslAuthenticationRequired = distConfig.getSSLRequireAuthentication();
+    this.sslEnabled = distConfig.getClusterSSLEnabled();
+    this.sslCiphers = distConfig.getClusterSSLCiphers();
+    this.sslProtocols = distConfig.getClusterSSLProtocols();
+    this.sslAuthenticationRequired = distConfig.getClusterSSLRequireAuthentication();
 
     this.logFile = distConfig.getLogFile().getPath();
     this.logLevel =
@@ -857,13 +857,13 @@ public class DistributedSystemConfigImpl
   //   SSL support...
   // -------------------------------------------------------------------------
   private boolean sslEnabled =
-      DistributionConfig.DEFAULT_SSL_ENABLED;
+      DistributionConfig.DEFAULT_CLUSTER_SSL_ENABLED;
   private String sslProtocols =
-      DistributionConfig.DEFAULT_SSL_PROTOCOLS;
+      DistributionConfig.DEFAULT_CLUSTER_SSL_PROTOCOLS;
   private String sslCiphers =
-      DistributionConfig.DEFAULT_SSL_CIPHERS;
+      DistributionConfig.DEFAULT_CLUSTER_SSL_CIPHERS;
   private boolean sslAuthenticationRequired =
-      DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
+      DistributionConfig.DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION;
   private Properties sslProperties = new Properties();
 
   public boolean isSSLEnabled() {
@@ -1097,16 +1097,16 @@ public class DistributedSystemConfigImpl
     buf.append("  " + REMOTE_COMMAND_NAME + "=");
     buf.append(String.valueOf(this.remoteCommand));
     buf.append(lf);
-    buf.append("  " + SSL_ENABLED + "=");
+    buf.append("  " + CLUSTER_SSL_ENABLED + "=");
     buf.append(String.valueOf(this.sslEnabled));
     buf.append(lf);
-    buf.append("  " + SSL_CIPHERS_NAME + "=");
+    buf.append("  " + CLUSTER_SSL_CIPHERS + "=");
     buf.append(String.valueOf(this.sslCiphers));
     buf.append(lf);
-    buf.append("  " + SSL_PROTOCOLS_NAME + "=");
+    buf.append("  " + CLUSTER_SSL_PROTOCOLS + "=");
     buf.append(String.valueOf(this.sslProtocols));
     buf.append(lf);
-    buf.append("  " + SSL_REQUIRE_AUTHENTICATION_NAME + "=");
+    buf.append("  " + CLUSTER_SSL_REQUIRE_AUTHENTICATION + "=");
     buf.append(String.valueOf(this.sslAuthenticationRequired));
     buf.append(lf);
     buf.append("  " + LOG_FILE_NAME + "=");

@@ -40,7 +40,6 @@ public class AbstractConfigJUnitTest {
     assertTrue((Boolean) method.invoke(actc, CLUSTER_SSL_ENABLED));
     assertFalse((Boolean) method.invoke(actc, GATEWAY_SSL_TRUSTSTORE_PASSWORD));
     assertFalse((Boolean) method.invoke(actc, SERVER_SSL_KEYSTORE_PASSWORD));
-    assertTrue((Boolean) method.invoke(actc, SSL_ENABLED));
     assertTrue((Boolean) method.invoke(actc, CONSERVE_SOCKETS));
     assertFalse((Boolean) method.invoke(actc, "javax.net.ssl.keyStorePassword"));
     assertFalse((Boolean) method.invoke(actc, "javax.net.ssl.keyStoreType"));

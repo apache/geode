@@ -159,6 +159,25 @@ public interface ConfigurationProperties {
    * <U>Since</U>: GemFire 8.1
    */
   String CLUSTER_CONFIGURATION_DIR = "cluster-configuration-dir";
+
+  /**
+   * The static String definition of the cluster ssl prefix <i>"cluster-ssl"</i> used in conjunction with other <i>cluster-ssl-*</i> properties property
+   * <a name="cluster-ssl"/a></p>
+   * <U>Description</U>: The cluster-ssl property prefix
+   */
+  String CLUSTER_SSL_PREFIX = "cluster-ssl";
+
+  /**
+   * The static String definition of the <i>"cluster-ssl-alias"</i> property
+   * <a name="cluster-ssl-alias"/a></p>
+   * <U>Description</U>: This property is to be used if a specific key is to be used out of a keystore with multiple keys in it.
+   * This alias will be used for all other SSL communication (HTTP Service,JMX,SERVER,GATEWAY) unless specifically overridden by their
+   * corresponding aliases {@link #GATEWAY_SSL_ALIAS}, {@link #HTTP_SERVICE_SSL_ALIAS}, {@link #JMX_MANAGER_SSL_ALIAS}, {@link #SERVER_SSL_ALIAS}
+   * </p>
+   * <U>Default</U>: "" </p>
+   * <U>Since</U>: Geode 1.0
+   */
+  String CLUSTER_SSL_ALIAS = "cluster-ssl-alias";
   /**
    * The static String definition of the <i>"cluster-ssl-ciphers"</i> property
    * <a name="cluster-ssl-ciphers"/a></p>
@@ -174,8 +193,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"cluster-ssl-enabled"</i> property
    * <a name="cluster-ssl-enabled"/a></p>
    * <U>Description</U>: If true, all gemfire socket communication is
-   * configured to use SSL through JSSE. Preferably Use cluster-ssl-* properties
-   * rather than ssl-* properties.
+   * configured to use SSL through JSSE.
    * </p>
    * <U>Default</U>: "false"</p>
    * <U>Since</U>: GemFire 8.0
@@ -214,8 +232,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"cluster-ssl-protocols"</i> property
    * <a name="cluster-ssl-protocols"/a></p>
    * <U>Description</U>: A space separated list of the SSL protocols to
-   * enable. Those listed must be supported by the available providers.Preferably
-   * use cluster-ssl-* properties rather than ssl-* properties.
+   * enable. Those listed must be supported by the available providers.
    * </p>
    * <U>Default</U>: "any"</p>
    * <U>Since</U>: GemFire 8.0
@@ -225,8 +242,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"cluster-ssl-require-authentication"</i> property
    * <a name="cluster-ssl-require-authentication"/a></p>
    * <U>Description</U>: If false, allow ciphers that do not require the
-   * client side of the connection to be authenticated.Preferably use
-   * cluster-ssl-* properties rather than ssl-* properties.
+   * client side of the connection to be authenticated.
    * </p>
    * <U>Default</U>: "true"</p>
    * <U>Since</U>: GemFire 8.0
@@ -422,6 +438,16 @@ public interface ConfigurationProperties {
    */
   String ENFORCE_UNIQUE_HOST = "enforce-unique-host";
   /**
+   * The static String definition of the <i>"gateway-ssl-alias"</i> property
+   * <a name="gateway-ssl-alias"/a></p>
+   * <U>Description</U>: This property is to be used if a specific key is to be used for the SSL communications for the Gateways.
+   * </p>
+   * <U><i>Optional</i></U>
+   * <U>Default</U>: "" </p>
+   * <U>Since</U>: Geode 1.0
+   */
+  String GATEWAY_SSL_ALIAS = "gateway-ssl-alias";
+  /**
    * The static String definition of the <i>"gateway-ssl-ciphers"</i> property
    * <a name="gateway-ssl-ciphers"/a></p>
    * <U>Description</U>: A space seperated list of the SSL cipher suites to enable.
@@ -429,6 +455,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>any</code></p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_CIPHERS}
    */
   String GATEWAY_SSL_CIPHERS = "gateway-ssl-ciphers";
   /**
@@ -440,6 +467,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>false</code></p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_ENABLED} with the optional {@link #GATEWAY_SSL_ALIAS}
    */
   String GATEWAY_SSL_ENABLED = "gateway-ssl-enabled";
   /**
@@ -450,6 +478,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE}
    */
   String GATEWAY_SSL_KEYSTORE = "gateway-ssl-keystore";
   /**
@@ -460,6 +489,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE_PASSWORD}
    */
   String GATEWAY_SSL_KEYSTORE_PASSWORD = "gateway-ssl-keystore-password";
   /**
@@ -470,6 +500,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE_TYPE}
    */
   String GATEWAY_SSL_KEYSTORE_TYPE = "gateway-ssl-keystore-type";
   /**
@@ -480,6 +511,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>any</code></p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_PROTOCOLS}
    */
   String GATEWAY_SSL_PROTOCOLS = "gateway-ssl-protocols";
   /**
@@ -490,6 +522,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>any</code></p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
   String GATEWAY_SSL_REQUIRE_AUTHENTICATION = "gateway-ssl-require-authentication";
   /**
@@ -500,6 +533,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_TRUSTSTORE}
    */
   String GATEWAY_SSL_TRUSTSTORE = "gateway-ssl-truststore";
   /**
@@ -510,6 +544,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
   String GATEWAY_SSL_TRUSTSTORE_PASSWORD = "gateway-ssl-truststore-password";
   /**
@@ -549,6 +584,16 @@ public interface ConfigurationProperties {
    */
   String HTTP_SERVICE_PORT = "http-service-port";
   /**
+   * The static String definition of the <i>"http-service-ssl-alias"</i> property
+   * <a name="http-service-ssl-alias"/a></p>
+   * <U>Description</U>: This property is to be used if a specific key is to be used for the SSL communications for the HTTP service.
+   * </p>
+   * <U><i>Optional</i></U>
+   * <U>Default</U>: "" </p>
+   * <U>Since</U>: Geode 1.0
+   */
+  String HTTP_SERVICE_SSL_ALIAS = "http-service-ssl-alias";
+  /**
    * The static String definition of the <i>"http-service-ssl-ciphers"</i> property
    * <a name="http-service-ssl-ciphers"/a></p>
    * <U>Description</U>: A space separated list of the SSL cipher suites to enable.
@@ -556,6 +601,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>any</code></p>
    * <U>Since</U>: GemFire 8.1
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_CIPHERS}
    */
   String HTTP_SERVICE_SSL_CIPHERS = "http-service-ssl-ciphers";
   /**
@@ -568,6 +614,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>false</code></p>
    * <U>Since</U>: GemFire 8.1
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_ENABLED} with optional {@link #HTTP_SERVICE_SSL_ALIAS}
    */
   String HTTP_SERVICE_SSL_ENABLED = "http-service-ssl-enabled";
   /**
@@ -578,6 +625,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.1
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE}
    */
   String HTTP_SERVICE_SSL_KEYSTORE = "http-service-ssl-keystore";
   /**
@@ -588,6 +636,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.1
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE_PASSWORD}
    */
   String HTTP_SERVICE_SSL_KEYSTORE_PASSWORD = "http-service-ssl-keystore-password";
   /**
@@ -598,6 +647,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.1
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE_TYPE}
    */
   String HTTP_SERVICE_SSL_KEYSTORE_TYPE = "http-service-ssl-keystore-type";
   /**
@@ -608,6 +658,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>any</code></p>
    * <U>Since</U>: GemFire 8.1
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_PROTOCOLS}
    */
   String HTTP_SERVICE_SSL_PROTOCOLS = "http-service-ssl-protocols";
   /**
@@ -618,6 +669,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>false</code></p>
    * <U>Since</U>: GemFire 8.1
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
   String HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION = "http-service-ssl-require-authentication";
   /**
@@ -628,6 +680,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.1
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_TRUSTSTORE}
    */
   String HTTP_SERVICE_SSL_TRUSTSTORE = "http-service-ssl-truststore";
   /**
@@ -638,8 +691,17 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.1
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
   String HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD = "http-service-ssl-truststore-password";
+  /**
+   * The static String definition of the jmx-manager-ssl prefix "jmx-manager-ssl-" used in conjunction with other jmx-manager-ssl-* properties</i> property
+   * <a name="jmx-manager-ssl-"/a></p>
+   * <U>Description</U>: The jmx-manager-ssl prefix for.
+   * </p>
+   * <U>Default</U>: Optional</p>
+   */
+  String JMX_MANAGER_SSL_PREFIX = "jmx-manager-ssl-";
   /**
    * The static String definition of the <i>"jmx-manager"</i> property
    * <a name="jmx-manager"/a></p>
@@ -730,20 +792,6 @@ public interface ConfigurationProperties {
    */
   String JMX_MANAGER_PORT = "jmx-manager-port";
   /**
-   * The static String definition of the <i>"jmx-manager-ssl"</i> property
-   * <a name="jmx-manager-ssl"/a></p>
-   * <U>Description</U>: If true and jmx-manager-port is not zero then the jmx-manager
-   * will only accept ssl connections. Note that the ssl-enabled property does not apply to the jmx-manager
-   * but the other ssl properties do. This allows ssl to be configured for just the jmx-manager
-   * without needing to configure it for the other GemFire connections.
-   * Ignored if jmx-manager is false.
-   * </p>
-   * <U>Default</U>: "false"</p>
-   * <U>Deprecated</U>: as of GemFire 8.0 use <a href="#jmx-manager-ssl-enabled"><code>jmx-manager-ssl-enabled</code></a> instead.
-   * @deprecated as of GemFire 8.0 use {@link #JMX_MANAGER_SSL_ENABLED} instead.
-   */
-  String JMX_MANAGER_SSL = "jmx-manager-ssl";
-  /**
    * The static String definition of the <i>"jmx-manager-start"</i> property
    * <a name="jmx-manager-start"/a></p>
    * <U>Description</U>: If true then this member will start a jmx manager when
@@ -767,12 +815,23 @@ public interface ConfigurationProperties {
    */
   String JMX_MANAGER_UPDATE_RATE = "jmx-manager-update-rate";
   /**
+   * The static String definition of the <i>"jmx-manager-ssl-alias"</i> property
+   * <a name="jmx-manager-ssl-alias"/a></p>
+   * <U>Description</U>: This property is to be used if a specific key is to be used for the SSL communications for the jmx manager.
+   * </p>
+   * <U><i>Optional</i></U>
+   * <U>Default</U>: "" </p>
+   * <U>Since</U>: Geode 1.0
+   */
+  String JMX_MANAGER_SSL_ALIAS = "jmx-manager-ssl-alias";
+  /**
    * The static String definition of the <i>"jmx-manager-ssl-ciphers"</i> property
    * <a name="jmx-manager-ssl-ciphers"/a></p>
    * <U>Description</U>: A space seperated list of the SSL cipher suites to enable.
    * Those listed must be supported by the available providers.
    * </p>
    * <U>Default</U>: "any"
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_CIPHERS}
    */
   String JMX_MANAGER_SSL_CIPHERS = "jmx-manager-ssl-ciphers";
   /**
@@ -785,6 +844,7 @@ public interface ConfigurationProperties {
    * Ignored if jmx-manager is false.
    * </p>
    * <U>Default</U>: "false"
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_ENABLED} with optional {@link #JMX_MANAGER_SSL_ALIAS}
    */
   String JMX_MANAGER_SSL_ENABLED = "jmx-manager-ssl-enabled";
   /**
@@ -795,6 +855,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE}
    */
   String JMX_MANAGER_SSL_KEYSTORE = "jmx-manager-ssl-keystore";
   /**
@@ -805,6 +866,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE_PASSWORD}
    */
   String JMX_MANAGER_SSL_KEYSTORE_PASSWORD = "jmx-manager-ssl-keystore-password";
   /**
@@ -815,6 +877,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE_TYPE}
    */
   String JMX_MANAGER_SSL_KEYSTORE_TYPE = "jmx-manager-ssl-keystore-type";
   /**
@@ -824,6 +887,7 @@ public interface ConfigurationProperties {
    * Those listed must be supported by the available providers.
    * </p>
    * <U>Default</U>: "any"
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_PROTOCOLS}
    */
   String JMX_MANAGER_SSL_PROTOCOLS = "jmx-manager-ssl-protocols";
   /**
@@ -833,6 +897,7 @@ public interface ConfigurationProperties {
    * side of the connection to be authenticated.
    * </p>
    * <U>Default</U>: "true"
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
   String JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION = "jmx-manager-ssl-require-authentication";
   /**
@@ -843,6 +908,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_TRUSTSTORE}
    */
   String JMX_MANAGER_SSL_TRUSTSTORE = "jmx-manager-ssl-truststore";
   /**
@@ -853,6 +919,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
   String JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD = "jmx-manager-ssl-truststore-password";
   /**
@@ -1237,6 +1304,16 @@ public interface ConfigurationProperties {
    */
   String SERVER_BIND_ADDRESS = "server-bind-address";
   /**
+   * The static String definition of the <i>"server-ssl-alias"</i> property
+   * <a name="server-ssl-alias"/a></p>
+   * <U>Description</U>: This property is to be used if a specific key is to be used for the SSL communications for client-server.
+   * </p>
+   * <U><i>Optional</i></U>
+   * <U>Default</U>: "" </p>
+   * <U>Since</U>: Geode 1.0
+   */
+  String SERVER_SSL_ALIAS = "server-ssl-alias";
+  /**
    * The static String definition of the <i>"server-ssl-ciphers"</i> property
    * <a name="server-ssl-ciphers"/a></p>
    * <U>Description</U>: A space seperated list of the SSL cipher suites to enable.
@@ -1244,6 +1321,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>any</code></p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_CIPHERS}
    */
   String SERVER_SSL_CIPHERS = "server-ssl-ciphers";
   /**
@@ -1255,6 +1333,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>false</code></p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_ENABLED} with optional {@link #SERVER_SSL_ALIAS}
    */
   String SERVER_SSL_ENABLED = "server-ssl-enabled";
   /**
@@ -1265,6 +1344,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE}
    */
   String SERVER_SSL_KEYSTORE = "server-ssl-keystore";
   /**
@@ -1275,6 +1355,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE_PASSWORD}
    */
   String SERVER_SSL_KEYSTORE_PASSWORD = "server-ssl-keystore-password";
   /**
@@ -1285,6 +1366,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_KEYSTORE_TYPE}
    */
   String SERVER_SSL_KEYSTORE_TYPE = "server-ssl-keystore-type";
   /**
@@ -1295,6 +1377,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>any</code></p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_PROTOCOLS}
    */
   String SERVER_SSL_PROTOCOLS = "server-ssl-protocols";
   /**
@@ -1305,6 +1388,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: <code>any</code></p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
   String SERVER_SSL_REQUIRE_AUTHENTICATION = "server-ssl-require-authentication";
   /**
@@ -1315,6 +1399,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_TRUSTSTORE}
    */
   String SERVER_SSL_TRUSTSTORE = "server-ssl-truststore";
   /**
@@ -1325,6 +1410,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: ""</p>
    * <U>Since</U>: GemFire 8.0
+   * @deprecated Since Geode 1.0 use {@link #CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
   String SERVER_SSL_TRUSTSTORE_PASSWORD = "server-ssl-truststore-password";
   /**
@@ -1552,48 +1638,4 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"distributed-transactions"</i> property
    */
   String DISTRIBUTED_TRANSACTIONS = "distributed-transactions";
-  /**
-   * The static String definition of the <i>"ssl-enabled"</i> property
-   * <a name="ssl-enabled"/a></p>
-   * <U>Description</U>: If true, all gemfire socket communication is
-   * configured to use SSL through JSSE.
-   * </p>
-   * <U>Default</U>: "false"</p>
-   * <U>Deprecated</U>: as of GemFire 8.0 use <a href="#cluster-ssl-enabled"><code>cluster-ssl-enabled</code></a> instead.
-   * @deprecated as of Gemfire 8.0 use {@link #CLUSTER_SSL_ENABLED} instead.
-   */
-  String SSL_ENABLED = "ssl-enabled";
-  /**
-   * The static String definition of the <i>"ssl-protocols"</i> property
-   * <a name="ssl-protocols"/a></p>
-   * <U>Description</U>: A space separated list of the SSL protocols to enable.
-   * Those listed must be supported by the available providers.
-   * </p>
-   * <U>Default</U>: "any"</p>
-   * <U>Deprecated</U>: as of GemFire 8.0 use <a href="#cluster-ssl-protocols"><code>cluster-ssl-protocols</code></a> instead.
-   * @deprecated as of GemFire 8.0 use {@link #CLUSTER_SSL_PROTOCOLS} instead.
-   */
-  String SSL_PROTOCOLS = "ssl-protocols";
-  /**
-   * The static String definition of the <i>"ssl-ciphers"</i> property
-   * <a name="ssl-ciphers"/a></p>
-   * <U>Description</U>: A space separated list of the SSL cipher suites to enable.
-   * Those listed must be supported by the available providers.
-   * </p>
-   * <U>Default</U>: "any"</p>
-   * <U>Deprecated</U>: as of GemFire 8.0 use <a href="#cluster-ssl-ciphers"><code>cluster-ssl-ciphers</code></a> instead.
-   * @deprecated as of GemFire 8.0 use {@link #CLUSTER_SSL_CIPHERS} instead.
-   */
-  String SSL_CIPHERS = "ssl-ciphers";
-  /**
-   * The static String definition of the <i>"ssl-require-authentication"</i> property
-   * <a name="ssl-require-authentication"/a></p>
-   * <U>Description</U>: If false, allow ciphers that do not require the client
-   * side of the connection to be authenticated.
-   * </p>
-   * <U>Default</U>: "true"</p>
-   * <U>Deprecated</U>: as of GemFire 8.0 use <a href="#cluster-ssl-require-authentication"><code>cluster-ssl-require-authentication</code></a> instead.
-   * @deprecated as of GemFire 8.0 use {@link #CLUSTER_SSL_REQUIRE_AUTHENTICATION} instead.
-   */
-  String SSL_REQUIRE_AUTHENTICATION = "ssl-require-authentication";
 }

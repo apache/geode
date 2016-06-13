@@ -858,10 +858,10 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     final Properties serverProperties = getSystem().getProperties();
 
     //Below removed properties are already got copied as cluster SSL properties 
-    serverProperties.remove(SSL_ENABLED);
-    serverProperties.remove(SSL_CIPHERS);
-    serverProperties.remove(SSL_PROTOCOLS);
-    serverProperties.remove(SSL_REQUIRE_AUTHENTICATION);
+    serverProperties.remove(CLUSTER_SSL_ENABLED);
+    serverProperties.remove(CLUSTER_SSL_CIPHERS);
+    serverProperties.remove(CLUSTER_SSL_PROTOCOLS);
+    serverProperties.remove(CLUSTER_SSL_REQUIRE_AUTHENTICATION);
 
     getLogWriter().info("[doTestSystemClientEventsInServer] ports[0]=" + ports[0]);
     getLogWriter().info("[doTestSystemClientEventsInServer] serverMemberId=" + serverMemberId);
@@ -1554,10 +1554,10 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     final String serverMemberId = serverMember.toString();
     final Properties serverProperties = getSystem().getProperties();
 
-    serverProperties.remove(SSL_ENABLED);
-    serverProperties.remove(SSL_CIPHERS);
-    serverProperties.remove(SSL_PROTOCOLS);
-    serverProperties.remove(SSL_REQUIRE_AUTHENTICATION);
+    serverProperties.remove(CLUSTER_SSL_ENABLED);
+    serverProperties.remove(CLUSTER_SSL_CIPHERS);
+    serverProperties.remove(CLUSTER_SSL_PROTOCOLS);
+    serverProperties.remove(CLUSTER_SSL_REQUIRE_AUTHENTICATION);
     
     getLogWriter().info("[testServerEventsInPeerSystem] ports[0]=" + ports[0]);
     getLogWriter().info("[testServerEventsInPeerSystem] serverMemberId=" + serverMemberId);

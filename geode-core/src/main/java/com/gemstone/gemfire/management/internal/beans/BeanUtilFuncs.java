@@ -14,7 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.gemstone.gemfire.management.internal.beans;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
+import java.util.Set;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -23,27 +35,20 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.management.GemFireProperties;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
 
-import java.io.*;
-import java.util.Set;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-
 /**
  * Various Utility Functions to be used by MBeans
- * 
- * 
  */
 public class BeanUtilFuncs {
 
   /**
    * returns the tail of the log file
-   * 
    * @param logFile
    * @return tail of the log file
    * @throws IOException
    */
   public static String tailSystemLog(File logFile, final int numLines)
-      throws IOException {
+    throws IOException
+  {
     if (logFile == null || logFile.equals(new File(""))) {
       return null;
     }
@@ -53,7 +58,7 @@ public class BeanUtilFuncs {
       return null;
     }
     byte[] buffer = (fileLength > maxBuffer) ? new byte[maxBuffer]
-        : new byte[(int) fileLength];
+      : new byte[(int) fileLength];
 
     int readSize = buffer.length;
     RandomAccessFile f = new RandomAccessFile(logFile, "r");
@@ -93,7 +98,8 @@ public class BeanUtilFuncs {
 
       if (readSize < seekPosition) {
         seekPosition = seekPosition - readSize;
-      } else {
+      }
+      else {
         readSize = (int) seekPosition;
         seekPosition = 0;
       }
@@ -105,12 +111,9 @@ public class BeanUtilFuncs {
 
     return returnStr.toString();
   }
-  
- 
- 
+
 
   /**
-   * 
    * @param sc
    * @return tail of log
    * @throws IOException
@@ -125,9 +128,10 @@ public class BeanUtilFuncs {
     }
     return tailSystemLog(logFile, numLines);
   }
-  
+
   public static DistributedMember getDistributedMemberByNameOrId(
-      String memberNameOrId) {
+    String memberNameOrId)
+  {
     DistributedMember memberFound = null;
 
     if (memberNameOrId != null) {
@@ -135,7 +139,7 @@ public class BeanUtilFuncs {
       Set<DistributedMember> memberSet = CliUtil.getAllMembers(cache);
       for (DistributedMember member : memberSet) {
         if (memberNameOrId.equals(member.getId())
-            || memberNameOrId.equals(member.getName())) {
+          || memberNameOrId.equals(member.getName())) {
           memberFound = member;
           break;
         }
@@ -143,7 +147,7 @@ public class BeanUtilFuncs {
     }
     return memberFound;
   }
-  
+
   public static GemFireProperties initGemfireProperties(DistributionConfig config) {
 
     // **TODO **/
@@ -159,11 +163,11 @@ public class BeanUtilFuncs {
     gemFirePropertyData.setMemberGroups(memberGroups);
     gemFirePropertyData.setMcastPort(config.getMcastPort());
     gemFirePropertyData.setMcastAddress(config.getMcastAddress()
-        .getHostAddress());
+      .getHostAddress());
     gemFirePropertyData.setBindAddress(config.getBindAddress());
     gemFirePropertyData.setTcpPort(config.getTcpPort());
     gemFirePropertyData.setCacheXMLFile(config.getCacheXmlFile()
-        .getAbsolutePath());
+      .getAbsolutePath());
     gemFirePropertyData.setConfigFile(configFile);
     gemFirePropertyData.setMcastTTL(config.getMcastTtl());
     gemFirePropertyData.setServerBindAddress(config.getServerBindAddress());
@@ -172,30 +176,24 @@ public class BeanUtilFuncs {
     gemFirePropertyData.setLogFile(config.getLogFile().getAbsolutePath());
     gemFirePropertyData.setLogLevel(config.getLogLevel());
     gemFirePropertyData.setStatisticSamplingEnabled(config
-        .getStatisticSamplingEnabled());
+      .getStatisticSamplingEnabled());
 
     gemFirePropertyData.setStatisticArchiveFile(config
-        .getStatisticArchiveFile().getAbsolutePath());
+      .getStatisticArchiveFile().getAbsolutePath());
     gemFirePropertyData.setIncludeFile(includeFile);
     gemFirePropertyData.setAckWaitThreshold(config.getAckWaitThreshold());
 
     gemFirePropertyData.setAckSevereAlertThreshold(config
-        .getAckSevereAlertThreshold());
+      .getAckSevereAlertThreshold());
 
     gemFirePropertyData.setArchiveFileSizeLimit(config
-        .getArchiveFileSizeLimit());
+      .getArchiveFileSizeLimit());
 
     gemFirePropertyData.setArchiveDiskSpaceLimit(config
-        .getArchiveDiskSpaceLimit());
+      .getArchiveDiskSpaceLimit());
     gemFirePropertyData.setLogFileSizeLimit(config.getLogFileSizeLimit());
     gemFirePropertyData.setLogDiskSpaceLimit(config.getLogDiskSpaceLimit());
 
-    gemFirePropertyData.setSslEnabled(config.getSSLEnabled());
-    gemFirePropertyData.setSslCiphers(config.getSSLCiphers());
-    gemFirePropertyData.setSslProtocols(config.getSSLProtocols());
-    gemFirePropertyData.setSslRequireAuthentication(config
-        .getSSLRequireAuthentication());
-    
     gemFirePropertyData.setClusterSSLEnabled(config.getClusterSSLEnabled());
     gemFirePropertyData.setClusterSSLCiphers(config.getClusterSSLCiphers());
     gemFirePropertyData.setClusterSSLProtocols(config.getClusterSSLProtocols());
@@ -205,7 +203,7 @@ public class BeanUtilFuncs {
     gemFirePropertyData.setClusterSSLKeyStorePassword(config.getClusterSSLKeyStorePassword());
     gemFirePropertyData.setClusterSSLTrustStore(config.getClusterSSLTrustStore());
     gemFirePropertyData.setClusterSSLTrustStorePassword(config.getClusterSSLTrustStorePassword());
-    
+
     gemFirePropertyData.setServerSSLEnabled(config.getServerSSLEnabled());
     gemFirePropertyData.setServerSSLCiphers(config.getServerSSLCiphers());
     gemFirePropertyData.setServerSSLProtocols(config.getServerSSLProtocols());
@@ -215,7 +213,7 @@ public class BeanUtilFuncs {
     gemFirePropertyData.setServerSSLKeyStorePassword(config.getServerSSLKeyStorePassword());
     gemFirePropertyData.setServerSSLTrustStore(config.getServerSSLTrustStore());
     gemFirePropertyData.setServerSSLTrustStorePassword(config.getServerSSLTrustStorePassword());
-    
+
     gemFirePropertyData.setGatewaySSLEnabled(config.getGatewaySSLEnabled());
     gemFirePropertyData.setGatewaySSLCiphers(config.getGatewaySSLCiphers());
     gemFirePropertyData.setGatewaySSLProtocols(config.getGatewaySSLProtocols());
@@ -225,7 +223,7 @@ public class BeanUtilFuncs {
     gemFirePropertyData.setGatewaySSLKeyStorePassword(config.getGatewaySSLKeyStorePassword());
     gemFirePropertyData.setGatewaySSLTrustStore(config.getGatewaySSLTrustStore());
     gemFirePropertyData.setGatewaySSLTrustStorePassword(config.getGatewaySSLTrustStorePassword());
-    
+
     gemFirePropertyData.setJmxManagerSSLEnabled(config.getJmxManagerSSLEnabled());
     gemFirePropertyData.setJmxManagerSSLCiphers(config.getJmxManagerSSLCiphers());
     gemFirePropertyData.setJmxManagerSSLProtocols(config.getJmxManagerSSLProtocols());
@@ -235,7 +233,7 @@ public class BeanUtilFuncs {
     gemFirePropertyData.setJmxManagerSSLKeyStorePassword(config.getJmxManagerSSLKeyStorePassword());
     gemFirePropertyData.setJmxManagerSSLTrustStore(config.getJmxManagerSSLTrustStore());
     gemFirePropertyData.setJmxManagerSSLTrustStorePassword(config.getJmxManagerSSLTrustStorePassword());
-    
+
     gemFirePropertyData.setHttpServiceSSLEnabled(config.getHttpServiceSSLEnabled());
     gemFirePropertyData.setHttpServiceSSLCiphers(config.getHttpServiceSSLCiphers());
     gemFirePropertyData.setHttpServiceSSLProtocols(config.getHttpServiceSSLProtocols());
@@ -245,7 +243,7 @@ public class BeanUtilFuncs {
     gemFirePropertyData.setHttpServiceSSLKeyStorePassword(config.getHttpServiceSSLKeyStorePassword());
     gemFirePropertyData.setHttpServiceSSLTrustStore(config.getHttpServiceSSLTrustStore());
     gemFirePropertyData.setHttpServiceSSLTrustStorePassword(config.getHttpServiceSSLTrustStorePassword());
-    
+
     gemFirePropertyData.setSocketLeaseTime(config.getSocketLeaseTime());
 
     gemFirePropertyData.setSocketBufferSize(config.getSocketBufferSize());
@@ -253,21 +251,21 @@ public class BeanUtilFuncs {
     gemFirePropertyData.setMcastRecvBufferSize(config.getMcastRecvBufferSize());
 
     gemFirePropertyData.setMcastByteAllowance(config.getMcastFlowControl()
-        .getByteAllowance());
+      .getByteAllowance());
     gemFirePropertyData.setMcastRechargeThreshold(config.getMcastFlowControl()
-        .getRechargeThreshold());
+      .getRechargeThreshold());
     gemFirePropertyData.setMcastRechargeBlockMs(config.getMcastFlowControl()
-        .getRechargeBlockMs());
+      .getRechargeBlockMs());
     gemFirePropertyData.setUdpFragmentSize(config.getUdpFragmentSize());
 
     gemFirePropertyData.setUdpRecvBufferSize(config.getUdpRecvBufferSize());
     gemFirePropertyData.setDisableTcp(config.getDisableTcp());
 
     gemFirePropertyData.setEnableTimeStatistics(config
-        .getEnableTimeStatistics());
+      .getEnableTimeStatistics());
 
     gemFirePropertyData.setEnableNetworkPartitionDetection(config
-        .getEnableNetworkPartitionDetection());
+      .getEnableNetworkPartitionDetection());
 
     gemFirePropertyData.setMemberTimeout(config.getMemberTimeout());
     gemFirePropertyData.setMembershipPortRange(config.getMembershipPortRange());
@@ -275,13 +273,13 @@ public class BeanUtilFuncs {
 
     gemFirePropertyData.setRoles(config.getRoles());
     gemFirePropertyData.setMaxWaitTimeForReconnect(config
-        .getMaxWaitTimeForReconnect());
+      .getMaxWaitTimeForReconnect());
 
     gemFirePropertyData.setMaxNumReconnectTries(config
-        .getMaxNumReconnectTries());
+      .getMaxNumReconnectTries());
 
     gemFirePropertyData.setAsyncDistributionTimeout(config
-        .getAsyncDistributionTimeout());
+      .getAsyncDistributionTimeout());
 
     gemFirePropertyData.setAsyncQueueTimeout(config.getAsyncQueueTimeout());
     gemFirePropertyData.setAsyncMaxQueueSize(config.getAsyncMaxQueueSize());
@@ -289,31 +287,31 @@ public class BeanUtilFuncs {
 
     gemFirePropertyData.setDurableClientId(config.getDurableClientId());
     gemFirePropertyData.setDurableClientTimeout(config
-        .getDurableClientTimeout());
+      .getDurableClientTimeout());
     gemFirePropertyData.setSecurityClientAuthInit(config
-        .getSecurityClientAuthInit());
+      .getSecurityClientAuthInit());
     gemFirePropertyData.setSecurityClientAuthenticator(config
-        .getSecurityClientAuthenticator());
+      .getSecurityClientAuthenticator());
     gemFirePropertyData.setSecurityClientDHAlgo(config
-        .getSecurityClientDHAlgo());
+      .getSecurityClientDHAlgo());
     gemFirePropertyData.setSecurityPeerAuthInit(config
-        .getSecurityPeerAuthInit());
+      .getSecurityPeerAuthInit());
     gemFirePropertyData.setSecurityPeerAuthenticator(config
-        .getSecurityPeerAuthenticator());
+      .getSecurityPeerAuthenticator());
     gemFirePropertyData.setSecurityClientAccessor(config
-        .getSecurityClientAccessor());
+      .getSecurityClientAccessor());
     gemFirePropertyData.setSecurityClientAccessorPP(config
-        .getSecurityClientAccessorPP());
+      .getSecurityClientAccessorPP());
     gemFirePropertyData.setSecurityLogLevel(config.getSecurityLogLevel());
 
     gemFirePropertyData.setSecurityLogFile(config.getSecurityLogFile()
-        .getAbsolutePath());
+      .getAbsolutePath());
 
     gemFirePropertyData.setSecurityPeerMembershipTimeout(config
-        .getSecurityPeerMembershipTimeout());
+      .getSecurityPeerMembershipTimeout());
 
     gemFirePropertyData.setRemoveUnresponsiveClient(config
-        .getRemoveUnresponsiveClient());
+      .getRemoveUnresponsiveClient());
 
     gemFirePropertyData.setDeltaPropagation(config.getDeltaPropagation());
     gemFirePropertyData.setRedundancyZone(config.getRedundancyZone());
@@ -324,7 +322,6 @@ public class BeanUtilFuncs {
 
     gemFirePropertyData.setJmxManager(config.getJmxManager());
     gemFirePropertyData.setJmxManagerStart(config.getJmxManagerStart());
-    gemFirePropertyData.setJmxManagerSSL(config.getJmxManagerSSL());
     gemFirePropertyData.setJmxManagerPort(config.getJmxManagerPort());
     gemFirePropertyData.setJmxManagerBindAddress(config.getJmxManagerBindAddress());
     gemFirePropertyData.setJmxManagerHostnameForClients(config.getJmxManagerHostnameForClients());
@@ -339,14 +336,12 @@ public class BeanUtilFuncs {
     return gemFirePropertyData;
 
   }
-  
+
 
   /**
    * Compresses a given String. It is encoded using ISO-8859-1, So any
    * decompression of the compressed string should also use ISO-8859-1
-   * 
-   * @param str
-   *          String to be compressed.
+   * @param str String to be compressed.
    * @return compressed bytes
    * @throws IOException
    */
@@ -363,9 +358,7 @@ public class BeanUtilFuncs {
   }
 
   /**
-   * 
-   * @param bytes
-   *          bytes to be decompressed
+   * @param bytes bytes to be decompressed
    * @return a decompressed String
    * @throws IOException
    */
@@ -374,7 +367,7 @@ public class BeanUtilFuncs {
       return null;
     }
     GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(bytes));
-    BufferedReader bf = new BufferedReader(new InputStreamReader(gis,"UTF-8"));
+    BufferedReader bf = new BufferedReader(new InputStreamReader(gis, "UTF-8"));
     String outStr = "";
     String line;
     while ((line = bf.readLine()) != null) {
@@ -382,5 +375,5 @@ public class BeanUtilFuncs {
     }
     return outStr;
   }
-  
+
 }

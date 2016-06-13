@@ -101,12 +101,12 @@ public class HTTPServiceSSLSupportJUnitTest {
 
     Properties localProps = new Properties();
     localProps.setProperty(MCAST_PORT, "0");
-    localProps.setProperty(SSL_ENABLED, "true");
+    localProps.setProperty(CLUSTER_SSL_ENABLED, "true");
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStore", jks.getCanonicalPath());
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStorePassword", "password");
 
-    localProps.setProperty(SSL_PROTOCOLS, "SSL");
-    localProps.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
+    localProps.setProperty(CLUSTER_SSL_PROTOCOLS, "SSL");
+    localProps.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION, "true");
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStore", jks.getCanonicalPath());
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStorePassword", "password");
 
@@ -129,10 +129,10 @@ public class HTTPServiceSSLSupportJUnitTest {
 
     Properties localProps = new Properties();
     localProps.setProperty(MCAST_PORT, "0");
-    localProps.setProperty(SSL_ENABLED, "true");
+    localProps.setProperty(CLUSTER_SSL_ENABLED, "true");
 
-    localProps.setProperty(SSL_PROTOCOLS, "SSL");
-    localProps.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
+    localProps.setProperty(CLUSTER_SSL_PROTOCOLS, "SSL");
+    localProps.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION, "true");
 
     Properties sslProps = new Properties();
     sslProps.setProperty("javax.net.ssl.keyStore", jks.getCanonicalPath());

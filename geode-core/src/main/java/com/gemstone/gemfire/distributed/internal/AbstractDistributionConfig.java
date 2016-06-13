@@ -52,9 +52,7 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
  *
  */
 @SuppressWarnings("deprecation")
-public abstract class AbstractDistributionConfig
-  extends AbstractConfig
-  implements DistributionConfig
+public abstract class AbstractDistributionConfig extends AbstractConfig implements DistributionConfig
 {
 
   protected Object checkAttribute(String attName, Object value){
@@ -114,10 +112,6 @@ public abstract class AbstractDistributionConfig
 
   @ConfigAttributeChecker(name = TCP_PORT)
   protected int checkTcpPort(int value) {
-    if ( getSSLEnabled() && value != 0 ) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE
-          .toLocalizedString(new Object[] { TCP_PORT, Integer.valueOf(value), SSL_ENABLED }));
-    }
     if ( getClusterSSLEnabled() && value != 0 ) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE
           .toLocalizedString(new Object[] { TCP_PORT, Integer.valueOf(value), CLUSTER_SSL_ENABLED }));
@@ -127,10 +121,6 @@ public abstract class AbstractDistributionConfig
 
   @ConfigAttributeChecker(name = MCAST_PORT)
   protected int checkMcastPort(int value) {
-    if ( getSSLEnabled() && value != 0 ) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE
-          .toLocalizedString(new Object[] { MCAST_PORT, Integer.valueOf(value), SSL_ENABLED }));
-    }
     if ( getClusterSSLEnabled() && value != 0 ) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE
           .toLocalizedString(new Object[] { MCAST_PORT, Integer.valueOf(value), CLUSTER_SSL_ENABLED }));
@@ -167,15 +157,6 @@ public abstract class AbstractDistributionConfig
         LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1
           .toLocalizedString(new Object[]{value, SocketCreator.getMyAddresses()
           }));
-    }
-    return value;
-  }
-
-  @ConfigAttributeChecker(name=SSL_ENABLED)
-  protected Boolean checkSSLEnabled(Boolean value) {
-    if ( value.booleanValue() && (getMcastPort() != 0) ) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_FALSE_WHEN_2_IS_NOT_0
-          .toLocalizedString(new Object[] { SSL_ENABLED, value, MCAST_PORT }));
     }
     return value;
   }
@@ -839,23 +820,6 @@ public abstract class AbstractDistributionConfig
         .toLocalizedString(
            Boolean.valueOf(DEFAULT_STATISTIC_SAMPLING_ENABLED)));
 
-    m.put(SSL_ENABLED,
-      LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_NAME_0
-        .toLocalizedString(
-           Boolean.valueOf(DEFAULT_SSL_ENABLED)));
-
-    m.put(SSL_PROTOCOLS,
-      LocalizedStrings.AbstractDistributionConfig_SSL_PROTOCOLS_NAME_0
-        .toLocalizedString(DEFAULT_SSL_PROTOCOLS));
-
-    m.put(SSL_CIPHERS,
-      LocalizedStrings.AbstractDistributionConfig_SSL_CIPHERS_NAME_0
-        .toLocalizedString(DEFAULT_SSL_CIPHERS));
-
-    m.put(SSL_REQUIRE_AUTHENTICATION,
-      LocalizedStrings.AbstractDistributionConfig_SSL_REQUIRE_AUTHENTICATION_NAME
-        .toLocalizedString(Boolean.valueOf(DEFAULT_SSL_REQUIRE_AUTHENTICATION)));
-    
     m.put(CLUSTER_SSL_ENABLED,
         LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_NAME_0
           .toLocalizedString(
@@ -1010,7 +974,6 @@ public abstract class AbstractDistributionConfig
     
     m.put(JMX_MANAGER, "If true then this member is willing to be a jmx manager. Defaults to false except on a locator.");
     m.put(JMX_MANAGER_START, "If true then the jmx manager will be started when the cache is created. Defaults to false.");
-    m.put(JMX_MANAGER_SSL, "If true then the jmx manager will only allow SSL clients to connect. Defaults to false. This property is ignored if jmx-manager-port is \"0\".");
     m.put(JMX_MANAGER_SSL_ENABLED, "If true then the jmx manager will only allow SSL clients to connect. Defaults to false. This property is ignored if jmx-manager-port is \"0\".");
     m.put(JMX_MANAGER_SSL_CIPHERS, "List of available SSL cipher suites that are to be enabled for JMX Manager. Defaults to \""+DEFAULT_JMX_MANAGER_SSL_CIPHERS+"\" meaning your provider''s defaults.");
     m.put(JMX_MANAGER_SSL_PROTOCOLS, "List of available SSL protocols that are to be enabled for JMX Manager. Defaults to \""+DEFAULT_JMX_MANAGER_SSL_PROTOCOLS+"\" meaning defaults of your provider.");

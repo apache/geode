@@ -16,6 +16,39 @@
  */
 package com.gemstone.gemfire.management.internal.cli.shell;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.JMX;
+import javax.management.MBeanException;
+import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
+import javax.management.Notification;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
+import javax.management.QueryExp;
+import javax.management.ReflectionException;
+import javax.management.remote.JMXConnectionNotification;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+import javax.rmi.ssl.SslRMIClientSocketFactory;
+
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.internal.util.ArrayUtils;
 import com.gemstone.gemfire.internal.util.IOUtils;
@@ -29,28 +62,10 @@ import com.gemstone.gemfire.management.internal.cli.LogWrapper;
 import com.gemstone.gemfire.management.internal.cli.commands.ShellCommands;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 
-import javax.management.*;
-import javax.management.remote.JMXConnectionNotification;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-import javax.rmi.ssl.SslRMIClientSocketFactory;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * OperationInvoker JMX Implementation
- *
- *
  * @since GemFire 7.0
  */
 public class JmxOperationInvoker implements OperationInvoker {
@@ -88,9 +103,8 @@ public class JmxOperationInvoker implements OperationInvoker {
                              final int port,
                              final String userName,
                              final String password,
-                             final Map<String, String> sslConfigProps, String gfSecurityPropertiesPath)
-    throws Exception
-  {
+                             final Map<String, String> sslConfigProps,
+                             String gfSecurityPropertiesPath) throws Exception {
     final Set<String> propsToClear = new TreeSet<String>();
     try {
       this.managerHost = host;
@@ -104,15 +118,15 @@ public class JmxOperationInvoker implements OperationInvoker {
 
       if (userName != null && userName.length() > 0) {
         env.put(JMXConnector.CREDENTIALS, new String[] { userName, password });
-      }      
+      }
       Set<Entry<String, String>> entrySet = sslConfigProps.entrySet();
-      for (Iterator<Entry<String, String>> it = entrySet.iterator(); it.hasNext();) {
+      for (Iterator<Entry<String, String>> it = entrySet.iterator(); it.hasNext(); ) {
         Entry<String, String> entry = it.next();
         String key = entry.getKey();
         String value = entry.getValue();
-        if (key.startsWith("javax.") || key.startsWith("cluster-ssl") || key.startsWith(JMX_MANAGER_SSL)) {
-          key =  checkforSystemPropertyPrefix(entry.getKey());
-          if((key.equals(Gfsh.SSL_ENABLED_CIPHERS) || key.equals(Gfsh.SSL_ENABLED_PROTOCOLS)) && "any".equals(value)){
+        if (key.startsWith("javax.") || key.startsWith(DistributionConfig.CLUSTER_SSL_PREFIX) || key.startsWith(JMX_MANAGER_SSL_PREFIX)) {
+          key = checkforSystemPropertyPrefix(entry.getKey());
+          if ((key.equals(Gfsh.SSL_ENABLED_CIPHERS) || key.equals(Gfsh.SSL_ENABLED_PROTOCOLS)) && "any".equals(value)) {
             continue;
           }
           System.setProperty(key, value);
@@ -120,7 +134,7 @@ public class JmxOperationInvoker implements OperationInvoker {
         }
       }
 
-      if(!sslConfigProps.isEmpty()){
+      if (!sslConfigProps.isEmpty()) {
         if (System.getProperty(Gfsh.SSL_KEYSTORE) != null || System.getProperty(Gfsh.SSL_TRUSTSTORE) != null) {
           // use ssl to connect
           env.put("com.sun.jndi.rmi.factory.socket", new SslRMIClientSocketFactory());
@@ -129,44 +143,39 @@ public class JmxOperationInvoker implements OperationInvoker {
 
       //Check for JMX Credentials if empty put properties instance directly so that
       //jmx management interceptor can read it for custom security properties
-      if(!env.containsKey(JMXConnector.CREDENTIALS)) {
+      if (!env.containsKey(JMXConnector.CREDENTIALS)) {
         env.put(JMXConnector.CREDENTIALS, readProperties(gfSecurityPropertiesPath));
       }
 
-      this.url = new JMXServiceURL(MessageFormat.format(JMX_URL_FORMAT, checkAndConvertToCompatibleIPv6Syntax(host), String.valueOf(port)));      
+      this.url = new JMXServiceURL(MessageFormat.format(JMX_URL_FORMAT, checkAndConvertToCompatibleIPv6Syntax(host), String.valueOf(port)));
       this.connector = JMXConnectorFactory.connect(url, env);
       this.mbsc = connector.getMBeanServerConnection();
       this.connector.addConnectionNotificationListener(new JMXConnectionListener(this), null, null);
       this.distributedSystemMXBeanProxy = JMX.newMXBeanProxy(mbsc, MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
 
-      if (this.distributedSystemMXBeanProxy == null ) {
-        LogWrapper.getInstance().info("DistributedSystemMXBean is not present on member with endpoints : "+this.endpoints);
+      if (this.distributedSystemMXBeanProxy == null) {
+        LogWrapper.getInstance().info("DistributedSystemMXBean is not present on member with endpoints : " + this.endpoints);
         throw new JMXConnectionException(JMXConnectionException.MANAGER_NOT_FOUND_EXCEPTION);
-      }
-      else {
+      } else {
         this.managerMemberObjectName = this.distributedSystemMXBeanProxy.getMemberObjectName();
         if (this.managerMemberObjectName == null || !JMX.isMXBeanInterface(MemberMXBean.class)) {
-          LogWrapper.getInstance().info("MemberMXBean with ObjectName "+this.managerMemberObjectName+" is not present on member with endpoints : "+endpoints);
+          LogWrapper.getInstance()
+                    .info("MemberMXBean with ObjectName " + this.managerMemberObjectName + " is not present on member with endpoints : " + endpoints);
           throw new JMXConnectionException(JMXConnectionException.MANAGER_NOT_FOUND_EXCEPTION);
-        }
-        else {
+        } else {
           this.memberMXBeanProxy = JMX.newMXBeanProxy(mbsc, managerMemberObjectName, MemberMXBean.class);
         }
       }
 
       this.isConnected.set(true);
       this.clusterId = distributedSystemMXBeanProxy.getDistributedSystemId();
-    }
-    catch (NullPointerException e) {
+    } catch (NullPointerException e) {
       throw e;
-    }
-    catch (MalformedURLException e) {
+    } catch (MalformedURLException e) {
       throw e;
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw e;
-    }
-    finally {
+    } finally {
       for (String propToClear : propsToClear) {
         System.clearProperty(propToClear);
       }
@@ -195,8 +204,7 @@ public class JmxOperationInvoker implements OperationInvoker {
     }
     // if 'gfSecurityPropertiesPath' OR gfsecurity.properties has resolvable path
     if (gfSecurityPropertiesUrl != null) {
-      gfshInstance.logToFile("Using security properties file : "
-              + CliUtil.decodeWithDefaultCharSet(gfSecurityPropertiesUrl.getPath()), null);
+      gfshInstance.logToFile("Using security properties file : " + CliUtil.decodeWithDefaultCharSet(gfSecurityPropertiesUrl.getPath()), null);
       return loadPropertiesFromURL(gfSecurityPropertiesUrl);
     }
     return null;
@@ -211,9 +219,8 @@ public class JmxOperationInvoker implements OperationInvoker {
         inputStream = gfSecurityPropertiesUrl.openStream();
         props.load(inputStream);
       } catch (IOException io) {
-        throw new RuntimeException(CliStrings.format(
-            CliStrings.CONNECT__MSG__COULD_NOT_READ_CONFIG_FROM_0,
-                CliUtil.decodeWithDefaultCharSet(gfSecurityPropertiesUrl.getPath())), io);
+        throw new RuntimeException(CliStrings.format(CliStrings.CONNECT__MSG__COULD_NOT_READ_CONFIG_FROM_0, CliUtil.decodeWithDefaultCharSet(gfSecurityPropertiesUrl
+          .getPath())), io);
       } finally {
         IOUtils.close(inputStream);
       }
@@ -223,9 +230,10 @@ public class JmxOperationInvoker implements OperationInvoker {
 
   private String checkforSystemPropertyPrefix(String key) {
     String returnKey = key;
-    if (key.startsWith("javax."))
+    if (key.startsWith("javax.")) {
       returnKey = key;
-    if (key.startsWith("cluster-ssl") || key.startsWith(JMX_MANAGER_SSL)) {
+    }
+    if (key.startsWith(CLUSTER_SSL_PREFIX) || key.startsWith(JMX_MANAGER_SSL_PREFIX)) {
       if (key.endsWith("keystore")) {
         returnKey = Gfsh.SSL_KEYSTORE;
       } else if (key.endsWith("keystore-password")) {
@@ -239,8 +247,8 @@ public class JmxOperationInvoker implements OperationInvoker {
       } else if (key.endsWith("protocols")) {
         returnKey = Gfsh.SSL_ENABLED_PROTOCOLS;
       }
-    }    
-    return returnKey;    
+    }
+    return returnKey;
   }
 
   @Override
@@ -256,7 +264,7 @@ public class JmxOperationInvoker implements OperationInvoker {
     } catch (MBeanException e) {
       throw new JMXInvocationException("Exception while fetching " + attributeName + " for " + resourceName, e);
     } catch (ReflectionException e) {
-      throw new JMXInvocationException("Couldn't find "+attributeName+" for " + resourceName, e);
+      throw new JMXInvocationException("Couldn't find " + attributeName + " for " + resourceName, e);
     } catch (NullPointerException e) {
       throw new JMXInvocationException("Given resourceName is null.", e);
     } catch (IOException e) {
@@ -277,12 +285,13 @@ public class JmxOperationInvoker implements OperationInvoker {
 
   /**
    * JMX Specific operation invoke caller.
-   *
    * @param resource
    * @param operationName
    * @param params
    * @param signature
+   *
    * @return result of JMX Operation invocation
+   *
    * @throws JMXInvocationException
    */
   protected Object invoke(ObjectName resource, String operationName, Object[] params, String[] signature) throws JMXInvocationException {
@@ -293,7 +302,7 @@ public class JmxOperationInvoker implements OperationInvoker {
     } catch (MBeanException e) {
       throw new JMXInvocationException("Exception while invoking " + operationName + " on " + resource, e);
     } catch (ReflectionException e) {
-      throw new JMXInvocationException("Couldn't find "+operationName+" on " + resource + " with arguments "+Arrays.toString(signature), e);
+      throw new JMXInvocationException("Couldn't find " + operationName + " on " + resource + " with arguments " + Arrays.toString(signature), e);
     } catch (IOException e) {
       throw new JMXInvocationException("Couldn't communicate with remote server at " + toString(), e);
     }
@@ -303,8 +312,7 @@ public class JmxOperationInvoker implements OperationInvoker {
     try {
       return getMBeanServerConnection().queryNames(objectName, queryExpression);
     } catch (IOException e) {
-      throw new JMXInvocationException(String.format("Failed to communicate with the remote MBean server at (%1$s)!",
-        toString()), e);
+      throw new JMXInvocationException(String.format("Failed to communicate with the remote MBean server at (%1$s)!", toString()), e);
     }
   }
 
@@ -312,10 +320,8 @@ public class JmxOperationInvoker implements OperationInvoker {
   public Object processCommand(final CommandRequest commandRequest) throws JMXInvocationException {
     //Gfsh.getCurrentInstance().printAsSevere(String.format("Command (%1$s)%n", commandRequest.getInput()));
     if (commandRequest.hasFileData()) {
-      return memberMXBeanProxy.processCommand(commandRequest.getInput(), commandRequest.getEnvironment(),
-        ArrayUtils.toByteArray(commandRequest.getFileData()));
-    }
-    else {
+      return memberMXBeanProxy.processCommand(commandRequest.getInput(), commandRequest.getEnvironment(), ArrayUtils.toByteArray(commandRequest.getFileData()));
+    } else {
       return memberMXBeanProxy.processCommand(commandRequest.getInput(), commandRequest.getEnvironment());
     }
   }
@@ -356,14 +362,11 @@ public class JmxOperationInvoker implements OperationInvoker {
   }
 
   public <T> T getMBeanProxy(final ObjectName objectName, final Class<T> mbeanInterface) {
-    if (DistributedSystemMXBean.class.equals(mbeanInterface)
-      && ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN.equals(objectName.toString())) {
+    if (DistributedSystemMXBean.class.equals(mbeanInterface) && ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN.equals(objectName.toString())) {
       return mbeanInterface.cast(getDistributedSystemMXBean());
-    }
-    else if (JMX.isMXBeanInterface(mbeanInterface)) {
+    } else if (JMX.isMXBeanInterface(mbeanInterface)) {
       return JMX.newMXBeanProxy(getMBeanServerConnection(), objectName, mbeanInterface);
-    }
-    else {
+    } else {
       return JMX.newMBeanProxy(getMBeanServerConnection(), objectName, mbeanInterface);
     }
   }
@@ -401,11 +404,10 @@ public class JmxOperationInvoker implements OperationInvoker {
    * returns the host based on RFC2732 requirements i.e. surrounds the given
    * host address string with square brackets. If ":" is not found in the given
    * string, simply returns the same string.
+   * @param hostAddress host address to check if it's an IPv6 address
    *
-   * @param hostAddress
-   *          host address to check if it's an IPv6 address
    * @return for an IPv6 address returns compatible host address otherwise
-   *         returns the same string
+   * returns the same string
    */
   //TODO - Abhishek: move to utility class
   // Taken from GFMon
@@ -429,23 +431,23 @@ public class JmxOperationInvoker implements OperationInvoker {
 /**
  * A Connection Notification Listener. Notifies Gfsh when a connection gets
  * terminated abruptly.
- *
  * @since GemFire 7.0
  */
 class JMXConnectionListener implements NotificationListener {
+
   public static final String CHECK_PERIOD_PROP = "jmx.remote.x.client.connection.check.period";
-  public static final long CHECK_PERIOD        = 1000L;
+  public static final long CHECK_PERIOD = 1000L;
   private JmxOperationInvoker invoker;
 
-  JMXConnectionListener (JmxOperationInvoker invoker) {
+  JMXConnectionListener(JmxOperationInvoker invoker) {
     this.invoker = invoker;
   }
+
   @Override
   public void handleNotification(Notification notification, Object handback) {
     if (JMXConnectionNotification.class.isInstance(notification)) {
-      JMXConnectionNotification connNotif = (JMXConnectionNotification)notification;
-      if (JMXConnectionNotification.CLOSED.equals(connNotif.getType()) ||
-          JMXConnectionNotification.FAILED.equals(connNotif.getType())) {
+      JMXConnectionNotification connNotif = (JMXConnectionNotification) notification;
+      if (JMXConnectionNotification.CLOSED.equals(connNotif.getType()) || JMXConnectionNotification.FAILED.equals(connNotif.getType())) {
         this.invoker.isConnected.set(false);
         this.invoker.resetClusterId();
         if (!this.invoker.isSelfDisconnect.get()) {

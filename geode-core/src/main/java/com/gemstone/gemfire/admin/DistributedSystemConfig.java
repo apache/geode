@@ -189,34 +189,6 @@ public interface DistributedSystemConfig extends Cloneable {
   String DEFAULT_REMOTE_COMMAND =
     "rsh -n {HOST} {CMD}";
 
-  /** The name of the "SSLEnabled" property */
-  String SSL_ENABLED_NAME = SSL_ENABLED;
-
-  /** The default ssl-enabled state (<code>false</code>) */
-  boolean DEFAULT_SSL_ENABLED =
-    DistributionConfig.DEFAULT_SSL_ENABLED;
- 
-  /** The name of the "SSLProtocols" property */
-  String SSL_PROTOCOLS_NAME = SSL_PROTOCOLS;
-
-  /** The default ssl-protocols value (<code>any</code>) */
-  String DEFAULT_SSL_PROTOCOLS =
-    DistributionConfig.DEFAULT_SSL_PROTOCOLS;
-   
-  /** The name of the "SSLCiphers" property */
-  String SSL_CIPHERS_NAME = SSL_CIPHERS;
-
-  /** The default ssl-ciphers value. (<code>any</code>) */
-  String DEFAULT_SSL_CIPHERS =
-    DistributionConfig.DEFAULT_SSL_CIPHERS; 
-  
-  /** The name of the "SSLRequireAuthentication" property */
-  String SSL_REQUIRE_AUTHENTICATION_NAME = SSL_REQUIRE_AUTHENTICATION;
-
-  /** The default ssl-require-authentication value (<code>true</code>) */
-  boolean DEFAULT_SSL_REQUIRE_AUTHENTICATION =
-    DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION; 
-
   /** The default disable-tcp value (<code>false</code>) */
   boolean DEFAULT_DISABLE_TCP = DistributionConfig.DEFAULT_DISABLE_TCP;
   

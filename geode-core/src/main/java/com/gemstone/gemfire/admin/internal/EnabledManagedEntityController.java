@@ -318,16 +318,16 @@ class EnabledManagedEntityController implements ManagedEntityController {
             MCAST_PORT,
                          "0");
     sslProps.setProperty(prefix +
-                         SSL_ENABLED,
+                         CLUSTER_SSL_ENABLED,
                          String.valueOf(config.isSSLEnabled()));
     sslProps.setProperty(prefix +
-                         SSL_CIPHERS,
+                         CLUSTER_SSL_CIPHERS,
                          config.getSSLCiphers());
     sslProps.setProperty(prefix +
-                         SSL_PROTOCOLS,
+                         CLUSTER_SSL_PROTOCOLS,
                          config.getSSLProtocols());
     sslProps.setProperty(prefix +
-                         SSL_REQUIRE_AUTHENTICATION,
+                         CLUSTER_SSL_REQUIRE_AUTHENTICATION,
                          String.valueOf(config.isSSLAuthenticationRequired()));
     return sslProps;
   }

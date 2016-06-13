@@ -309,9 +309,9 @@ public class ShellCommands implements CommandMarker {
         // Used for gfsh->locator connection & not needed for gfsh->manager connection
         if (useSsl || !sslConfigProps.isEmpty()) {
           //Fix for 51266 : Added an check for cluster-ssl-enabled proeprty
-          if (!sslConfigProps.containsKey(DistributionConfig.CLUSTER_SSL_ENABLED_NAME)) {
-            sslConfigProps.put(DistributionConfig.SSL_ENABLED_NAME, String.valueOf(true));
-          }
+//          if (!sslConfigProps.containsKey(DistributionConfig.CLUSTER_SSL_ENABLED_NAME)) {
+//            sslConfigProps.put(DistributionConfig.SSL_ENABLED_NAME, String.valueOf(true));
+//          }
           sslConfigProps.put(MCAST_PORT, String.valueOf(0));
           sslConfigProps.put(LOCATORS, "");
 

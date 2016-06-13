@@ -177,7 +177,7 @@ public abstract class AbstractConfig implements Config {
   }
   
   private boolean okToDisplayPropertyValue(String attName) {
-    if (attName.startsWith(DistributionConfig.SECURITY_PREFIX_NAME)) {
+    if (attName.startsWith(SECURITY_PREFIX)) {
       return false;
     }
     if (attName.startsWith(DistributionConfig.SSL_SYSTEM_PROPS_NAME)) {
@@ -208,18 +208,7 @@ public abstract class AbstractConfig implements Config {
   }
   
   public boolean isDeprecated(String attName) {
-    if (attName.equals(SSL_CIPHERS)) {
-      return true;
-    } else if (attName.equals(SSL_ENABLED)) {
-      return true;
-    } else if (attName.equals(SSL_PROTOCOLS)) {
-      return true;
-    } else if (attName.equals(SSL_REQUIRE_AUTHENTICATION)) {
-      return true;
-    } else if (attName.equals(JMX_MANAGER_SSL)) {
-      return true;
-    }
-    return false; 
+    return false;
   }
   
   public Properties toProperties() {
