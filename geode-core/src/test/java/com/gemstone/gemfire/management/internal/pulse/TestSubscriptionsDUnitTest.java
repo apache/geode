@@ -16,7 +16,21 @@
  */
 package com.gemstone.gemfire.management.internal.pulse;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -27,36 +41,39 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.management.DistributedSystemMXBean;
 import com.gemstone.gemfire.management.ManagementService;
 import com.gemstone.gemfire.management.ManagementTestBase;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This is for testing subscriptions
- * 
- * 
  */
+@Category(DistributedTest.class)
+public class TestSubscriptionsDUnitTest extends JUnit4DistributedTestCase {
 
-public class TestSubscriptionsDUnitTest extends DistributedTestCase {
   private static final String k1 = "k1";
   private static final String k2 = "k2";
   private static final String client_k1 = "client-k1";
 
   private static final String client_k2 = "client-k2";
-  /** name of the test region */
-  private static final String REGION_NAME = "TestSubscriptionsDUnitTest_Region";
+  private static final String REGION_NAME = TestSubscriptionsDUnitTest.class.getSimpleName() + "_Region";
   private static VM server = null;
   private static VM client = null;
   private static VM client2 = null;
   private static VM managingNode = null;
   private ManagementTestBase helper;
 
-  public TestSubscriptionsDUnitTest(String name) {
-    super(name);
-    this.helper = new ManagementTestBase(name);
+  @Override
+  public final void preSetUp() throws Exception {
+    this.helper = new ManagementTestBase(){};
   }
 
   @Override
@@ -77,8 +94,7 @@ public class TestSubscriptionsDUnitTest extends DistributedTestCase {
     disconnectFromDS();
   }
 
-  private static final long serialVersionUID = 1L;
-
+  @Test
   public void testNoOfSubscription() throws Exception {
 
     helper.createManagementCache(managingNode);

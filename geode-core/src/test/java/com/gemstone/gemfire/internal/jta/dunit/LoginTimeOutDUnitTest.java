@@ -16,28 +16,49 @@
  */
 package com.gemstone.gemfire.internal.jta.dunit;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
+import org.apache.logging.log4j.Logger;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.jta.CacheUtils;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.RMIException;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.util.test.TestUtil;
-import org.apache.logging.log4j.Logger;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-import java.io.*;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-public class LoginTimeOutDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class LoginTimeOutDUnitTest extends JUnit4DistributedTestCase {
   private static final Logger logger = LogService.getLogger();
 
   protected static volatile boolean runTest1Ready = false;
@@ -45,10 +66,6 @@ public class LoginTimeOutDUnitTest extends DistributedTestCase {
   
   private static Cache cache;
   private static String tblName;
-
-  public LoginTimeOutDUnitTest(String name) {
-    super(name);
-  }
 
   private static String readFile(String filename) throws IOException {
     BufferedReader br = new BufferedReader(new FileReader(filename));
@@ -204,8 +221,8 @@ public class LoginTimeOutDUnitTest extends DistributedTestCase {
     }
   }
 
-  public void disabledsetUp() throws Exception {
-    super.setUp();
+  @Override
+  public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     Object o[] = new Object[1];
@@ -213,7 +230,8 @@ public class LoginTimeOutDUnitTest extends DistributedTestCase {
     vm0.invoke(LoginTimeOutDUnitTest.class, "init", o);
   }
 
-  public void disabledtearDown2() throws Exception {
+  @Override
+  public final void preTearDown() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     try {
@@ -222,18 +240,16 @@ public class LoginTimeOutDUnitTest extends DistributedTestCase {
       if ( (e instanceof RMIException) || (e instanceof SQLException)) {
         // sometimes we have lock timeout problems destroying the table in
         // this test
-        vm0.invoke(() -> DistributedTestCase.disconnectFromDS());
+        vm0.invoke(() -> disconnectFromDS());
       }
     }
   }
   
-  public void testBug52206() {
-    // reenable setUp and testLoginTimeout to work on bug 52206
-  }
-  
   // this test and the setUp and teardown2 methods are disabled due to frequent
   // failures in CI runs.  See bug #52206
-  public void disabledtestLoginTimeOut() throws Exception {
+  @Ignore("TODO: test is disabled due to #52206")
+  @Test
+  public void testLoginTimeOut() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     AsyncInvocation test1 = vm0.invokeAsync(() -> LoginTimeOutDUnitTest.runTest1());

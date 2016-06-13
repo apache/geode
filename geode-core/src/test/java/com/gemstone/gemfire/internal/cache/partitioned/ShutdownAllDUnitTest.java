@@ -16,13 +16,17 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
-import static com.gemstone.gemfire.internal.lang.ThrowableUtils.getRootCause;
+import static com.gemstone.gemfire.internal.lang.ThrowableUtils.*;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.InternalGemFireError;
 import com.gemstone.gemfire.admin.AdminDistributedSystemFactory;
@@ -32,58 +36,41 @@ import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.EntryEvent;
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAttributes;
-import com.gemstone.gemfire.cache.MirrorType;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionDestroyedException;
-import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.cache.client.ServerConnectivityException;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache.EntryEvent;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.admin.remote.ShutdownAllRequest;
 import com.gemstone.gemfire.internal.cache.DiskRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.internal.cache.PutAllPartialResultException;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceObserver;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.RMIException;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests the basic use cases for PR persistence.
- *
  */
-public class ShutdownAllDUnitTest extends CacheTestCase {
-  protected static HangingCacheListener listener;
+@Category(DistributedTest.class)
+public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
 
+  private static HangingCacheListener listener;
 
-  final String expectedExceptions = InternalGemFireError.class.getName()+"||ShutdownAllRequest: disconnect distributed without response";
+  private static final String expectedExceptions = InternalGemFireError.class.getName()+"||ShutdownAllRequest: disconnect distributed without response";
 
-  public ShutdownAllDUnitTest(String name) {
-    super(name);
-  }
-  /**
-   * 
-   */
   private static final int MAX_WAIT = 600 * 1000;
   
   @Override
@@ -91,9 +78,10 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
     //Get rid of any existing distributed systems. We want
     //to make assertions about the number of distributed systems
     //we shut down, so we need to start with a clean slate.
-    DistributedTestCase.disconnectAllFromDS();
+    disconnectAllFromDS();
   }
 
+  @Test
   public void testShutdownAll2Servers() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -136,6 +124,7 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
     checkData(vm0, numBuckets, 113, "b", "region");
   }
 
+  @Test
   public void testShutdownAllWithEncounterIGE1() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -161,6 +150,7 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
     vm0.invoke(removeExceptionTag1(expectedExceptions));
   }
 
+  @Test
   public void testShutdownAllWithEncounterIGE2() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -198,6 +188,7 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
     vm1.invoke(removeExceptionTag1(expectedExceptions));
   }
 
+  @Test
   public void testShutdownAllOneServerAndRecover() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -219,6 +210,7 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
     createData(vm0, 1, 10, "b", "region");
   }
 
+  @Test
   public void testPRWithDR() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -244,6 +236,7 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
     checkData(vm0, 0, 1, "c", "region_dr");
   }
   
+  @Test
   public void testShutdownAllFromServer() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -282,6 +275,7 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
   }
   
   // shutdownAll, then restart to verify
+  @Test
   public void testCleanStop() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -326,6 +320,7 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
   }
 
   // shutdownAll, then restart to verify
+  @Test
   public void testCleanStopWithConflictCachePort() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -364,6 +359,7 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
   }
   
   /*
+  @Test
   public void testStopNonPersistRegions() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -388,6 +384,7 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
   }
   */
 
+  @Test
   public void testMultiPRDR() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -428,6 +425,7 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
   }
 
 
+  @Test
   public void testShutdownAllTimeout() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -523,6 +521,7 @@ public class ShutdownAllDUnitTest extends CacheTestCase {
    * members waiting on recovery.
    * @throws Throwable
    */
+  @Test
   public void testShutdownAllWithMembersWaiting() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

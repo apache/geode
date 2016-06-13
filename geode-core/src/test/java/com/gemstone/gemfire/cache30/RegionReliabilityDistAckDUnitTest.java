@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.*;
 
 /**
@@ -24,10 +33,11 @@ import com.gemstone.gemfire.cache.*;
  *
  * @since GemFire 5.0
  */
+@Category(DistributedTest.class)
 public class RegionReliabilityDistAckDUnitTest extends RegionReliabilityTestCase {
 
-  public RegionReliabilityDistAckDUnitTest(String name) {
-    super(name);
+  public RegionReliabilityDistAckDUnitTest() {
+    super();
   }
   
   protected Scope getRegionScope() {

@@ -20,7 +20,6 @@ package com.gemstone.gemfire.internal.security;
 import com.gemstone.gemfire.cache.operations.OperationContext;
 import com.gemstone.gemfire.cache.operations.OperationContext.OperationCode;
 import com.gemstone.gemfire.cache.operations.OperationContext.Resource;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.security.shiro.CustomAuthRealm;
 import com.gemstone.gemfire.internal.security.shiro.ShiroPrincipal;
@@ -48,7 +47,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 public class GeodeSecurityUtil {
 
@@ -233,7 +232,7 @@ public class GeodeSecurityUtil {
     if(securityProps==null)
       return;
 
-    String shiroConfig = securityProps.getProperty(DistributionConfig.SECURITY_SHIRO_INIT);
+    String shiroConfig = securityProps.getProperty(SECURITY_SHIRO_INIT);
     String customAuthenticator =securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
     if (!com.gemstone.gemfire.internal.lang.StringUtils.isBlank(shiroConfig)) {
       IniSecurityManagerFactory factory = new IniSecurityManagerFactory("classpath:"+shiroConfig);

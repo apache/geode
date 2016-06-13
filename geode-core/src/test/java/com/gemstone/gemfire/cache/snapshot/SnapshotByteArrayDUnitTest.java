@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.snapshot;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.File;
 
 import com.examples.snapshot.MyPdxSerializer;
@@ -31,13 +40,15 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 
-public class SnapshotByteArrayDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class SnapshotByteArrayDUnitTest extends JUnit4CacheTestCase {
   private final File snap = new File("snapshot-ops");
   
-  public SnapshotByteArrayDUnitTest(String name) {
-    super(name);
+  public SnapshotByteArrayDUnitTest() {
+    super();
   }
 
+  @Test
   public void testImportByteArray() throws Exception {
     SerializableCallable load = new SerializableCallable() {
       @Override

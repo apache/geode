@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.redis;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.*;

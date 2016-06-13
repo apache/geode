@@ -20,7 +20,7 @@ import com.gemstone.gemfire.*;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
 
 /**
  * GemFire statistics about a Pool 

@@ -41,7 +41,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class MultiUserDUnitTest extends CliCommandTestBase {

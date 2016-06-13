@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -48,13 +57,14 @@ import com.gemstone.gemfire.test.dunit.VM;
  *
  *
  */
-public class CacheAdvisorDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
   private transient VM[] vms;
   private transient InternalDistributedMember[] ids;
   
   /** Creates a new instance of CacheAdvisorDUnitTest */
-  public CacheAdvisorDUnitTest(String name) {
-    super(name);
+  public CacheAdvisorDUnitTest() {
+    super();
   }
 
   /**
@@ -82,6 +92,7 @@ public class CacheAdvisorDUnitTest extends CacheTestCase {
     this.ids = (InternalDistributedMember[])idList.toArray(new InternalDistributedMember[idList.size()]);
   }
   
+  @Test
   public void testGenericAdvice() throws Exception {
     final RegionAttributes attrs = new AttributesFactory().create();
     assertTrue(attrs.getScope().isDistributedNoAck());
@@ -108,6 +119,7 @@ public class CacheAdvisorDUnitTest extends CacheTestCase {
     assertEquals("Unexpected advice for subregion=" + rgn, expected, actual);
   }
       
+  @Test
   public void testNetWriteAdvice() throws Exception {
     final String rgnName = getUniqueName();
     Set expected = new HashSet();
@@ -134,6 +146,7 @@ public class CacheAdvisorDUnitTest extends CacheTestCase {
     assertEquals(expected, rgn.getCacheDistributionAdvisor().adviseNetWrite());    
   }
   
+  @Test
   public void testNetLoadAdvice() throws Exception {
     final String rgnName = getUniqueName();
     Set expected = new HashSet();
@@ -166,6 +179,7 @@ public class CacheAdvisorDUnitTest extends CacheTestCase {
     assertEquals(expected, rgn.getCacheDistributionAdvisor().adviseNetLoad());    
   }
   
+  @Test
   public void testNetLoadAdviceWithAttributesMutator() throws Exception {
     final String rgnName = getUniqueName();
 
@@ -263,17 +277,20 @@ public class CacheAdvisorDUnitTest extends CacheTestCase {
   /** coverage for bug 34255
    * @since GemFire 5.0
    */
- public void testRegionClose() throws Exception {
+  @Test
+  public void testRegionClose() throws Exception {
     basicTestClose(Operation.REGION_CLOSE);
   }
 
   /** coverage for bug 34255
    * @since GemFire 5.0
    */
+  @Test
   public void testRegionLocalDestroy() throws Exception {
     basicTestClose(Operation.REGION_LOCAL_DESTROY);
   }
 
+  @Test
   public void testCacheClose() throws Exception {
     basicTestClose(Operation.CACHE_CLOSE);
   }

@@ -19,6 +19,15 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Collection;
 import java.util.Set;
 
@@ -56,23 +65,18 @@ import com.gemstone.gemfire.test.dunit.Wait;
  *
  *
  */
+@Category(DistributedTest.class)
 public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
-    CacheTestCase {
+    JUnit4CacheTestCase {
 
   String name;
 
   public static volatile boolean hooked = false;
 
   /**
-   * @param name
-   */
-  public ConcurrentIndexOperationsOnOverflowRegionDUnitTest(String name) {
-    super(name);
-  }
-
-  /**
    *
    */
+  @Test
   public void testAsyncIndexInitDuringEntryDestroyAndQueryOnRR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -175,6 +179,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
   /**
    *
    */
+  @Test
   public void testAsyncIndexInitDuringEntryDestroyAndQueryOnPR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -277,6 +282,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
   /**
   *
   */
+  @Test
   public void testAsyncIndexInitDuringEntryDestroyAndQueryOnPersistentRR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -382,6 +388,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
   /**
   *
   */
+  @Test
   public void testAsyncIndexInitDuringEntryDestroyAndQueryOnPersistentPR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -487,7 +494,8 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
   /**
   *
   */
- public void testAsyncIndexInitDuringEntryDestroyAndQueryOnNonOverflowRR() {
+  @Test
+  public void testAsyncIndexInitDuringEntryDestroyAndQueryOnNonOverflowRR() {
    Host host = Host.getHost(0);
    VM vm0 = host.getVM(0);
    hooked = false;
@@ -580,7 +588,8 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends
  /**
   *
   */
- public void testAsyncIndexInitDuringEntryDestroyAndQueryOnOnNonOverflowPR() {
+  @Test
+  public void testAsyncIndexInitDuringEntryDestroyAndQueryOnOnNonOverflowPR() {
    Host host = Host.getHost(0);
    VM vm0 = host.getVM(0);
    hooked = false;

@@ -16,27 +16,38 @@
  */
 package com.gemstone.gemfire.internal.jta.dunit;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.sql.SQLException;
+import java.util.Properties;
+import javax.naming.Context;
+import javax.sql.DataSource;
+import javax.transaction.UserTransaction;
+
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.jta.CacheUtils;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 
-import javax.naming.Context;
-import javax.sql.DataSource;
-import javax.transaction.UserTransaction;
-import java.io.*;
-import java.sql.SQLException;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-public class ExceptionsDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class ExceptionsDUnitTest extends JUnit4DistributedTestCase {
 
   static DistributedSystem ds;
   static Cache cache;
@@ -59,8 +70,8 @@ public class ExceptionsDUnitTest extends DistributedTestCase {
     return sb.toString();
   }
 
-  public ExceptionsDUnitTest(String name) {
-    super(name);
+  public ExceptionsDUnitTest() {
+    super();
   }
 
   private static String modifyFile(String str) throws IOException {
@@ -128,10 +139,10 @@ public class ExceptionsDUnitTest extends DistributedTestCase {
     wr.close();
     props.setProperty(CACHE_XML_FILE, path);
 //    String tableName = "";
-    //		  props.setProperty(DistributionConfig.DistributedSystemConfigProperties.MCAST_PORT, "10339");
+    //		  props.setProperty(DistributionConfig.ConfigurationProperties.MCAST_PORT, "10339");
     try {
       //			   ds = DistributedSystem.connect(props);
-      ds = (new ExceptionsDUnitTest("temp")).getSystem(props);
+      ds = (new ExceptionsDUnitTest()).getSystem(props);
       cache = CacheFactory.create(ds);
     }
     catch (Exception e) {

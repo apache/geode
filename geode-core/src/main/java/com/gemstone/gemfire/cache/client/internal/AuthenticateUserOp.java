@@ -44,7 +44,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Authenticates this client (or a user) on a server. This op ideally should get

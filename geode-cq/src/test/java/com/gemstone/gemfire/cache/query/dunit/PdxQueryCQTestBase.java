@@ -16,16 +16,36 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
 import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.PartitionAttributes;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.query.*;
+import com.gemstone.gemfire.cache.query.CacheUtils;
+import com.gemstone.gemfire.cache.query.Query;
+import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.data.PortfolioPdx;
 import com.gemstone.gemfire.cache.query.data.PositionPdx;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.compression.SnappyCompressor;
 import com.gemstone.gemfire.i18n.LogWriterI18n;
@@ -37,14 +57,9 @@ import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 
-import java.io.IOException;
-import java.util.*;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
-
-public abstract class PdxQueryCQTestBase extends CacheTestCase {
+public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
 
   /** The port on which the bridge server was started in this VM */
   private static int bridgeServerPort;
@@ -93,8 +108,8 @@ public abstract class PdxQueryCQTestBase extends CacheTestCase {
 
   public void createPool(VM vm, String poolName, String server, int port,
       boolean subscriptionEnabled) {
-        createPool(vm, poolName, new String[]{server}, new int[]{port}, subscriptionEnabled);  
-      }
+      createPool(vm, poolName, new String[]{server}, new int[]{port}, subscriptionEnabled);
+    }
 
   public void createPool(VM vm, String poolName, String server, int port) {
     createPool(vm, poolName, new String[]{server}, new int[]{port}, false);  
@@ -477,8 +492,8 @@ public abstract class PdxQueryCQTestBase extends CacheTestCase {
         bridgeServerPort = bridge.getPort();
       }
 
-  public PdxQueryCQTestBase(String name) {
-    super(name);
+  public PdxQueryCQTestBase() {
+    super();
   }
 
 }

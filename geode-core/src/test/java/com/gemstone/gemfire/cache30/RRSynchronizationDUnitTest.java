@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.*;
@@ -29,7 +38,8 @@ import com.gemstone.gemfire.test.dunit.*;
  * 
  *
  */
-public class RRSynchronizationDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class RRSynchronizationDUnitTest extends JUnit4CacheTestCase {
   static enum TestType {
     IN_MEMORY,
     OVERFLOW,
@@ -38,18 +48,21 @@ public class RRSynchronizationDUnitTest extends CacheTestCase {
   
   public static LocalRegion TestRegion;
 
-  public RRSynchronizationDUnitTest(String name) {
-    super(name);
+  public RRSynchronizationDUnitTest() {
+    super();
   }
 
+  @Test
   public void testThatRegionsSyncOnPeerLoss() {
     doRegionsSyncOnPeerLoss(TestType.IN_MEMORY);
   }
   
+  @Test
   public void testThatRegionsSyncOnPeerLossWithPersistence() {
     doRegionsSyncOnPeerLoss(TestType.PERSISTENT);
   }
   
+  @Test
   public void testThatRegionsSyncOnPeerLossWithOverflow() {
     doRegionsSyncOnPeerLoss(TestType.OVERFLOW);
   }

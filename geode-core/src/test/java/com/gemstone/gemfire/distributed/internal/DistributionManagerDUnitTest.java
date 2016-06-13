@@ -16,9 +16,34 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Properties;
+
+import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.admin.*;
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.admin.AdminDistributedSystem;
+import com.gemstone.gemfire.admin.AdminDistributedSystemFactory;
+import com.gemstone.gemfire.admin.Alert;
+import com.gemstone.gemfire.admin.AlertLevel;
+import com.gemstone.gemfire.admin.AlertListener;
+import com.gemstone.gemfire.admin.DistributedSystemConfig;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionEvent;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
@@ -28,22 +53,26 @@ import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManage
 import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
 import com.gemstone.gemfire.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.dunit.*;
-import org.apache.logging.log4j.Logger;
-import org.junit.Assert;
-
-import java.net.InetAddress;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the functionality of the {@link
  * DistributionManager} class.
  */
-public class DistributionManagerDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
   private static final Logger logger = LogService.getLogger();
-  
+
+  public static DistributedSystem ds;
+
   /**
    * Clears the exceptionInThread flag in the given distribution
    * manager. 
@@ -52,18 +81,12 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
     dm.clearExceptionInThreads();
   }
 
-  public DistributionManagerDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public void preSetUp() throws Exception {
     disconnectAllFromDS();
   }
 
-  ////////  Test Methods
-
-  protected static class ItsOkayForMyClassNotToBeFound 
+  protected static class ItsOkayForMyClassNotToBeFound
     extends SerialDistributionMessage {
 
     public int getDSFID() {
@@ -76,8 +99,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
     }
   };
   
-  public static DistributedSystem ds;
-  
+  @Test
   public void testGetDistributionVMType() {
     DM dm = getSystem().getDistributionManager();
     InternalDistributedMember ipaddr = dm.getId();
@@ -87,6 +109,8 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
   /**
    * Send the distribution manager a message it can't deserialize
    */
+  @Ignore("TODO: use Awaitility and reenable assertions")
+  @Test
   public void testExceptionInThreads() throws InterruptedException {
     DM dm = getSystem().getDistributionManager();
     String p1 = "ItsOkayForMyClassNotToBeFound";
@@ -100,7 +124,9 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
 //    assertTrue(!dm.exceptionInThreads());
   }
 
-  public void _testGetDistributionManagerIds() {
+  @Ignore("TODO: this passes when enabled")
+  @Test
+  public void testGetDistributionManagerIds() {
     int systemCount = 0;
     for (int h = 0; h < Host.getHostCount(); h++) {
       Host host = Host.getHost(h);
@@ -112,14 +138,12 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
 
     assertEquals(systemCount, dm.getNormalDistributionManagerIds().size());
   }
-  
-  
-
 
   /**
    * Demonstrate that a new UDP port is used when an attempt is made to
    * reconnect using a shunned port
    */
+  @Test
   public void testConnectAfterBeingShunned() {
     InternalDistributedSystem sys = getSystem();
     MembershipManager mgr = MembershipManagerHelper.getMembershipManager(sys);
@@ -149,6 +173,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
    * until the member should be gone and force more view processing to have
    * it scrubbed from the set.
    **/ 
+  @Test
   public void testSurpriseMemberHandling() {
     VM vm0 = Host.getHost(0).getVM(0);
 
@@ -206,7 +231,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
         Thread.sleep(gracePeriod);
       }
       catch (InterruptedException e) {
-        fail("test was interrupted");
+        fail("test was interrupted", e);
       }
       
       vm0.invoke(connectDisconnect);
@@ -214,8 +239,8 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
           !mgr.isSurpriseMember(mbr));
       
     }
-    catch (java.net.UnknownHostException e) {
-      fail("unable to resolve localhost - test needs some attention");
+    catch (UnknownHostException e) {
+      fail("unable to resolve localhost - test needs some attention", e);
     }
     finally {
       if (sys != null && sys.isConnected()) {
@@ -237,6 +262,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
    * region that sleeps when notified, forcing the operation to take longer
    * than ack-wait-threshold + ack-severe-alert-threshold
    */
+  @Test
   public void testAckSevereAlertThreshold() throws Exception {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -332,7 +358,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
           Thread.sleep(15000);
         }
         catch (InterruptedException ie) {
-          fail("interrupted");
+          fail("interrupted", ie);
         }
       }
       @Override
@@ -378,6 +404,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
   /**
    * Tests that a sick member is kicked out
    */
+  @Test
   public void testKickOutSickMember() throws Exception {
     disconnectAllFromDS();
     IgnoredException.addIgnoredException("10 seconds have elapsed while waiting");
@@ -490,8 +517,8 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
 
   /**
    * test use of a bad bind-address for bug #32565
-   * @throws Exception
    */
+  @Test
   public void testBadBindAddress() throws Exception {
     disconnectAllFromDS();
 
@@ -521,6 +548,7 @@ public class DistributionManagerDUnitTest extends DistributedTestCase {
   /**
    * install a new view and show that waitForViewInstallation works as expected
    */
+  @Test
   public void testWaitForViewInstallation() {
     getSystem(new Properties());
     

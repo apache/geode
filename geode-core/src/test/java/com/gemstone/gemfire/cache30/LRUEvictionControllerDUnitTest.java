@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.File;
 import java.util.Properties;
 
@@ -56,15 +65,16 @@ import com.gemstone.gemfire.test.dunit.VM;
  *
  * @since GemFire 3.2
  */
-public class LRUEvictionControllerDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
 
   private static boolean usingMain = false;
 
   /**
    * Creates a new <code>LRUEvictionControllerDUnitTest</code>
    */
-  public LRUEvictionControllerDUnitTest(String name) {
-    super(name);
+  public LRUEvictionControllerDUnitTest() {
+    super();
   }
 
   /**
@@ -81,6 +91,7 @@ public class LRUEvictionControllerDUnitTest extends CacheTestCase {
    * Carefully verifies that region operations effect the {@link
    * LRUStatistics} as expected.
    */
+  @Test
   public void testRegionOperations() throws CacheException {
 
     int threshold = 10;
@@ -128,6 +139,7 @@ public class LRUEvictionControllerDUnitTest extends CacheTestCase {
    * LRUStatistics} as expected in the presense of a {@link
    * CacheLoader}.
    */
+  @Test
   public void testCacheLoader() throws CacheException {
 
     int threshold = 10;
@@ -183,6 +195,7 @@ public class LRUEvictionControllerDUnitTest extends CacheTestCase {
   /**
    * Tests an <code>LRUCapacityController</code> of size 1.
    */
+  @Test
   public void testSizeOne() throws CacheException {
     int threshold = 1;
 
@@ -247,6 +260,7 @@ public class LRUEvictionControllerDUnitTest extends CacheTestCase {
    * Tests that a single set of eviction attributes can be used multiple times
    * (and does the right thing).
    */
+  @Test
   public void testMultipleUsesOfEvictionAttributes()
     throws CacheException, CloneNotSupportedException {
 
@@ -282,6 +296,7 @@ public class LRUEvictionControllerDUnitTest extends CacheTestCase {
    * Tests that a Region with an LRU capacity controller can be
    * accessed from inside a cache listener.
    */
+  @Test
   public void testBug31592() throws Exception {
     final String name = this.getUniqueName();
     final Object key = "KEY";
@@ -330,6 +345,7 @@ public class LRUEvictionControllerDUnitTest extends CacheTestCase {
    * Tests that a capacity controller with LOCAL_DESTROY eviction action
    * cannot be installed into a region
    */
+  @Test
   public void testCCMirrored() throws Exception {
     final String name = this.getUniqueName();
     AttributesFactory factory = new AttributesFactory();
@@ -351,6 +367,7 @@ public class LRUEvictionControllerDUnitTest extends CacheTestCase {
    * Asserts that the LRU rules are observed
    * @throws Exception
    */
+  @Test
   public void testReplicationAndTransactions() throws Exception {
     final String r1 = this.getUniqueName() + "-1";
     final String r2 = this.getUniqueName() + "-2";
@@ -481,7 +498,7 @@ public class LRUEvictionControllerDUnitTest extends CacheTestCase {
   
   public static void main(String[] args) throws Exception {
     usingMain = true;
-    (new LRUEvictionControllerDUnitTest("test")).testSizeOne();
+    (new LRUEvictionControllerDUnitTest()).testSizeOne();
   }
 
 }

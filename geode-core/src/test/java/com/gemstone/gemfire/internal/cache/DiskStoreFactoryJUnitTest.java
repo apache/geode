@@ -16,35 +16,40 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-import static org.junit.Assert.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.DiskStoreFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Tests DiskStoreFactory
- * 
- *  
  */
 @Category(IntegrationTest.class)
-public class DiskStoreFactoryJUnitTest
-{
+public class DiskStoreFactoryJUnitTest {
 
-  protected static Cache cache = null;
+  private static Cache cache = null;
 
-  protected static DistributedSystem ds = null;
-  protected static Properties props = new Properties();
+  private static DistributedSystem ds = null;
+  private static Properties props = new Properties();
 
   static {
     props.setProperty(MCAST_PORT, "0");
@@ -60,7 +65,7 @@ public class DiskStoreFactoryJUnitTest
     createCache();
   }
 
-  protected Cache createCache() {
+  private Cache createCache() {
     cache = new CacheFactory(props).create();
     ds = cache.getDistributedSystem();
     return cache;
@@ -71,7 +76,7 @@ public class DiskStoreFactoryJUnitTest
     cache.close();
   }
 
-  /*
+  /**
    * Test method for
    * 'com.gemstone.gemfire.cache.DiskWriteAttributes.getDefaultInstance()'
    */
@@ -188,6 +193,7 @@ public class DiskStoreFactoryJUnitTest
     } catch (IllegalArgumentException expected) {
     }
   }
+
   @Test
   public void testTimeInterval() {
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
@@ -208,6 +214,7 @@ public class DiskStoreFactoryJUnitTest
     } catch (IllegalArgumentException expected) {
     }
   }
+
   @Test
   public void testMaxOplogSize() {
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
@@ -234,6 +241,7 @@ public class DiskStoreFactoryJUnitTest
     } catch (IllegalArgumentException expected) {
     }
   }
+
   @Test
   public void testFlush() {
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
@@ -348,7 +356,7 @@ public class DiskStoreFactoryJUnitTest
     removeFiles(diskStore);
   }
 
-  protected void removeFiles(DiskStore diskStore) {
+  private void removeFiles(DiskStore diskStore) {
     final String diskStoreName = diskStore.getName();
     File[] dirs = diskStore.getDiskDirs();
     

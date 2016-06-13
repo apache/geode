@@ -37,13 +37,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.util.JSR166TestCase;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import com.gemstone.gemfire.util.JSR166TestCase;
 
 @Category(IntegrationTest.class)
-public class CountedMapLoopsJUnitTest extends JSR166TestCase {
+public class CountedMapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
 
     static int nkeys       = 100000;
     static int pinsert     = 60;
@@ -55,10 +56,7 @@ public class CountedMapLoopsJUnitTest extends JSR166TestCase {
 
     static final ExecutorService pool = Executors.newCachedThreadPool();
 
-    public CountedMapLoopsJUnitTest(String name) {
-      super(name);
-    }
-
+    @Test
     public void testCountedMapLoops() throws Exception {
       main(new String[0]);
     }

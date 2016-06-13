@@ -16,13 +16,15 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
 
+@Category(PerformanceTest.class)
+@Ignore("Tests have no assertions")
 public class LogWriterDisabledPerformanceTest extends LogWriterPerformanceTest {
-
-  public LogWriterDisabledPerformanceTest(String name) {
-    super(name);
-  }
 
   @Override
   protected PerformanceLogger createPerformanceLogger() {
@@ -40,25 +42,5 @@ public class LogWriterDisabledPerformanceTest extends LogWriterPerformanceTest {
     };
     
     return perfLogger;
-  }
-
-  @Override
-  public void testCountBasedLogging() throws Exception {
-    super.testCountBasedLogging();
-  }
-
-  @Override
-  public void testTimeBasedLogging() throws Exception {
-    super.testTimeBasedLogging();
-  }
-
-  @Override
-  public void testCountBasedIsEnabled() throws Exception {
-    super.testCountBasedIsEnabled();
-  }
-
-  @Override
-  public void testTimeBasedIsEnabled() throws Exception {
-    super.testTimeBasedIsEnabled();
   }
 }

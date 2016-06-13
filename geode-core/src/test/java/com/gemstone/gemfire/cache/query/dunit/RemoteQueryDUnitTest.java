@@ -16,11 +16,29 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Comparator;
+import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import cacheRunner.Portfolio;
 import cacheRunner.Position;
+
 import com.gemstone.gemfire.DataSerializable;
 import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
 import com.gemstone.gemfire.cache.query.SelectResults;
@@ -30,37 +48,30 @@ import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
 import com.gemstone.gemfire.cache.query.internal.ResultsBag;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.Comparator;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 
 /**
  * Tests remote (client/server) query execution.
  *
  * @since GemFire 5.0.1
  */
-public class RemoteQueryDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
 
   /** The port on which the bridge server was started in this VM */
   private static int bridgeServerPort;
-
-  public RemoteQueryDUnitTest(String name) {
-    super(name);
-  }
-
-  ////////  Test Methods
 
   @Override
   public final void postSetUp() throws Exception {
@@ -75,6 +86,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
   /**
    * Tests remote predicate query execution.
    */
+  @Test
   public void testRemotePredicateQueries() throws CacheException {
 
     final String name = this.getName();
@@ -218,6 +230,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
   /**
    * Tests remote import query execution.
    */
+  @Test
   public void testRemoteImportQueries() throws CacheException {
 
     final String name = this.getName();
@@ -346,6 +359,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
   /**
    * Tests remote struct query execution.
    */
+  @Test
   public void testRemoteStructQueries() throws CacheException {
 
     final String name = this.getName();
@@ -472,7 +486,9 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
   /**
    * Tests remote complex query execution.
    */
-  public void __testRemoteComplexQueries() throws CacheException {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testRemoteComplexQueries() throws CacheException {
 
     final String name = this.getName();
     final Host host = Host.getHost(0);
@@ -666,6 +682,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
   /**
    * Tests remote full region query execution.
    */
+  @Test
   public void testRemoteFullRegionQueries() throws CacheException {
 
     final String name = this.getName();
@@ -831,6 +848,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
   /**
    * Tests remote join query execution.
    */
+  @Test
   public void testRemoteJoinRegionQueries() throws CacheException {
 
     final String name = this.getName();
@@ -932,6 +950,7 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
    * and CacheLoader.
    */
   @Category(FlakyTest.class) // GEODE-490: random port
+  @Test
   public void testRemoteBridgeClientQueries() throws CacheException {
 
     final String name = this.getName();
@@ -1085,13 +1104,11 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
     });
   }
 
-
   /**
    * This the dunit test for the bug no : 36434
-   * @throws Exception
    */
-
-   public void testBug36434() throws Exception
+  @Test
+  public void testBug36434() throws Exception
    {
      final String name = this.getName();
      final Host host = Host.getHost(0);
@@ -1185,17 +1202,13 @@ public class RemoteQueryDUnitTest extends CacheTestCase {
          stopBridgeServer(getCache());
        }
      });
-
-
-
    }
 
   /**
-    * This the dunit test for the bug no : 36969
-    * @throws Exception
-    */
-
-    public void testBug36969() throws Exception
+   * This the dunit test for the bug no : 36969
+   */
+  @Test
+  public void testBug36969() throws Exception
     {
       final String name = this.getName();
       final Host host = Host.getHost(0);

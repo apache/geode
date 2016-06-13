@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management.internal.pulse;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.Function;
@@ -35,12 +44,13 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 
  * 
  */
+@Category(DistributedTest.class)
 public class TestFunctionsDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public TestFunctionsDUnitTest(String name) {
-    super(name);
+  public TestFunctionsDUnitTest() {
+    super();
   }
 
   public static Integer getNumOfRunningFunction() {
@@ -74,6 +84,7 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
     return Integer.valueOf(bean.getNumRunningFunctions());
   }
 
+  @Test
   public void testNumOfRunningFunctions() throws Exception {
     initManagement(false);
     VM client = managedNodeList.get(2);    

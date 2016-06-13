@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -31,32 +33,26 @@ import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionManagerDUnitTest;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 
 /**
  * This is the abstract superclass of tests that validate the
  * functionality of GemFire's distributed caches.  It provides a
  * number of convenient helper classes.
  */
-public abstract class DistributedCacheTestCase
-  extends DistributedTestCase {
+public abstract class DistributedCacheTestCase extends JUnit4DistributedTestCase {
 
   /** The current cache in this VM */
   protected static Cache cache = null;
-
-  ///////////////////////  Constructors  ///////////////////////
-
-  public DistributedCacheTestCase(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
     setUpDistributedCacheTestCase(true);
   }
+
   /**
    * Creates the {@link Cache} and root region in each remote VM
    * and, if createLocalCache, in this VM.
@@ -93,7 +89,7 @@ public abstract class DistributedCacheTestCase
 
     Assert.assertTrue(cache == null, "cache should be null");
 
-    DistributedCacheTestCase x = new DistributedCacheTestCase("Lame") { };
+    DistributedCacheTestCase x = new DistributedCacheTestCase() { };
     cache = CacheFactory.create(x.getSystem());
     
     AttributesFactory factory = new AttributesFactory();
@@ -163,8 +159,6 @@ public abstract class DistributedCacheTestCase
 
     return exceptionInThreads;
   }
-
-  //////////////////////  Helper Methods  //////////////////////
 
   /**
    * Returns the root region of the cache.  We assume that the {@link
@@ -250,9 +244,6 @@ public abstract class DistributedCacheTestCase
     remoteDefineEntry(regionName, entryName, scope, true);
   }
 
-
-  
-  
   /**
    * Defines an entry in the Region with the given name and scope.  In
    * 3.0 this method create a subregion named <code>entryName</code>
@@ -304,7 +295,6 @@ public abstract class DistributedCacheTestCase
       "Defined Entry named '" + entryName + "' in region '" +
       sub.getFullPath() +"'");
   }
-  
 
   /**
    * Puts (or creates) a value in a subregion of <code>region</code>
@@ -348,8 +338,7 @@ public abstract class DistributedCacheTestCase
    throws CacheException {
      remotePut(regionName, entryName, value, Scope.DISTRIBUTED_NO_ACK);
    }
-                                  
-  
+
   /**
    * Replaces the value of an entry in a region in a remote VM
    *
@@ -462,11 +451,19 @@ public abstract class DistributedCacheTestCase
    * every VM that host knows about.
    */
   public void forEachVMInvoke(String methodName, Object[] args) {
+    forEachVMInvoke(getClass(), methodName, args);
+  }
+
+  /**
+   * Assumes there is only one host, and invokes the given method in
+   * every VM that host knows about.
+   */
+  public void forEachVMInvoke(Class<?> targetClass, String methodName, Object[] args) {
     Host host = Host.getHost(0);
     int vmCount = host.getVMCount();
     for (int i=0; i<vmCount; i++) {
       LogWriterUtils.getLogWriter().info("Invoking " + methodName + "on VM#" + i);
-      host.getVM(i).invoke(this.getClass(), methodName, args);
+      host.getVM(i).invoke(targetClass, methodName, args);
     }
   }
 }

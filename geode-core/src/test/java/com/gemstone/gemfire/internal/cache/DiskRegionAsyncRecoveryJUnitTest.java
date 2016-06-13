@@ -16,10 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +25,6 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -37,15 +33,11 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.internal.FileUtil;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-/**
- *
- */
 @Category(IntegrationTest.class)
 public class DiskRegionAsyncRecoveryJUnitTest extends DiskRegionTestingBase {
 
-  @After
-  public void tearDown() throws Exception {
-    super.tearDown();
+  @Override
+  protected final void postTearDown() throws Exception {
     DiskStoreObserver.setInstance(null);
     System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "true");
     System.setProperty(DiskStoreImpl.RECOVER_VALUES_SYNC_PROPERTY_NAME, "false");

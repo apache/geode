@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import static com.gemstone.gemfire.cache.query.Utils.*;
 
 import java.util.ArrayList;
@@ -34,10 +43,11 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
+@Category(DistributedTest.class)
 public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTestCase {
 
-  public PRBasicMultiIndexCreationDUnitTest(String name) {
-    super(name);
+  public PRBasicMultiIndexCreationDUnitTest() {
+    super();
   }
 
   public void setCacheInVMs(VM... vms) {
@@ -61,6 +71,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
    * 
    * @throws Exception  if an exception is generated
    */
+  @Test
   public void testPRBasicIndexCreate() throws Exception
   {
     Host host = Host.getHost(0);
@@ -123,6 +134,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
    *
    * @throws Exception if any exception are generated
    */
+  @Test
   public void testPRMultiIndexCreationAndGetIndex() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -209,6 +221,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
    * in the system.
    * 
    */ 
+  @Test
   public void testCreatePartitionedRegionThroughXMLAndAPI()
   {
     Host host = Host.getHost(0);
@@ -264,6 +277,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
    * serialQueryEntry.conf hydra test before putting the data in the partitioned
    * region.
    */ 
+  @Test
   public void testCreatePartitionedIndexWithNoAliasBeforePuts () throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -311,6 +325,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
    * Test creating index on partitioned region like created in test
    * serialQueryEntry.conf but after putting some data in.
    */
+  @Test
   public void testCreatePartitionedIndexWithNoAliasAfterPuts () throws Exception { 
     
     Host host = Host.getHost(0);
@@ -355,6 +370,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
   /**
    * Test index usage with query on a partitioned region with bucket indexes.
    */
+  @Test
   public void testPartitionedIndexUsageWithPRQuery () throws Exception { 
     
     Host host = Host.getHost(0);
@@ -406,6 +422,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
    * Test index usage with query on a partitioned region with bucket indexes.
    * @throws Throwable 
    */
+  @Test
   public void testPartitionedIndexCreationDuringPersistentRecovery() throws Throwable { 
     
     Host host = Host.getHost(0);
@@ -465,6 +482,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
    * Test for bug 37089 where if there is an index on one attribute
    * (CompiledComparision) of the where clause query produces wrong results.
    */
+  @Test
   public void testPartitionedQueryWithIndexOnIdBug37089 () throws Exception { 
     
     Host host = Host.getHost(0);
@@ -511,6 +529,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
   /**
    * Creats partitioned index on keys and values of a bucket regions.
    */
+  @Test
   public void testCreatePartitionedIndexWithKeysValuesAndFunction() throws Exception
   {
 
@@ -561,6 +580,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
   /**
    * Bug Fix 37201, creating index from a data accessor.
    */
+  @Test
   public void testCreateIndexFromAccessor() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -604,6 +624,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
    * accessor VM.
    */
   
+  @Test
   public void testCreateIndexAndAddAnAccessor() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -646,7 +667,8 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
    *
    * @throws Exception
    */
- public void testIndexQueryingWithOrderBy() throws Exception
+  @Test
+  public void testIndexQueryingWithOrderBy() throws Exception
  {
    int dataSize = 10;
    int step = 2;
@@ -747,7 +769,8 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
   *
   * @throws Exception
   */
- public void testIndexQueryingWithOrderAndVerify() throws Exception
+  @Test
+  public void testIndexQueryingWithOrderAndVerify() throws Exception
  {
    int dataSize = 10;
    int step = 2;
@@ -838,7 +861,8 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : *Querying PR's with DACK Test ENDED*****");
  }
 
-public void testIndexQueryingWithOrderByLimit() throws Exception
+  @Test
+  public void testIndexQueryingWithOrderByLimit() throws Exception
  {
   int step = 2;
   int totalDataSize = 90;

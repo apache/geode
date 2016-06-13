@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheListener;
@@ -37,7 +46,8 @@ import com.gemstone.gemfire.test.dunit.VM;
  *
  * @since GemFire 5.0
  */
-public class Bug34387DUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class Bug34387DUnitTest extends JUnit4CacheTestCase {
 
 //  private transient Region r;
 //  private transient DistributedMember otherId;
@@ -45,8 +55,8 @@ public class Bug34387DUnitTest extends CacheTestCase {
   
   static volatile boolean callbackFailure;
   
-  public Bug34387DUnitTest(String name) {
-    super(name);
+  public Bug34387DUnitTest() {
+    super();
   }
 
   protected static void callbackAssertEquals(String message, Object expected, 
@@ -115,6 +125,7 @@ public class Bug34387DUnitTest extends CacheTestCase {
   /**
    * test create followed by localDestroy
    */
+  @Test
   public void testCreateAndLD() throws CacheException {
     initOtherId();
     AttributesFactory af = new AttributesFactory();
@@ -144,6 +155,7 @@ public class Bug34387DUnitTest extends CacheTestCase {
   /**
    * test create followed by localInvalidate
    */
+  @Test
   public void testCreateAndLI() throws CacheException {
     initOtherId();
     AttributesFactory af = new AttributesFactory();

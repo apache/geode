@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.management.bean.stats;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -27,7 +27,7 @@ import org.junit.Before;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertNotNull;
 
 /**

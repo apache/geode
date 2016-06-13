@@ -16,7 +16,51 @@
  */
 package com.gemstone.gemfire.rest.internal.web.controllers;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheLoader;
+import com.gemstone.gemfire.cache.CacheWriter;
+import com.gemstone.gemfire.cache.CacheWriterException;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Declarable;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.LoaderHelper;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionDestroyedException;
+import com.gemstone.gemfire.cache.RegionEvent;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.distributed.ServerLauncher;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
@@ -25,24 +69,9 @@ import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.management.internal.AgentUtil;
 import com.gemstone.gemfire.management.internal.ManagementConstants;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import junit.framework.TestCase;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.junit.experimental.categories.Category;
-import org.springframework.http.*;
-import org.springframework.util.StringUtils;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.*;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 @Category(IntegrationTest.class)
-public class RestAPIsQueryAndFEJUnitTest extends TestCase {
+public class RestAPIsQueryAndFEJUnitTest {
 
   private Cache c;
 
@@ -53,9 +82,6 @@ public class RestAPIsQueryAndFEJUnitTest extends TestCase {
   private int restServicePort;
   
   private final String CUSTOMER_REGION = "customers";
-  
-  //DEBUG code
-  //private final String PEOPLE_REGION = "People";
   
   private final String ITEM_REGION = "items";
   private final String ORDER_REGION = "orders";
@@ -1252,9 +1278,9 @@ public class RestAPIsQueryAndFEJUnitTest extends TestCase {
       return baseURL + RestTestUtils.GEMFIRE_REST_API_CONTEXT + RestTestUtils.GEMFIRE_REST_API_VERSION + requestPart;
     }
   }
+
   public void initializeQueryTestData() {
-    
-    //LIST_ALL_NAMED_QUERY 
+    //LIST_ALL_NAMED_QUERY
     int size = PARAMETERIZED_QUERIES.length;
     List<String> queryIds = new ArrayList<>();
     for (int i=0; i < size; i++ ){
@@ -1293,10 +1319,8 @@ public class RestAPIsQueryAndFEJUnitTest extends TestCase {
     queryResultByIndex.put(48, qIndex48_resultData);
   }
   
-  @Override
-  @SuppressWarnings("deprecation")
+  @Before
   public void setUp() throws Exception {
-    
     AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
     if (agentUtil.findWarLocation("geode-web-api") == null) {
       fail("unable to locate geode-web-api WAR file");
@@ -1329,33 +1353,6 @@ public class RestAPIsQueryAndFEJUnitTest extends TestCase {
     this.baseURL = "http://" + this.hostName + ":" + this.restServicePort;
     this.c = CacheFactory.getAnyInstance();
     
-    /*
-    //Debug code
-    this.baseURL = "http://" + "localhost" + ":" + "8080";
-   
-    this.c = (GemFireCacheImpl) new CacheFactory().set("mcast-port", "0")
-        .set("rest-service-http-port", String.valueOf(this.restServicePort))
-        .set("rest-service-bind-address", this.hostName)
-        //.set("log-file", "./restJunitLogs/my.log")
-        .setPdxReadSerialized(true).create();
-    */
-    
-    /*
-    this.c = (GemFireCacheImpl) new CacheFactory().set("mcast-port", "0")
-        .set("rest-service-http-port", "8080")
-        .set("rest-service-bind-address", "localhost")
-        //.set("log-file", "./restJunitLogs/my.log")
-        .setPdxReadSerialized(true).create();
-    */
-    
-    //start cache-server, Gemfire cache clients will connect it
-    /*
-    BridgeServer server = c.addCacheServer();
-    final int serverPort = 40405;
-    server.setPort(serverPort);
-    server.start();
-    */
-    
     final AttributesFactory<String, String> attributesFactory = new AttributesFactory<>();
     attributesFactory.setDataPolicy(DataPolicy.REPLICATE);
 
@@ -1363,9 +1360,6 @@ public class RestAPIsQueryAndFEJUnitTest extends TestCase {
     final RegionAttributes<String, String> regionAttributes = attributesFactory
         .create();
     c.createRegion(CUSTOMER_REGION, regionAttributes);
-    
-    //Debug code
-    //c.createRegion(PEOPLE_REGION, regionAttributes);
     
     // Create region, items
     attributesFactory.setDataPolicy(DataPolicy.PARTITION);
@@ -1399,10 +1393,9 @@ public class RestAPIsQueryAndFEJUnitTest extends TestCase {
     FunctionService.registerFunction(new AddFreeItemToOrders());
   }
 
-  @Override
+  @After
   public void tearDown() {
     // shutdown and clean up the manager node.
-    //this.c.close();
     ServerLauncher.getInstance().stop();
   }
   
@@ -1416,24 +1409,27 @@ public class RestAPIsQueryAndFEJUnitTest extends TestCase {
     return headers;
   }
 
- 
+  @Test
   public void testCreateAsJson() { 
     executeQueryTestCases();
   }
-    
+
+  private void caught(String message, Throwable cause) {
+    throw new AssertionError(message, cause);
+  }
+
   private void validateGetAllResult(int index, ResponseEntity<String> result){
-    if(index == 27  || index == 29  || index == 30) {
+    if (index == 27  || index == 29  || index == 30) {
       try {
         new JSONObject(result.getBody()).getJSONArray("customers");
       } catch (JSONException e) {
-        fail("Caught JSONException in validateGetAllResult :: " + e.getMessage());
+        caught("Caught JSONException in validateGetAllResult :: " + e.getMessage(), e);
       }
     }
   }
   
   private void verifyRegionSize(int index, ResponseEntity<String> result) {
-    
-    if(index == 59 ) {
+    if (index == 59 ) {
       HttpHeaders headers = result.getHeaders();
       String value = headers.getFirst("Resource-Count");
       assertEquals(Integer.parseInt(value), 55);
@@ -1441,8 +1437,7 @@ public class RestAPIsQueryAndFEJUnitTest extends TestCase {
   }
   
   private void validateQueryResult(int index, ResponseEntity<String> result){
-    
-    if(Query_URL_INDEXS.contains(index)) {
+    if (Query_URL_INDEXS.contains(index)) {
       queryResultByIndex = new HashMap<>();
       initializeQueryTestData();  
       QueryResultData queryResult =  queryResultByIndex.get(index);   
@@ -1458,7 +1453,7 @@ public class RestAPIsQueryAndFEJUnitTest extends TestCase {
             assertTrue("PREPARE_PARAMETERIZED_QUERY: function IDs are not matched", queryResult.getResult().contains(jsonArray.getJSONObject(i).getString("id")));
           }
         } catch (JSONException e) {
-          fail("Caught JSONException in validateQueryResult :: " + e.getMessage());
+          caught("Caught JSONException in validateQueryResult :: " + e.getMessage(), e);
         }
       }
       else if (index == 46 || index == 47 || index == 48) {
@@ -1469,16 +1464,13 @@ public class RestAPIsQueryAndFEJUnitTest extends TestCase {
           //verify query result size
           assertEquals(queryResult.getResultSize(), jsonArray.length());
         } catch (JSONException e) {
-          fail("Caught JSONException in validateQueryResult :: " + e.getMessage());
+          caught("Caught JSONException in validateQueryResult :: " + e.getMessage(), e);
         }
-        
       }
-        
     }
   }
   
   private String addExpectedException (int index) {
-  
     String expectedEx =  "appears to have started a thread named";
     if (index == 4 || index == 5 || index == 24) {
       expectedEx = "java.lang.UnsupportedOperationException";
@@ -1492,118 +1484,110 @@ public class RestAPIsQueryAndFEJUnitTest extends TestCase {
       expectedEx = "com.gemstone.gemfire.cache.CacheWriterException";
       c.getLogger().info("<ExpectedException action=add>" + expectedEx + "</ExpectedException>");
       return expectedEx;
-    }else if (index == 19) {
+    } else if (index == 19) {
       expectedEx = "java.lang.IllegalArgumentException";
       c.getLogger().info("<ExpectedException action=add>" + expectedEx + "</ExpectedException>");
       return expectedEx;
-    }else if (index == 38 || index == 41 ) {
+    } else if (index == 38 || index == 41 ) {
       expectedEx = "com.gemstone.gemfire.cache.RegionDestroyedException";
       c.getLogger().info("<ExpectedException action=add>" + expectedEx + "</ExpectedException>");
       return expectedEx;
     }
     
     return expectedEx;
-    
   }
-  private void executeQueryTestCases() {
 
+  private void executeQueryTestCases() {
     HttpHeaders headers = setAcceptAndContentTypeHeaders();
     HttpEntity<Object> entity;
     
     int totalRequests = TEST_DATA.length;
     String expectedEx = null;
       
-      for (int index=0; index < totalRequests; index++) { 
-      //Debug code
-      /*
-      c.getLogger().info("-------------------------------");
-      c.getLogger().info("Index:" + index+ " " +  TEST_DATA[index][METHOD_INDEX] + " " + TEST_DATA[index][URL_INDEX]);
-                 
-       if(index == 50){
-         System.out.println("Debug Here...!!");
-       }
-       */
-       try {    
-          expectedEx = addExpectedException(index);
-          final String restRequestUrl = createRestURL(this.baseURL, TEST_DATA[index][URL_INDEX]);  
-          
-          entity = new HttpEntity<>(TEST_DATA[index][REQUEST_BODY_INDEX], headers);
-          ResponseEntity<String> result = RestTestUtils.getRestTemplate().exchange(
-              restRequestUrl,
-              (HttpMethod)TEST_DATA[index][METHOD_INDEX], entity, String.class);
-        
-          validateGetAllResult(index, result);
-          validateQueryResult(index, result);
-          
-          assertEquals(result.getStatusCode(), TEST_DATA[index][STATUS_CODE_INDEX]);
-          assertEquals(result.hasBody(), ((Boolean)TEST_DATA[index][RESPONSE_HAS_BODY_INDEX]).booleanValue());
-          
-          verifyRegionSize(index, result);
-          //TODO:
-          //verify location header
-          
-        } catch (HttpClientErrorException e) {
-          
-          if( VALID_409_URL_INDEXS.contains(index)) { 
-            //create-409, conflict testcase. [create on already existing key]
-            
-            assertEquals(e.getStatusCode(), TEST_DATA[index][STATUS_CODE_INDEX]);
-            assertEquals(StringUtils.hasText(e.getResponseBodyAsString()),((Boolean)TEST_DATA[index][RESPONSE_HAS_BODY_INDEX]).booleanValue());
-            
-          }else if (VALID_400_URL_INDEXS.contains(index)) { 
-            // 400, Bad Request testcases. [create with malformed Json]
-            
-            assertEquals(e.getStatusCode(), TEST_DATA[index][STATUS_CODE_INDEX]);
-            assertEquals(StringUtils.hasText(e.getResponseBodyAsString()), ((Boolean)TEST_DATA[index][RESPONSE_HAS_BODY_INDEX]).booleanValue());
-            
-          }
-          else if(VALID_404_URL_INDEXS.contains(index) ) { 
-            // create-404, Not Found testcase. [create on not-existing region]
-            
-            assertEquals(e.getStatusCode(), TEST_DATA[index][STATUS_CODE_INDEX]);
-            assertEquals(StringUtils.hasText(e.getResponseBodyAsString()), ((Boolean)TEST_DATA[index][RESPONSE_HAS_BODY_INDEX]).booleanValue());
-           
-          }
-          else if(VALID_405_URL_INDEXS.contains(index) ) { 
-            // create-404, Not Found testcase. [create on not-existing region]
-            
-            assertEquals(e.getStatusCode(), TEST_DATA[index][STATUS_CODE_INDEX]);
-            assertEquals(StringUtils.hasText(e.getResponseBodyAsString()), ((Boolean)TEST_DATA[index][RESPONSE_HAS_BODY_INDEX]).booleanValue());
-          }
-          else {
-          fail( "Index:" + index+ " " +  TEST_DATA[index][METHOD_INDEX] + " " + TEST_DATA[index][URL_INDEX] + " should not have thrown exception ");
-          }
-          
-        }catch (HttpServerErrorException se) { 
-          //index=4, create- 500, INTERNAL_SERVER_ERROR testcase. [create on Region with DataPolicy=Empty set]
-          //index=7, create- 500, INTERNAL_SERVER_ERROR testcase. [Get, attached cache loader throws Timeout exception]
-          //index=11, put- 500, [While doing R.put, CacheWriter.beforeCreate() has thrown CacheWriterException]
-          //.... and more test cases
-          assertEquals(se.getStatusCode(), TEST_DATA[index][STATUS_CODE_INDEX]);
-          assertEquals(StringUtils.hasText(se.getResponseBodyAsString()), ((Boolean)TEST_DATA[index][RESPONSE_HAS_BODY_INDEX]).booleanValue());
-          
+    for (int index=0; index < totalRequests; index++) {
+      try {
+        expectedEx = addExpectedException(index);
+        final String restRequestUrl = createRestURL(this.baseURL, TEST_DATA[index][URL_INDEX]);
+
+        entity = new HttpEntity<>(TEST_DATA[index][REQUEST_BODY_INDEX], headers);
+        ResponseEntity<String> result = RestTestUtils.getRestTemplate().exchange(
+            restRequestUrl,
+            (HttpMethod)TEST_DATA[index][METHOD_INDEX], entity, String.class);
+
+        validateGetAllResult(index, result);
+        validateQueryResult(index, result);
+
+        assertEquals(result.getStatusCode(), TEST_DATA[index][STATUS_CODE_INDEX]);
+        assertEquals(result.hasBody(), ((Boolean)TEST_DATA[index][RESPONSE_HAS_BODY_INDEX]).booleanValue());
+
+        verifyRegionSize(index, result);
+        //TODO:
+        //verify location header
+
+      } catch (HttpClientErrorException e) {
+
+        if( VALID_409_URL_INDEXS.contains(index)) {
+          //create-409, conflict testcase. [create on already existing key]
+
+          assertEquals(e.getStatusCode(), TEST_DATA[index][STATUS_CODE_INDEX]);
+          assertEquals(StringUtils.hasText(e.getResponseBodyAsString()),((Boolean)TEST_DATA[index][RESPONSE_HAS_BODY_INDEX]).booleanValue());
+
+        }else if (VALID_400_URL_INDEXS.contains(index)) {
+          // 400, Bad Request testcases. [create with malformed Json]
+
+          assertEquals(e.getStatusCode(), TEST_DATA[index][STATUS_CODE_INDEX]);
+          assertEquals(StringUtils.hasText(e.getResponseBodyAsString()), ((Boolean)TEST_DATA[index][RESPONSE_HAS_BODY_INDEX]).booleanValue());
+
         }
-        catch (Exception e) {
-          throw new RuntimeException("caught Exception in executeQueryTestCases " + "Index:" + index+ " " +  TEST_DATA[index][METHOD_INDEX] + " " + TEST_DATA[index][URL_INDEX] + " :: Unexpected ERROR...!!", e);
-        }finally {
-          c.getLogger().info("<ExpectedException action=remove>" + expectedEx + "</ExpectedException>");
+        else if (VALID_404_URL_INDEXS.contains(index) ) {
+          // create-404, Not Found testcase. [create on not-existing region]
+
+          assertEquals(e.getStatusCode(), TEST_DATA[index][STATUS_CODE_INDEX]);
+          assertEquals(StringUtils.hasText(e.getResponseBodyAsString()), ((Boolean)TEST_DATA[index][RESPONSE_HAS_BODY_INDEX]).booleanValue());
+
         }
-        
-      } 
-    
+        else if (VALID_405_URL_INDEXS.contains(index) ) {
+          // create-404, Not Found testcase. [create on not-existing region]
+
+          assertEquals(e.getStatusCode(), TEST_DATA[index][STATUS_CODE_INDEX]);
+          assertEquals(StringUtils.hasText(e.getResponseBodyAsString()), ((Boolean)TEST_DATA[index][RESPONSE_HAS_BODY_INDEX]).booleanValue());
+        }
+        else {
+        fail( "Index:" + index+ " " +  TEST_DATA[index][METHOD_INDEX] + " " + TEST_DATA[index][URL_INDEX] + " should not have thrown exception ");
+        }
+
+      } catch (HttpServerErrorException se) {
+        //index=4, create- 500, INTERNAL_SERVER_ERROR testcase. [create on Region with DataPolicy=Empty set]
+        //index=7, create- 500, INTERNAL_SERVER_ERROR testcase. [Get, attached cache loader throws Timeout exception]
+        //index=11, put- 500, [While doing R.put, CacheWriter.beforeCreate() has thrown CacheWriterException]
+        //.... and more test cases
+        assertEquals(se.getStatusCode(), TEST_DATA[index][STATUS_CODE_INDEX]);
+        assertEquals(StringUtils.hasText(se.getResponseBodyAsString()), ((Boolean)TEST_DATA[index][RESPONSE_HAS_BODY_INDEX]).booleanValue());
+
+      }
+      catch (Exception e) {
+        caught("caught Exception in executeQueryTestCases " + "Index:" + index+ " " +  TEST_DATA[index][METHOD_INDEX] + " " + TEST_DATA[index][URL_INDEX] + " :: Unexpected ERROR...!!", e);
+      } finally {
+        c.getLogger().info("<ExpectedException action=remove>" + expectedEx + "</ExpectedException>");
+      }
+    }
   }
-  
 }
+
+// TODO: move following classes to be inner classes
 
 class SimpleCacheLoader implements CacheLoader<String, Object>, Declarable {
 	  
+  @Override
   public Object load(LoaderHelper helper) {
     //throws TimeoutException  
     throw new TimeoutException("Could not load, Request Timedout...!!");
   }
-  public void close() {  
-  
+
+  @Override
+  public void close() {
   }
+
   @Override
   public void init(Properties props) {
     
@@ -1613,10 +1597,12 @@ class SimpleCacheLoader implements CacheLoader<String, Object>, Declarable {
 class SampleCacheWriter  implements CacheWriter<String, Object> {
 
   @Override
-  public void close() { }
+  public void close() {
+  }
 
   @Override
-  public void beforeUpdate(EntryEvent event) throws CacheWriterException { }
+  public void beforeUpdate(EntryEvent event) throws CacheWriterException {
+  }
 
   @Override
   public void beforeCreate(EntryEvent event) throws CacheWriterException {
@@ -1629,16 +1615,18 @@ class SampleCacheWriter  implements CacheWriter<String, Object> {
   }
 
   @Override
-  public void beforeRegionDestroy(RegionEvent event) throws CacheWriterException { }
+  public void beforeRegionDestroy(RegionEvent event) throws CacheWriterException {
+  }
 
   @Override
-  public void beforeRegionClear(RegionEvent event) throws CacheWriterException { } 
+  public void beforeRegionClear(RegionEvent event) throws CacheWriterException {
+  }
 }
 
 enum QueryType {LIST_ALL_NAMED_QUERY, EXECUTE_NAMED_QUERY, EXECUTE_ADHOC_QUERY }
 
-class QueryResultData
-{
+class QueryResultData {
+
   private int queryIndex;
   private QueryType type; 
   private int resultSize;

@@ -17,7 +17,7 @@
 package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
@@ -26,8 +26,8 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -124,7 +124,7 @@ public class Bug48182JUnitTest {
     Properties props = new Properties();
     props.setProperty(LOCATORS, "");
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributedSystemConfigProperties.OFF_HEAP_MEMORY_SIZE, getOffHeapMemorySize());
+    props.setProperty(ConfigurationProperties.OFF_HEAP_MEMORY_SIZE, getOffHeapMemorySize());
     GemFireCacheImpl result = (GemFireCacheImpl) new CacheFactory(props).create();
     return result;
   }

@@ -16,26 +16,33 @@
  */
 package com.gemstone.gemfire.internal.process;
 
+import static org.junit.Assert.*;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Multi-process tests for ProcessLauncher.
  * 
  * @since GemFire 7.0
  */
+@Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class LocalProcessLauncherDUnitTest extends DistributedTestCase {
+public class LocalProcessLauncherDUnitTest extends JUnit4DistributedTestCase {
 
-  public LocalProcessLauncherDUnitTest(String name) {
-    super(name);
+  public LocalProcessLauncherDUnitTest() {
+    super();
   }
 
   @Override
@@ -43,6 +50,7 @@ public class LocalProcessLauncherDUnitTest extends DistributedTestCase {
     new File(getClass().getSimpleName()).mkdir();
   }
   
+  @Test
   public void testExistingPidFileThrows() throws Exception {
     final File pidFile = new File(getClass().getSimpleName() 
         + File.separator + "testExistingPidFileThrows.pid");
@@ -71,6 +79,7 @@ public class LocalProcessLauncherDUnitTest extends DistributedTestCase {
     });
   }
   
+  @Test
   public void testForceReplacesExistingPidFile() throws Exception {
     final File pidFile = new File(getClass().getSimpleName() 
         + File.separator + "testForceReplacesExistingPidFile.pid");
@@ -111,6 +120,7 @@ public class LocalProcessLauncherDUnitTest extends DistributedTestCase {
     });
   }
   
+  @Test
   public void testPidFileReadByOtherProcess() throws Exception {
     final File pidFile = new File(getClass().getSimpleName() 
         + File.separator + "testPidFileReadByOtherProcess.pid");

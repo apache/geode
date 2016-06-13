@@ -20,19 +20,8 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.cache.LocalRegion.NonTXEntry;
-import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestName;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,42 +29,53 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
-import static org.junit.Assert.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
+
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.DiskStoreFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionDestroyedException;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.FileUtil;
+import com.gemstone.gemfire.internal.cache.LocalRegion.NonTXEntry;
+import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 
 /**
  * All disk region unit tests extend this base class , common method to be used in
  * all tests are present here.
  * 
  * @since GemFire 5.1
- *
  */
-public class DiskRegionTestingBase
-{
-  @Rule public TestName name = new TestName();
-  
-   boolean testFailed = false;
-   String failureCause = "";
-  protected static Cache cache = null;
+public abstract class DiskRegionTestingBase {
 
-  protected static DistributedSystem ds = null;
-  protected static Properties props = new Properties();
-
-  protected static File[] dirs = null;
-
-  protected static int[] diskDirSize = null;
-
-  protected Region region = null;
-  
   protected static final boolean debug = false;
 
+  protected static Cache cache = null;
+  protected static DistributedSystem ds = null;
+  protected static Properties props = new Properties();
+  protected static File[] dirs = null;
+  protected static int[] diskDirSize = null;
+
+  protected Region region;
   protected LogWriter logWriter;
 
+  boolean testFailed;
+  String failureCause = "";
+
+  @Rule
+  public TestName name = new TestName();
 
   @Before
-  public void setUp() throws Exception
-  {
+  public final void setUp() throws Exception {
+    preSetUp();
+
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     props.setProperty(LOG_LEVEL, "config"); // to keep diskPerf logs smaller
@@ -116,14 +116,20 @@ public class DiskRegionTestingBase
     deleteFiles();
 
     DiskStoreImpl.SET_IGNORE_PREALLOCATE = true;
+
+    postSetUp();
+  }
+
+  protected void preSetUp() throws Exception {
+  }
+
+  protected void postSetUp() throws Exception {
   }
 
   @After
-  public void tearDown() throws Exception
-  {
-    /*if (cache != null && !cache.isClosed()) {
-      cache.close();
-    }*/
+  public final void tearDown() throws Exception {
+    preTearDown();
+
     try {
       if (cache != null && !cache.isClosed()) {
         for (Iterator itr = cache.rootRegions().iterator(); itr.hasNext();) {
@@ -139,13 +145,6 @@ public class DiskRegionTestingBase
           catch (RegionDestroyedException e) {
             // ignore
           }
-          catch (VirtualMachineError e) {
-            SystemFailure.initiateFailure(e);
-            throw e;
-          }
-          catch (Throwable t) {
-            logWriter.error(t);
-          }
         }
       }
       
@@ -154,22 +153,20 @@ public class DiskRegionTestingBase
       }
     }
     finally {
-      try {
-        closeCache();
-      }
-      catch (VirtualMachineError e) {
-        SystemFailure.initiateFailure(e);
-        throw e;
-      }
-      catch (Throwable t) {
-        logWriter.error("Error in closing the cache ", t);
-        
-      }
+      closeCache();
     }
     ds.disconnect();
     //Asif : below is not needed but leave it
     deleteFiles();
     DiskStoreImpl.SET_IGNORE_PREALLOCATE = false;
+
+    postTearDown();
+  }
+
+  protected void preTearDown() throws Exception {
+  }
+
+  protected void postTearDown() throws Exception {
   }
 
   protected Cache createCache() {
@@ -202,8 +199,7 @@ public class DiskRegionTestingBase
   /**
    * cleans all the directory of all the files present in them
    */
-  protected static void deleteFiles()
-  {
+  protected static void deleteFiles() {
     closeDiskStores();
     for (int i = 0; i < dirs.length; i++) {
       System.out.println("trying to delete files in " + dirs[i].getAbsolutePath());
@@ -230,7 +226,6 @@ public class DiskRegionTestingBase
         }
       }
     }
-
   }
 
   protected static void closeDiskStores() {
@@ -243,34 +238,30 @@ public class DiskRegionTestingBase
    * clears and closes the region
    *  
    */
-
-  protected void closeDown()
-  {
-    try{
-      if(!region.isDestroyed()) {
+  protected void closeDown() {
+    try {
+      if (!region.isDestroyed()) {
         region.destroyRegion();
       }
-    }catch(Exception e) {
+    } catch(Exception e) {
       this.logWriter.error("DiskRegionTestingBase::closeDown:Exception in destroyiong the region",e);
     }
   }
 
   /**
    * puts a 100 integers into the region
-   *  
    */
-  protected void put100Int()
-  {
+  protected void put100Int() {
     for (int i = 0; i < 100; i++) {
       region.put(new Integer(i), new Integer(i));
     }
   }
+
   protected void verify100Int() {
     verify100Int(true);
   }
   
-  protected void verify100Int(boolean verifySize)
-  {
+  protected void verify100Int(boolean verifySize) {
     if (verifySize) {
       assertEquals(100,region.size());
     }
@@ -283,31 +274,26 @@ public class DiskRegionTestingBase
 
   /**
    * will keep on putting till region overflows
-   *  
    */
-  protected void putTillOverFlow(Region region)
-  {
+  protected void putTillOverFlow(Region region) {
     int i = 0;
     for (i = 0; i < 1010; i++) {
       region.put(new Integer(i + 200), new Integer(i + 200));
     }
   }
 
-  /*
+  /**
    * put an entry
-   *  
    */
-  protected void putForValidation(Region region)
-  {
+  protected void putForValidation(Region region) {
     final byte[] value = new byte[1024];
     region.put("testKey", value);
   }
 
-  /*
+  /**
    * get val from disk
    */
-  protected void validatePut(Region region)
-  {
+  protected void validatePut(Region region) {
     // flush data to disk
     ((LocalRegion)region).getDiskRegion().flushForTesting();
     try {
@@ -316,9 +302,7 @@ public class DiskRegionTestingBase
     catch (Exception ex) {
       ex.printStackTrace();
       fail("Failed to get the value on disk");
-
     }
-
   }
   
   protected HashMap<String, VersionTag> saveVersionTags(LocalRegion region) {
@@ -345,17 +329,15 @@ public class DiskRegionTestingBase
     }
   }
 
-  /** Since these are not visible to cache.diskPerf we add wrapper methods to
+  /**
+   * Since these are not visible to cache.diskPerf we add wrapper methods to
    * make the following parameters/visible
-   *
    */
-  public static void setCacheObserverCallBack()
-  {
+  public static void setCacheObserverCallBack() {
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
   }
 
-  public static void unSetCacheObserverCallBack()
-  {
+  public static void unSetCacheObserverCallBack() {
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
   }
 

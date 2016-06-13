@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,14 +35,16 @@ import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
+@Category(DistributedTest.class)
 public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
   
   private static final long serialVersionUID = 1L;
   
-  public SerialWANPropagationLoopBackDUnitTest(String name) {
-    super(name);
+  public SerialWANPropagationLoopBackDUnitTest() {
+    super();
   }
   
+  @Test
   public void testReplicatedSerialPropagationLoopBack() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -124,6 +135,7 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
   }
   
   @Category(FlakyTest.class) // GEODE-1148: random ports, eats exceptions (fixed 1), time sensitive, thread sleeps, waitForCriterion
+  @Test
   public void testReplicatedSerialPropagationLoopBack3SitesLoop() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -230,6 +242,7 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
   }
   
   
+  @Test
   public void testReplicatedSerialPropagationLoopBack3SitesNtoNPutInAllDS() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -374,6 +387,7 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
   }
 
   
+  @Test
   public void testReplicatedSerialPropagationLoopBack3SitesNtoNPutFromOneDS() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

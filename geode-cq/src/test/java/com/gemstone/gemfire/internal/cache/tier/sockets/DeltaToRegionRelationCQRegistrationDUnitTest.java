@@ -16,7 +16,22 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.util.Iterator;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
@@ -28,34 +43,33 @@ import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.Iterator;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 /**
  * This tests the flag setting for region ( DataPolicy as Empty ) for
  * Delta propogation for a client while registering CQ
- * 
  */
-public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4DistributedTestCase {
+
   private static Cache cache = null;
 
-  VM server = null;
-
-  VM client = null;
- 
-  VM server2 = null;
-  
-  VM client2 = null;
+  private VM server = null;
+  private VM client = null;
+  private VM server2 = null;
+  private VM client2 = null;
  
   private int PORT1 ;
-  
   private int PORT2 ;
   
-  private static PoolImpl p = null; 
+  private static PoolImpl p = null;
+
   /*
    * name of the region with data policy empty
    */
@@ -65,6 +79,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
    * name of the region whose data policy is not empty
    */
   private static final String REGION_NAME2 = "DeltaToRegionRelationCQRegistration_region2";
+
   /*
    * to detect primary server
    */
@@ -95,11 +110,6 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
   private static final String cqName3="cqNamethird";
   private static final String cqName4="cqNameFourth";
   
-  /** constructor */
-  public DeltaToRegionRelationCQRegistrationDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     disconnectAllFromDS();
@@ -117,6 +127,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
    * 2)Verifies no create happens for region with data policy other then Empty; in map <br>
    * 3)Verifies multiple and different interest registration (key/list) should not create multiple entries in map <br>
    */
+  @Test
   public void testDeltaToRegionForRegisterCQ(){
     
     intialSetUp();
@@ -153,6 +164,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
    * 2)Verifies no create happens for region with data policy other then Empty; in map <br>
    * 3)Verifies multiple and different interest registration (key/list) should not create multiple entries in map <br>
    */
+  @Test
   public void testDeltaToRegionForRegisterCQIR(){
     
     intialSetUp();
@@ -189,6 +201,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
    * 1)Verifies create entry for region in map stored in CacheCleintProxy <br>
    * 2)Verifies multiple and different interest registration (key/list) should not create multiple entries in map <br>
    */
+  @Test
   public void testDeltaToRegionForRegisterCQIRThroughPool(){
     
     intialSetUpClientWithNoRegion();
@@ -227,6 +240,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
    * 2)Verifies create entry for region with data policy as Empty; in map stored in CacheCleintProxy <br>
    * 3)Verifies no create happens for region with data policy other then Empty; in map <br>
    */
+  @Test
   public void testDeltaToRegionForRegisterCQFailover(){
     
     intialSetUpForFailOver();
@@ -245,6 +259,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
    * 2)Verifies create entry for region with data policy as Empty; in map stored in CacheCleintProxy <br>
    * 3)Verifies no create happens for region with data policy other then Empty; in map <br>
    */
+  @Test
   public void testDeltaToRegionForRegisterCQIRFaliover() {
     intialSetUpForFailOver();
     // Register CQ on region with data policy as EMPTY
@@ -262,6 +277,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
    * 1)Verifies when primary goes down, cq registration happen <br>
    * 2)Verifies create entry for region in map stored in CacheCleintProxy <br>
    */
+  @Test
   public void testDeltaToRegionForRegisterCQIRFromPoolFaliover() {
     intialSetUpNoRegiononClientForFailOver();
     // Register CQ on region
@@ -292,7 +308,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     CqAttributesFactory cqf = new CqAttributesFactory();
     CqAttributes cqa = cqf.create();
     
-//  Create and Execute CQ.
+    //  Create and Execute CQ.
     try {
       CqQuery cq1 = cqService.newCq(name, Cquery, cqa);
       assertTrue("newCq() state mismatch", cq1.getState().isStopped());
@@ -301,11 +317,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
       else  
         cq1.execute();
     } catch (Exception ex){
-      LogWriterUtils.getLogWriter().info("CqService is :" + cqService);
-      ex.printStackTrace();
-      AssertionError err = new AssertionError("Failed to create CQ " + cqName1 + " . ");
-      err.initCause(ex);
-      throw err;
+      fail("Failed to create CQ " + cqName1, ex);
     }
     
     CqQuery cQuery = cqService.getCq(name);
@@ -314,7 +326,6 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     }
   }
 
-  
   /*
    * register cq from pool
    */
@@ -333,7 +344,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     CqAttributesFactory cqf = new CqAttributesFactory();
     CqAttributes cqa = cqf.create();
     
-//  Create and Execute CQ.
+    //  Create and Execute CQ.
     try {
       CqQuery cq1 = cqService.newCq(name, Cquery, cqa);
       assertTrue("newCq() state mismatch", cq1.getState().isStopped());
@@ -342,11 +353,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
       else  
         cq1.execute();
     } catch (Exception ex){
-      LogWriterUtils.getLogWriter().info("CqService is :" + cqService);
-      ex.printStackTrace();
-      AssertionError err = new AssertionError("Failed to create CQ " + cqName1 + " . ");
-      err.initCause(ex);
-      throw err;
+      fail("Failed to create CQ " + cqName1, ex);
     }
     
     CqQuery cQuery = cqService.getCq(name);
@@ -359,7 +366,6 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     checkNumberOfClientProxies(1);
     CacheClientProxy proxy = getClientProxy();
     assertNotNull(proxy);
-//  wait
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
         return DeltaToRegionRelationCQRegistrationDUnitTest.getClientProxy()
@@ -397,7 +403,6 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     CacheClientProxy proxy = getClientProxy();
     assertNotNull(proxy);
 
-//  wait
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
         return DeltaToRegionRelationCQRegistrationDUnitTest.getClientProxy()
@@ -426,12 +431,13 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
         .intValue() == 0);
 
   }
+
   /*
    * create server cache
    */
   public static Integer createServerCache() throws Exception
   {
-    new DeltaToRegionRelationCQRegistrationDUnitTest("temp").createCache(new Properties());
+    new DeltaToRegionRelationCQRegistrationDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -448,6 +454,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     return new Integer(server.getPort());
 
   }
+
   /*
    * create client cache
    */
@@ -456,7 +463,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new DeltaToRegionRelationCQRegistrationDUnitTest("temp").createCache(props);
+    new DeltaToRegionRelationCQRegistrationDUnitTest().createCache(props);
     Pool p = PoolManager.createFactory().addServer(host, port.intValue())
         .setThreadLocalConnections(true).setMinConnections(3)
         .setSubscriptionEnabled(true).setSubscriptionRedundancy(0)
@@ -492,7 +499,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new DeltaToRegionRelationCQRegistrationDUnitTest("temp").createCache(props);
+    new DeltaToRegionRelationCQRegistrationDUnitTest().createCache(props);
     p = (PoolImpl)PoolManager.createFactory().addServer(host, port.intValue())
         .setThreadLocalConnections(true).setMinConnections(3)
         .setSubscriptionEnabled(true).setSubscriptionRedundancy(0)
@@ -501,6 +508,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
         // .setRetryAttempts(5)
         .create("DeltaToRegionRelationCQRegistrationTestPool");
   }
+
   /*
    * create client cache and return's primary server location object (primary)
    */
@@ -509,7 +517,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new DeltaToRegionRelationCQRegistrationDUnitTest("temp").createCache(props);
+    new DeltaToRegionRelationCQRegistrationDUnitTest().createCache(props);
     PoolImpl p = (PoolImpl)PoolManager.createFactory().addServer(host1,
         port1.intValue()).addServer(host2, port2.intValue())
         .setThreadLocalConnections(true).setMinConnections(3)
@@ -535,7 +543,6 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     return new Integer(p.getPrimaryPort());
   }
 
-  
   /*
    * create client cache and return's primary server location object (primary)
    * no region created on client
@@ -545,7 +552,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new DeltaToRegionRelationCQRegistrationDUnitTest("temp").createCache(props);
+    new DeltaToRegionRelationCQRegistrationDUnitTest().createCache(props);
     p = (PoolImpl)PoolManager.createFactory().addServer(host1,
         port1.intValue()).addServer(host2, port2.intValue())
         .setThreadLocalConnections(true).setMinConnections(3)
@@ -594,6 +601,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     assertNotNull(bridgeServer);
     return bridgeServer;
   }
+
   /*
    * number of client proxies are presert
    */
@@ -601,6 +609,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     return getBridgeServer().getAcceptor().getCacheClientNotifier()
         .getClientProxies().size();
   }
+
   /*
    * if expected number of proxies are not present and wait
    */
@@ -624,6 +633,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
   public static void stopCacheServer(){
     getBridgeServer().stop();
   }
+
   /*
    * initial setup required for testcase with out failover
    */
@@ -643,6 +653,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
         .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createClientCacheWithNoRegion( NetworkUtils.getServerHostName(server.getHost()),
                 new Integer(PORT1) ));
   }
+
   /*
    * kind of teardown for testcase without failover
    */
@@ -651,7 +662,8 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     client.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.closeCache());
     // then close the servers
     server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.closeCache());
-  }  
+  }
+
   /*
    * initial setup required for testcase with failover
    */
@@ -715,6 +727,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
       server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.validationOnServerForCqRegistrationFromPool());
     }
   }
+
   /*
    * kind of teardown for testcase with failover
    */
@@ -725,6 +738,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     server.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.closeCache());
     server2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.closeCache());
   }
+
   /*
    * create cache with properties
    */
@@ -734,6 +748,4 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends DistributedTes
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
   }
-  
- 
 }

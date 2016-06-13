@@ -30,7 +30,7 @@ import java.io.FileWriter;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Integration tests for AbstractLauncher class. These tests require file system I/O.

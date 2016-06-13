@@ -16,15 +16,25 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.Wait;
 
+@Category(DistributedTest.class)
 public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
   
-  public ParallelWANPropagationLoopBackDUnitTest(String name) {
-    super(name);
+  public ParallelWANPropagationLoopBackDUnitTest() {
+    super();
   }
   
   /**
@@ -32,6 +42,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
    * Site1 (LN): vm2, vm4, vm5
    * Site2 (NY): vm3, vm6, vm7
    */
+  @Test
   public void testParallelPropagationLoopBack() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -144,6 +155,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
    * Site2 (NY): vm4, vm7
    * Site3 (TK): vm5
    */
+  @Test
   public void testParallelPropagationLoopBack3Sites() {
     //Create locators
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -249,6 +261,7 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
    * NY site: vm4, vm7
    * TK site: vm5
    */
+  @Test
   public void testParallelPropagationLoopBack3SitesNtoNTopologyPutFromOneDS() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

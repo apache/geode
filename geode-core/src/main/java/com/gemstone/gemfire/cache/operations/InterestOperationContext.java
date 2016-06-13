@@ -33,7 +33,7 @@ public abstract class InterestOperationContext extends OperationContext {
 
   /**
    * Constructor for the register interest operation.
-   * 
+   *
    * @param key
    *                the key or list of keys being registered/unregistered
    * @param interestType
@@ -73,7 +73,7 @@ public abstract class InterestOperationContext extends OperationContext {
 
   /**
    * Get the <code>InterestType</code> of this register/unregister operation.
-   * 
+   *
    * @return the <code>InterestType</code> of this request.
    */
   public InterestType getInterestType() {

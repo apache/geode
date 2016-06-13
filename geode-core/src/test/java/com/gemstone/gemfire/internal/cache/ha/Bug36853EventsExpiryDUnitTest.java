@@ -16,7 +16,22 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache30.CacheTestCase;
@@ -24,13 +39,13 @@ import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
-import com.gemstone.gemfire.test.dunit.*;
-import junit.framework.Assert;
-
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This is a bug test for 36853 (Expiry logic in HA is used to expire early data
@@ -44,29 +59,27 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  * is set for delayed start. This will make some of the events in the queue
  * expire before dispatcher can start picking them up for delivery to the
  * client.
- * 
- * 
  */
-public class Bug36853EventsExpiryDUnitTest extends CacheTestCase
-{
+@Category(DistributedTest.class)
+public class Bug36853EventsExpiryDUnitTest extends JUnit4CacheTestCase {
 
   /** Cache-server */
-  VM server = null;
+  private VM server = null;
 
   /** Client , connected to Cache-server */
-  VM client = null;
+  private VM client = null;
 
   /** Name of the test region */
-  private static final String REGION_NAME = "Bug36853EventsExpiryDUnitTest_region";
+  private static final String REGION_NAME = Bug36853EventsExpiryDUnitTest.class.getSimpleName() + "_region";
 
   /** The cache instance for test cases */
-  protected static Cache cache = null;
+  private static Cache cache = null;
 
   /** Boolean to indicate the client to proceed for validation */
-  protected static volatile boolean proceedForValidation = false;
+  private static volatile boolean proceedForValidation = false;
 
   /** Counter to indicate number of puts recieved by client */
-  protected static volatile int putsRecievedByClient;
+  private static volatile int putsRecievedByClient;
 
   /** The last key for operations, to notify for proceeding to validation */
   private static final String LAST_KEY = "LAST_KEY";
@@ -77,21 +90,6 @@ public class Bug36853EventsExpiryDUnitTest extends CacheTestCase
   /** Number of puts done for the test */
   private static final int TOTAL_PUTS = 5;
 
-  /**
-   * Constructor
-   * 
-   * @param name
-   */
-  public Bug36853EventsExpiryDUnitTest(String name) {
-    super(name);
-  }
-
-  /**
-   * Sets up the cache-server and client for the test
-   * 
-   * @throws Exception -
-   *           thrown in any problem occurs in setUp
-   */
   @Override
   public final void preSetUp() throws Exception {
     disconnectAllFromDS();
@@ -126,12 +124,12 @@ public class Bug36853EventsExpiryDUnitTest extends CacheTestCase
   /**
    * Creates cache and starts the bridge-server
    */
-  public static Integer createServerCache() throws Exception
+  private static Integer createServerCache() throws Exception
   {
     System.setProperty(HARegionQueue.REGION_ENTRY_EXPIRY_TIME, "1");
     System.setProperty("slowStartTimeForTesting", String
         .valueOf(DISPATCHER_SLOWSTART_TIME));
-    new Bug36853EventsExpiryDUnitTest("temp").createCache(new Properties());
+    new Bug36853EventsExpiryDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -156,12 +154,12 @@ public class Bug36853EventsExpiryDUnitTest extends CacheTestCase
    * @throws Exception -
    *           thrown if any problem occurs in setting up the client
    */
-  public static void createClientCache(String hostName, Integer port)
+  private static void createClientCache(String hostName, Integer port)
     throws Exception {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new Bug36853EventsExpiryDUnitTest("temp").createCache(props);
+    new Bug36853EventsExpiryDUnitTest().createCache(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     ClientServerTestCase.configureConnectionPool(factory, hostName, port.intValue(),-1, true, -1, 2, null);
@@ -203,7 +201,7 @@ public class Bug36853EventsExpiryDUnitTest extends CacheTestCase
    * @throws Exception -
    *           thrown if any problem occurs in put operation
    */
-  public static void generateEvents() throws Exception
+  private static void generateEvents() throws Exception
   {
     String regionName = Region.SEPARATOR + REGION_NAME;
     Region region = cache.getRegion(regionName);
@@ -230,6 +228,7 @@ public class Bug36853EventsExpiryDUnitTest extends CacheTestCase
    * @throws Exception -
    *           thrown if any exception occurs in test
    */
+  @Test
   public void testEventsExpiryBug() throws Exception
   {
     IgnoredException.addIgnoredException("Unexpected IOException");
@@ -242,7 +241,7 @@ public class Bug36853EventsExpiryDUnitTest extends CacheTestCase
    * Waits for the listener to receive all events and validates that no
    * exception occured in client
    */
-  public static void validateEventCountAtClient() throws Exception
+  private static void validateEventCountAtClient() throws Exception
   {
     if (!proceedForValidation) {
       synchronized (Bug36853EventsExpiryDUnitTest.class) {
@@ -258,7 +257,7 @@ public class Bug36853EventsExpiryDUnitTest extends CacheTestCase
       }
     }
     LogWriterUtils.getLogWriter().info("Starting validation on client2");
-    Assert.assertEquals(
+    assertEquals(
         "Puts recieved by client not equal to the puts done at server.",
         TOTAL_PUTS, putsRecievedByClient);
     LogWriterUtils.getLogWriter()
@@ -271,7 +270,7 @@ public class Bug36853EventsExpiryDUnitTest extends CacheTestCase
    * Closes the cache
    * 
    */
-  public static void unSetExpiryTimeAndCloseCache()
+  private static void unSetExpiryTimeAndCloseCache()
   {    
     System.clearProperty(HARegionQueue.REGION_ENTRY_EXPIRY_TIME);
     CacheTestCase.closeCache();

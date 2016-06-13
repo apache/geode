@@ -20,9 +20,14 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
@@ -40,15 +45,13 @@ import com.gemstone.gemfire.internal.cache.xmlcache.AsyncEventQueueCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- *
- */
+@Category(DistributedTest.class)
 public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
-  private static final long serialVersionUID = 225193925777688541L;
 
-  public CacheXml70DUnitTest(String name) {
-    super(name);
+  public CacheXml70DUnitTest() {
+    super();
   }
 
   
@@ -60,6 +63,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
   }
 
   /** make sure we can create regions with concurrencyChecksEnabled=true */
+  @Test
   public void testConcurrencyChecksEnabled() throws CacheException {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -110,6 +114,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
     region.localDestroyRegion();
   }
 
+  @Test
   public void testAsyncEventQueue() {
     getSystem();
     CacheCreation cache = new CacheCreation();
@@ -143,6 +148,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
     }
   }
   
+  @Test
   public void testConcurrentAsyncEventQueue() {
     getSystem();
     CacheCreation cache = new CacheCreation();
@@ -179,6 +185,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
   /**
    * Added to test the scenario of defect #50600.
    */
+  @Test
   public void testAsyncEventQueueWithGatewayEventFilter() {
     getSystem();
     CacheCreation cache = new CacheCreation();
@@ -257,6 +264,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
   }
 
   // test bug 47197
+  @Test
   public void testPartitionedRegionAttributesForCoLocation3(){
     closeCache();
     setXmlFile(findFile("coLocation3.xml"));    
@@ -271,6 +279,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
     assertTrue(order.getAttributes().getPartitionAttributes().getColocatedWith().equals("Customer"));
   }
 
+  @Test
   public void testBug44710() {
     closeCache();
     setXmlFile(findFile("bug44710.xml"));

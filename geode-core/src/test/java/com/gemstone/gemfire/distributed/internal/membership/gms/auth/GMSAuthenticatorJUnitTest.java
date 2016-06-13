@@ -39,7 +39,7 @@ import java.util.Properties;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 @Category({ UnitTest.class, SecurityTest.class })
 public class GMSAuthenticatorJUnitTest {
@@ -158,38 +158,38 @@ public class GMSAuthenticatorJUnitTest {
 
   @Test
   public void testAuthenticatorWithEmptyAuth() throws Exception {
-    props.setProperty(DistributionConfig.SECURITY_PEER_AUTHENTICATOR, "");
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR, "");
     String result = authenticator.authenticate(member, props, props, member);
     assertNull(result);
   }
 
   @Test
   public void testAuthenticatorWithNotExistAuth() throws Exception {
-    props.setProperty(DistributionConfig.SECURITY_PEER_AUTHENTICATOR, prefix + "NotExistAuth.create");
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR, prefix + "NotExistAuth.create");
     verifyNegativeAuthenticate(props, props, "Authentication failed. See coordinator");
   }
 
   @Test
   public void testAuthenticatorWithNullAuth() throws Exception {
-    props.setProperty(DistributionConfig.SECURITY_PEER_AUTHENTICATOR, prefix + "TestAuthenticator1.create");
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR, prefix + "TestAuthenticator1.create");
     verifyNegativeAuthenticate(props, props, "Authentication failed. See coordinator");
   }
 
   @Test
   public void testAuthenticatorWithNullCredential() throws Exception {
-    props.setProperty(DistributionConfig.SECURITY_PEER_AUTHENTICATOR, prefix + "TestAuthenticator1.create");
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR, prefix + "TestAuthenticator1.create");
     verifyNegativeAuthenticate(null, props, "Failed to find credentials from");
   }
 
   @Test
   public void testAuthenticatorWithAuthInitFailure() throws Exception {
-    props.setProperty(DistributionConfig.SECURITY_PEER_AUTHENTICATOR, prefix + "TestAuthenticator2.create");
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR, prefix + "TestAuthenticator2.create");
     verifyNegativeAuthenticate(props, props, "Authentication failed. See coordinator");
   }
 
   @Test
   public void testAuthenticatorWithAuthFailure() throws Exception {
-    props.setProperty(DistributionConfig.SECURITY_PEER_AUTHENTICATOR, prefix + "TestAuthenticator3.create");
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR, prefix + "TestAuthenticator3.create");
     verifyNegativeAuthenticate(props, props, "Authentication failed. See coordinator");
   }
 

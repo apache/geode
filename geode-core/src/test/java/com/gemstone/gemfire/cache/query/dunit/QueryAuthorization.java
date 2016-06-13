@@ -16,9 +16,9 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
-import java.security.Principal;
+import static org.junit.Assert.*;
 
-import junit.framework.TestCase;
+import java.security.Principal;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
@@ -32,9 +32,12 @@ import com.gemstone.gemfire.security.NotAuthorizedException;
  * Test authorization class for testing the accessibility of query bind
  * parameters from QueryOperationContext
  * 
- * 
+ * Used by test:
+ *
+ * <li/>QueryParamsAuthorizationDUnitTest (via reflection)
  */
-public class QueryAuthorization extends TestCase implements AccessControl {
+public class QueryAuthorization implements AccessControl {
+
   private DistributedMember remoteDistributedMember;
 
   private LogWriter logger;
@@ -48,8 +51,7 @@ public class QueryAuthorization extends TestCase implements AccessControl {
   }
 
   @Override
-  public void init(Principal principal, DistributedMember remoteMember,
-      Cache cache) throws NotAuthorizedException {
+  public void init(Principal principal, DistributedMember remoteMember, Cache cache) throws NotAuthorizedException {
     this.remoteDistributedMember = remoteMember;
     this.logger = cache.getSecurityLogger();
   }
@@ -60,10 +62,8 @@ public class QueryAuthorization extends TestCase implements AccessControl {
     if (context instanceof QueryOperationContext) {
       Object[] params = ((QueryOperationContext) context).getQueryParams();
       assertTrue(" Bind parameters should not be null", params != null);
-      assertEquals(" 2 bind parameters should have been received.", 2,
-          params.length);
+      assertEquals(" 2 bind parameters should have been received.", 2, params.length);
     }
     return true;
   }
-
 }

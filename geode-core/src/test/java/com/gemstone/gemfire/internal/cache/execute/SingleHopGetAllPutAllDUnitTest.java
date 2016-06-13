@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,13 +44,14 @@ import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 
+@Category(DistributedTest.class)
 public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
 
 
   private static final long serialVersionUID = 3873751456134028508L;
   
-  public SingleHopGetAllPutAllDUnitTest(String name) {
-    super(name);
+  public SingleHopGetAllPutAllDUnitTest() {
+    super();
     
   }
   
@@ -51,6 +61,7 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
    * hosting the data. 
    */
   @Ignore("Disabled due to bug #50618")
+  @Test
   public void testServerGetAllFunction(){
     createScenario();
     client.invoke(() -> SingleHopGetAllPutAllDUnitTest.getAll());
@@ -140,6 +151,7 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase{
    * Will also have to see if the function was routed from client to all the servers
    * hosting the data. 
    */
+  @Test
   public void testServerPutAllFunction(){
     createScenario();
     client.invoke(() -> SingleHopGetAllPutAllDUnitTest.putAll());

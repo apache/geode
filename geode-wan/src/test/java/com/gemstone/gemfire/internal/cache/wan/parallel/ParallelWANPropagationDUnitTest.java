@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Set;
 
 import org.junit.experimental.categories.Category;
@@ -36,13 +45,15 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
+@Category(DistributedTest.class)
 public class ParallelWANPropagationDUnitTest extends WANTestBase {
   private static final long serialVersionUID = 1L;
 
-  public ParallelWANPropagationDUnitTest(String name) {
-    super(name);
+  public ParallelWANPropagationDUnitTest() {
+    super();
   }
 
+  @Test
   public void test_ParallelGatewaySenderMetaRegionNotExposedToUser_Bug44216() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -78,6 +89,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
     }
   }
   
+  @Test
   public void testParallelPropagation_withoutRemoteSite() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -133,6 +145,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
    * Normal happy scenario test case.
    * @throws Exception
    */
+  @Test
   public void testParallelPropagation() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -194,6 +207,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
     return () -> WANTestBase.waitForSenderRunningState( "ln" );
   }
 
+  @Test
   public void testParallelPropagation_ManualStart() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -243,6 +257,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
    * Normal happy scenario test case2.
    * @throws Exception
    */
+  @Test
   public void testParallelPropagationPutBeforeSenderStart() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -296,6 +311,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testParallelPropagationWithLocalCacheClosedAndRebuilt() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -387,6 +403,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
       getTestMethodName() + "_PR", 1000 ));
   }
   
+  @Test
   public void testParallelColocatedPropagation() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -434,6 +451,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
    * @throws Exception
    */
 
+  @Test
   public void testParallelColocatedPropagation2() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -480,6 +498,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
   }
 
   
+  @Test
   public void testParallelPropagationWithOverflow() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -530,6 +549,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
         getTestMethodName(), 150 ));
   }
 
+  @Test
   public void testSerialReplicatedAndParallePartitionedPropagation()
       throws Exception {
 
@@ -601,6 +621,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
         getTestMethodName() + "_PR", 1000 ));
   }
 
+  @Test
   public void testPartitionedParallelPropagationToTwoWanSites()
       throws Exception {
     Integer lnPort = createFirstLocatorWithDSId(1);
@@ -684,6 +705,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
   }
 
   @Category(FlakyTest.class) // GEODE-1008 and GEODE-1180: random ports, async actions, thread sleeps, time sensitive, waitForCriterion
+  @Test
   public void testPartitionedParallelPropagationHA() throws Exception {
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection reset");
@@ -745,6 +767,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
         getTestMethodName() + "_PR", 10000 ));
   }
 
+  @Test
   public void testParallelPropagationWithFilter() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -796,6 +819,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
   }
   
   
+  @Test
   public void testParallelPropagationWithPutAll() throws Exception {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -851,6 +875,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
    *  
    * @throws Exception
    */
+  @Test
   public void testParallelPropagationWithDestroy() throws Exception {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -926,6 +951,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
    * Normal happy scenario test case. But with Tx operations
    * @throws Exception
    */
+  @Test
   public void testParallelPropagationTxOperations() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -1083,6 +1109,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
   /**
    * Added for defect #50364 Can't colocate region that has AEQ with a region that does not have that same AEQ
    */
+  @Test
   public void testParallelSenderAttachedToChildRegionButNotToParentRegion() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -1124,6 +1151,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
         getTestMethodName() + "CHILD_PR", 1000 ));
   }
   
+  @Test
   public void testParallelPropagationWithFilter_AfterAck() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

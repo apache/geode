@@ -23,13 +23,16 @@
  */
 package com.gemstone.gemfire.util;
 
+import static org.junit.Assert.*;
+
 import java.security.CodeSource;
 import java.security.Permission;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.security.ProtectionDomain;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * Base class for JSR166 Junit TCK tests.  Defines some constants,
@@ -49,7 +52,7 @@ import junit.framework.TestCase;
  * Only the most typically used JUnit assertion methods are defined
  * this way, but enough to live with.</li>
  *
- * <li> If you override {@link junit.framework.TestCase#setUp} or {@link junit.framework.TestCase#tearDown}, make sure
+ * <li> If you override {@link #setUp} or {@link #tearDown}, make sure
  * to invoke <tt>super.setUp</tt> and <tt>super.tearDown</tt> within
  * them. These methods are used to clear and check for thread
  * assertion failures.</li>
@@ -107,19 +110,15 @@ import junit.framework.TestCase;
  *
  * @version Based on JSR166 TCK version 1.8
  */
-public class JSR166TestCase extends TestCase {
+public class JSR166TestCase { // TODO: reformat
+
     public static long SHORT_DELAY_MS;
     public static long SMALL_DELAY_MS;
     public static long MEDIUM_DELAY_MS;
     public static long LONG_DELAY_MS;
 
-    public static Class<?> MAP_CLASS =
-        com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.class;
+    public static Class<?> MAP_CLASS = com.gemstone.gemfire.internal.util.concurrent.CustomEntryConcurrentHashMap.class;
 
-    public JSR166TestCase(String name) {
-      super(name);
-    } 
-    
     /**
      * Return the shortest timed delay. This could
      * be reimplmented to use for example a Property.
@@ -147,7 +146,8 @@ public class JSR166TestCase extends TestCase {
     /**
      * Initialize test to indicate that no thread assertions have failed
      */
-    protected void setUp() throws Exception { 
+    @Before
+    public void setUp() throws Exception {
         setDelays();
         threadFailed = false;  
     }
@@ -155,7 +155,8 @@ public class JSR166TestCase extends TestCase {
     /**
      * Trigger test case failure if any thread assertions have failed
      */
-    protected void tearDown() throws Exception { 
+    @After
+    public void tearDown() throws Exception {
         assertFalse(threadFailed);  
     }
 

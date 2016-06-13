@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.web.controllers;
 
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.internal.lang.StringUtils;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
@@ -44,7 +44,7 @@ public class DurableClientCommandsController extends AbstractCommandsController 
 
   @RequestMapping(method = RequestMethod.GET, value = "/durable-clients/{durable-client-id}/cqs")
   @ResponseBody
-  public String listDurableClientContinuousQueries(@PathVariable(DistributedSystemConfigProperties.DURABLE_CLIENT_ID) final String durableClientId,
+  public String listDurableClientContinuousQueries(@PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
                                                    @RequestParam(value = CliStrings.LIST_DURABLE_CQS__MEMBER, required = false) final String memberNameId,
                                                    @RequestParam(value = CliStrings.LIST_DURABLE_CQS__GROUP, required = false) final String[] groups)
   {
@@ -65,7 +65,7 @@ public class DurableClientCommandsController extends AbstractCommandsController 
 
   @RequestMapping(method = RequestMethod.GET, value = "/durable-clients/{durable-client-id}/cqs/events")
   @ResponseBody
-  public String countDurableClientContinuousQueryEvents(@PathVariable(DistributedSystemConfigProperties.DURABLE_CLIENT_ID) final String durableClientId,
+  public String countDurableClientContinuousQueryEvents(@PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
                                                         @RequestParam(value = CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER, required = false) final String memberNameId,
                                                         @RequestParam(value = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP, required = false) final String[] groups)
   {
@@ -74,7 +74,7 @@ public class DurableClientCommandsController extends AbstractCommandsController 
 
   @RequestMapping(method = RequestMethod.GET, value = "/durable-clients/{durable-client-id}/cqs/{durable-cq-name}/events")
   @ResponseBody
-  public String countDurableClientContinuousQueryEvents(@PathVariable(DistributedSystemConfigProperties.DURABLE_CLIENT_ID) final String durableClientId,
+  public String countDurableClientContinuousQueryEvents(@PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
                                                         @PathVariable("durable-cq-name") final String durableCqName,
                                                         @RequestParam(value = CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER, required = false) final String memberNameId,
                                                         @RequestParam(value = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP, required = false) final String[] groups)
@@ -108,7 +108,7 @@ public class DurableClientCommandsController extends AbstractCommandsController 
 
   @RequestMapping(method = RequestMethod.POST, value = "/durable-clients/{durable-client-id}", params = "op=close")
   @ResponseBody
-  public String closeDurableClient(@PathVariable(DistributedSystemConfigProperties.DURABLE_CLIENT_ID) final String durableClientId,
+  public String closeDurableClient(@PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
                                    @RequestParam(value = CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER, required = false) final String memberNameId,
                                    @RequestParam(value = CliStrings.CLOSE_DURABLE_CLIENTS__GROUP, required = false) final String[] groups)
   {
@@ -129,7 +129,7 @@ public class DurableClientCommandsController extends AbstractCommandsController 
 
   @RequestMapping(method = RequestMethod.POST, value = "/durable-clients/{durable-client-id}/cqs/{durable-cq-name}", params = "op=close")
   @ResponseBody
-  public String closeDurableContinuousQuery(@PathVariable(DistributedSystemConfigProperties.DURABLE_CLIENT_ID) final String durableClientId,
+  public String closeDurableContinuousQuery(@PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
                                             @PathVariable("durable-cq-name")final String durableCqName,
                                             @RequestParam(value = CliStrings.CLOSE_DURABLE_CQS__MEMBER, required = false) final String memberNameId,
                                             @RequestParam(value = CliStrings.CLOSE_DURABLE_CQS__GROUP, required = false) final String[] groups)

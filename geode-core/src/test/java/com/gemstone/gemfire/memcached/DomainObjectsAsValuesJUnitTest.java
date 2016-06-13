@@ -16,28 +16,26 @@
  */
 package com.gemstone.gemfire.memcached;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.concurrent.Future;
+
 import net.spy.memcached.MemcachedClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.concurrent.Future;
-import java.util.logging.Logger;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
-import static org.junit.Assert.*;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class DomainObjectsAsValuesJUnitTest {
 
-  private static final Logger logger = Logger.getLogger(DomainObjectsAsValuesJUnitTest.class.getCanonicalName());
-  
   private int PORT;
   
   private GemFireMemcachedServer server;
@@ -56,7 +54,7 @@ public class DomainObjectsAsValuesJUnitTest {
     System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT);
   }
 
-  public static class Customer implements java.io.Serializable {
+  private static class Customer implements java.io.Serializable {
     private static final long serialVersionUID = 4238572216598708877L;
     private String name;
     private String address;

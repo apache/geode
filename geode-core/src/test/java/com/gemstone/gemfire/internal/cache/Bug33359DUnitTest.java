@@ -23,6 +23,9 @@ package com.gemstone.gemfire.internal.cache;
 
 import java.util.Properties;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
@@ -34,20 +37,14 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- *
- */
-public class Bug33359DUnitTest extends DistributedTestCase {
-    
-    /** Creates a new instance of Bug33359DUnitTest */
-    public Bug33359DUnitTest(String name) {
-        super(name);
-    }
+@Category(DistributedTest.class)
+public class Bug33359DUnitTest extends JUnit4DistributedTestCase { // TODO: reformat
     
     static Cache cache;
     static Properties props = new Properties();
@@ -80,7 +77,7 @@ public class Bug33359DUnitTest extends DistributedTestCase {
     
     public static void createCacheVM0(){
         try{
-            ds = (new Bug33359DUnitTest("temp")).getSystem(props);
+            ds = (new Bug33359DUnitTest()).getSystem(props);
             cache = CacheFactory.create(ds);
             
             AttributesFactory factory  = new AttributesFactory();
@@ -98,7 +95,7 @@ public class Bug33359DUnitTest extends DistributedTestCase {
     } //end of create cache for VM0
     public static void createCacheVM1(){
         try{
-            ds = (new Bug33359DUnitTest("temp")).getSystem(props);
+            ds = (new Bug33359DUnitTest()).getSystem(props);
             DistributedSystem.setThreadsSocketPolicy(false);
             
             cache = CacheFactory.create(ds);
@@ -128,7 +125,8 @@ public class Bug33359DUnitTest extends DistributedTestCase {
     //test methods
     
     
-    public void testClearMultiVM(){
+  @Test
+  public void testClearMultiVM(){
         
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);

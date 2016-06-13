@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.cq.dunit;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.HashSet;
 import java.util.concurrent.CountDownLatch;
 
@@ -55,12 +64,13 @@ import com.gemstone.gemfire.test.dunit.Wait;
  * This includes the test with different data activities.
  *
  */
-public class CqDataDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CqDataDUnitTest extends JUnit4CacheTestCase {
 
-  protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest("CqDataDUnitTest");
+  protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
   
-  public CqDataDUnitTest(String name) {
-    super(name);
+  public CqDataDUnitTest() {
+    super();
   }
 
   @Override
@@ -87,6 +97,7 @@ public class CqDataDUnitTest extends CacheTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testClientWithFeederAndCQ() throws Exception
   {
     final Host host = Host.getHost(0);
@@ -129,6 +140,7 @@ public class CqDataDUnitTest extends CacheTestCase {
    * Test for CQ Fail over/HA with redundancy level set.
    * @throws Exception
    */
+  @Test
   public void testCQHAWithState() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -250,6 +262,7 @@ public class CqDataDUnitTest extends CacheTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testCQWithDestroysAndInvalidates() throws Exception
   {
     final Host host = Host.getHost(0);
@@ -321,6 +334,7 @@ public class CqDataDUnitTest extends CacheTestCase {
    * bug 37295.
    * 
    */
+  @Test
   public void testCQWithMultipleClients() throws Exception {
     
     final Host host = Host.getHost(0);
@@ -390,6 +404,7 @@ public class CqDataDUnitTest extends CacheTestCase {
    * Test for CQ when region is populated with net load.
    * @throws Exception
    */
+  @Test
   public void testCQWithLoad() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -441,6 +456,7 @@ public class CqDataDUnitTest extends CacheTestCase {
    * Test for CQ when entries are evicted from region.
    * @throws Exception
    */
+  @Test
   public void testCQWithEviction() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -511,6 +527,7 @@ public class CqDataDUnitTest extends CacheTestCase {
    * Test for CQ with ConnectionPool.
    * @throws Exception
    */
+  @Test
   public void testCQWithConnectionPool() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -569,6 +586,7 @@ public class CqDataDUnitTest extends CacheTestCase {
    * Test for CQ with BridgeClient.
    * @throws Exception
    */
+  @Test
   public void testCQWithBridgeClient() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -624,6 +642,7 @@ public class CqDataDUnitTest extends CacheTestCase {
    * Test for CQ with ConnectionPool.
    * @throws Exception
    */
+  @Test
   public void testCQWithPool() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -678,6 +697,7 @@ public class CqDataDUnitTest extends CacheTestCase {
    * Test for CQ with establishCallBackConnection.
    * @throws Exception
    */
+  @Test
   public void testCQWithEstablishCallBackConnection() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -743,6 +763,7 @@ public class CqDataDUnitTest extends CacheTestCase {
    * Region invalidate triggers cqEvent with query op region invalidate.
    * @throws Exception
    */
+  @Test
   public void testRegionEvents() throws Exception {
     
     final Host host = Host.getHost(0);
@@ -824,6 +845,7 @@ public class CqDataDUnitTest extends CacheTestCase {
    * thus making the query data and region data inconsistent.
    * @throws Exception
    */
+  @Test
   public void testEventsDuringQueryExecution() throws Exception {
     
     final Host host = Host.getHost(0);
@@ -959,6 +981,7 @@ public class CqDataDUnitTest extends CacheTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testMultipleExecuteWithInitialResults() throws Exception {
     final int numObjects = 200;
     final int totalObjects = 500;

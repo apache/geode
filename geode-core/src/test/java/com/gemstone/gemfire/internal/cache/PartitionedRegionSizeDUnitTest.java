@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.File;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -48,12 +57,13 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 
  *  
  */
+@Category(DistributedTest.class)
 public class PartitionedRegionSizeDUnitTest extends
     PartitionedRegionDUnitTestCase
 {
 
-  public PartitionedRegionSizeDUnitTest(String name) {
-    super(name);
+  public PartitionedRegionSizeDUnitTest() {
+    super();
   }
 
   public static final String PR_PREFIX = "PR";
@@ -380,12 +390,14 @@ public class PartitionedRegionSizeDUnitTest extends
    * 
    * @throws Exception
    */
+  @Test
   public void testSize() throws Throwable
   {
     sizeOpsForDistAckSync();
     sizeOpsForDistAckASync();
   }
   
+  @Test
   public void testBug39868() throws Exception {
     Host host = Host.getHost(0);
 
@@ -438,6 +450,7 @@ public class PartitionedRegionSizeDUnitTest extends
     });
   }
   
+  @Test
   public void testByteSize() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -465,6 +478,7 @@ public class PartitionedRegionSizeDUnitTest extends
     };
   }
   
+  @Test
   public void testByteSizeWithEviction() throws Exception {
     Host host = Host.getHost(0);
 

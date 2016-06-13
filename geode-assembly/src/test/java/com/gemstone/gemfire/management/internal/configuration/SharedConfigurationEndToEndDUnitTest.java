@@ -50,7 +50,7 @@ import java.util.Set;
 
 import static com.gemstone.gemfire.cache.RegionShortcut.PARTITION;
 import static com.gemstone.gemfire.cache.RegionShortcut.REPLICATE;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static com.gemstone.gemfire.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static com.gemstone.gemfire.internal.FileUtil.delete;
 import static com.gemstone.gemfire.internal.FileUtil.deleteMatching;

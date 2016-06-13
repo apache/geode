@@ -19,7 +19,7 @@ package com.gemstone.gemfire.distributed;
 import com.gemstone.gemfire.CancelException;
 
 /**
- * Thrown when a GemFire gateway has been terminated.
+ * Thrown when a GemFire operation log has been terminated.
  * 
  * @since GemFire 6.0
  */

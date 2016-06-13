@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 /**
  * This is a dunit test for PartitionedRegion creation and Region API's
  * for put and get functionality in case of Custom Partitioning.
@@ -58,11 +67,12 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
+@Category(DistributedTest.class)
 public class PRPerformanceTestDUnitTest extends
     PartitionedRegionDUnitTestCase {
 
-  public PRPerformanceTestDUnitTest(String name) {
-    super(name);
+  public PRPerformanceTestDUnitTest() {
+    super();
   }
 
   protected static Cache cache = null;
@@ -85,7 +95,7 @@ public class PRPerformanceTestDUnitTest extends
   
   public static void createCacheInVm() throws Exception{
     Properties props = new Properties();
-    new PRPerformanceTestDUnitTest("temp").createCache(props);
+    new PRPerformanceTestDUnitTest().createCache(props);
   }
   
   private void createCache(Properties props) throws Exception
@@ -317,6 +327,7 @@ public class PRPerformanceTestDUnitTest extends
    * This is a PartitionedRegion test for Custom Prtitioning . 4 VMs are used to create the PR with
    * and without(Only Accessor) the DataStore.
    */
+  @Test
   public void testPartitionedRegionOperationsCustomPartitioning()
       throws Exception {
     Host host = Host.getHost(0);

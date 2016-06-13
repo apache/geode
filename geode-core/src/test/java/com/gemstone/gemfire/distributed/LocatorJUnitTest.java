@@ -49,7 +49,7 @@ import java.net.InetAddress;
 import java.util.*;
 import java.util.function.IntSupplier;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static com.gemstone.gemfire.internal.AvailablePort.SOCKET;
 import static com.gemstone.gemfire.internal.AvailablePort.getRandomAvailablePort;
 import static org.junit.Assert.*;
@@ -163,7 +163,7 @@ public class LocatorJUnitTest {
   public void testServerOnly() throws Exception {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributedSystemConfigProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
+    props.setProperty(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
     locator = Locator.startLocatorAndDS(port, tmpFile, null, props, false, true, null);
    assertFalse(locator.isPeerLocator());
    assertTrue(locator.isServerLocator());
@@ -175,7 +175,7 @@ public class LocatorJUnitTest {
   public void testBothPeerAndServer() throws Exception {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributedSystemConfigProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
+    props.setProperty(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
 
     locator = Locator.startLocatorAndDS(port, tmpFile, null, props);
     assertTrue(locator.isPeerLocator());

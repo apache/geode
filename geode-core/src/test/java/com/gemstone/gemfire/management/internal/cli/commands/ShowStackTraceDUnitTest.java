@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
@@ -33,7 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 import static com.gemstone.gemfire.test.dunit.Assert.assertFalse;
 import static com.gemstone.gemfire.test.dunit.Assert.assertTrue;
 import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;

@@ -16,25 +16,30 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
+import java.util.Properties;
+
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 /**
  * Tests Distributed NoAck Region with OffHeap memory.
  * 
  * @since Geode 1.0
  */
 @SuppressWarnings({ "deprecation", "serial" })
+@Category(DistributedTest.class)
 public class DistributedNoAckRegionOffHeapDUnitTest extends DistributedNoAckRegionDUnitTest {
 
-  public DistributedNoAckRegionOffHeapDUnitTest(String name) {
-    super(name);
+  public DistributedNoAckRegionOffHeapDUnitTest() {
+    super();
   }
   
   @Override

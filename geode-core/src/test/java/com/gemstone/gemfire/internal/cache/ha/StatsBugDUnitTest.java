@@ -16,22 +16,35 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Iterator;
+import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-
-import java.util.Iterator;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
 
 /**
  * This is Dunit test for bug 36109. This test has a cache-client having a primary
@@ -42,13 +55,11 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  * appearing because invalidate stats was part of Endpoint which used to get
  * closed during fail over , with the failed endpoint getting closed. This bug
  * has been fixed by moving the invalidate stat to be part of our implementation.
- * 
- * 
  */
 @Category(DistributedTest.class)
 @Ignore("Test was disabled by renaming to DisabledTest")
-public class StatsBugDUnitTest extends DistributedTestCase
-{
+public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
+
   /** primary cache server */
   VM primary = null;
 
@@ -68,7 +79,7 @@ public class StatsBugDUnitTest extends DistributedTestCase
   private static int PORT2;
 
   /** name of the test region */
-  private static final String REGION_NAME = "StatsBugDUnitTest_Region";
+  private static final String REGION_NAME = StatsBugDUnitTest.class.getSimpleName() + "_Region";
 
   /** brige-writer instance( used to get connection proxy handle) */
   private static PoolImpl pool = null;
@@ -85,22 +96,6 @@ public class StatsBugDUnitTest extends DistributedTestCase
   /** prefix added to the keys of events generated on secondary */
   private static final String secondaryPrefix = "secondary_";
 
-  /**
-   * Constructor
-   * 
-   * @param name -
-   *          name for this test instance
-   */
-  public StatsBugDUnitTest(String name) {
-    super(name);
-  }
-
-  /**
-   * Creates the primary and the secondary cache servers
-   * 
-   * @throws Exception -
-   *           thrown if any problem occurs in initializing the test
-   */
   @Override
   public final void postSetUp() throws Exception {
     disconnectAllFromDS();
@@ -134,12 +129,6 @@ public class StatsBugDUnitTest extends DistributedTestCase
     return cache;
   }
 
-  /**
-   * close the cache instances in server and client during tearDown
-   * 
-   * @throws Exception
-   *           thrown if any problem occurs in closing cache
-   */
   @Override
   public final void preTearDown() throws Exception {
     // close client
@@ -159,10 +148,8 @@ public class StatsBugDUnitTest extends DistributedTestCase
    * operations from secondary<br>
    * 5)Verify that the invalidates stats at the client accounts for the
    * operations done by both, primary and secondary.
-   * 
-   * @throws Exception -
-   *           thrown if any problem occurs in test execution
    */
+  @Test
   public void testBug36109() throws Exception
   {
     LogWriterUtils.getLogWriter().info("testBug36109 : BEGIN");
@@ -200,7 +187,7 @@ public class StatsBugDUnitTest extends DistributedTestCase
    */
   public static Integer createServerCache() throws Exception
   {
-    StatsBugDUnitTest test = new StatsBugDUnitTest("temp");
+    StatsBugDUnitTest test = new StatsBugDUnitTest();
     Properties props = new Properties();
     cache = test.createCache(props);
     AttributesFactory factory = new AttributesFactory();
@@ -233,7 +220,7 @@ public class StatsBugDUnitTest extends DistributedTestCase
   public static void createClientCache(String host, Integer port1, Integer port2)
       throws Exception
   {
-    StatsBugDUnitTest test = new StatsBugDUnitTest("temp");
+    StatsBugDUnitTest test = new StatsBugDUnitTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -257,7 +244,7 @@ public class StatsBugDUnitTest extends DistributedTestCase
   public static void createClientCacheForInvalidates(String host, Integer port1, Integer port2)
       throws Exception
   {
-    StatsBugDUnitTest test = new StatsBugDUnitTest("temp");
+    StatsBugDUnitTest test = new StatsBugDUnitTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);

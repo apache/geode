@@ -16,7 +16,26 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import org.junit.BeforeClass;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.InterestResultPolicy;
+import com.gemstone.gemfire.cache.MirrorType;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.cache.client.internal.RegisterInterestTracker;
@@ -28,36 +47,35 @@ import com.gemstone.gemfire.internal.cache.CacheServerImpl;
 import com.gemstone.gemfire.internal.cache.ClientServerObserver;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.*;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests Redundancy Level Functionality
- * 
- * 
  */
-public class RedundancyLevelTestBase extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
+
+  protected static volatile boolean registerInterestCalled = false;
+  protected static volatile boolean makePrimaryCalled = false;
+
   static Cache cache = null;
 
   VM server0 = null;
-
   VM server1 = null;
-
   VM server2 = null;
-
   VM server3 = null;
 
   static int PORT1;
-
   static int PORT2;
-
   static int PORT3;
-
   static int PORT4;
 
   static String SERVER1;
@@ -66,7 +84,6 @@ public class RedundancyLevelTestBase extends DistributedTestCase
   static String SERVER4;
 
   static final String k1 = "k1";
-
   static final String k2 = "k2";
 
   static final String REGION_NAME = "RedundancyLevelTestBase_region";
@@ -77,13 +94,9 @@ public class RedundancyLevelTestBase extends DistributedTestCase
   
   static boolean FailOverDetectionByCCU = false;
   
-  /** constructor */
-  public RedundancyLevelTestBase(String name) {
-    super(name);
-  }
-
+  @BeforeClass
   public static void caseSetUp() throws Exception {
-    DistributedTestCase.disconnectAllFromDS();
+    disconnectAllFromDS();
   }
 
   @Override
@@ -112,9 +125,6 @@ public class RedundancyLevelTestBase extends DistributedTestCase
     CacheServerTestUtil.disableShufflingOfEndpoints();
   }
 
-  protected static volatile boolean registerInterestCalled = false;
-  protected static volatile boolean makePrimaryCalled = false;
-  
   public static void doPuts()
   {
     putEntriesK1andK2();
@@ -133,16 +143,14 @@ public class RedundancyLevelTestBase extends DistributedTestCase
       assertEquals(r1.getEntry(k1).getValue(), k1);
       assertEquals(r1.getEntry(k2).getValue(), k2);
     }
-    catch (Exception ex) {
-      //ignore
+    catch (Exception ignore) {
+      // not sure why it's ok to ignore but if you don't ignore it, RedundancyLevelPart3DUnitTest will fail
     }
   }
 
   public static void verifyDispatcherIsAlive()
   {
     try {
-//      assertIndexDetailsEquals("More than one BridgeServer", 1, cache.getCacheServers()
-//          .size());
       WaitCriterion wc = new WaitCriterion() {
         String excuse;
         public boolean done() {
@@ -200,8 +208,6 @@ public class RedundancyLevelTestBase extends DistributedTestCase
   public static void verifyDispatcherIsNotAlive()
   {
     try {
-      // assertIndexDetailsEquals("More than one BridgeServer", 1,
-      // cache.getCacheServers().size());
       WaitCriterion wc = new WaitCriterion() {
         String excuse;
         public boolean done() {
@@ -242,8 +248,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
       Assert.fail("while setting verifyDispatcherIsNotAlive  ", ex);
     }
   }
-  
-  
+
   public static void verifyRedundantServersContain(final String server) {
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
@@ -458,7 +463,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
       }
     }
     catch (Exception ex) {
-      fail("while setting verifyInterestRegistration  " + ex);
+      fail("while setting verifyInterestRegistration", ex);
     }
   }
 
@@ -486,7 +491,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
       bs.start();
     }
     catch (Exception ex) {
-      Assert.fail("while startServer()  ", ex);
+      Assert.fail("while startServer()", ex);
     }
   }
 
@@ -501,19 +506,13 @@ public class RedundancyLevelTestBase extends DistributedTestCase
   }
 
   
-  public static void createClientCache(String host, int port1, int port2, int port3,
-                                       int port4, int redundancy)
-    throws Exception {
+  public static void createClientCache(String host, int port1, int port2, int port3, int port4, int redundancy) throws Exception {
     createClientCache(host, port1, port2, port3,
                       port4,  redundancy, 3000, /* defaul socket timeout of 250 millisec*/
                       10 /*default retry interval*/);
   }
-  public static void createClientCache(String host, int port1, int port2, int port3,
-                                       int port4, int redundancy,
-                                       int socketReadTimeout,
-                                       int retryInterval) throws Exception
-  {
-    
+
+  public static void createClientCache(String host, int port1, int port2, int port3, int port4, int redundancy, int socketReadTimeout, int retryInterval) throws Exception {
     if(!FailOverDetectionByCCU)
     {
         oldBo = ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
@@ -534,7 +533,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new RedundancyLevelTestBase("temp").createCache(props);
+    new RedundancyLevelTestBase().createCache(props);
 
     PoolImpl p = (PoolImpl)PoolManager.createFactory()
       .addServer(host, PORT1)
@@ -562,7 +561,7 @@ public class RedundancyLevelTestBase extends DistributedTestCase
 
   public static Integer createServerCache() throws Exception
   {
-    new RedundancyLevelTestBase("temp").createCache(new Properties());
+    new RedundancyLevelTestBase().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableConflation(true);

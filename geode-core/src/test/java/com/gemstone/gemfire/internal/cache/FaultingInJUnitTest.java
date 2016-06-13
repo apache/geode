@@ -16,32 +16,27 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
 
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * Tests faulting in from current oplog, old oplog
  * and htree for different modes (overflow only, persist+overflow : Sync/Async)
- * 
- *
  */
 @Category(IntegrationTest.class)
-public class FaultingInJUnitTest extends DiskRegionTestingBase
-{
-  protected volatile boolean hasBeenNotified;
-  
-  
+public class FaultingInJUnitTest extends DiskRegionTestingBase {
+
+  private volatile boolean hasBeenNotified;
+
   private DiskRegionProperties diskProps = new DiskRegionProperties();
   
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
+  @Override
+  protected final void postSetUp() throws Exception {
     deleteFiles();
     diskProps.setDiskDirs(dirs);
     diskProps.setCompactionThreshold(100);
@@ -49,19 +44,16 @@ public class FaultingInJUnitTest extends DiskRegionTestingBase
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
   }
   
-  @After
-  public void tearDown() throws Exception {
+  @Override
+  protected final void preTearDown() throws Exception {
     closeDown();
     deleteFiles();
-    super.tearDown();
   }
 
   /**
    * fault in a value from teh current oplog
-   *
    */
-  void faultInFromCurrentOplog()
-  { 
+  private void faultInFromCurrentOplog() {
     put100Int();
     putTillOverFlow(region);
     region.put(new Integer(200), new Integer(200));
@@ -73,10 +65,8 @@ public class FaultingInJUnitTest extends DiskRegionTestingBase
 
   /**
    * fault in a value from an old oplog
-   *
    */
-  void faultInFromOldOplog()
-  {
+  private void faultInFromOldOplog() {
     put100Int();
     putTillOverFlow(region);
     region.put(new Integer(200), new Integer(200));
@@ -89,10 +79,8 @@ public class FaultingInJUnitTest extends DiskRegionTestingBase
 
   /**
    * fault in a value that has been copied forward by compaction
-   *
    */
-  void faultInFromCompactedOplog()
-  {
+  private void faultInFromCompactedOplog() {
     put100Int();
     putTillOverFlow(region);
     region.put(new Integer(101), new Integer(101));
@@ -147,89 +135,74 @@ public class FaultingInJUnitTest extends DiskRegionTestingBase
    * test OverflowOnly Sync Faultin  From CurrentOplog
    */
   @Test
-  public void testOverflowOnlyFaultinSyncFromCurrentOplog()
-  {
+  public void testOverflowOnlyFaultinSyncFromCurrentOplog() {
     region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache,diskProps);
     faultInFromCurrentOplog();
   }
 
   @Test
-  public void testOverflowOnlyFaultinSyncFromOldOplog()
-  {
+  public void testOverflowOnlyFaultinSyncFromOldOplog() {
     region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache,diskProps);
     faultInFromOldOplog();
   }
 
   @Test
-  public void testOverflowOnlyFaultinSyncFromCompactedOplog()
-  {
+  public void testOverflowOnlyFaultinSyncFromCompactedOplog() {
     region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache,diskProps);
     faultInFromCompactedOplog();
   }
 
   @Test
-  public void testOverflowOnlyFaultinAsyncFromCurrentOplog()
-  {
+  public void testOverflowOnlyFaultinAsyncFromCurrentOplog() {
     region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,diskProps);
     faultInFromCurrentOplog();
   }
 
   @Test
-  public void testOverflowOnlyFaultinAsyncFromOldOplog()
-  {
+  public void testOverflowOnlyFaultinAsyncFromOldOplog() {
     region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,diskProps);
     faultInFromOldOplog();
   }
 
   @Test
-  public void testOverflowOnlyFaultinAsyncFromCompactedOplog()
-  {
+  public void testOverflowOnlyFaultinAsyncFromCompactedOplog() {
     region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,diskProps);
     faultInFromCompactedOplog();
   }
   
   @Test
-  public void testOverflowAndPersistFaultinSyncFromCurrentOplog()
-  {
+  public void testOverflowAndPersistFaultinSyncFromCurrentOplog() {
     region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,diskProps);
     faultInFromCurrentOplog();
   }
 
   @Test
-  public void testOverflowAndPersistFaultinSyncFromOldOplog()
-  {
+  public void testOverflowAndPersistFaultinSyncFromOldOplog() {
     region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,diskProps);
     faultInFromOldOplog();
   }
 
   @Test
-  public void testOverflowAndPersistFaultinSyncFromCompactedOplog()
-  {
+  public void testOverflowAndPersistFaultinSyncFromCompactedOplog() {
     region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,diskProps);
     faultInFromCompactedOplog();
   }
 
   @Test
-  public void testOverflowAndPersistFaultinAsyncFromCurrentOplog()
-  {
+  public void testOverflowAndPersistFaultinAsyncFromCurrentOplog() {
     region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,diskProps);
     faultInFromCurrentOplog();
   }
 
   @Test
-  public void testOverflowAndPersistFaultinAsyncFromOldOplog()
-  {
+  public void testOverflowAndPersistFaultinAsyncFromOldOplog() {
     region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,diskProps);
     faultInFromOldOplog();
   }
 
   @Test
-  public void testOverflowAndPersistFaultinAsyncFromCompactedOplog()
-  {
+  public void testOverflowAndPersistFaultinAsyncFromCompactedOplog() {
     region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache,diskProps);
     faultInFromCompactedOplog();
   }
-
-
-  
 }

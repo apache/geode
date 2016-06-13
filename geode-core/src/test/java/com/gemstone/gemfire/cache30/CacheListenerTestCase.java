@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheListener;
@@ -39,8 +48,8 @@ import com.gemstone.gemfire.test.dunit.Wait;
 public abstract class CacheListenerTestCase
   extends CacheLoaderTestCase {
 
-  public CacheListenerTestCase(String name) {
-    super(name);
+  public CacheListenerTestCase() {
+    super();
   }
 
   ///////////////////////  Test Methods  ///////////////////////
@@ -49,6 +58,7 @@ public abstract class CacheListenerTestCase
    * Tests that the <code>CacheListener</code> is called after an entry
    * is {@linkplain CacheListener#afterCreate created}.
    */
+  @Test
   public void testCacheListenerAfterCreate() throws CacheException {
     String name = this.getUniqueName();
     final Object key = this.getUniqueName();
@@ -102,6 +112,7 @@ public abstract class CacheListenerTestCase
    * Tests that the <code>CacheListener</code> is called after an entry
    * is {@linkplain CacheListener#afterUpdate updated}.
    */
+  @Test
   public void testCacheListenerAfterUpdate() throws CacheException {
     String name = this.getUniqueName();
     final Object key = this.getUniqueName();
@@ -168,6 +179,7 @@ public abstract class CacheListenerTestCase
    * Tests that the <code>CacheListener</code> is called after an
    * entry is {@linkplain CacheListener#afterDestroy destroyed}.
    */
+  @Test
   public void testCacheListenerAfterDestroy() throws CacheException {
     String name = this.getUniqueName();
     final Object key = this.getUniqueName();
@@ -212,6 +224,7 @@ public abstract class CacheListenerTestCase
    * Tests that the <code>CacheListener</code> is called after an
    * entry is {@linkplain CacheListener#afterInvalidate invalidated}.
    */
+  @Test
   public void testCacheListenerAfterInvalidate() throws CacheException {
     String name = this.getUniqueName();
     final Object key = this.getUniqueName();
@@ -258,6 +271,7 @@ public abstract class CacheListenerTestCase
     assertFalse(listener.wasInvoked());
   }
   
+  @Test
   public void testCacheListenerAfterInvalidateWithForce() throws CacheException {
     AbstractRegionMap.FORCE_INVALIDATE_EVENT = true;
     try {
@@ -321,6 +335,7 @@ public abstract class CacheListenerTestCase
    * @see CacheListener#afterRegionDestroy
    * @see CacheListener#close
    */
+  @Test
   public void testCacheListenerAfterRegionDestroy()
     throws CacheException,InterruptedException {
 
@@ -381,6 +396,7 @@ public abstract class CacheListenerTestCase
    * @see CacheListener#afterRegionInvalidate
    * @see CacheListener#close
    */
+  @Test
   public void testCacheListenerAfterRegionInvalidate()
     throws CacheException, InterruptedException  {
 

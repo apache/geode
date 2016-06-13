@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
@@ -25,19 +34,21 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * 
  */
+@Category(DistributedTest.class)
 public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
     WANTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public SerialWANPersistenceEnabledGatewaySenderDUnitTest(String name) {
-    super(name);
+  public SerialWANPersistenceEnabledGatewaySenderDUnitTest() {
+    super();
   }
 
   /**
    * Just enable the persistence for GatewaySender and see if it remote site
    * receives all the events.
    */
+  @Test
   public void testReplicatedRegionWithGatewaySenderPersistenceEnabled() {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -83,6 +94,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
    * Enable persistence for the Region and see if the remote site gets all the
    * events.
    */
+  @Test
   public void testPersistentReplicatedRegionWithGatewaySender() {
 
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -123,6 +135,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
    * site receives all the events.
    * 
    */
+  @Test
   public void testPersistentReplicatedRegionWithGatewaySenderPersistenceEnabled() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -161,6 +174,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
    * Enable persistence for GatewaySender, kill the sender and restart it. Check
    * if the remote site receives all the event.
    */
+  @Test
   public void testReplicatedRegionWithGatewaySenderPersistenceEnabled_Restart() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -257,6 +271,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
    * all the event. again?
    * 
    */
+  @Test
   public void testPersistentReplicatedRegionWithGatewaySenderPersistenceEnabled_Restart() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -346,6 +361,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
    * all the event. again?
    * 
    */
+  @Test
   public void testPersistentReplicatedRegionWithGatewaySender_Restart() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -445,6 +461,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends
    * all the event. again?
    * In this case put is continuously happening while the vm is down.
    */
+  @Test
   public void testPersistentReplicatedRegionWithGatewaySenderPersistenceEnabled_Restart2() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

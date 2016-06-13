@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.locator.ClientConnectionRequest;
@@ -55,6 +64,7 @@ import java.util.concurrent.TimeUnit;
 /**
  *
  */
+@Category(DistributedTest.class)
 public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
 
   /**
@@ -69,14 +79,15 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
   private static final int ALLOWABLE_ERROR_IN_COUNT = 1;
   protected static final long MAX_WAIT = 60000;
 
-  public LocatorLoadBalancingDUnitTest(String name) {
-    super(name);
+  public LocatorLoadBalancingDUnitTest() {
+    super();
   }
 
   /**
    * Test the locator discovers a bridge server and is initialized with
    * the correct load for that bridge server.
    */
+  @Test
   public void testDiscovery() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -112,6 +123,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
    * Test that the locator will properly estimate the load for servers when
    * it receives connection requests.
    */
+  @Test
   public void testEstimation() throws IOException, ClassNotFoundException {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -169,6 +181,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
    *
    * @throws Exception
    */
+  @Test
   public void testLoadMessaging() throws Exception {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -219,6 +232,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
    *
    * @throws Exception
    */
+  @Test
   public void testBalancing() throws Exception {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -284,6 +298,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
    *
    * @throws Exception
    */
+  @Test
   public void testIntersectingServerGroups() throws Exception {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -367,6 +382,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
 
   }
 
+  @Test
   public void testCustomLoadProbe() throws Exception {
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

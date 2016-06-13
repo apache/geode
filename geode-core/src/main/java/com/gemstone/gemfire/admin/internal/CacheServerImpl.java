@@ -22,7 +22,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.internal.admin.GemFireVM;
 import com.gemstone.gemfire.internal.admin.remote.RemoteApplicationVM;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Implements the administrative interface to a cache server.

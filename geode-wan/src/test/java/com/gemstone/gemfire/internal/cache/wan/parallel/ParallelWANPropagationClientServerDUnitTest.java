@@ -16,17 +16,27 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 
 /**
  * 
  */
+@Category(DistributedTest.class)
 public class ParallelWANPropagationClientServerDUnitTest extends WANTestBase {
   private static final long serialVersionUID = 1L;
 
-  public ParallelWANPropagationClientServerDUnitTest(String name) {
-    super(name);
+  public ParallelWANPropagationClientServerDUnitTest() {
+    super();
   }
 
   /**
@@ -34,6 +44,7 @@ public class ParallelWANPropagationClientServerDUnitTest extends WANTestBase {
    * 
    * @throws Exception
    */
+  @Test
   public void testParallelPropagationWithClientServer() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

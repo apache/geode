@@ -16,31 +16,40 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.util.test.TestUtil;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
  * Test for GEODE-396
  */
-public class SSLNoClientAuthDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class SSLNoClientAuthDUnitTest extends JUnit4DistributedTestCase {
   
-  private static final long serialVersionUID = 1L;
   private Cache cache;
   private CacheServer cacheServer;
   private ClientCache clientCache;
@@ -49,16 +58,12 @@ public class SSLNoClientAuthDUnitTest extends DistributedTestCase {
   
   private static final String DEFAULT_STORE = "default.keystore";
   
-  private static SSLNoClientAuthDUnitTest instance = new SSLNoClientAuthDUnitTest("SSLNoClientAuthDUnitTest");
+  private static SSLNoClientAuthDUnitTest instance = new SSLNoClientAuthDUnitTest();
   
   @Override
   public final void preSetUp() throws Exception {
     disconnectAllFromDS();
   }
-
-  public SSLNoClientAuthDUnitTest(String name) {
-    super(name);
-  }  
 
   public Cache createCache(Properties props) throws Exception
   {
@@ -228,6 +233,7 @@ public class SSLNoClientAuthDUnitTest extends DistributedTestCase {
   /**
    * Test for GEODE-396
    */
+  @Test
   public void testSSLServerWithNoAuth() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(1);

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
   import java.io.EOFException;
 import java.io.IOException;
 import java.io.Serializable;
@@ -54,7 +63,10 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
-  public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest extends PRClientServerTestBase {
+
+@Category(DistributedTest.class)
+public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest extends PRClientServerTestBase {
+
     private static final String TEST_FUNCTION7 = TestFunction.TEST_FUNCTION7;
 
     private static final String TEST_FUNCTION2 = TestFunction.TEST_FUNCTION2;
@@ -62,8 +74,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
     
     private static int retryCount = 0;
     
-    public PRClientServerRegionFunctionExecutionSingleHopDUnitTest(String name) {
-      super(name);
+    public PRClientServerRegionFunctionExecutionSingleHopDUnitTest() {
+      super();
     }
 
     @Override
@@ -76,7 +88,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
     /*
      * Execution of the function on server with 
      */
-    public void testServerAllKeyExecution_byInstance(){
+  @Test
+  public void testServerAllKeyExecution_byInstance(){
       createScenario();
       Function function = new TestFunction(true,TEST_FUNCTION2);
       registerFunctionAtServer(function);
@@ -88,7 +101,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
     /*
      * Execution of the function on server with 
      */
-    public void testServerGetAllFunction(){
+  @Test
+  public void testServerGetAllFunction(){
       createScenario();
       client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.getAll());
     }
@@ -96,7 +110,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
     /*
      * Execution of the function on server with 
      */
-    public void testServerPutAllFunction(){
+  @Test
+  public void testServerPutAllFunction(){
       createScenario();
       client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.putAll());
     }    
@@ -104,7 +119,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      * Execution of the function on server with single key as the routing
      * object and using the name of the function
      */   
-    public void testServerSingleKeyExecution_byName() {
+  @Test
+  public void testServerSingleKeyExecution_byName() {
       createScenario();
       Function function = new TestFunction(true,TEST_FUNCTION2);
       registerFunctionAtServer(function);
@@ -118,12 +134,14 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      * of HA then system should retry the function execution. After 5th attempt
      * function will send Boolean as last result.
      */
-    public void testserverSingleKeyExecution_FunctionInvocationTargetException() {
+  @Test
+  public void testserverSingleKeyExecution_FunctionInvocationTargetException() {
       createScenario();
       client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverSingleKeyExecution_FunctionInvocationTargetException());
     }
 
-    public void testServerSingleKeyExecution_SocketTimeOut() {
+  @Test
+  public void testServerSingleKeyExecution_SocketTimeOut() {
       createScenario();
       Function function = new TestFunction(true,
           TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
@@ -143,7 +161,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      * Execution of the function on server with single key as the routing
      * object and using the instance of the function
      */
-    public void testServerSingleKeyExecution_byInstance() {
+  @Test
+  public void testServerSingleKeyExecution_byInstance() {
       createScenario();
       Function function = new TestFunction(true,TEST_FUNCTION2);
       registerFunctionAtServer(function);
@@ -155,7 +174,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      * Execution of the inline function on server with single key as the routing
      * object
      */   
-    public void testServerSingleKeyExecution_byInlineFunction() {
+  @Test
+  public void testServerSingleKeyExecution_byInlineFunction() {
       createScenario();
       client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverSingleKeyExecution_Inline());
     }
@@ -164,7 +184,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      * Execution of the function on server with set multiple keys as the routing
      * object and using the name of the function
      */
-    public void testserverMultiKeyExecution_byName(){
+  @Test
+  public void testserverMultiKeyExecution_byName(){
       createScenario();
       Function function = new TestFunction(true,TEST_FUNCTION2);
       registerFunctionAtServer(function);
@@ -178,7 +199,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
     /*
      * Execution of the function on server with bucket as filter
      */
-    public void testBucketFilter(){
+  @Test
+  public void testBucketFilter(){
       createScenarioForBucketFilter();
       Function function = new TestFunction(true,TestFunction.TEST_FUNCTION_BUCKET_FILTER);
       registerFunctionAtServer(function);
@@ -193,7 +215,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       client.invoke(() -> PRClientServerTestBase.serverBucketFilterExecution(bucketFilterSet));      
     }
     
-    public void testBucketFilterOverride(){
+  @Test
+  public void testBucketFilterOverride(){
       createScenarioForBucketFilter();
       Function function = new TestFunction(true,TestFunction.TEST_FUNCTION_BUCKET_FILTER);
       registerFunctionAtServer(function);
@@ -211,7 +234,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       
     }
     
-    public void testserverMultiKeyExecution_SocektTimeOut(){
+  @Test
+  public void testserverMultiKeyExecution_SocektTimeOut(){
       createScenario();
       Function function = new TestFunction(true,TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
       registerFunctionAtServer(function);
@@ -223,7 +247,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      * Execution of the inline function on server with set multiple keys as the routing
      * object
      */
-    public void testserverMultiKeyExecution_byInlineFunction(){
+  @Test
+  public void testserverMultiKeyExecution_byInlineFunction(){
       createScenario();
       client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.serverMultiKeyExecution_Inline());
     }
@@ -234,7 +259,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      * this is the case of HA then system should retry the function execution.
      * After 5th attempt function will send Boolean as last result.
      */
-    public void testserverMultiKeyExecution_FunctionInvocationTargetException() {
+  @Test
+  public void testserverMultiKeyExecution_FunctionInvocationTargetException() {
       IgnoredException.addIgnoredException("FunctionException: IOException while sending");
       IgnoredException.addIgnoredException("java.net.SocketException: Software caused connection abort");
       createScenario();
@@ -245,7 +271,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      * Execution of the function on server with set multiple keys as the routing
      * object and using the name of the function
      */
-    public void testserverMultiKeyExecutionNoResult_byName(){
+  @Test
+  public void testserverMultiKeyExecutionNoResult_byName(){
       IgnoredException.addIgnoredException("Cannot send result");
       createScenario();
       Function function = new TestFunction(false,TEST_FUNCTION7);
@@ -258,7 +285,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      * Execution of the function on server with set multiple keys as the routing
      * object and using the instance of the function
      */
-    public void testserverMultiKeyExecution_byInstance(){
+  @Test
+  public void testserverMultiKeyExecution_byInstance(){
       createScenario();
       Function function = new TestFunction(true,TEST_FUNCTION2);
       registerFunctionAtServer(function);
@@ -271,7 +299,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      * that the routing logic works correctly such that there is not extra
      * execution
      */
-    public void testserverMultiKeyExecutionOnASingleBucket_byName(){
+  @Test
+  public void testserverMultiKeyExecutionOnASingleBucket_byName(){
       createScenario();
       Function function = new TestFunction(true,TEST_FUNCTION2);
       registerFunctionAtServer(function);
@@ -284,7 +313,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      * that the routing logic works correctly such that there is not extra
      * execution
      */
-    public void testserverMultiKeyExecutionOnASingleBucket_byInstance(){
+  @Test
+  public void testserverMultiKeyExecutionOnASingleBucket_byInstance(){
       createScenario();
       Function function = new TestFunction(true,TEST_FUNCTION2);
       registerFunctionAtServer(function);
@@ -296,7 +326,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      * Ensure that the while executing the function if the servers is down then 
      * the execution is failover to other available server
      */
-    public void testServerFailoverWithTwoServerAliveHA()
+  @Test
+  public void testServerFailoverWithTwoServerAliveHA()
         throws InterruptedException {
       ArrayList commonAttributes = createCommonServerAttributes(
           "TestPartitionedRegion", null, 1, 13, null);
@@ -328,7 +359,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
      * Ensure that the while executing the function if the servers is down then 
      * the execution is failover to other available server
      */
-    public void testServerCacheClosedFailoverWithTwoServerAliveHA() throws InterruptedException{
+  @Test
+  public void testServerCacheClosedFailoverWithTwoServerAliveHA() throws InterruptedException{
       ArrayList commonAttributes = createCommonServerAttributes("TestPartitionedRegion",
           null, 1, 13, null);
       createClientServerScenarion(commonAttributes,20, 20, 20);
@@ -352,7 +384,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
       assertEquals(2, l.size());
     }
 
-    public void testBug40714() {
+  @Test
+  public void testBug40714() {
       createScenario();
       server1.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.registerFunction());
       server1.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest.registerFunction());

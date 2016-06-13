@@ -19,16 +19,14 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
 import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Region.Entry;
@@ -41,12 +39,9 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * This test verifies the flag's on-off switching for
  * boolean flags in AbstractRegionEntry.
  * Currently a byte array is used to maintain two flags.
- * 
- *
  */
 @Category(IntegrationTest.class)
 public class RegionEntryFlagsJUnitTest {
-
 
   @Before
   public void setUp() throws Exception {

@@ -43,7 +43,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static com.gemstone.gemfire.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static com.gemstone.gemfire.management.internal.cli.CliUtil.getAllNormalMembers;
 import static com.gemstone.gemfire.management.internal.cli.i18n.CliStrings.*;

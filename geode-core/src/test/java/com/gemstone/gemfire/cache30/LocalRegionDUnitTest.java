@@ -16,6 +16,11 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheLoaderException;
@@ -27,20 +32,18 @@ import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.TimeoutException;
 import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests the functionality of a {@link Scope#LOCAL locally scoped}
  * cache {@link Region} including its callbacks.  Note that even
- * though this test is a {@link com.gemstone.gemfire.test.dunit.DistributedTestCase}, it does
+ * though this test is a dunit test, it does
  * not perform any distribution.
  *
  * @since GemFire 3.0
  */
+@Category(DistributedTest.class)
 public class LocalRegionDUnitTest extends CacheListenerTestCase {
-
-  public LocalRegionDUnitTest(String name) {
-    super(name);
-  }
 
   /**
    * Returns the attributes of a region to be tested.
@@ -60,6 +63,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
    *
    * @see Region#createSubregion
    */
+  @Test
   public void testIncompatibleSubregions() throws CacheException {
     Region region = createRegion(this.getUniqueName());
     assertEquals(Scope.LOCAL, region.getAttributes().getScope());
@@ -110,6 +114,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
    * invokes {@link LoaderHelper#netSearch}, a {@link
    * CacheLoaderException} is thrown.
    */
+  @Test
   public void testLocalLoaderNetSearch() throws CacheException {
     assertEquals(Scope.LOCAL, getRegionAttributes().getScope());
 
@@ -155,6 +160,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
    * Tests that a local writer receives a modified version of the
    * callback argument on a create.
    */
+  @Test
   public void testLocalCreateModifiedCallbackArgument()
     throws CacheException {
 
@@ -202,6 +208,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
    * Tests that a local writer receives a modified version of the
    * callback argument on an update.
    */
+  @Test
   public void testLocalUpdateModifiedCallbackArgument()
     throws CacheException {
 

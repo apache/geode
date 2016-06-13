@@ -16,26 +16,44 @@
  */
 package com.gemstone.gemfire.internal.jta.dunit;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.junit.Assert.*;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.jta.CacheUtils;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.util.test.TestUtil;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-import java.io.*;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-public class IdleTimeOutDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
 
   static DistributedSystem ds;
   static Cache cache;
@@ -58,8 +76,8 @@ public class IdleTimeOutDUnitTest extends DistributedTestCase {
     return sb.toString();
   }
 
-  public IdleTimeOutDUnitTest(String name) {
-    super(name);
+  public IdleTimeOutDUnitTest() {
+    super();
   }
 
   private static String modifyFile(String str) throws IOException {
@@ -131,10 +149,10 @@ public class IdleTimeOutDUnitTest extends DistributedTestCase {
     wr.close();
     props.setProperty(CACHE_XML_FILE, path);
     String tableName = "";
-    //	        props.setProperty(DistributionConfig.DistributedSystemConfigProperties.MCAST_PORT, "10339");
+    //	        props.setProperty(DistributionConfig.ConfigurationProperties.MCAST_PORT, "10339");
     try {
       //	  	      ds = DistributedSystem.connect(props);
-      ds = (new IdleTimeOutDUnitTest("temp")).getSystem(props);
+      ds = (new IdleTimeOutDUnitTest()).getSystem(props);
       cache = CacheFactory.create(ds);
       if (className != null && !className.equals("")) {
         String time = new Long(System.currentTimeMillis()).toString();
@@ -248,6 +266,7 @@ public class IdleTimeOutDUnitTest extends DistributedTestCase {
     vm0.invoke(() -> IdleTimeOutDUnitTest.closeCache());
   }
 
+  @Test
   public void testIdleTimeOut() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

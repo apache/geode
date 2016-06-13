@@ -32,6 +32,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 /**
  * Provides an implementation of <code>DistributionConfig</code> that
  * knows how to read the configuration file.

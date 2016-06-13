@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
@@ -33,12 +35,12 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  *
  */
-public abstract class LocatorTestBase extends DistributedTestCase {
+public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
   protected static final String CACHE_KEY = "CACHE";
   protected static final String LOCATOR_KEY = "LOCATOR";
   protected static final String REGION_NAME = "A_REGION";
@@ -50,8 +52,8 @@ public abstract class LocatorTestBase extends DistributedTestCase {
    */
   protected static final HashMap remoteObjects = new HashMap();
 
-  public LocatorTestBase(String name) {
-    super(name);
+  public LocatorTestBase() {
+    super();
   }
 
   @Override

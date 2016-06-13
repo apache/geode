@@ -20,6 +20,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,14 +45,15 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * @since GemFire 6.0
  */
+@Category(DistributedTest.class)
 public class PartitionedRegionMembershipListenerDUnitTest extends
     RegionMembershipListenerDUnitTest {
   
   private transient MyRML myPRListener;
   private transient Region prr; // root region
 
-  public PartitionedRegionMembershipListenerDUnitTest(String name) {
-    super(name);
+  public PartitionedRegionMembershipListenerDUnitTest() {
+    super();
   }
 
   @Override

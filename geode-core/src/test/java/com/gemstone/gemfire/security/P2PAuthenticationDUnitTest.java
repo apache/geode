@@ -18,8 +18,8 @@
  */
 package com.gemstone.gemfire.security;
 
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
@@ -43,7 +43,7 @@ import org.junit.experimental.categories.Category;
 import javax.net.ssl.SSLHandshakeException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static com.gemstone.gemfire.internal.AvailablePort.SOCKET;
 import static com.gemstone.gemfire.internal.AvailablePort.getRandomAvailablePort;
 import static com.gemstone.gemfire.security.SecurityTestUtils.startLocator;
@@ -92,9 +92,9 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "26753");
-    props.setProperty(DistributedSystemConfigProperties.LOCATORS, getIPLiteral() + "[" + port + "]");
-    props.setProperty(DistributedSystemConfigProperties.SECURITY_PEER_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create");
-    props.setProperty(DistributedSystemConfigProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
+    props.setProperty(ConfigurationProperties.LOCATORS, getIPLiteral() + "[" + port + "]");
+    props.setProperty(ConfigurationProperties.SECURITY_PEER_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create");
+    props.setProperty(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
 
     try {
       Locator.startLocatorAndDS(port, null, null, props);

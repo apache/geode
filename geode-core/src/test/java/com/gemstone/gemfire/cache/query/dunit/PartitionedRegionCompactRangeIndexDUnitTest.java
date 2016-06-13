@@ -16,16 +16,8 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.QueryTestUtils;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-import com.gemstone.gemfire.test.dunit.*;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.util.test.TestUtil;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.HashMap;
@@ -33,14 +25,25 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.query.Query;
+import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.cache.query.QueryTestUtils;
+import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.data.Portfolio;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.util.test.TestUtil;
 
 @Category(DistributedTest.class)
-public class PartitionedRegionCompactRangeIndexDUnitTest extends DistributedTestCase {
-
-  public PartitionedRegionCompactRangeIndexDUnitTest(String name) {
-    super(name);
-  }
+public class PartitionedRegionCompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
 
   private Properties getSystemProperties(String cacheXML) {
     Properties props = new Properties();

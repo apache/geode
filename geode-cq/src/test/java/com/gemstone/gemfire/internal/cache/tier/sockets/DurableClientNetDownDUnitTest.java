@@ -16,62 +16,69 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Class <code>DurableClientCrashDUnitTest</code> tests durable client
  * functionality when clients are disconnected from servers.
  * 
- * 
  * @since GemFire 5.2
  */
+@Category(DistributedTest.class)
 public class DurableClientNetDownDUnitTest extends DurableClientCrashDUnitTest {
 
-  public DurableClientNetDownDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   protected final void preTearDownDurableClientTestCase() throws Exception {
     //ensure that the test flag is no longer set in this vm
     this.durableClientVM.invoke(() -> CacheServerTestUtil.reconnectClient());
   }
 
-  public void setPrimaryRecoveryCheck() {}
-  
-  public void checkPrimaryRecovery() {}
-  
-  public void configureClientStop1() {}
-  
-  public void configureClientStop2() {}
-  
-  public void closeDurableClient()
-  {
+  @Override
+  public void setPrimaryRecoveryCheck() {
+  }
+
+  @Override
+  public void checkPrimaryRecovery() {
+  }
+
+  @Override
+  public void configureClientStop1() {
+  }
+
+  @Override
+  public void configureClientStop2() {
+  }
+
+  @Override
+  public void closeDurableClient() {
     this.durableClientVM.invoke(() -> CacheServerTestUtil.reconnectClient());
     this.durableClientVM.invoke(() -> CacheServerTestUtil.closeCache());
   }
-  
-  public void disconnectDurableClient()
-  {
+
+  @Override
+  public void disconnectDurableClient() {
     this.durableClientVM.invoke(() -> CacheServerTestUtil.disconnectClient());
   }
 
-  public void disconnectDurableClient(boolean keepAlive)
-  {
+  @Override
+  public void disconnectDurableClient(boolean keepAlive) {
     this.disconnectDurableClient();
   }
-  
-  public void restartDurableClient(Object[] args)
-  {
+
+  @Override
+  public void restartDurableClient(Object[] args) {
     this.durableClientVM.invoke(() -> CacheServerTestUtil.reconnectClient());  
   }
-  
-  public void verifyListenerUpdatesDisconnected(int numberOfEntries)
-  {
+
+  @Override
+  public void verifyListenerUpdatesDisconnected(int numberOfEntries) {
     this.verifyListenerUpdates(numberOfEntries);
   }
 
-  public void verifyListenerUpdates(int numEntries, int numEntriesBeforeDisconnect)
-  {
+  @Override
+  public void verifyListenerUpdates(int numEntries, int numEntriesBeforeDisconnect) {
     this.verifyListenerUpdatesEntries(numEntries, numEntriesBeforeDisconnect);
   }
   

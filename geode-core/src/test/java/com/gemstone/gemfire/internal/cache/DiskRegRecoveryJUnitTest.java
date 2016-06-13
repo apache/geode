@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -25,12 +27,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
 
 import com.gemstone.gemfire.cache.DiskStore;
 import com.gemstone.gemfire.cache.EntryNotFoundException;
@@ -45,33 +43,24 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * @since GemFire 5.1
  */
 @Category(IntegrationTest.class)
-public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
-{
-  DiskRegionProperties diskProps = new DiskRegionProperties();
-  
+public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
+
   private static int EMPTY_RVV_SIZE = 6;
-
-//  private static final boolean debug = false;
-
-  @Before
-  public void setUp() throws Exception
-  {
-    super.setUp();
-    diskProps.setDiskDirs(dirs);
-  }
-
-  @After
-  public void tearDown() throws Exception
-  {
-    super.tearDown();
-  }
-
   private static int ENTRY_SIZE = 1024;
 
   private static boolean oplogsIDsNotifiedToRoll;
+
+  private boolean proceedWithRolling;
+  private boolean rollingDone;
+  private boolean verifiedOplogs;
+  private final Object verifiedSync = new Object();
+
+  private DiskRegionProperties diskProps = new DiskRegionProperties();
   
-  boolean proceedWithRolling, rollingDone, verifiedOplogs;
-  final Object verifiedSync = new Object();
+  @Override
+  protected final void postSetUp() throws Exception {
+    diskProps.setDiskDirs(dirs);
+  }
 
   /**
    * Disk region recovery test for Persist only with sync writes. Test has four
@@ -82,11 +71,9 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
    * 1. Get and verify the entries put in STEP 1 and STEP 2. STEP 4: Create
    * cache. Create Region with the same name as that of in STEP 1. Get and
    * verify the entries put in STEP 1 and STEP 2.
-   * 
    */
   @Test
-  public void testDiskRegRecovery()
-  {
+  public void testDiskRegRecovery() {
     /**
      * STEP 1
      */
@@ -310,21 +297,18 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
     getByteArrValZeroLnth("119", region);
 
     closeDown();  // closes disk file which will flush all buffers
-
   }
 
-/**
+  /**
    * Disk region recovery test for Persist only with sync writes. Test has four
    * steps : STEP 1: Create cache. Create Region. Put entries. Close cache. STEP
    * 2: Create cache. Create Region with the same name as that of in STEP 1. Delete some entries.
    * Close the Cache   * 
    * 3: Again Create cache. Create Region with the same name as that of in STEP
    * 4) Verify that the entries got deleted
-   * 
    */
   @Test
-  public void testBug39989_1()
-  {
+  public void testBug39989_1() {
     /**
      * STEP 1
      */
@@ -409,9 +393,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
     }   
 
     closeDown();  // closes disk file which will flush all buffers
-
   }
-  
 
   /**
    * Disk region recovery test for Persist only with sync writes. Test has four
@@ -421,11 +403,9 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
    * Close the Cache   * 
    * 3: Again Create cache.
    * 4) check if the region creation is successful
-   * 
    */
   @Test
-  public void testBug39989_2()
-  {
+  public void testBug39989_2() {
     /**
      * STEP 1
      */
@@ -516,16 +496,12 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
     }   
 
     closeDown();  // closes disk file which will flush all buffers
-
   }
 
   /**
    * To validate the get operation performed on a byte array.
-   *  
    */
-
-  private void getByteArrVal(String key, Region region)
-  {
+  private void getByteArrVal(String key, Region region) {
     byte[] val = (byte[])region.get(key);
     //verify that the retrieved byte[] equals to the value put initially.
     // val should be an unitialized array of bytes of length 1024
@@ -537,10 +513,8 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
 
   /**
    * to validate the get operation performed on a byte array of length zero
-   *  
    */
-  private boolean getByteArrValZeroLnth(String key, Region region)
-  {
+  private boolean getByteArrValZeroLnth(String key, Region region) {
     Object val0 = null;
     byte[] val2 = new byte[0];
     try {
@@ -567,14 +541,12 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
     return result;
   }
 
-  public void verifyOplogSizeZeroAfterRecovery(Region region)
-  {
+  private void verifyOplogSizeZeroAfterRecovery(Region region) {
     assertEquals(Oplog.OPLOG_MAGIC_SEQ_REC_SIZE*2 + Oplog.OPLOG_DISK_STORE_REC_SIZE*2 + EMPTY_RVV_SIZE + Oplog.OPLOG_GEMFIRE_VERSION_REC_SIZE*2, ((LocalRegion)region).getDiskRegion().testHook_getChild().getOplogSize());
   }
 
   @Test
-  public void testNoEvictionDuringRecoveryIfNoGIIRecoverValuesTrue()
-  {
+  public void testNoEvictionDuringRecoveryIfNoGIIRecoverValuesTrue() {
     String oldValue = System.getProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
     System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "true");
     try {
@@ -628,8 +600,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
   }
 
   @Test
-  public void testNoEvictionDuringRecoveryIfNoGIIRecoverValuesFalse()
-  {
+  public void testNoEvictionDuringRecoveryIfNoGIIRecoverValuesFalse() {
     String oldValue = System.getProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
     System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "false");
     try {
@@ -688,8 +659,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
   }
 
   @Test
-  public void testEmptyRegionRecover()
-  {
+  public void testEmptyRegionRecover() {
     diskProps.setDiskDirs(dirs);
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
     Assert.assertTrue(region.size() == 0);
@@ -714,8 +684,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
   }
 
   @Test
-  public void testReadCorruptedFile()
-  {
+  public void testReadCorruptedFile() {
     diskProps.setDiskDirs(dirs);
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
 
@@ -765,8 +734,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
   }
   
   @Test
-  public void testForceCompactionForRegionWithRollingDisabled()
-      throws Exception {
+  public void testForceCompactionForRegionWithRollingDisabled() throws Exception {
     diskProps.setDiskDirs(dirs);
     diskProps.setMaxOplogSize(2048+(18*2)+15*7);
     diskProps.setRolling(false);
@@ -837,12 +805,9 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
    * leaves it in created set & so when the compactor processes the created Set it 
    * thinks that the entry is now referenced in the any of the subsequent oplogs & thus
    * overwrites it with a byte[].
-   * @throws Exception
    */
-  
   @Test
-  public void testVestigialCreatesInOplog() throws Exception
-  {
+  public void testVestigialCreatesInOplog() throws Exception {
     diskProps.setDiskDirs(dirs);
     diskProps.setMaxOplogSize(40);
     diskProps.setPersistBackup(true);
@@ -907,9 +872,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
   }
   
   @Test
-  public void testDiskIDFieldsForPersistOnlyRecoverValuesTrue()
-      throws Exception
-  {
+  public void testDiskIDFieldsForPersistOnlyRecoverValuesTrue() throws Exception {
     String oldValue = System.getProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
     System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "true");
     try {
@@ -985,13 +948,10 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
         System.clearProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
       }
     }
-
   }
   
   @Test
-  public void testDiskIDFieldsForPersistOverFlowRecoverValuesTrue()
-      throws Exception
-  {
+  public void testDiskIDFieldsForPersistOverFlowRecoverValuesTrue() throws Exception {
     String oldValue = System.getProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
     System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "true");
     try {
@@ -1067,8 +1027,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
   }
   
   @Test
-  public void testDiskIDFieldsForPersistOnlyRecoverValuesFalse()
-      throws Exception {
+  public void testDiskIDFieldsForPersistOnlyRecoverValuesFalse() throws Exception {
     String oldValue = System.getProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
     System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "false");
     try {
@@ -1145,8 +1104,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
   }
  
   @Test
-  public void testDiskIDFieldsForPersistOverFlowRecoverValuesFalse()
-      throws Exception {
+  public void testDiskIDFieldsForPersistOverFlowRecoverValuesFalse() throws Exception {
     String oldValue = System.getProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
     System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "false");
     try {
@@ -1224,7 +1182,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
 
   @Test
   public void testBug40375() throws Exception {
-      try {
+    try {
       diskProps.setDiskDirs(dirs);
       diskProps.setPersistBackup(true);
       diskProps.setSynchronous(true);
@@ -1249,66 +1207,65 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
       assertEquals(4, region.size());
       region.close();
-      }finally {
-
+    } finally {
       System.setProperty(DiskStoreImpl.COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME,"");
-        }
+    }
   }
      
   @Test
   public void testBug41340() throws Exception {
-       diskProps.setDiskDirs(dirs);
-       diskProps.setPersistBackup(true);
-       diskProps.setSynchronous(true);
-       diskProps.setRolling(true);
-       diskProps.setRegionName("testBug41340");
-       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
-       assertEquals(0, region.size());
-       //put some entries
-       region.put("0","0");
-       region.put("1","1");
-       region.put("2","2");
-       region.put("3","3");
-       
-       
-       //Create another oplog
-       DiskStore store = cache.findDiskStore(region.getAttributes().getDiskStoreName());
-       store.forceRoll();
-       
-       //Now create and destroy all of the entries in the new
-       //oplog. This should cause us to remove the CRF but leave
-       //the DRF, which has creates in reverse order. Now we have
-       //garbage destroys which have higher IDs than any crate
-       region.put("4","1");
-       region.put("5","2");
-       region.put("6","3");
-       region.destroy("0");
-       region.destroy("6");
-       region.destroy("5");
-       region.destroy("4");
-       
-       store.forceRoll();
-       
-       //Force a recovery
-       GemFireCacheImpl.getInstance().close();
-       cache = createCache();
-       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
-       assertEquals(3, region.size());
-       
-       //With bug 41340, this is reusing an oplog id.
-       region.put("7","7");
+     diskProps.setDiskDirs(dirs);
+     diskProps.setPersistBackup(true);
+     diskProps.setSynchronous(true);
+     diskProps.setRolling(true);
+     diskProps.setRegionName("testBug41340");
+     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
+     assertEquals(0, region.size());
+     //put some entries
+     region.put("0","0");
+     region.put("1","1");
+     region.put("2","2");
+     region.put("3","3");
+
+
+     //Create another oplog
+     DiskStore store = cache.findDiskStore(region.getAttributes().getDiskStoreName());
+     store.forceRoll();
+
+     //Now create and destroy all of the entries in the new
+     //oplog. This should cause us to remove the CRF but leave
+     //the DRF, which has creates in reverse order. Now we have
+     //garbage destroys which have higher IDs than any crate
+     region.put("4","1");
+     region.put("5","2");
+     region.put("6","3");
+     region.destroy("0");
+     region.destroy("6");
+     region.destroy("5");
+     region.destroy("4");
+
+     store.forceRoll();
+
+     //Force a recovery
+     GemFireCacheImpl.getInstance().close();
+     cache = createCache();
+     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
+     assertEquals(3, region.size());
+
+     //With bug 41340, this is reusing an oplog id.
+     region.put("7","7");
 //       region.close();
-       
-       //Force another recovery
-       GemFireCacheImpl.getInstance().close();
-       cache = createCache();
-       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
-       
-       //Make sure we didn't lose the entry
-       assertEquals(4, region.size());
-       assertEquals("7", region.get("7"));
-       region.close();
-     }
+
+     //Force another recovery
+     GemFireCacheImpl.getInstance().close();
+     cache = createCache();
+     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
+
+     //Make sure we didn't lose the entry
+     assertEquals(4, region.size());
+     assertEquals("7", region.get("7"));
+     region.close();
+   }
   
   @Test
   public void testRecoverValuesFalse() {

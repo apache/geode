@@ -19,6 +19,15 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Collection;
 import java.util.Map;
 
@@ -54,17 +63,19 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  *
  */
-public class IndexTrackingQueryObserverDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
 
   private final int NUM_BKTS = 10;
   private static final String queryStr = "select * from /portfolio where ID >= 0";
   protected static final int TOTAL_OBJECTS = 1000;
   public static final String INDEX_NAME = "keyIndex1"; 
 
-  public IndexTrackingQueryObserverDUnitTest(String name) {
-    super(name);
+  public IndexTrackingQueryObserverDUnitTest() {
+    super();
   }
   
+  @Test
   public void testNothing() {
     
   }

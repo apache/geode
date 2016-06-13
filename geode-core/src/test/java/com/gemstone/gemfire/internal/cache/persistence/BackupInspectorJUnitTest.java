@@ -35,14 +35,7 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
  * TODO: fails when running integrationTest from gradle command-line on Windows 7
- * 
-com.gemstone.gemfire.internal.cache.DiskRegionJUnitTest > testAssertionErrorIfMissingOplog FAILED
-    junit.framework.AssertionFailedError
-        at junit.framework.Assert.fail(Assert.java:55)
-        at junit.framework.Assert.assertTrue(Assert.java:22)
-        at junit.framework.Assert.assertTrue(Assert.java:31)
-        at com.gemstone.gemfire.internal.cache.DiskRegionJUnitTest.testAssertionErrorIfMissingOplog(DiskRegionJUnitTest.java:2630)
- * 
+ *
  * Tests for the BackupInspector.
  */
 @Category(IntegrationTest.class)

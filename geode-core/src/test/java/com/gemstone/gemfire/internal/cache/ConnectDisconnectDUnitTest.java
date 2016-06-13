@@ -16,29 +16,31 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.test.dunit.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /** A test of 46438 - missing response to an update attributes message */
-public class ConnectDisconnectDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class ConnectDisconnectDUnitTest extends JUnit4CacheTestCase {
   
-  static {
-//    System.setProperty("DistributionManager.VERBOSE", "true");
-  }
-
-
   private IgnoredException ex;
 
-  public ConnectDisconnectDUnitTest(String name) {
-    super(name);
-  }
-  
-  
-  // see bugs #50785 and #46438 
+  // see bugs #50785 and #46438
+  @Test
   public void testManyConnectsAndDisconnects() throws Throwable {
 //    invokeInEveryVM(new SerializableRunnable() {
 //
@@ -63,7 +65,7 @@ public class ConnectDisconnectDUnitTest extends CacheTestCase {
   
   static int LOCATOR_PORT;
   static String LOCATORS_STRING;
-  
+
   static int[] locatorPorts;
   
   public void setLocatorPorts(int[] ports) {

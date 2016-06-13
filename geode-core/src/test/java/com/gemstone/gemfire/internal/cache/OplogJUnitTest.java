@@ -16,12 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,10 +31,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 
+import com.jayway.awaitility.Awaitility;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -62,13 +57,13 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import com.jayway.awaitility.Awaitility;
 
 /**
  * Testing Oplog API's
  */
 @Category(IntegrationTest.class)
 public class OplogJUnitTest extends DiskRegionTestingBase {
+
   boolean proceed = false;
 
   private final DiskRegionProperties diskProps = new DiskRegionProperties();
@@ -117,17 +112,13 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   protected volatile Thread rollerThread = null;
 
   @Override
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
+  protected final void postSetUp() throws Exception {
     diskProps.setDiskDirs(dirs);
     DiskStoreImpl.SET_IGNORE_PREALLOCATE = true;
   }
 
   @Override
-  @After
-  public void tearDown() throws Exception {
-    super.tearDown();
+  protected final void postTearDown() throws Exception {
     DiskStoreImpl.SET_IGNORE_PREALLOCATE = false;
   }
 
@@ -2297,10 +2288,10 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   /**
    * Tests if buffer size is set but time is not set , the asynch writer gets
    * awakened on buffer size basis
-   *
    */
-  public void DARREL_DISABLE_testAsynchWriterAttribBehaviour2()
-  {
+  @Ignore("TODO:DARREL_DISABLE: test is disabled")
+  @Test
+  public void testAsynchWriterAttribBehaviour2() {
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     ((DiskStoreFactoryImpl)dsf).setMaxOplogSizeInBytes(10000);
     dsf.setQueueSize(2);
@@ -2449,8 +2440,9 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
    */
   //Now we preallocate spaces for if files and also crfs and drfs. So the below test is not valid
   // any more. See revision: r42359 and r42320. So disabling this test.
-  public void _testPreblowErrorCondition()
-  {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testPreblowErrorCondition() {
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     ((DiskStoreFactoryImpl)dsf).setMaxOplogSizeInBytes(100000000L * 1024L * 1024L * 1024L);
     dsf.setAutoCompact(false);

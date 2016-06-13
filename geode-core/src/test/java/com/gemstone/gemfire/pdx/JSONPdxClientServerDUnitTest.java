@@ -16,15 +16,33 @@
  */
 package com.gemstone.gemfire.pdx;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Properties;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gemstone.gemfire.cache.*;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.internal.Assert;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
@@ -33,26 +51,13 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.util.test.TestUtil;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Properties;
+@Category(DistributedTest.class)
+public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-/**
- *
- */
-public class JSONPdxClientServerDUnitTest extends CacheTestCase {
-
-  public JSONPdxClientServerDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public final void preTearDownCacheTestCase() {
     // this test creates client caches in some VMs and so
@@ -61,6 +66,7 @@ public class JSONPdxClientServerDUnitTest extends CacheTestCase {
     disconnectAllFromDS();
   }
 
+  @Test
   public void testSimplePut() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -90,6 +96,7 @@ public class JSONPdxClientServerDUnitTest extends CacheTestCase {
   }
   
   //this is for unquote fielnames in json string
+  @Test
   public void testSimplePut2() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -112,6 +119,7 @@ public class JSONPdxClientServerDUnitTest extends CacheTestCase {
      
   }
   
+  @Test
   public void testPdxInstanceAndJSONConversion() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -153,43 +161,43 @@ public class JSONPdxClientServerDUnitTest extends CacheTestCase {
         
         //Testcase-1: Validate json string against the pdxInstance.
         //validation for primitive types
-        junit.framework.Assert.assertEquals("VerifyPdxInstanceToJson: Int type values are not matched",
+        assertEquals("VerifyPdxInstanceToJson: Int type values are not matched",
             testObject.getP_int(), jsonObject.getInt(testObject.getP_intFN()));
-        junit.framework.Assert.assertEquals("VerifyPdxInstanceToJson: long type values are not matched",
+        assertEquals("VerifyPdxInstanceToJson: long type values are not matched",
             testObject.getP_long(), jsonObject.getLong(testObject.getP_longFN()));
         
         //validation for wrapper types
-        junit.framework.Assert.assertEquals("VerifyPdxInstanceToJson: Boolean type values are not matched",
+        assertEquals("VerifyPdxInstanceToJson: Boolean type values are not matched",
             testObject.getW_bool().booleanValue(), jsonObject.getBoolean(testObject.getW_boolFN()));
-        junit.framework.Assert.assertEquals("VerifyPdxInstanceToJson: Float type values are not matched",
-            testObject.getW_double().doubleValue(), jsonObject.getDouble(testObject.getW_doubleFN()));
-        junit.framework.Assert.assertEquals("VerifyPdxInstanceToJson: bigDec type values are not matched",
+        assertEquals("VerifyPdxInstanceToJson: Float type values are not matched",
+            testObject.getW_double().doubleValue(), jsonObject.getDouble(testObject.getW_doubleFN()), 0);
+        assertEquals("VerifyPdxInstanceToJson: bigDec type values are not matched",
             testObject.getW_bigDec().longValue(), jsonObject.getLong(testObject.getW_bigDecFN()));
         
         //vlidation for array types
-        junit.framework.Assert.assertEquals("VerifyPdxInstanceToJson: Byte[] type values are not matched",
+        assertEquals("VerifyPdxInstanceToJson: Byte[] type values are not matched",
             (int)testObject.getW_byteArray()[1], jsonObject.getJSONArray(testObject.getW_byteArrayFN()).getInt(1));
-        junit.framework.Assert.assertEquals("VerifyPdxInstanceToJson: Double[] type values are not matched",
-            testObject.getW_doubleArray()[0], jsonObject.getJSONArray(testObject.getW_doubleArrayFN()).getDouble(0));
-        junit.framework.Assert.assertEquals("VerifyPdxInstanceToJson: String[] type values are not matched",
+        assertEquals("VerifyPdxInstanceToJson: Double[] type values are not matched",
+            testObject.getW_doubleArray()[0], jsonObject.getJSONArray(testObject.getW_doubleArrayFN()).getDouble(0), 0);
+        assertEquals("VerifyPdxInstanceToJson: String[] type values are not matched",
             testObject.getW_strArray()[2], jsonObject.getJSONArray(testObject.getW_strArrayFN()).getString(2));
         
         //validation for collection types
-        junit.framework.Assert.assertEquals("VerifyPdxInstanceToJson: list type values are not matched", 
+        assertEquals("VerifyPdxInstanceToJson: list type values are not matched", 
             testObject.getC_list().get(0), 
             jsonObject.getJSONArray(testObject.getC_listFN()).getString(0));
         
-        junit.framework.Assert.assertEquals("VerifyPdxInstanceToJson: stack type values are not matched", 
+        assertEquals("VerifyPdxInstanceToJson: stack type values are not matched", 
             testObject.getC_stack().get(2), 
             jsonObject.getJSONArray(testObject.getC_stackFN()).getString(2));
         
         //validation for Map
-        junit.framework.Assert.assertEquals("VerifyPdxInstanceToJson: Map type values are not matched", 
+        assertEquals("VerifyPdxInstanceToJson: Map type values are not matched", 
             testObject.getM_empByCity().get("Ahmedabad").get(0).getFname(), 
             jsonObject.getJSONObject(testObject.getM_empByCityFN()).getJSONArray("Ahmedabad").getJSONObject(0).getString("fname"));
         
         //validation Enum
-        junit.framework.Assert.assertEquals("VerifyPdxInstanceToJson: Enum type values are not matched", 
+        assertEquals("VerifyPdxInstanceToJson: Enum type values are not matched", 
             testObject.getDay().toString(), 
             jsonObject.getString(testObject.getDayFN()));       
       } catch (JSONException e) {
@@ -323,11 +331,11 @@ public class JSONPdxClientServerDUnitTest extends CacheTestCase {
     
     String o1 = jsonParse(jd.getJsonString());
     String o2 = jsonParse(getJsonString);
-    junit.framework.Assert.assertEquals("Json Strings are not equal " + jd.getFileName() + " " +  Boolean.getBoolean("pdxToJson.unqouteFieldNames"), o1, o2);
+    assertEquals("Json Strings are not equal " + jd.getFileName() + " " +  Boolean.getBoolean("pdxToJson.unqouteFieldNames"), o1, o2);
   
     PdxInstance pdx2 = JSONFormatter.fromJSON(getJsonString);
     
-    junit.framework.Assert.assertEquals("Pdx are not equal; json filename " + jd.getFileName(), pdx, pdx2);    
+    assertEquals("Pdx are not equal; json filename " + jd.getFileName(), pdx, pdx2);    
   }  
   
   protected final static int INT_TAB = '\t';
@@ -367,13 +375,12 @@ public class JSONPdxClientServerDUnitTest extends CacheTestCase {
     byte[] o1 = jsonParse(jd.getJsonByteArray());
     byte[] o2 = jsonParse(jsonByteArray);
     
-   // junit.framework.Assert.assertIndexDetailsEquals("Pdx byte aray are not equal after fetching from cache " + jd.getFileName(), o1, o2);
    compareByteArray(o1, o2);
     
     PdxInstance pdx2 = JSONFormatter.fromJSON(jsonByteArray);
     boolean pdxequals = pdx.equals(pdx2);
     
-    junit.framework.Assert.assertEquals("Pdx are not equal for byte array ; json filename " + jd.getFileName(), pdx, pdx2 );    
+    assertEquals("Pdx are not equal for byte array ; json filename " + jd.getFileName(), pdx, pdx2 );    
   }  
   public void compareByteArray(byte[] b1, byte[] b2) {
     if(b1.length != b2.length) 

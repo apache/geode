@@ -36,7 +36,7 @@ import org.junit.rules.TestName;
 import javax.transaction.Synchronization;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.*;
 
 /**

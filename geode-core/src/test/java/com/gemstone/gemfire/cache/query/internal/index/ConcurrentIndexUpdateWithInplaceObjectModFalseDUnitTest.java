@@ -19,7 +19,18 @@
  */
 package com.gemstone.gemfire.cache.query.internal.index;
 
-import com.gemstone.gemfire.cache.*;
+import static org.junit.Assert.*;
+
+import java.util.Collection;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheExistsException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.Index;
 import com.gemstone.gemfire.cache.query.IndexStatistics;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
@@ -31,13 +42,24 @@ import com.gemstone.gemfire.cache.query.partitioned.PRQueryDUnitHelper;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.cache.*;
+import com.gemstone.gemfire.internal.cache.CachedDeserializable;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.RegionEntry;
+import com.gemstone.gemfire.internal.cache.Token;
 import com.gemstone.gemfire.internal.cache.persistence.query.CloseableIterator;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
-
-import java.util.Collection;
 
 /**
  * This test is similar to {@link ConcurrentIndexUpdateWithoutWLDUnitTest} except
@@ -47,7 +69,8 @@ import java.util.Collection;
  * During validation all region operations are paused for a while. Validation
  * happens multiple time during one test run on a fixed time interval.
  */
-public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends JUnit4DistributedTestCase {
   
   PRQueryDUnitHelper helper = new PRQueryDUnitHelper();
   private static String regionName = "Portfolios";
@@ -92,13 +115,6 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends Dis
     }
   }
 
-  /**
-   * @param name
-   */
-  public ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void preSetUp() throws Exception {
     Invoke.invokeInEveryVM(new CacheSerializableRunnable("Set INPLACE_OBJECT_MODIFICATION false") {
@@ -138,6 +154,7 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends Dis
   }
 
   // Tests on Local/Replicated Region
+  @Test
   public void testCompactRangeIndex() {
     // Create a Local Region.
     Host host = Host.getHost(0);
@@ -184,6 +201,7 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends Dis
   }
 
   @Category(FlakyTest.class) // GEODE-431: time sensitive, uses PRQueryDUnitHelper whcih eats exceptions, async actions, uses Random
+  @Test
   public void testRangeIndex() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -212,6 +230,7 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends Dis
   }
 
   // Tests on Partition Region
+  @Test
   public void testCompactRangeIndexOnPR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -275,6 +294,7 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest extends Dis
   }
   
 
+  @Test
   public void testRangeIndexOnPR() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

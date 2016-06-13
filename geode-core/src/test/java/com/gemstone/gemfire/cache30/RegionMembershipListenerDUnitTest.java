@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,7 +57,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  *
  * @since GemFire 5.0
  */
-public class RegionMembershipListenerDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
 
   private transient MyRML myListener;
   private transient MyRML mySRListener;
@@ -56,8 +66,8 @@ public class RegionMembershipListenerDUnitTest extends CacheTestCase {
   private transient Region sr; // subregion
   protected transient DistributedMember otherId;
   
-  public RegionMembershipListenerDUnitTest(String name) {
-    super(name);
+  public RegionMembershipListenerDUnitTest() {
+    super();
   }
   
   @Override
@@ -163,6 +173,7 @@ public class RegionMembershipListenerDUnitTest extends CacheTestCase {
   /**
    * tests {@link RegionMembershipListener#initialMembers}
    */
+  @Test
   public void testInitialMembers() throws CacheException {
     final String rName = getUniqueName();
     initOtherId();
@@ -204,6 +215,7 @@ public class RegionMembershipListenerDUnitTest extends CacheTestCase {
   /**
    * tests {@link RegionMembershipListener#afterRemoteRegionCreate}
    */
+  @Test
   public void testCreate() throws CacheException {
     final String rName = getUniqueName();
     initOtherId();
@@ -237,6 +249,7 @@ public class RegionMembershipListenerDUnitTest extends CacheTestCase {
   /**
    * tests {@link RegionMembershipListener#afterRemoteRegionDeparture}
    */
+  @Test
   public void testDeparture() throws CacheException {
     final String rName = getUniqueName();
     initOtherId();
@@ -281,6 +294,7 @@ public class RegionMembershipListenerDUnitTest extends CacheTestCase {
   /**
    * tests {@link RegionMembershipListener#afterRemoteRegionCrash}
    */
+  @Test
   public void testCrash() throws CacheException {
     final String rName = getUniqueName();
     initOtherId();

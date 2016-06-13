@@ -16,17 +16,8 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DMStats;
-import com.gemstone.gemfire.internal.tcp.Connection;
-import com.gemstone.gemfire.test.dunit.*;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.util.Iterator;
@@ -34,7 +25,32 @@ import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Region.Entry;
+import com.gemstone.gemfire.cache.RegionEvent;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DMStats;
+import com.gemstone.gemfire.internal.tcp.Connection;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Test to make sure slow receiver queuing is working
@@ -43,11 +59,9 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  */
 @Category(DistributedTest.class)
 @Ignore("Test was disabled by renaming to DisabledTest")
-public class SlowRecDUnitTest extends CacheTestCase {
+public class SlowRecDUnitTest extends JUnit4CacheTestCase {
 
-  public SlowRecDUnitTest(String name) {
-    super(name);
-  }
+  protected static Object lastCallback = null;
 
   // this test has special config of its distributed system so
   // the setUp and tearDown methods need to make sure we don't
@@ -63,15 +77,11 @@ public class SlowRecDUnitTest extends CacheTestCase {
   public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
-  
-  //////////////////////  Test Methods  //////////////////////
 
   private VM getOtherVm() {
     Host host = Host.getHost(0);
     return host.getVM(0);
   }
-
-  static protected Object lastCallback = null;
 
   private void doCreateOtherVm(final Properties p, final boolean addListener) {
     VM vm = getOtherVm();
@@ -93,24 +103,20 @@ public class SlowRecDUnitTest extends CacheTestCase {
           } else {
             CacheListener cl = new CacheListenerAdapter() {
                 public void afterCreate(EntryEvent event) {
-//                   getLogWriter().info("afterCreate " + event.getKey());
                   if (event.getCallbackArgument() != null) {
                     lastCallback = event.getCallbackArgument();
                   }
                   if (event.getKey().equals("sleepkey")) {
                     int sleepMs = ((Integer)event.getNewValue()).intValue();
-//                     getLogWriter().info("sleepkey sleeping for " + sleepMs);
                     try {Thread.sleep(sleepMs);} catch (InterruptedException ignore) {fail("interrupted");}
                   }
                 }
                 public void afterUpdate(EntryEvent event) {
-//                   getLogWriter().info("afterUpdate " + event.getKey());
                   if (event.getCallbackArgument() != null) {
                     lastCallback = event.getCallbackArgument();
                   }
                   if (event.getKey().equals("sleepkey")) {
                     int sleepMs = ((Integer)event.getNewValue()).intValue();
-//                     getLogWriter().info("sleepkey sleeping for " + sleepMs);
                     try {Thread.sleep(sleepMs);} catch (InterruptedException ignore) {fail("interrupted");}
                   }
                 }
@@ -133,7 +139,8 @@ public class SlowRecDUnitTest extends CacheTestCase {
         }
       });
   }
-  static protected final String CHECK_INVALID = "CHECK_INVALID";
+
+  protected static final String CHECK_INVALID = "CHECK_INVALID";
   
   private void checkLastValueInOtherVm(final String lastValue, final Object lcb) {
     VM vm = getOtherVm();
@@ -181,8 +188,6 @@ public class SlowRecDUnitTest extends CacheTestCase {
                 }
               };
               Wait.waitForCriterion(ev, 50 * 1000, 200, true);
-//              assertNotNull(re);
-//              assertIndexDetailsEquals(null, value);
             }
           } else {
             {
@@ -243,7 +248,8 @@ public class SlowRecDUnitTest extends CacheTestCase {
    * Make sure that noack puts to a receiver
    * will eventually queue and then catch up.
    */
-  public void testNoAck() throws CacheException {
+  @Test
+  public void testNoAck() throws Exception {
     final AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
     final Region r = createRootRegion("slowrec", factory.create());
@@ -261,7 +267,6 @@ public class SlowRecDUnitTest extends CacheTestCase {
       final Object key = "key";
       long queuedMsgs = stats.getAsyncQueuedMsgs();
       long dequeuedMsgs = stats.getAsyncDequeuedMsgs();
-//      long conflatedMsgs = stats.getAsyncConflatedMsgs();
       long queueSize = stats.getAsyncQueueSize();
       String lastValue = "";
       final long intialQueuedMsgs = queuedMsgs;
@@ -299,6 +304,7 @@ public class SlowRecDUnitTest extends CacheTestCase {
       checkLastValueInOtherVm(lastValue, null);
     }
   }
+
   /**
    * Create a region named AckRegion with ACK scope
    */
@@ -314,11 +320,13 @@ public class SlowRecDUnitTest extends CacheTestCase {
     final Region r = createRootRegion("AckRegion", factory.create());
     return r;
   }
+
   /**
    * Make sure that noack puts to a receiver
    * will eventually queue and then catch up with conflation
    */
-  public void testNoAckConflation() throws CacheException {
+  @Test
+  public void testNoAckConflation() throws Exception {
     final AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
     factory.setEnableAsyncConflation(true);
@@ -333,10 +341,7 @@ public class SlowRecDUnitTest extends CacheTestCase {
     forceQueuing(r);
     final Object key = "key";
     int count = 0;
-//    long queuedMsgs = stats.getAsyncQueuedMsgs();
-//    long dequeuedMsgs = stats.getAsyncDequeuedMsgs();
     final long initialConflatedMsgs = stats.getAsyncConflatedMsgs();
-//    long queueSize = stats.getAsyncQueueSize();
     String lastValue = "";
     final long intialDeQueuedMsgs = stats.getAsyncDequeuedMsgs();
     long start = 0;
@@ -346,46 +351,23 @@ public class SlowRecDUnitTest extends CacheTestCase {
         lastValue = value;
         r.put(key, value);
         count ++;
-        //       getLogWriter().info("After " + count + " "
-        //                           + " puts queueSize=" + queueSize
-        //                           + "    queuedMsgs=" + queuedMsgs
-        //                           + "  dequeuedMsgs=" + dequeuedMsgs
-        //                           + " conflatedMsgs=" + conflatedMsgs);
       }
       start = System.currentTimeMillis();
     } finally {
       forceQueueFlush();
     }
-//     queueSize = stats.getAsyncQueueSize();
-//     queuedMsgs = stats.getAsyncQueuedMsgs();
-
-//     getLogWriter().info("After " + count + " "
-//                         + " puts slowrec mode kicked in by queuing "
-//                         + queuedMsgs + " for a total size of " + queueSize
-//                         + " conflatedMsgs=" + conflatedMsgs
-//                         + " dequeuedMsgs=" + dequeuedMsgs);
-//     final long start = System.currentTimeMillis();
-//     while (stats.getAsyncQueuedMsgs() > stats.getAsyncDequeuedMsgs()) {
-//       try {Thread.sleep(100);} catch (InterruptedException ignore) {}
-//       queueSize = stats.getAsyncQueueSize();
-//       queuedMsgs = stats.getAsyncQueuedMsgs();
-//       dequeuedMsgs = stats.getAsyncDequeuedMsgs();
-//       conflatedMsgs = stats.getAsyncConflatedMsgs();
-//       getLogWriter().info("After sleeping"
-//                           + "     queueSize=" + queueSize
-//                           + "    queuedMsgs=" + queuedMsgs
-//                           + "  dequeuedMsgs=" + dequeuedMsgs
-//                           + " conflatedMsgs=" + conflatedMsgs);
     final long finish = System.currentTimeMillis();
     LogWriterUtils.getLogWriter().info("After " + (finish - start) + " ms async msgs where flushed. A total of " + (stats.getAsyncDequeuedMsgs()-intialDeQueuedMsgs) + " were flushed. Leaving a queue size of " + stats.getAsyncQueueSize() + ". The lastValue was " + lastValue);
     
     checkLastValueInOtherVm(lastValue, null);
   }
+
   /**
    * make sure ack does not hang
    * make sure two ack updates do not conflate but are both queued
    */
-  public void testAckConflation() throws CacheException {
+  @Test
+  public void testAckConflation() throws Exception {
     final AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
     factory.setEnableAsyncConflation(true);
@@ -431,6 +413,7 @@ public class SlowRecDUnitTest extends CacheTestCase {
       assertEquals(startQueuedMsgs+2, endQueuedMsgs);
     }
   }
+
   /**
    * Make sure that only sequences of updates are conflated
    * Also checks that sending to a conflating region and non-conflating region
@@ -438,7 +421,8 @@ public class SlowRecDUnitTest extends CacheTestCase {
    * Test disabled because it intermittently fails due to race conditions
    * in test. This has been fixed in congo's tests. See bug 35357.
    */
-  public void _disabled_testConflationSequence() throws CacheException {
+  @Test
+  public void testConflationSequence() throws Exception {
     final AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
     factory.setEnableAsyncConflation(true);
@@ -473,8 +457,6 @@ public class SlowRecDUnitTest extends CacheTestCase {
     String lastValue = value;
     Object mylcb = null;
     long initialConflatedMsgs = stats.getAsyncConflatedMsgs();
-//    long initialDequeuedMsgs = stats.getAsyncDequeuedMsgs();
-//    long dequeuedMsgs = stats.getAsyncDequeuedMsgs();
     int endCount = count+60;
 
     LogWriterUtils.getLogWriter().info("[testConflationSequence] about to build up queue");
@@ -492,7 +474,6 @@ public class SlowRecDUnitTest extends CacheTestCase {
       r.destroy(key, mylcb);
       count ++;
       lastValue = null;
-//      dequeuedMsgs = stats.getAsyncDequeuedMsgs();
       assertTrue(System.currentTimeMillis() < begin+1000*60*2);
     }
     assertEquals(initialConflatedMsgs, stats.getAsyncConflatedMsgs());
@@ -503,8 +484,6 @@ public class SlowRecDUnitTest extends CacheTestCase {
     LogWriterUtils.getLogWriter().info("[testConflationSequence] force queuing create-update-destroy");
     forceQueuing(r);
     initialConflatedMsgs = stats.getAsyncConflatedMsgs();
-//    initialDequeuedMsgs = stats.getAsyncDequeuedMsgs();
-//    dequeuedMsgs = stats.getAsyncDequeuedMsgs();
     endCount = count + 40;
     
     LogWriterUtils.getLogWriter().info("[testConflationSequence] create-update-destroy");
@@ -519,7 +498,6 @@ public class SlowRecDUnitTest extends CacheTestCase {
       r.put(key, value);
       count ++;
       r.localDestroy(key);
-//      dequeuedMsgs = stats.getAsyncDequeuedMsgs();
       assertTrue(System.currentTimeMillis() < begin+1000*60*2);
     }
     assertEquals(initialConflatedMsgs, stats.getAsyncConflatedMsgs());
@@ -530,12 +508,10 @@ public class SlowRecDUnitTest extends CacheTestCase {
     LogWriterUtils.getLogWriter().info("[testConflationSequence] force queuing update-invalidate");
     forceQueuing(r);
     initialConflatedMsgs = stats.getAsyncConflatedMsgs();
-//    initialDequeuedMsgs = stats.getAsyncDequeuedMsgs();
     value = "count=" + count;
     lastValue = value;
     r.create(key, value);
     count++;
-//    dequeuedMsgs = stats.getAsyncDequeuedMsgs();
     endCount = count + 40;
 
     LogWriterUtils.getLogWriter().info("[testConflationSequence] update-invalidate");
@@ -548,7 +524,6 @@ public class SlowRecDUnitTest extends CacheTestCase {
       r.invalidate(key);
       count ++;
       lastValue = CHECK_INVALID;
-//      dequeuedMsgs = stats.getAsyncDequeuedMsgs();
       assertTrue(System.currentTimeMillis() < begin+1000*60*2);
     }
     assertEquals(initialConflatedMsgs, stats.getAsyncConflatedMsgs());
@@ -563,8 +538,7 @@ public class SlowRecDUnitTest extends CacheTestCase {
     LogWriterUtils.getLogWriter().info("[testConflationSequence] conflate & no-conflate regions");
     forceQueuing(r);
     final int initialAsyncSocketWrites = stats.getAsyncSocketWrites();
-//    initialDequeuedMsgs = stats.getAsyncDequeuedMsgs();
-    
+
     value = "count=" + count;
     lastValue = value;
     long conflatedMsgs = stats.getAsyncConflatedMsgs();
@@ -586,7 +560,6 @@ public class SlowRecDUnitTest extends CacheTestCase {
     assertEquals(queuedMsgs, stats.getAsyncQueuedMsgs());
     assertEquals(conflatedMsgs, stats.getAsyncConflatedMsgs());
     count++;
-//    dequeuedMsgs = stats.getAsyncDequeuedMsgs();
     endCount = count + 80;
 
     begin = System.currentTimeMillis();
@@ -616,7 +589,6 @@ public class SlowRecDUnitTest extends CacheTestCase {
       queuedMsgs++;
       assertEquals(queuedMsgs, stats.getAsyncQueuedMsgs());
       assertEquals(conflatedMsgs, stats.getAsyncConflatedMsgs());
-//      dequeuedMsgs = stats.getAsyncDequeuedMsgs();
       assertTrue(System.currentTimeMillis() < begin+1000*60*2);
     }
 
@@ -624,10 +596,12 @@ public class SlowRecDUnitTest extends CacheTestCase {
     LogWriterUtils.getLogWriter().info("[testConflationSequence] assert other vm");
     checkLastValueInOtherVm(lastValue, null);
   }
+
   /**
    * Make sure that exceeding the queue size limit causes a disconnect.
    */
-  public void testSizeDisconnect() throws CacheException {
+  @Test
+  public void testSizeDisconnect() throws Exception {
     final String expected = 
       "com.gemstone.gemfire.internal.tcp.ConnectionException: Forced disconnect sent to" +
       "||java.io.IOException: Broken pipe";
@@ -650,7 +624,6 @@ public class SlowRecDUnitTest extends CacheTestCase {
     p.setProperty(ASYNC_MAX_QUEUE_SIZE, "1"); // 1 meg
     doCreateOtherVm(p, false);
 
-    
     final Object key = "key";
     final int VALUE_SIZE = 1024 * 100; // .1M async-max-queue-size should give us 10 of these 100K msgs before queue full
     final byte[] value = new byte[VALUE_SIZE];
@@ -692,6 +665,7 @@ public class SlowRecDUnitTest extends CacheTestCase {
     assertEquals(others, dm.getOtherDistributionManagerIds());
     assertEquals(0, stats.getAsyncQueueSize());
   }
+
   /**
    * Make sure that exceeding the async-queue-timeout causes a disconnect.<p>
    * [bruce] This test was disabled when the SlowRecDUnitTest was re-enabled
@@ -699,7 +673,8 @@ public class SlowRecDUnitTest extends CacheTestCase {
    * June 2006 due to hangs.  Some of the tests, like this one, still need
    * work because the periodically (some quite often) fail.
    */
-  public void donottestTimeoutDisconnect() throws CacheException {
+  @Test
+  public void testTimeoutDisconnect() throws Exception {
     final String expected = 
       "com.gemstone.gemfire.internal.tcp.ConnectionException: Forced disconnect sent to" +
       "||java.io.IOException: Broken pipe";
@@ -766,8 +741,6 @@ public class SlowRecDUnitTest extends CacheTestCase {
     assertEquals(0, stats.getAsyncQueueSize());
   }
 
-  // static helper methods ---------------------------------------------------
-  
   private static final String KEY_SLEEP = "KEY_SLEEP";
   private static final String KEY_WAIT = "KEY_WAIT";
   private static final String KEY_DISCONNECT = "KEY_DISCONNECT";
@@ -895,17 +868,10 @@ public class SlowRecDUnitTest extends CacheTestCase {
    * June 2006 r13222 in the trunk.  This test is failing because conflation
    * isn't kicking in for some reason.
    */
-  public void donottestMultipleRegionConflation() throws Throwable {
+  @Test
+  public void testMultipleRegionConflation() throws Exception {
     try {
       doTestMultipleRegionConflation();
-    }
-    catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    }
-    catch (Throwable t) {
-      LogWriterUtils.getLogWriter().error("Encountered exception: ", t);
-      throw t;
     }
     finally {
       // make sure other vm was notified even if test failed
@@ -918,6 +884,7 @@ public class SlowRecDUnitTest extends CacheTestCase {
       });
     }
   }
+
   protected static ControlListener doTestMultipleRegionConflation_R1_Listener;
   protected static ControlListener doTestMultipleRegionConflation_R2_Listener;
   private void doTestMultipleRegionConflation() throws Exception {
@@ -1117,17 +1084,10 @@ public class SlowRecDUnitTest extends CacheTestCase {
   /**
    * Make sure a disconnect causes queue memory to be released.
    */
-  public void testDisconnectCleanup() throws Throwable {
+  @Test
+  public void testDisconnectCleanup() throws Exception {
     try {
       doTestDisconnectCleanup();
-    }
-    catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    }
-    catch (Throwable t) {
-      LogWriterUtils.getLogWriter().error("Encountered exception: ", t);
-      throw t;
     }
     finally {
       // make sure other vm was notified even if test failed
@@ -1140,6 +1100,7 @@ public class SlowRecDUnitTest extends CacheTestCase {
       });
     }
   }
+
   protected static ControlListener doTestDisconnectCleanup_Listener;
   private void doTestDisconnectCleanup() throws Exception {
     final AttributesFactory factory = new AttributesFactory();
@@ -1259,29 +1220,20 @@ public class SlowRecDUnitTest extends CacheTestCase {
       }
     };
     Wait.waitForCriterion(ev, 2 * 1000, 200, true);
-//    getLogWriter().info("[testDisconnectCleanup] initialQueues=" + 
-//      initialQueues + " asyncQueues=" + stats.getAsyncQueues());
     assertEquals(initialQueues, stats.getAsyncQueues());
   }
 
   /**
    * Make sure a disconnect causes queue memory to be released.<p>
-     * [bruce] This test was disabled when the SlowRecDUnitTest was re-enabled
+   * [bruce] This test was disabled when the SlowRecDUnitTest was re-enabled
    * in build.xml in the splitbrainNov07 branch.  It had been disabled since
    * June 2006 due to hangs.  Some of the tests, like this one, still need
    * work because the periodically (some quite often) fail.
- */
-  public void donottestPartialMessage() throws Throwable {
+   */
+  @Test
+  public void testPartialMessage() throws Exception {
     try {
       doTestPartialMessage();
-    }
-    catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    }
-    catch (Throwable t) {
-      LogWriterUtils.getLogWriter().error("Encountered exception: ", t);
-      throw t;
     }
     finally {
       // make sure other vm was notified even if test failed
@@ -1294,6 +1246,7 @@ public class SlowRecDUnitTest extends CacheTestCase {
       });
     }
   }
+
   protected static ControlListener doTestPartialMessage_Listener;
   private void doTestPartialMessage() throws Exception {
     final AttributesFactory factory = new AttributesFactory();
@@ -1304,9 +1257,7 @@ public class SlowRecDUnitTest extends CacheTestCase {
     final DMStats stats = dm.getStats();
     
     // set others before vm0 connects
-//    final Set others = dm.getOtherDistributionManagerIds();
     long initialQueuedMsgs = stats.getAsyncQueuedMsgs();
-//    int initialQueues = stats.getAsyncQueues();
 
     // create receiver in vm0 with queuing enabled
     final Properties p = new Properties();
@@ -1360,11 +1311,6 @@ public class SlowRecDUnitTest extends CacheTestCase {
       count++;
       r.put(key, value, new Integer(count));
       if (count == partialId+1) {
-//        long begin = System.currentTimeMillis();
-//        while (stats.getAsyncQueues() < 1) {
-//          pause(100);
-//          assertFalse(System.currentTimeMillis() > begin+1000*10);
-//        }
         assertEquals(initialQueuedMsgs+2, stats.getAsyncQueuedMsgs());
         assertEquals(0, stats.getAsyncConflatedMsgs());
       } else if (count == partialId+2) {

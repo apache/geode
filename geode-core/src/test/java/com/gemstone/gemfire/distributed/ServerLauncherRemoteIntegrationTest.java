@@ -47,7 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
@@ -1299,8 +1299,8 @@ public class ServerLauncherRemoteIntegrationTest extends AbstractServerLauncherR
   @Override
   protected List<String> getJvmArguments() {
     final List<String> jvmArguments = new ArrayList<String>();
-    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + DistributedSystemConfigProperties.LOG_LEVEL+"=config");
-    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + DistributedSystemConfigProperties.MCAST_PORT+"=0");
+    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + ConfigurationProperties.LOG_LEVEL+"=config");
+    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + ConfigurationProperties.MCAST_PORT+"=0");
     return jvmArguments;
   }
   

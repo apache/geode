@@ -16,11 +16,27 @@
  */
 package com.gemstone.gemfire.management;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import javax.management.MBeanServer;
+import javax.management.Notification;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.OutOfOffHeapMemoryException;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.offheap.OffHeapMemoryStats;
@@ -28,21 +44,21 @@ import com.gemstone.gemfire.internal.offheap.OffHeapStorage;
 import com.gemstone.gemfire.internal.offheap.OffHeapStoredObject;
 import com.gemstone.gemfire.management.internal.MBeanJMXAdapter;
 import com.gemstone.gemfire.management.internal.beans.MemberMBean;
-import com.gemstone.gemfire.test.dunit.*;
-
-import javax.management.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests the off-heap additions to the RegionMXBean and MemberMXBean JMX interfaces.
  */
 @SuppressWarnings("serial")
-public class OffHeapManagementDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class OffHeapManagementDUnitTest extends JUnit4CacheTestCase {
   /**
    * Specified assertion operations.
    */
@@ -123,14 +139,6 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
    */
   private static MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
 
-  /**
-   * Creates a new OffHeapManagementDUnitTest.
-   * @param name the test name.
-   */
-  public OffHeapManagementDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public final void postSetUp() throws Exception {
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
@@ -155,6 +163,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
    * Tests off-heap additions to the RegionMXBean and MemberMXBean interfaces.
    * @throws Exception
    */
+  @Test
   public void testOffHeapMBeanAttributesAndStats() throws Exception {
     final VM vm = Host.getHost(0).getVM(0);    
 
@@ -203,6 +212,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
    * Tests the fragmentation statistic for off-heap memory.
    * @throws Exception
    */
+  @Test
   public void testFragmentationStat() throws Exception {
     final VM vm = Host.getHost(0).getVM(0);    
 
@@ -293,6 +303,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
    * Tests the compation time statistic for off-heap memory.
    * @throws Exception
    */
+  @Test
   public void testCompactionTimeStat() throws Exception {
     final VM vm = Host.getHost(0).getVM(0);    
 
@@ -351,6 +362,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
   /**
    *  Asserts that a monitor assigned to the OffHeapObjects attribute is triggered.
    */
+  @Test
   public void testOffHeapObjectsMonitoring()  throws Exception {
     final VM vm = Host.getHost(0).getVM(0);    
 
@@ -388,6 +400,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
   /**
    * Asserts that a monitor assigned to the OffHeapFreeSize attribute is triggered.
    */
+  @Test
   public void testOffHeapFreeSizeMonitoring()  throws Exception {
     final VM vm = Host.getHost(0).getVM(0);    
 
@@ -425,6 +438,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
   /**
    * Asserts that a monitor assigned to the OffHeapAllocatedSize attribute is triggered.
    */
+  @Test
   public void testOffHeapAllocatedSizeMonitoring()  throws Exception {
     final VM vm = Host.getHost(0).getVM(0);    
 

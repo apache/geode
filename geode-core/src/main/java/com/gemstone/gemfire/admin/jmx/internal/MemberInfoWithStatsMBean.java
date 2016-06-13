@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.admin.jmx.internal;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import com.gemstone.gemfire.admin.*;
 import com.gemstone.gemfire.admin.jmx.Agent;

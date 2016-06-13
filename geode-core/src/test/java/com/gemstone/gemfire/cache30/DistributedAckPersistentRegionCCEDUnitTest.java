@@ -20,42 +20,23 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.DataPolicy;
-import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.Scope;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
-import com.gemstone.gemfire.internal.cache.DistributedRegion;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.io.IOException;
-import java.util.Map;
-
-import junit.framework.Assert;
-
+@Category(DistributedTest.class)
 public class DistributedAckPersistentRegionCCEDUnitTest extends DistributedAckRegionCCEDUnitTest {
 
-  public DistributedAckPersistentRegionCCEDUnitTest(String name) {
-    super(name);
-  }
-  
-  /**
-   * Returns region attributes for a <code>GLOBAL</code> region
-   */
+  @Override
   protected RegionAttributes getRegionAttributes() {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -64,26 +45,27 @@ public class DistributedAckPersistentRegionCCEDUnitTest extends DistributedAckRe
     return factory.create();
   }
 
-//  public void testClearWithConcurrentEventsAsync() throws Exception {
-//    int end = 100;
-//    for (int i=0; i<end; i++) {
-//      System.out.println("Starting run #" + i);
-//      super.testClearWithConcurrentEventsAsync();
-//      if (i<(end-1)) {
-//        tearDown();
-//        setUp();
-//      }
-//    }
-//  }
-  
-  public void testClearOnNonReplicateWithConcurrentEvents() {}
-  
-  public void testConcurrentEventsOnNonReplicatedRegion() {}
-  
-  public void testGetAllWithVersions() {}
+  @Ignore("Skip test for this configuration")
+  @Override
+  @Test
+  public void testClearOnNonReplicateWithConcurrentEvents() {
+  }
+
+  @Ignore("Skip test for this configuration")
+  @Override
+  @Test
+  public void testConcurrentEventsOnNonReplicatedRegion() {
+  }
+
+  @Ignore("Skip test for this configuration")
+  @Override
+  @Test
+  public void testGetAllWithVersions() {
+  }
 
   private VersionTag getVersionTag(VM vm, final String key) {
     SerializableCallable getVersionTag = new SerializableCallable("verify recovered entry") {
+      @Override
       public Object call() {
         VersionTag tag = CCRegion.getVersionTag(key);
         return tag;
@@ -92,7 +74,8 @@ public class DistributedAckPersistentRegionCCEDUnitTest extends DistributedAckRe
     };
     return (VersionTag)vm.invoke(getVersionTag);
   }
-  
+
+  // TODO: resurrect dead test or delete the following dead code
 //  protected void do_version_recovery_if_necessary(final VM vm0, final VM vm1, final VM vm2, final Object[] params) {
 //    final String name = (String)params[0];
 //    final String hostName = (String)params[1];

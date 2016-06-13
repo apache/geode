@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -26,11 +35,12 @@ import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 
+@Category(DistributedTest.class)
 public class DistributedAckOverflowRegionCCEDUnitTest extends
     DistributedAckRegionCCEDUnitTest {
 
-  public DistributedAckOverflowRegionCCEDUnitTest(String name) {
-    super(name);
+  public DistributedAckOverflowRegionCCEDUnitTest() {
+    super();
   }
 
   @Override
@@ -61,8 +71,8 @@ public class DistributedAckOverflowRegionCCEDUnitTest extends
   }
 
   @Override
-  @Test
   @Ignore
+  @Test
   public void testClearWithConcurrentEvents() throws Exception {
     // TODO this test is disabled due to frequent failures.  See bug #
     // Remove this method from this class when the problem is fixed
@@ -70,8 +80,8 @@ public class DistributedAckOverflowRegionCCEDUnitTest extends
   }
 
   @Override
-  @Test
   @Ignore
+  @Test
   public void testClearWithConcurrentEventsAsync() throws Exception {
     // TODO this test is disabled due to frequent failures.  See bug #
     // Remove this method from this class when the problem is fixed

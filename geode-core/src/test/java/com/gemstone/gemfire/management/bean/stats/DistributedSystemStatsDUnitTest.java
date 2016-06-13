@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management.bean.stats;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Set;
 
 import javax.management.ObjectName;
@@ -35,14 +44,16 @@ import com.gemstone.gemfire.test.dunit.VM;
 
 /**
  */
+@Category(DistributedTest.class)
 public class DistributedSystemStatsDUnitTest extends ManagementTestBase{
   
   private static final long serialVersionUID = 1L;
 
-  public DistributedSystemStatsDUnitTest(String name) {
-    super(name);
+  public DistributedSystemStatsDUnitTest() {
+    super();
   }
 
+  @Test
   public void testDistributedSystemStats() throws Exception {
     initManagement(true);
 

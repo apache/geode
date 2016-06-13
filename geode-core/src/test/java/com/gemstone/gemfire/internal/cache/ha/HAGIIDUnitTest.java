@@ -14,10 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.internal.cache.ha;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.InterestResultPolicy;
+import com.gemstone.gemfire.cache.Operation;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
@@ -32,85 +51,34 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientTombstoneMessage;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ConflationDUnitTest;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Client is connected to S1 which has a slow dispatcher. Puts are made on S1.  Then S2 is started
  * and made available for the client. After that , S1 's  server is stopped. The client fails over to
  * S2. The client should receive all the puts . These puts have arrived on S2 via GII of HARegion.
- *
- *
  */
+@Category(DistributedTest.class)
+public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
 
-class GIIChecker extends CacheListenerAdapter
-{
-  private boolean gotFirst = false;
-  private boolean gotSecond = false;
-  private boolean gotThird = false;
-  private int updates = 0;
-  
-  public void afterUpdate(EntryEvent event) {
-    
-    this.updates++;
-    
-    String key = (String) event.getKey();
-    String value = (String) event.getNewValue();
-    
-    if (key.equals("key-1") && value.equals("value-1")) {
-      this.gotFirst = true;
-    }
-    
-    if (key.equals("key-2") && value.equals("value-2")) {
-      this.gotSecond = true;
-    }
-    
-    if (key.equals("key-3") && value.equals("value-3")) {
-      this.gotThird = true;
-    }
-  }
-  
-  public int getUpdates() {
-    return this.updates;
-  }
-  
-  public boolean gotFirst() {
-    return this.gotFirst;
-  }
-  
-  public boolean gotSecond() {
-    return this.gotSecond;
-  }
-  
-  public boolean gotThird() {
-    return this.gotThird;
-  }
-}
-
-public class HAGIIDUnitTest extends DistributedTestCase
-{
   private static Cache cache = null;
   //server
   private static VM server0 = null;
   private static VM server1 = null;
   private static VM client0 = null;
 
-  private static final String REGION_NAME = "HAGIIDUnitTest_region";
+  private static final String REGION_NAME = HAGIIDUnitTest.class.getSimpleName() + "_region";
   
   protected static GIIChecker checker = new GIIChecker();
   private int PORT2;
-
-  /** constructor */
-  public HAGIIDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -134,6 +102,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
     client0.invoke(() -> HAGIIDUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT1),new Integer(PORT2)));
   }
   
+  @Test
   public void testGIIRegionQueue()
   {
     client0.invoke(() -> HAGIIDUnitTest.createEntries());
@@ -167,7 +136,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new HAGIIDUnitTest("temp").createCache(props);
+    new HAGIIDUnitTest().createCache(props);
     AttributesFactory factory = new AttributesFactory();
     ClientServerTestCase.configureConnectionPool(factory, host, new int[] {PORT1,PORT2}, true, -1, 2, null, 1000, -1, false, -1);
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -178,7 +147,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
 
   public static Integer createServer1Cache() throws Exception
   {
-    new HAGIIDUnitTest("temp").createCache(new Properties());
+    new HAGIIDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -194,7 +163,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
 
   public static void createServer2Cache(Integer port) throws Exception
   {
-    new HAGIIDUnitTest("temp").createCache(new Properties());
+    new HAGIIDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -219,6 +188,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
       Assert.fail("failed while registering keys ", ex);
     }
   }
+
   public static void createEntries()
   {
     try {
@@ -244,7 +214,7 @@ public class HAGIIDUnitTest extends DistributedTestCase
       }
     }
     catch (Exception e) {
-      fail("failed while stopServer()" + e);
+      fail("failed while stopServer()", e);
     }
   }
 
@@ -401,7 +371,6 @@ public class HAGIIDUnitTest extends DistributedTestCase
       Wait.waitForCriterion(ev, 60 * 1000, 200, true);
       // assertIndexDetailsEquals( "key-2",r.getEntry("key-2").getValue());
 
-
       // wait until
       // we have a
       // dead server
@@ -448,6 +417,51 @@ public class HAGIIDUnitTest extends DistributedTestCase
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();
+    }
+  }
+
+  private static class GIIChecker extends CacheListenerAdapter {
+
+    private boolean gotFirst = false;
+    private boolean gotSecond = false;
+    private boolean gotThird = false;
+    private int updates = 0;
+
+    @Override
+    public void afterUpdate(EntryEvent event) {
+
+      this.updates++;
+
+      String key = (String) event.getKey();
+      String value = (String) event.getNewValue();
+
+      if (key.equals("key-1") && value.equals("value-1")) {
+        this.gotFirst = true;
+      }
+
+      if (key.equals("key-2") && value.equals("value-2")) {
+        this.gotSecond = true;
+      }
+
+      if (key.equals("key-3") && value.equals("value-3")) {
+        this.gotThird = true;
+      }
+    }
+
+    public int getUpdates() {
+      return this.updates;
+    }
+
+    public boolean gotFirst() {
+      return this.gotFirst;
+    }
+
+    public boolean gotSecond() {
+      return this.gotSecond;
+    }
+
+    public boolean gotThird() {
+      return this.gotThird;
     }
   }
 }

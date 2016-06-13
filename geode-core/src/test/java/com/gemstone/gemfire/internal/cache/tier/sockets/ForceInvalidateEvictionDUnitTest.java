@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
@@ -54,12 +63,13 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  *
  */
-public class ForceInvalidateEvictionDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
   
   private static final long serialVersionUID = -11364213547039967L;
 
-  public ForceInvalidateEvictionDUnitTest(String name) {
-    super(name);
+  public ForceInvalidateEvictionDUnitTest() {
+    super();
   }
 
   private void doPropagationTest(VM sourceVM, VM destinationVm, boolean validateCallbacks, boolean validateContent) {
@@ -95,6 +105,7 @@ public class ForceInvalidateEvictionDUnitTest extends CacheTestCase {
     removeListener(destinationVm);
   }
   
+  @Test
   public void testPRToAccessor() {
     
     Host host = Host.getHost(0);
@@ -113,6 +124,7 @@ public class ForceInvalidateEvictionDUnitTest extends CacheTestCase {
     doPropagationTest(vm1, vm2, true, false);
   }
   
+  @Test
   public void testBridgeClientWithPR() {
     
     Host host = Host.getHost(0);
@@ -132,6 +144,7 @@ public class ForceInvalidateEvictionDUnitTest extends CacheTestCase {
     doPropagationTest(vm1, vm3, true, true);
   }
 
+  @Test
   public void testBridgeClientWithAccessorServer() {
     
     Host host = Host.getHost(0);
@@ -149,6 +162,7 @@ public class ForceInvalidateEvictionDUnitTest extends CacheTestCase {
     doPropagationTest(vm0, vm3, true, true);
   }
   
+  @Test
   public void testBridgeClientWithAccessorSource() {
     
     Host host = Host.getHost(0);

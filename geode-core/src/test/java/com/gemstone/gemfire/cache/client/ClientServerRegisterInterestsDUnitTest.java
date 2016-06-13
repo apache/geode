@@ -16,12 +16,8 @@
  */
 package com.gemstone.gemfire.cache.client;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.test.dunit.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -29,16 +25,36 @@ import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.InterestResultPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.cache.server.ClientSubscriptionConfig;
+import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * The ClientServerRegisterInterestsDUnitTest class is a test suite of test cases testing the interaction between a
  * client and a server in a Register Interests scenario.
  *
- * @see com.gemstone.gemfire.test.dunit.DistributedTestCase
  * @since GemFire 8.0
  */
-public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTestCase {
 
   protected static final long WAIT_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(5);
 
@@ -49,10 +65,6 @@ public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase 
   private final Stack entryEvents = new Stack();
 
   private VM gemfireServerVm;
-
-  public ClientServerRegisterInterestsDUnitTest(final String testName) {
-    super(testName);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -197,6 +209,7 @@ public class ClientServerRegisterInterestsDUnitTest extends DistributedTestCase 
     }
   }
 
+  @Test
   public void testClientRegisterInterests() {
     ClientCache clientCache = setupGemFireClientCache();
 

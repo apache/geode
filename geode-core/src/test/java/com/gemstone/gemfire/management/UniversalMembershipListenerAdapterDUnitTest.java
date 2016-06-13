@@ -16,6 +16,20 @@
  */
 package com.gemstone.gemfire.management;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.InternalGemFireException;
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -33,22 +47,30 @@ import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LocalLogWriter;
-import com.gemstone.gemfire.management.membership.*;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.management.membership.ClientMembership;
+import com.gemstone.gemfire.management.membership.ClientMembershipEvent;
+import com.gemstone.gemfire.management.membership.ClientMembershipListener;
+import com.gemstone.gemfire.management.membership.MembershipEvent;
+import com.gemstone.gemfire.management.membership.MembershipListener;
+import com.gemstone.gemfire.management.membership.UniversalMembershipListenerAdapter;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
-
-import java.io.IOException;
-import java.util.*;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Tests the UniversalMembershipListenerAdapter.
  *
  * @since GemFire 4.2.1
  */
+@Category(DistributedTest.class)
 public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTestCase {
+
   protected static final boolean CLIENT = true;
   protected static final boolean SERVER = false;
   
@@ -70,10 +92,6 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   /** Millis to wait for all three event listeners to be notified */
   private static final int ASYNC_EVENT_WAIT_MILLIS = 120000; // use Integer.MAX_VALUE for debugging
     
-  public UniversalMembershipListenerAdapterDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     InternalClientMembership.unregisterAllListeners();
@@ -82,6 +100,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   /**
    * Tests wrapping of BridgeMembershipEvent fired as MembershipEvent.
    */
+  @Test
   public void testAdaptedBridgeEvents() throws Exception {
     getSystem();
     
@@ -124,6 +143,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   /**
    * Tests use of history to prevent duplicate events.
    */
+  @Test
   public void testNoDuplicates() throws Exception {
     getSystem();
     
@@ -224,14 +244,16 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   /**
    * Tests notification of events for loner bridge clients in server process.
    */
+  @Test
   public void testLonerClientEventsInServer() throws Exception {
-     try {
-       doTestLonerClientEventsInServer();
-     }
-     finally {
-       disconnectAllFromDS();
-     }
+    try {
+      doTestLonerClientEventsInServer();
+    }
+    finally {
+      disconnectAllFromDS();
+    }
   }
+
   private void doTestLonerClientEventsInServer() throws Exception {
     final boolean[] firedSystem = new boolean[3];
     final DistributedMember[] memberSystem = new DistributedMember[3];
@@ -249,6 +271,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     final boolean[] isClientBridge = new boolean[3];
 
     MembershipListener systemListener = new MembershipListener() {
+      @Override
       public synchronized void memberJoined(MembershipEvent event) {
         assertFalse(firedSystem[JOINED]);
         assertNull(memberSystem[JOINED]);
@@ -258,6 +281,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
         memberIdSystem[JOINED] = event.getMemberId();
         notify();
       }
+      @Override
       public synchronized void memberLeft(MembershipEvent event) {
         assertFalse(firedSystem[LEFT]);
         assertNull(memberSystem[LEFT]);
@@ -267,6 +291,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
         memberIdSystem[LEFT] = event.getMemberId();
         notify();
       }
+      @Override
       public synchronized void memberCrashed(MembershipEvent event) {
         assertFalse(firedSystem[CRASHED]);
         assertNull(memberSystem[CRASHED]);
@@ -322,6 +347,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     };
 
     ClientMembershipListener bridgeListener = new ClientMembershipListener() {
+      @Override
       public synchronized void memberJoined(ClientMembershipEvent event) {
         assertFalse(firedBridge[JOINED]);
         assertNull(memberBridge[JOINED]);
@@ -333,6 +359,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
         isClientBridge[JOINED] = event.isClient();
         notify();
       }
+      @Override
       public synchronized void memberLeft(ClientMembershipEvent event) {
         assertFalse(firedBridge[LEFT]);
         assertNull(memberBridge[LEFT]);
@@ -344,6 +371,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
         isClientBridge[LEFT] = event.isClient();
         notify();
       }
+      @Override
       public synchronized void memberCrashed(ClientMembershipEvent event) {
         assertFalse(firedBridge[CRASHED]);
         assertNull(memberBridge[CRASHED]);
@@ -363,7 +391,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     final int[] ports = new int[1];
 
     // create BridgeServer in controller vm...
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testLonerClientEventsInServer] Create BridgeServer");
+    getLogWriter().info("[testLonerClientEventsInServer] Create BridgeServer");
     getSystem();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -377,9 +405,9 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     final String serverMemberId = serverMember.toString();
     final Properties serverProperties = getSystem().getProperties();
 
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testLonerClientEventsInServer] ports[0]=" + ports[0]);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testLonerClientEventsInServer] serverMemberId=" + serverMemberId);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testLonerClientEventsInServer] serverMember=" + serverMember);
+    getLogWriter().info("[testLonerClientEventsInServer] ports[0]=" + ports[0]);
+    getLogWriter().info("[testLonerClientEventsInServer] serverMemberId=" + serverMemberId);
+    getLogWriter().info("[testLonerClientEventsInServer] serverMember=" + serverMember);
 
     // register the bridge listener
     ClientMembership.registerClientMembershipListener(bridgeListener);
@@ -398,7 +426,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     new SerializableCallable("Create bridge client") {
       @Override
       public Object call() {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testLonerClientEventsInServer] create bridge client");
+        getLogWriter().info("[testLonerClientEventsInServer] create bridge client");
         Properties config = new Properties();
         config.setProperty(MCAST_PORT, "0");
         config.setProperty(LOCATORS, "");
@@ -429,7 +457,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
     }
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testLonerClientEventsInServer] assert server detected client join");
+    getLogWriter().info("[testLonerClientEventsInServer] assert server detected client join");
     assertTrue(firedBridge[JOINED]);
     assertEquals(clientMember, memberBridge[JOINED]);
     //as of 6.1 the id can change when a bridge is created or a connection pool is created
@@ -475,7 +503,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     vm0.invoke(new SerializableRunnable("Wait for client to fully connect") {
       public void run() {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testLonerClientEventsInServer] wait for client to fully connect");
+        getLogWriter().info("[testLonerClientEventsInServer] wait for client to fully connect");
         final String pl =
           getRootRegion().getSubregion(name).getAttributes().getPoolName();
         PoolImpl pi = (PoolImpl)PoolManager.find(pl);
@@ -485,7 +513,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     
     vm0.invoke(new SerializableRunnable("Close bridge client region") {
       public void run() {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testLonerClientEventsInServer] close bridge client region");
+        getLogWriter().info("[testLonerClientEventsInServer] close bridge client region");
         getRootRegion().getSubregion(name).close();
         PoolManager.close();
       }
@@ -502,7 +530,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
     }
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testLonerClientEventsInServer] assert server detected client left");
+    getLogWriter().info("[testLonerClientEventsInServer] assert server detected client left");
 
     assertFalse(firedBridge[JOINED]);
     assertNull(memberIdBridge[JOINED]);
@@ -561,7 +589,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
     }
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testLonerClientEventsInServer] assert server detected client re-join");
+    getLogWriter().info("[testLonerClientEventsInServer] assert server detected client re-join");
     assertTrue(firedBridge[JOINED]);
     assertEquals(clientMember, memberBridge[JOINED]);
     assertEquals(clientMemberId, memberIdBridge[JOINED]);
@@ -606,7 +634,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     
     vm0.invoke(new SerializableRunnable("Wait for client to fully connect") {
       public void run() {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testLonerClientEventsInServer] wait for client to fully connect");
+        getLogWriter().info("[testLonerClientEventsInServer] wait for client to fully connect");
         final String pl =
           getRootRegion().getSubregion(name).getAttributes().getPoolName();
         PoolImpl pi = (PoolImpl)PoolManager.find(pl);
@@ -618,7 +646,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     try {
       vm0.invoke(new SerializableRunnable("Stop bridge client") {
         public void run() {
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testLonerClientEventsInServer] Stop bridge client");
+          getLogWriter().info("[testLonerClientEventsInServer] Stop bridge client");
           getRootRegion().getSubregion(name).close();
           PoolManager.close();
         }
@@ -635,7 +663,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
         }
       }
       
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testLonerClientEventsInServer] assert server detected client crashed");
+    getLogWriter().info("[testLonerClientEventsInServer] assert server detected client crashed");
     assertFalse(firedBridge[JOINED]);
     assertNull(memberIdBridge[JOINED]);
     assertNull(memberBridge[JOINED]);
@@ -687,14 +715,16 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
    * Tests notification of events for loner bridge clients in server process.
    */
   @Category(FlakyTest.class) // GEODE-1174: random port, async behavior, condition await loops
+  @Test
   public void testSystemClientEventsInServer() throws Exception {
-     try {
-       doTestSystemClientEventsInServer();
-     }
-     finally {
-       disconnectAllFromDS();
-     }
+    try {
+      doTestSystemClientEventsInServer();
+    }
+    finally {
+      disconnectAllFromDS();
+    }
   }
+
   private void doTestSystemClientEventsInServer() throws Exception {
     final boolean[] firedSystem = new boolean[3];
     final DistributedMember[] memberSystem = new DistributedMember[3];
@@ -743,7 +773,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       new UniversalMembershipListenerAdapter() {
       @Override
       public synchronized void memberJoined(MembershipEvent event) {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] memberJoined >" + event.getMemberId() + "<");
+        getLogWriter().info("[doTestSystemClientEventsInServer] memberJoined >" + event.getMemberId() + "<");
         firedAdapterDuplicate[JOINED] = firedAdapter[JOINED];
         firedAdapter[JOINED] = true;
         memberAdapter[JOINED] = event.getDistributedMember();
@@ -756,7 +786,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
       @Override
       public synchronized void memberLeft(MembershipEvent event) {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] memberLeft >" + event.getMemberId() + "<");
+        getLogWriter().info("[doTestSystemClientEventsInServer] memberLeft >" + event.getMemberId() + "<");
         firedAdapterDuplicate[LEFT] = firedAdapter[LEFT];
         firedAdapter[LEFT] = true;
         memberAdapter[LEFT] = event.getDistributedMember();
@@ -769,7 +799,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
       @Override
       public synchronized void memberCrashed(MembershipEvent event) {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] memberCrashed >" + event.getMemberId() + "<");
+        getLogWriter().info("[doTestSystemClientEventsInServer] memberCrashed >" + event.getMemberId() + "<");
         firedAdapterDuplicate[CRASHED] = firedAdapter[CRASHED];
         firedAdapter[CRASHED] = true;
         memberAdapter[CRASHED] = event.getDistributedMember();
@@ -815,7 +845,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     final int[] ports = new int[1];
 
     // create BridgeServer in controller vm...
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] Create BridgeServer");
+    getLogWriter().info("[doTestSystemClientEventsInServer] Create BridgeServer");
     getSystem();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -835,9 +865,9 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     serverProperties.remove(SSL_PROTOCOLS);
     serverProperties.remove(SSL_REQUIRE_AUTHENTICATION);
 
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] ports[0]=" + ports[0]);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] serverMemberId=" + serverMemberId);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] serverMember=" + serverMember);
+    getLogWriter().info("[doTestSystemClientEventsInServer] ports[0]=" + ports[0]);
+    getLogWriter().info("[doTestSystemClientEventsInServer] serverMemberId=" + serverMemberId);
+    getLogWriter().info("[doTestSystemClientEventsInServer] serverMember=" + serverMember);
 
     // register the bridge listener
     ClientMembership.registerClientMembershipListener(bridgeListener);
@@ -856,7 +886,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     new SerializableCallable("Create bridge client") {
       @Override
       public Object call() {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] create system bridge client");
+        getLogWriter().info("[doTestSystemClientEventsInServer] create system bridge client");
         assertTrue(getSystem(serverProperties).isConnected());
         assertFalse(getCache().isClosed());
         AttributesFactory factory = new AttributesFactory();
@@ -889,10 +919,10 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
     }
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] assert server detected client join");
-    assertFalse(firedSystemDuplicate);
-    assertFalse(firedAdapterDuplicate);
-    assertFalse(firedBridgeDuplicate);
+    getLogWriter().info("[doTestSystemClientEventsInServer] assert server detected client join");
+    assertArrayFalse(firedSystemDuplicate);
+    assertArrayFalse(firedAdapterDuplicate);
+    assertArrayFalse(firedBridgeDuplicate);
 
     assertTrue(firedBridge[JOINED]);
     assertEquals(clientMember, memberBridge[JOINED]);
@@ -938,7 +968,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     vm0.invoke(new SerializableRunnable("Wait for client to fully connect") {
       public void run() {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] wait for client to fully connect");
+        getLogWriter().info("[doTestSystemClientEventsInServer] wait for client to fully connect");
         final String pl =
           getRootRegion().getSubregion(name).getAttributes().getPoolName();
         PoolImpl pi = (PoolImpl)PoolManager.find(pl);
@@ -949,7 +979,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     // close bridge client region
     vm0.invoke(new SerializableRunnable("Close bridge client region") {
       public void run() {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] close bridge client region");
+        getLogWriter().info("[doTestSystemClientEventsInServer] close bridge client region");
         getRootRegion().getSubregion(name).close();
         PoolManager.close();
       }
@@ -966,10 +996,10 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
     }
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] assert server detected client left");
-    assertFalse(firedSystemDuplicate);
-    assertFalse(firedAdapterDuplicate);
-    assertFalse(firedBridgeDuplicate);
+    getLogWriter().info("[doTestSystemClientEventsInServer] assert server detected client left");
+    assertArrayFalse(firedSystemDuplicate);
+    assertArrayFalse(firedAdapterDuplicate);
+    assertArrayFalse(firedBridgeDuplicate);
     
     assertFalse(firedBridge[JOINED]);
     assertNull(memberIdBridge[JOINED]);
@@ -1028,10 +1058,10 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
     }
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] assert server detected client re-join");
-    assertFalse(firedSystemDuplicate);
-    assertFalse(firedAdapterDuplicate);
-    assertFalse(firedBridgeDuplicate);
+    getLogWriter().info("[doTestSystemClientEventsInServer] assert server detected client re-join");
+    assertArrayFalse(firedSystemDuplicate);
+    assertArrayFalse(firedAdapterDuplicate);
+    assertArrayFalse(firedBridgeDuplicate);
 
     assertTrue(firedBridge[JOINED]);
     assertEquals(clientMember, memberBridge[JOINED]);
@@ -1077,7 +1107,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     
     vm0.invoke(new SerializableRunnable("Wait for client to fully connect") {
       public void run() {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] wait for client to fully connect");
+        getLogWriter().info("[doTestSystemClientEventsInServer] wait for client to fully connect");
         final String pl =
           getRootRegion().getSubregion(name).getAttributes().getPoolName();
         PoolImpl pi = (PoolImpl)PoolManager.find(pl);
@@ -1088,7 +1118,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     // have bridge client disconnect from system
     vm0.invoke(new SerializableRunnable("Disconnect bridge client") {
       public void run() {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] disconnect bridge client");
+        getLogWriter().info("[doTestSystemClientEventsInServer] disconnect bridge client");
         closeCache();
         disconnectFromDS();
       }
@@ -1110,10 +1140,10 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
     }
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] assert server detected client left");
-    assertFalse(firedSystemDuplicate);
-    assertFalse(firedAdapterDuplicate);
-    assertFalse(firedBridgeDuplicate);
+    getLogWriter().info("[doTestSystemClientEventsInServer] assert server detected client left");
+    assertArrayFalse(firedSystemDuplicate);
+    assertArrayFalse(firedAdapterDuplicate);
+    assertArrayFalse(firedBridgeDuplicate);
 
     assertFalse(firedBridge[JOINED]);
     assertNull(memberBridge[JOINED]);
@@ -1177,10 +1207,10 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
     }
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] assert server detected client re-join");
-    assertFalse(firedSystemDuplicate);
-    assertFalse(firedAdapterDuplicate);
-    assertFalse(firedBridgeDuplicate);
+    getLogWriter().info("[doTestSystemClientEventsInServer] assert server detected client re-join");
+    assertArrayFalse(firedSystemDuplicate);
+    assertArrayFalse(firedAdapterDuplicate);
+    assertArrayFalse(firedBridgeDuplicate);
 
     assertTrue(firedBridge[JOINED]);
     assertEquals(clientMember, memberBridge[JOINED]);
@@ -1226,7 +1256,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     
     vm0.invoke(new SerializableRunnable("Wait for client to fully connect") {
       public void run() {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] wait for client to fully connect");
+        getLogWriter().info("[doTestSystemClientEventsInServer] wait for client to fully connect");
         final String pl =
           getRootRegion().getSubregion(name).getAttributes().getPoolName();
         PoolImpl pi = (PoolImpl)PoolManager.find(pl);
@@ -1239,7 +1269,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     try {
       vm0.invoke(new SerializableRunnable("Close bridge client region") {
         public void run() {
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] close bridge client region");
+          getLogWriter().info("[doTestSystemClientEventsInServer] close bridge client region");
           getRootRegion().getSubregion(name).close();
           PoolManager.close();
         }
@@ -1256,10 +1286,10 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
         }
       }
       
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] assert server detected client crashed");
-    assertFalse(firedSystemDuplicate);
-    assertFalse(firedAdapterDuplicate);
-    assertFalse(firedBridgeDuplicate);
+    getLogWriter().info("[doTestSystemClientEventsInServer] assert server detected client crashed");
+      assertArrayFalse(firedSystemDuplicate);
+      assertArrayFalse(firedAdapterDuplicate);
+      assertArrayFalse(firedBridgeDuplicate);
 
     assertFalse(firedBridge[JOINED]);
     assertNull(memberBridge[JOINED]);
@@ -1310,7 +1340,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
    * Note: This probably won't work if the pool has more than one Endpoint.
    */
   protected void waitForClientToFullyConnect(final PoolImpl pool) {
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[waitForClientToFullyConnect]");
+    getLogWriter().info("[waitForClientToFullyConnect]");
     final long failMillis = System.currentTimeMillis() + JOIN_FAIL_MILLIS;
     boolean fullyConnected = false;
     while (!fullyConnected) {
@@ -1323,7 +1353,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
                  + " connections were created.",
                  System.currentTimeMillis() < failMillis);
     }
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[waitForClientToFullyConnect] fullyConnected=" + fullyConnected);
+    getLogWriter().info("[waitForClientToFullyConnect] fullyConnected=" + fullyConnected);
   }
   
   /**
@@ -1345,10 +1375,10 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   /**
    * Asserts all elements in the array are false.
    */
-  private void assertFalse(boolean[] array) {
-    assertFalse(null, array);
+  private void assertArrayFalse(boolean[] array) {
+    assertArrayFalse(null, array);
   }
-  private void assertFalse(String msg, boolean[] array) {
+  private void assertArrayFalse(String msg, boolean[] array) {
     for (int i = 0; i < array.length; i++) {
       if (msg == null) {
         assertFalse(array[i]);
@@ -1357,10 +1387,10 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
     }    
   }
-  private void assertTrue(boolean[] array) {
-    assertTrue(null, array);
+  private void assertArrayTrue(boolean[] array) {
+    assertArrayTrue(null, array);
   }
-  private void assertTrue(String msg, boolean[] array) {
+  private void assertArrayTrue(String msg, boolean[] array) {
     for (int i = 0; i < array.length; i++) {
       if (msg == null) {
         assertTrue(array[i]);
@@ -1374,17 +1404,21 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
    * Tests notification of events for bridge server in system bridge client
    * process.
    */
+  @Test
   public void testServerEventsInPeerSystem() throws Exception {
-       try {
-         doTestServerEventsInPeerSystem();       
-       }finally {
-         disconnectAllFromDS();
-       }
+    try {
+      doTestServerEventsInPeerSystem();
+    }finally {
+     disconnectAllFromDS();
+    }
   }
+
   protected static int testServerEventsInSystemClient_port;
+
   private static int getTestServerEventsInSystemClient_port() {
     return testServerEventsInSystemClient_port;
   }
+
   private void doTestServerEventsInPeerSystem() throws Exception {
     // KIRK: this test fails intermittently with bug 37482
     final boolean[] firedSystem = new boolean[3];
@@ -1434,7 +1468,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       new UniversalMembershipListenerAdapter() {
       @Override
       public synchronized void memberJoined(MembershipEvent event) {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInSystemClient] memberJoined >" + event.getMemberId() + "<");
+        getLogWriter().info("[testServerEventsInSystemClient] memberJoined >" + event.getMemberId() + "<");
         firedAdapterDuplicate[JOINED] = firedAdapter[JOINED];
         firedAdapter[JOINED] = true;
         memberAdapter[JOINED] = event.getDistributedMember();
@@ -1447,7 +1481,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
       @Override
       public synchronized void memberLeft(MembershipEvent event) {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInSystemClient] memberLeft >" + event.getMemberId() + "<");
+        getLogWriter().info("[testServerEventsInSystemClient] memberLeft >" + event.getMemberId() + "<");
         firedAdapterDuplicate[LEFT] = firedAdapter[LEFT];
         firedAdapter[LEFT] = true;
         memberAdapter[LEFT] = event.getDistributedMember();
@@ -1460,7 +1494,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
       @Override
       public synchronized void memberCrashed(MembershipEvent event) {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInSystemClient] memberCrashed >" + event.getMemberId() + "<");
+        getLogWriter().info("[testServerEventsInSystemClient] memberCrashed >" + event.getMemberId() + "<");
         firedAdapterDuplicate[CRASHED] = firedAdapter[CRASHED];
         firedAdapter[CRASHED] = true;
         memberAdapter[CRASHED] = event.getDistributedMember();
@@ -1508,7 +1542,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     assertTrue(ports[0] != 0);
         
  // create BridgeServer in controller vm...
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[doTestSystemClientEventsInServer] Create BridgeServer");
+    getLogWriter().info("[doTestSystemClientEventsInServer] Create BridgeServer");
     getSystem();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -1527,9 +1561,9 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     serverProperties.remove(SSL_PROTOCOLS);
     serverProperties.remove(SSL_REQUIRE_AUTHENTICATION);
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInPeerSystem] ports[0]=" + ports[0]);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInPeerSystem] serverMemberId=" + serverMemberId);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInPeerSystem] serverMember=" + serverMember);
+    getLogWriter().info("[testServerEventsInPeerSystem] ports[0]=" + ports[0]);
+    getLogWriter().info("[testServerEventsInPeerSystem] serverMemberId=" + serverMemberId);
+    getLogWriter().info("[testServerEventsInPeerSystem] serverMember=" + serverMember);
     
     GemFireCacheImpl cache = GemFireCacheImpl.getExisting();
     assertNotNull(cache);
@@ -1545,7 +1579,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     new SerializableCallable("Create Peer Cache") {
       @Override
       public Object call() {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInPeerSystem] Create Peer cache");
+        getLogWriter().info("[testServerEventsInPeerSystem] Create Peer cache");
         getSystem(serverProperties);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
@@ -1559,8 +1593,8 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     DistributedMember peerMember = (DistributedMember)vm0.invoke(createPeerCache);
     String peerMemberId = peerMember.toString();
 
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInPeerSystem] peerMemberId=" + peerMemberId);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInPeerSystem] peerMember=" + peerMember);
+    getLogWriter().info("[testServerEventsInPeerSystem] peerMemberId=" + peerMemberId);
+    getLogWriter().info("[testServerEventsInPeerSystem] peerMember=" + peerMember);
 
     
 
@@ -1575,8 +1609,8 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
     }
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInPeerSystem] assert server detected peer join");
-    assertFalse(firedSystemDuplicate);
+    getLogWriter().info("[testServerEventsInPeerSystem] assert server detected peer join");
+    assertArrayFalse(firedSystemDuplicate);
     // TODO: sometimes get adapter duplicate since memberId isn't endpoint
     // initial impl uses Endpoint.toString() for memberId of server; final
     // impl should have server send its real memberId to client via HandShake
@@ -1623,7 +1657,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     try {
       vm0.invoke(new SerializableRunnable("Disconnect Peer server") {
         public void run() {
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInPeerSystem] disconnect peer server");
+          getLogWriter().info("[testServerEventsInPeerSystem] disconnect peer server");
           closeCache();
           disconnectFromDS();
         }
@@ -1646,14 +1680,14 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       ex.remove();
     }
 
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInPeerSystem] assert server detected peer crashed");
-    assertFalse(firedSystemDuplicate);
+    getLogWriter().info("[testServerEventsInPeerSystem] assert server detected peer crashed");
+    assertArrayFalse(firedSystemDuplicate);
     // TODO: sometimes get adapter duplicate since memberId isn't endpoint
     // initial impl uses Endpoint.toString() for memberId of server; final
     // impl should have server send its real memberId to client via HandShake
     //assertFalse("Please update testBridgeMembershipEventsInClient to use BridgeServer memberId.",
     //           firedAdapterDuplicate);
-    assertFalse(firedAdapterDuplicate);
+    assertArrayFalse(firedAdapterDuplicate);
       
     assertFalse(firedSystem[JOINED]);
     assertNull(memberSystem[JOINED]);
@@ -1697,18 +1731,22 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
    * Tests notification of events for bridge server in system bridge client
    * process.
    */
+  @Test
   public void testServerEventsInLonerClient() throws Exception {
-     try {
-       doTestServerEventsInLonerClient();
-     }
-     finally {
-       disconnectAllFromDS();
-     }
+    try {
+      doTestServerEventsInLonerClient();
+    }
+    finally {
+      disconnectAllFromDS();
+    }
   }
+
   protected static int testServerEventsInLonerClient_port;
+
   private static int getTestServerEventsInLonerClient_port() {
     return testServerEventsInLonerClient_port;
   }
+
   private void doTestServerEventsInLonerClient() throws Exception {
     final boolean[] firedAdapter = new boolean[3];
     final DistributedMember[] memberAdapter = new DistributedMember[3];
@@ -1727,7 +1765,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       new UniversalMembershipListenerAdapter() {
       @Override
       public synchronized void memberJoined(MembershipEvent event) {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] memberJoined >" + event.getMemberId() + "<");
+        getLogWriter().info("[testServerEventsInLonerClient] memberJoined >" + event.getMemberId() + "<");
         firedAdapterDuplicate[JOINED] = firedAdapter[JOINED];
         firedAdapter[JOINED] = true;
         memberAdapter[JOINED] = event.getDistributedMember();
@@ -1740,7 +1778,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
       @Override
       public synchronized void memberLeft(MembershipEvent event) {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] memberLeft >" + event.getMemberId() + "<");
+        getLogWriter().info("[testServerEventsInLonerClient] memberLeft >" + event.getMemberId() + "<");
         firedAdapterDuplicate[LEFT] = firedAdapter[LEFT];
         firedAdapter[LEFT] = true;
         memberAdapter[LEFT] = event.getDistributedMember();
@@ -1753,7 +1791,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
       @Override
       public synchronized void memberCrashed(MembershipEvent event) {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] memberCrashed >" + event.getMemberId() + "<");
+        getLogWriter().info("[testServerEventsInLonerClient] memberCrashed >" + event.getMemberId() + "<");
         firedAdapterDuplicate[CRASHED] = firedAdapter[CRASHED];
         firedAdapter[CRASHED] = true;
         memberAdapter[CRASHED] = event.getDistributedMember();
@@ -1800,13 +1838,13 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       { AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET) };
     assertTrue(ports[0] != 0);
 
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] create loner bridge client");
+    getLogWriter().info("[testServerEventsInLonerClient] create loner bridge client");
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOCATORS, "");
     getSystem(config);
         
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] create system bridge client");
+    getLogWriter().info("[testServerEventsInLonerClient] create system bridge client");
     getSystem();
 
     // register the bridge listener
@@ -1822,7 +1860,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     new SerializableCallable("Create BridgeServer") {
       @Override
       public Object call() {
-        com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] Create BridgeServer");
+        getLogWriter().info("[testServerEventsInLonerClient] Create BridgeServer");
         getSystem();
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
@@ -1833,7 +1871,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
           testServerEventsInLonerClient_port = startBridgeServer(ports[0]);
         }
         catch (IOException e) {
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().error(e);
+          getLogWriter().error(e);
           fail(e.getMessage());
         }
         return basicGetSystem().getDistributedMember();
@@ -1847,9 +1885,9 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     assertEquals(ports[0],
                  (int) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getTestServerEventsInLonerClient_port()));
 
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] ports[0]=" + ports[0]);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] serverMemberId=" + serverMemberId);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] serverMember=" + serverMember);
+    getLogWriter().info("[testServerEventsInLonerClient] ports[0]=" + ports[0]);
+    getLogWriter().info("[testServerEventsInLonerClient] serverMemberId=" + serverMemberId);
+    getLogWriter().info("[testServerEventsInLonerClient] serverMember=" + serverMember);
 
     // create region which connects to bridge server
     AttributesFactory factory = new AttributesFactory();
@@ -1869,14 +1907,14 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
     }
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] assert client detected server join");
+    getLogWriter().info("[testServerEventsInLonerClient] assert client detected server join");
     // TODO: sometimes get adapter duplicate since memberId isn't endpoint KIRK
     // initial impl uses Endpoint.toString() for memberId of server; final
     // impl should have server send its real memberId to client via HandShake
     //assertFalse("Please update testBridgeMembershipEventsInClient to use BridgeServer memberId.",
     //           firedAdapterDuplicate);
-    assertFalse(firedAdapterDuplicate);
-    assertFalse(firedBridgeDuplicate);
+    assertArrayFalse(firedAdapterDuplicate);
+    assertArrayFalse(firedBridgeDuplicate);
 
     assertTrue(firedBridge[JOINED]);
     assertEquals(serverMember, memberBridge[JOINED]);
@@ -1909,7 +1947,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     assertFalse(isClientAdapter[CRASHED]);
     resetArraysForTesting(firedAdapter, memberAdapter, memberIdAdapter, isClientAdapter);
 
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] wait for client to fully connect");
+    getLogWriter().info("[testServerEventsInLonerClient] wait for client to fully connect");
     final String pl =
       getRootRegion().getSubregion(name).getAttributes().getPoolName();
     PoolImpl pi = (PoolImpl)PoolManager.find(pl);
@@ -1938,7 +1976,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     try {
       vm0.invoke(new SerializableRunnable("Disconnect bridge server") {
         public void run() {
-          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] disconnect bridge server");
+          getLogWriter().info("[testServerEventsInLonerClient] disconnect bridge server");
           closeCache();
         }
       });
@@ -1962,14 +2000,14 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       lw.info(removeExpected2);
     }
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] assert client detected server crashed");
+    getLogWriter().info("[testServerEventsInLonerClient] assert client detected server crashed");
     // TODO: sometimes get adapter duplicate since memberId isn't endpoint KIRK
     // initial impl uses Endpoint.toString() for memberId of server; final
     // impl should have server send its real memberId to client via HandShake
     //assertFalse("Please update testBridgeMembershipEventsInClient to use BridgeServer memberId.",
     //           firedAdapterDuplicate);
-    assertFalse(firedAdapterDuplicate);
-    assertFalse(firedBridgeDuplicate);
+    assertArrayFalse(firedAdapterDuplicate);
+    assertArrayFalse(firedBridgeDuplicate);
 
     assertFalse(firedBridge[JOINED]);
     assertNull(memberIdBridge[JOINED]);
@@ -2015,9 +2053,9 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
         (int) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getTestServerEventsInLonerClient_port()));
     serverMember = (DistributedMember) vm0.invoke(() -> UniversalMembershipListenerAdapterDUnitTest.getDistributedMember());
 
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] ports[0]=" + ports[0]);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] serverMemberId=" + serverMemberId);
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] serverMember=" + serverMember);
+    getLogWriter().info("[testServerEventsInLonerClient] ports[0]=" + ports[0]);
+    getLogWriter().info("[testServerEventsInLonerClient] serverMemberId=" + serverMemberId);
+    getLogWriter().info("[testServerEventsInLonerClient] serverMember=" + serverMember);
                                                 
     synchronized(adapter) {
       if (!firedAdapter[JOINED]) {
@@ -2030,14 +2068,14 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
     }
     
-    com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("[testServerEventsInLonerClient] assert client detected server re-join");
+    getLogWriter().info("[testServerEventsInLonerClient] assert client detected server re-join");
     // TODO: sometimes get adapter duplicate since memberId isn't endpoint KIRK
     // initial impl uses Endpoint.toString() for memberId of server; final
     // impl should have server send its real memberId to client via HandShake
     //assertFalse("Please update testBridgeMembershipEventsInClient to use BridgeServer memberId.",
     //           firedAdapterDuplicate);
-    assertFalse(firedAdapterDuplicate);
-    assertFalse(firedBridgeDuplicate);
+    assertArrayFalse(firedAdapterDuplicate);
+    assertArrayFalse(firedBridgeDuplicate);
 
     assertTrue(firedBridge[JOINED]);
     assertNotNull(memberBridge[JOINED]);

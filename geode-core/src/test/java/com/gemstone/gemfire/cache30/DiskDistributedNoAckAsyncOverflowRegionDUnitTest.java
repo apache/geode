@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.File;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -30,25 +39,23 @@ import com.gemstone.gemfire.internal.OSProcess;
  *
  *
  */
+@Category(DistributedTest.class)
 public class DiskDistributedNoAckAsyncOverflowRegionDUnitTest extends DiskDistributedNoAckRegionTestCase {
   
   /** Creates a new instance of DiskDistributedNoAckSyncOverflowRegionTest */
-  public DiskDistributedNoAckAsyncOverflowRegionDUnitTest(String name) {
-    super(name);
+  public DiskDistributedNoAckAsyncOverflowRegionDUnitTest() {
+    super();
   }
   
   protected RegionAttributes getRegionAttributes() {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
 
-    File[] diskDirs = new File[1];
-    diskDirs[0] = new File("diskRegionDirs/" + OSProcess.getId());
-    diskDirs[0].mkdirs();
     factory.setDiskStoreName(getCache().createDiskStoreFactory()
-                             .setDiskDirs(diskDirs)
+                             .setDiskDirs(getDiskDirs())
                              .setTimeInterval(1000)
                              .setQueueSize(0)
-                             .create("DiskDistributedNoAckAsyncOverflowRegionDUnitTest")
+                             .create(getUniqueName())
                              .getName());
    
     factory.setEvictionAttributes(EvictionAttributes

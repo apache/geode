@@ -22,9 +22,14 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -40,17 +45,14 @@ import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-public class PutAllCallBkSingleVMDUnitTest extends DistributedTestCase{
-    
-    /** Creates a new instance of PutAllCallBkSingleVMDUnitTest */
-    public PutAllCallBkSingleVMDUnitTest(String name) {
-        super(name);
-    }
+@Category(DistributedTest.class)
+public class PutAllCallBkSingleVMDUnitTest extends JUnit4DistributedTestCase {
     
     static volatile Cache cache;
     static Properties props = new Properties();
@@ -89,7 +91,7 @@ public class PutAllCallBkSingleVMDUnitTest extends DistributedTestCase{
         try{
             CacheListener aListener = new AfterCreateCallback();
             CacheWriter aWriter = new BeforeCreateCallback();            
-            ds = (new PutAllCallBkSingleVMDUnitTest("temp")).getSystem(props);
+            ds = (new PutAllCallBkSingleVMDUnitTest()).getSystem(props);
             cache = CacheFactory.create(ds);
             AttributesFactory factory  = new AttributesFactory();
             factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -118,7 +120,8 @@ public class PutAllCallBkSingleVMDUnitTest extends DistributedTestCase{
     }
 
     //test methods
-    public void testputAllSingleVM(){
+  @Test
+  public void testputAllSingleVM(){
         
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);

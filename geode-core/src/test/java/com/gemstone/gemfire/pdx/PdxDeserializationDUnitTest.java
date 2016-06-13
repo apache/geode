@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.pdx;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.IOException;
 
 import com.gemstone.gemfire.SerializationException;
@@ -54,16 +63,18 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 
  *
  */
-public class PdxDeserializationDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
 
-  public PdxDeserializationDUnitTest(String name) {
-    super(name);
+  public PdxDeserializationDUnitTest() {
+    super();
   }
   
   /**
    * Test that we don't deserialize objects on a remote peer
    * when performing operations. 
    */
+  @Test
   public void testP2P() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -77,6 +88,7 @@ public class PdxDeserializationDUnitTest extends CacheTestCase {
    * Test to make sure we don't deserialize
    * objects on a server that is a datastore 
    */
+  @Test
   public void testClientToDataStore() {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(1);
@@ -89,6 +101,7 @@ public class PdxDeserializationDUnitTest extends CacheTestCase {
    * Test to make sure we don't deserialize
    * objects on a server that is an accessor.
    */
+  @Test
   public void testClientToAccessor() {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(1);
@@ -101,6 +114,7 @@ public class PdxDeserializationDUnitTest extends CacheTestCase {
    * Test to make sure we don't deserialize
    * objects on a client that has registered interest.
    */
+  @Test
   public void testAccessorToClient() {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(1);

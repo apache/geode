@@ -34,6 +34,8 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.*;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 /**
  * Provides an implementation of <code>DistributionConfig</code> that
  * knows how to read the configuration file.
@@ -1140,7 +1142,7 @@ public class DistributionConfigImpl
     // a no-op since multicast discovery has been removed
     // and the default mcast port is now zero
 
-    //    ConfigSource cs = getAttSourceMap().get(DistributedSystemConfigProperties.MCAST_PORT);
+    //    ConfigSource cs = getAttSourceMap().get(ConfigurationProperties.MCAST_PORT);
 //    if (cs == null) {
 //      String locators = getLocators();
 //      if (locators != null && !locators.isEmpty()) {

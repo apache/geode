@@ -16,41 +16,32 @@
  */
 package com.gemstone.gemfire.internal.cache.diskPerf;
 
-import java.util.*;
+import java.util.Arrays;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
-import com.gemstone.gemfire.*;
+import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.internal.cache.DiskRegionHelperFactory;
 import com.gemstone.gemfire.internal.cache.DiskRegionProperties;
 import com.gemstone.gemfire.internal.cache.DiskRegionTestingBase;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * 
  * Disk region Perf test for Overflow only with ASync writes. 1) Performance of
  * get operation for entry in memory.
- *  
  */
 @Category(IntegrationTest.class)
-public class DiskRegOverflowAsyncGetInMemPerfJUnitTest extends DiskRegionTestingBase
-{
+public class DiskRegOverflowAsyncGetInMemPerfJUnitTest extends DiskRegionTestingBase {
 
-  LogWriter log = null;
+  private static int counter = 0;
 
-  static int counter = 0;
+  private LogWriter log = null;
 
-  DiskRegionProperties diskProps = new DiskRegionProperties();
+  private DiskRegionProperties diskProps = new DiskRegionProperties();
 
-  @Before
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  protected final void postSetUp() throws Exception {
     diskProps.setDiskDirs(dirs);
 //    Properties properties = new Properties();
     diskProps.setBytesThreshold(10000l);
@@ -61,10 +52,8 @@ public class DiskRegOverflowAsyncGetInMemPerfJUnitTest extends DiskRegionTesting
     log = ds.getLogWriter();
   }
 
-  @After
-  public void tearDown() throws Exception
-  {
-    super.tearDown();
+  @Override
+  protected final void postTearDown() throws Exception {
     if (cache != null) {
       cache.close();
     }
@@ -73,21 +62,17 @@ public class DiskRegOverflowAsyncGetInMemPerfJUnitTest extends DiskRegionTesting
     }
   }
 
- 
   private static int ENTRY_SIZE = 1024;
   
   /* OP_COUNT can be increased/decrease as per the requirement.
    * If required to be set as higher value such as 1000000
    * one needs to set the VM heap size accordingly.
    * (For example:Default setting in build.xml is <jvmarg value="-Xmx256M"/>
-   *    
    */
-  
   private static int OP_COUNT = 1000;
 
   @Test
-  public void testPopulatefor1Kbwrites()
-  {
+  public void testPopulatefor1Kbwrites() {
 //    RegionAttributes ra = region.getAttributes();
 //    final String key = "K";
     final byte[] value = new byte[ENTRY_SIZE];
@@ -129,8 +114,5 @@ public class DiskRegOverflowAsyncGetInMemPerfJUnitTest extends DiskRegionTesting
         + " bytes/sec=" + bytesPerSecGet;
     log.info(statsGet);
     System.out.println("Perf Stats of get which is in memory :" + statsGet);
-
   }
-
 }
-

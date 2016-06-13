@@ -16,7 +16,24 @@
  */
 package com.gemstone.gemfire.internal.cache.wan;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.EvictionAction;
+import com.gemstone.gemfire.cache.EvictionAttributes;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.server.CacheServer;
@@ -29,23 +46,20 @@ import com.gemstone.gemfire.internal.cache.ha.HAContainerRegion;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
+@Category(DistributedTest.class)
 public class CacheClientNotifierDUnitTest extends WANTestBase {
+
   private static final int NUM_KEYS = 10;
   
-  public CacheClientNotifierDUnitTest(String name) {
-    super(name);
-    // TODO Auto-generated constructor stub
-  }
-
-  private int createCacheServerWithCSC(VM vm, final boolean withCSC, final int capacity, 
+  private int createCacheServerWithCSC(VM vm, final boolean withCSC, final int capacity,
       final String policy, final String diskStoreName) {
     final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
@@ -147,11 +161,12 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     vm.invoke(verifyRegionSize);
   }
   
-  /*
+  /**
    * The test will start several cache servers, including gateway receivers.
-   * Shutdown them and verify the CacheClientNofifier for each server is correct
+   * Shutdown them and verify the CacheClientNotifier for each server is correct
    */
-  // GEODE-1183: random ports, failure to start threads, eats exceptions, time sensitive
+  @Category(FlakyTest.class) // GEODE-1183: random ports, failure to start threads, eats exceptions, time sensitive
+  @Test
   public void testNormalClient2MultipleCacheServer() throws Exception {
     doMultipleCacheServer(false);
   }
@@ -220,7 +235,7 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
 
   public static void createClientWithLocator(int port0,String host,
       String regionName, String clientId, boolean isDurable) {
-    WANTestBase test = new WANTestBase(getTestMethodName());
+    WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -259,5 +274,4 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
         "Distributed Region " + regionName + " created Successfully :"
             + region.toString() + " in a "+(isDurable?"durable":"")+" client");
   }
-
- }
+}

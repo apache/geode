@@ -16,16 +16,26 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.PartitionAttributesFactory;
 import com.gemstone.gemfire.cache.RegionAttributes;
 
+@Category(DistributedTest.class)
 public class PersistentPartitionedRegionOldConfigDUnitTest extends PersistentPartitionedRegionDUnitTest {
 
-  public PersistentPartitionedRegionOldConfigDUnitTest(String name) {
-    super(name);
+  public PersistentPartitionedRegionOldConfigDUnitTest() {
+    super();
   }
   
   @Override

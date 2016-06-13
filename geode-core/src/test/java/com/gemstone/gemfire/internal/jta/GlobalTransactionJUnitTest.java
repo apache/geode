@@ -16,6 +16,25 @@
  */
 package com.gemstone.gemfire.internal.jta;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Properties;
+import javax.naming.Context;
+import javax.transaction.RollbackException;
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
@@ -23,19 +42,9 @@ import com.gemstone.gemfire.internal.datasource.GemFireBasicDataSource;
 import com.gemstone.gemfire.internal.datasource.GemFireTransactionDataSource;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
-import junit.framework.TestCase;
-import org.junit.experimental.categories.Category;
-
-import javax.naming.Context;
-import javax.transaction.*;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 @Category(IntegrationTest.class)
-public class GlobalTransactionJUnitTest extends TestCase {
+public class GlobalTransactionJUnitTest {
 
   private static Properties props = null;
   private static DistributedSystem ds1 = null;
@@ -43,8 +52,8 @@ public class GlobalTransactionJUnitTest extends TestCase {
   private static UserTransaction utx = null;
   private static TransactionManager tm = null;
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     String path = TestUtil.getResourcePath(GlobalTransactionJUnitTest.class, "/jta/cachejta.xml");
@@ -55,48 +64,35 @@ public class GlobalTransactionJUnitTest extends TestCase {
     tm = TransactionManagerImpl.getTransactionManager();
   }
 
-  @Override
-  protected void tearDown() throws Exception {
+  @After
+  public void tearDown() throws Exception {
     ds1.disconnect();
   }
 
-  public GlobalTransactionJUnitTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testGetSimpleDataSource() throws Exception {
-    try {
-      Context ctx = cache.getJNDIContext();
-      GemFireBasicDataSource ds = (GemFireBasicDataSource) ctx
-          .lookup("java:/SimpleDataSource");
-      Connection conn = ds.getConnection();
-      if (conn == null)
-        fail("DataSourceFactoryTest-testGetSimpleDataSource() Error in creating the GemFireBasicDataSource");
-    }
-    catch (Exception e) {
-      fail("Exception occured in testGetSimpleDataSource due to " + e);
-      e.printStackTrace();
-    }
+    Context ctx = cache.getJNDIContext();
+    GemFireBasicDataSource ds = (GemFireBasicDataSource) ctx
+        .lookup("java:/SimpleDataSource");
+    Connection conn = ds.getConnection();
+    if (conn == null)
+      fail("DataSourceFactoryTest-testGetSimpleDataSource() Error in creating the GemFireBasicDataSource");
   }
 
-  public void testSetRollbackOnly() {
-    try {
-      utx.begin();
-      utx.setRollbackOnly();
-      Transaction txn = tm.getTransaction();
-      if (txn.getStatus() != Status.STATUS_MARKED_ROLLBACK) {
-        utx.rollback();
-        fail("testSetRollbackonly failed");
-      }
+  @Test
+  public void testSetRollbackOnly() throws Exception {
+    utx.begin();
+    utx.setRollbackOnly();
+    Transaction txn = tm.getTransaction();
+    if (txn.getStatus() != Status.STATUS_MARKED_ROLLBACK) {
       utx.rollback();
+      fail("testSetRollbackonly failed");
     }
-    catch (Exception e) {
-      fail("exception in testSetRollbackonly due to " + e);
-      e.printStackTrace();
-    }
+    utx.rollback();
   }
 
-  public void testEnlistResource() {
+  @Test
+  public void testEnlistResource() throws Exception {
     try {
       boolean exceptionoccured = false;
       utx.begin();
@@ -125,7 +121,8 @@ public class GlobalTransactionJUnitTest extends TestCase {
     }
   }
 
-  public void testRegisterSynchronization() {
+  @Test
+  public void testRegisterSynchronization() throws Exception {
     try {
       boolean exceptionoccured = false;
       utx.begin();
@@ -153,7 +150,8 @@ public class GlobalTransactionJUnitTest extends TestCase {
     }
   }
 
-  public void testEnlistResourceAfterRollBack() {
+  @Test
+  public void testEnlistResourceAfterRollBack() throws Exception {
     try {
       boolean exceptionoccured = false;
       utx.begin();
@@ -183,7 +181,8 @@ public class GlobalTransactionJUnitTest extends TestCase {
     }
   }
 
-  public void testRegisterSynchronizationAfterRollBack() {
+  @Test
+  public void testRegisterSynchronizationAfterRollBack() throws Exception {
     try {
       boolean exceptionoccured = false;
       utx.begin();
@@ -213,34 +212,23 @@ public class GlobalTransactionJUnitTest extends TestCase {
     }
   }
 
-  public void testSuspend() {
-    try {
-      utx.begin();
-//      Transaction txn = tm.getTransaction();
-      tm.suspend();
-      Transaction txn1 = tm.getTransaction();
-      if (txn1 != null)
-        fail("suspend failed to suspend the transaction");
-    }
-    catch (Exception e) {
-      fail("exception in testSuspend due to " + e);
-      e.printStackTrace();
-    }
+  @Test
+  public void testSuspend() throws Exception {
+    utx.begin();
+    tm.suspend();
+    Transaction txn1 = tm.getTransaction();
+    if (txn1 != null)
+      fail("suspend failed to suspend the transaction");
   }
 
-  public void testResume() {
-    try {
-      utx.begin();
-      Transaction txn = tm.getTransaction();
-      Transaction txn1 = tm.suspend();
-      tm.resume(txn1);
-      if (txn != tm.getTransaction())
-        fail("resume failed ");
-      utx.commit();
-    }
-    catch (Exception e) {
-      fail("exception in testSuspend due to " + e);
-      e.printStackTrace();
-    }
+  @Test
+  public void testResume() throws Exception {
+    utx.begin();
+    Transaction txn = tm.getTransaction();
+    Transaction txn1 = tm.suspend();
+    tm.resume(txn1);
+    if (txn != tm.getTransaction())
+      fail("resume failed ");
+    utx.commit();
   }
 }

@@ -18,8 +18,8 @@ package com.gemstone.gemfire.disttx;
 
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PRTXJUnitTest;
 import com.gemstone.gemfire.test.junit.categories.DistributedTransactionsTest;
@@ -30,7 +30,7 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * Same tests as that of {@link PRTXJUnitTest} after setting
@@ -47,7 +47,7 @@ public class PRDistTXJUnitTest extends PRTXJUnitTest {
   protected void createCache() throws Exception {
     Properties p = new Properties();
     p.setProperty(MCAST_PORT, "0"); // loner
-    p.setProperty(DistributedSystemConfigProperties.DISTRIBUTED_TRANSACTIONS, "true");
+    p.setProperty(ConfigurationProperties.DISTRIBUTED_TRANSACTIONS, "true");
     this.cache = (GemFireCacheImpl) CacheFactory.create(DistributedSystem
         .connect(p));
     createRegion();

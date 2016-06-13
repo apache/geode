@@ -22,6 +22,8 @@
  */
 package com.gemstone.gemfire.cache.query.functional;
 
+import static org.junit.Assert.*;
+
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -31,10 +33,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.CacheUtils;
@@ -49,12 +47,8 @@ import com.gemstone.gemfire.cache.query.internal.ExecutionContext;
 import com.gemstone.gemfire.cache.query.internal.parse.OQLLexerTokenTypes;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-/**
- *
- */
 @Category(IntegrationTest.class)
 public class FunctionJUnitTest {
-
 
   @Before
   public void setUp() throws java.lang.Exception {

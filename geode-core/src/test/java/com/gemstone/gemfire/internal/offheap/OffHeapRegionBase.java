@@ -24,7 +24,7 @@ import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.compression.SnappyCompressor;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.internal.offheap.annotations.OffHeapIdentifier;
 import com.gemstone.gemfire.internal.offheap.annotations.Released;
@@ -40,8 +40,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.*;
 
 /**
@@ -64,7 +64,7 @@ public abstract class OffHeapRegionBase {
     Properties props = new Properties();
     props.setProperty(LOCATORS, "");
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DistributedSystemConfigProperties.OFF_HEAP_MEMORY_SIZE, getOffHeapMemorySize());
+    props.setProperty(ConfigurationProperties.OFF_HEAP_MEMORY_SIZE, getOffHeapMemorySize());
     GemFireCacheImpl result = (GemFireCacheImpl) new CacheFactory(props).setPdxPersistent(isPersistent).create();
     unconfigureOffHeapStorage();
     return result;

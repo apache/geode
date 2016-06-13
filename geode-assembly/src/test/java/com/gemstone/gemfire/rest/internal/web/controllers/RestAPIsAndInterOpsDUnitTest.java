@@ -16,6 +16,13 @@
  */
 package com.gemstone.gemfire.rest.internal.web.controllers;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
@@ -49,7 +56,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Dunit Test containing inter - operations between REST Client and Gemfire cache client
@@ -57,6 +64,7 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  * @since GemFire 8.0
  */
 
+@Category(DistributedTest.class)
 public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
 
   private static final long serialVersionUID = -254776154266339226L;
@@ -147,9 +155,9 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
       + " \"middleName\": \"kiran12\"," + " \"lastName\": \"Patel\","
       + " \"birthDate\": \"23/08/2012\"," + "\"gender\": \"MALE\"" + "}" + "]";
 
-  public RestAPIsAndInterOpsDUnitTest(String name) {
-    super(name);
-    this.helper = new ManagementTestBase(name);
+  public RestAPIsAndInterOpsDUnitTest() {
+    super();
+    this.helper = new ManagementTestBase() {{}};
 
   }
 
@@ -759,6 +767,7 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
    * @throws Exception
    */
 
+  @Test
   public void testInterOpsWithReplicatedRegion() throws Exception {
 
     final Host host = Host.getHost(0);

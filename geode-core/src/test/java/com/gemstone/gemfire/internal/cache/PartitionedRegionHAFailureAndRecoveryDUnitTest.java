@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +60,7 @@ import com.gemstone.gemfire.test.dunit.VM;
  * cleanup for multiple failed nodes.</br>
  *
  */
+@Category(DistributedTest.class)
 public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends
     PartitionedRegionDUnitTestCase
 {
@@ -63,9 +73,9 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends
    *
    * @param name
    */
-  public PartitionedRegionHAFailureAndRecoveryDUnitTest(String name) {
+  public PartitionedRegionHAFailureAndRecoveryDUnitTest() {
 
-    super(name);
+    super();
   }
 
   /**
@@ -78,6 +88,7 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends
    * (5) Validate Failed node's bucket2Node Region metadata. </br>
    */
 
+  @Test
   public void testMetaDataCleanupOnSinglePRNodeFail() throws Throwable
   {
     // create the VM's
@@ -187,6 +198,7 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends
    * (4) Validate all Failed node's config metadata </br> <br>
    * (5) Validate all Failed node's bucket2Node Region metadata. </br>
    */
+  @Test
   public void testMetaDataCleanupOnMultiplePRNodeFail() throws Throwable
   {
     // create the VM's
@@ -412,6 +424,7 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends
    * Test for peer recovery of buckets when a member is removed from the distributed system 
    * @throws Throwable
    */
+  @Test
   public void testRecoveryOfSingleMemberFailure() throws Throwable
   {
     final String uniqName = getUniqueName();

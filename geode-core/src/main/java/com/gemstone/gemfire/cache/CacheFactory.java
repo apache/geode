@@ -19,6 +19,7 @@ package com.gemstone.gemfire.cache;
 
 import java.util.Properties;
 
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.GemFireVersion;
@@ -93,7 +94,8 @@ public class CacheFactory {
   }
   /**
    * Create a CacheFactory initialized with the given gemfire properties.
-   * For a list of valid gemfire properties see {@link DistributedSystem}.
+   * For a list of valid GemFire properties and their meanings
+   * see {@linkplain ConfigurationProperties}.
    * @param props the gemfire properties to initialize the factory with.
    * @since GemFire 6.5
    */
@@ -106,7 +108,8 @@ public class CacheFactory {
 
   /**
    * Sets a gemfire property that will be used when creating the Cache.
-   * For a list of valid gemfire properties see {@link DistributedSystem}.
+   * For a list of valid GemFire properties and their meanings
+   * see {@link ConfigurationProperties}.
    * @param name the name of the gemfire property
    * @param value the value of the gemfire property
    * @return a reference to this CacheFactory object

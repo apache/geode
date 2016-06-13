@@ -16,27 +16,39 @@
  */
 package com.gemstone.gemfire.cache.query.partitioned;
 
-import static com.gemstone.gemfire.cache.query.Utils.createPortfolioData;
+import static com.gemstone.gemfire.cache.query.Utils.*;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.query.data.PortfolioData;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- * Basic funtional test for removing index from a partitioned region system.
- * 
+ * Basic functional test for removing index from a partitioned region system.
  */
-public class PRBasicRemoveIndexDUnitTest extends PartitionedRegionDUnitTestCase
-{
+@Category(DistributedTest.class)
+public class PRBasicRemoveIndexDUnitTest extends PartitionedRegionDUnitTestCase {
+
+  private final PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();
+
+  private final int start = 0;
+
+  private final int end = 1003;
+
   /**
-   * Constructor
-   * @param name
-   */  
-  public PRBasicRemoveIndexDUnitTest (String name) {
-    super(name);
-  }
+   * Name of the partitioned region for the test.
+   */
+  private final String name = "PartitionedPortfolios";
+
+  /**
+   * Redundancy level for the pr.
+   */
+  private final int redundancy = 0;
 
   public void setCacheInVMs(VM... vms) {
     for (VM vm : vms) {
@@ -44,32 +56,11 @@ public class PRBasicRemoveIndexDUnitTest extends PartitionedRegionDUnitTestCase
     }
   }
   
-  PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();
-  
-  /**
-   * Name of the partitioned region for the test.
-   */
-  final String name = "PartionedPortfolios";
-  
-  
-  final int start = 0;
-  
-  final int end = 1003;
-
-  /**
-   * Reduncancy level for the pr.
-   */
-  final int redundancy = 0;
-
-  
   /**
    * Remove index test to remove all the indexes in a given partitioned region
-   * 
-   * @throws Exception
-   *           if the test fails
    */
-  public void testPRBasicIndexRemove() throws Exception
-  {
+  @Test
+  public void testPRBasicIndexRemove() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -106,12 +97,12 @@ public class PRBasicRemoveIndexDUnitTest extends PartitionedRegionDUnitTestCase
     
     LogWriterUtils.getLogWriter().info(
     "PRBasicRemoveIndexDUnitTest.testPRBasicRemoveIndex test now  ends sucessfully");
-
   }
   
   /**
    * Test removing single index on a pr.
    */
+  @Test
   public void testPRBasicRemoveParticularIndex() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

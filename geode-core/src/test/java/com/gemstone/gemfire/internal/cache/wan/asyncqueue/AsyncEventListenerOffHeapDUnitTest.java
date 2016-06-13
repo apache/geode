@@ -16,11 +16,21 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.asyncqueue;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 @SuppressWarnings("serial")
+@Category(DistributedTest.class)
 public class AsyncEventListenerOffHeapDUnitTest extends AsyncEventListenerDUnitTest {
 
-  public AsyncEventListenerOffHeapDUnitTest(String name) {
-    super(name);
+  public AsyncEventListenerOffHeapDUnitTest() {
+    super();
   }
 
   @Override

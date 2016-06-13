@@ -16,6 +16,16 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.Pool;
@@ -24,26 +34,18 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.internal.cache.HARegion;
 import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.VM;
-
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- * 
- *
  * The test is written to verify that the rootRegion() in GemfireCache.java
  * doesn't return any metaRegions or HA Regions.
- * 
  */
-
-public class Bug37805DUnitTest extends DistributedTestCase{
+@Category(DistributedTest.class)
+public class Bug37805DUnitTest extends JUnit4DistributedTestCase {
 
   private VM server1VM;
 
@@ -52,10 +54,6 @@ public class Bug37805DUnitTest extends DistributedTestCase{
   private String regionName;
 
   private int PORT1;
-
-  public Bug37805DUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -73,6 +71,7 @@ public class Bug37805DUnitTest extends DistributedTestCase{
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
   }
   
+  @Test
   public void testFunctionality() {
  // Step 1: Starting the servers
 

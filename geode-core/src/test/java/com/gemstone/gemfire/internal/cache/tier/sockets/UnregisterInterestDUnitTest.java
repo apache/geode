@@ -19,7 +19,21 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.GemFireCache;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
@@ -30,17 +44,17 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.FilterProfile;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.ArrayList;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
-
-/**
- */
-public class UnregisterInterestDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
 
   private VM server0 = null;
   private VM client1 = null;
@@ -48,19 +62,12 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
 
   private static GemFireCache cache = null;
 
-  private static final String regionname = "UnregisterInterestDUnitTest_region";
+  private static final String regionname = UnregisterInterestDUnitTest.class.getSimpleName() + "_region";
   private static final int all_keys = 0;
   private static final int list = 1;
   private static final int regex = 2;
   private static final int filter = 3;
   private static final boolean receiveValuesConstant = true;
-
-  /**
-   * @param name
-   */
-  public UnregisterInterestDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -98,6 +105,7 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testUnregisterInterestAllKeys() throws Exception {
     server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(all_keys, 0, 0));
     client1.invoke(() -> UnregisterInterestDUnitTest.registerInterest(all_keys, receiveValuesConstant, null));
@@ -117,6 +125,7 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testUnregisterInterestKeys() throws Exception {
     server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(list, 0, 0));
     client1.invoke(UnregisterInterestDUnitTest.class, "registerInterest", new Object[] {list, receiveValuesConstant, new String[]{"key_1", "key_2", "key_3", "key_4", "key_5"}});
@@ -137,6 +146,7 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testUnregisterInterestPatterns() throws Exception {
     server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(regex, 0, 0));
     client1.invoke(UnregisterInterestDUnitTest.class, "registerInterest", new Object[] {regex, receiveValuesConstant, new String[] {"[a-z]*[0-9]"}});
@@ -158,6 +168,7 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testUnregisterInterestKeysInvForOneClientDoesNotAffectOtherClient() throws Exception {
     server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(list, 0, 0));
     client1.invoke(UnregisterInterestDUnitTest.class, "registerInterest", new Object[] {list, !receiveValuesConstant, new String[] {"key_1", "key_2", "key_3", "key_4", "key_5"}});
@@ -181,6 +192,7 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
    * 
    * @throws Exception
    */
+  @Test
   public void testUnregisterInterestRegexInvForOneClientDoesNotAffectOtherClient() throws Exception {
     server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(regex, 0, 0));
     client1.invoke(UnregisterInterestDUnitTest.class, "registerInterest", new Object[] {regex, !receiveValuesConstant, new String[] {"[a-z]*[0-9]"}});
@@ -192,8 +204,9 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
     client2.invoke(() -> UnregisterInterestDUnitTest.timedWaitForInvalidates(5));
   }
 
-  public void _testUnregisterInterestFilters() throws Exception {
-    
+  @Ignore("TODO: never implemented")
+  @Test
+  public void testUnregisterInterestFilters() throws Exception {
   }
 
   public static void checkRIArtifacts(Integer interestType, Integer value, Integer valueInv) {
@@ -303,7 +316,7 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
   }
 
   public static Integer createCacheAndStartServer() throws Exception {
-    DistributedSystem ds = new UnregisterInterestDUnitTest("UnregisterInterestDUnitTest").getSystem();
+    DistributedSystem ds = new UnregisterInterestDUnitTest().getSystem();
     ds.disconnect();
     Properties props = new Properties();
     props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
@@ -318,7 +331,7 @@ public class UnregisterInterestDUnitTest extends DistributedTestCase {
   }
 
   public static void createClientCache(Host host, Integer port) throws Exception {
-    DistributedSystem ds = new UnregisterInterestDUnitTest("UnregisterInterestDUnitTest").getSystem();
+    DistributedSystem ds = new UnregisterInterestDUnitTest().getSystem();
     ds.disconnect();
 
     Properties props = new Properties();

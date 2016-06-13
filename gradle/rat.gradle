@@ -46,6 +46,7 @@ rat {
     // IDE
     'etc/eclipseFormatterProfile.xml',
     'etc/intellijIdeaCodeStyle.xml',
+    'etc/eclipseOrganizeImports.importorder', 
     '**/.project',
     '**/.classpath',
     '**/.settings/**',

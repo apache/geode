@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.Serializable;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -39,43 +48,52 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  *
  */
-public class DeltaSizingDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
   
   /**
    * @param name
    */
-  public DeltaSizingDUnitTest(String name) {
-    super(name);
+  public DeltaSizingDUnitTest() {
+    super();
   }
   
+  @Test
   public void testPeerWithoutCloning() throws Exception {
     doPeerTest(false, false);
   }
   
+  @Test
   public void testPeerWithCloning() throws Exception {
     doPeerTest(true, false);
   }
   
+  @Test
   public void testPeerWithCopyOnRead() throws Exception {
     doPeerTest(false, true);
   }
   
+  @Test
   public void testPeerWithCopyOnAndClone() throws Exception {
     doPeerTest(true, true);
   }
   
+  @Test
   public void testClientWithoutCloning() throws Exception {
     doClientTest(false, false);
   }
   
+  @Test
   public void testClientWithCloning() throws Exception {
     doClientTest(true, false);
   }
   
+  @Test
   public void testClientWithCopyOnRead() throws Exception {
     doClientTest(false, true);
   }
   
+  @Test
   public void testClientWithCopyOnAndClone() throws Exception {
     doClientTest(true, true);
   }

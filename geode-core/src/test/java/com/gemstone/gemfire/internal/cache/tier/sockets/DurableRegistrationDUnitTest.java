@@ -16,6 +16,17 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
@@ -26,19 +37,22 @@ import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
+import com.gemstone.gemfire.internal.cache.FilterProfile;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- * 
- * 
  * We have 2 servers and One client which registers some keys with durable
  * interest and some without it. We maintain queues on only One server as
  * redundancy level is one. Following 2 tests have the two TestCase scenarios
@@ -59,9 +73,9 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  * Unregister Some Keys (Here K1, K3) // Step 12: Modify values on the server
  * for all the Keys // Step 13: Check the values for the ones not unregistered
  * and the Unregistered Keys' Values should be null
- * 
  */
-public class DurableRegistrationDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
   private VM server1VM;
 
@@ -83,8 +97,8 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
 
   private static final String K4 = "KEY_STONE4";
 
-  public DurableRegistrationDUnitTest(String name) {
-    super(name);
+  public DurableRegistrationDUnitTest() {
+    super();
   }
 
   @Override
@@ -97,6 +111,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
     CacheServerTestUtil.disableShufflingOfEndpoints();
   }
 
+  @Test
   public void testSimpleDurableClient() {
 
     // Step 1: Starting the servers
@@ -215,6 +230,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
 
   }
 
+  @Test
   public void testSimpleDurableClientWithRegistration() {
     // Step 1: Starting the servers
     PORT1 = ((Integer)this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer( regionName, new Boolean(true)
@@ -366,6 +382,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
 
   }
 
+  @Test
   public void testDurableClientWithRegistrationHA() {
     
     // Step 1: Start server1
@@ -459,6 +476,7 @@ public class DurableRegistrationDUnitTest extends DistributedTestCase {
 
   }
 
+  @Test
   public void testDurableClientDisConnectWithRegistrationHA() {
     
     // Step 1: Start server1

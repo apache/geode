@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.concurrent.CancellationException;
 
 import com.gemstone.gemfire.Statistics;
@@ -40,13 +49,14 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
 /**
  *  
  */
+@Category(DistributedTest.class)
 public class PartitionedRegionStatsDUnitTest extends
     PartitionedRegionDUnitTestCase
 {
 
   //////constructor //////////
-  public PartitionedRegionStatsDUnitTest(String name) {
-    super(name);
+  public PartitionedRegionStatsDUnitTest() {
+    super();
   }//end of constructor
 
   public static final String PR_PREFIX = "PR";
@@ -72,6 +82,7 @@ public class PartitionedRegionStatsDUnitTest extends
   final int totalNumBuckets = 5;
   static final int REDUNDANT_COPIES = 1; 
   //////////test methods ////////////////
+  @Test
   public void testClose() throws Exception
   {
 
@@ -335,6 +346,7 @@ public class PartitionedRegionStatsDUnitTest extends
      */
   }
   
+  @Test
   public void testDataStoreEntryCountWithRebalance() throws InterruptedException {
     //Ok, first problem, GC'd tombstone is counted as an entry
     //To test
@@ -386,6 +398,7 @@ public class PartitionedRegionStatsDUnitTest extends
     validateEntryCount(vm1, 1);
   }
   
+  @Test
   public void testDataStoreEntryCount2WithRebalance() throws InterruptedException {
     final Host host = Host.getHost(0);
 
@@ -438,6 +451,7 @@ public class PartitionedRegionStatsDUnitTest extends
    * accurate.
    * @throws InterruptedException 
    */
+  @Test
   public void testDataStoreEntryCount() throws InterruptedException {
     //Ok, first problem, GC'd tombstone is counted as an entry
     //To test
@@ -554,6 +568,7 @@ public class PartitionedRegionStatsDUnitTest extends
   }
   
     
+  @Test
   public void testTotalNumBuckets() {
 	  final Host host = Host.getHost(0);
 	  

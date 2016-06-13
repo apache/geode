@@ -39,7 +39,7 @@ import com.gemstone.gemfire.test.dunit.internal.JUnit3DistributedTestCase;
  */
 public abstract class JUnit3CacheTestCase extends JUnit3DistributedTestCase implements CacheTestFixture {
 
-  private final JUnit4CacheTestCase delegate = new JUnit4CacheTestCase(this);
+  private final JUnit4CacheTestCase delegate = new JUnit4CacheTestCase(this){};
 
   public JUnit3CacheTestCase(final String name) {
     super(name);

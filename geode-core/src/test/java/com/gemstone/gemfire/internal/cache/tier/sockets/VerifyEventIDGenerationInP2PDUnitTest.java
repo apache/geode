@@ -16,7 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static org.junit.Assert.*;
+
 import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -31,21 +37,19 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
- * 
  * To verify that new events get generated on the node by get operation for key
  * that is not present in the node's region.
  * Currently test is commented because of the bug.
- * 
- * 
  */
+@Category(DistributedTest.class)
+public class VerifyEventIDGenerationInP2PDUnitTest extends JUnit4DistributedTestCase {
 
-public class VerifyEventIDGenerationInP2PDUnitTest extends DistributedTestCase
-{
   private static Cache cache = null;
 
   static VM vm0 = null;
@@ -62,8 +66,8 @@ public class VerifyEventIDGenerationInP2PDUnitTest extends DistributedTestCase
 
   /* Constructor */
 
-  public VerifyEventIDGenerationInP2PDUnitTest(String name) {
-    super(name);
+  public VerifyEventIDGenerationInP2PDUnitTest() {
+    super();
   }
 
   @Override
@@ -76,19 +80,15 @@ public class VerifyEventIDGenerationInP2PDUnitTest extends DistributedTestCase
     receiver = false;
   }
 
-  public void _testEventIDGeneration() throws Exception
-  {
+  @Ignore("TODO")
+  @Test
+  public void testEventIDGeneration() throws Exception {
     createEntry();
     vm0.invoke(() -> VerifyEventIDGenerationInP2PDUnitTest.get());
     Boolean pass = (Boolean)vm0.invoke(() -> VerifyEventIDGenerationInP2PDUnitTest.verifyResult());
     assertFalse(pass.booleanValue());
   }
 
-  public void testDummy() throws Exception
-  {
-    
-  }
-  
   private void createCache(Properties props) throws Exception
   {
     DistributedSystem ds = getSystem(props);
@@ -106,7 +106,7 @@ public class VerifyEventIDGenerationInP2PDUnitTest extends DistributedTestCase
 
   public static void createServerCache() throws Exception
   {
-    new VerifyEventIDGenerationInP2PDUnitTest("temp")
+    new VerifyEventIDGenerationInP2PDUnitTest()
         .createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);

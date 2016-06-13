@@ -16,11 +16,14 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
 import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
@@ -30,14 +33,10 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-@Ignore("Test was disabled by renaming to DisabledTest")
+@Ignore("TODO: Test was disabled by renaming to DisabledTest")
 public class EvictionDUnitTest extends EvictionTestBase {
-  private static final long serialVersionUID = 270073077723092256L;
 
-  public EvictionDUnitTest(String name) {
-    super(name);
-  }
- 
+  @Test
   public void testDummyInlineNCentralizedEviction() {
     prepareScenario1(EvictionAlgorithm.LRU_HEAP,0);
     putData("PR1", 50, 1);
@@ -53,6 +52,7 @@ public class EvictionDUnitTest extends EvictionTestBase {
     validateNoOfEvictions("PR1", 4 + expectedEviction1 + expectedEviction2);
   }
   
+  @Test
   public void testThreadPoolSize() {
     prepareScenario1(EvictionAlgorithm.LRU_HEAP,0);
     putData("PR1", 50, 1);
@@ -60,6 +60,7 @@ public class EvictionDUnitTest extends EvictionTestBase {
     verifyThreadPoolTaskCount(HeapEvictor.MAX_EVICTOR_THREADS);
   }
   
+  @Test
   public void testCentralizedEvictionnForDistributedRegionWithDummyEvent() {
     prepareScenario1(EvictionAlgorithm.LRU_HEAP,0);
     createDistributedRegion();
@@ -77,6 +78,7 @@ public class EvictionDUnitTest extends EvictionTestBase {
    * goes down and then comes up again causing GII to take place, the system
    * doesnot throw an OOME.
    */
+  @Test
   public void testEvictionWithNodeDown() {
     prepareScenario2(EvictionAlgorithm.LRU_HEAP, "PR3", "PR4");
     putDataInDataStore3("PR3", 100, 1);
@@ -88,6 +90,7 @@ public class EvictionDUnitTest extends EvictionTestBase {
     assertEquals(0, getPRSize("PR4"));
   }
   
+  @Test
   public void testEntryLruEvictions() {
     int extraEntries=1;
     createCache();
@@ -104,8 +107,8 @@ public class EvictionDUnitTest extends EvictionTestBase {
      
     assertEquals(extraEntries,((AbstractLRURegionMap)pr.entries)._getLruList().stats().getEvictions());
   }
-  
-  
+
+  @Test
   public void testEntryLru() {
     createCache();
     maxEnteries=12;
@@ -132,6 +135,7 @@ public class EvictionDUnitTest extends EvictionTestBase {
    assertEquals(0,((AbstractLRURegionMap)pr.entries)._getLruList().stats().getEvictions());
   }
 
+  @Test
   public void testCheckEntryLruEvictionsIn1DataStore() {
     int extraEntries=10;
     createCache();
@@ -162,14 +166,15 @@ public class EvictionDUnitTest extends EvictionTestBase {
     }
   }
   
+  @Test
   public void testCheckEntryLruEvictionsIn2DataStore() {
     maxEnteries=20;
     prepareScenario1(EvictionAlgorithm.LRU_ENTRY,maxEnteries);
     putData("PR1", 60, 1);
     validateNoOfEvictions("PR1", 20);
   }
-  
-  
+
+  @Test
   public void testMemLruForPRAndDR() {
     createCache();
     createPartitionedRegion(true, EvictionAlgorithm.LRU_MEMORY, "PR1", 4, 1, 1000,40);
@@ -195,6 +200,7 @@ public class EvictionDUnitTest extends EvictionTestBase {
    assertTrue(((AbstractLRURegionMap)dr.entries)._getLruList().stats().getEvictions()<=2);
   }
   
+  @Test
   public void testEachTaskSize() {
     createCache();
     createPartitionedRegion(true, EvictionAlgorithm.LRU_HEAP, "PR1", 6, 1,
@@ -211,37 +217,5 @@ public class EvictionDUnitTest extends EvictionTestBase {
         assertEquals(8, size.intValue());
       }
     }
-
-    /*
-    final PartitionedRegion pr1 = (PartitionedRegion)cache.getRegion("PR1");
-    final PartitionedRegion pr2 = (PartitionedRegion)cache.getRegion("PR2");
-    final PartitionedRegion pr3 = (PartitionedRegion)cache.getRegion("PR3");
-    final DistributedRegion dr1 = (DistributedRegion)cache.getRegion("DR1");
-    
-    for (int counter = 1; counter <= 18; counter++) {
-      pr1.put(new Integer(counter), new byte[1 * 1024 * 1024]);
-    }
-    getLogWriter().info("Size of PR1 before eviction = "+ pr1.size());
-    
-    for (int counter = 1; counter <= 30; counter++) {
-      pr2.put(new Integer(counter), new byte[1 * 1024 * 1024]);
-    }
-    getLogWriter().info("Size of PR2 before eviction = "+ pr2.size());
-    
-    for (int counter = 1; counter <= 45; counter++) {
-      pr3.put(new Integer(counter), new byte[1 * 1024 * 1024]);
-    }
-    getLogWriter().info("Size of PR3 before eviction = "+ pr3.size());
-    
-    for (int counter = 1; counter <= 150; counter++) {
-      dr1.put(new Integer(counter), new byte[1 * 1024 * 1024]);
-    }
-    getLogWriter().info("Size of DR1 before eviction = "+ dr1.size());
-    
-    
-    getLogWriter().info("Size of PR1 after eviction = "+ pr1.size());
-    getLogWriter().info("Size of PR2 after eviction = "+ pr2.size());
-    getLogWriter().info("Size of PR3 after eviction = "+ pr3.size());
-    getLogWriter().info("Size of PR4 after eviction = "+ dr1.size());*/
   }
 }

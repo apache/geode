@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.pdx;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.List;
 import java.util.Properties;
 
@@ -37,10 +46,11 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
 
-public class PDXAsyncEventQueueDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PDXAsyncEventQueueDUnitTest extends JUnit4CacheTestCase {
 
-  public PDXAsyncEventQueueDUnitTest(String name) {
-    super(name);
+  public PDXAsyncEventQueueDUnitTest() {
+    super();
   }
   
   /**
@@ -48,6 +58,7 @@ public class PDXAsyncEventQueueDUnitTest extends CacheTestCase {
    * type registry.
    */
   
+  @Test
   public void testNonPersistentPDXCreateQueueFirst() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -61,6 +72,7 @@ public class PDXAsyncEventQueueDUnitTest extends CacheTestCase {
    * Test that an async queue doesn't require a persistent PDX
    * type registry.
    */
+  @Test
   public void testNonPersistentPDXCreatePDXFirst() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(1);

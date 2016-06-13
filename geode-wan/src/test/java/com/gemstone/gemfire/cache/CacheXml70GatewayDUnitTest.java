@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Properties;
 import java.util.Set;
 
@@ -43,10 +52,11 @@ import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.SerialGatewaySenderCreation;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
+@Category(DistributedTest.class)
 public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
 
-  public CacheXml70GatewayDUnitTest(String name) {
-    super(name);
+  public CacheXml70GatewayDUnitTest() {
+    super();
   }
 
   protected String getGemFireVersion() {
@@ -56,6 +66,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   /**
    * Added to test the scenario of defect #50600.
    */
+  @Test
   public void testAsyncEventQueueWithGatewayEventFilter() {
     getSystem();
     CacheCreation cache = new CacheCreation();
@@ -91,6 +102,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   }
 
   @Category(FlakyTest.class) // GEODE-978: hardcoded port range, BindException
+  @Test
   public void testGatewayReceiver() throws Exception{
     getSystem();
     CacheCreation cache = new CacheCreation();
@@ -118,6 +130,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     }
   }
   
+  @Test
   public void testParallelGatewaySender() throws CacheException{
     getSystem();
     CacheCreation cache = new CacheCreation();
@@ -155,6 +168,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     }
   }
   
+  @Test
   public void testSerialGatewaySender() throws CacheException{
     getSystem();
     CacheCreation cache = new CacheCreation();

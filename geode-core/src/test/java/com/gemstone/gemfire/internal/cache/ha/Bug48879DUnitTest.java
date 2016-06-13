@@ -16,7 +16,13 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -33,14 +39,14 @@ import com.gemstone.gemfire.internal.OSProcess;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.Properties;
-
+@Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class Bug48879DUnitTest extends DistributedTestCase {
+public class Bug48879DUnitTest extends JUnit4DistributedTestCase {
 
   private static VM vm0 = null;
   private static VM vm1 = null;
@@ -51,8 +57,8 @@ public class Bug48879DUnitTest extends DistributedTestCase {
 
   public static final int SLEEP_TIME = 40000;
 
-  public Bug48879DUnitTest(String name) {
-    super(name);
+  public Bug48879DUnitTest() {
+    super();
   }
 
   @Override
@@ -85,9 +91,8 @@ public class Bug48879DUnitTest extends DistributedTestCase {
   }
 
   @SuppressWarnings({ "unused", "deprecation" })
-  public static Integer createCacheServer()
-      throws Exception {
-    Bug48879DUnitTest test = new Bug48879DUnitTest("Bug48879DUnitTest");
+  public static Integer createCacheServer() throws Exception {
+    Bug48879DUnitTest test = new Bug48879DUnitTest();
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "MessageTimeToLive", "30");
     cache = (GemFireCacheImpl)CacheFactory.create(test.getSystem());
     HARegionQueue.threadIdExpiryTime = (SLEEP_TIME/1000) - 10;
@@ -113,7 +118,7 @@ public class Bug48879DUnitTest extends DistributedTestCase {
         + ".gfs");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
-    DistributedSystem ds = new Bug48879DUnitTest("Bug48879DUnitTest").getSystem(props);
+    DistributedSystem ds = new Bug48879DUnitTest().getSystem(props);
     ds.disconnect();
     ClientCacheFactory ccf = new ClientCacheFactory(props);
     ccf.setPoolSubscriptionEnabled(doRI);
@@ -201,6 +206,7 @@ public class Bug48879DUnitTest extends DistributedTestCase {
         actualTids >= expectedTids);
   }
 
+  @Test
   public void testThreadIdentfiersExpiry() throws Exception {
     // create server1 and server2
     // create client with redundancy = 1

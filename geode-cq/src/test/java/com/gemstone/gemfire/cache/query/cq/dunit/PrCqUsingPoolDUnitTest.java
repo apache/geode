@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.cq.dunit;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,10 +67,11 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
  * 
  * @since GemFire 5.5
  */
-public class PrCqUsingPoolDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
-  public PrCqUsingPoolDUnitTest(String name) {
-    super(name);
+  public PrCqUsingPoolDUnitTest() {
+    super();
   }
   
   static public final String[] regions = new String[] {
@@ -71,9 +81,9 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
   
   static public final String KEY = "key-";
   
-  private final CqQueryUsingPoolDUnitTest cqHelper = new CqQueryUsingPoolDUnitTest("HelperPartitonedRegionCqTest");
+  private final CqQueryUsingPoolDUnitTest cqHelper = new CqQueryUsingPoolDUnitTest();
   
-  private final CqStatsDUnitTest cqStatsHelper = new CqStatsDUnitTest("HelperPrCqUsingPool");
+  private final CqStatsDUnitTest cqStatsHelper = new CqStatsDUnitTest();
 
   public final String[] cqs = new String [] {
       //0 - Test for ">" 
@@ -109,6 +119,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
   
   private static int bridgeServerPort;
   
+  @Test
   public void testCQAndPartitionedRegion() throws Exception {
     // creating servers.
     final Host host = Host.getHost(0);
@@ -223,6 +234,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
   /**
    * test for registering cqs on a bridge server with local max memory zero.
    */
+  @Test
   public void testPartitionedCqOnAccessorBridgeServer() throws Exception {
  // creating servers.
     final Host host = Host.getHost(0);
@@ -386,6 +398,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
    * will generate all the events locally and should always have the old value 
    * and should not sent the profile update on wire.
    */
+  @Test
   public void testPartitionedCqOnSingleBridgeServer() throws Exception { 
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -479,6 +492,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
    * will generate all the events locally but the puts, updates and destroys originate
    * at an accessor vm.
    */
+  @Test
   public void testPRCqOnSingleBridgeServerUpdatesOriginatingAtAccessor() throws Exception { 
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -578,6 +592,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
   /**
    * test to check invalidates on bridge server hosting datastores as well.
    */
+  @Test
   public void testPRCqWithInvalidatesOnBridgeServer()  {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -677,6 +692,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
    * test cqs with invalidates on bridge server not hosting datastores.
    * 
    */
+  @Test
   public void testPRCqWithInvalidatesOnAccessorBridgeServer() throws Exception {
     
     final Host host = Host.getHost(0);
@@ -777,6 +793,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
    * test cqs with create updates and destroys from client on bridge server
    * hosting datastores.
    */
+  @Test
   public void testPRCqWithUpdatesFromClients() throws Exception {
     
     final Host host = Host.getHost(0);
@@ -884,6 +901,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
    * test cqs on multiple partitioned region hosted by bridge servers.
    * 
    */
+  @Test
   public void testPRCqWithMultipleRegionsOnServer() throws Exception {
     
     final Host host = Host.getHost(0);
@@ -1030,6 +1048,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
    * for not requiring old values.
    * 
    */
+  @Test
   public void testPRWithCQsAndProfileUpdates() throws Exception {
     
     final Host host = Host.getHost(0);
@@ -1256,6 +1275,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
    * @throws Exception
    */
   @Category(FlakyTest.class) // GEODE-1181: random ports, eats exceptions (fixed some), async behavior
+  @Test
   public void testEventsDuringQueryExecution() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -1384,6 +1404,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
 
   }
 
+  @Test
   public void testCQsWithPutalls() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -1478,6 +1499,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
     cqHelper.closeServer(server1);   
   }
   
+  @Test
   public void testCQsWithPutallsValidateStats() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -1580,6 +1602,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
     cqHelper.closeServer(server1);   
   }
   
+  @Test
   public void testCQsWithPutallsWithTx() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -1702,6 +1725,7 @@ public class PrCqUsingPoolDUnitTest extends CacheTestCase {
   
   }
   
+  @Test
   public void testCQsWithPutallsWithTxValidateStats() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.Serializable;
@@ -58,6 +67,7 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
+@Category(DistributedTest.class)
 public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends PRClientServerTestBase {
   private static final String TEST_FUNCTION7 = TestFunction.TEST_FUNCTION7;
 
@@ -67,13 +77,14 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
 
   private static int retryCount = 0;
 
-  public PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest(String name) {
-    super(name);
+  public PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest() {
+    super();
   }
 
   /*
    * Execution of the function on server with
    */
+  @Test
   public void testServerAllKeyExecution_byInstance() {
     createScenario();
     Function function = new TestFunction(true, TEST_FUNCTION2);
@@ -85,6 +96,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
   /*
    * Execution of the function on server with
    */
+  @Test
   public void testServerGetAllFunction() {
     createScenario();
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.getAll());
@@ -93,6 +105,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
   /*
    * Execution of the function on server with
    */
+  @Test
   public void testServerPutAllFunction() {
     createScenario();
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.putAll());
@@ -102,6 +115,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
    * Execution of the function on server with single key as the routing object
    * and using the name of the function
    */
+  @Test
   public void testServerSingleKeyExecution_byName() {
     createScenario();
     Function function = new TestFunction(true, TEST_FUNCTION2);
@@ -116,6 +130,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
    * of HA then system should retry the function execution. After 5th attempt
    * function will send Boolean as last result.
    */
+  @Test
   public void testserverSingleKeyExecution_FunctionInvocationTargetException() {
     createScenario();
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverSingleKeyExecution_FunctionInvocationTargetException());
@@ -124,6 +139,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
   /*
    * Execution of the function on server with bucket as filter
    */
+  @Test
   public void testBucketFilter(){
     createScenarioForBucketFilter();
     Function function = new TestFunction(true,TestFunction.TEST_FUNCTION_BUCKET_FILTER);
@@ -140,6 +156,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
     client.invoke(() -> PRClientServerTestBase.serverBucketFilterExecution(bucketFilterSet));
   }
   
+  @Test
   public void testBucketFilterOverride(){
     createScenarioForBucketFilter();
     Function function = new TestFunction(true,TestFunction.TEST_FUNCTION_BUCKET_FILTER);
@@ -158,6 +175,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
     
   }
 
+  @Test
   public void testServerSingleKeyExecution_SocketTimeOut() {
     createScenario();
     Function function = new TestFunction(true,
@@ -171,6 +189,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
    * Execution of the function on server with single key as the routing object
    * and using the instance of the function
    */
+  @Test
   public void testServerSingleKeyExecution_byInstance() {
     createScenario();
     Function function = new TestFunction(true, TEST_FUNCTION2);
@@ -183,6 +202,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
    * Execution of the inline function on server with single key as the routing
    * object
    */
+  @Test
   public void testServerSingleKeyExecution_byInlineFunction() {
     createScenario();
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverSingleKeyExecution_Inline());
@@ -192,6 +212,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
    * Execution of the function on server with set multiple keys as the routing
    * object and using the name of the function
    */
+  @Test
   public void testserverMultiKeyExecution_byName() {
     createScenario();
     Function function = new TestFunction(true, TEST_FUNCTION2);
@@ -203,6 +224,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
     server3.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.checkBucketsOnServer());
   }
 
+  @Test
   public void testserverMultiKeyExecution_SocektTimeOut() {
     createScenario();
     Function function = new TestFunction(true,
@@ -216,6 +238,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
    * Execution of the inline function on server with set multiple keys as the
    * routing object
    */
+  @Test
   public void testserverMultiKeyExecution_byInlineFunction() {
     createScenario();
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverMultiKeyExecution_Inline());
@@ -228,6 +251,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
    * After 5th attempt function will send Boolean as last result.
    */
   @Category(FlakyTest.class) // GEODE-600: network sensitive, random ports, configs lots of PoolFactory network attributes
+  @Test
   public void testserverMultiKeyExecution_FunctionInvocationTargetException() {
     createScenario();
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.serverMultiKeyExecution_FunctionInvocationTargetException());
@@ -237,6 +261,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
    * Execution of the function on server with set multiple keys as the routing
    * object and using the name of the function
    */
+  @Test
   public void testserverMultiKeyExecutionNoResult_byName() {
     createScenario();
     Function function = new TestFunction(false, TEST_FUNCTION7);
@@ -249,6 +274,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
    * Execution of the function on server with set multiple keys as the routing
    * object and using the instance of the function
    */
+  @Test
   public void testserverMultiKeyExecution_byInstance() {
     createScenario();
     Function function = new TestFunction(true, TEST_FUNCTION2);
@@ -262,6 +288,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
    * that the routing logic works correctly such that there is not extra
    * execution
    */
+  @Test
   public void testserverMultiKeyExecutionOnASingleBucket_byName() {
     createScenario();
     Function function = new TestFunction(true, TEST_FUNCTION2);
@@ -275,6 +302,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
    * that the routing logic works correctly such that there is not extra
    * execution
    */
+  @Test
   public void testserverMultiKeyExecutionOnASingleBucket_byInstance() {
     createScenario();
     Function function = new TestFunction(true, TEST_FUNCTION2);
@@ -287,6 +315,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
    * Ensure that the while executing the function if the servers is down then
    * the execution is failover to other available server
    */
+  @Test
   public void testServerFailoverWithTwoServerAliveHA()
       throws InterruptedException {
     IgnoredException.addIgnoredException("FunctionInvocationTargetException");
@@ -320,6 +349,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
    * Ensure that the while executing the function if the servers is down then
    * the execution is failover to other available server
    */
+  @Test
   public void testServerCacheClosedFailoverWithTwoServerAliveHA()
       throws InterruptedException {
     IgnoredException.addIgnoredException("FunctionInvocationTargetException");
@@ -347,6 +377,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest extends P
     assertEquals(2, l.size());
   }
 
+  @Test
   public void testBug40714() {
     createScenario();
     server1.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest.registerFunction());

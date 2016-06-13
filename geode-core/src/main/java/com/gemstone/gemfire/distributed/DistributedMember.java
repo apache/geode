@@ -44,6 +44,7 @@ public interface DistributedMember extends Comparable<DistributedMember> {
   /**
    * Returns the Roles that this member performs in the system.
    * Note that the result will contain both groups and roles.
+   * @deprecated Roles is scheduled to be removed
    */
   public Set<Role> getRoles();
   

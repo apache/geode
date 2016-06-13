@@ -16,30 +16,32 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Properties;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXmlGenerator;
 import com.gemstone.gemfire.internal.cache.xmlcache.ClientCacheCreation;
 import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.util.test.TestUtil;
 
-import java.io.*;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-public class CacheXmlTestCase extends CacheTestCase {
+public class CacheXmlTestCase extends JUnit4CacheTestCase {
 
   /** The file used by this test (method) to initialize the cache */
   private File xmlFile;
   
   /** set this to false if a test needs a non-loner distributed system */
   static boolean lonerDistributedSystem = true;
-
-  public CacheXmlTestCase(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {

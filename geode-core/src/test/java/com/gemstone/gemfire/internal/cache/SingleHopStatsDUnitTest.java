@@ -16,32 +16,48 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.client.Pool;
-import com.gemstone.gemfire.cache.client.PoolManager;
-import com.gemstone.gemfire.cache.client.internal.ClientMetadataService;
-import com.gemstone.gemfire.cache.client.internal.ClientPartitionAdvisor;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.cache.execute.data.CustId;
-import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
-import com.gemstone.gemfire.internal.cache.execute.data.ShipmentId;
-import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
-import com.gemstone.gemfire.test.dunit.*;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import com.jayway.awaitility.Awaitility;
-import org.junit.experimental.categories.Category;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import com.jayway.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-public class SingleHopStatsDUnitTest extends CacheTestCase {
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheClosedException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.internal.ClientMetadataService;
+import com.gemstone.gemfire.cache.client.internal.ClientPartitionAdvisor;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.cache.execute.data.CustId;
+import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
+import com.gemstone.gemfire.internal.cache.execute.data.ShipmentId;
+import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+
+@Category(DistributedTest.class)
+public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
 
   private final String Region_Name = "42010";
   private final String ORDER_REGION_NAME = "ORDER";
@@ -60,11 +76,6 @@ public class SingleHopStatsDUnitTest extends CacheTestCase {
   private static long nonSingleHopsCount_Order;
   private static long metaDataRefreshCount_Shipment;
   private static long nonSingleHopsCount_Shipment;
-
-
-  public SingleHopStatsDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -109,6 +120,7 @@ public class SingleHopStatsDUnitTest extends CacheTestCase {
   }
 
   @Category(FlakyTest.class) // GEODE-364: random ports, time sensitive, waitForCriterions, magic numbers (113, 226)
+  @Test
   public void testClientStatsPR() {
     Integer port0 = (Integer) member0.invoke(() -> createServerForStats(0, 113, "No_Colocation"));
     Integer port1 = (Integer) member1.invoke(() -> createServerForStats(0, 113, "No_Colocation"));
@@ -126,6 +138,7 @@ public class SingleHopStatsDUnitTest extends CacheTestCase {
     member3.invoke(() -> updatePR("FirstClient", "No_Colocation"));
   }
 
+  @Test
   public void testClientStatsColocationPR() {
     Integer port0 = (Integer) member0.invoke(() -> createServerForStats(0, 4, "Colocation"));
     Integer port1 = (Integer) member1.invoke(() -> createServerForStats(0, 4, "Colocation"));
@@ -140,12 +153,9 @@ public class SingleHopStatsDUnitTest extends CacheTestCase {
 
   private void createClient(int port0, int port1, int port2, String colocation) {
     Properties props = new Properties();
-    props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    CacheTestCase test = new SingleHopStatsDUnitTest(
-        "SingleHopStatsDUnitTest");
-    DistributedSystem distributedSystem = test.getSystem(props);
+    DistributedSystem distributedSystem = getSystem(props);
     Cache cache = CacheFactory.create(distributedSystem);
     assertNotNull(cache);
     CacheServerTestUtil.disableShufflingOfEndpoints();
@@ -165,9 +175,7 @@ public class SingleHopStatsDUnitTest extends CacheTestCase {
   }
 
   private int createServerForStats(int redundantCopies, int totalNoofBuckets, String colocation) {
-    CacheTestCase test = new SingleHopStatsDUnitTest(
-        "SingleHopStatsDUnitTest");
-    Cache cache = test.getCache();
+    Cache cache = getCache();
     CacheServer server = cache.addCacheServer();
     server.setPort(0);
     server.setHostnameForClients("localhost");

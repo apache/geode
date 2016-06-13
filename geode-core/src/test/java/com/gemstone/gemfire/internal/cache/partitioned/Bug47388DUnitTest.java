@@ -19,7 +19,22 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
+import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.ExpirationAction;
+import com.gemstone.gemfire.cache.ExpirationAttributes;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
@@ -31,11 +46,12 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueueStats;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientNotifier;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * The test creates two datastores with a partitioned region, and also running a
@@ -45,11 +61,10 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  * ensures that the EXPIRE_DESTROY events are propagated to the subscriber
  * client and the secondary server does process the QRMs for the EXPIRE_DESTROY
  * events.
- * 
- * 
  */
+@Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class Bug47388DUnitTest extends DistributedTestCase {
+public class Bug47388DUnitTest extends JUnit4DistributedTestCase {
 
   private static VM vm0 = null;
   private static VM vm1 = null;
@@ -60,14 +75,7 @@ public class Bug47388DUnitTest extends DistributedTestCase {
 
   private static volatile boolean lastKeyDestroyed = false;
 
-  public static final String REGION_NAME = "Bug47388DUnitTest_region";
-
-  /**
-   * @param name
-   */
-  public Bug47388DUnitTest(String name) {
-    super(name);
-  }
+  public static final String REGION_NAME = Bug47388DUnitTest.class.getSimpleName() + "_region";
 
   @Override
   public final void postSetUp() throws Exception {
@@ -109,10 +117,9 @@ public class Bug47388DUnitTest extends DistributedTestCase {
   }
 
   @SuppressWarnings("deprecation")
-  public static Integer createCacheServerWithPRDatastore()//Integer mcastPort)
-      throws Exception {
+  public static Integer createCacheServerWithPRDatastore() throws Exception {
     Properties props = new Properties();
-    Bug47388DUnitTest test = new Bug47388DUnitTest("Bug47388DUnitTest");
+    Bug47388DUnitTest test = new Bug47388DUnitTest();
     DistributedSystem ds = test.getSystem(props);
     ds.disconnect();
     cache = (GemFireCacheImpl)CacheFactory.create(test.getSystem());
@@ -135,15 +142,13 @@ public class Bug47388DUnitTest extends DistributedTestCase {
   }
 
   @SuppressWarnings("deprecation")
-  public static void createClientCache(Host host, Integer[] ports, Boolean doRI)
-      throws Exception {
-
+  public static void createClientCache(Host host, Integer[] ports, Boolean doRI) throws Exception {
     Properties props = new Properties();
     props.setProperty(DURABLE_CLIENT_ID,
         "my-durable-client-" + ports.length);
     props.setProperty(DURABLE_CLIENT_TIMEOUT, "300000");
 
-    DistributedSystem ds = new Bug47388DUnitTest("Bug47388DUnitTest").getSystem(props);
+    DistributedSystem ds = new Bug47388DUnitTest().getSystem(props);
     ds.disconnect();
     ClientCacheFactory ccf = new ClientCacheFactory(props);
     ccf.setPoolSubscriptionEnabled(doRI);
@@ -174,12 +179,10 @@ public class Bug47388DUnitTest extends DistributedTestCase {
       region.registerInterest("ALL_KEYS", true);
       cache.readyForEvents();
     }
-
   }
 
   @SuppressWarnings("unchecked")
-  public static void doPuts(Integer numOfSets, Integer numOfPuts)
-      throws Exception {
+  public static void doPuts(Integer numOfSets, Integer numOfPuts) throws Exception {
     Region<String, String> region = cache.getRegion(REGION_NAME);
 
     for (int i = 0; i < numOfSets; i++) {
@@ -195,8 +198,7 @@ public class Bug47388DUnitTest extends DistributedTestCase {
         .getClientProxies().toArray()[0]).isPrimary();
   }
 
-  public static void verifyClientSubscriptionStats(final Boolean isPrimary,
-      final Integer events) throws Exception {
+  public static void verifyClientSubscriptionStats(final Boolean isPrimary, final Integer events) throws Exception {
 
     WaitCriterion wc = new WaitCriterion() {
       private long dispatched;
@@ -254,7 +256,9 @@ public class Bug47388DUnitTest extends DistributedTestCase {
     Wait.waitForCriterion(wc, 60 * 1000, 500, true);
   }
 
-  public void bug51931_testQRMOfExpiredEventsProcessedSuccessfully() throws Exception {
+  @Ignore("TODO: test is disabled due to bug51931")
+  @Test
+  public void testQRMOfExpiredEventsProcessedSuccessfully() throws Exception {
     int numOfSets = 2, numOfPuts = 5;
     int totalEvents = 23; // = (numOfSets * numOfPuts) * 2 [eviction-destroys] +
                           // 2 [last key's put and eviction-destroy] + 1 [marker
@@ -269,8 +273,4 @@ public class Bug47388DUnitTest extends DistributedTestCase {
     vm0.invoke(() -> Bug47388DUnitTest.verifyClientSubscriptionStats( isvm0Primary, totalEvents ));
     vm1.invoke(() -> Bug47388DUnitTest.verifyClientSubscriptionStats( !isvm0Primary, totalEvents ));
   }
-  public void testNothingBecauseOfBug51931() {
-    // remove this when bug #51931 is fixed
-  }
-
 }

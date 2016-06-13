@@ -22,32 +22,7 @@
  */
 package com.gemstone.gemfire.cache.query.functional;
 
-import com.gemstone.gemfire.cache.query.*;
-import com.gemstone.gemfire.cache.AttributesFactory;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheWriterException;
-import com.gemstone.gemfire.cache.PartitionAttributes;
-import com.gemstone.gemfire.cache.PartitionAttributesFactory;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
-import com.gemstone.gemfire.cache.TimeoutException;
-import com.gemstone.gemfire.cache.query.CacheUtils;
-import com.gemstone.gemfire.cache.query.FunctionDomainException;
-import com.gemstone.gemfire.cache.query.Index;
-import com.gemstone.gemfire.cache.query.IndexType;
-import com.gemstone.gemfire.cache.query.NameResolutionException;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.QueryInvocationTargetException;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.Struct;
-import com.gemstone.gemfire.cache.query.TypeMismatchException;
-import com.gemstone.gemfire.cache.query.data.Data;
-import com.gemstone.gemfire.cache.query.data.Portfolio;
-
-//import com.gemstone.gemfire.cache.query.facets.lang.Employee;
-import com.gemstone.gemfire.cache.query.types.StructType;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -55,29 +30,46 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import parReg.query.unittest.NewPortfolio;
-import static org.junit.Assert.*;
-import junit.framework.*;
 
-/**
- */
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.PartitionAttributes;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.query.CacheUtils;
+import com.gemstone.gemfire.cache.query.Index;
+import com.gemstone.gemfire.cache.query.IndexType;
+import com.gemstone.gemfire.cache.query.Query;
+import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.cache.query.Struct;
+import com.gemstone.gemfire.cache.query.data.Data;
+import com.gemstone.gemfire.cache.query.data.Portfolio;
+import com.gemstone.gemfire.cache.query.types.StructType;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
 @Category(IntegrationTest.class)
 public class MiscJUnitTest {
 
   @Before
-  public void setUp() throws java.lang.Exception {
+  public void setUp() throws Exception {
     CacheUtils.startCache();
   }
 
   @After
-  public void tearDown() throws java.lang.Exception {
+  public void tearDown() throws Exception {
     CacheUtils.closeCache();
   }
 
-  public void xtestNestQueryInFromClause() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testNestQueryInFromClause() throws Exception {
     Region region = CacheUtils.createRegion("Portfolios", Portfolio.class);
     region.put("0", new Portfolio(0));
     region.put("1", new Portfolio(1));
@@ -91,7 +83,9 @@ public class MiscJUnitTest {
     if (!p.status.equals("active") || p.getID() != 0) fail(query.getQueryString());
   }
 
-  public void xtestNestQueryInWhereClause() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testNestQueryInWhereClause() throws Exception {
     Region region = CacheUtils.createRegion("Portfolios", Portfolio.class);
     region.put("0", new Portfolio(0));
     region.put("1", new Portfolio(1));
@@ -119,7 +113,9 @@ public class MiscJUnitTest {
     // DISTINCT * FROM /Portfolios p where p.ID = x.ID).status
   }
 
-  public void xtestVoidMethods() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testVoidMethods() throws Exception {
     Region region = CacheUtils.createRegion("Data", Data.class);
     region.put("0", new Data());
     Query query = CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM /Data where voidMethod");
@@ -130,7 +126,9 @@ public class MiscJUnitTest {
     if (result.size() != 1) fail(query.getQueryString());
   }
 
-  public void xtestMiscQueries() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testMiscQueries() throws Exception {
     String testData[] = { "NULL", "UNDEFINED"};
     for (int i = 0; i < testData.length; i++) {
       Query query = CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM " + testData[i]);
@@ -139,9 +137,9 @@ public class MiscJUnitTest {
     }
   }
 
-  public void xtestBug32763() throws FunctionDomainException, TypeMismatchException, NameResolutionException,
-      QueryInvocationTargetException, TimeoutException, CacheWriterException
-    {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testBug32763() throws Exception {
     Region region = CacheUtils.createRegion("pos", Portfolio.class);
     region.put("0", new Portfolio(0));
     region.put("1", new Portfolio(1));
@@ -164,8 +162,7 @@ public class MiscJUnitTest {
   }
   
   @Test
-  public void testBug() throws TimeoutException, CacheWriterException,
-  FunctionDomainException, TypeMismatchException, NameResolutionException, QueryInvocationTargetException, Exception {
+  public void testBug() throws Exception {
     Region region = CacheUtils.createRegion("portfolios", Portfolio.class);
     region.put("0", new Portfolio(0));
     region.put("1", new Portfolio(1));
@@ -192,11 +189,10 @@ public class MiscJUnitTest {
     Query q = qs.newQuery(qStr);
     SelectResults result = (SelectResults) q.execute();
     if(result.size()==0) fail("Test failed as size is zero");
-  
   }
   
   @Test
-  public void testBug37723() {
+  public void testBug37723() throws Exception {
     Region region = CacheUtils.createRegion("portfolios", Portfolio.class);
     region.put("0", new Portfolio(0));
     region.put("1", new Portfolio(1));
@@ -205,28 +201,22 @@ public class MiscJUnitTest {
     QueryService qs = CacheUtils.getQueryService();
     String qry = "select distinct getID, status from /portfolios pf where getID < 10 order by getID desc";
     Query q = qs.newQuery(qry);
-    try {
-      SelectResults result = (SelectResults) q.execute();
-      Iterator itr = result.iterator();
-      int j = 3;
-      while ( itr.hasNext()) {
-       Struct struct = (Struct)itr.next();
-       assertEquals(j--, ((Integer)struct.get("getID")).intValue());
-      }      
-      qry = "select distinct getID, status from /portfolios pf where getID < 10 order by getID asc";
-      q = qs.newQuery(qry);
-      result = (SelectResults) q.execute();
-      itr = result.iterator();
-      j = 0;
-      while ( itr.hasNext()) {
-       Struct struct = (Struct)itr.next();
-       assertEquals(j++, ((Integer)struct.get("getID")).intValue());
-      }      
+    SelectResults result = (SelectResults) q.execute();
+    Iterator itr = result.iterator();
+    int j = 3;
+    while ( itr.hasNext()) {
+     Struct struct = (Struct)itr.next();
+     assertEquals(j--, ((Integer)struct.get("getID")).intValue());
     }
-    catch (Exception e) {      
-      e.printStackTrace();
-      fail ("Test failed because of exception="+e);      
-    }   
+    qry = "select distinct getID, status from /portfolios pf where getID < 10 order by getID asc";
+    q = qs.newQuery(qry);
+    result = (SelectResults) q.execute();
+    itr = result.iterator();
+    j = 0;
+    while ( itr.hasNext()) {
+     Struct struct = (Struct)itr.next();
+     assertEquals(j++, ((Integer)struct.get("getID")).intValue());
+    }
   }
   
   @Test
@@ -276,14 +266,10 @@ public class MiscJUnitTest {
 
     SelectResults rs = (SelectResults)query.execute();
     assertEquals(rs.size(), 2);
-    
   }
 
-  
-  
-  
   @Test
-  public void testMultipleOrderByClauses() {
+  public void testMultipleOrderByClauses() throws Exception  {
     Region region = CacheUtils.createRegion("portfolios", Portfolio.class);
     region.put("2", new Portfolio(2));
     region.put("3", new Portfolio(3));
@@ -294,44 +280,27 @@ public class MiscJUnitTest {
     QueryService qs = CacheUtils.getQueryService();
     String qry = "select distinct status, getID from /portfolios pf where getID < 10 order by status asc, getID desc";
     Query q = qs.newQuery(qry);
-    try {
-      SelectResults result = (SelectResults) q.execute();
-      Iterator itr = result.iterator();
-      int j = 6;
-      while ( itr.hasNext() && j >0) {
-       Struct struct = (Struct)itr.next();
-       assertEquals("active", struct.get("status"));
-       assertEquals(j, ((Integer)struct.get("getID")).intValue());
-      
-       j-=2;
-      }
-      j =7;
-      while ( itr.hasNext()) {
-        Struct struct = (Struct)itr.next();
-        assertEquals(j, ((Integer)struct.get("getID")).intValue());
-        assertEquals("inactive", struct.get("status"));
-        j-=2;
-      }
-      /*
-      qry = "select distinct getID, status from /portfolios pf where getID < 10 order by getID asc";
-      q = qs.newQuery(qry);
-      result = (SelectResults) q.execute();
-      itr = result.iterator();
-      j = 0;
-      while ( itr.hasNext()) {
-       Struct struct = (Struct)itr.next();
-       assertIndexDetailsEquals(j++, ((Integer)struct.get("getID")).intValue());
-      }*/      
+    SelectResults result = (SelectResults) q.execute();
+    Iterator itr = result.iterator();
+    int j = 6;
+    while ( itr.hasNext() && j >0) {
+     Struct struct = (Struct)itr.next();
+     assertEquals("active", struct.get("status"));
+     assertEquals(j, ((Integer)struct.get("getID")).intValue());
+
+     j-=2;
     }
-    catch (Exception e) {      
-      e.printStackTrace();
-      fail ("Test failed because of exception="+e);      
-    }   
+    j =7;
+    while ( itr.hasNext()) {
+      Struct struct = (Struct)itr.next();
+      assertEquals(j, ((Integer)struct.get("getID")).intValue());
+      assertEquals("inactive", struct.get("status"));
+      j-=2;
+    }
   }
   
   /**
    * Tests the where clause formed with CompiledComparison nesting
-   * @throws Exception
    */
   @Test
   public void testBug40333_InLocalRegion_1() throws Exception {
@@ -350,9 +319,10 @@ public class MiscJUnitTest {
    * Commented the test as it is for some reason causing OOM when run in the suite.
    * It is due to presence of PR
    * Tests the where clause formed with CompiledComparison nesting
-   * @throws Exception
    */
-  public void _testBug40333_InPartitionedRegion_1() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testBug40333_InPartitionedRegion_1() throws Exception {
     CacheUtils.startCache();
     final Cache cache = CacheUtils.getCache();
     AttributesFactory attributesFactory = new AttributesFactory();
@@ -370,7 +340,6 @@ public class MiscJUnitTest {
   
   /**
    * Tests the where clause formed with CompiledComparison nesting with CompiledIN
-   * @throws Exception
    */
   @Test
   public void testBug40333_InLocalRegion_2() throws Exception {
@@ -389,9 +358,10 @@ public class MiscJUnitTest {
    * Commented the test as it is for some reason causing OOM when run in the suite.
    * It is due to presence of PR
    * Tests the where clause formed with CompiledComparison nesting with CompiledIN
-   * @throws Exception
    */
-  public void _testBug40333_InPartitionedRegion_2() throws Exception {
+  @Ignore("TODO: test is disabled")
+  @Test
+  public void testBug40333_InPartitionedRegion_2() throws Exception {
     CacheUtils.startCache();
     final Cache cache = CacheUtils.getCache();
     AttributesFactory attributesFactory = new AttributesFactory();
@@ -545,14 +515,9 @@ public class MiscJUnitTest {
                 "undefinedTestField.toString", "/new_pos");
     final Query q1 = qs.newQuery(queryStr1);
     final Query q2 = qs.newQuery(queryStr2);
-    try {
-      SelectResults sr1 = (SelectResults)q1.execute();
-      SelectResults sr2 = (SelectResults)q2.execute();
-    }catch(Throwable e) {
-      e.printStackTrace();
-      fail("Test failed due to = " +e.toString());
-    }    
-  } 
+    SelectResults sr1 = (SelectResults)q1.execute();
+    SelectResults sr2 = (SelectResults)q2.execute();
+  }
   
   @Test
   public void testBug37119() throws Exception {
@@ -599,126 +564,4 @@ public class MiscJUnitTest {
     pf = (Portfolio)result.iterator().next();
     assertEquals(pf.getID(),3);
   }
-  
- 
-  /*
-  @Test
-  public void testBug37119() throws Exception {
-    Region region = CacheUtils.createRegion("portfolios", Portfolio.class);
-    region.put("0", new Portfolio(0));
-    region.put("1", new Portfolio(1));
-    region.put("2", new Portfolio(2));
-    region.put("3", new Portfolio(3));
-    QueryService qs = CacheUtils.getQueryService();
-    
-    String qStr = "Select distinct * from /portfolios pf where pf.getID() > Integer.MIN_VALUE"; 
-    Query q = qs.newQuery(qStr);
-    SelectResults result = (SelectResults) q.execute();
-    assertIndexDetailsEquals(result.size(),4);
-    
-    qStr = "Select distinct * from /portfolios pf where pf.getID() > Integer.MAX_VALUE"; 
-    q = qs.newQuery(qStr);
-    result = (SelectResults) q.execute();
-    assertIndexDetailsEquals(result.size(),0);
-    
-    qStr = "Select distinct * from /portfolios pf where pf.getID() > \"Long\".MAX_VALUE"; 
-    q = qs.newQuery(qStr);
-    result = (SelectResults) q.execute();
-    assertIndexDetailsEquals(result.size(),0);
-    
-    qStr = "Select distinct * from /portfolios pf where pf.getID() > \"Long\".MIN_VALUE"; 
-    q = qs.newQuery(qStr);
-    result = (SelectResults) q.execute();
-    assertIndexDetailsEquals(result.size(),4);
-    
-    qStr = "Select distinct * from /portfolios pf where pf.getID() > integer.MIN_VALUE"; 
-    q = qs.newQuery(qStr);
-    try {
-      result = (SelectResults) q.execute();
-      fail("Expected QueryException as integer.MIN_VALUE will not be  resolved");
-    }catch(TypeMismatchException tme) {
-      //Ok
-    }
-    
-    qStr = "Select distinct * from /portfolios pf where pf.intFunction(Integer.MIN_VALUE) = Integer.MIN_VALUE"; 
-    q = qs.newQuery(qStr);
-    result = (SelectResults) q.execute();
-    assertIndexDetailsEquals(result.size(),4);
-    
-    qStr = "Select distinct * from /portfolios pf where pf.intFunction(Integer.MAX_VALUE) = Integer.MAX_VALUE"; 
-    q = qs.newQuery(qStr);
-    result = (SelectResults) q.execute();
-    assertIndexDetailsEquals(result.size(),4);
-    
-    qStr = "Select distinct * from /portfolios pf where pf.longFunction( \"Long\".MAX_VALUE) = \"Long\".MAX_VALUE"; 
-    q = qs.newQuery(qStr);
-    result = (SelectResults) q.execute();
-    assertIndexDetailsEquals(result.size(),4);
-    
-    qStr = "Select distinct * from /portfolios pf where pf.longFunction(\"Long\".MIN_VALUE) = \"Long\".MIN_VALUE"; 
-    q = qs.newQuery(qStr);
-    result = (SelectResults) q.execute();
-    assertIndexDetailsEquals(result.size(),4);
-      
-    qStr = "Select distinct * from /portfolios pf where pf.Integer.MAX_VALUE = Integer.MAX_VALUE"; 
-    q = qs.newQuery(qStr);
-    try {
-    result = (SelectResults) q.execute();
-    fail("Query should have thrown Exception as attribute Integer.MAX_VALUE is not present");
-    }catch(NameNotFoundException nfe) {
-      //Ok;
-    }
-    
-    qStr = "Select distinct Integer.MAX_VALUE from /portfolios pf where Integer.MAX_VALUE = Integer.MAX_VALUE"; 
-    q = qs.newQuery(qStr);
-    result = (SelectResults) q.execute();
-    assertIndexDetailsEquals(result.size(),1);
-    assertIndexDetailsEquals(result.iterator().next(),Integer.valueOf(Integer.MAX_VALUE));
-    
-    
-  }
-  
-  @Test
-  public void testBu37119_1() throws Exception {
-    Region region = CacheUtils.createRegion("tempdata",null);
-    region.put("1", new TempData1());
-    QueryService qs = CacheUtils.getQueryService();
-    
-    String qStr = "Select distinct * from /tempdata td where td.Integer.MAX_VALUE > Integer.MAX_VALUE"; 
-    Query q = qs.newQuery(qStr);
-    SelectResults result = (SelectResults) q.execute();
-    assertIndexDetailsEquals(result.size(),0);
-    
-    qStr = "Select distinct * from /tempdata td where td.Integer.MAX_VALUE = 2 "; 
-    q = qs.newQuery(qStr);
-    result = (SelectResults) q.execute();
-    assertIndexDetailsEquals(result.size(),1);
-       
-    qStr = "Select distinct * from /tempdata td where Integer.MAX_VALUE = 2 "; 
-    q = qs.newQuery(qStr);
-    result = (SelectResults) q.execute();
-    assertIndexDetailsEquals(result.size(),0);
-    
-    qStr = "Select distinct * from /tempdata td where Integer.MAX_VALUE.intValue = Integer.MAX_VALUE "; 
-    q = qs.newQuery(qStr);
-    result = (SelectResults) q.execute();
-    assertIndexDetailsEquals(result.size(),0);
-    
-    qStr = "Select distinct * from /tempdata td where Integer.test = 'test'"; 
-    q = qs.newQuery(qStr);
-    result = (SelectResults) q.execute();
-    assertIndexDetailsEquals(result.size(),1);
-  }  
-  
-  
-  static class TempData1 {
-    public TempData2 Integer = new TempData2();
-    
-  }
-  
-  static class TempData2 {
-    public Integer MAX_VALUE = new Integer(2);
-    public String test ="test";
-  }  */
-  
 }

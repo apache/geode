@@ -16,20 +16,22 @@
  */
 package com.gemstone.gemfire.disttx;
 
-import com.gemstone.gemfire.cache30.TXRestrictionsDUnitTest;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
 import java.util.Properties;
+
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache30.TXRestrictionsDUnitTest;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Same tests as that of {@link TXRestrictionsDUnitTest} after setting
  * "distributed-transactions" property to true
  */
+@Category(DistributedTest.class)
 public class DistTXRestrictionsDUnitTest extends TXRestrictionsDUnitTest {
 
-  public DistTXRestrictionsDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();

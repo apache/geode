@@ -16,9 +16,14 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -29,18 +34,18 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This tests that basic entry operations work properly when regions are
  * configured with newly added RegionAttributes in a P2P environment.
- * 
  */
-public class NewRegionAttributesDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
 
   /** test VM */
   VM vm0, vm1 = null;
@@ -52,16 +57,6 @@ public class NewRegionAttributesDUnitTest extends DistributedTestCase
   private static final int TOTAL_PUTS = 10;
 
   private static final String REGION_NAME = "NewRegionAttributesDUnitTest_region" ;
-
-  /**
-   * Creates a test instance with the given name
-   * 
-   * @param name -
-   *          name of test instance
-   */
-  public NewRegionAttributesDUnitTest(String name) {
-    super(name);
-  }
 
   /**
    * Creates the server cache on test-VMs
@@ -124,7 +119,7 @@ public class NewRegionAttributesDUnitTest extends DistributedTestCase
   public static void createServerCache(Boolean enableWan, Boolean setPublisher,
       Boolean enableConflation, Boolean enableAsyncConflation) throws Exception
   {
-    NewRegionAttributesDUnitTest test = new NewRegionAttributesDUnitTest("temp");
+    NewRegionAttributesDUnitTest test = new NewRegionAttributesDUnitTest();
     cache = test.createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -182,6 +177,7 @@ public class NewRegionAttributesDUnitTest extends DistributedTestCase
    * @see AttributesFactory#setEnableConflation(boolean)
    * @see AttributesFactory#setEnableAsyncConflation(boolean)
    */
+  @Test
   public void testEntryOperationsWithNewAttributesEnabled()
   {
     vm0.invoke(() -> NewRegionAttributesDUnitTest.checkAttributes());
@@ -202,6 +198,7 @@ public class NewRegionAttributesDUnitTest extends DistributedTestCase
    * test-region (which does not have any bridge-client or bridge-server) and
    * verifies that <code>UnsupportedOperationException</code> occurs as expected
    */
+  @Test
   public void testRegisterInterestUseCases()
   {
     vm1.invoke(() -> NewRegionAttributesDUnitTest.registerInterest());

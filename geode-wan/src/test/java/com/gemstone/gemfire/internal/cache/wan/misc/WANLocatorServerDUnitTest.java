@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.io.IOException;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
@@ -33,25 +42,19 @@ import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.io.IOException;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
+@Category(DistributedTest.class)
 public class WANLocatorServerDUnitTest extends WANTestBase {
 
   static PoolImpl proxy;
-
-  public WANLocatorServerDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   protected final void postSetUpWANTestBase() throws Exception {
     final Host host = Host.getHost(0);
   }
 
+  @Test
   public void test_3Locators_2Servers() {
 
     int port1 = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
@@ -88,7 +91,6 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
         port1, port2, port3, port3 ));
 
     vm5.invoke(() -> WANLocatorServerDUnitTest.tryNewConnection());
-
   }
 
   public static void createLocator(Integer port1, Integer port2, Integer port3,
@@ -124,9 +126,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
       receiver.start();
     }
     catch (IOException e) {
-      e.printStackTrace();
-      fail("Test " + test.getName()
-          + " failed to start GatewayRecevier on port " + port);
+      fail("Test " + test.getName() + " failed to start GatewayRecevier on port " + port, e);
     }
   }
 
@@ -146,9 +146,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
       server.start();
     }
     catch (IOException e) {
-      e.printStackTrace();
-      fail("Test " + test.getName() + " failed to start CacheServer on port "
-          + port);
+      fail("Test " + test.getName() + " failed to start CacheServer on port " + port, e);
     }
     LogWriterUtils.getLogWriter().info(
         "Server Started on port : " + port + " : server : " + server);
@@ -177,7 +175,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
       con1.close(true);
     }
     catch (Exception e) {
-      e.printStackTrace();
+      fail("createClient failed", e);
     }
   }
 

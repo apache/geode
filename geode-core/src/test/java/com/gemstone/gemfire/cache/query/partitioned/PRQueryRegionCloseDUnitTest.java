@@ -17,6 +17,15 @@
 
 package com.gemstone.gemfire.cache.query.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 /**
  * This test creates partition regions with one Accessor node & two Datastores
  * Calls region.close() on one of the data stores while the query is being
@@ -42,6 +51,7 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.internal.cache.ForceReattemptException;
 
+@Category(DistributedTest.class)
 public class PRQueryRegionCloseDUnitTest extends PartitionedRegionDUnitTestCase
 {
 
@@ -51,8 +61,8 @@ public class PRQueryRegionCloseDUnitTest extends PartitionedRegionDUnitTestCase
    * @param name
    */
 
-  public PRQueryRegionCloseDUnitTest(String name) {
-    super(name);
+  public PRQueryRegionCloseDUnitTest() {
+    super();
   }
 
   public void setCacheInVMs(VM... vms) {
@@ -88,6 +98,7 @@ public class PRQueryRegionCloseDUnitTest extends PartitionedRegionDUnitTestCase
    * 6. then recreates the PR on the same VM <br>
    * 7. Verfies the size , type , contents of both the resultSets Obtained <br>
    */
+  @Test
   public void testPRWithRegionCloseInOneDatastoreWithoutDelay()
       throws Exception
 

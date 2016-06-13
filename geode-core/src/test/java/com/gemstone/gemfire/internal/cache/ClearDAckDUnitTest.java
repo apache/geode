@@ -21,23 +21,36 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.internal.cache.versions.VersionSource;
-import com.gemstone.gemfire.test.dunit.*;
+import static org.junit.Assert.*;
 
 import java.util.Properties;
 
-/**
- *
- */
-public class ClearDAckDUnitTest extends DistributedTestCase {
-    
-    /** Creates a new instance of ClearDAckDUnitTest */
-    public ClearDAckDUnitTest(String name) {
-        super(name);
-    }
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionEvent;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.internal.cache.versions.VersionSource;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+@Category(DistributedTest.class)
+public class ClearDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: reformat
     
     static Cache cache;
     static Properties props = new Properties();
@@ -90,7 +103,7 @@ public class ClearDAckDUnitTest extends DistributedTestCase {
           //            props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "1234");
             //            ds = DistributedSystem.connect(props);
             LogWriterUtils.getLogWriter().info("I am vm0");
-            ds = (new ClearDAckDUnitTest("temp")).getSystem(props);
+            ds = (new ClearDAckDUnitTest()).getSystem(props);
             cache = CacheFactory.create(ds);
             
             AttributesFactory factory  = new AttributesFactory();
@@ -115,7 +128,7 @@ public class ClearDAckDUnitTest extends DistributedTestCase {
           //   props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "1234");
             //   ds = DistributedSystem.connect(props);
             LogWriterUtils.getLogWriter().info("I am vm1");
-            ds = (new ClearDAckDUnitTest("temp")).getSystem(props);
+            ds = (new ClearDAckDUnitTest()).getSystem(props);
             //DistributedSystem.setThreadsSocketPolicy(false);
             CacheObserverImpl observer = new CacheObserverImpl();
             origObserver = CacheObserverHolder.setInstance(observer);
@@ -144,7 +157,7 @@ public class ClearDAckDUnitTest extends DistributedTestCase {
         //   props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "1234");
           //   ds = DistributedSystem.connect(props);
           LogWriterUtils.getLogWriter().info("I am vm2");
-          ds = (new ClearDAckDUnitTest("temp")).getSystem(props);
+          ds = (new ClearDAckDUnitTest()).getSystem(props);
           //DistributedSystem.setThreadsSocketPolicy(false);
           CacheObserverImpl observer = new CacheObserverImpl();
           origObserver = CacheObserverHolder.setInstance(observer);
@@ -182,7 +195,8 @@ public class ClearDAckDUnitTest extends DistributedTestCase {
     //test methods
     
     
-    public void testClearMultiVM(){
+  @Test
+  public void testClearMultiVM(){
         
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);

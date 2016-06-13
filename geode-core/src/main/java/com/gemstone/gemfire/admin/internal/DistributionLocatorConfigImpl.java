@@ -24,7 +24,7 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import java.net.InetAddress;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * Provides an implementation of

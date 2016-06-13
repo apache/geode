@@ -16,27 +16,28 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Performs eviction stat dunit tests for off-heap regions.
+ *
  * @since Geode 1.0
  */
+@Category(DistributedTest.class)
 public class OffHeapEvictionStatsDUnitTest extends EvictionStatsDUnitTest {
-
-  public OffHeapEvictionStatsDUnitTest(String name) {
-    super(name);
-    // TODO Auto-generated constructor stub
-  }
 
   @Override
   public final void preTearDownAssertions() throws Exception {
@@ -61,6 +62,7 @@ public class OffHeapEvictionStatsDUnitTest extends EvictionStatsDUnitTest {
     return properties;
   }
 
+  @Override
   public void createCache() {
     try {
       Properties props = new Properties();

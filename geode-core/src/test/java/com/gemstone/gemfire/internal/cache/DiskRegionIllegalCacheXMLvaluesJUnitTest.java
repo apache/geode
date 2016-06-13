@@ -16,33 +16,31 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.CacheXmlException;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-import static org.junit.Assert.fail;
 
 /**
  * This test tests Illegal arguements being passed to 
  * create disk regions. The creation of the DWA object should
  * throw a relevant exception if the arguements specified are incorrect.
- * 
- *
  */
 @Category(IntegrationTest.class)
-public class DiskRegionIllegalCacheXMLvaluesJUnitTest
-{
+public class DiskRegionIllegalCacheXMLvaluesJUnitTest {
 
-  public void createRegion(String path)
-  {
+  public void createRegion(String path) {
     DistributedSystem ds = null;
     try {
       boolean exceptionOccured = false;
@@ -82,59 +80,51 @@ public class DiskRegionIllegalCacheXMLvaluesJUnitTest
     }
   }
  
-  
   /**
    * test Illegal max oplog size
    */
-
   @Test
-  public void testMaxOplogSize()
-  {
+  public void testMaxOplogSize() {
     createRegion("faultyDiskXMLsForTesting/incorrect_max_oplog_size.xml");
   }
 
+  @Ignore("TODO: test is empty")
   @Test
-  public void testSynchronous()
-  {}
+  public void testSynchronous() {
+  }
 
   @Test
-  public void testIsRolling()
-  {
+  public void testIsRolling() {
     createRegion("faultyDiskXMLsForTesting/incorrect_roll_oplogs_value.xml");
   }
 
   @Test
-  public void testDiskDirSize()
-  {
+  public void testDiskDirSize() {
     createRegion("faultyDiskXMLsForTesting/incorrect_dir_size.xml");
   }
 
   @Test
-  public void testDiskDirs()
-  {
+  public void testDiskDirs() {
     createRegion("faultyDiskXMLsForTesting/incorrect_dir.xml");
   }
 
   @Test
-  public void testBytesThreshold()
-  {
+  public void testBytesThreshold() {
     createRegion("faultyDiskXMLsForTesting/incorrect_bytes_threshold.xml");
   }
 
   @Test
-  public void testTimeInterval()
-  {
+  public void testTimeInterval() {
     createRegion("faultyDiskXMLsForTesting/incorrect_time_interval.xml");
   }
 
   @Test
-  public void testMixedDiskStoreWithDiskDir()
-  {
+  public void testMixedDiskStoreWithDiskDir() {
     createRegion("faultyDiskXMLsForTesting/mixed_diskstore_diskdir.xml");
   }
+
   @Test
-  public void testMixedDiskStoreWithDWA()
-  {
+  public void testMixedDiskStoreWithDWA() {
     createRegion("faultyDiskXMLsForTesting/mixed_diskstore_diskwriteattrs.xml");
   }
 }

@@ -18,7 +18,7 @@ package com.gemstone.gemfire.redis;
 
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.GemFireCache;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -32,7 +32,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import java.io.IOException;
 import java.util.Random;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
@@ -64,7 +64,7 @@ public class AuthJUnitTest {
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
-    cf.set(DistributedSystemConfigProperties.REDIS_PASSWORD, PASSWORD);
+    cf.set(ConfigurationProperties.REDIS_PASSWORD, PASSWORD);
     cache = cf.create();
     server = new GemFireRedisServer("localhost", port);
     server.start();

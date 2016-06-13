@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -32,10 +41,11 @@ import com.gemstone.gemfire.cache.RegionAttributes;
  *
  * @since GemFire 3.0
  */
-public class CacheCloseDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CacheCloseDUnitTest extends JUnit4CacheTestCase {
 
-  public CacheCloseDUnitTest(String name) {
-    super(name);
+  public CacheCloseDUnitTest() {
+    super();
   }
 
   private RegionAttributes createAtts(List callbacks) {
@@ -72,6 +82,7 @@ public class CacheCloseDUnitTest extends CacheTestCase {
   
   //////////////////////  Test Methods  //////////////////////
 
+  @Test
   public void testCallbacksClosed() throws CacheException {
     {
       List callbacks = new ArrayList();

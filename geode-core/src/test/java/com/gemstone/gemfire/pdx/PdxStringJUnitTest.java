@@ -16,28 +16,29 @@
  */
 package com.gemstone.gemfire.pdx;
 
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
-import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
-import com.gemstone.gemfire.pdx.internal.PdxString;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.pdx.internal.PdxInstanceFactoryImpl;
+import com.gemstone.gemfire.pdx.internal.PdxInstanceImpl;
+import com.gemstone.gemfire.pdx.internal.PdxString;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class PdxStringJUnitTest {
+
   private GemFireCacheImpl c;
 
   @Before

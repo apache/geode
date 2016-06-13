@@ -17,7 +17,7 @@
 
 package com.gemstone.gemfire.distributed;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.Cache;
@@ -60,7 +60,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.SERVER_BIND_ADDRESS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
 
 /**
  * The ServerLauncher class is a launcher class with main method to start a GemFire Server (implying a GemFire Cache

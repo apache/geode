@@ -19,6 +19,21 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.asyncqueue;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static junitparams.JUnitParamsRunner.*;
+import static org.junit.Assert.*;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import com.jayway.awaitility.Awaitility;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
@@ -30,26 +45,7 @@ import com.gemstone.gemfire.internal.cache.wan.AsyncEventQueueConfigurationExcep
 import com.gemstone.gemfire.internal.cache.wan.MyGatewayEventFilter;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.util.test.TestUtil;
-import com.jayway.awaitility.Awaitility;
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.CACHE_XML_FILE;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
-import static junitparams.JUnitParamsRunner.$;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-/**
- *
- */
 @Category(IntegrationTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class AsyncEventQueueValidationsJUnitTest {

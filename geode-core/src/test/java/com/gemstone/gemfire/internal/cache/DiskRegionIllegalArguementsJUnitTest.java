@@ -16,53 +16,45 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DiskStoreFactory;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
- * This test tests Illegal arguements being passed to create disk regions. The
+ * This test tests Illegal arguments being passed to create disk regions. The
  * creation of the DWA object should throw a relevant exception if the
- * arguements specified are incorrect.
- * 
- *  
+ * arguments specified are incorrect.
  */
 @Category(IntegrationTest.class)
-public class DiskRegionIllegalArguementsJUnitTest
-{
+public class DiskRegionIllegalArguementsJUnitTest {
 
   protected static Cache cache = null;
 
   protected static DistributedSystem ds = null;
-  protected static Properties props = new Properties();
 
-  static {
+  @Before
+  public void setUp() throws Exception {
+    Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     props.setProperty(LOG_LEVEL, "config"); // to keep diskPerf logs smaller
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
     props.setProperty(ENABLE_TIME_STATISTICS, "true");
     props.setProperty(STATISTIC_ARCHIVE_FILE, "stats.gfs");
-  }
 
-  @Before
-  public void setUp() throws Exception {
     cache = new CacheFactory(props).create();
     ds = cache.getDistributedSystem();
   }
@@ -75,7 +67,6 @@ public class DiskRegionIllegalArguementsJUnitTest
   /**
    * test Illegal max oplog size
    */
-
   @Test
   public void testMaxOplogSize()
   {

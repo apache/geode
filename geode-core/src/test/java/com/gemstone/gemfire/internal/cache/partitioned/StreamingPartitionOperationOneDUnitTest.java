@@ -20,6 +20,15 @@
 //
 package com.gemstone.gemfire.internal.cache.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,7 +60,8 @@ import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 
-public class StreamingPartitionOperationOneDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase {
 
 	/* SerializableRunnable object to create PR */
 	CacheSerializableRunnable createPrRegionWithDS_DACK = new CacheSerializableRunnable("createPrRegionWithDS") {
@@ -76,10 +86,11 @@ public class StreamingPartitionOperationOneDUnitTest extends CacheTestCase {
   }
 
 
-  public StreamingPartitionOperationOneDUnitTest(String name) {
-    super(name);
+  public StreamingPartitionOperationOneDUnitTest() {
+    super();
   }
 
+  @Test
   public void testStreamingPartitionOneProviderNoExceptions() throws Exception {
 //    final String name = this.getUniqueName();
 

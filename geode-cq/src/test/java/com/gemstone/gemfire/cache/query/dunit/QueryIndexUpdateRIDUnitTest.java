@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,7 +68,8 @@ import com.gemstone.gemfire.cache30.CertifiableTestCacheListener;
  * 
  *
  */
-public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
+@Category(DistributedTest.class)
+public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase{
 
   /** The port on which the bridge server was started in this VM */
   private static int bridgeServerPort;
@@ -76,8 +86,8 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
 
   private static final String ROOT = "root";
   
-  public QueryIndexUpdateRIDUnitTest(String name) {
-    super(name);
+  public QueryIndexUpdateRIDUnitTest() {
+    super();
   }
 
   /* Test creates 1 Client and 1 Server. Client and Server create same region in their cache.
@@ -85,9 +95,10 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
    * Query must fail as registerInterest does not update indexes on client.
    */
 
+  @Test
   public void testClientIndexUpdateWithRIOnKeys() throws Exception{
     
-    CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest("CqRegisterInterestIndexUpdateDunitTest");
+    CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest();
     
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -130,9 +141,10 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
    * with client region on register interest.
    * @throws Exception
    */
+  @Test
   public void testClientIndexUpdateWithRIOnOverlapKeys() throws Exception{
     
-    CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest("CqRegisterInterestIndexUpdateDunitTest");
+    CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest();
     
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -180,9 +192,10 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
     cqDUnitTest.closeServer(server);
   }
 
+  @Test
   public void testClientIndexUpdateWithRIOnRegion() throws Exception{
     
-    CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest("CqRegisterInterestIndexUpdateDunitTest");
+    CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest();
     
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -220,9 +233,10 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
     cqDUnitTest.closeServer(server);
   }
 
+  @Test
   public void testClientIndexUpdateWithRIOnRegEx() throws Exception{
     
-    CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest("QueryIndexUpdateRIDunitTest");
+    CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest();
     
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -266,9 +280,10 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
    * 
    * @throws Exception
    */
+  @Test
   public void testClientIndexUpdateWithRIOnClearedRegion() throws Exception{
     
-    CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest("QueryIndexUpdateRIDunitTest");
+    CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest();
     
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -322,9 +337,10 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
    * Same tests as above using Partitioned Regions. 
    */
 
+  @Test
   public void testClientIndexUpdateWithRIOnPRRegion() throws Exception{
     
-    CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest("QueryIndexUpdateRIDunitTest");
+    CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest();
     
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -362,9 +378,10 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
     cqDUnitTest.closeServer(server);
   }
 
+  @Test
   public void testClientIndexUpdateWithRIOnPRKeys() throws Exception{
     
-    CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest("QueryIndexUpdateRIDunitTest");
+    CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest();
     
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -402,9 +419,10 @@ public class QueryIndexUpdateRIDUnitTest extends CacheTestCase{
     cqDUnitTest.closeServer(server);
   }
 
+  @Test
   public void testClientIndexUpdateWithRIOnPRRegEx() throws Exception{
     
-    CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest("QueryIndexUpdateRIDunitTest");
+    CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest();
     
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);

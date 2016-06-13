@@ -16,6 +16,21 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.Region;
@@ -23,34 +38,47 @@ import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.query.*;
+import com.gemstone.gemfire.cache.query.CqAttributes;
+import com.gemstone.gemfire.cache.query.CqAttributesFactory;
+import com.gemstone.gemfire.cache.query.CqException;
+import com.gemstone.gemfire.cache.query.CqExistsException;
+import com.gemstone.gemfire.cache.query.CqListener;
+import com.gemstone.gemfire.cache.query.CqQuery;
+import com.gemstone.gemfire.cache.query.QueryService;
+import com.gemstone.gemfire.cache.query.RegionNotFoundException;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.internal.cq.CqQueryImpl;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.ServerLocation;
-import com.gemstone.gemfire.internal.cache.*;
+import com.gemstone.gemfire.internal.cache.CacheServerImpl;
+import com.gemstone.gemfire.internal.cache.ClientServerObserver;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
+import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.InternalCache;
+import com.gemstone.gemfire.internal.cache.PoolFactoryImpl;
 import com.gemstone.gemfire.internal.cache.ha.HARegionQueue;
-import com.gemstone.gemfire.test.dunit.*;
-import junit.framework.Assert;
-import org.junit.Ignore;
-import util.TestException;
-
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Class <code>DurableClientTestCase</code> tests durable client
  * functionality.
- * 
- * 
+ *
  * @since GemFire 5.2
- */ 
-public class DurableClientTestCase extends DistributedTestCase {
+ */
+@Category(DistributedTest.class)
+public class DurableClientTestCase extends JUnit4DistributedTestCase {
+
+  protected static volatile boolean isPrimaryRecovered = false;
 
   protected VM server1VM;
   protected VM server2VM;
@@ -58,12 +86,6 @@ public class DurableClientTestCase extends DistributedTestCase {
   protected VM publisherClientVM;
   protected String regionName;
   
-  protected static volatile boolean isPrimaryRecovered = false;
-
-  public DurableClientTestCase(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
@@ -97,6 +119,7 @@ public class DurableClientTestCase extends DistributedTestCase {
   /**
    * Test that starting a durable client is correctly processed by the server.
    */
+  @Test
   public void testSimpleDurableClient() {    
     // Start a server
     int serverPort = ((Integer) this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
@@ -148,6 +171,7 @@ public class DurableClientTestCase extends DistributedTestCase {
    * In this test we will set gemfire.SPECIAL_DURABLE property to true and will
    * see durableID appended by poolname or not
    */
+  @Test
   public void testSimpleDurableClient2() {
     final Properties jp = new Properties();
     jp.setProperty(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE", "true");
@@ -281,6 +305,7 @@ public class DurableClientTestCase extends DistributedTestCase {
    * Test that starting, stopping then restarting a durable client is correctly
    * processed by the server.
    */
+  @Test
   public void testStartStopStartDurableClient() {
     // Start a server
     int serverPort = ((Integer) this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
@@ -362,6 +387,7 @@ public class DurableClientTestCase extends DistributedTestCase {
    * processed by the server.
    * This is a test of bug 39630
    */
+  @Test
   public void test39630() {
     // Start a server
     int serverPort = ((Integer) this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
@@ -406,7 +432,7 @@ public class DurableClientTestCase extends DistributedTestCase {
         // Find the proxy
         CacheClientProxy proxy = getClientProxy();
         assertNotNull(proxy);
-        Assert.assertNotNull(proxy._socket);
+        assertNotNull(proxy._socket);
         long end = System.currentTimeMillis() + 60000;
         
         while(!proxy._socket.isClosed()) {
@@ -414,7 +440,7 @@ public class DurableClientTestCase extends DistributedTestCase {
             break;
           }
         }
-        Assert.assertTrue(proxy._socket.isClosed());
+        assertTrue(proxy._socket.isClosed());
       }
     });
     
@@ -449,6 +475,7 @@ public class DurableClientTestCase extends DistributedTestCase {
    * Test that disconnecting a durable client for longer than the timeout
    * period is correctly processed by the server.
    */
+  @Test
   public void testStartStopTimeoutDurableClient() {
     // Start a server
     int serverPort = ((Integer) this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
@@ -530,6 +557,7 @@ public class DurableClientTestCase extends DistributedTestCase {
   /**
    * Test that a durable client correctly receives updates after it reconnects.
    */
+  @Test
   public void testDurableClientPrimaryUpdate() {
     // Start a server
     int serverPort = ((Integer) this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
@@ -698,6 +726,7 @@ public class DurableClientTestCase extends DistributedTestCase {
   /**
    * Test that a durable client correctly receives updates after it reconnects.
    */
+  @Test
   public void testStartStopStartDurableClientUpdate() {
     // Start a server
     int serverPort = ((Integer) this.server1VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
@@ -911,6 +940,7 @@ public class DurableClientTestCase extends DistributedTestCase {
    * Test whether a durable client reconnects properly to a server that is
    * stopped and restarted.
    */
+  @Test
   public void testDurableClientConnectServerStopStart() {
     // Start a server
     // Start server 1
@@ -1028,16 +1058,16 @@ public class DurableClientTestCase extends DistributedTestCase {
     this.server1VM.invoke(() -> CacheServerTestUtil.closeCache());
   }
 
-  @Ignore("This test is failing inconsistently, see bug 51258")
-  public void DISABLED_testDurableNonHAFailover() throws InterruptedException
-  {
-      durableFailover(0);
-      durableFailoverAfterReconnect(0);   
+  @Ignore("TODO: This test is failing inconsistently, see bug 51258")
+  @Test
+  public void testDurableNonHAFailover() throws InterruptedException {
+    durableFailover(0);
+    durableFailoverAfterReconnect(0);
   }
 
-  @Ignore("This test is failing inconsistently, see bug 51258")
-  public void DISABLED_testDurableHAFailover() throws InterruptedException
-  {
+  @Ignore("TODO: This test is failing inconsistently, see bug 51258")
+  @Test
+  public void testDurableHAFailover() throws InterruptedException {
     //Clients see this when the servers disconnect
     IgnoredException.addIgnoredException("Could not find any server");
     durableFailover(1);
@@ -1451,7 +1481,7 @@ public class DurableClientTestCase extends DistributedTestCase {
         try {
           if (spot.equals("CLIENT_PRE_RECONNECT")) {
             if (!reconnectLatch.await(60, TimeUnit.SECONDS)) {
-              throw new TestException("reonnect latch was never released.");
+              fail("reonnect latch was never released.");
             }
           }
           else if (spot.equals("DRAIN_IN_PROGRESS_BEFORE_DRAIN_LOCK_CHECK")) {
@@ -1459,7 +1489,7 @@ public class DurableClientTestCase extends DistributedTestCase {
             reconnectLatch.countDown();
             //we wait until the client is rejected
             if (!continueDrain.await(120, TimeUnit.SECONDS)) {
-              throw new TestException("Latch was never released.");
+              fail("Latch was never released.");
             }
           }
           else if (spot.equals("CLIENT_REJECTED_DUE_TO_CQ_BEING_DRAINED")) {
@@ -1500,7 +1530,7 @@ public class DurableClientTestCase extends DistributedTestCase {
             unblockClient.countDown();
             //Wait until client is reconnecting
             if (!unblockDrain.await(120, TimeUnit.SECONDS)) {
-              throw new TestException("client never got far enough reconnected to unlatch lock.");
+              fail("client never got far enough reconnected to unlatch lock.");
             }
           }
           catch (InterruptedException e) {
@@ -1515,7 +1545,7 @@ public class DurableClientTestCase extends DistributedTestCase {
           //wait until the server has finished attempting to close the cq
           try {
             if (!finish.await(30, TimeUnit.SECONDS) ) {
-              throw new TestException("Test did not complete, server never finished attempting to close cq");
+              fail("Test did not complete, server never finished attempting to close cq");
             }
           }
           catch (InterruptedException e) {

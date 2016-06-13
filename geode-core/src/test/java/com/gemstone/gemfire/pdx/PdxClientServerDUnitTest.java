@@ -16,35 +16,53 @@
  */
 package com.gemstone.gemfire.pdx;
 
-import com.gemstone.gemfire.DataSerializer;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.client.*;
-import com.gemstone.gemfire.cache.client.internal.PoolImpl;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.HeapDataOutputStream;
-import com.gemstone.gemfire.internal.PdxSerializerObject;
-import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.test.dunit.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-/**
- *
- */
-public class PdxClientServerDUnitTest extends CacheTestCase {
+import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
+import com.gemstone.gemfire.cache.client.PoolFactory;
+import com.gemstone.gemfire.cache.client.PoolManager;
+import com.gemstone.gemfire.cache.client.internal.PoolImpl;
+import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.HeapDataOutputStream;
+import com.gemstone.gemfire.internal.PdxSerializerObject;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-  public PdxClientServerDUnitTest(String name) {
-    super(name);
+@Category(DistributedTest.class)
+public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
+
+  public PdxClientServerDUnitTest() {
+    super();
   }
 
+  @Test
   public void testSimplePut() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -83,6 +101,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
    * registry if the server is restarted and PDX serialization
    * for a class has changed.  This was reported in Pivotal bug #47338
    */
+  @Test
   public void testNonPersistentServerRestart() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -168,6 +187,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
    * Test of bug 47338 - what happens to the client type
    * registry if the server is restarted.
    */
+  @Test
   public void testNonPersistentServerRestartAutoSerializer() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -255,6 +275,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
    * Test that we through an exception if one of the servers has persistent
    * regions but not a persistent registry.
    */
+  @Test
   public void testServersWithPersistence() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -292,6 +313,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testPutThreadLocalConnections() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -326,6 +348,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
 
   }
   
+  @Test
   public void testSimplePdxInstancePut() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -377,6 +400,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
    * in multiple distributed systems.
    * @throws Exception 
    */
+  @Test
   public void testMultipleServerDSes() throws Exception {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -444,6 +468,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
     assertEquals(new SimpleClass(57, (byte) 3), r.get(1));
   }
   
+  @Test
   public void testUserSerializesObject() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -485,6 +510,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
    * Test that we still use the client
    * type registry, even if pool is created late.
    */
+  @Test
   public void testLatePoolCreation() {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -537,6 +563,7 @@ public class PdxClientServerDUnitTest extends CacheTestCase {
    * tries to create a pool after we were forced to use a peer
    * type registry.
    */
+  @Test
   public void testExceptionWithPoolAfterTypeRegistryCreation() {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);

@@ -16,6 +16,11 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.parallel;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.GemFireIOException;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
@@ -23,25 +28,26 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.MessageTooLargeException
 import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.internal.cache.wan.GatewaySenderException;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.RMIException;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
 
 /**
  * DUnit test for operations on ParallelGatewaySender
  */
+@Category(DistributedTest.class)
 public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
-  private static final long serialVersionUID = 1L;
-  
-  public ParallelGatewaySenderOperationsDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   protected final void postSetUpWANTestBase() throws Exception {
     IgnoredException.addIgnoredException("Broken pipe||Unexpected IOException");
   }
   
+  @Test
   public void testParallelGatewaySenderWithoutStarting() {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -62,6 +68,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
   /**
    * Defect 44323 (ParallelGatewaySender should not be started on Accessor node)
    */
+  @Test
   public void testParallelGatewaySenderStartOnAccessorNode() {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -82,11 +89,10 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     validateRegionSizes(getTestMethodName() + "_PR", 10, vm2, vm3);
   }
 
-  
   /**
    * Normal scenario in which the sender is paused in between.
-   * @throws Exception
    */
+  @Test
   public void testParallelPropagationSenderPause() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -115,8 +121,8 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
   /**
    * Normal scenario in which a paused sender is resumed.
-   * @throws Exception
    */
+  @Test
   public void testParallelPropagationSenderResume() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -151,16 +157,14 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     
     //find the region size on remote vm
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000 ));
- 
   }
 
   /**
    * Negative scenario in which a sender that is stopped (and not paused) is resumed.
    * Expected: resume is only valid for pause. If a sender which is stopped is resumed,
    * it will not be started again.
-   * 
-   * @throws Exception
    */
+  @Test
   public void testParallelPropagationSenderResumeNegativeScenario() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -216,8 +220,8 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
   /**
    * Normal scenario in which a sender is stopped.
-   * @throws Exception
    */
+  @Test
   public void testParallelPropagationSenderStop() throws Exception {
     IgnoredException.addIgnoredException("Broken pipe");
     Integer[] locatorPorts = createLNAndNYLocators();
@@ -244,9 +248,9 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
   /**
    * Normal scenario in which a sender is stopped and then started again.
-   * @throws Exception
    */
   @Category(FlakyTest.class) // GEODE-933: thread sleeps, random ports, async actions, time sensitive
+  @Test
   public void testParallelPropagationSenderStartAfterStop() throws Exception {
     IgnoredException.addIgnoredException("Broken pipe");
     Integer[] locatorPorts = createLNAndNYLocators();
@@ -300,8 +304,8 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
    * Normal scenario in which a sender is stopped and then started again.
    * Differs from above test case in the way that when the sender is starting from
    * stopped state, puts are simultaneously happening on the region by another thread.
-   * @throws Exception
    */
+  @Test
   public void testParallelPropagationSenderStartAfterStop_Scenario2() throws Exception {
     IgnoredException.addIgnoredException("Broken pipe");
     Integer[] locatorPorts = createLNAndNYLocators();
@@ -358,8 +362,8 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
   
   /**
    * Normal scenario in which a sender is stopped and then started again on accessor node.
-   * @throws Exception
    */
+  @Test
   public void testParallelPropagationSenderStartAfterStopOnAccessorNode() throws Exception {
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection reset");
@@ -410,6 +414,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
    * Normal scenario in which a combinations of start, pause, resume operations
    * is tested
    */
+  @Test
   public void testStartPauseResumeParallelGatewaySender() throws Exception {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -461,8 +466,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     try {
       inv1.join();
     } catch (InterruptedException e) {
-      e.printStackTrace();
-      fail("Interrupted the async invocation.");
+      fail("Interrupted the async invocation.", e);
     }
     
     //verify all buckets drained on all sender nodes.
@@ -475,6 +479,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
    * Since the sender is attached to a region and in use, it can not be
    * destroyed. Hence, exception is thrown by the sender API.
    */
+  @Test
   public void testDestroyParallelGatewaySenderExceptionScenario() {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -508,6 +513,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
         getTestMethodName() + "_PR", 1000 ));
   }
 
+  @Test
   public void testDestroyParallelGatewaySender() {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
@@ -546,6 +552,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm7.invoke(() -> WANTestBase.verifySenderDestroyed( "ln", true ));
   }
 
+  @Test
   public void testParallelGatewaySenderMessageTooLargeException() {
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];

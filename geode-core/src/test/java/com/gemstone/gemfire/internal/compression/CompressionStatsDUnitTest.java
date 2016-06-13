@@ -17,6 +17,15 @@
 
 package com.gemstone.gemfire.internal.compression;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.Serializable;
 
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -35,7 +44,8 @@ import com.gemstone.gemfire.test.dunit.VM;
  * Tests compression statistics.
  * @since GemFire 8.0
  */
-public class CompressionStatsDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
   /**
    * The name of our test region.
    */
@@ -62,8 +72,8 @@ public class CompressionStatsDUnitTest extends CacheTestCase {
    * Creates a new CompressionStatsDUnitTest.
    * @param name test name.
    */
-  public CompressionStatsDUnitTest(String name) {
-    super(name);
+  public CompressionStatsDUnitTest() {
+    super();
   }
 
   /**
@@ -270,6 +280,7 @@ public class CompressionStatsDUnitTest extends CacheTestCase {
   /**
    * Asserts that compression stats are functioning properly.
    */
+  @Test
   public void testCompressionStats() {
     VM vm = Host.getHost(0).getVM(TEST_VM);
     

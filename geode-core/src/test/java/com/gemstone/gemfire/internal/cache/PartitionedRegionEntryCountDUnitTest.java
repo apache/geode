@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.EvictionAction;
@@ -34,13 +43,11 @@ import com.gemstone.gemfire.test.dunit.VM;
  * 
  * 
  */
-public class PartitionedRegionEntryCountDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PartitionedRegionEntryCountDUnitTest extends JUnit4CacheTestCase {
   private static final long serialVersionUID = 19808034671087558L;
 
-  public PartitionedRegionEntryCountDUnitTest(final String name) {
-    super(name);
-  }
-
+  @Test
   public void testTotalEntryCountAfterLocalDestroyEviction() {
     final Host host = Host.getHost(0);
     final VM vm1 = host.getVM(0);

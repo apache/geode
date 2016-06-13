@@ -21,6 +21,8 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -28,6 +30,9 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -46,18 +51,17 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.locks.DLockGrantor;
 import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-/**
- *
- */
-public class PutAllGlobalDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class PutAllGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: reformat
     /**
      * timeout period for the put() operation, when it is run
      * concurrent with a conflicting putAll() operation
@@ -66,10 +70,6 @@ public class PutAllGlobalDUnitTest extends DistributedTestCase {
     
     private static ServerSocket serverSocket;
     
-    /** Creates a new instance of PutAllGlobalDUnitTest */
-    public PutAllGlobalDUnitTest(String name) {
-        super(name);
-    }
     static Cache cache;
     static Properties props = new Properties();
     static Properties propsWork = new Properties();
@@ -103,7 +103,7 @@ public class PutAllGlobalDUnitTest extends DistributedTestCase {
     
     public static void createCacheForVM0(){
         try{
-            ds = (new PutAllGlobalDUnitTest("temp")).getSystem(props);
+            ds = (new PutAllGlobalDUnitTest()).getSystem(props);
             cache = CacheFactory.create(ds);
             AttributesFactory factory  = new AttributesFactory();
             factory.setScope(Scope.GLOBAL);
@@ -117,7 +117,7 @@ public class PutAllGlobalDUnitTest extends DistributedTestCase {
     public static void createCacheForVM1(){
         try{           
             CacheWriter aWriter = new BeforeCreateCallback();
-            ds = (new PutAllGlobalDUnitTest("temp")).getSystem(props);
+            ds = (new PutAllGlobalDUnitTest()).getSystem(props);
             cache = CacheFactory.create(ds);
             cache.setLockTimeout(TIMEOUT_PERIOD/1000);
             AttributesFactory factory  = new AttributesFactory();
@@ -148,8 +148,9 @@ public class PutAllGlobalDUnitTest extends DistributedTestCase {
     
     //test methods
     
-    public void testputAllGlobalRemoteVM() throws Throwable {
-        // Test Fails: AssertionFailedError: Should have thrown TimeoutException
+  @Test
+  public void testputAllGlobalRemoteVM() throws Throwable {
+        // Test Fails: AssertionError: Should have thrown TimeoutException
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);
         VM vm1 = host.getVM(1);

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.Properties;
 import java.util.Random;
 
@@ -42,7 +51,8 @@ import com.gemstone.gemfire.internal.size.WellKnownClassSizer;
  * 
  * @since GemFire 3.2
  */
-public class MemLRUEvictionControllerDUnitTest extends CacheTestCase
+@Category(DistributedTest.class)
+public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase
 {
 
   private static boolean usingMain = false;
@@ -50,8 +60,8 @@ public class MemLRUEvictionControllerDUnitTest extends CacheTestCase
   /**
    * Creates a new <code>MemLRUEvictionControllerDUnitTest</code>
    */
-  public MemLRUEvictionControllerDUnitTest(String name) {
-    super(name);
+  public MemLRUEvictionControllerDUnitTest() {
+    super();
   }
 
   /**
@@ -76,6 +86,7 @@ public class MemLRUEvictionControllerDUnitTest extends CacheTestCase
    * Carefully verifies that region operations effect the {@link LRUStatistics}
    * as expected.
    */
+  @Test
   public void testRegionOperations() throws CacheException
   {
 
@@ -149,6 +160,7 @@ public class MemLRUEvictionControllerDUnitTest extends CacheTestCase
    * see the class instance.
    * @throws CacheException
    */
+  @Test
   public void testSizeClassesOnce() throws CacheException
   {
     int threshold = 4;
@@ -191,6 +203,7 @@ public class MemLRUEvictionControllerDUnitTest extends CacheTestCase
   /**
    * Prints out the number of bytes that a region entry occupies in the VM.
    */
+  @Test
   public void testEntryOverHead() throws Exception
   {
     final String name = this.getUniqueName();
@@ -235,6 +248,7 @@ public class MemLRUEvictionControllerDUnitTest extends CacheTestCase
    * 
    * @throws Exception
    */
+  @Test
   public void testCustomObjectSizer() throws Exception
   {
     final String name = this.getUniqueName();
@@ -261,7 +275,7 @@ public class MemLRUEvictionControllerDUnitTest extends CacheTestCase
   public static void main(String[] args) throws Exception
   {
     usingMain = true;
-    (new MemLRUEvictionControllerDUnitTest("test")).testRegionOperations();
+    (new MemLRUEvictionControllerDUnitTest()).testRegionOperations();
   }
   
   private static class TestObject {

@@ -21,12 +21,10 @@
  */
 package com.gemstone.gemfire.cache.query.functional;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -43,27 +41,10 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverAdapter;
 import com.gemstone.gemfire.cache.query.internal.QueryObserverHolder;
-import com.gemstone.gemfire.cache.query.types.ObjectType;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class IndexUsageWithAliasAsProjAtrbtJUnitTest{
-  ObjectType resType1=null;
-  ObjectType resType2= null;
-
-
-  int resSize1=0;
-  int resSize2=0;
-
-  Iterator itert1=null;
-  Iterator itert2=null;
-
-  Set set1=null;
-  Set set2=null;
-
-  String s1;
-  String s2;
-
+public class IndexUsageWithAliasAsProjAtrbtJUnitTest {
 
   @Before
   public void setUp() throws java.lang.Exception {
@@ -97,20 +78,14 @@ public class IndexUsageWithAliasAsProjAtrbtJUnitTest{
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
-      try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
-        QueryObserverImpl observer = new QueryObserverImpl();
-        QueryObserverHolder.setInstance(observer);
-        r[i][0] =(SelectResults) q.execute();
-        if(!observer.isIndexesUsed){
-          CacheUtils.log("NO INDEX USED");
-        }else {
-          fail("If index were not there how did they get used ???? ");
-        }              
-
-      } catch (Exception e) {
-        e.printStackTrace();
-        fail(q.getQueryString());
+      q = CacheUtils.getQueryService().newQuery(queries[i]);
+      QueryObserverImpl observer = new QueryObserverImpl();
+      QueryObserverHolder.setInstance(observer);
+      r[i][0] =(SelectResults) q.execute();
+      if(!observer.isIndexesUsed){
+        CacheUtils.log("NO INDEX USED");
+      }else {
+        fail("If index were not there how did they get used ???? ");
       }
     }
 
@@ -120,29 +95,23 @@ public class IndexUsageWithAliasAsProjAtrbtJUnitTest{
     qs.createIndex("lengthIndex", IndexType.FUNCTIONAL,"length","/portfolios,secIds, positions.values");
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
-      try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
-        QueryObserverImpl observer2 = new QueryObserverImpl();
-        QueryObserverHolder.setInstance(observer2);
-        r[i][1] = (SelectResults)q.execute();
+      q = CacheUtils.getQueryService().newQuery(queries[i]);
+      QueryObserverImpl observer2 = new QueryObserverImpl();
+      QueryObserverHolder.setInstance(observer2);
+      r[i][1] = (SelectResults)q.execute();
 
-        if(observer2.isIndexesUsed){
-          CacheUtils.log("YES INDEX IS USED!");
-        }
-        else {
-          fail("Index should have been used!!! ");
-        }              
-
-      } catch (Exception e) {
-        e.printStackTrace();
-        fail(q.getQueryString());
+      if(observer2.isIndexesUsed){
+        CacheUtils.log("YES INDEX IS USED!");
+      }
+      else {
+        fail("Index should have been used!!! ");
       }
     }
     CacheUtils.compareResultsOfWithAndWithoutIndex(r,this);        
-
   }
+
   @Test
-  public void testQueryResultComposition() throws Exception{
+  public void testQueryResultComposition() throws Exception {
     Region region = CacheUtils.createRegion("pos", Portfolio.class);
     for(int i=0;i<4;i++){
       region.put(""+i, new Portfolio(i));
@@ -154,27 +123,22 @@ public class IndexUsageWithAliasAsProjAtrbtJUnitTest{
         "select distinct nm from /pos prt,names nm where ID>0",
         "select distinct prt from /pos prt, names where names[3]='ddd'"
     };
-    try{
-      for(int i=0;i<queries.length;i++){
-        Query q = CacheUtils.getQueryService().newQuery(queries[i]);
-        q.execute();
-        //   CacheUtils.log(Utils.printResult(result));
-
-      }
-    }catch (Exception e){
-      e.printStackTrace();
-      fail();
+    for(int i=0;i<queries.length;i++){
+      Query q = CacheUtils.getQueryService().newQuery(queries[i]);
+      q.execute();
     }
   }
 
-  class QueryObserverImpl extends QueryObserverAdapter{
+  private static class QueryObserverImpl extends QueryObserverAdapter{
     boolean isIndexesUsed = false;
     ArrayList indexesUsed = new ArrayList();
 
+    @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       indexesUsed.add(index.getName());
     }
 
+    @Override
     public void afterIndexLookup(Collection results) {
       if(results != null){
         isIndexesUsed = true;

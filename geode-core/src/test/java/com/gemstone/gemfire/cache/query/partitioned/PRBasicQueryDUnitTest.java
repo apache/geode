@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import static com.gemstone.gemfire.cache.query.Utils.*;
 
 import com.gemstone.gemfire.cache.Cache;
@@ -38,6 +47,7 @@ import com.gemstone.gemfire.test.dunit.VM;
  * firing a simple query and validating the ResultSet size and Contents. 
  * 
  */
+@Category(DistributedTest.class)
 public class PRBasicQueryDUnitTest extends PartitionedRegionDUnitTestCase
 
 {
@@ -47,8 +57,8 @@ public class PRBasicQueryDUnitTest extends PartitionedRegionDUnitTestCase
    * @param name
    */
 
-  public PRBasicQueryDUnitTest(String name) {
-    super(name);
+  public PRBasicQueryDUnitTest() {
+    super();
   }
 
   public void setCacheInVMs(VM... vms) {
@@ -74,6 +84,7 @@ public class PRBasicQueryDUnitTest extends PartitionedRegionDUnitTestCase
    * 3. Fires a query on accessor VM and verifies the result. 
    * @throws Exception
    */
+  @Test
   public void testPRBasicQuerying() throws Exception
   {
     Host host = Host.getHost(0);
@@ -142,6 +153,7 @@ public class PRBasicQueryDUnitTest extends PartitionedRegionDUnitTestCase
             "PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR's Test ENDED");
   }
   
+  @Test
   public void testPRCountStarQuery() throws Exception
   {
     Host host = Host.getHost(0);
@@ -221,6 +233,7 @@ public class PRBasicQueryDUnitTest extends PartitionedRegionDUnitTestCase
             "PRQBasicQueryDUnitTest#testPRCountStarQuery: Querying PR's Test ENDED");
   }
   
+  @Test
   public void testPROrderBy() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

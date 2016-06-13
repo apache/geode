@@ -34,7 +34,7 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  *

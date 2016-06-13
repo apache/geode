@@ -16,28 +16,41 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.LossAction;
+import com.gemstone.gemfire.cache.MembershipAttributes;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.ResumptionAction;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.internal.cache.CachePerfStats;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-public class CacheRegionsReliablityStatsCheckDUnitTest extends CacheTestCase {
-  public CacheRegionsReliablityStatsCheckDUnitTest(String name) {
-    super(name);
-  }
+@Category(DistributedTest.class)
+public class CacheRegionsReliablityStatsCheckDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * The tests check to see if all the reliablity stats are working
    * fine and asserts their values to constants.
    */
-  public void testRegionsReliablityStats() throws Exception, RegionExistsException {
+	@Test
+  public void testRegionsReliablityStats() throws Exception {
     final String rr1 = "roleA";
     final String regionNoAccess = "regionNoAccess";
     final String regionLimitedAccess = "regionLimitedAccess";

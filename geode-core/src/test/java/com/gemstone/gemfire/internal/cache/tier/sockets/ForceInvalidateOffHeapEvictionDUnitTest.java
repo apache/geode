@@ -16,23 +16,27 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Runs force invalidate eviction tests with off-heap regions.
  * @since Geode 1.0
  */
+@Category(DistributedTest.class)
 public class ForceInvalidateOffHeapEvictionDUnitTest extends
     ForceInvalidateEvictionDUnitTest {
 
-  public ForceInvalidateOffHeapEvictionDUnitTest(String name) {
-    super(name);
+  public ForceInvalidateOffHeapEvictionDUnitTest() {
+    super();
   }
 
   @Override

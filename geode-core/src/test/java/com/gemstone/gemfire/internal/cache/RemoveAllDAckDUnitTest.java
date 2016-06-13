@@ -21,8 +21,13 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -37,20 +42,18 @@ import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.test.dunit.Assert;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Adapted from RemoveAllDAckDUnitTest
  */
-public class RemoveAllDAckDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class RemoveAllDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: reformat
     
-    /** Creates a new instance of RemoveAllDAckDunitTest */
-    public RemoveAllDAckDUnitTest(String name) {
-        super(name);
-    }
     static Cache cache;
     static Properties props = new Properties();
     static Properties propsWork = new Properties();
@@ -81,7 +84,7 @@ public class RemoveAllDAckDUnitTest extends DistributedTestCase {
     }
     
     public static void createCacheForVM0() throws Exception {
-            ds = (new RemoveAllDAckDUnitTest("temp")).getSystem(props);
+            ds = (new RemoveAllDAckDUnitTest()).getSystem(props);
             cache = CacheFactory.create(ds);
             AttributesFactory factory  = new AttributesFactory();
             factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -91,7 +94,7 @@ public class RemoveAllDAckDUnitTest extends DistributedTestCase {
     
     public static void createCacheForVM1() throws Exception {
             CacheWriter aWriter = new BeforeDestroyCallback();
-            ds = (new RemoveAllDAckDUnitTest("temp")).getSystem(props);
+            ds = (new RemoveAllDAckDUnitTest()).getSystem(props);
             cache = CacheFactory.create(ds);
             AttributesFactory factory  = new AttributesFactory();
             factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -108,7 +111,8 @@ public class RemoveAllDAckDUnitTest extends DistributedTestCase {
     
     //test methods
  
-    public void testRemoveAllRemoteVM() {
+  @Test
+  public void testRemoveAllRemoteVM() {
         // Test PASS. 
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);

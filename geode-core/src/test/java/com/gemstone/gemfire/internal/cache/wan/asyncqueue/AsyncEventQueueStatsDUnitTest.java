@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.asyncqueue;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,17 +32,19 @@ import com.gemstone.gemfire.internal.cache.wan.AsyncEventQueueTestBase;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Wait;
 
+@Category(DistributedTest.class)
 public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
 
   private static final long serialVersionUID = 1L;
   
-  public AsyncEventQueueStatsDUnitTest(String name) {
-    super(name);
+  public AsyncEventQueueStatsDUnitTest() {
+    super();
   }
   
   /**
    * Normal replication scenario
    */
+  @Test
   public void testReplicatedSerialPropagation() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
@@ -73,6 +84,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   /**
    * Two listeners added to the same RR.
    */
+  @Test
   public void testAsyncStatsTwoListeners() throws Exception {
     Integer lnPort = createFirstLocatorWithDSId(1);
 
@@ -128,6 +140,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   /**
    * HA scenario: kill one vm when puts are in progress on the other vm.
    */
+  @Test
   public void testReplicatedSerialPropagationHA() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
@@ -174,6 +187,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   /**
    * Two regions attached to same AsyncEventQueue
    */
+  @Test
   public void testReplicatedSerialPropagationUNPorcessedEvents() throws Exception {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 
@@ -228,6 +242,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   /**
    * Test with conflation enabled
    */
+  @Test
   public void testSerialPropagationConflation() {
     Integer lnPort = (Integer)vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId( 1 ));
 

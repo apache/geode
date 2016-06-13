@@ -16,24 +16,30 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.PartitionAttributes;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-public class DistrbutedRegionProfileOffHeapDUnitTest extends CacheTestCase {
-  private static final long serialVersionUID = 1L;
-
-  public DistrbutedRegionProfileOffHeapDUnitTest(String name) {
-    super(name);
-  }
+@Category(DistributedTest.class)
+public class DistrbutedRegionProfileOffHeapDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void preTearDownAssertions() throws Exception {
@@ -55,6 +61,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends CacheTestCase {
    * region as on-heap and the other as having the region as off-heap, will
    * cause an exception and the region will not be created.
    */
+  @Test
   public void testPartitionedRegionProfileWithConflict() throws Exception {
     final String regionName = getTestMethodName() + "Region";
 
@@ -110,6 +117,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends CacheTestCase {
    * same off-heap status, will not cause an exception and the region will be
    * created.
    */
+  @Test
   public void testPartitionedRegionProfileWithoutConflict() throws Exception {
     final String offHeapRegionName = getTestMethodName() + "OffHeapRegion";
     final String onHeapRegionName = getTestMethodName() + "OnHeapRegion";
@@ -148,6 +156,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends CacheTestCase {
    * storage and the other being on-heap without local storage, will not cause an
    * exception.
    */
+  @Test
   public void testPartitionedRegionProfileWithAccessor() throws Exception {
     final String regionName = getTestMethodName() + "Region";
 
@@ -201,6 +210,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends CacheTestCase {
    * Asserts that creating a region on two members, with one being off-heap with local
    * storage and the other being a proxy will not cause an exception.
    */
+  @Test
   public void testPartitionedRegionProfileWithProxy() throws Exception {
     final String regionName = getTestMethodName() + "Region";
 

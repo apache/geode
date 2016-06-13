@@ -16,13 +16,9 @@
  */
 package com.gemstone.gemfire.cache.query.functional;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
-
-import junit.framework.Assert;
 
 import org.junit.After;
 import org.junit.Before;
@@ -49,25 +45,21 @@ import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
-/**
-*
-*/
 @Category(IntegrationTest.class)
-public class IndexCreationDeadLockJUnitTest
-{
-  protected boolean testFailed = false;
+public class IndexCreationDeadLockJUnitTest {
 
-  protected String cause = "";
+  private static final String indexName = "queryTest";
 
-  boolean exceptionInCreatingIndex = false;
+  private boolean testFailed = false;
 
-  Region region;
+  private String cause = "";
 
-  final String indexName = "queryTest";
+  private boolean exceptionInCreatingIndex = false;
+
+  private Region region;
 
   @Before
-  public void setUp() throws java.lang.Exception
-  {
+  public void setUp() throws Exception {
     CacheUtils.startCache();
     this.testFailed = false;
     this.cause = "";
@@ -83,25 +75,21 @@ public class IndexCreationDeadLockJUnitTest
   }
 
   @After
-  public void tearDown() throws java.lang.Exception
-  {
-	try{
-		this.region.localDestroyRegion();
-	}catch(RegionDestroyedException  rde) {
-		//Ignore
-	}
+  public void tearDown() throws Exception {
+    try{
+      this.region.localDestroyRegion();
+    }catch(RegionDestroyedException  rde) {
+      //Ignore
+    }
 
     CacheUtils.closeCache();
   }
 
   /**
    * Tests Index creation and maintenance deadlock scenario for in memory region
-   *
    */
   @Test
-  public void testIndexCreationDeadLock() throws Exception
-  {
-
+  public void testIndexCreationDeadLock() throws Exception {
     simulateDeadlockScenario();
     assertFalse(this.cause, this.testFailed);
     assertFalse("Index creation failed", this.exceptionInCreatingIndex);
@@ -111,8 +99,7 @@ public class IndexCreationDeadLockJUnitTest
    * Tests  Index creation and maintenance deadlock scenario for Persistent only disk region
    */
   @Test
-  public void testIndexCreationDeadLockForDiskOnlyRegion()
-  {
+  public void testIndexCreationDeadLockForDiskOnlyRegion() {
     this.region.destroyRegion();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -132,14 +119,11 @@ public class IndexCreationDeadLockJUnitTest
     assertFalse("Index creation failed", this.exceptionInCreatingIndex);
   }
 
-
   /**
    * Tests  Index creation and maintenance deadlock scenario for a region with stats enabled
-   *
    */
   @Test
-  public void testIndexCreationDeadLockForStatsEnabledRegion()
-  {
+  public void testIndexCreationDeadLockForStatsEnabledRegion() {
     this.region.destroyRegion();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -157,8 +141,7 @@ public class IndexCreationDeadLockJUnitTest
    * Tests inability to create index on a region which overflows to disk   *
    */
   @Test
-  public void testIndexCreationDeadLockForOverflowToDiskRegion()
-  {
+  public void testIndexCreationDeadLockForOverflowToDiskRegion() {
     this.region.destroyRegion();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -181,7 +164,6 @@ public class IndexCreationDeadLockJUnitTest
   }
 
   private void simulateDeadlockScenario() {
-
     Thread th = new IndexCreationDeadLockJUnitTest.PutThread("put thread");
     th.start();
     ThreadUtils.join(th, 60 * 1000);
@@ -190,8 +172,7 @@ public class IndexCreationDeadLockJUnitTest
   /**
    * following thread will perform the operations of data population and index creation.
    */
-  public class HelperThread extends Thread
-  {
+  private class HelperThread extends Thread {
 
     public HelperThread(String thName) {
       super(thName);
@@ -201,8 +182,8 @@ public class IndexCreationDeadLockJUnitTest
               + thName);
     }
 
-    public void run()
-    {
+    @Override
+    public void run() {
       try {
 
         System.out
@@ -227,19 +208,17 @@ public class IndexCreationDeadLockJUnitTest
   /**
    * thread to put the entries in region
    */
-  public class PutThread extends Thread
-  {
+  private class PutThread extends Thread {
 
     public PutThread(String thName) {
       super(thName);
       System.out
           .println("--------------------- Thread started ------------------------- "
               + thName);
-
     }
 
-    public void run()
-    {
+    @Override
+    public void run() {
       try {
         System.out
             .println("--------------------- Populating Data -------------------------");
@@ -275,12 +254,12 @@ public class IndexCreationDeadLockJUnitTest
   /**
    *  make the update to wait for a while before updatation to simulate the deadlock condiction
    */
-  public class BeforeUpdateCallBack extends CacheWriterAdapter
-  {
+  private class BeforeUpdateCallBack extends CacheWriterAdapter {
+
     int cnt = 0;
 
-    public void beforeCreate(EntryEvent event) throws CacheWriterException
-    {
+    @Override
+    public void beforeCreate(EntryEvent event) throws CacheWriterException {
       cnt++;
       if (cnt == 10) {
         System.out

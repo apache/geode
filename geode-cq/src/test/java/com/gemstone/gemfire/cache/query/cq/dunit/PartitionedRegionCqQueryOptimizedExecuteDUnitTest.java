@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.cq.dunit;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
@@ -26,10 +35,11 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.test.dunit.*;
 
+@Category(DistributedTest.class)
 public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest extends PartitionedRegionCqQueryDUnitTest{
 
-  public PartitionedRegionCqQueryOptimizedExecuteDUnitTest(String name) {
-    super(name);
+  public PartitionedRegionCqQueryOptimizedExecuteDUnitTest() {
+    super();
   }
 
   @Override
@@ -51,6 +61,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest extends Partition
     });
   }
   
+  @Test
   public void testCqExecuteWithoutQueryExecution() throws Exception {
     final Host host = Host.getHost(0);
     final VM server = host.getVM(0);
@@ -142,6 +153,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest extends Partition
     cqHelper.closeServer(server);    
   }
   
+  @Test
   public void testCqExecuteWithoutQueryExecutionAndNoRSCaching() throws Exception {
     final Host host = Host.getHost(0);
     final VM server = host.getVM(0);

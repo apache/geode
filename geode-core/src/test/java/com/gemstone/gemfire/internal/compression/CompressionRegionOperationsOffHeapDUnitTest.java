@@ -16,22 +16,22 @@
  */
 package com.gemstone.gemfire.internal.compression;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
+import java.util.Properties;
+
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.compression.Compressor;
 import com.gemstone.gemfire.compression.SnappyCompressor;
 import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-import java.util.Properties;
+@Category(DistributedTest.class)
+public class CompressionRegionOperationsOffHeapDUnitTest extends CompressionRegionOperationsDUnitTest {
 
-public class CompressionRegionOperationsOffHeapDUnitTest extends
-    CompressionRegionOperationsDUnitTest {
-
-  public CompressionRegionOperationsOffHeapDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public final void preTearDownAssertions() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {

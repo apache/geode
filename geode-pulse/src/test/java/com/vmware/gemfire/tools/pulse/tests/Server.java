@@ -44,7 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 public class Server {
   private static final String DEFAULT_HOST = "127.0.0.1"; //"localhost"

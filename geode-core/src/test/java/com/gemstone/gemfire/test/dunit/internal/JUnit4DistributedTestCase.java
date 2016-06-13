@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.test.dunit.internal;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
 import com.gemstone.gemfire.cache.Cache;
@@ -54,8 +54,8 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -324,6 +324,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    * name of the class as well as the name of the method.
    */
   public final String getUniqueName() {
+    assertNotNull(getName());
     return getTestClass().getSimpleName() + "_" + getName();
   }
 

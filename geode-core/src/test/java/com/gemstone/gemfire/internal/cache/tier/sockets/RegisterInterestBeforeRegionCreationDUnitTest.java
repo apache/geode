@@ -16,7 +16,24 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.InterestResultPolicy;
+import com.gemstone.gemfire.cache.MirrorType;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
@@ -25,12 +42,13 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheObserverAdapter;
 import com.gemstone.gemfire.internal.cache.CacheObserverHolder;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This test tests the scenario whereby a register interest has been called before
@@ -47,13 +65,9 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  * - mirrored region1 is created on server2
  * - data will come to region1 on server2 via GII
  * - data should be sent to client2 
- * 
- * 
- * 
  */
-
-public class RegisterInterestBeforeRegionCreationDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4DistributedTestCase {
 
  /** Server1 VM **/
   static VM server1 = null;
@@ -68,13 +82,9 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends DistributedTe
   /** Server2 port **/
   public static int PORT2;
   /** Region name **/
-  private static final String REGION_NAME = "RegisterInterestBeforeRegionCreationDUnitTest_Region";
+  private static final String REGION_NAME = RegisterInterestBeforeRegionCreationDUnitTest.class.getSimpleName() + "_Region";
   /** Server2 VM **/
   protected static Cache cache = null;
-
-  public RegisterInterestBeforeRegionCreationDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -88,7 +98,6 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends DistributedTe
 
   /**
    * close the cache on all the vms
-   * @throws Exception
    */
   @Override
   public final void preTearDown() throws Exception {
@@ -98,7 +107,6 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends DistributedTe
     server2.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest.closeCache());
   }
 
-  
   /**
    * - Creates the client-server configuration (which also registers interest)
    * - put on server1
@@ -106,20 +114,16 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends DistributedTe
    * - create region on server2
    * - verify puts received on server2 via GII
    * - verify puts received on client2 via server2
-   * 
-   * @throws Exception
    */
-  public void YOGESH_testRegisterInterestHappeningBeforeRegionCreation() throws Exception
-  {
+  @Ignore("TODO:YOGESH: test is disabled")
+  @Test
+  public void testRegisterInterestHappeningBeforeRegionCreation() throws Exception {
     createClientServerConfigurationForClearTest();
     server1.invoke(putFromServer());
     client1.invoke(verifyIfAllPutsGot());
     server2.invoke(createRegionOnServer());
     server2.invoke(verifyIfAllPutsGot());
     client2.invoke(verifyIfAllPutsGot());
-  }
-  public void testDummyAsThereIsNoOtherTestInThisClass(){
-    //DO NOTHING
   }
 
   private CacheSerializableRunnable putFromServer()
@@ -196,7 +200,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends DistributedTe
 
   public static Integer createServer(Boolean createRegion) throws Exception
   {
-    new RegisterInterestBeforeRegionCreationDUnitTest("temp").createCache(new Properties());
+    new RegisterInterestBeforeRegionCreationDUnitTest().createCache(new Properties());
     boolean isCreateRegion = createRegion.booleanValue();
     if (isCreateRegion) {
       AttributesFactory factory = new AttributesFactory();
@@ -230,7 +234,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends DistributedTe
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new RegisterInterestBeforeRegionCreationDUnitTest("temp").createCache(props);
+    new RegisterInterestBeforeRegionCreationDUnitTest().createCache(props);
     Pool p = PoolManager.createFactory()
       .addServer(host, PORT1)
       .setSubscriptionEnabled(true)

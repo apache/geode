@@ -16,10 +16,10 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
 import java.util.Collections;
 import java.util.List;
-
-import junit.framework.Assert;
 
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.internal.offheap.MemoryBlock;
@@ -30,7 +30,7 @@ import com.gemstone.gemfire.internal.offheap.MemoryAllocatorImpl;
 @SuppressWarnings("deprecation")
 public class OffHeapTestUtil {
 
-  public static void checkOrphans() { // TODO:KIRK: need to do something special to guarantee proper tearDown
+  public static void checkOrphans() {
     MemoryAllocatorImpl allocator = null;
     try {
       allocator = MemoryAllocatorImpl.getAllocator();
@@ -57,7 +57,7 @@ public class OffHeapTestUtil {
       System.out.println("Sample orphan: " + orphans.get(0));
       System.out.println("Orphan info: " + info);
     }
-    Assert.assertEquals(Collections.emptyList(), orphans);
+    assertEquals(Collections.emptyList(), orphans);
   }
 
 }

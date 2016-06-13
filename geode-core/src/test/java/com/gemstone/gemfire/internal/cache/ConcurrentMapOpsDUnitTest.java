@@ -14,28 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * 
- */
 package com.gemstone.gemfire.internal.cache;
 
-import com.gemstone.gemfire.Delta;
-import com.gemstone.gemfire.InvalidDeltaException;
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.cache.client.internal.DestroyOp;
-import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
-import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
-import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.test.dunit.*;
-import junit.framework.AssertionFailedError;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -45,16 +27,48 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.Delta;
+import com.gemstone.gemfire.InvalidDeltaException;
+import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.Operation;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionEvent;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
+import com.gemstone.gemfire.cache.client.internal.DestroyOp;
+import com.gemstone.gemfire.cache.server.CacheServer;
+import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.MembershipManager;
+import com.gemstone.gemfire.distributed.internal.membership.gms.MembershipManagerHelper;
+import com.gemstone.gemfire.internal.AvailablePort;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * tests for the concurrentMapOperations. there are more tests in ClientServerMiscDUnitTest
- *
  */
-public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
 
-  protected static final String REP_REG_NAME = "repRegion";
-  protected static final String PR_REG_NAME = "prRegion";
+  private static final String REP_REG_NAME = "repRegion";
+  private static final String PR_REG_NAME = "prRegion";
   private static final int MAX_ENTRIES = 113;
   
   enum OP {PUTIFABSENT, REPLACE, REMOVE}
@@ -79,11 +93,11 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
     });
   }
 
-  protected Region createReplicateRegion() {
+  private Region createReplicateRegion() {
     return getCache().createRegionFactory(RegionShortcut.REPLICATE).setConcurrencyChecksEnabled(true).create(REP_REG_NAME);
   }
 
-  protected Region createPartitionedRegion() {
+  private Region createPartitionedRegion() {
     return getCache().createRegionFactory(RegionShortcut.PARTITION).setConcurrencyChecksEnabled(true).create(PR_REG_NAME);
   }
 
@@ -151,8 +165,8 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
       }
     });
   }
-  
-   static abstract class AbstractConcMapOpsListener implements CacheListener<Integer, String> {
+
+  private static abstract class AbstractConcMapOpsListener implements CacheListener<Integer, String> {
     public void afterCreate(EntryEvent<Integer, String> event) {
       validate(event);
     }
@@ -179,15 +193,15 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
     }
     abstract void validate(EntryEvent event);
   }
-  
-  static class NotInvokedListener extends AbstractConcMapOpsListener {
+
+  private static class NotInvokedListener extends AbstractConcMapOpsListener {
     @Override
     void validate(EntryEvent event) {
       fail("should not be called.  Event="+event);
     }
   }
 
-  static class InitialCreatesListener extends AbstractConcMapOpsListener {
+  private static class InitialCreatesListener extends AbstractConcMapOpsListener {
     AtomicInteger numCreates = new AtomicInteger();
     @Override
     void validate(EntryEvent event) {
@@ -197,14 +211,9 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
       numCreates.incrementAndGet();
     }
   }
-  /**
-   * @param name
-   */
-  public ConcurrentMapOpsDUnitTest(String name) {
-    super(name);
-  }
 
   // test for bug #42164
+  @Test
   public void testListenerNotInvokedForRejectedOperation() {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);
@@ -324,10 +333,12 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testBug42162() {
     dotestConcOps(false);
   }
   
+  @Test
   public void testBug42162EmptyClient() {
     dotestConcOps(true);
   }
@@ -372,7 +383,7 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
         final Region r = getCache().getRegion(REP_REG_NAME);
         final Region pr = getCache().getRegion(PR_REG_NAME);
         WaitCriterion wc = new WaitCriterion() {
-          AssertionFailedError e = null;
+          AssertionError e = null;
           public boolean done() {
             try {
               if (!emptyClient) {
@@ -389,7 +400,7 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
               assertNull(pr.putIfAbsent("keyForNull", null));
               assertNull(r.putIfAbsent("clientNullKey", null));
               assertNull(pr.putIfAbsent("clientNullKey", null));
-            } catch (AssertionFailedError ex) {
+            } catch (AssertionError ex) {
               r.getCache().getLoggerI18n().fine("SWAP:caught ", ex);
               e = ex;
               return false;
@@ -424,7 +435,7 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
         final Region r = getCache().getRegion(REP_REG_NAME);
         final Region pr = getCache().getRegion(PR_REG_NAME);
         WaitCriterion wc = new WaitCriterion() {
-          AssertionFailedError e = null;
+          AssertionError e = null;
           public boolean done() {
             try {
               assertEquals("value2", r.putIfAbsent("key0", null));
@@ -438,7 +449,7 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
               assertNull(r.replace("NoKeyOnServer", "value"));
               assertTrue(r.replace("clientNullKey", null, "newValue"));
               assertTrue(pr.replace("clientNullKey", null, "newValue"));
-            } catch (AssertionFailedError ex) {
+            } catch (AssertionError ex) {
               e = ex;
               return false;
             }
@@ -463,6 +474,7 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testNullValueFromNonEmptyClients() {
     Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -496,10 +508,12 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
     });
   }
 
+  @Test
   public void testPutIfAbsent() {
     doPutIfAbsentWork(false);
   }
   
+  @Test
   public void testPutIfAbsentCS() {
     doPutIfAbsentWork(true);
   }
@@ -547,10 +561,12 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testRemove() {
     doRemoveWork(false);
   }
   
+  @Test
   public void testRemoveCS() {
     doRemoveWork(true);
   }
@@ -609,10 +625,12 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testReplaceCS() {
     doReplaceWork(true);
   }
   
+  @Test
   public void testReplace() {
     doReplaceWork(false);
   }
@@ -674,15 +692,19 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testBug42167() {
     do42167Work(false, REP_REG_NAME);
   }
+  @Test
   public void testBug42167PR() {
     do42167Work(false, PR_REG_NAME);
   }
+  @Test
   public void testBug42167Empty() {
     do42167Work(true, REP_REG_NAME);
   }
+  @Test
   public void testBug42167EmptyPR() {
     do42167Work(true, PR_REG_NAME);
   }
@@ -759,9 +781,11 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testBug42189() {
     doBug42189Work(REP_REG_NAME);
   }
+  @Test
   public void testBug42189PR() {
     doBug42189Work(PR_REG_NAME);
   }
@@ -802,13 +826,25 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
       }
     });
   }
-  
-  public void _testBug42195() {
+
+  /**
+   * Replicate Region test for bug #42195: putIfAbsent from client does not put old value in local cache
+   */
+  @Ignore("TODO")
+  @Test
+  public void testBug42195() {
     doPutIfAbsentPutsKeyInLocalClientCacheWork(REP_REG_NAME);
   }
-  public void _testBug42195PR() {
+
+  /**
+   * Partitioned Region test for bug #42195: putIfAbsent from client does not put old value in local cache
+   */
+  @Ignore("TODO")
+  @Test
+  public void testBug42195PR() {
     doPutIfAbsentPutsKeyInLocalClientCacheWork(PR_REG_NAME);
   }
+
   private void doPutIfAbsentPutsKeyInLocalClientCacheWork(final String regionName) {
     Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -836,9 +872,11 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
     });
   }
   
+  @Test
   public void testReplacePutsKeyInLocalClientCache() {
     doReplacePutsKeyInLocalClientCacheWork(REP_REG_NAME);
   }
+  @Test
   public void testReplacePutsKeyInLocalClientCachePR() {
     doReplacePutsKeyInLocalClientCacheWork(PR_REG_NAME);
   }
@@ -961,15 +999,19 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
       }
     });
   }
+  @Test
   public void testWithDelta() {
     doTestWithDeltaWork(false, REP_REG_NAME);
   }
+  @Test
   public void testWithDeltaPR() {
     doTestWithDeltaWork(false, PR_REG_NAME);
   }  
+  @Test
   public void testWithDeltaCS() {
     doTestWithDeltaWork(true, REP_REG_NAME);
   }
+  @Test
   public void testWithDeltaPRCS() {
     doTestWithDeltaWork(true, PR_REG_NAME);
   }
@@ -1005,26 +1047,32 @@ public class ConcurrentMapOpsDUnitTest extends CacheTestCase {
   }
   
   /** test putIfAbsent with failover & retry.  This is bugs 42559 and 43640 */
+  @Test
   public void testRetriedPutIfAbsent() throws Exception {
     doRetriedOperation(Operation.PUT_IF_ABSENT, false);
   }
   
+  @Test
   public void testRetriedReplace() throws Exception {
     doRetriedOperation(Operation.REPLACE, false);
   }
 
+  @Test
   public void testRetriedRemove() throws Exception {
     doRetriedOperation(Operation.REMOVE, false);
   }
 
+  @Test
   public void testRetriedPutIfAbsentPR() throws Exception {
     doRetriedOperation(Operation.PUT_IF_ABSENT, false);
   }
   
+  @Test
   public void testRetriedReplacePR() throws Exception {
     doRetriedOperation(Operation.REPLACE, false);
   }
 
+  @Test
   public void testRetriedRemovePR() throws Exception {
     doRetriedOperation(Operation.REMOVE, false);
   }

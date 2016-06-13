@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned.fixed;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,10 +45,11 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
  * This Dunit test class have multiple tests to tests different validations of
  * static partitioning
  */
+@Category(DistributedTest.class)
 public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
 
-  public FixedPartitioningDUnitTest(String name) {
-    super(name);
+  public FixedPartitioningDUnitTest() {
+    super();
   }
 
   private static final long serialVersionUID = 1L;
@@ -57,6 +67,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * This test validates that null partition name cannot be added in
    * FixedPartitionAttributes
    */
+  @Test
   public void testNullPartitionName() {
     try {
       member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
@@ -83,6 +94,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * 
    */
 
+  @Test
   public void testSamePartitionNameTwice() {
     try {
       member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
@@ -110,6 +122,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * This test validates that FixedPartitionAttributes cannot be defined for
    * accessor nodes
    */
+  @Test
   public void testFixedPartitionAttributes_Accessor() {
     try {
       member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
@@ -139,6 +152,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * condition is not met.
    */
 
+  @Test
   public void testSamePartitionName_Primary_OnTwoMembers() {
     IgnoredException ex = IgnoredException.addIgnoredException("DuplicatePrimaryPartitionException");
     try {
@@ -181,6 +195,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * the nodes then illegalStateException will be thrown
    */
 
+  @Test
   public void testSamePartitionName_DifferentNumBuckets() {
     IgnoredException ex = IgnoredException.addIgnoredException("IllegalStateException");
     try {
@@ -222,6 +237,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * if this condition is not met.
    */
 
+  @Test
   public void testNumberOfPartitions() {
     IgnoredException expected = IgnoredException.addIgnoredException("IllegalStateException");
     try {
@@ -278,6 +294,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * greater than totalNumBuckets.
    */
 
+  @Test
   public void testNumBuckets_totalNumBuckets() {
     IgnoredException expected = IgnoredException.addIgnoredException("IllegalStateException");
     try {
@@ -323,6 +340,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * This test validates that if the required partition is not available at the
    * time of entry operation then PartitionNotAvailabelException is thrown
    */
+  @Test
   public void testPut_PartitionNotAvailableException() {
     try {
       member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
@@ -360,6 +378,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * partition attributes defined
    */
   
+  @Test
   public void test_DataStoreWithoutPartition_DataStoreWithPartition() {
     IgnoredException expected = IgnoredException.addIgnoredException("IllegalStateException");
     try {
@@ -390,6 +409,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * partition attributes defined
    */
 
+  @Test
   public void test_DataStoreWithPartition_DataStoreWithoutPartition() {
     IgnoredException expected = IgnoredException.addIgnoredException("IllegalStateException");
     try {
@@ -418,6 +438,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * This tests validate that accessor member does the put on datastores as per
    * primary FixedPartitionAttributes defined on datastores
    */
+  @Test
   public void testPut_ValidateDataOnMember_OnlyPrimary_Accessor() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", null, 0, 0, 12,
@@ -454,6 +475,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
   }
 
   @Category(FlakyTest.class) // GEODE-567: async actions, waitForCriterion, time sensitive, non-thread-safe test hook, eats exceptions (partially fixed)
+  @Test
   public void testBug43283() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
@@ -527,6 +549,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * datastores.
    */
   
+  @Test
   public void testPut_ValidateDataOnMember_OnlyPrimary_Datastore() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -574,6 +597,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * This test validate that a delete operation on empty region will throw
    * EntryNotFoundException
    */
+  @Test
   public void testDelete_WithoutPut() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -626,6 +650,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * datastores. But No resolver is provided. So IllegalStateException in expected
    */
   
+  @Test
   public void testPut_NoResolver() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -673,6 +698,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * datastores. here CallBack implements FixedPartitionResolver.
    */
   
+  @Test
   public void testPut_CallBackWithResolver() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -721,6 +747,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * FixedPartitionResolver will do custom partitioning as per resolver.
    */
   
+  @Test
   public void testPut_WithResolver_NoFPAs() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes( "Quarter", null, 0, 40, 12,
@@ -751,6 +778,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    */
   
   
+  @Test
   public void testPut_FixedPartitionResolver_NoResolver() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -800,6 +828,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * IllegalStateException is expected.
    */
   
+  @Test
   public void testPut_FixedPartitionResolver_PartitionResolver() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -847,6 +876,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * datastores with only one bucket per partition.  
    */
 
+  @Test
   public void testFPR_DefaultNumBuckets() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -894,6 +924,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * primary and secondary FixedPartitionAttributes defined on datastores.
    */
   
+  @Test
   public void testPut_ValidateDataOnMember_PrimarySecondary_Accessor() {
     createCacheOnMember();
     createRegionWithPartitionAttributes("Quarter", null, 3, 0, 12,
@@ -964,6 +995,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * datastores.
    */
   
+  @Test
   public void testPut_ValidateDataOnMember_PrimarySecondary_Datastore() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -1026,6 +1058,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * 
    */
   
+  @Test
   public void testPut_ValidateDataOnMember_OnlySecondary_Datastore() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -1105,6 +1138,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    *        
    * 
    */
+  @Test
   public void testPut_ValidateDataOnMember_PrimarySecondary_Accessor_CacheClosed() {
     createCacheOnMember();
     createRegionWithPartitionAttributes("Quarter", null, 3, 0, 12,
@@ -1213,6 +1247,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * Member4 =       Q4(9,10,11)            Q1(0,1,2)
    */
   
+  @Test
   public void testPut_ValidateDataOnMember_PrimarySecondary_Datastore_CacheClosed() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -1294,6 +1329,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     member4.invoke(() -> FixedPartitioningTestBase.checkPrimaryBucketsForQuarter( 6, 3 ));
   }
   
+  @Test
   public void test_Bug46619_Put_ValidateDataOnMember_PrimarySecondary_Datastore_CacheClosed() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember_DisableMovePrimary());
     FixedPartitionAttributes fpa1 = FixedPartitionAttributes
@@ -1416,6 +1452,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * 
    */
   
+  @Test
   public void testPut_ValidateDataOnMember_MultiplePrimaries_Datastore_CacheClosed() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     

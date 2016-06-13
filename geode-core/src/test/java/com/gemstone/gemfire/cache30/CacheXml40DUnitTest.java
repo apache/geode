@@ -16,6 +16,11 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.MirrorType;
 import com.gemstone.gemfire.cache.Scope;
@@ -24,6 +29,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheTransactionManagerCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests the declarative caching functionality introduced in GemFire
@@ -31,27 +37,19 @@ import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
  *
  * @since GemFire 4.0
  */
+@Category(DistributedTest.class)
 public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
-
-  ////////  Constructors
-
-  public CacheXml40DUnitTest(String name) {
-    super(name);
-  }
-
-  ////////  Helper methods
 
   protected String getGemFireVersion() {
     return CacheXml.VERSION_4_0;
   }
-
-  ////////  Test methods
 
   /**
    * Tests the cache server attribute
    *
    * @since GemFire 4.0
    */
+  @Test
   public void testServer() {
     CacheCreation cache = new CacheCreation();
     cache.setIsServer(true);
@@ -65,6 +63,7 @@ public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
    *
    * @since GemFire 4.0
    */
+  @Test
   public void testBridgeServers() {
     CacheCreation cache = new CacheCreation();
 
@@ -90,6 +89,7 @@ public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
   /**
    * Tests the is-lock-grantor attribute in xml.
    */
+  @Test
   public void testIsLockGrantorAttribute() throws CacheException {
 
     CacheCreation cache = new CacheCreation();
@@ -110,6 +110,7 @@ public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
    *
    * @since GemFire 4.0
    */
+  @Test
   public void testTransactionListener() {
     CacheCreation cache = new CacheCreation();
     CacheTransactionManagerCreation txMgrCreation = new CacheTransactionManagerCreation();
@@ -123,6 +124,7 @@ public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
    *
    * @since GemFire 4.0
    */
+  @Test
   public void testCacheTransactionManager() {
     CacheCreation cache = new CacheCreation();
     CacheTransactionManagerCreation txMgrCreation = new CacheTransactionManagerCreation();
@@ -136,6 +138,7 @@ public class CacheXml40DUnitTest extends CacheXml30DUnitTest {
    *
    * @since GemFire 4.1
    */
+  @Test
   public void testConstrainedValues() throws CacheException {
     CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);

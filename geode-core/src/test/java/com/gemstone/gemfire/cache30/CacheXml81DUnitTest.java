@@ -16,8 +16,10 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import org.junit.Rule;
+import static org.junit.Assert.*;
+
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
 
@@ -32,6 +34,7 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.XmlParser;
 import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests 8.1 schema based configuration. From this point all config test cases
@@ -40,11 +43,12 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
  *
  * @since GemFire 8.1
  */
+@Category(DistributedTest.class)
 public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
   private static final long serialVersionUID = 1L;
   
-  public CacheXml81DUnitTest(String name) {
-    super(name);
+  public CacheXml81DUnitTest() {
+    super();
   }
 
   protected String getGemFireVersion() {
@@ -61,6 +65,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
    * 
    * @since GemFire 8.1
    */
+  @Test
   public void testCacheExtension() {
     final CacheCreation cache = new CacheCreation();
     final MockCacheExtension extension = new MockCacheExtension("testCacheExtension");
@@ -93,6 +98,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
    * 
    * @since GemFire 8.1
    */
+  @Test
   public void testRegionExtension() {
     final String regionName = "testRegionExtension";
     final CacheCreation cache = new CacheCreation();

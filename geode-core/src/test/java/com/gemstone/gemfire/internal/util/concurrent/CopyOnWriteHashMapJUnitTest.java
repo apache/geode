@@ -23,6 +23,8 @@
  */
 package com.gemstone.gemfire.internal.util.concurrent;
 
+import static org.junit.Assert.*;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -36,6 +38,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.internal.util.concurrent.cm.ConcurrentHashMapJUnitTest;
@@ -46,11 +49,7 @@ import com.gemstone.gemfire.util.JSR166TestCase;
  * Adopted from the JSR166 test cases. {@link ConcurrentHashMapJUnitTest}
  */
 @Category(IntegrationTest.class)
-public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
-
-    public CopyOnWriteHashMapJUnitTest(String name) {
-      super(name);
-    }
+public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase { // TODO: reformat
 
     /**
      * Create a map from Integers 1-5 to Strings "A"-"E".
@@ -75,6 +74,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      *  clear removes all pairs
      */
+    @Test
     public void testClear() {
         CopyOnWriteHashMap map = map5();
         map.clear();
@@ -84,6 +84,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      *  Maps with same contents are equal
      */
+    @Test
     public void testEquals() {
         CopyOnWriteHashMap map1 = map5();
         CopyOnWriteHashMap map2 = map5();
@@ -97,6 +98,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      *  containsKey returns true for contained key
      */
+    @Test
     public void testContainsKey() {
         CopyOnWriteHashMap map = map5();
         assertTrue(map.containsKey(one));
@@ -106,6 +108,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      *  containsValue returns true for held values
      */
+    @Test
     public void testContainsValue() {
         CopyOnWriteHashMap map = map5();
         assertTrue(map.containsValue("A"));
@@ -116,6 +119,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
      *  get returns the correct element at the given key,
      *  or null if not present
      */
+    @Test
     public void testGet() {
         CopyOnWriteHashMap map = map5();
         assertEquals("A", (String)map.get(one));
@@ -126,6 +130,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      *  isEmpty is true of empty map and false for non-empty
      */
+    @Test
     public void testIsEmpty() {
         CopyOnWriteHashMap empty = newMap();
         CopyOnWriteHashMap map = map5();
@@ -136,6 +141,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      *   keySet returns a Set containing all the keys
      */
+    @Test
     public void testKeySet() {
         CopyOnWriteHashMap map = map5();
         Set s = map.keySet();
@@ -150,6 +156,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      *  keySet.toArray returns contains all keys
      */
+    @Test
     public void testKeySetToArray() {
         CopyOnWriteHashMap map = map5();
         Set s = map.keySet();
@@ -163,6 +170,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      *  Values.toArray contains all values
      */
+    @Test
     public void testValuesToArray() {
         CopyOnWriteHashMap map = map5();
         Collection v = map.values();
@@ -179,6 +187,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      *  entrySet.toArray contains all entries
      */
+    @Test
     public void testEntrySetToArray() {
         CopyOnWriteHashMap map = map5();
         Set s = map.entrySet();
@@ -193,6 +202,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * values collection contains all values
      */
+    @Test
     public void testValues() {
         CopyOnWriteHashMap map = map5();
         Collection s = map.values();
@@ -207,6 +217,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * entrySet contains all pairs
      */
+    @Test
     public void testEntrySet() {
         CopyOnWriteHashMap map = map5();
         Set s = map.entrySet();
@@ -226,6 +237,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      *   putAll  adds all key-value pairs from the given map
      */
+    @Test
     public void testPutAll() {
         CopyOnWriteHashMap empty = newMap();
         CopyOnWriteHashMap map = map5();
@@ -241,6 +253,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      *   putIfAbsent works when the given key is not present
      */
+    @Test
     public void testPutIfAbsent() {
         CopyOnWriteHashMap map = map5();
         map.putIfAbsent(six, "Z");
@@ -250,6 +263,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      *   putIfAbsent does not add the pair if the key is already present
      */
+    @Test
     public void testPutIfAbsent2() {
         CopyOnWriteHashMap map = map5();
         assertEquals("A", map.putIfAbsent(one, "Z"));
@@ -258,6 +272,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      *   replace fails when the given key is not present
      */
+    @Test
     public void testReplace() {
         CopyOnWriteHashMap map = map5();
         assertNull(map.replace(six, "Z"));
@@ -267,6 +282,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      *   replace succeeds if the key is already present
      */
+    @Test
     public void testReplace2() {
         CopyOnWriteHashMap map = map5();
         assertNotNull(map.replace(one, "Z"));
@@ -277,6 +293,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * replace value fails when the given key not mapped to expected value
      */
+    @Test
     public void testReplaceValue() {
         CopyOnWriteHashMap map = map5();
         assertEquals("A", map.get(one));
@@ -287,6 +304,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * replace value succeeds when the given key mapped to expected value
      */
+    @Test
     public void testReplaceValue2() {
         CopyOnWriteHashMap map = map5();
         assertEquals("A", map.get(one));
@@ -298,6 +316,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      *   remove removes the correct key-value pair from the map
      */
+    @Test
     public void testRemove() {
         CopyOnWriteHashMap map = map5();
         map.remove(five);
@@ -308,6 +327,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * remove(key,value) removes only if pair present
      */
+    @Test
     public void testRemove2() {
         CopyOnWriteHashMap map = map5();
         map.remove(five, "E");
@@ -322,6 +342,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      *   size returns the correct values
      */
+    @Test
     public void testSize() {
         CopyOnWriteHashMap map = map5();
         CopyOnWriteHashMap empty = newMap();
@@ -332,6 +353,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * toString contains toString of elements
      */
+    @Test
     public void testToString() {
         CopyOnWriteHashMap map = map5();
         String s = map.toString();
@@ -345,6 +367,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * get(null) throws NPE
      */
+    @Test
     public void testGetNull() {
       CopyOnWriteHashMap c = newMap();
       assertNull(c.get(null));
@@ -353,6 +376,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * containsKey(null) throws NPE
      */
+    @Test
     public void testContainsKeyNull() {
       CopyOnWriteHashMap c = newMap();
       assertFalse(c.containsKey(null));
@@ -361,6 +385,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * containsValue(null) throws NPE
      */
+    @Test
     public void testContainsValue_NullPointerException() {
       CopyOnWriteHashMap c = newMap();
       assertFalse(c.containsValue(null));
@@ -369,6 +394,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * put(null,x) throws NPE
      */
+    @Test
     public void testPut1NullKey() {
       CopyOnWriteHashMap c = newMap();
       c.put(null, "whatever");
@@ -379,6 +405,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * put(x, null) throws NPE
      */
+    @Test
     public void testPut2NullValue() {
       CopyOnWriteHashMap c = newMap();
       c.put("whatever", null);
@@ -389,6 +416,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * putIfAbsent(null, x) throws NPE
      */
+    @Test
     public void testPutIfAbsent1NullKey() {
       CopyOnWriteHashMap c = newMap();
       c.putIfAbsent(null, "whatever");
@@ -399,6 +427,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * replace(null, x) throws NPE
      */
+    @Test
     public void testReplace_NullPointerException() {
       CopyOnWriteHashMap c = newMap();
       assertNull(c.replace(null, "whatever"));
@@ -407,6 +436,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * replace(null, x, y) throws NPE
      */
+    @Test
     public void testReplaceValueNullKey() {
       CopyOnWriteHashMap c = newMap();
       c.replace(null, one, "whatever");
@@ -416,6 +446,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * putIfAbsent(x, null) throws NPE
      */
+    @Test
     public void testPutIfAbsent2_NullPointerException() {
       CopyOnWriteHashMap c = newMap();
       c.putIfAbsent("whatever", null);
@@ -427,6 +458,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * replace(x, null) throws NPE
      */
+    @Test
     public void testReplace2Null() {
       CopyOnWriteHashMap c = newMap();
       c.replace("whatever", null);
@@ -437,6 +469,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * replace(x, null, y) throws NPE
      */
+    @Test
     public void testReplaceValue2Null() {
       CopyOnWriteHashMap c = newMap();
       c.replace("whatever", null, "A");
@@ -446,6 +479,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * replace(x, y, null) throws NPE
      */
+    @Test
     public void testReplaceValue3Null() {
       CopyOnWriteHashMap c = newMap();
       c.replace("whatever", one, null);
@@ -456,6 +490,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * remove(null) throws NPE
      */
+    @Test
     public void testRemoveNull() {
       CopyOnWriteHashMap c = newMap();
       c.put("sadsdf", "asdads");
@@ -465,6 +500,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * remove(null, x) throws NPE
      */
+    @Test
     public void testRemove2_NullPointerException() {
       CopyOnWriteHashMap c = newMap();
       c.put("sadsdf", "asdads");
@@ -474,6 +510,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * remove(x, null) returns false
      */
+    @Test
     public void testRemove3() {
         try {
             CopyOnWriteHashMap c = newMap();
@@ -487,6 +524,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase{
     /**
      * A deserialized map equals original
      */
+    @Test
     public void testSerialization() throws Exception {
         CopyOnWriteHashMap q = map5();
 

@@ -16,16 +16,17 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import util.TestException;
-
-import junit.framework.Assert;
 
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -44,39 +45,29 @@ import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.HARegion;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
-public class HARegionQueueDUnitTest extends DistributedTestCase {
-  VM vm0 = null;
+@Category(DistributedTest.class)
+public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
 
-  VM vm1 = null;
+  private static volatile boolean toCnt = true;
+  private static volatile Thread createQueuesThread;
 
-  VM vm3 = null;
+  private static Cache cache = null;
+  private static HARegionQueue hrq = null;
+  private static Thread[] opThreads;
 
-  VM vm2 = null;
-
-  protected static Cache cache = null;
-
-  protected static HARegionQueue hrq = null;
-
-//  private static int counter = 0;
-
-  protected static volatile boolean toCnt = true;
-
-  protected static Thread opThreads[];
-  
-  protected static volatile Thread createQueuesThread;
-
-  /** constructor */
-  public HARegionQueueDUnitTest(String name) {
-    super(name);
-  }
+  private VM vm0 = null;
+  private VM vm1 = null;
+  private VM vm3 = null;
+  private VM vm2 = null;
 
   /**
    * get the VM's
@@ -99,13 +90,16 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
     vm1.invoke(() -> HARegionQueueDUnitTest.closeCache());
     vm2.invoke(() -> HARegionQueueDUnitTest.closeCache());
     vm3.invoke(() -> HARegionQueueDUnitTest.closeCache());
+    
+    cache = null;
+    hrq = null;
+    opThreads = null;
   }
 
   /**
    * create cache
    */
-  protected Cache createCache() throws CacheException
-  {
+  private Cache createCache() throws CacheException {
     Properties props = new Properties();
     DistributedSystem ds = getSystem(props);
     ds.disconnect();
@@ -124,10 +118,9 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
    * assert that the put has not propagated from VM1 to VM2 4) do a put in VM2
    * 5) assert that the value in VM1 has not changed to due to put in VM2 6)
    * assert put in VM2 was successful by doing a get
-   *
    */
-  public void testLocalPut()
-  {
+  @Test
+  public void testLocalPut() throws Exception {
     vm0.invoke(() -> HARegionQueueDUnitTest.createRegion());
     vm1.invoke(() -> HARegionQueueDUnitTest.createRegion());
     vm0.invoke(() -> HARegionQueueDUnitTest.putValue1());
@@ -145,10 +138,9 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
    * assert respective puts the VMs were successful by doing a get 7)
    * localDestroy key in VM1 8) assert key has been destroyed in VM1 9) assert
    * key has not been destroyed in VM2
-   *
    */
-  public void testLocalDestroy()
-  {
+  @Test
+  public void testLocalDestroy() throws Exception {
     vm0.invoke(() -> HARegionQueueDUnitTest.createRegion());
     vm1.invoke(() -> HARegionQueueDUnitTest.createRegion());
     vm0.invoke(() -> HARegionQueueDUnitTest.putValue1());
@@ -166,10 +158,9 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
    * value in VM1 to assert put has happened successfully 4) Create mirrored
    * HARegion region1 in VM2 5) do a get in VM2 to verify that value was got
    * through GII 6) do a put in VM2 7) assert put in VM2 was successful
-   *
    */
-  public void testGII()
-  {
+  @Test
+  public void testGII() throws Exception {
     vm0.invoke(() -> HARegionQueueDUnitTest.createRegion());
     vm0.invoke(() -> HARegionQueueDUnitTest.putValue1());
     vm0.invoke(() -> HARegionQueueDUnitTest.getValue1());
@@ -177,37 +168,16 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
     vm1.invoke(() -> HARegionQueueDUnitTest.getValue1());
     vm1.invoke(() -> HARegionQueueDUnitTest.putValue2());
     vm1.invoke(() -> HARegionQueueDUnitTest.getValue2());
-
   }
-
-  /**
-   * Tests the relevant data structures are updated after GII happens.
-   *
-   * In this test, a HARegion is created in vm0. 10 conflatable objects are put
-   * in vm0's region HARegion is then created in vm1. After region creation, the
-   * verification whether the relevant data structuers have been updated is
-   * done.
-   *
-   */
- /* public void testGIIAndMapUpdates()
-  {
-    vm0.invoke(() -> HARegionQueueDUnitTest.createRegionQueue2());
-    vm0.invoke(() -> HARegionQueueDUnitTest.putConflatables());
-    vm1.invoke(() -> HARegionQueueDUnitTest.createRegionQueue2());
-    vm0.invoke(() -> HARegionQueueDUnitTest.clearRegion());
-    vm1.invoke(() -> HARegionQueueDUnitTest.verifyMapsAndData());
-
-  } */
 
   /**
    * 1) Create mirrored HARegion region1 in VM1 2) do a put in VM1 3) get teh
    * value in VM1 to assert put has happened successfully 4) Create mirrored
    * HARegion region1 in VM2 5) do a get in VM2 to verify that value was got
    * through GII 6) do a put in VM2 7) assert put in VM2 was successful
-   *
    */
-  public void testQRM()
-  {
+  @Test
+  public void testQRM() throws Exception {
     vm0.invoke(() -> HARegionQueueDUnitTest.createRegionQueue());
     vm1.invoke(() -> HARegionQueueDUnitTest.createRegionQueue());
     vm0.invoke(() -> HARegionQueueDUnitTest.verifyAddingDispatchMesgs());
@@ -216,27 +186,18 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
   }
 
   /**
-   * 1)Create regionqueue on VM0 and VM1 2) put same conflated object from VM1
-   * aand VM2 3)perform take() operation from VM0 4) Wait for the QRM to
-   * execute. 4)check the size of the regionqueue in VM1. It should be zero
-   * because QRM should remove entry from the regionqueue of VM1
-   * 
-   * 
-   */
-  
-  /**
-   * Behaviour of take() has been changed for relaible messaging feature. Region queue take()
+   * Behaviour of take() has been changed for reliable messaging feature. Region queue take()
    * operation will no longer add to the Dispatch Message Map. Hence disabling the test - SUYOG
-  */
-    
-  public void _testBugNo35988() throws Exception
-  {
-    
-    CacheSerializableRunnable createQueue = new CacheSerializableRunnable(
-        "CreateCache, HARegionQueue and start thread") {
-      public void run2() throws CacheException
-      {
-        HARegionQueueDUnitTest test = new HARegionQueueDUnitTest("region1");
+   *
+   * Test for #35988 HARegionQueue.take() is not functioning as expected
+   */
+  @Ignore("TODO: this test was disabled")
+  @Test
+  public void testBugNo35988() throws Exception {
+    CacheSerializableRunnable createQueue = new CacheSerializableRunnable("CreateCache, HARegionQueue and start thread") {
+      @Override
+      public void run2() throws CacheException {
+        HARegionQueueDUnitTest test = new HARegionQueueDUnitTest();
         //TODO:ASIF: Bcoz of the QRM thread cannot take frequency below
         // 1 second , thus we need to carfully evaluate what to do. Though
         //in this case 1 second instead of 500 ms will work
@@ -253,8 +214,7 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
               new byte[] { 0 }, 1, 1), false, "dummy"));
         }
         catch (Exception e) {
-          throw new CacheException(e) {
-          };
+          throw new AssertionError(e);
         }
       }
     };
@@ -262,28 +222,28 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
     vm1.invoke(createQueue);
 
     vm0.invoke(new CacheSerializableRunnable("takeFromVm0") {
+      @Override
       public void run2() throws CacheException {
         try {
           Conflatable obj = (Conflatable)hrq.take();
           assertNotNull(obj);
         }
         catch (Exception e) {
-          throw new CacheException(e) {
-          };
+          throw new AssertionError(e);
         }
       }
     });
 
-
-
     vm1.invoke(new CacheSerializableRunnable("checkInVm1") {
-      public void run2() throws CacheException
-      {
+      @Override
+      public void run2() throws CacheException {
         WaitCriterion ev = new WaitCriterion() {
+          @Override
           public boolean done() {
             Thread.yield(); // TODO is this necessary?
             return hrq.size() == 0;
           }
+          @Override
           public String description() {
             return null;
           }
@@ -296,32 +256,18 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
 
   /**
    * create a client with 2 regions sharing a common writer
-   *
-   * @throws Exception
    */
-
-  public static void createRegion() throws Exception
-  {
-    HARegionQueueDUnitTest test = new HARegionQueueDUnitTest(
-        "HARegionQueueDUnitTest_region");
+  private static void createRegion() throws Exception {
+    HARegionQueueDUnitTest test = new HARegionQueueDUnitTest();
     cache = test.createCache();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    HARegion.getInstance("HARegionQueueDUnitTest_region", (GemFireCacheImpl)cache,
-        null, factory.create());
+    HARegion.getInstance("HARegionQueueDUnitTest_region", (GemFireCacheImpl)cache, null, factory.create());
   }
 
-  /**
-   *
-   *
-   * @throws Exception
-   */
-
-  public static void createRegionQueue() throws Exception
-  {
-    HARegionQueueDUnitTest test = new HARegionQueueDUnitTest(
-        "HARegionQueueDUnitTest_region");
+  private static void createRegionQueue() throws Exception   {
+    HARegionQueueDUnitTest test = new HARegionQueueDUnitTest();
     cache = test.createCache();
     /*
      * AttributesFactory factory = new AttributesFactory();
@@ -339,13 +285,10 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
         "HARegionQueueDUnitTest_region");
     hrq.put(c1);
     hrq.put(c2);
-
   }
 
-  public static void createRegionQueue2() throws Exception
-  {
-    HARegionQueueDUnitTest test = new HARegionQueueDUnitTest(
-        "HARegionQueueDUnitTest_region");
+  private static void createRegionQueue2() throws Exception {
+    HARegionQueueDUnitTest test = new HARegionQueueDUnitTest();
     cache = test.createCache();
     /*
      * AttributesFactory factory = new AttributesFactory();
@@ -359,8 +302,7 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
         HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
   }
 
-  public static void clearRegion()
-  {
+  private static void clearRegion() {
     try {
       Iterator iterator = hrq.getRegion().keys().iterator();
       while (iterator.hasNext()) {
@@ -368,31 +310,31 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
       }
     }
     catch (Exception e) {
-      fail("Exception occured while trying to destroy region");
+      fail("Exception occured while trying to destroy region", e);
     }
 
   }
 
-  public static void verifyAddingDispatchMesgs()
-  {
-    Assert.assertTrue(HARegionQueue.getDispatchedMessagesMapForTesting()
+  private static void verifyAddingDispatchMesgs() {
+    assertTrue(HARegionQueue.getDispatchedMessagesMapForTesting()
         .isEmpty());
     hrq.addDispatchedMessage(new ThreadIdentifier(new byte[1], 1), 1);
-    Assert.assertTrue(!HARegionQueue.getDispatchedMessagesMapForTesting()
+    assertTrue(!HARegionQueue.getDispatchedMessagesMapForTesting()
         .isEmpty());
   }
 
-  public static void verifyDispatchedMessagesRemoved()
+  private static void verifyDispatchedMessagesRemoved()
   {
     try {
       final Region region = hrq.getRegion();
-      // wait until we have a dead
-      // server
+      // wait until we have a dead server
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           Thread.yield(); // TODO is this necessary?
           return region.get(new Long(0)) == null;
         }
+        @Override
         public String description() {
           return null;
         }
@@ -410,16 +352,14 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
 
     }
     catch (Exception e) {
-      fail("test failed due to an exception :  " + e);
+      fail("test failed due to an exception", e);
     }
   }
 
   /**
    * close the cache
-   * 
    */
-  public static void closeCache()
-  {
+  private static void closeCache() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();
@@ -428,22 +368,18 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
 
   /**
    * do puts on key-1
-   *
    */
-  public static void putValue1()
-  {
+  private static void putValue1() {
     try {
       Region r1 = cache.getRegion("/HARegionQueueDUnitTest_region");
       r1.put("key-1", "value-1");
     }
     catch (Exception ex) {
-      ex.printStackTrace();
-      com.gemstone.gemfire.test.dunit.Assert.fail("failed while region.put()", ex);
+      fail("failed while region.put()", ex);
     }
   }
 
-  public static void putConflatables()
-  {
+  private static void putConflatables() {
     try {
       Region r1 = hrq.getRegion();
       for (int i = 1; i < 11; i++) {
@@ -453,54 +389,51 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
       }
     }
     catch (Exception ex) {
-      ex.printStackTrace();
-      com.gemstone.gemfire.test.dunit.Assert.fail("failed while region.put()", ex);
+      fail("failed while region.put()", ex);
     }
   }
 
   /**
    * verifies the data has been populated correctly after GII
-   *
    */
-  public static void verifyMapsAndData()
-  {
+  private static void verifyMapsAndData() {
     try {
       HARegion r1 = (HARegion)hrq.getRegion();
       // region should not be null
-      Assert.assertNotNull(" Did not expect the HARegion to be null but it is",
+      assertNotNull(" Did not expect the HARegion to be null but it is",
           r1);
       // it should have ten non null entries
       for (int i = 1; i < 11; i++) {
-        Assert.assertNotNull(" Did not expect the entry to be null but it is",
+        assertNotNull(" Did not expect the entry to be null but it is",
             r1.get(new Long(i)));
       }
       // HARegionQueue should not be null
-      Assert.assertNotNull(
+      assertNotNull(
           " Did not expect the HARegionQueue to be null but it is", hrq);
 
       Map conflationMap = hrq.getConflationMapForTesting();
       // conflationMap size should be greater than 0
-      Assert.assertTrue(
+      assertTrue(
           " Did not expect the conflationMap size to be 0 but it is",
           conflationMap.size() > 0);
       Map internalMap = (Map)conflationMap.get("HARegionQueueDUnitTest_region");
       // internal map should not be null. it should be present
-      Assert.assertNotNull(
+      assertNotNull(
           " Did not expect the internalMap to be null but it is", internalMap);
       // get and verify the entries in the conflation map.
       for (int i = 1; i < 11; i++) {
-        Assert.assertTrue(
+        assertTrue(
             " Did not expect the entry not to be equal but it is", internalMap
                 .get("key" + i).equals(new Long(i)));
       }
       Map eventMap = hrq.getEventsMapForTesting();
       // DACE should not be null
-      Assert.assertNotNull(
+      assertNotNull(
           " Did not expect the result (DACE object) to be null but it is",
           eventMap.get(new ThreadIdentifier(new byte[] { 1 }, 1)));
       Set counterSet = hrq.getCurrentCounterSet(new EventID(new byte[] { 1 },
           1, 1));
-      Assert.assertTrue(
+      assertTrue(
           " excpected the counter set size to be 10 but it is not so",
           counterSet.size() == 10);
       long i = 1;
@@ -508,12 +441,12 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
       // verify the order of the iteration. it should be 1 - 10. The underlying
       // set is a LinkedHashSet
       while (iterator.hasNext()) {
-        Assert.assertTrue(((Long)iterator.next()).longValue() == i);
+        assertTrue(((Long)iterator.next()).longValue() == i);
         i++;
       }
       // The last dispactchde sequence Id should be -1 since no dispatch has
       // been made
-      Assert.assertTrue(hrq.getLastDispatchedSequenceId(new EventID(
+      assertTrue(hrq.getLastDispatchedSequenceId(new EventID(
           new byte[] { 1 }, 1, 1)) == -1);
 
       // sleep for 8.0 seconds. Everythign should expire and everything should
@@ -521,8 +454,7 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
       Thread.sleep(7500);
 
       for (int j = 1; j < 11; j++) {
-        Assert
-            .assertNull(
+        assertNull(
                 "expected the entry to be null since expiry time exceeded but it is not so",
                 r1.get(new Long(j)));
       }
@@ -530,50 +462,41 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
       internalMap = (Map)hrq.getConflationMapForTesting().get(
           "HARegionQueueDUnitTest_region");
 
-      Assert.assertNotNull(
+      assertNotNull(
           " Did not expect the internalMap to be null but it is", internalMap);
-      Assert
-          .assertTrue(
+      assertTrue(
               "internalMap (conflation) should have been emptry since expiry of all entries has been exceeded but it is not so",
               internalMap.isEmpty());
-      Assert
-          .assertTrue(
+      assertTrue(
               "eventMap should have been emptry since expiry of all entries has been exceeded but it is not so",
               eventMap.isEmpty());
-      Assert
-          .assertTrue(
+      assertTrue(
               "counter set should have been emptry since expiry of all entries has been exceeded but it is not so",
               counterSet.isEmpty());
 
     }
     catch (Exception ex) {
-      ex.printStackTrace();
-      com.gemstone.gemfire.test.dunit.Assert.fail("failed while region.put()", ex);
+      fail("failed while region.put()", ex);
     }
   }
 
   /**
    * do puts on key-1,value-2
-   *
    */
-  public static void putValue2()
-  {
+  private static void putValue2() {
     try {
       Region r1 = cache.getRegion("/HARegionQueueDUnitTest_region");
       r1.put("key-1", "value-2");
     }
     catch (Exception ex) {
-      ex.printStackTrace();
-      com.gemstone.gemfire.test.dunit.Assert.fail("failed while region.put()", ex);
+      fail("failed while region.put()", ex);
     }
   }
 
   /**
    * do a get on region1
-   *
    */
-  public static void getValue1()
-  {
+  private static void getValue1() {
     try {
       Region r = cache.getRegion("/HARegionQueueDUnitTest_region");
       if (!(r.get("key-1").equals("value-1"))) {
@@ -582,17 +505,14 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
 
     }
     catch (Exception ex) {
-      ex.printStackTrace();
-      com.gemstone.gemfire.test.dunit.Assert.fail("failed while region.get()", ex);
+      fail("failed while region.get()", ex);
     }
   }
 
   /**
    * do a get on region1
-   *
    */
-  public static void getNull()
-  {
+  private static void getNull() {
     try {
       Region r = cache.getRegion("/HARegionQueueDUnitTest_region");
       if (!(r.get("key-1") == (null))) {
@@ -601,17 +521,14 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
 
     }
     catch (Exception ex) {
-      ex.printStackTrace();
-      com.gemstone.gemfire.test.dunit.Assert.fail("failed while region.get()", ex);
+      fail("failed while region.get()", ex);
     }
   }
 
   /**
    * do a get on region1
-   *
    */
-  public static void getValue2()
-  {
+  public static void getValue2() {
     try {
       Region r = cache.getRegion("/HARegionQueueDUnitTest_region");
       if (!(r.get("key-1").equals("value-2"))) {
@@ -620,24 +537,20 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
 
     }
     catch (Exception ex) {
-      ex.printStackTrace();
-      com.gemstone.gemfire.test.dunit.Assert.fail("failed while region.get()", ex);
+      fail("failed while region.get()", ex);
     }
   }
 
   /**
    * destroy key-1
-   *
    */
-  public static void destroy()
-  {
+  public static void destroy() {
     try {
       Region region1 = cache.getRegion("/HARegionQueueDUnitTest_region");
       region1.localDestroy("key-1");
     }
     catch (Exception e) {
-      e.printStackTrace();
-      fail("test failed due to exception in destroy ");
+      fail("test failed due to exception in destroy", e);
     }
   }
 
@@ -646,11 +559,9 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
    * peek , batch peek operations in multiple regions. The test will have
    * take/remove occuring in all the VMs. This test is targetted to test for
    * hang or exceptions in non blocking queue.
-   *
-   *
    */
-  public void testConcurrentOperationsDunitTestOnNonBlockingQueue()
-  {
+  @Test
+  public void testConcurrentOperationsDunitTestOnNonBlockingQueue() throws Exception {
     concurrentOperationsDunitTest(false, Scope.DISTRIBUTED_ACK);
   }
 
@@ -659,11 +570,9 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
    * peek , batch peek operations in multiple regions. The test will have
    * take/remove occuring in all the VMs. This test is targetted to test for
    * hang or exceptions in non blocking queue.
-   *
-   *
    */
-  public void testConcurrentOperationsDunitTestOnNonBlockingQueueWithDNoAckRegion()
-  {
+  @Test
+  public void testConcurrentOperationsDunitTestOnNonBlockingQueueWithDNoAckRegion() throws Exception {
     concurrentOperationsDunitTest(false, Scope.DISTRIBUTED_NO_ACK);
   }
 
@@ -672,25 +581,19 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
    * peek , batch peek operations in multiple regions. The test will have
    * take/remove occuring in all the VMs. This test is targetted to test for
    * hang or exceptions in blocking queue.
-   *
-   *
    */
-  public void testConcurrentOperationsDunitTestOnBlockingQueue()
-  {
+  @Test
+  public void testConcurrentOperationsDunitTestOnBlockingQueue() throws Exception {
     concurrentOperationsDunitTest(true, Scope.DISTRIBUTED_ACK);
   }
 
-  private void concurrentOperationsDunitTest(
-      final boolean createBlockingQueue, final Scope rscope)
-  {
+  private void concurrentOperationsDunitTest(final boolean createBlockingQueue, final Scope rscope) {
     // Create Cache and HARegionQueue in all the 4 VMs.
 
-    CacheSerializableRunnable createRgnsAndQueues = new CacheSerializableRunnable(
-        "CreateCache, mirrored Region & HARegionQueue with a CacheListener") {
-      public void run2() throws CacheException
-      {
-        HARegionQueueDUnitTest test = new HARegionQueueDUnitTest(
-            "HARegionQueueDUnitTest_region");
+    CacheSerializableRunnable createRgnsAndQueues = new CacheSerializableRunnable("CreateCache, mirrored Region & HARegionQueue with a CacheListener") {
+      @Override
+      public void run2() throws CacheException {
+        HARegionQueueDUnitTest test = new HARegionQueueDUnitTest();
         System.getProperties()
             .put("QueueRemovalThreadWaitTime", "2000");
         cache = test.createCache();
@@ -710,12 +613,11 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
           }
         }
         catch (Exception e) {
-          throw new CacheException(e) {
-          };
+          throw new AssertionError(e);
         }
         factory.addCacheListener(new CacheListenerAdapter() {
-          public void afterCreate(final EntryEvent event)
-          {
+          @Override
+          public void afterCreate(final EntryEvent event) {
             Conflatable conflatable = new ConflatableObject(event.getKey(),
                 event.getNewValue(), ((EntryEventImpl)event).getEventId(),
                 false, event.getRegion().getFullPath());
@@ -724,14 +626,12 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
               hrq.put(conflatable);
             }
             catch (Exception e) {
-              e.printStackTrace();
-              fail("The put operation in queue did not succeed due to exception ="
-                  + e);
+              fail("The put operation in queue did not succeed due to exception =", e);
             }
           }
 
-          public void afterUpdate(final EntryEvent event)
-          {
+          @Override
+          public void afterUpdate(final EntryEvent event) {
             Conflatable conflatable = new ConflatableObject(event.getKey(),
                 event.getNewValue(), ((EntryEventImpl)event).getEventId(),
                 true, event.getRegion().getFullPath());
@@ -740,9 +640,7 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
               hrq.put(conflatable);
             }
             catch (Exception e) {
-              e.printStackTrace();
-              fail("The put operation in queue did not succeed due to exception ="
-                  + e);
+              fail("The put operation in queue did not succeed due to exception =", e);
             }
           }
 
@@ -757,11 +655,10 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
     vm1.invoke(createRgnsAndQueues);
     vm2.invoke(createRgnsAndQueues);
     vm3.invoke(createRgnsAndQueues);
-    CacheSerializableRunnable spawnThreadsAndperformOps = new CacheSerializableRunnable(
-        "Spawn multipe threads which do various operations") {
+    CacheSerializableRunnable spawnThreadsAndperformOps = new CacheSerializableRunnable("Spawn multiple threads which do various operations") {
 
-      public void run2() throws CacheException
-      {
+      @Override
+      public void run2() throws CacheException {
         opThreads = new Thread[4 + 2 + 2 + 2];
         for (int i = 0; i < 4; ++i) {
           opThreads[i] = new Thread(new RunOp(RunOp.PUT, i), "ID="
@@ -798,13 +695,14 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
       Thread.sleep(2000);
     }
     catch (InterruptedException e1) {
-      fail("Test failed as the test thread encoutered exception in sleep");
+      fail("Test failed as the test thread encoutered exception in sleep", e1);
     }
+
     // Asif : In case of blocking HARegionQueue do some extra puts so that the
     // blocking threads
     // are exited
-    CacheSerializableRunnable toggleFlag = new CacheSerializableRunnable(
-        "Toggle the flag to signal end of threads") {
+    CacheSerializableRunnable toggleFlag = new CacheSerializableRunnable("Toggle the flag to signal end of threads") {
+      @Override
       public void run2() throws CacheException {
         toCnt = false;
         if (createBlockingQueue) {
@@ -815,8 +713,7 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
             }
           }
           catch (Exception e) {
-            throw new CacheException(e) {
-            };
+            throw new AssertionError(e);
           }
         }
 
@@ -827,16 +724,10 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
     vm1.invokeAsync(toggleFlag);
     vm2.invokeAsync(toggleFlag);
     vm3.invokeAsync(toggleFlag);
-//     try {
-//       Thread.sleep(5000);
-//     }
-//     catch (InterruptedException e2) {
-//       fail("Test failed as the test thread encoutered exception in sleep");
-//     }
-    CacheSerializableRunnable joinWithThreads = new CacheSerializableRunnable(
-        "Join with the threads") {
-      public void run2() throws CacheException
-      {
+
+    CacheSerializableRunnable joinWithThreads = new CacheSerializableRunnable("Join with the threads") {
+      @Override
+      public void run2() throws CacheException {
         for (int i = 0; i < opThreads.length; ++i) {
 
           if (opThreads[i].isInterrupted()) {
@@ -858,20 +749,21 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
    * This is to test the bug which is caused when HARegionQueue object hasnot
    * been fully constructed but as the HARegion has got constructed , it gets
    * visible to QRM Message Thread.
+   *
+   * TODO: this test runs too long! Shorten run time. 1m 40s on new Mac.
    */
   @Category(FlakyTest.class) // GEODE-690: async queuing, time sensitive, expiration, waitForCriterion, joins
-  public void testNPEDueToHARegionQueueEscapeInConstructor()
-  {
+  @Test
+  public void testNPEDueToHARegionQueueEscapeInConstructor() {
     // changing EXPIRY_TIME to 5 doesn't change how long the test runs!
     final int EXPIRY_TIME = 30; // test will run for this many seconds
     // Create two HARegionQueue 's in the two VMs. The frequency of QRM thread
     // should be high
     // Check for NullPointeException in the other VM.
-    CacheSerializableRunnable createQueuesAndThread = new CacheSerializableRunnable(
-        "CreateCache, HARegionQueue and start thread") {
-      public void run2() throws CacheException
-      {
-        HARegionQueueDUnitTest test = new HARegionQueueDUnitTest("region1");
+    CacheSerializableRunnable createQueuesAndThread = new CacheSerializableRunnable("CreateCache, HARegionQueue and start thread") {
+      @Override
+      public void run2() throws CacheException {
+        HARegionQueueDUnitTest test = new HARegionQueueDUnitTest();
         //TODO:ASIF: Bcoz of the QRM thread cannot take frequency below
         // 1 second , thus we need to carfully evaluate what to do. 
         //For this bug to appear ,without bugfix , qrm needs to run
@@ -894,8 +786,8 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
           }
           opThreads = new Thread[1];
           opThreads[0] = new Thread(new Runnable() {
-            public void run()
-            {
+            @Override
+            public void run() {
               for (int i = 0; i < OP_COUNT; ++i) {
                 try {
                   Object o = hrq.take();
@@ -904,7 +796,7 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
                   }
                 }
                 catch (InterruptedException e) {
-                  fail("interrupted");
+                  throw new AssertionError(e);
                 }
               }
             }
@@ -913,18 +805,16 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
 
         }
         catch (Exception e) {
-          throw new CacheException(e) {
-          };
+          throw new AssertionError(e);
         }
       }
     };
 
-    CacheSerializableRunnable createQueues = new CacheSerializableRunnable(
-        "CreateCache, HARegionQueue ") {
-      public void run2() throws CacheException
-      {
+    CacheSerializableRunnable createQueues = new CacheSerializableRunnable("CreateCache, HARegionQueue ") {
+      @Override
+      public void run2() throws CacheException {
         createQueuesThread = Thread.currentThread();
-        HARegionQueueDUnitTest test = new HARegionQueueDUnitTest("region1");
+        HARegionQueueDUnitTest test = new HARegionQueueDUnitTest();
         //System.getProperties().put("QueueRemovalThreadWaitTime",
          //   new Long(120000));
         cache = test.createCache();
@@ -937,19 +827,20 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
               HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
         }
         catch (Exception e) {
-          throw new CacheException(e) {
-          };
+          throw new AssertionError(e);
         }
       }
     };
     
-    CacheSerializableRunnable waitForCreateQueuesThread = new CacheSerializableRunnable(
-        "joinCreateCache") {
-      public void run2() throws TestException {
+    CacheSerializableRunnable waitForCreateQueuesThread = new CacheSerializableRunnable("joinCreateCache") {
+      @Override
+      public void run2() {
         WaitCriterion ev = new WaitCriterion() {
+          @Override
           public boolean done() {
             return createQueuesThread != null;
           }
+          @Override
           public String description() {
             return null;
           }
@@ -962,10 +853,9 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
     vm0.invoke(createQueuesAndThread);
     vm1.invokeAsync(createQueues);
 
-    CacheSerializableRunnable joinWithThread = new CacheSerializableRunnable(
-        "CreateCache, HARegionQueue join with thread") {
-      public void run2() throws CacheException
-      {
+    CacheSerializableRunnable joinWithThread = new CacheSerializableRunnable("CreateCache, HARegionQueue join with thread") {
+      @Override
+      public void run2() throws CacheException {
         if (opThreads[0].isInterrupted()) {
           fail("The test has failed as it encountered interrupts in puts & takes");
         }
@@ -976,28 +866,23 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
     vm1.invoke(waitForCreateQueuesThread);
   }
 
-  class RunOp implements Runnable
-  {
+  private static class RunOp implements Runnable {
 
-    int opType;
+    private static final int PUT = 1;
+    private static final int TAKE = 2;
+    private static final int PEEK = 3;
+    private static final int BATCH_PEEK = 4;
 
-    int threadID;
-
-    public static final int PUT = 1;
-
-    public static final int TAKE = 2;
-
-    public static final int PEEK = 3;
-
-    public static final int BATCH_PEEK = 4;
+    private int opType;
+    private int threadID;
 
     public RunOp(int opType, int id) {
       this.opType = opType;
       this.threadID = id;
     }
 
-    public void run()
-    {
+    @Override
+    public void run() {
       Region rgn = cache.getRegion("test_region");
       int counter = 0;
       LogWriter logger = cache.getLogger();
@@ -1049,35 +934,17 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
         }
       }
       catch (Exception e) {
-        Thread.currentThread().interrupt();
+        throw new AssertionError(e);
       }
     }
   }
 
   /**
-   * This is to test the bug which is caused when HARegionQueue object hasnot
-   * been fully constructed but as the HARegion has got constructed , it gets
-   * visible to expiry thread task causing NullPointerException in some
-   * situations.
-   *
-   */
- /* public void testBugNo35989()
-  {
-    vm0.invoke(() -> HARegionQueueDUnitTest.createRegionQueue());
-    vm1.invoke(() -> HARegionQueueDUnitTest.createHARegionQueueandCheckExpiration());
-
-  } */
-
-  /**
    * Checks the data received by GII, only gets expired after proper
    * construction of HARegionQueue object.
-   *
-   * @throws Exception
    */
-  public static void createHARegionQueueandCheckExpiration() throws Exception
-  {
-    HARegionQueueDUnitTest test = new HARegionQueueDUnitTest(
-        "HARegionQueueDUnitTest_region");
+  private static void createHARegionQueueandCheckExpiration() throws Exception {
+    HARegionQueueDUnitTest test = new HARegionQueueDUnitTest();
     cache = test.createCache();
     HARegionQueueAttributes attrs = new HARegionQueueAttributes();
     attrs.setExpiryTime(1);
@@ -1087,9 +954,11 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
     // wait until we have a dead
     // server
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return hrq.getAvalaibleIds().size() == 0;
       }
+      @Override
       public String description() {
         return null;
       }
@@ -1098,21 +967,17 @@ public class HARegionQueueDUnitTest extends DistributedTestCase {
     // assertIndexDetailsEquals(0, hrq.getAvalaibleIds().size());
   }
 
-  public void testForDuplicateEvents()
-  {
+  @Test
+  public void testForDuplicateEvents() throws Exception {
     vm0.invoke(() -> HARegionQueueDUnitTest.createRegionQueue());
     vm1.invoke(() -> HARegionQueueDUnitTest.createRegionQueueandCheckDuplicates());
   }
 
   /**
    *  HARegionQueue should not allow data with duplicate EventIds.
-   *
-   * @throws Exception
    */
-  public static void createRegionQueueandCheckDuplicates() throws Exception
-  {
-    HARegionQueueDUnitTest test = new HARegionQueueDUnitTest(
-        "HARegionQueueDUnitTest_region");
+  private static void createRegionQueueandCheckDuplicates() throws Exception {
+    HARegionQueueDUnitTest test = new HARegionQueueDUnitTest();
     cache = test.createCache();
 
     hrq = HARegionQueue.getHARegionQueueInstance("HARegionQueueDUnitTest_region", cache,

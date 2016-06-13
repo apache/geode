@@ -16,6 +16,12 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static org.junit.Assert.*;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.EvictionAction;
@@ -33,15 +39,18 @@ import com.gemstone.gemfire.internal.logging.PureLogWriter;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This class is extended by some PartitionedRegion related DUnit test cases 
- *
  */
-public class PartitionedRegionDUnitTestCase extends CacheTestCase
-{
+@Category(DistributedTest.class)
+public class PartitionedRegionDUnitTestCase extends JUnit4CacheTestCase {
+
   static int oldLogLevel;
+
   public void setVMInfoLogLevel() {
     SerializableRunnable runnable = new SerializableRunnable() {
       public void run() {
@@ -63,6 +72,7 @@ public class PartitionedRegionDUnitTestCase extends CacheTestCase
       Host.getHost(0).getVM(i).invoke(runnable);
     }
   }
+
   /**
    * Sets the loglevel for the provided log writer
    * @param l  the {@link LogWriter}
@@ -84,10 +94,6 @@ public class PartitionedRegionDUnitTestCase extends CacheTestCase
     return ret;
   }
 
-  public PartitionedRegionDUnitTestCase(String name) {
-    super(name);
-  }
-
   /**
    * Tear down a PartitionedRegionTestCase by cleaning up the existing cache (mainly
    * because we want to destroy any existing PartitionedRegions)
@@ -101,12 +107,15 @@ public class PartitionedRegionDUnitTestCase extends CacheTestCase
   
   protected void preTearDownPartitionedRegionDUnitTest() throws Exception {
   }
-  
+
+  @BeforeClass
   public static void caseSetUp() {
     DUnitLauncher.launchIfNeeded();
     // this makes sure we don't have any connection left over from previous tests
     disconnectAllFromDS();
   }
+
+  @AfterClass
   public static void caseTearDown() {
     // this makes sure we don't leave anything for the next tests
     disconnectAllFromDS();

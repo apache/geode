@@ -26,11 +26,14 @@
 * @version 1.0
 * @since GemFire   2014-04-02
 */
-
 package com.vmware.gemfire.tools.pulse.tests;
 
-import com.gemstone.gemfire.test.junit.categories.UITest;
-import junit.framework.Assert;
+import static org.junit.Assert.*;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.List;
+
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -38,9 +41,7 @@ import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.List;
+import com.gemstone.gemfire.test.junit.categories.UITest;
 
 @Category(UITest.class)
 public class PulseAutomatedTest extends PulseAbstractTest {
@@ -84,61 +85,61 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 	@Test
 	public void regionDetailsNavigationTest() {
 		navigateToRegionDetailsView();
-		Assert.assertEquals("/R2", getTextUsingId(PulseTestLocators.RegionDetailsView.regionNameDivId));
+		assertEquals("/R2", getTextUsingId(PulseTestLocators.RegionDetailsView.regionNameDivId));
 	}
 
 	@Test
 	public void regionName() {
 		navigateToRegionDetailsView();
-		Assert.assertEquals(getPropertyValue("region.R2.name"), getTextUsingId(PulseTestLocators.RegionDetailsView.regionNameDivId));
+		assertEquals(getPropertyValue("region.R2.name"), getTextUsingId(PulseTestLocators.RegionDetailsView.regionNameDivId));
 	}
 
 	@Test
 	public void regionPath() {
 		navigateToRegionDetailsView();
-		Assert.assertEquals(getPropertyValue("region.R2.fullPath"),
+		assertEquals(getPropertyValue("region.R2.fullPath"),
 				getTextUsingId(PulseTestLocators.RegionDetailsView.regionPathId));
 	}
 
 	@Test
 	public void regionType() {
 		navigateToRegionDetailsView();
-		Assert.assertEquals(getPropertyValue("region.R2.regionType"),
+		assertEquals(getPropertyValue("region.R2.regionType"),
 				getTextUsingId(PulseTestLocators.RegionDetailsView.regionTypeId));
 	}
 
 	@Test
 	public void regionMembers() {
 		navigateToRegionDetailsView();
-		Assert.assertEquals(getPropertyValue("region.R2.memberCount"),
+		assertEquals(getPropertyValue("region.R2.memberCount"),
 				getTextUsingId(PulseTestLocators.RegionDetailsView.regionMembersTextId));
 	}
 
 	@Test
 	public void regionEmptyNodes() {
 		navigateToRegionDetailsView();
-		Assert.assertEquals(getPropertyValue("region.R2.emptyNodes"),
+		assertEquals(getPropertyValue("region.R2.emptyNodes"),
 				getTextUsingId(PulseTestLocators.RegionDetailsView.regionEmptyNodesId));
 	}
 
 	@Test
 	public void regionEntryCount() {
 		navigateToRegionDetailsView();
-		Assert.assertEquals(getPropertyValue("region.R2.systemRegionEntryCount"),
+		assertEquals(getPropertyValue("region.R2.systemRegionEntryCount"),
 				getTextUsingId(PulseTestLocators.RegionDetailsView.regionEntryCountTextId));
 	}
 
 	@Test
 	public void regionDiskUsage() {
 		navigateToRegionDetailsView();
-		Assert.assertEquals(getPropertyValue("region.R2.diskUsage"),
+		assertEquals(getPropertyValue("region.R2.diskUsage"),
 				getTextUsingId(PulseTestLocators.RegionDetailsView.regionDiskUsageId));
 	}
 
 	@Test
 	public void regionPersistence() {
 		navigateToRegionDetailsView();
-		Assert.assertEquals(getPersistanceEnabled(getPropertyValue("region.R2.persistentEnabled")),
+		assertEquals(getPersistanceEnabled(getPropertyValue("region.R2.persistentEnabled")),
 				getTextUsingId(PulseTestLocators.RegionDetailsView.regionPersistenceId));
 	}
 
@@ -152,7 +153,7 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 	@Test
 	public void regionInMemoryRead() {
 		navigateToRegionDetailsView();
-		Assert.assertEquals(getPropertyValue("region.R2.getsRate"),
+		assertEquals(getPropertyValue("region.R2.getsRate"),
 				getTextUsingId(PulseTestLocators.RegionDetailsView.inMemoryReadsId));
 
 	}
@@ -160,21 +161,21 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 	@Test
 	public void regionInMemoryWrites() {
 		navigateToRegionDetailsView();
-		Assert.assertEquals(getPropertyValue("region.R2.putsRate"),
+		assertEquals(getPropertyValue("region.R2.putsRate"),
 				getTextUsingId(PulseTestLocators.RegionDetailsView.inMemoryWritesId));
 	}
 
 	@Test
 	public void regionDiskRead() {
 		navigateToRegionDetailsView();
-		Assert.assertEquals(getPropertyValue("region.R2.diskReadsRate"),
+		assertEquals(getPropertyValue("region.R2.diskReadsRate"),
 				getTextUsingId(PulseTestLocators.RegionDetailsView.diskReadsId));
 	}
 
 	@Test
 	public void regionDiskWrites() {
 		navigateToRegionDetailsView();
-		Assert.assertEquals(getPropertyValue("region.R2.diskWritesRate"),
+		assertEquals(getPropertyValue("region.R2.diskWritesRate"),
 				getTextUsingId(PulseTestLocators.RegionDetailsView.diskWritesId));
 	}
 
@@ -544,15 +545,15 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 	@Test
 	public void testHotSpotOptPrsntOnTopologyView(){
 		navigateToTopologyTreeView();
-	    Assert.assertEquals(PulseTestData.Topology.hotSpotHeapLbl, getTextUsingId(PulseTestLocators.TopologyView.hotSpotId));	
+	    assertEquals(PulseTestData.Topology.hotSpotHeapLbl, getTextUsingId(PulseTestLocators.TopologyView.hotSpotId));	
 	}
 	
 	@Test
 	public void testHotSpotOptionsTopologyView(){	
 		navigateToTopologyTreeView();
 		clickElementUsingId(PulseTestLocators.TopologyView.hotSpotId);
-		Assert.assertEquals(PulseTestData.Topology.hotSpotHeapLbl, getTextUsingXpath(PulseTestLocators.TopologyView.heapUsageXpath));
-		Assert.assertEquals(PulseTestData.Topology.hotSpotCPULbl, getTextUsingXpath(PulseTestLocators.TopologyView.cpuUsageXpath));
+		assertEquals(PulseTestData.Topology.hotSpotHeapLbl, getTextUsingXpath(PulseTestLocators.TopologyView.heapUsageXpath));
+		assertEquals(PulseTestData.Topology.hotSpotCPULbl, getTextUsingXpath(PulseTestLocators.TopologyView.cpuUsageXpath));
 	}
 	
 	@Test
@@ -560,7 +561,7 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 		navigateToTopologyTreeView();
 		clickElementUsingId(PulseTestLocators.TopologyView.hotSpotId);
 		clickElementUsingXpath(PulseTestLocators.TopologyView.cpuUsageXpath);
-		Assert.assertEquals(PulseTestData.Topology.hotSpotCPULbl, getTextUsingId(PulseTestLocators.TopologyView.hotSpotId));
+		assertEquals(PulseTestData.Topology.hotSpotCPULbl, getTextUsingId(PulseTestLocators.TopologyView.hotSpotId));
 	}
 	
 	@Test
@@ -568,7 +569,7 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 		navigateToTopologyTreeView();
 		clickElementUsingId(PulseTestLocators.TopologyView.hotSpotId);
 		clickElementUsingXpath(PulseTestLocators.TopologyView.heapUsageXpath);
-		Assert.assertEquals(PulseTestData.Topology.hotSpotHeapLbl, getTextUsingId(PulseTestLocators.TopologyView.hotSpotId));
+		assertEquals(PulseTestData.Topology.hotSpotHeapLbl, getTextUsingId(PulseTestLocators.TopologyView.hotSpotId));
 	}
 
 	@Test
@@ -592,15 +593,15 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 	@Test
 	public void testHotSpotOptPrsntOnServerGroupView(){
 		navigateToServerGroupTreeView();
-	    Assert.assertEquals(PulseTestData.ServerGroups.hotSpotHeapLbl, getTextUsingId(PulseTestLocators.ServerGroups.hotSpotId));	
+	    assertEquals(PulseTestData.ServerGroups.hotSpotHeapLbl, getTextUsingId(PulseTestLocators.ServerGroups.hotSpotId));	
 	}
 	
 	@Test
 	public void testHotSpotOptionsServerGroupView(){	
 		navigateToServerGroupTreeView();
 		clickElementUsingId(PulseTestLocators.ServerGroups.hotSpotId);
-		Assert.assertEquals(PulseTestData.ServerGroups.hotSpotHeapLbl, getTextUsingXpath(PulseTestLocators.ServerGroups.heapUsageXpath));
-		Assert.assertEquals(PulseTestData.ServerGroups.hotSpotCPULbl, getTextUsingXpath(PulseTestLocators.ServerGroups.cpuUsageXpath));		
+		assertEquals(PulseTestData.ServerGroups.hotSpotHeapLbl, getTextUsingXpath(PulseTestLocators.ServerGroups.heapUsageXpath));
+		assertEquals(PulseTestData.ServerGroups.hotSpotCPULbl, getTextUsingXpath(PulseTestLocators.ServerGroups.cpuUsageXpath));		
 	}
 	
 	@Test
@@ -608,7 +609,7 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 		navigateToServerGroupTreeView();
 		clickElementUsingId(PulseTestLocators.ServerGroups.hotSpotId);
 		clickElementUsingXpath(PulseTestLocators.ServerGroups.cpuUsageXpath);
-		Assert.assertEquals(PulseTestData.ServerGroups.hotSpotCPULbl, getTextUsingId(PulseTestLocators.ServerGroups.hotSpotId));
+		assertEquals(PulseTestData.ServerGroups.hotSpotCPULbl, getTextUsingId(PulseTestLocators.ServerGroups.hotSpotId));
 	}
 	
 	@Test
@@ -616,7 +617,7 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 		navigateToServerGroupTreeView();
 		clickElementUsingId(PulseTestLocators.ServerGroups.hotSpotId);
 		clickElementUsingXpath(PulseTestLocators.ServerGroups.heapUsageXpath);
-		Assert.assertEquals(PulseTestData.ServerGroups.hotSpotHeapLbl, getTextUsingId(PulseTestLocators.ServerGroups.hotSpotId));
+		assertEquals(PulseTestData.ServerGroups.hotSpotHeapLbl, getTextUsingId(PulseTestLocators.ServerGroups.hotSpotId));
 	}	
 
 	@Test
@@ -640,7 +641,7 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 	@Test
 	public void testHotSpotOptPrsntOnRedundancyZoneView(){
 		navigateToRedundancyZonesTreeView();
-	    Assert.assertEquals(PulseTestData.RedundancyZone.hotSpotHeapLbl, getTextUsingId(PulseTestLocators.RedundancyZone.hotSpotId));	
+	    assertEquals(PulseTestData.RedundancyZone.hotSpotHeapLbl, getTextUsingId(PulseTestLocators.RedundancyZone.hotSpotId));	
 	}
 	
 	
@@ -649,8 +650,8 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 		// navigate to Redundancy Zones - Tree View
 		navigateToRedundancyZonesTreeView();
 		clickElementUsingId(PulseTestLocators.RedundancyZone.hotSpotId);
-		Assert.assertEquals(PulseTestData.RedundancyZone.hotSpotHeapLbl, getTextUsingXpath(PulseTestLocators.RedundancyZone.heapUsageXpath));
-		Assert.assertEquals(PulseTestData.RedundancyZone.hotSpotCPULbl, getTextUsingXpath(PulseTestLocators.RedundancyZone.cpuUsageXpath));		
+		assertEquals(PulseTestData.RedundancyZone.hotSpotHeapLbl, getTextUsingXpath(PulseTestLocators.RedundancyZone.heapUsageXpath));
+		assertEquals(PulseTestData.RedundancyZone.hotSpotCPULbl, getTextUsingXpath(PulseTestLocators.RedundancyZone.cpuUsageXpath));		
 	}
 	
 	@Test
@@ -659,7 +660,7 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 		navigateToRedundancyZonesTreeView();
 		clickElementUsingId(PulseTestLocators.RedundancyZone.hotSpotId);
 		clickElementUsingXpath(PulseTestLocators.RedundancyZone.cpuUsageXpath);
-		Assert.assertEquals(PulseTestData.RedundancyZone.hotSpotCPULbl, getTextUsingId(PulseTestLocators.RedundancyZone.hotSpotId));
+		assertEquals(PulseTestData.RedundancyZone.hotSpotCPULbl, getTextUsingId(PulseTestLocators.RedundancyZone.hotSpotId));
 	}
 	
 	@Test
@@ -668,7 +669,7 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 		navigateToRedundancyZonesTreeView();
 		clickElementUsingId(PulseTestLocators.RedundancyZone.hotSpotId);
 		clickElementUsingXpath(PulseTestLocators.RedundancyZone.heapUsageXpath);
-		Assert.assertEquals(PulseTestData.RedundancyZone.hotSpotHeapLbl, getTextUsingId(PulseTestLocators.RedundancyZone.hotSpotId));
+		assertEquals(PulseTestData.RedundancyZone.hotSpotHeapLbl, getTextUsingId(PulseTestLocators.RedundancyZone.hotSpotId));
 	}
 	
 	@Test
@@ -706,7 +707,7 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 				List<WebElement> regionLst1 = getRegionsFromDataBrowser();									
 				
 				for(int regionIndex = 1; regionIndex <= regionLst1.size(); regionIndex++){
-					Assert.assertEquals(region,  findElementByXpath(PulseTestLocators.DataBrowser.rgnSpanFirstPart + regionIndex + PulseTestLocators.DataBrowser.rgnSpanSecondPart).getText());
+					assertEquals(region,  findElementByXpath(PulseTestLocators.DataBrowser.rgnSpanFirstPart + regionIndex + PulseTestLocators.DataBrowser.rgnSpanSecondPart).getText());
 				}
 		}
 	}
@@ -722,7 +723,7 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 		List<WebElement> regionLst = getRegionsFromDataBrowser();		
 		
 		for(int regionIndex = 0; regionIndex < regionLst.size(); regionIndex++){			
-			Assert.assertTrue(findElementByXpath(PulseTestLocators.DataBrowser.rgnSpanFirstPart + 
+			assertTrue(findElementByXpath(PulseTestLocators.DataBrowser.rgnSpanFirstPart + 
 					(regionIndex + 1 ) + 
 					PulseTestLocators.DataBrowser.rgnSpanSecondPart).
 					getText().
@@ -740,7 +741,7 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 		clickElementUsingXpath(PulseTestLocators.DataBrowser.btnClearXpath);
 		String editorTextAfterClear = getTextUsingId(PulseTestLocators.DataBrowser.queryEditorTxtBoxId);
 		
-		Assert.assertFalse(PulseTestData.DataBrowser.query1Text.equals(editorTextAfterClear));
+		assertFalse(PulseTestData.DataBrowser.query1Text.equals(editorTextAfterClear));
 	}
 	
 	@Ignore("WIP") // Data Browser's Query History not showing any data on button click, therefore this test is failing
@@ -776,8 +777,8 @@ public class PulseAutomatedTest extends PulseAbstractTest {
 	  System.out.println("Query Text from History Table: " + queryText);
 		System.out.println("Query Time from History Table: " + historyDateTime);
   	    //verify the query text, query datetime in history panel
-	    Assert.assertTrue(PulseAbstractTest.QUERY_TYPE_ONE.equals(queryText));
-	    Assert.assertTrue(historyDateTime.contains(queryTime[0]));
+	    assertTrue(PulseAbstractTest.QUERY_TYPE_ONE.equals(queryText));
+	    assertTrue(historyDateTime.contains(queryTime[0]));
 	   
 	}	
 }

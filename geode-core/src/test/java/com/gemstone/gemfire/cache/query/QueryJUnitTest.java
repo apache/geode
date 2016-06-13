@@ -26,9 +26,8 @@
  */
 package com.gemstone.gemfire.cache.query;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.junit.runners.MethodSorters.NAME_ASCENDING;
+import static org.junit.Assert.*;
+import static org.junit.runners.MethodSorters.*;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -43,8 +42,6 @@ import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import util.TestException;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -415,7 +412,7 @@ public class QueryJUnitTest {
       try {
         q.execute(params);
       } catch (Exception e) {
-        throw new TestException("exception occured while executing query", e);
+        throw new AssertionError("exception occured while executing query", e);
       }
     }
   }

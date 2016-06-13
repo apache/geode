@@ -16,7 +16,18 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
 
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
@@ -26,35 +37,22 @@ import com.gemstone.gemfire.internal.logging.log4j.LogWriterLogger;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
-import static org.junit.Assert.*;
 
 /**
  * Creates Locator and tests logging behavior at a high level.
- * 
  */
 @Category(IntegrationTest.class)
 public class LocatorLogFileJUnitTest {
-  @Rule public TestName name = new TestName();
 
   protected static final int TIMEOUT_MILLISECONDS = 180 * 1000; // 2 minutes
   protected static final int INTERVAL_MILLISECONDS = 100; // 100 milliseconds
   
   private Locator locator;
   private FileInputStream fis;
-  
-  
+
+  @Rule
+  public TestName name = new TestName();
+
   @After
   public void tearDown() throws Exception {
     if (this.locator != null) {

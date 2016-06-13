@@ -16,31 +16,52 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheWriter;
+import com.gemstone.gemfire.cache.CacheWriterException;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.MirrorType;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionEvent;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache.util.CacheWriterAdapter;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import com.gemstone.gemfire.internal.cache.CacheObserverAdapter;
+import com.gemstone.gemfire.internal.cache.CacheObserverHolder;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl;
+import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.RegionEventImpl;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Test to verify EventID generated from Cache Client is correctly passed on to
  * the cache server for create, update, remove and destroy operations.It also checks
  * that peer nodes also get the same EventID.
- *
- *
  */
+@Category(DistributedTest.class)
+public class EventIDVerificationDUnitTest extends JUnit4DistributedTestCase {
 
-public class EventIDVerificationDUnitTest extends DistributedTestCase
-{
   private static Cache cache = null;
 
   static VM vm0 = null;
@@ -51,7 +72,7 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
 
   private static int PORT2;
 
-  private static final String REGION_NAME = "EventIDVerificationDUnitTest_region";
+  private static final String REGION_NAME = EventIDVerificationDUnitTest.class.getSimpleName() + "_region";
 
   protected static EventID eventId;
 
@@ -61,8 +82,8 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
 
   /* Constructor */
 
-  public EventIDVerificationDUnitTest(String name) {
-    super(name);
+  public EventIDVerificationDUnitTest() {
+    super();
   }
 
   @Override
@@ -81,6 +102,7 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
     CacheObserverHolder.setInstance(new CacheObserverAdapter());
   }
 
+  @Test
   public void testEventIDOnServer()
   {
     createEntry();
@@ -106,6 +128,7 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
    * also checks that peer nodes also get the same EventID.
    *
    */
+  @Test
   public void testEventIDPrapogationOnServerDuringRegionDestroy()
   {
     destroyRegion();
@@ -120,6 +143,7 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
    * also checks that peer nodes also get the same EventID.
 
    */
+  @Test
   public void testEventIDPrapogationOnServerDuringRegionClear()
   {
     clearRegion();
@@ -148,7 +172,7 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new EventIDVerificationDUnitTest("temp").createCache(props);
+    new EventIDVerificationDUnitTest().createCache(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setMirrorType(MirrorType.NONE);
@@ -263,7 +287,7 @@ public class EventIDVerificationDUnitTest extends DistributedTestCase
 
   public static Integer createServerCache() throws Exception
   {
-    new EventIDVerificationDUnitTest("temp").createCache(new Properties());
+    new EventIDVerificationDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);

@@ -16,25 +16,23 @@
  */
 package com.gemstone.gemfire.memcached;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import net.spy.memcached.MemcachedClient;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-import static org.junit.Assert.*;
+import net.spy.memcached.MemcachedClient;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-/**
- * 
- */
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
 @Category(IntegrationTest.class)
 public class IntegrationJUnitTest {
 

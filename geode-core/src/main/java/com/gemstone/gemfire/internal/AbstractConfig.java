@@ -29,7 +29,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 /**
  * Provides an implementation of the {@link Config} interface
  * that implements functionality that all {@link Config} implementations
@@ -161,7 +161,7 @@ public abstract class AbstractConfig implements Config {
         }
       }
       // hide the shiro-init configuration for now. Remove after we can allow customer to specify shiro.ini file
-      if(attName.equals(DistributionConfig.SECURITY_SHIRO_INIT)){
+      if(attName.equals(SECURITY_SHIRO_INIT)){
         continue;
       }
       pw.print(attName);

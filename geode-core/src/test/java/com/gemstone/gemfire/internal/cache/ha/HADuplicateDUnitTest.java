@@ -16,21 +16,40 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheListener;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.InterestResultPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.util.CacheListenerAdapter;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheServerImpl;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This is the Dunit test to verify the duplicates after the fail over
@@ -39,12 +58,9 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  * 2. Perform put operations for knows set of keys directy from the server1.
  * 3. Stop the server1 so that fail over happens
  * 4. Validate the duplicates received by the client1
- *
- *
  */
-
-public class HADuplicateDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
 
   VM server1 = null;
 
@@ -72,10 +88,6 @@ public class HADuplicateDUnitTest extends DistributedTestCase
 
   static Map storeEvents = new HashMap();
 
-  public HADuplicateDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
@@ -98,8 +110,9 @@ public class HADuplicateDUnitTest extends DistributedTestCase
     server2.invoke(() -> HADuplicateDUnitTest.closeCache());
   }
 
-  public void _testDuplicate() throws Exception
-  {
+  @Ignore("TODO")
+  @Test
+  public void testDuplicate() throws Exception {
     createClientServerConfiguration();
     server1.invoke(putForKnownKeys());
     server1.invoke(stopServer());
@@ -138,10 +151,9 @@ public class HADuplicateDUnitTest extends DistributedTestCase
     server1.invoke(() -> HADuplicateDUnitTest.reSetQRMslow());
   }
 
-
+  @Test
   public void testSample() throws Exception
   {
-
     IgnoredException.addIgnoredException("IOException");
     IgnoredException.addIgnoredException("Connection reset");
     createClientServerConfiguration();
@@ -155,9 +167,7 @@ public class HADuplicateDUnitTest extends DistributedTestCase
 
     }
     });
-
   }
-
 
   // function to perform put operations for the known set of keys.
   private CacheSerializableRunnable putForKnownKeys()
@@ -196,8 +206,6 @@ public class HADuplicateDUnitTest extends DistributedTestCase
     return stopserver;
   }
 
-
-
   // function to create 2servers and 1 clients
   private void createClientServerConfiguration()
   {
@@ -222,7 +230,7 @@ public class HADuplicateDUnitTest extends DistributedTestCase
 
   public static Integer createServerCache() throws Exception
   {
-    new HADuplicateDUnitTest("temp").createCache(new Properties());
+    new HADuplicateDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -255,7 +263,7 @@ public class HADuplicateDUnitTest extends DistributedTestCase
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new HADuplicateDUnitTest("temp").createCache(props);
+    new HADuplicateDUnitTest().createCache(props);
     AttributesFactory factory = new AttributesFactory();
     ClientServerTestCase.configureConnectionPool(factory, hostName, new int[] {PORT1,PORT2}, true, -1, 2, null);
     
@@ -278,8 +286,9 @@ public class HADuplicateDUnitTest extends DistributedTestCase
       cache.getDistributedSystem().disconnect();
     }
   }
-
 }
+
+// TODO: move these classes to be inner static classes
 
 // Listener class for the validation purpose
 class HAValidateDuplicateListener extends CacheListenerAdapter
@@ -288,7 +297,6 @@ class HAValidateDuplicateListener extends CacheListenerAdapter
   {
     System.out.println("After Create");
     HADuplicateDUnitTest.storeEvents.put(event.getKey(), event.getNewValue());
-
   }
 
   public void afterUpdate(EntryEvent event)

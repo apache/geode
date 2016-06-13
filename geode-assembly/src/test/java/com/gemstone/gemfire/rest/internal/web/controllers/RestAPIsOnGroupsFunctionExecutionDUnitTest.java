@@ -16,22 +16,24 @@
  */
 package com.gemstone.gemfire.rest.internal.web.controllers;
 
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
+
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.rest.internal.web.RestFunctionTemplate;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
-import com.gemstone.gemfire.test.dunit.VM;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
+@Category(DistributedTest.class)
 public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase {
-
-  public RestAPIsOnGroupsFunctionExecutionDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   protected String getFunctionID() {
@@ -48,6 +50,7 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
     vm2.invoke("registerFunction(new OnGroupsFunction())", () -> FunctionService.registerFunction(new OnGroupsFunction()));
   }
 
+  @Test
   public void testonGroupsExecutionOnAllMembers() {
     setupCacheWithGroupsAndFunction();
 
@@ -61,6 +64,7 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
     restURLs.clear();
   }
 
+  @Test
   public void testonGroupsExecutionOnAllMembersWithFilter() {
     setupCacheWithGroupsAndFunction();
 
@@ -74,6 +78,7 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
     restURLs.clear();
   }
 
+  @Test
   public void testBasicP2PFunctionSelectedGroup() {
     setupCacheWithGroupsAndFunction();
 

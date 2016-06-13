@@ -16,7 +16,27 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
-import com.gemstone.gemfire.cache.*;
+import static org.junit.Assert.*;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.AttributesMutator;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.MirrorType;
+import com.gemstone.gemfire.cache.Operation;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionDestroyedException;
+import com.gemstone.gemfire.cache.RegionEvent;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
@@ -29,14 +49,15 @@ import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.EventIDHolder;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * This test verifies that eventId, while being sent across the network ( client
@@ -49,11 +70,9 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  * sent to server-1 and then to server-2 via p2p and then finally to client-2.
  * It is verified that client-2 recieves the same values for thread-id and
  * sequence-id.
- * 
- * 
  */
-public class EventIdOptimizationDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
 
   /** Cache-server1 */
   VM server1 = null;
@@ -135,17 +154,6 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
       new EventID(new byte[] { 1, 1 }, ID_VALUE_LONG, ID_VALUE_INT),
       new EventID(new byte[] { 1, 1 }, ID_VALUE_LONG, ID_VALUE_LONG) };
 
-  /** Constructor */
-  public EventIdOptimizationDUnitTest(String name) {
-    super(name);
-  }
-
-  /**
-   * Sets up the cache-servers and clients for the test
-   * 
-   * @throws Exception -
-   *           thrown in any problem occurs in setUp
-   */
   @Override
   public final void postSetUp() throws Exception  {
     disconnectAllFromDS();
@@ -181,7 +189,7 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
   /** Creates cache and starts the bridge-server */
   public static Integer createServerCache() throws Exception
   {
-    new EventIdOptimizationDUnitTest("temp").createCache(new Properties());
+    new EventIdOptimizationDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setMirrorType(MirrorType.KEYS_VALUES);
@@ -215,7 +223,7 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new EventIdOptimizationDUnitTest("temp").createCache(props);
+    new EventIdOptimizationDUnitTest().createCache(props);
 
     AttributesFactory factory = new AttributesFactory();
     ClientServerTestCase.configureConnectionPool(factory, hostName, port.intValue(),-1, true, -1, 2, null);
@@ -238,7 +246,7 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new EventIdOptimizationDUnitTest("temp").createCache(props);
+    new EventIdOptimizationDUnitTest().createCache(props);
     AttributesFactory factory = new AttributesFactory();
     ClientServerTestCase.configureConnectionPool(factory, hostName, port.intValue(),-1, true, -1, 2, null);
     
@@ -368,6 +376,7 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
    * @throws Exception -
    *           thrown if any exception occurs in test
    */
+  @Test
   public void testEventIdOptimizationByPutOperation() throws Exception
   {
     client1.invoke(() -> EventIdOptimizationDUnitTest.generateEventsByPutOperation());
@@ -383,6 +392,7 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
    * @throws Exception -
    *           thrown if any exception occurs in test
    */
+  @Test
   public void testEventIdOptimizationByDestroyEntryOperation() throws Exception
   {
     client1.invoke(() -> EventIdOptimizationDUnitTest.generateEventsByDestroyEntryOperation());
@@ -397,6 +407,7 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
    * @throws Exception -
    *           thrown if any exception occurs in test
    */
+  @Test
   public void testEventIdOptimizationByDestroyRegionOperation()
       throws Exception
   {
@@ -412,6 +423,7 @@ public class EventIdOptimizationDUnitTest extends DistributedTestCase
    * @throws Exception -
    *           thrown if any exception occurs in test
    */
+  @Test
   public void testEventIdOptimizationByClearRegionOperation() throws Exception
   {
     client1.invoke(() -> EventIdOptimizationDUnitTest.generateEventsByClearRegionOperation());

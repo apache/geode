@@ -30,8 +30,8 @@ import com.gemstone.gemfire.pdx.PdxSerializer;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * Factory class used to create the singleton {@link ClientCache client cache} and connect to one or more GemFire Cache Servers. If the application wants to connect to GemFire as a peer it should use {@link com.gemstone.gemfire.cache.CacheFactory} instead.

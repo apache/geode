@@ -22,9 +22,14 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -36,21 +41,18 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.test.dunit.DistributedTestCase;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  *
  */
-public class RemoveAllMultiVmDUnitTest extends DistributedTestCase {
-    
-    /** Creates a new instance of RemoveAllMultiVmDUnitTest */
-    public RemoveAllMultiVmDUnitTest(String name) {
-        super(name);
-    }
+@Category(DistributedTest.class)
+public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: reformat
     
     static Cache cache;
     static Properties props = new Properties();
@@ -82,7 +84,7 @@ public class RemoveAllMultiVmDUnitTest extends DistributedTestCase {
     
     public static void createCache(){
         try{
-            ds = (new RemoveAllMultiVmDUnitTest("temp")).getSystem(props);
+            ds = (new RemoveAllMultiVmDUnitTest()).getSystem(props);
             cache = CacheFactory.create(ds);
             AttributesFactory factory  = new AttributesFactory();
             factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -120,7 +122,8 @@ public class RemoveAllMultiVmDUnitTest extends DistributedTestCase {
     
     //tests methods
     
-    public void testLocalRemoveAll(){
+  @Test
+  public void testLocalRemoveAll(){
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
     
@@ -151,7 +154,8 @@ public class RemoveAllMultiVmDUnitTest extends DistributedTestCase {
       } );
     }
     
-    public void testLocalTxRemoveAll(){
+  @Test
+  public void testLocalTxRemoveAll(){
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
     
@@ -187,7 +191,8 @@ public class RemoveAllMultiVmDUnitTest extends DistributedTestCase {
     } );
     }
 
-    public void testDistributedRemoveAll(){
+  @Test
+  public void testDistributedRemoveAll(){
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);
         VM vm1 = host.getVM(1);
@@ -236,7 +241,8 @@ public class RemoveAllMultiVmDUnitTest extends DistributedTestCase {
           }
         } );
     }
-    public void testDistributedTxRemoveAll(){
+  @Test
+  public void testDistributedTxRemoveAll(){
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);

@@ -86,23 +86,13 @@ import com.gemstone.gemfire.util.test.TestUtil;
 
 /**
  * This is a helper class for the various Partitioned Query DUnit Test Cases
- * 
  */
+public class PRQueryDUnitHelper implements Serializable {
 
-public class PRQueryDUnitHelper implements Serializable
-{
-  /**
-   * constructor *
-   * 
-   * @param name
-   */
   static Cache cache = null;
+
   public static void setCache(Cache cache) {
     PRQueryDUnitHelper.cache = cache;
-  }
-
-  public PRQueryDUnitHelper() {
-
   }
 
   public static Cache getCache() {

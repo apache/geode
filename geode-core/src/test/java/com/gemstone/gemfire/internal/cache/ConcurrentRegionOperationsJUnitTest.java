@@ -16,9 +16,7 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -31,8 +29,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -60,12 +56,9 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * recover the old values and again the two regions are checked for equality.
  *  * This test is run for all modes persist, persist+overflow, overflow only in
  * syn and async mode.
- * 
- *  
  */
 @Category(IntegrationTest.class)
-public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase
-{
+public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
 
   private int numberOfPutsThreads = 5;
 
@@ -107,10 +100,8 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase
 
   private static int counter = 0;
 
-  @Before
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  @Override
+  protected final void postSetUp() throws Exception {
     counter++;
     if (longTest) {
       TIME_TO_RUN = 10000;
@@ -120,12 +111,6 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase
       numberOfClearThreads = 2;
       numberOfForceRollThreads = 3;
     }
-  }
-
-  @After
-  public void tearDown() throws Exception
-  {
-    super.tearDown();
   }
 
   @Test
@@ -330,11 +315,10 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase
         p);
     validate(region1, region2);
   }
+
   /**
    * Tests the bug where a get operation on an evicted entry fails to get value
    * as the oplog is deleted by the roller, but the entry was not rolled.
-   * 
-   *  
    */
   @Test
   public void testBug35048()
@@ -445,7 +429,6 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase
     ThreadUtils.join(t1, 30 * 1000);
     ThreadUtils.join(t2, 30 * 1000);
     assertTrue(!failure);
-
   }
 
   private final AtomicBoolean timeToStop = new AtomicBoolean();
@@ -459,9 +442,9 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase
     try {
       startLine.await();
     } catch (InterruptedException ie) {
-      fail("unexpected " + ie);
+      throw new AssertionError("unexpected ", ie);
     } catch (BrokenBarrierException ex) {
-      fail("unexpected " + ex);
+      throw new AssertionError("unexpected ", ex);
     }
   }
   
@@ -691,7 +674,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase
       catch (Exception e) {
         exceptionOccuredInGets = true;
         logWriter.severe("Exception occured in get ", e);
-        fail(" failed during get due to " + e);
+        throw new AssertionError(" failed during get due to ", e);
       }
     } finally {
       if (lock != null) {
@@ -764,7 +747,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase
     catch (Exception e) {
       exceptionOccuredInClears = true;
       logWriter.severe("Exception occured in clear=",e);
-      fail("Exception occured in clear");
+      throw new AssertionError("Exception occured in clear", e);
     }
   }
 
@@ -776,8 +759,6 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase
    * because a clear operation stop/starts the roller) & the destroy operation
    * actually joined with the new thread ( different from the one on which
    * notification was issued to exit).
-   * 
-   *  
    */
   @Test
   public void testConcurrentClearAndRegionDestroyBug()
@@ -912,8 +893,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase
       catch (Exception e) {
         exceptionOccuredInForceRolls = true;
         logWriter.severe("Exception occured in forceRolling ", e);
-        fail(" Exception occured here");
-
+        throw new AssertionError(" Exception occured here", e);
       }
     }
 

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.rest.internal.web.controllers;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
@@ -40,14 +49,15 @@ import java.util.*;
  * @since GemFire 8.0
  */
 
+@Category(DistributedTest.class)
 public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
 
   private final String REPLICATE_REGION_NAME = "sampleRRegion";
 
   private final String PR_REGION_NAME = "samplePRRegion";
 
-  public RestAPIOnRegionFunctionExecutionDUnitTest(String name) {
-    super(name);
+  public RestAPIOnRegionFunctionExecutionDUnitTest() {
+    super();
   }
 
   private class SampleFunction extends RestFunctionTemplate {
@@ -243,6 +253,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     vm3.invoke("registerFunction(new SampleFunction())", () -> FunctionService.registerFunction(new SampleFunction()));
   }
 
+  @Test
   public void testOnRegionExecutionWithReplicateRegion() {
     createCacheAndRegisterFunction();
 
@@ -263,6 +274,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     restURLs.clear();
   }
 
+  @Test
   public void testOnRegionExecutionWithPartitionRegion() throws Exception {
     createCacheAndRegisterFunction();
 
@@ -279,6 +291,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     restURLs.clear();
   }
 
+  @Test
   public void testOnRegionWithFilterExecutionWithPartitionRegion() throws Exception {
     createCacheAndRegisterFunction();
 
@@ -301,6 +314,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     }
   }
 
+  @Test
   public void testOnRegionWithFilterExecutionWithPartitionRegionJsonArgs() throws Exception {
     createCacheAndRegisterFunction();
 

@@ -16,21 +16,29 @@
  */
 package com.gemstone.gemfire.internal.logging.log4j;
 
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.FileUtil;
-import com.gemstone.gemfire.internal.logging.LoggingPerformanceTestCase;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URL;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 
-import java.io.*;
-import java.net.URL;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.internal.FileUtil;
+import com.gemstone.gemfire.internal.logging.LoggingPerformanceTestCase;
+import com.gemstone.gemfire.internal.util.IOUtils;
+import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
 
 @Category(PerformanceTest.class)
 @Ignore("Tests have no assertions")
@@ -45,13 +53,8 @@ public class Log4J2PerformanceTest extends LoggingPerformanceTestCase {
   
   private File config = null;
   
-  public Log4J2PerformanceTest(String name) {
-    super(name);
-  }
-
-  @Override
-  public void tearDown() throws Exception {
-    super.tearDown();
+  @After
+  public void tearDownLog4J2PerformanceTest() throws Exception {
     this.config = null; // leave this file in place for now
   }
   
@@ -107,7 +110,8 @@ public class Log4J2PerformanceTest extends LoggingPerformanceTestCase {
     final Logger logger = LogManager.getLogger();
     return logger;
   }
-  
+
+  @Override
   protected PerformanceLogger createPerformanceLogger() throws IOException {
     final Logger logger = createLogger();
     
@@ -123,25 +127,5 @@ public class Log4J2PerformanceTest extends LoggingPerformanceTestCase {
     };
     
     return perfLogger;
-  }
-
-  @Override
-  public void testCountBasedLogging() throws Exception {
-    super.testCountBasedLogging();
-  }
-
-  @Override
-  public void testTimeBasedLogging() throws Exception {
-    super.testTimeBasedLogging();
-  }
-
-  @Override
-  public void testCountBasedIsEnabled() throws Exception {
-    super.testCountBasedIsEnabled();
-  }
-
-  @Override
-  public void testTimeBasedIsEnabled() throws Exception {
-    super.testTimeBasedIsEnabled();
   }
 }

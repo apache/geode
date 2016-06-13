@@ -18,7 +18,7 @@ package com.gemstone.gemfire.internal.admin;
 
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import java.util.Iterator;
 import java.util.Properties;

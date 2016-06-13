@@ -16,76 +16,54 @@
  */
 package com.gemstone.gemfire.internal.cache.lru;
 
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
+
+import com.gemstone.gemfire.StatisticDescriptor;
+import com.gemstone.gemfire.StatisticsFactory;
+import com.gemstone.gemfire.StatisticsType;
+import com.gemstone.gemfire.StatisticsTypeFactory;
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheExistsException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.EvictionAction;
+import com.gemstone.gemfire.cache.EvictionAlgorithm;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.internal.StatisticsTypeFactoryImpl;
 import com.gemstone.gemfire.internal.cache.InternalRegionArguments;
 import com.gemstone.gemfire.internal.cache.PlaceHolderDiskRegion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
-
-/**  This class tests the LRUCapacityController's core clock algorithm.  */
+/**
+ * This class tests the LRUCapacityController's core clock algorithm.
+ */
 @Category(IntegrationTest.class)
-public class LRUClockJUnitTest extends junit.framework.TestCase {
+public class LRUClockJUnitTest {
   
   private String myTestName;
 
-  //static int unusedPort = AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
-
   static Properties sysProps = new Properties();
-  static {
-    //sysProps.setProperty(DistributionConfig.DistributedSystemConfigProperties.MCAST_PORT, String.valueOf(unusedPort));
-    // a loner is all this test needs
+
+  @Rule
+  public TestName testName = new TestName();
+
+  @Before
+  public void setUp() throws Exception {
+    sysProps = new Properties();
     sysProps.setProperty(MCAST_PORT, "0");
     sysProps.setProperty(LOCATORS, "");
   }
 
-  public LRUClockJUnitTest( String name ) {
-    super( name );
-    this.myTestName = name;
-  }
-
-  protected LRUClockJUnitTest( String prefix, String methodName ) {
-    super( methodName );
-    this.myTestName = prefix + methodName;
-  }
-  
-  /**
-   *  The JUnit setup method
-   *
-   * @exception  Exception  Description of the Exception
-   */
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-    System.out.println( "\n\n### beginning " + this.myTestName + "###" );
-  }
-
-  /**
-   *  The teardown method for JUnit
-   *
-   * @exception  Exception  Description of the Exception
-   */
-  @After
-  public void tearDown() throws Exception {
-    super.tearDown();
-    System.out.println( "###  finished " + this.myTestName + "###" );
-  }
-
-  /**
-   *  A unit test for JUnit
-   *
-   * @exception  Exception  Description of the Exception
-   */
   @Test
   public void testAddToClockFace() throws Exception {
     NewLRUClockHand clock = getAClockHand( getARegion(), new TestEnableLRU() );
@@ -110,8 +88,7 @@ public class LRUClockJUnitTest extends junit.framework.TestCase {
   }
 
   @Test
-  public void testFIFO() {
-    try {
+  public void testFIFO() throws Exception {
     NewLRUClockHand clock = getAClockHand( getARegion(), new TestEnableLRU() );
 
     for( int i = 0; i < 100; i++ ) {
@@ -139,15 +116,6 @@ public class LRUClockJUnitTest extends junit.framework.TestCase {
       le = (LRUTestEntry) clock.getLRUEntry();
     }
     assertTrue( "expected 100, found " + counter, counter == 100);
-    } 
-    catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    }
-    catch ( Throwable t ) {
-      t.printStackTrace();
-      assertTrue( "failed", false );
-    }
   }
   
   @Test
@@ -267,16 +235,16 @@ public class LRUClockJUnitTest extends junit.framework.TestCase {
   }
   
   /** manufacture a node so that a shared type can be used by SharedLRUClockTest. */
-  protected LRUTestEntry getANode( int id ) {
+  private LRUTestEntry getANode( int id ) {
     return new LocalLRUTestEntry( id );
   }
-  
-  public static interface LRUTestEntry extends LRUClockNode {
+
+  private interface LRUTestEntry extends LRUClockNode {
     public int id();
   }
   
   /** test implementation of an LRUClockNode */
-  public static class LocalLRUTestEntry implements LRUTestEntry {
+  private static class LocalLRUTestEntry implements LRUTestEntry {
     
     int id;
     LRUClockNode next;
@@ -293,7 +261,8 @@ public class LRUClockJUnitTest extends junit.framework.TestCase {
       recentlyUsed = false;
       evicted = false;
     }
-    
+
+    @Override
     public int id() {
       return id; 
     }
@@ -301,108 +270,121 @@ public class LRUClockJUnitTest extends junit.framework.TestCase {
     public boolean isTombstone() {
       return false;
     }
-    
+
+    @Override
     public void setNextLRUNode( LRUClockNode next ) {
       this.next = next; 
     }
-    
+
+    @Override
     public LRUClockNode nextLRUNode() {
       return this.next; 
     }
 
+    @Override
     public void setPrevLRUNode( LRUClockNode prev ) {
       this.prev = prev; 
     }
-    
+
+    @Override
     public LRUClockNode prevLRUNode() {
       return this.prev; 
     }
-    
-    
+
+    @Override
     public int updateEntrySize( EnableLRU cc ) {
       return this.size = 1; 
     }
 
+    @Override
     public int updateEntrySize(EnableLRU cc, Object value) {
       return this.size = 1; 
     }
-    
+
+    @Override
     public int getEntrySize() {
       return this.size; 
     }
     
     /** this should only happen with the LRUClockHand sync'ed */
+    @Override
     public void setEvicted() {
       evicted = true;
     }
 
+    @Override
     public void unsetEvicted() {
       evicted = false;
     }
-    
+
+    @Override
     public boolean testEvicted( ) {
       return evicted; 
     }
-    
+
+    @Override
     public boolean testRecentlyUsed() {
       return recentlyUsed;  
     }
-    
+
+    @Override
     public void setRecentlyUsed() {
       recentlyUsed = true;  
     }
-    
+
+    @Override
     public void unsetRecentlyUsed() {
       recentlyUsed = false; 
     }
+
     public LRUClockNode absoluteSelf( ) { return this; }
     public LRUClockNode clearClones( ) { return this; }
     public int cloneCount( ) { return 0; }
   }
 
-
-  public class TestEnableLRU implements EnableLRU {
+  private class TestEnableLRU implements EnableLRU {
 
     private final StatisticsType statType;
 
     {
-    // create the stats type for MemLRU.
-    StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
-    
-    final String bytesAllowedDesc = 
-      "Number of total bytes allowed in this region.";
-    final String byteCountDesc = 
-      "Number of bytes in region.";
-    final String lruEvictionsDesc = 
-      "Number of total entry evictions triggered by LRU.";
-    final String lruEvaluationsDesc = 
-      "Number of entries evaluated during LRU operations.";
-    final String lruGreedyReturnsDesc =
-      "Number of non-LRU entries evicted during LRU operations";
-    final String lruDestroysDesc =
-      "Number of entry destroys triggered by LRU.";
-    final String lruDestroysLimitDesc =
-      "Maximum number of entry destroys triggered by LRU before scan occurs.";
-      
-    statType = f.createType( "TestLRUStatistics",
-      "Statistics about byte based Least Recently Used region entry disposal",
-      new StatisticDescriptor[] {
-        f.createLongGauge("bytesAllowed", bytesAllowedDesc, "bytes" ),
-        f.createLongGauge("byteCount", byteCountDesc, "bytes" ),
-        f.createLongCounter("lruEvictions", lruEvictionsDesc, "entries" ),
-        f.createLongCounter("lruEvaluations", lruEvaluationsDesc, "entries" ),
-        f.createLongCounter("lruGreedyReturns", lruGreedyReturnsDesc, "entries"),
-        f.createLongCounter("lruDestroys", lruDestroysDesc, "entries" ),
-        f.createLongCounter("lruDestroysLimit", lruDestroysLimitDesc, "entries" ),
-      }
-    );
-  }
+      // create the stats type for MemLRU.
+      StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
 
-  
+      final String bytesAllowedDesc =
+        "Number of total bytes allowed in this region.";
+      final String byteCountDesc =
+        "Number of bytes in region.";
+      final String lruEvictionsDesc =
+        "Number of total entry evictions triggered by LRU.";
+      final String lruEvaluationsDesc =
+        "Number of entries evaluated during LRU operations.";
+      final String lruGreedyReturnsDesc =
+        "Number of non-LRU entries evicted during LRU operations";
+      final String lruDestroysDesc =
+        "Number of entry destroys triggered by LRU.";
+      final String lruDestroysLimitDesc =
+        "Maximum number of entry destroys triggered by LRU before scan occurs.";
+
+      statType = f.createType( "TestLRUStatistics",
+        "Statistics about byte based Least Recently Used region entry disposal",
+        new StatisticDescriptor[] {
+          f.createLongGauge("bytesAllowed", bytesAllowedDesc, "bytes" ),
+          f.createLongGauge("byteCount", byteCountDesc, "bytes" ),
+          f.createLongCounter("lruEvictions", lruEvictionsDesc, "entries" ),
+          f.createLongCounter("lruEvaluations", lruEvaluationsDesc, "entries" ),
+          f.createLongCounter("lruGreedyReturns", lruGreedyReturnsDesc, "entries"),
+          f.createLongCounter("lruDestroys", lruDestroysDesc, "entries" ),
+          f.createLongCounter("lruDestroysLimit", lruDestroysLimitDesc, "entries" ),
+        }
+      );
+    }
+
+    @Override
     public int entrySize( Object key, Object value ) throws IllegalArgumentException {
       return 1;  
     }
-    
+
+    @Override
     public long limit( ) {
       return 20; 
     }
@@ -410,66 +392,79 @@ public class LRUClockJUnitTest extends junit.framework.TestCase {
     public boolean usesMem( ) {
       return false; 
     }
-    
+
+    @Override
     public EvictionAlgorithm getEvictionAlgorithm() {
       return EvictionAlgorithm.LRU_ENTRY;
     }
-    
+
+    @Override
     public LRUStatistics getStats() {
       return null;
     }
 
+    @Override
     public EvictionAction getEvictionAction() {
       return EvictionAction.DEFAULT_EVICTION_ACTION;
     }
 
-      public StatisticsType getStatisticsType() {
-        return statType;
-      }
+    @Override
+    public StatisticsType getStatisticsType() {
+      return statType;
+    }
 
-      public String getStatisticsName() {
-        return "TestLRUStatistics";
-      }
+    @Override
+    public String getStatisticsName() {
+      return "TestLRUStatistics";
+    }
 
-      public int getLimitStatId() {
-        return statType.nameToId("bytesAllowed");
+    @Override
+    public int getLimitStatId() {
+      return statType.nameToId("bytesAllowed");
+    }
 
-      }
+    @Override
+    public int getCountStatId() {
+      return statType.nameToId("byteCount");
+    }
 
-      public int getCountStatId() {
-        return statType.nameToId("byteCount");
-      }
+    @Override
+    public int getEvictionsStatId() {
+      return statType.nameToId("lruEvictions");
+    }
 
-      public int getEvictionsStatId() {
-        return statType.nameToId("lruEvictions");
-      }
+    @Override
+    public int getDestroysStatId() {
+      return statType.nameToId("lruDestroys");
+    }
 
-      public int getDestroysStatId() {
-        return statType.nameToId("lruDestroys");
-      }
+    @Override
+    public int getDestroysLimitStatId() {
+      return statType.nameToId("lruDestroysLimit");
+    }
 
-      public int getDestroysLimitStatId() {
-        return statType.nameToId("lruDestroysLimit");
-      }
+    @Override
+    public int getEvaluationsStatId() {
+      return statType.nameToId("lruEvaluations");
+    }
 
-      public int getEvaluationsStatId() {
-        return statType.nameToId("lruEvaluations");
-      }
-      
-      public int getGreedyReturnsStatId() {
-        return statType.nameToId("lruGreedyReturns");
-      }
+    @Override
+    public int getGreedyReturnsStatId() {
+      return statType.nameToId("lruGreedyReturns");
+    }
 
+    @Override
     public boolean mustEvict(LRUStatistics stats, Region region, int delta) {
       throw new UnsupportedOperationException("Not implemented");
     }
 
+    @Override
     public void afterEviction() {
       throw new UnsupportedOperationException("Not implemented");
     }
 
-    public LRUStatistics initStats(Object region, StatisticsFactory sf)
-    {
+    @Override
+    public LRUStatistics initStats(Object region, StatisticsFactory sf) {
       String regionName;
       if (region instanceof Region) {
         regionName = ((Region)region).getName();
@@ -486,7 +481,7 @@ public class LRUClockJUnitTest extends junit.framework.TestCase {
   }
 
   /** overridden in SharedLRUClockTest to test SharedLRUClockHand */
-  protected NewLRUClockHand getAClockHand( Region reg, EnableLRU elru ) {
+  private NewLRUClockHand getAClockHand( Region reg, EnableLRU elru ) {
     return new NewLRUClockHand( reg, elru,new InternalRegionArguments());
   }
   
@@ -503,7 +498,7 @@ public class LRUClockJUnitTest extends junit.framework.TestCase {
     if ( root == null ) {
       root = c.createRegion("root", af.create() );
     }
-    Region sub = root.createSubregion( myTestName, af.create() );
+    Region sub = root.createSubregion( testName.getMethodName(), af.create() );
     return sub;
   }
   

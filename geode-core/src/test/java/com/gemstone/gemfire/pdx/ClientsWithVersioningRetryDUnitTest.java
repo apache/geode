@@ -16,41 +16,68 @@
  */
 package com.gemstone.gemfire.pdx;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Operation;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.cache.*;
+import com.gemstone.gemfire.internal.cache.DistributedPutAllOperation;
+import com.gemstone.gemfire.internal.cache.DistributedRegion;
+import com.gemstone.gemfire.internal.cache.EntryEventImpl;
+import com.gemstone.gemfire.internal.cache.EventID;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.RegionEntry;
 import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.tier.sockets.command.Put70;
 import com.gemstone.gemfire.internal.cache.versions.VMVersionTag;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.util.*;
+@Category(DistributedTest.class)
+public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-/**
- *
- */
-public class ClientsWithVersioningRetryDUnitTest extends CacheTestCase {
   // list of expected exceptions to remove in tearDown2()
   static List<IgnoredException> expectedExceptions = new LinkedList<IgnoredException>();
 
-  public ClientsWithVersioningRetryDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public final void postSetUp() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
@@ -82,6 +109,7 @@ public class ClientsWithVersioningRetryDUnitTest extends CacheTestCase {
    * the version information.
    * second failure in bug 44951
    */
+  @Test
   public void testRetryPut() {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -159,6 +187,7 @@ public class ClientsWithVersioningRetryDUnitTest extends CacheTestCase {
    * the version information.
    * bug #45059
    */
+  @Test
   public void testRetryPutAll() {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
@@ -247,6 +276,7 @@ public class ClientsWithVersioningRetryDUnitTest extends CacheTestCase {
    * and get the version information.
    * bug #48205
    */
+  @Test
   public void testRetryPutAllInAccessor() {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);

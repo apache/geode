@@ -16,33 +16,30 @@
  */
 package com.gemstone.gemfire.internal.logging;
 
-import com.gemstone.gemfire.LogWriter;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
-import com.gemstone.gemfire.internal.util.IOUtils;
-import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
+import com.gemstone.gemfire.internal.util.IOUtils;
+import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
 
 /**
  * Tests performance of logging when level is OFF.
- * 
  */
 @Category(PerformanceTest.class)
 @Ignore("Tests have no assertions")
 public class LogWriterPerformanceTest extends LoggingPerformanceTestCase {
 
-  public LogWriterPerformanceTest(String name) {
-    super(name);
-  }
-  
   protected Properties createGemFireProperties() {
     final Properties props = new Properties();
     this.logFile = new File(this.configDirectory, DistributionConfig.GEMFIRE_PREFIX + "log");
@@ -87,7 +84,8 @@ public class LogWriterPerformanceTest extends LoggingPerformanceTestCase {
         appendToFile, isLoner, isSecurityLog, config, logConfig, fosHolder);
     return logWriter;
   }
-  
+
+  @Override
   protected PerformanceLogger createPerformanceLogger() {
     final LogWriter logWriter = createLogWriter();
     
@@ -103,25 +101,5 @@ public class LogWriterPerformanceTest extends LoggingPerformanceTestCase {
     };
     
     return perfLogger;
-  }
-  
-  @Override
-  public void testCountBasedLogging() throws Exception {
-    super.testCountBasedLogging();
-  }
-
-  @Override
-  public void testTimeBasedLogging() throws Exception {
-    super.testTimeBasedLogging();
-  }
-
-  @Override
-  public void testCountBasedIsEnabled() throws Exception {
-    super.testCountBasedIsEnabled();
-  }
-
-  @Override
-  public void testTimeBasedIsEnabled() throws Exception {
-    super.testTimeBasedIsEnabled();
   }
 }

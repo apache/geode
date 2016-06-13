@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -54,6 +63,7 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
  * execute transactions.  
  *
  */
+@Category(DistributedTest.class)
 public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
   public static final int VERIFY_TX = 0;
@@ -78,30 +88,36 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
   final int perfOrderShipmentPairs = 1;
 
-  public PRTransactionDUnitTest(String name) {
-    super(name);
+  public PRTransactionDUnitTest() {
+    super();
   }
 
+  @Test
   public void testBasicPRTransactionRedundancy0() {
     basicPRTXInFunction(0, true);
   }
 
+  @Test
   public void testBasicPRTransactionRedundancy1() {
     basicPRTXInFunction(1, true);
   }
 
+  @Test
   public void testBasicPRTransactionRedundancy2() {
     basicPRTXInFunction(2, true);
   }
 
+  @Test
   public void testBasicPRTransactionNoDataRedundancy0() {
     basicPRTXInFunction(0, false);
   }
 
+  @Test
   public void testBasicPRTransactionNoDataRedundancy1() {
     basicPRTXInFunction(1, false);
   }
 
+  @Test
   public void testBasicPRTransactionNoDataRedundancy2() {
     basicPRTXInFunction(2, false);
   }
@@ -311,14 +327,17 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     return false;
   }
   
+  @Test
   public void testPRTXInCacheListenerRedundancy0() {
     basicPRTXInCacheListener(0);
   }
 
+  @Test
   public void testPRTXInCacheListenerRedundancy1() {
     basicPRTXInCacheListener(1);
   }
 
+  @Test
   public void testPRTXInCacheListenerRedundancy2() {
     basicPRTXInCacheListener(2);
   }
@@ -466,6 +485,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
   }
   
+  @Test
   public void testRepeatableRead() throws Exception {
     createColocatedPRs(1);
     SerializableCallable registerFunction = new SerializableCallable(
@@ -514,6 +534,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
   }
 
+  @Test
   public void testPRTXPerformance() throws Exception {
     defaultStringSize = 1024;
 
@@ -630,36 +651,47 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   }
 
   // Don't want to run the test twice
+  @Test
   public void testColocatedPartitionedRegion() throws Throwable {
   }
 
+  @Test
   public void testColocationPartitionedRegion() throws Throwable {
   }
 
+  @Test
   public void testColocationPartitionedRegionWithRedundancy() throws Throwable {
   }
 
+  @Test
   public void testPartitionResolverPartitionedRegion() throws Throwable {
   }
 
+  @Test
   public void testColocationPartitionedRegionWithNullColocationSpecifiedOnOneNode() {
   }
   @Override
+  @Test
   public void testColocatedPRRedundancyRecovery() throws Throwable {
   }
   @Override
+  @Test
   public void testColocatedPRWithAccessorOnDifferentNode1() throws Throwable {
   }
   @Override
+  @Test
   public void testColocatedPRWithAccessorOnDifferentNode2() throws Throwable {
   }
   @Override
+  @Test
   public void testColocatedPRWithDestroy() throws Throwable {
   }
   @Override
+  @Test
   public void testColocatedPRWithLocalDestroy() throws Throwable {
   }
   @Override
+  @Test
   public void testColocatedPRWithPROnDifferentNode1() throws Throwable {
   }
   

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.dunit;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import static com.gemstone.gemfire.cache.query.Utils.createPortfoliosAndPositions;
 
 import java.util.ArrayList;
@@ -74,7 +83,8 @@ import com.gemstone.gemfire.test.junit.categories.FlakyTest;
  * (routing keys) to run the query on subset of buckets "locally". If query
  * includes buckets
  */
-public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
   private static final int cnt = 0;
 
@@ -130,8 +140,8 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   /**
    * @param name
    */
-  public QueryUsingFunctionContextDUnitTest(String name) {
-    super(name);
+  public QueryUsingFunctionContextDUnitTest() {
+    super();
   }
 
   @Override
@@ -161,6 +171,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   /**
    * Test on Replicated Region.
    */
+  @Test
   public void testQueriesWithFilterKeysOnReplicatedRegion() {
     IgnoredException.addIgnoredException("IllegalArgumentException");
 
@@ -197,6 +208,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   /**
    * Test on PR on one server only using filter.
    */
+  @Test
   public void testQueriesWithFilterKeysOnPRLocal() {
     
     client.invoke(new CacheSerializableRunnable("Test query on client and server") {
@@ -211,7 +223,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
 
           TestServerQueryFunction func = new TestServerQueryFunction("LDS Server function-1");
           function = new TestQueryFunction("queryFunction-1");
-          QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest("test");
+          QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest();
           ArrayList queryResults2 = test.runQueryOnClientUsingFunc(function, PartitionedRegionName1, filter, queries[i]);  
           if (queryResults2 == null)
             fail(queries[i] +"result is null from client function");
@@ -230,6 +242,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
     
   }
 
+  @Test
   public void testInvalidQueries() {
     
     IgnoredException.addIgnoredException("Syntax error");
@@ -242,7 +255,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
         String query = "select * from / " + repRegionName + " where ID>=0";
         TestServerQueryFunction func = new TestServerQueryFunction("LDS Server function-1");
         function = new TestQueryFunction("queryFunction-1");
-        QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest("test");
+        QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest();
         try {
           test.runQueryOnClientUsingFunc(function, repRegionName, filter, query);  
           fail("Query execution should have failed.");
@@ -253,7 +266,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
         query = "select * from / " + PartitionedRegionName1 + " where ID>=0";
         func = new TestServerQueryFunction("LDS Server function-1");
         function = new TestQueryFunction("queryFunction-1");
-        test = new QueryUsingFunctionContextDUnitTest("test");
+        test = new QueryUsingFunctionContextDUnitTest();
         try {
           test.runQueryOnClientUsingFunc(function, PartitionedRegionName1, filter, query);  
           fail("Query execution should have failed.");
@@ -268,6 +281,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   /**
    *
    */
+  @Test
   public void testQueriesWithFilterKeysOnPRLocalAndRemote() {
     
     client.invoke(new CacheSerializableRunnable("Test query on client and server") {
@@ -282,7 +296,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
         for (int i=0; i< queries.length; i++) {
           Object[][] r = new Object[1][2];
 
-          QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest("test");
+          QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest();
           ArrayList queryResults2 = test.runQueryOnClientUsingFunc(function, PartitionedRegionName1, filter, queries[i]);
           if (queryResults2 == null)
             fail(queries[i] +"result is null from client function");
@@ -303,7 +317,8 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   /**
   *
   */
- public void testQueriesWithFilterKeysOnPRLocalAndRemoteWithBucketDestroy() {
+  @Test
+  public void testQueriesWithFilterKeysOnPRLocalAndRemoteWithBucketDestroy() {
    
    // Set Query Observer in cache on server1
    server1.invoke(new CacheSerializableRunnable("Set QueryObserver in cache on server1") {
@@ -342,7 +357,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
 
        for (int i=0; i< queries.length; i++) {
          
-         QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest("test");
+         QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest();
          ArrayList queryResults2 = test.runQueryOnClientUsingFunc(function, PartitionedRegionName1, filter, queries[i]);  
          
          // The Partition Region has 20 buckets with 100 values and key i goes in bucket j=(i%20)
@@ -366,6 +381,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   /**
    *
    */
+  @Test
   public void testQueriesWithFilterKeysOnPRWithBucketDestroy() {
     IgnoredException.addIgnoredException("QueryInvocationTargetException");
     Object[][] r = new Object[queries.length][2];
@@ -436,6 +452,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   }
 
   @Category(FlakyTest.class) // GEODE-575: ignores lots of exceptions, non-thread-safe test hooks
+  @Test
   public void testQueriesWithFilterKeysOnPRWithRebalancing() {
    IgnoredException.addIgnoredException("QueryInvocationTargetException");
    IgnoredException.addIgnoredException("java.net.SocketException");
@@ -515,7 +532,8 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
  }
 
  
- public void testNonColocatedRegionQueries() {
+  @Test
+  public void testNonColocatedRegionQueries() {
    IgnoredException.addIgnoredException("UnsupportedOperationException");
    client.invoke(new CacheSerializableRunnable("Test query on non-colocated regions on server") {
      @Override
@@ -525,7 +543,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
 
        for (int i=0; i< nonColocatedQueries.length; i++) {
          function = new TestQueryFunction("queryFunction-1");
-         QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest("test");
+         QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest();
          try {
           ArrayList queryResults2 = test.runQueryOnClientUsingFunc(function, PartitionedRegionName1, filter, nonColocatedQueries[i]);
           fail("Function call did not fail for query with function context");
@@ -540,7 +558,8 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
    
  }
  
- public void testJoinQueryPRWithMultipleIndexes(){
+  @Test
+  public void testJoinQueryPRWithMultipleIndexes(){
    
    server1.invoke(new CacheSerializableRunnable("Test query with indexes") {
      
@@ -549,7 +568,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
        Set filter = getFilter(0, 1);
        function = new TestQueryFunction("queryFunction-2");
        Object[][] r = new Object[2][2];
-       QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest("test");
+       QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest();
        int j = 0;
        for (int i=3; i< 5; i++) {
          ArrayList queryResults2 = test.runQueryOnClientUsingFunc(function, PartitionedRegionName1, filter, queries[i]);
@@ -744,7 +763,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   }
 
   public static void createProxyRegions() {
-    new QueryUsingFunctionContextDUnitTest("temp").createProxyRegs();
+    new QueryUsingFunctionContextDUnitTest().createProxyRegs();
   }
 
   private void createProxyRegs() {
@@ -766,7 +785,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   }
 
   public static void createLocalRegion() {
-    new QueryUsingFunctionContextDUnitTest("temp").createLocalReg();
+    new QueryUsingFunctionContextDUnitTest().createLocalReg();
   }
   public void createLocalReg() {
     cache = CacheFactory.getAnyInstance();
@@ -774,7 +793,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   }
 
   public static void createReplicatedRegion() {
-    new QueryUsingFunctionContextDUnitTest("temp").createRR();
+    new QueryUsingFunctionContextDUnitTest().createRR();
   }
   public void createRR() {
     cache = CacheFactory.getAnyInstance();
@@ -782,7 +801,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   }
 
   public static void createColocatedPR() {
-    new QueryUsingFunctionContextDUnitTest("temp").createColoPR();
+    new QueryUsingFunctionContextDUnitTest().createColoPR();
   }
   public void createColoPR() {
     PartitionResolver testKeyBasedResolver = new QueryAPITestPartitionResolver();
@@ -837,7 +856,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
   }
 
   public static void createCacheClientWithoutRegion(String host, Integer port1, Integer port2, Integer port3) {
-    new QueryUsingFunctionContextDUnitTest("temp").createCacheClientWithoutReg(host, port1, port2, port3);
+    new QueryUsingFunctionContextDUnitTest().createCacheClientWithoutReg(host, port1, port2, port3);
   }
   private void createCacheClientWithoutReg(String host, Integer port1, Integer port2, Integer port3) {
     this.disconnectFromDS();
@@ -853,7 +872,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
    * received from client function execution.
    */
   public static ArrayList runQueryOnServerLocalDataSet(String query, Set filter) {
-    return new QueryUsingFunctionContextDUnitTest("temp").runQueryOnServerLDS(query, filter);
+    return new QueryUsingFunctionContextDUnitTest().runQueryOnServerLDS(query, filter);
   }
 
   protected ArrayList runQueryOnServerLDS(String queryStr, Set filter) {
@@ -880,7 +899,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
    * Run query on server to compare the results received from client function execution.
    */
   public static ArrayList runQueryOnServerRegion(String query) {
-    return new QueryUsingFunctionContextDUnitTest("temp").runQueryOnServerReg(query);
+    return new QueryUsingFunctionContextDUnitTest().runQueryOnServerReg(query);
   }
   protected ArrayList runQueryOnServerReg(String queryStr) {
 
@@ -904,7 +923,7 @@ public class QueryUsingFunctionContextDUnitTest extends CacheTestCase {
    * @return ArrayList of results
    */
   public static ArrayList runQueryOnClientUsingFunction(Function function, String regionName, Set filter, String query) {
-    return new QueryUsingFunctionContextDUnitTest("temp").runQueryOnClientUsingFunc(function, regionName, filter, query);
+    return new QueryUsingFunctionContextDUnitTest().runQueryOnClientUsingFunc(function, regionName, filter, query);
   }
 
   private ArrayList runQueryOnClientUsingFunc(Function func, String regionName, Set filter, String query) {

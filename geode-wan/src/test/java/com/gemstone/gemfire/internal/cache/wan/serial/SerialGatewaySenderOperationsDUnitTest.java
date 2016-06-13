@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.serial;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,12 +50,13 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  * 
  */
+@Category(DistributedTest.class)
 public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public SerialGatewaySenderOperationsDUnitTest(String name) {
-    super(name);
+  public SerialGatewaySenderOperationsDUnitTest() {
+    super();
   }
 
   @Override
@@ -62,6 +72,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     IgnoredException.addIgnoredException(RegionDestroyedException.class.getSimpleName());
   }
 
+  @Test
   public void testSerialGatewaySenderOperationsWithoutStarting() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -124,6 +135,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
   }
 
   
+  @Test
   public void testStartPauseResumeSerialGatewaySender() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -180,6 +192,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
 
   }
 
+  @Test
   public void testStopSerialGatewaySender() throws Throwable {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -265,6 +278,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.validateQueueSizeStat( "ln", 0 ));
   }
 
+  @Test
   public void testStopOneSerialGatewaySenderBothPrimary() throws Throwable {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -318,6 +332,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     
   }
 
+  @Test
   public void testStopOneSerialGatewaySender_PrimarySecondary() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -354,6 +369,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
         getTestMethodName() + "_RR", 100 ));
   }
   
+  @Test
   public void testStopOneSender_StartAnotherSender() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -387,6 +403,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
         getTestMethodName() + "_RR", 100 ));
   }
 
+  @Test
   public void test_Bug44153_StopOneSender_StartAnotherSender_CheckQueueSize() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -445,6 +462,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
   /**
    * Destroy SerialGatewaySender on all the nodes.
    */
+  @Test
   public void testDestroySerialGatewaySenderOnAllNodes() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -483,6 +501,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
   /**
    * Destroy SerialGatewaySender on a single node.
    */
+  @Test
   public void testDestroySerialGatewaySenderOnSingleNode() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -519,6 +538,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
    * Since the sender is attached to a region and in use, it can not be destroyed.
    * Hence, exception is thrown by the sender API.
    */
+  @Test
   public void testDestroySerialGatewaySenderExceptionScenario() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -550,6 +570,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
   }
 
   
+  @Test
   public void testGatewaySenderNotRegisteredAsCacheServer() {
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));

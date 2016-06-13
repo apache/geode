@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.management;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -54,6 +63,7 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  * 
  * 
  */
+@Category(DistributedTest.class)
 public class DiskManagementDUnitTest extends ManagementTestBase {
 
   /**
@@ -75,8 +85,8 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
 
   protected static LogWriter logWriter;
 
-  public DiskManagementDUnitTest(String name) throws Exception {
-    super(name);
+  public DiskManagementDUnitTest() throws Exception {
+    super();
   
     diskDir = new File("diskDir-" + getName()).getAbsoluteFile();
     com.gemstone.gemfire.internal.FileUtil.delete(diskDir);
@@ -102,6 +112,7 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
    * @throws Exception
    */
 
+  @Test
   public void testDiskCompact() throws Throwable {
     initManagement(false);
     for (VM vm : getManagedNodeList()) {
@@ -122,6 +133,7 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
    * @throws Exception
    */
 
+  @Test
   public void testDiskCompactRemote() throws Throwable {
 
     initManagement(false);
@@ -139,6 +151,7 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
    * @throws Exception
    */
 
+  @Test
   public void testDiskOps() throws Throwable {
 
     initManagement(false);
@@ -152,6 +165,7 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
 
   }
 
+  @Test
   public void testDiskBackupAllMembers() throws Throwable {
     initManagement(false);
     for (VM vm : getManagedNodeList()) {
@@ -169,6 +183,7 @@ public class DiskManagementDUnitTest extends ManagementTestBase {
    * @throws Throwable
    */
   @SuppressWarnings("serial")
+  @Test
   public void testMissingMembers() throws Throwable {
 
     initManagement(false);

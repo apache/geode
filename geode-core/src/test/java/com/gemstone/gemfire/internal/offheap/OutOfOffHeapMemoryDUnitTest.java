@@ -16,25 +16,10 @@
  */
 package com.gemstone.gemfire.internal.offheap;
 
-import com.gemstone.gemfire.OutOfOffHeapMemoryException;
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache30.CacheTestCase;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
-import com.gemstone.gemfire.distributed.internal.DistributionManager;
-import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
-import com.gemstone.gemfire.internal.cache.DistributedRegion;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.util.StopWatch;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.IgnoredException;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import org.apache.logging.log4j.Logger;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.jayway.awaitility.Awaitility.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -42,26 +27,39 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-import static com.jayway.awaitility.Awaitility.with;
-import static org.hamcrest.CoreMatchers.equalTo;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.OutOfOffHeapMemoryException;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
+import com.gemstone.gemfire.distributed.internal.DistributionManager;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.internal.cache.DistributedRegion;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
+import com.gemstone.gemfire.internal.util.StopWatch;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Test behavior of region when running out of off-heap memory.
- * 
  */
+@Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
-  private static final Logger logger = LogService.getLogger();
-  
+public class OutOfOffHeapMemoryDUnitTest extends JUnit4CacheTestCase {
+
   protected static final AtomicReference<Cache> cache = new AtomicReference<Cache>();
   protected static final AtomicReference<DistributedSystem> system = new AtomicReference<DistributedSystem>();
   protected static final AtomicBoolean isSmallerVM = new AtomicBoolean();
   
-  public OutOfOffHeapMemoryDUnitTest(String name) {
-    super(name);
-  }
-
   @Override
   public final void preSetUp() throws Exception {
     disconnectAllFromDS();
@@ -124,6 +122,7 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
     return props;
   }
   
+  @Test
   public void testSimpleOutOfOffHeapMemoryMemberDisconnects() {
     final DistributedSystem system = getSystem();
     final Cache cache = getCache();
@@ -194,6 +193,7 @@ public class OutOfOffHeapMemoryDUnitTest extends CacheTestCase {
     }
   }
   
+  @Test
   public void testOtherMembersSeeOutOfOffHeapMemoryMemberDisconnects() {
     final int vmCount = Host.getHost(0).getVMCount();
 

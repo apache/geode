@@ -16,8 +16,14 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
 import java.util.Arrays;
 import java.util.Set;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
@@ -37,6 +43,7 @@ import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the functionality of a cache {@link Region region}
@@ -45,11 +52,8 @@ import com.gemstone.gemfire.test.dunit.WaitCriterion;
  *
  * @since GemFire 3.0
  */
+@Category(DistributedTest.class)
 public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
-
-  public DistributedNoAckRegionDUnitTest(String name) {
-    super(name);
-  }
 
   /**
    * Returns region attributes for a <code>GLOBAL</code> region
@@ -62,12 +66,12 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
     return factory.create();
   }
 
-  //////////////////////  Test Methods  //////////////////////
-
-  /** Tests creating a distributed subregion of a local scope region,
+  /**
+   * Tests creating a distributed subregion of a local scope region,
    * which should fail.
    */
-  public void testDistSubregionOfLocalRegion() throws CacheException {
+  @Test
+  public void testDistSubregionOfLocalRegion() throws Exception {
     // creating a distributed subregion of a LOCAL region is illegal.
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -87,8 +91,8 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
    *
    * @see Region#createSubregion
    */
-  public void testIncompatibleSubregions()
-    throws CacheException, InterruptedException {
+  @Test
+  public void testIncompatibleSubregions() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -121,17 +125,16 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
             try {
               createRootRegion( "INCOMPATIBLE_ROOT", factory.create());
               fail("Should have thrown an IllegalStateException");
-//              createRegion(name, factory.create());
             } catch (IllegalStateException ex) {
               // pass...
             }
-//            assertNull(getRootRegion());
 
           } catch (CacheException ex) {
             Assert.fail("While creating GLOBAL Region", ex);
           }
         }
       });
+
     vm1.invoke(new SerializableRunnable("Create ACK Region") {
         public void run() {
           try {
@@ -142,11 +145,9 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
             try {
               createRootRegion( "INCOMPATIBLE_ROOT", factory.create());
               fail("Should have thrown an IllegalStateException");
-//              createRegion(name, factory.create());
             } catch (IllegalStateException ex) {
               // pass...
             }
-//            assertNull(getRootRegion());
 
           } catch (CacheException ex) {
             Assert.fail("While creating ACK Region", ex);
@@ -156,6 +157,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
   }
 
   private static final int CHUNK_SIZE = 500 * 1024; // == InitialImageOperation.CHUNK_SIZE_IN_BYTES
+
   // use sizes so it completes in < 15 sec, but hangs if bug exists
   private static final int NUM_ENTRIES_VM = 15000;
   private static final int VALUE_SIZE_VM = CHUNK_SIZE * 150 / NUM_ENTRIES_VM;
@@ -170,7 +172,9 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
    * and GII is now non-blocking (bug 30705 was caused blocking gii).
    * This test can take a long time to run on disk regions.
    */
-  public void disabled_testBug30705() throws InterruptedException {    
+  @Ignore("TODO")
+  @Test
+  public void testBug30705() throws Exception {
     final String name = this.getUniqueName();
     final int numEntries = NUM_ENTRIES_VM;
     final int valueSize = VALUE_SIZE_VM;
@@ -212,7 +216,6 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
           }          
         }
     };
-
 
     vm0.invoke(create);
 
@@ -263,12 +266,6 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
             }
           };
           Wait.waitForCriterion(ev, 30 * 1000, 200, true);
-//          pause(100);
-//           try {
-//             getRootRegion().getSubregion(name).destroyRegion();
-//           } catch (OperationAbortedException ignore) {
-//           }
-//           closeCache();
         }
        });
     } // finally
@@ -297,13 +294,13 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
 
   /**
    * The number of milliseconds to try repeating validation code in the
-   * event that AssertionFailedError is thrown.  For DISTRIBUTED_NO_ACK 
+   * event that AssertionError is thrown.  For DISTRIBUTED_NO_ACK
    * scopes, a repeat timeout is used to account for the fact that a
    * previous operation may have not yet completed.
    */
   @Override
   protected long getRepeatTimeoutMs() {
-    return 5000;
+    return 120*1000;
   }
   
 }

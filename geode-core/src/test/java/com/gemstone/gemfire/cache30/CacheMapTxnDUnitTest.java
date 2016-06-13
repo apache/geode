@@ -22,26 +22,41 @@
  */
 package com.gemstone.gemfire.cache30;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.test.dunit.*;
+import static org.junit.Assert.*;
 
 import java.util.Properties;
 import java.util.Set;
 
-public class CacheMapTxnDUnitTest extends DistributedTestCase{
-    
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.CacheTransactionManager;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
+import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+@Category(DistributedTest.class)
+public class CacheMapTxnDUnitTest extends JUnit4DistributedTestCase { // TODO: reformat
+
     protected static Cache cache;
     protected static Properties props = new Properties();
     static DistributedSystem ds = null;
     static Region region;
     static Region mirroredRegion;
     protected static CacheTransactionManager cacheTxnMgr;
-    
-    /** Creates a new instance of CacheMapTxnDUnitTest */
-    public CacheMapTxnDUnitTest(String name) {
-        super(name);
-    }
     
     @Override
     public final void postSetUp() throws Exception {
@@ -69,7 +84,7 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
         try{
             //            props.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "1234");
             //            ds = DistributedSystem.connect(props);
-            ds = (new CacheMapTxnDUnitTest("temp")).getSystem(props);
+            ds = (new CacheMapTxnDUnitTest()).getSystem(props);
             cache = CacheFactory.create(ds);
             AttributesFactory factory  = new AttributesFactory();
             factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -78,7 +93,7 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
             region = cache.createRegion("map", attr);
             
         } catch (Exception ex){
-            ex.printStackTrace();
+            throw new AssertionError(ex);
         }
     }
     
@@ -87,25 +102,28 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
             cache.close();
             ds.disconnect();            
         } catch (Exception ex){
-            ex.printStackTrace();
+          throw new AssertionError(ex);
         }
     }
     
-    public void testCommitTxn() {
+  @Test
+  public void testCommitTxn() {
         //this is to test single VM region transactions
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);
         vm0.invoke(() -> CacheMapTxnDUnitTest.commitTxn());
     }//end of testCommitTxn
     
-    public void testRollbackTxn() {
+  @Test
+  public void testRollbackTxn() {
         //this is to test single VM region transactions
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);
         vm0.invoke(() -> CacheMapTxnDUnitTest.rollbackTxn());
     }//end of testRollbackTxn
     
-    public void testRollbackTxnClear() {
+  @Test
+  public void testRollbackTxnClear() {
         //this is to test single VM region transactions
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);
@@ -130,7 +148,8 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
         }
     }//end of testRollbackTxnClear
     
-    public void testMiscMethods() throws Throwable{
+  @Test
+  public void testMiscMethods() throws Throwable{
         Host host = Host.getHost(0);
         VM vm0 = host.getVM(0);
         VM vm1 = host.getVM(1);
@@ -245,8 +264,7 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
             
         }
         catch(Exception ex){
-            ex.printStackTrace();
-            fail("failed in commitTxn");
+          throw new AssertionError(ex);
         }
         finally{
             if(cacheTxnMgr.exists()){
@@ -350,8 +368,7 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
             
         }
         catch(Exception ex){
-            ex.printStackTrace();
-            fail("failed in rollbackTxn");
+          throw new AssertionError(ex);
         }
         finally{
             if(cacheTxnMgr.exists()){
@@ -395,8 +412,7 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
         }
         catch(Exception ex){
             cacheTxnMgr = null;
-            ex.printStackTrace();
-            fail("failed in rollbackTxnClear");
+          throw new AssertionError(ex);
         }
         
     }//end of rollbackTxnClear
@@ -447,8 +463,7 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
             
         }
         catch(Exception ex){
-            ex.printStackTrace();
-            fail("failed in miscMethodsOwner");
+          throw new AssertionError(ex);
         }
         finally{
             if(cacheTxnMgr.exists()){
@@ -488,8 +503,7 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
             
         }
         catch(Exception ex){
-            ex.printStackTrace();
-            fail("failed in miscMethodsNotOwner");
+          throw new AssertionError(ex);
         }
     }//end of miscMethodsNotOwner
     
@@ -504,8 +518,7 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
                 obj = region.put(ob, str);
             }
         }catch(Exception ex){
-            ex.printStackTrace();
-            fail("Failed while region.put");
+          throw new AssertionError(ex);
         }
         return obj;
     }
@@ -515,7 +528,7 @@ public class CacheMapTxnDUnitTest extends DistributedTestCase{
         try{
             obj = region.get(ob);
         } catch(Exception ex){
-            fail("Failed while region.get");
+          throw new AssertionError(ex);
         }
         return obj;
     }

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -38,10 +47,11 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 @SuppressWarnings("synthetic-access")
-public class PartitionedRegionDelayedRecoveryDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCase {
   
-  public PartitionedRegionDelayedRecoveryDUnitTest(String name) {
-    super(name);
+  public PartitionedRegionDelayedRecoveryDUnitTest() {
+    super();
   }
   
   @Override
@@ -54,6 +64,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends CacheTestCase {
     InternalResourceManager.setResourceObserver(null);
   }
 
+  @Test
   public void testNoRecovery() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -127,6 +138,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends CacheTestCase {
   }
 
   @Category(FlakyTest.class) // GEODE-860: time sensitive, thread unsafe test hook, CountDownLatch, 1 minute timeout, waitForBucketRecovery loops eating InterruptedException
+  @Test
   public void testDelay() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -193,6 +205,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends CacheTestCase {
   }
 
   @Category(FlakyTest.class) // GEODE-757: time sensitive, fails because event occurs 2 millis too soon, waitForBucketRecovery wait loop eats InterruptedException, thread unsafe test hook
+  @Test
   public void testStartupDelay() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

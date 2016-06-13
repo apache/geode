@@ -16,15 +16,18 @@
  */
 package com.gemstone.gemfire.internal.cache;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
+import java.util.Properties;
+
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.EvictionAttributes;
 import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Tests PartitionedRegion localMaxMemory with Off-Heap memory.
@@ -32,12 +35,9 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  * @since Geode 1.0
  */
 @SuppressWarnings({ "deprecation", "serial" })
+@Category(DistributedTest.class)
 public class PartitionedRegionLocalMaxMemoryOffHeapDUnitTest extends PartitionedRegionLocalMaxMemoryDUnitTest {
 
-  public PartitionedRegionLocalMaxMemoryOffHeapDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public final void preTearDownAssertions() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {

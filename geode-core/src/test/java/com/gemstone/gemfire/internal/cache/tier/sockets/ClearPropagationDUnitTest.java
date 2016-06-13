@@ -16,7 +16,25 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionEvent;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.internal.Connection;
@@ -31,24 +49,20 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.CacheObserverAdapter;
 import com.gemstone.gemfire.internal.cache.CacheObserverHolder;
 import com.gemstone.gemfire.internal.cache.EventID;
-import com.gemstone.gemfire.test.dunit.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This is the DUnit Test to verify clear and DestroyRegion operation in
  * Client-Server Configuration.
- *
- *
  */
-
-public class ClearPropagationDUnitTest extends DistributedTestCase
-{
+@Category(DistributedTest.class)
+public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   VM server1 = null;
 
@@ -71,8 +85,8 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
   protected static boolean gotDestroyed = false;
 
   /** constructor */
-  public ClearPropagationDUnitTest(String name) {
-    super(name);
+  public ClearPropagationDUnitTest() {
+    super();
   }
 
   @Override
@@ -121,6 +135,7 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
    * the update
    *
    */
+  @Test
   public void testVerifyClearNotReceivedBySenderReceivedByOthers()
   {
 	  CacheSerializableRunnable resetFlags = new CacheSerializableRunnable(
@@ -172,6 +187,7 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
    * the update
    *
    */
+  @Test
   public void testEventIdGeneratedInDestroyRegionOperation() throws Exception
   {
 	CacheSerializableRunnable resetFlags = new CacheSerializableRunnable(
@@ -346,7 +362,7 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new ClearPropagationDUnitTest("temp").createCache(props);
+    new ClearPropagationDUnitTest().createCache(props);
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
     try {
@@ -390,7 +406,7 @@ public class ClearPropagationDUnitTest extends DistributedTestCase
 
   public static Integer createServerCache() throws Exception
   {
-    new ClearPropagationDUnitTest("temp").createCache(new Properties());
+    new ClearPropagationDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);

@@ -34,7 +34,6 @@ import static org.junit.Assert.*;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
- * 
  * This test does a check that conflation in the buffer happen correctly
  * 
  * Conflation cases tested include:
@@ -47,198 +46,164 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * <li> create, invalidate, modify
  * </ul>
  * The test is done for persist only, overflow only and persist + overflow only (async modes).
- * 
- *
  */
 @Category(IntegrationTest.class)
-public class ConflationJUnitTest extends DiskRegionTestingBase
-{
+public class ConflationJUnitTest extends DiskRegionTestingBase {
+  
   private DiskRegionProperties diskProps = new DiskRegionProperties();
 
+  private long flushCount;
+
   @Override
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
+  protected final void postSetUp() throws Exception {
     diskProps.setDiskDirs(dirs);
     diskProps.setBytesThreshold(100000000);
     diskProps.setTimeInterval(100000000);
     diskProps.setSynchronous(false);
   }
 
-
-
-  protected void createOverflowOnly()
-  {
-    region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,
-        diskProps);
-  }
-
-  protected void createPersistOnly()
-  {
+  private void createPersistOnly() {
     region = DiskRegionHelperFactory
         .getAsyncPersistOnlyRegion(cache, diskProps);
   }
 
-  protected void createOverflowAndPersist()
-  {
+  private void createOverflowAndPersist() {
     region = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache,
         diskProps);
   }
 
   /**
    * do a put followed by a put
-   *  
    */
-  void putAndPut()
-  {
+  private void putAndPut() {
     region.put(new Integer(1), new Integer(1));
     region.put(new Integer(1), new Integer(2));
   }
 
   /**
    * do a put followed by a destroy on the same entry
-   *  
    */
-  void putAndDestroy()
-  {
+  private void putAndDestroy() {
     region.put(new Integer(1), new Integer(1));
     try {
       region.destroy(new Integer(1));
     }
     catch (Exception e) {
-      logWriter.error("Exception occured",e);
+      logWriter.error("Exception occurred",e);
       fail(" failed to destory Integer");
     }
   }
 
   /**
    * do a put destroy the same entry and put it again
-   *  
    */
-  void putDestroyPut()
-  {
+  private void putDestroyPut() {
     putAndDestroy();
     region.put(new Integer(1), new Integer(2));
   }
 
   /**
    * put a key and then invalidate it
-   *  
    */
-  void putAndInvalidate()
-  {
+  private void putAndInvalidate() {
     region.put(new Integer(1), new Integer(1));
     try {
       region.invalidate(new Integer(1));
     }
     catch (Exception e) {
-      logWriter.error("Exception occured",e);
-      fail(" failed to invalidate Integer");
+      logWriter.error("Exception occurred",e);
+      throw new AssertionError(" failed to invalidate Integer", e);
     }
   }
 
   /**
    * put a key, invalidate it and the perform a put on it
-   *  
    */
-  void putInvalidatePut()
-  {
+  private void putInvalidatePut() {
     putAndInvalidate();
     region.put(new Integer(1), new Integer(2));
   }
 
   /**
    * do a create and then a put on the same key
-   *  
    */
-  void createAndPut()
-  {
+  private void createAndPut() {
     try {
       region.create(new Integer(1), new Integer(1));
     }
     catch (Exception e) {
-      logWriter.error("Exception occured",e);
-       fail(" failed in trying to create");
+      logWriter.error("Exception occurred",e);
+      throw new AssertionError(" failed in trying to create", e);
     }
     region.put(new Integer(1), new Integer(2));
   }
 
   /**
    * do a create and then a destroy
-   *  
    */
-  void createAndDestroy()
-  {
+  private void createAndDestroy() {
     try {
       region.create(new Integer(1), new Integer(1));
     }
     catch (Exception e) {
-      logWriter.error("Exception occured",e);
-      fail(" failed in trying to create");
+      logWriter.error("Exception occurred", e);
+      throw new AssertionError("failed in trying to create", e);
     }
     try {
       region.destroy(new Integer(1));
     }
     catch (Exception e) {
-      logWriter.error("Exception occured",e);
-      fail(" failed to destory Integer");
+      logWriter.error("Exception occurred", e);
+      throw new AssertionError("failed to destroy Integer", e);
     }
   }
 
   /**
    * do a create then destroy the entry and create it again
-   *  
    */
-  void createDestroyCreate()
-  {
+  private void createDestroyCreate() {
     createAndDestroy();
     try {
       region.create(new Integer(1), new Integer(2));
     }
     catch (Exception e) {
-      logWriter.error("Exception occured",e);
-      fail(" failed in trying to create");
+      logWriter.error("Exception occurred", e);
+      throw new AssertionError("failed in trying to create", e);
     }
   }
 
   /**
    * create an entry and then invalidate it
-   *  
    */
-  void createAndInvalidate()
-  {
+  private void createAndInvalidate() {
     try {
       region.create(new Integer(1), new Integer(1));
     }
     catch (Exception e) {
-      logWriter.error("Exception occured",e);
-      fail(" failed in trying to create");
+      logWriter.error("Exception occurred", e);
+      throw new AssertionError("failed in trying to create", e);
     }
     try {
       region.invalidate(new Integer(1));
     }
     catch (Exception e) {
-      logWriter.error("Exception occured",e);
-      fail(" failed to invalidate Integer");
+      logWriter.error("Exception occurred", e);
+      throw new AssertionError("failed to invalidate Integer", e);
     }
   }
 
   /**
    * create an entry, invalidate it and then perform a put on the same key
-   *  
    */
-  void createInvalidatePut()
-  {
+  private void createInvalidatePut() {
     createAndInvalidate();
     region.put(new Integer(1), new Integer(2));
   }
 
   /**
    * validate whether a modification of an entry was correctly done
-   *  
    */
-  void validateModification()
-  {
+  private void validateModification() {
     Collection entries = ((LocalRegion)region).entries.regionEntries();
     if (entries.size() != 1) {
       fail("expected size to be 1 but is not so");
@@ -247,16 +212,14 @@ public class ConflationJUnitTest extends DiskRegionTestingBase
     DiskId id = ((DiskEntry)entry).getDiskId();
     Object obj = ((LocalRegion)region).getDiskRegion().get(id);
     if (!(obj.equals(new Integer(2)))) {
-      fail(" incorrect modification");
+      fail("incorrect modification");
     }
   }
 
   /**
    * validate whether nothing was written
-   */  
- 
-  void validateNothingWritten()
-  {
+   */
+  private void validateNothingWritten() {
     Collection entries = ((LocalRegion)region).entries.regionEntries();
     //We actually will have a tombstone in the region, hence
     //the 1 entry
@@ -264,19 +227,12 @@ public class ConflationJUnitTest extends DiskRegionTestingBase
       fail("expected size to be 1 but is " + entries.size());
     }
     assertEquals(this.flushCount, getCurrentFlushCount());
-//     Oplog oplog = ((LocalRegion)region).getDiskRegion().getChild();
-//     if (oplog.getOplogSize() != 0) {
-//       fail(" expected zero bytes to have been written but is "
-//           + oplog.getOplogSize());
-//     }
   }
   
   /**
    * validate whether invalidate was done
-   *  
    */
-  void validateTombstone()
-  {
+  private void validateTombstone() {
     Collection entries = ((LocalRegion)region).entries.regionEntries();
     if (entries.size() != 1) {
       fail("expected size to be 1 but is " + entries.size());
@@ -289,10 +245,8 @@ public class ConflationJUnitTest extends DiskRegionTestingBase
 
   /**
    * validate whether invalidate was done
-   *  
    */
-  void validateInvalidate()
-  {
+  private void validateInvalidate() {
     Collection entries = ((LocalRegion)region).entries.regionEntries();
     if (entries.size() != 1) {
       fail("expected size to be 1 but is " + entries.size());
@@ -305,31 +259,26 @@ public class ConflationJUnitTest extends DiskRegionTestingBase
     }
   }
 
-  private long flushCount;
-
   private long getCurrentFlushCount() {
     return ((LocalRegion)region).getDiskStore().getStats().getFlushes();
   }
-  void pauseFlush() {
+
+  private void pauseFlush() {
     ((LocalRegion)region).getDiskRegion().pauseFlusherForTesting();
     this.flushCount = getCurrentFlushCount();
   }
   
   /**
    * force a flush on the region
-   *  
    */
-  void forceFlush()
-  {
+  private void forceFlush() {
     ((LocalRegion)region).getDiskRegion().flushForTesting();
   }
 
   /**
    * all the operations done here
-   *  
    */
-  void allTest()
-  {
+  private void allTest() {
     pauseFlush();
     createAndPut();
     forceFlush();
@@ -370,16 +319,13 @@ public class ConflationJUnitTest extends DiskRegionTestingBase
     forceFlush();
     validateInvalidate();
     region.clear();
-
   }
 
   /**
    * test conflation for perist only
-   *  
    */
   @Test
-  public void testPersistOnlyConflation()
-  {
+  public void testPersistOnlyConflation() throws Exception {
     createPersistOnly();
     allTest();
     closeDown();
@@ -387,22 +333,11 @@ public class ConflationJUnitTest extends DiskRegionTestingBase
 
   /**
    * test conflation for overflow and persist
-   *  
    */
   @Test
-  public void testOverFlowAndPersistOnlyConflation()
-  {
-    try {
-      createOverflowAndPersist();
-      allTest();
-      closeDown();
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-      fail(e.toString());
-    }
+  public void testOverFlowAndPersistOnlyConflation() throws Exception {
+    createOverflowAndPersist();
+    allTest();
+    closeDown();
   }
-
- 
-
 }

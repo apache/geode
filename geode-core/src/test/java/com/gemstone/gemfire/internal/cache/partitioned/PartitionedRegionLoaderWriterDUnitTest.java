@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.Serializable;
 import java.util.Properties;
 
@@ -36,7 +45,8 @@ import com.gemstone.gemfire.test.dunit.Assert;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.VM;
 
-public class PartitionedRegionLoaderWriterDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PartitionedRegionLoaderWriterDUnitTest extends JUnit4CacheTestCase {
 
   private static final String PartitionedRegionName = "PartitionedRegionTest";
 
@@ -53,10 +63,11 @@ public class PartitionedRegionLoaderWriterDUnitTest extends CacheTestCase {
   /**
    * @param name
    */
-  public PartitionedRegionLoaderWriterDUnitTest(String name) {
-    super(name);
+  public PartitionedRegionLoaderWriterDUnitTest() {
+    super();
   }
 
+  @Test
   public void testLoader_OnAccessor_NotOnDataStore(){
     host = Host.getHost(0);
     accessor = host.getVM(0);
@@ -65,6 +76,7 @@ public class PartitionedRegionLoaderWriterDUnitTest extends CacheTestCase {
     datastore1.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(null, null, 10));
   }
   
+  @Test
   public void testWriter_NotOnAccessor_OnDataStore(){
     host = Host.getHost(0);
     accessor = host.getVM(1);
@@ -73,6 +85,7 @@ public class PartitionedRegionLoaderWriterDUnitTest extends CacheTestCase {
     datastore1.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(null, new CacheWriter2(), 10));
   }
   
+  @Test
   public void testWriter_OnDataStore_NotOnAccessor(){
     host = Host.getHost(0);
     accessor = host.getVM(1);
@@ -81,6 +94,7 @@ public class PartitionedRegionLoaderWriterDUnitTest extends CacheTestCase {
     accessor.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(null, null, 0));
   }
   
+  @Test
   public void testLoader_OnAccessor_NotOnFirstDataStore_OnSecondDataStore(){
     host = Host.getHost(0);
     accessor = host.getVM(1);
@@ -91,6 +105,7 @@ public class PartitionedRegionLoaderWriterDUnitTest extends CacheTestCase {
     datastore2.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegionWithPossibleFail(new CacheLoader2(),null, 10));
   }
   
+  @Test
   public void testLoader_NotOnFirstDataStore_OnAccessor_OnSecondDataStore(){
     host = Host.getHost(0);
     accessor = host.getVM(1);
@@ -101,6 +116,7 @@ public class PartitionedRegionLoaderWriterDUnitTest extends CacheTestCase {
     datastore2.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegionWithPossibleFail(new CacheLoader2(),null, 10));
   }
   
+  @Test
   public void testLoader_OnFirstDataStore_OnSecondDataStore_OnAccessor(){
     host = Host.getHost(0);
     accessor = host.getVM(1);
@@ -111,6 +127,7 @@ public class PartitionedRegionLoaderWriterDUnitTest extends CacheTestCase {
     accessor.invoke(() -> PartitionedRegionLoaderWriterDUnitTest.createRegion(new CacheLoader2(), null, 0));
   }
   
+  @Test
   public void testLoader_OnFirstDataStore_OnSecondDataStore_NotOnAccessor(){
     host = Host.getHost(0);
     accessor = host.getVM(1);
@@ -124,7 +141,7 @@ public class PartitionedRegionLoaderWriterDUnitTest extends CacheTestCase {
   
   public static void createRegion(CacheLoader cacheLoader, CacheWriter cacheWriter, Integer localMaxMemory) {
     try {
-      new PartitionedRegionLoaderWriterDUnitTest("DUnitTests")
+      new PartitionedRegionLoaderWriterDUnitTest()
           .createCache(new Properties());
       AttributesFactory factory = new AttributesFactory();
       factory.setCacheLoader(cacheLoader);
@@ -144,7 +161,7 @@ public class PartitionedRegionLoaderWriterDUnitTest extends CacheTestCase {
   public static void createRegionWithPossibleFail(CacheLoader cacheLoader,
       CacheWriter cacheWriter, Integer localMaxMemory) {
     final PartitionedRegionLoaderWriterDUnitTest test =
-      new PartitionedRegionLoaderWriterDUnitTest("DUnitTests");
+      new PartitionedRegionLoaderWriterDUnitTest();
     test.createCache(new Properties());
     // add expected exception
     test.cache.getLogger().info("<ExpectedException action=add>"

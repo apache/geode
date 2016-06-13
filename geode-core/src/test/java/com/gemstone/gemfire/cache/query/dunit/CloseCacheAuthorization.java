@@ -18,8 +18,6 @@ package com.gemstone.gemfire.cache.query.dunit;
 
 import java.security.Principal;
 
-import junit.framework.TestCase;
-
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -29,7 +27,11 @@ import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 
-public class CloseCacheAuthorization extends TestCase implements AccessControl {
+/**
+ * Used by CqStateDUnitTest
+ */
+public class CloseCacheAuthorization implements AccessControl {
+
   private DistributedMember remoteDistributedMember;
   private Cache cache;
   private LogWriter logger;
@@ -43,8 +45,7 @@ public class CloseCacheAuthorization extends TestCase implements AccessControl {
   }
 
   @Override
-  public void init(Principal principal, DistributedMember remoteMember,
-      Cache cache) throws NotAuthorizedException {
+  public void init(Principal principal, DistributedMember remoteMember, Cache cache) throws NotAuthorizedException {
     this.remoteDistributedMember = remoteMember;
     this.cache = cache;
     this.logger = cache.getSecurityLogger();

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache.query.partitioned;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import static com.gemstone.gemfire.cache.query.Utils.createPortfoliosAndPositions;
 
 import java.io.File;
@@ -36,6 +45,7 @@ import com.gemstone.gemfire.test.dunit.Wait;
 /**
  * 
  */
+@Category(DistributedTest.class)
 public class PRBasicIndexCreationDeadlockDUnitTest extends
     PartitionedRegionDUnitTestCase
 
@@ -46,8 +56,8 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
    * @param name
    */
 
-  public PRBasicIndexCreationDeadlockDUnitTest(String name) {
-    super(name);
+  public PRBasicIndexCreationDeadlockDUnitTest() {
+    super();
   }
   public void setCacheInVMs(VM... vms) {
     for (VM vm : vms) {
@@ -74,6 +84,7 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
   public static volatile boolean hook_vm1, hook_vm2;
 
   //Dummy test method to be removed when test is fixed
+  @Test
   public void testIndexCreationMessageDiskRecoveryDeadLock() {
   }
 

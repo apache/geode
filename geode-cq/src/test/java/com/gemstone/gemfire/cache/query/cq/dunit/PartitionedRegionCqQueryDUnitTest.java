@@ -16,10 +16,14 @@
  */
 package com.gemstone.gemfire.cache.query.cq.dunit;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
 
 import java.io.IOException;
 import java.util.HashSet;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.Cache;
@@ -43,7 +47,6 @@ import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.cache30.CacheSerializableRunnable;
-import com.gemstone.gemfire.cache30.CacheTestCase;
 import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.test.dunit.Assert;
@@ -53,26 +56,25 @@ import com.gemstone.gemfire.test.dunit.NetworkUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Test class for Partitioned Region and CQs
  * 
  * @since GemFire 5.5
  */
-public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
 
-  public PartitionedRegionCqQueryDUnitTest(String name) {
-    super(name);
-  }
-  
-  static public final String[] regions = new String[] {
+  public static final String[] regions = new String[] {
       "regionA",
       "regionB"
   };
+
+  public static final String KEY = "key-";
   
-  static public final String KEY = "key-";
-  
-  protected final CqQueryDUnitTest cqHelper = new CqQueryDUnitTest("HelperPartitonedRegionCqTest");
+  protected final CqQueryDUnitTest cqHelper = new CqQueryDUnitTest();
   
   public final String[] cqs = new String [] {
       //0 - Test for ">" 
@@ -109,11 +111,11 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
   public final String[] cqsWithoutRoot = new String [] {
       //0 - Test for ">" 
       "SELECT ALL * FROM /" + regions[0] + " p where p.ID > 0"
-      
   };
   
   private static int bridgeServerPort;
   
+  @Test
   public void testCQLeakWithPartitionedRegion() throws Exception {
     // creating servers.
     final Host host = Host.getHost(0);
@@ -124,8 +126,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     createServer(server1);       
     createServer(server2);    
        
-    
-    // create client 
+    // create client
     
     final int port = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
@@ -155,8 +156,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryUpdates: */ 0,
         /* queryDeletes: */ 0,
         /* totalEvents: */ size);
-    
-    
+
     int cc1 = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCqCountFromRegionProfile());
     int cc2 = server2.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCqCountFromRegionProfile());
     assertEquals("Should have one", 1, cc1);
@@ -166,7 +166,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     
     cqHelper.closeClient(client);
     Wait.pause(10 * 1000);
-    //cc1 = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCqCountFromRegionProfile());
     cc2 = server2.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCqCountFromRegionProfile());
     
     //assertIndexDetailsEquals("Should have one", 0, cc1);
@@ -176,6 +175,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     //cqHelper.closeServer(server1);
   }
   
+  @Test
   public void testCQAndPartitionedRegion() throws Exception {
     // creating servers.
     final Host host = Host.getHost(0);
@@ -218,8 +218,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryDeletes: */ 0,
         /* totalEvents: */ size);
     
-    //size = 2;
-    
     // do updates
     createValues(server1, regions[0], size);
     
@@ -236,16 +234,14 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryDeletes: */ 0,
         /* totalEvents: */ (size+size));
     
-    
     // destroy all the values.
     int numDestroys = size;
     cqHelper.deleteValues(server2,regions[0], numDestroys);
     
     cqHelper.waitForDestroyed(client, "testCQEvents_0", KEY+numDestroys);
     
-    // validate cqs after destroyes on server2.
+    // validate cqs after destroys on server2.
  
-        
     cqHelper.validateCQ(client, "testCQEvents_0",
         /* resultSize: */ CqQueryDUnitTest.noTest,
         /* creates: */ size,
@@ -256,30 +252,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryDeletes: */ numDestroys,
         /* totalEvents: */ (size+size+numDestroys));
     
-    // invalidate some entries.
-    /*final int numInvalidates = 5;
-    
-    server2.invoke(new CacheSerializableRunnable("Invalidate values") {
-      public void run2() throws CacheException {
-        Region region1 = getRootRegion().getSubregion(regions[0]);
-        for (int i = numInvalidates; i <= (numInvalidates+4); i++) {
-          region1.invalidate(KEY+i);
-        }
-      }
-    });
-     
-    cqHelper.waitForInvalidated(client, "testCQEvents_0", KEY+(numInvalidates+4));
-    */
-   // cqHelper.validateCQ(client, "testCQEvents_0",
-    //    /* resultSize: */ cqHelper.noTest,
-    //    /* creates: */ size,
-    //    /* updates: */ size,
-    //    /* deletes; */ (numDestroys+numInvalidates),
-    //    /* queryInserts: */ size,
-     //   /* queryUpdates: */ size,
-     //   /* queryDeletes: */ (numDestroys+numInvalidates),
-    //    /* totalEvents: */ (size+size+numDestroys + numInvalidates));
-    
     cqHelper.closeClient(client);
     cqHelper.closeServer(server2);
     cqHelper.closeServer(server1);
@@ -288,8 +260,9 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
   /**
    * test for registering cqs on a bridge server with local max memory zero.
    */
+  @Test
   public void testPartitionedCqOnAccessorBridgeServer() throws Exception {
- // creating servers.
+    // creating servers.
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
     VM server2 = host.getVM(1);
@@ -333,8 +306,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryDeletes: */ 0,
         /* totalEvents: */ size);
     
-    //size = 2;
-    
     // do updates
     createValues(server1, regions[0], size);
     
@@ -362,9 +333,8 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
       cqHelper.waitForDestroyed(client, "testCQEvents_0", KEY+i);
     }
     
-    // validate cqs after destroyes on server2.
+    // validate cqs after destroys on server2.
  
-        
     cqHelper.validateCQ(client, "testCQEvents_0",
         /* resultSize: */ CqQueryDUnitTest.noTest,
         /* creates: */ size,
@@ -385,10 +355,10 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
    * will generate all the events locally and should always have the old value 
    * and should not sent the profile update on wire.
    */
+  @Test
   public void testPartitionedCqOnSingleBridgeServer() throws Exception { 
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
-//    VM server2 = host.getVM(1);
     VM client = host.getVM(2);
     
     // creating an accessor vm with Bridge Server installed.
@@ -424,8 +394,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryDeletes: */ 0,
         /* totalEvents: */ size);
     
-    //size = 2;
-    
     // do updates
     createValues(server1, regions[0], size);
     
@@ -444,7 +412,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryDeletes: */ 0,
         /* totalEvents: */ (size+size));
     
-    
     // destroy all the values.
     int numDestroys = size;
     cqHelper.deleteValues(server1,regions[0], numDestroys);
@@ -453,9 +420,8 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
       cqHelper.waitForDestroyed(client, "testCQEvents_0", KEY+i);
     }
     
-    // validate cqs after destroyes on server2.
- 
-        
+    // validate cqs after destroys on server2.
+
     cqHelper.validateCQ(client, "testCQEvents_0",
         /* resultSize: */ CqQueryDUnitTest.noTest,
         /* creates: */ size,
@@ -468,7 +434,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     
     cqHelper.closeClient(client);
     cqHelper.closeServer(server1);
-    
   }
   
   /**
@@ -476,6 +441,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
    * will generate all the events locally but the puts, updates and destroys originate
    * at an accessor vm.
    */
+  @Test
   public void testPRCqOnSingleBridgeServerUpdatesOriginatingAtAccessor() throws Exception { 
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -522,8 +488,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryDeletes: */ 0,
         /* totalEvents: */ size);
     
-    //size = 2;
-    
     // do updates
     createValues(server1, regions[0], size);
     
@@ -541,8 +505,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryUpdates: */ size,
         /* queryDeletes: */ 0,
         /* totalEvents: */ (size+size));
-    
-    
+
     // destroy all the values.
     int numDestroys = size;
     cqHelper.deleteValues(server1,regions[0], numDestroys);
@@ -551,9 +514,8 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
       cqHelper.waitForDestroyed(client, "testCQEvents_0", KEY+i);
     }
     
-    // validate cqs after destroyes on server2.
- 
-        
+    // validate cqs after destroys on server2.
+
     cqHelper.validateCQ(client, "testCQEvents_0",
         /* resultSize: */ CqQueryDUnitTest.noTest,
         /* creates: */ size,
@@ -572,6 +534,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
   /**
    * test to check invalidates on bridge server hosting datastores as well.
    */
+  @Test
   public void testPRCqWithInvalidatesOnBridgeServer()  {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -584,7 +547,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
      
     // create another server with data store.
     createServer(server2);
-    
     
     final int port = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
@@ -617,8 +579,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryDeletes: */ 0,
         /* totalEvents: */ size);
     
-    //size = 2;
-    
     // do updates
     createValues(server1, regions[0], size);
     
@@ -636,7 +596,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryUpdates: */ size,
         /* queryDeletes: */ 0,
         /* totalEvents: */ (size+size));
-    
     
     // invalidate all the values.
     int numInvalidates = size;
@@ -665,10 +624,9 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
   
   /**
    * test cqs with invalidates on bridge server not hosting datastores.
-   * 
    */
+  @Test
   public void testPRCqWithInvalidatesOnAccessorBridgeServer() throws Exception {
-    
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
     VM server2 = host.getVM(1);
@@ -680,8 +638,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
      
     // create another server with data store.
     createServer(server2);
-    
-    
+
     final int port = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     
@@ -713,8 +670,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryDeletes: */ 0,
         /* totalEvents: */ size);
     
-    //size = 2;
-    
     // do updates
     createValues(server1, regions[0], size);
     
@@ -732,8 +687,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryUpdates: */ size,
         /* queryDeletes: */ 0,
         /* totalEvents: */ (size+size));
-    
-    
+
     // invalidate all the values.
     int numInvalidates = size;
     cqHelper.invalidateValues(server1,regions[0], numInvalidates);
@@ -762,8 +716,8 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
    * test cqs with create updates and destroys from client on bridge server
    * hosting datastores.
    */
+  @Test
   public void testPRCqWithUpdatesFromClients() throws Exception {
-    
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
     VM server2 = host.getVM(1);
@@ -776,7 +730,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
      
     // create another server with data store.
     createServer(server2, false , 1);
-    
     
     final int port = server1.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
@@ -810,8 +763,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryDeletes: */ 0,
         /* totalEvents: */ size);
     
-    //size = 2;
-    
     // do updates
     createValues(client2, regions[0], size);
     
@@ -829,7 +780,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryUpdates: */ size,
         /* queryDeletes: */ 0,
         /* totalEvents: */ (size+size));
-    
     
     // invalidate all the values.
     int numDelets = size;
@@ -860,10 +810,9 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
   
   /**
    * test cqs on multiple partitioned region hosted by bridge servers.
-   * 
    */
+  @Test
   public void testPRCqWithMultipleRegionsOnServer() throws Exception {
-    
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
     VM server2 = host.getVM(1);
@@ -924,14 +873,10 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryDeletes: */ 0,
         /* totalEvents: */ size);
     
-    
-    //size = 2;
-    
     // do updates
     createValues(client2, regions[0], size);
     createValues(client2, regions[1], size);
-    
- 
+
     for (int i=1; i <= size; i++){
       cqHelper.waitForUpdated(client, "testCQEvents_0", KEY+i);
       cqHelper.waitForUpdated(client, "testCQEvents_1", KEY+i);
@@ -964,13 +909,11 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     cqHelper.deleteValues(client2,regions[0], numInvalidates);
     cqHelper.deleteValues(client2,regions[1], numInvalidates);
     
-
     for (int i=1; i <= numInvalidates; i++){
       cqHelper.waitForDestroyed(client, "testCQEvents_0", KEY+i);
       cqHelper.waitForDestroyed(client, "testCQEvents_1", KEY+i);
     }
-    
-    
+
     // validate cqs after invalidates on server2.
          
     cqHelper.validateCQ(client, "testCQEvents_0",
@@ -982,8 +925,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryUpdates: */ size,
         /* queryDeletes: */ numInvalidates,
         /* totalEvents: */ (size+size+numInvalidates));
-    
-    
+
     cqHelper.validateCQ(client, "testCQEvents_1",
         /* resultSize: */ CqQueryDUnitTest.noTest,
         /* creates: */ size,
@@ -1003,10 +945,9 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
   /**
    * tests multiple cqs on partitioned region on bridge servers with profile update 
    * for not requiring old values.
-   * 
    */
+  @Test
   public void testPRWithCQsAndProfileUpdates() throws Exception {
-    
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
     VM server2 = host.getVM(1);
@@ -1065,9 +1006,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryDeletes: */ 0,
         /* totalEvents: */ size);
     
-    
-    //size = 2;
-    
     // do updates
     createValues(client2, regions[0], size);
     createValues(client2, regions[1], size);
@@ -1108,8 +1046,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
       cqHelper.waitForDestroyed(client,"testPRWithCQsAndProfileUpdates_0",KEY+i);
       cqHelper.waitForDestroyed(client,"testPRWithCQsAndProfileUpdates_1",KEY+i);
     }
-    
-    
+
     // validate cqs after invalidates on server2.
          
     cqHelper.validateCQ(client, "testPRWithCQsAndProfileUpdates_0",
@@ -1121,8 +1058,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryUpdates: */ size,
         /* queryDeletes: */ numInvalidates,
         /* totalEvents: */ (size+size+numInvalidates));
-    
-    
+
     cqHelper.validateCQ(client, "testPRWithCQsAndProfileUpdates_1",
         /* resultSize: */ CqQueryDUnitTest.noTest,
         /* creates: */ size,
@@ -1133,86 +1069,9 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         /* queryDeletes: */ numInvalidates,
         /* totalEvents: */ (size+size+numInvalidates));
     
-    // check for requries old value set.
-    /*
-    server1.invoke(new CacheSerializableRunnable("Check requires old value") {
-      public void run2()
-      {
-        Cache cc = getCache();
-        PartitionedRegion region1 = (PartitionedRegion)cc
-            .getRegion("/root/regionA");
-        Set requiresOldValue = region1.getRegionAdvisor()
-            .adviseRequiresOldValue();
-        getLogWriter().info(
-            "ize of requires old value at server1 before closing cqs : "
-                + requiresOldValue.size());
-        assertTrue("The size of requiresOldValue shoule be zero on server1",
-            (0 == requiresOldValue.size()));
-      }
-    });
-
-    server2.invoke(new CacheSerializableRunnable("Check requires old value") {
-      public void run2()
-      {
-        Cache cc = getCache();
-        PartitionedRegion region1 = (PartitionedRegion)cc
-            .getRegion("/root/regionA");
-        Set requiresOldValue = region1.getRegionAdvisor()
-            .adviseRequiresOldValue();
-        getLogWriter().info(
-            "size of requires old value at server2 before closing cqs :"
-                + requiresOldValue.size());
-        assertTrue("The size of requiresOldValue should be one on server2 ",
-            (1 == requiresOldValue.size()));
-      }
-    });
-    */
-    
     cqHelper.closeCQ(client, "testPRWithCQsAndProfileUpdates_0");
     cqHelper.closeCQ(client, "testPRWithCQsAndProfileUpdates_1");
     
-    
-    // check for requires old value set after closing all the cqs.
-    /*
-    REQUIRES OLD VALUES requirement is removed in the eventFilterOpt_dev_Jun09 
-    branch. The old values are no more sent to the peer, instead CQs are processed
-    at the source (where change happens). Replace requiresOldValue test with 
-    appropriate test.
-    
-    server1.invoke(new CacheSerializableRunnable("Check requires old value") {
-      public void run2()
-      {
-        Cache cc = getCache();
-        PartitionedRegion region1 = (PartitionedRegion)cc
-            .getRegion("/root/regionA");
-        Set requiresOldValue = region1.getRegionAdvisor()
-            .adviseRequiresOldValue();
-        getLogWriter().info(
-            "size of requires old value set at the end server1 : "
-                + requiresOldValue.size());
-        assertTrue("The size of requiresOldValue shoule be zero on server1",
-            (0 == requiresOldValue.size()));
-      }
-    });
-    
-    
-    server2.invoke(new CacheSerializableRunnable("Check requires old value") {
-      public void run2()
-      {
-        Cache cc = getCache();
-        PartitionedRegion region1 = (PartitionedRegion)cc
-            .getRegion("/root/regionA");
-        Set requiresOldValue = region1.getRegionAdvisor()
-            .adviseRequiresOldValue();
-        getLogWriter().info(
-            " size of requires old value set at the end server2 : "
-                + requiresOldValue.size());
-        assertTrue(
-            "The size of requiresOldValue shoule be zero on server2 as well after closing all the cqs",
-            (0 == requiresOldValue.size()));
-      }
-    });
-    */
     cqHelper.closeClient(client);
     cqHelper.closeClient(client2);
     cqHelper.closeServer(server2);
@@ -1225,8 +1084,8 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
    * there may be possibility that the region changes during
    * that time may not be reflected in the query result set
    * thus making the query data and region data inconsistent.
-   * @throws Exception
    */
+  @Test
   public void testEventsDuringQueryExecution() throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -1289,13 +1148,8 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         try {
           cqResults = cq1.executeWithInitialResults();
         } catch (Exception ex){
-          AssertionError err = new AssertionError("Failed to execute  CQ " + cqName);
-          err.initCause(ex);
-          throw err;
+          fail("Failed to execute  CQ " + cqName, ex);
         }
-        
-        //getLogWriter().info("initial result size = " + cqResults.size());
-        
         
         CqQueryTestListener cqListener = (CqQueryTestListener)cq1.getCqAttributes().getCqListener();
         // Wait for the last key to arrive.
@@ -1330,13 +1184,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
           ids.add(s.get("key"));
         }
 
-        //Iterator iter = cqResults.asSet().iterator();
-        //while (iter.hasNext()) {
-        //  Portfolio p = (Portfolio)iter.next();
-        //  ids.add(p.getPk());
-        //  //getLogWriter().info("Result set value : " + p.getPk());
-        //}
-        
         HashSet missingIds = new HashSet();
         String key = "";
         for (int i = 1; i <= totalObjects; i++) {
@@ -1351,8 +1198,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
               " Missing keys : [size : " + missingIds.size() + "]" + missingIds +
               " Ids in ResultSet and CQ Events :" + ids);
         }
-        
-      } 
+      }
     });
     
     cqHelper.closeClient(client);
@@ -1360,8 +1206,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     cqHelper.closeServer(server1);    
   }
 
-  
-  
+  @Test
   public void testDestroyRegionEventOnClientsWithCQRegistered() throws Exception{
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
@@ -1394,7 +1239,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
           region.put("KEY-"+i, p);
         }
       }
-      
     });
     
     client1.invokeAsync(new CacheSerializableRunnable("Wait for CqEvent") {
@@ -1409,7 +1253,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         assertNotNull(cqListener);
         
         cqListener.waitForTotalEvents(numObjects + 1 /*Destroy region event*/);
-                
       }
     });
     
@@ -1447,15 +1290,12 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
               "Region is still available on client1 even after performing destroyRegion from client2 on server."
                   + "Client1 must have received destroyRegion message from server with CQ parts in it.",
               getCache().getRegion("/" + regions[0]));
-
         }
       }
     });
     
     cqHelper.closeServer(server);
   }
-  
-  // helper methods.
   
   /**
    * create bridge server with default attributes for partitioned region.
@@ -1496,36 +1336,27 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         "Create Cache Server") {
       public void run2() throws CacheException
       {
-          LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
-          //AttributesFactory factory = new AttributesFactory();
-          //factory.setScope(Scope.DISTRIBUTED_ACK);
-          //factory.setMirrorType(MirrorType.KEYS_VALUES);
-          
-          //int maxMem = 0;
-          AttributesFactory attr = new AttributesFactory();
-          //attr.setValueConstraint(valueConstraint);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
-          if (isAccessor){
-            paf.setLocalMaxMemory(0);
-          }
-          PartitionAttributes prAttr = paf.setTotalNumBuckets(197).setRedundantCopies(redundantCopies).create();
-          attr.setPartitionAttributes(prAttr);
-          
-          assertFalse(getSystem().isLoner());
-          //assertTrue(getSystem().getDistributionManager().getOtherDistributionManagerIds().size() > 0);
-          for (int i = 0; i < regions.length; i++) {
-            Region r = createRegion(regions[i], attr.create());
-            LogWriterUtils.getLogWriter().info("Server created the region: "+r);
-          }
-//          pause(2000);
-          try {
-            startBridgeServer(port, true);
-          }
-          catch (Exception ex) {
-            Assert.fail("While starting CacheServer", ex);
-          }
-//          pause(2000);
-       
+        LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
+        AttributesFactory attr = new AttributesFactory();
+        PartitionAttributesFactory paf = new PartitionAttributesFactory();
+        if (isAccessor){
+          paf.setLocalMaxMemory(0);
+        }
+        PartitionAttributes prAttr = paf.setTotalNumBuckets(197).setRedundantCopies(redundantCopies).create();
+        attr.setPartitionAttributes(prAttr);
+
+        assertFalse(getSystem().isLoner());
+        //assertTrue(getSystem().getDistributionManager().getOtherDistributionManagerIds().size() > 0);
+        for (int i = 0; i < regions.length; i++) {
+          Region r = createRegion(regions[i], attr.create());
+          LogWriterUtils.getLogWriter().info("Server created the region: "+r);
+        }
+        try {
+          startBridgeServer(port, true);
+        }
+        catch (Exception ex) {
+          Assert.fail("While starting CacheServer", ex);
+        }
       }
     };
 
@@ -1545,35 +1376,27 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         "Create Cache Server") {
       public void run2() throws CacheException
       {
-          LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
-          //AttributesFactory factory = new AttributesFactory();
-          //factory.setScope(Scope.DISTRIBUTED_ACK);
-          //factory.setMirrorType(MirrorType.KEYS_VALUES);
-          
-          //int maxMem = 0;
-          AttributesFactory attr = new AttributesFactory();
-          //attr.setValueConstraint(valueConstraint);
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
-          if (isAccessor){
-            paf.setLocalMaxMemory(0);
-          }
-          PartitionAttributes prAttr = paf.setTotalNumBuckets(1).setRedundantCopies(redundantCopies).create();
-          attr.setPartitionAttributes(prAttr);
-          
-          assertFalse(getSystem().isLoner());
-          //assertTrue(getSystem().getDistributionManager().getOtherDistributionManagerIds().size() > 0);
-          for (int i = 0; i < regions.length; i++) {
-            Region r = createRegionWithoutRoot(regions[i], attr.create());
-            LogWriterUtils.getLogWriter().info("Server created the region: "+r);
-          }
-//          pause(2000);
-          try {
-            startBridgeServer(port, true);
-          }
-          catch (Exception ex) {
-            Assert.fail("While starting CacheServer", ex);
-          }
-//          pause(2000);
+        LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
+        AttributesFactory attr = new AttributesFactory();
+        PartitionAttributesFactory paf = new PartitionAttributesFactory();
+        if (isAccessor){
+          paf.setLocalMaxMemory(0);
+        }
+        PartitionAttributes prAttr = paf.setTotalNumBuckets(1).setRedundantCopies(redundantCopies).create();
+        attr.setPartitionAttributes(prAttr);
+
+        assertFalse(getSystem().isLoner());
+        //assertTrue(getSystem().getDistributionManager().getOtherDistributionManagerIds().size() > 0);
+        for (int i = 0; i < regions.length; i++) {
+          Region r = createRegionWithoutRoot(regions[i], attr.create());
+          LogWriterUtils.getLogWriter().info("Server created the region: "+r);
+        }
+        try {
+          startBridgeServer(port, true);
+        }
+        catch (Exception ex) {
+          Assert.fail("While starting CacheServer", ex);
+        }
       }
 
       private Region createRegionWithoutRoot(String regionName,
@@ -1585,6 +1408,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
 
     server.invoke(createServer);
   }
+
   /**
    * Starts a bridge server on the given port, using the given
    * deserializeValues and notifyBySubscription to serve up the
@@ -1594,7 +1418,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
    */
   protected void startBridgeServer(int port, boolean notifyBySubscription)
   throws IOException {
-    
     Cache cache = getCache();
     CacheServer bridge = cache.addCacheServer();
     bridge.setPort(port);
@@ -1608,8 +1431,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
     int[] serverPorts = new int[] {serverPort};
     createClient(client, serverPorts, serverHost, null); 
   }
-  
-  
+
   /* Create Client */
   public void createClient(VM client, final int[] serverPorts, final String serverHost, final String redundancyLevel) {
     SerializableRunnable createQService =
@@ -1624,8 +1446,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         try {
           getCache().getQueryService();
         } catch (Exception cqe) {
-          cqe.printStackTrace();
-          fail("Failed to getCQService.");
+          fail("Failed to getCQService.", cqe);
         }
         
         AttributesFactory regionFactory = new AttributesFactory();
@@ -1640,7 +1461,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         for (int i=0; i < regions.length; i++) {        
           Region clientRegion = createRegion(regions[i], regionFactory.createRegionAttributes());
           LogWriterUtils.getLogWriter().info("### Successfully Created Region on Client :" + clientRegion);
-          //region1.getAttributesMutator().setCacheListener(new CqListener());
         }
       }
     };
@@ -1651,18 +1471,14 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
   public void createCQ(VM vm, final String cqName, final String queryStr) {
     vm.invoke(new CacheSerializableRunnable("Create CQ :" + cqName) {
       public void run2() throws CacheException {
-        //pause(60 * 1000);
-        //getLogWriter().info("### DEBUG CREATE CQ START ####");
-        //pause(20 * 1000);
-        
+
         LogWriterUtils.getLogWriter().info("### Create CQ. ###" + cqName);
         // Get CQ Service.
         QueryService cqService = null;
         try {
           cqService = getCache().getQueryService();
         } catch (Exception cqe) {
-          cqe.printStackTrace();
-          fail("Failed to getCQService.");
+          fail("Failed to getCQService.", cqe);
         }
         // Create CQ Attributes.
         CqAttributesFactory cqf = new CqAttributesFactory();
@@ -1678,16 +1494,13 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
           assertTrue("newCq() state mismatch", cq1.getState().isStopped());
           LogWriterUtils.getLogWriter().info("Created a new CqQuery : "+cq1);
         } catch (Exception ex){
-          AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ");
-          err.initCause(ex);
-          LogWriterUtils.getLogWriter().info("CqService is :" + cqService, err);
-          throw err;
+          fail("Failed to create CQ " + cqName, ex);
         }
       }
     });   
   } 
   
-  /* Returs Cache Server Port */
+  /** Return Cache Server Port */
   protected static int getCacheServerPort() {
     return bridgeServerPort;
   }
@@ -1705,9 +1518,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
   }
   
   private static int getCqCountFromRegionProfile() {
-    
     LocalRegion region1 = (LocalRegion)CacheFactory.getAnyInstance().getRegion("/root/regionA");
-    
     return region1.getFilterProfile().getCqCount();
   }
   
@@ -1737,8 +1548,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
       }
     });
   }
-  
-  
+
   public void createCacheClient(VM client, final int serverPort, final String serverHost){
     createCacheClient(client, new String[]{serverHost}, new int[]{serverPort}, null);
   }
@@ -1762,8 +1572,7 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
         try {
           getCache().getQueryService();
         } catch (Exception cqe) {
-          cqe.printStackTrace();
-          fail("Failed to getCQService.");
+          fail("Failed to getCQService.", cqe);
         }
         
         AttributesFactory regionFactory = new AttributesFactory();
@@ -1779,7 +1588,6 @@ public class PartitionedRegionCqQueryDUnitTest extends CacheTestCase {
           Region clientRegion = ((ClientCache)getCache()).createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
           .create(regions[i]);
           LogWriterUtils.getLogWriter().info("### Successfully Created Region on Client :" + clientRegion);
-          //region1.getAttributesMutator().setCacheListener(new CqListener());
         }
       }
     });   

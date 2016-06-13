@@ -16,14 +16,8 @@
  */
 package com.gemstone.gemfire.management;
 
-import com.gemstone.gemfire.distributed.DistributedMember;
-import com.gemstone.gemfire.distributed.Locator;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.distributed.internal.InternalLocator;
-import com.gemstone.gemfire.internal.AvailablePortHelper;
-import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.management.internal.ManagementConstants;
-import com.gemstone.gemfire.test.dunit.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,35 +25,36 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.Locator;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalLocator;
+import com.gemstone.gemfire.internal.AvailablePortHelper;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.management.internal.ManagementConstants;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * Test cases
  * 
  * DistributedSystem Cache Locator no no yes yes no yes yes yes yes
- * 
- * 
- * 
  */
-
+@Category(DistributedTest.class)
 public class LocatorManagementDUnitTest extends ManagementTestBase {
-
-  /** Default file name for locator log: <code>"locator.log"</code> */
-  public static final String DEFAULT_LOG_FILE = "locator.log";
 
   private static final int MAX_WAIT = 8 * ManagementConstants.REFRESH_TIME;
 
-  private static Properties props = new Properties();
-
   private VM locator;
-  
-
-  public LocatorManagementDUnitTest(String name) {
-    super(name);
-  }
-
-  private static final long serialVersionUID = 1L;
 
   @Override
   protected final void postSetUpManagementTestBase() throws Exception {
@@ -74,9 +69,8 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
   /**
    * When plan is to start Distributed System later so that the system can use
    * this locator
-   * 
-   * @throws Exception
    */
+  @Test
   public void testPeerLocation() throws Exception {
     int locPort = AvailablePortHelper.getRandomAvailableTCPPort();
     startLocator(locator, true, locPort);
@@ -99,6 +93,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
 
   }
 
+  @Test
   public void testPeerLocationWithPortZero() throws Exception {
     // Start the locator with port=0
     int locPort = startLocator(locator, true, 0);
@@ -123,9 +118,8 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
 
   /**
    * Tests a locator which is co-located with already existing cache
-   * 
-   * @throws Exception
    */
+  @Test
   public void testColocatedLocator() throws Exception {
     initManagement(false);
     int locPort = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -134,6 +128,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
 
   }
 
+  @Test
   public void testColocatedLocatorWithPortZero() throws Exception {
     initManagement(false);
     int locPort = startLocator(locator, false, 0);
@@ -141,6 +136,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
 
   }
 
+  @Test
   public void testListManagers() throws Exception {
     initManagement(false);
     int locPort = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -148,12 +144,14 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     listManagers(locator, locPort, false);
   }
 
+  @Test
   public void testListManagersWithPortZero() throws Exception {
     initManagement(false);
     int locPort = startLocator(locator, false, 0);
     listManagers(locator, locPort, false);
   }
 
+  @Test
   public void testWillingManagers() throws Exception {
     int locPort = AvailablePortHelper.getRandomAvailableTCPPort();
     startLocator(locator, true, locPort);
@@ -173,6 +171,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     listWillingManagers(locator, locPort, false);
   }
 
+  @Test
   public void testWillingManagersWithPortZero() throws Exception {
     int locPort = startLocator(locator, true, 0);
 

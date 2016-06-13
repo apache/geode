@@ -16,30 +16,21 @@
  */
 package com.gemstone.gemfire.internal.compression;
 
-import com.gemstone.gemfire.compression.SnappyCompressor;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
-import com.gemstone.gemfire.test.dunit.Invoke;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.compression.SnappyCompressor;
+import com.gemstone.gemfire.internal.cache.OffHeapTestUtil;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 @SuppressWarnings("serial")
-public class CompressionCacheListenerOffHeapDUnitTest extends
-    CompressionCacheListenerDUnitTest {
-
-  public CompressionCacheListenerOffHeapDUnitTest(String name) {
-    super(name);
-  }
-  
-  public static void caseSetUp() {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "trackOffHeapRefCounts", "true");
-  }
-  public static void caseTearDown() {
-    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "trackOffHeapRefCounts");
-  }
+@Category(DistributedTest.class)
+public class CompressionCacheListenerOffHeapDUnitTest extends CompressionCacheListenerDUnitTest {
 
   @Override
   public final void preTearDownAssertions() throws Exception {

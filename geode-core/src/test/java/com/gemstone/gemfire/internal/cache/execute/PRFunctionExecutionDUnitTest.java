@@ -16,46 +16,94 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.EntryOperation;
+import com.gemstone.gemfire.cache.PartitionAttributes;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.PartitionResolver;
+import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Region.Entry;
-import com.gemstone.gemfire.cache.execute.*;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.execute.Execution;
+import com.gemstone.gemfire.cache.execute.Function;
+import com.gemstone.gemfire.cache.execute.FunctionAdapter;
+import com.gemstone.gemfire.cache.execute.FunctionContext;
+import com.gemstone.gemfire.cache.execute.FunctionException;
+import com.gemstone.gemfire.cache.execute.FunctionService;
+import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
+import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.internal.DM;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.LonerDistributionManager;
-import com.gemstone.gemfire.internal.cache.*;
+import com.gemstone.gemfire.internal.cache.EntrySnapshot;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.LocalDataSet;
+import com.gemstone.gemfire.internal.cache.PartitionAttributesImpl;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.PartitionedRegionDUnitTestCase;
+import com.gemstone.gemfire.internal.cache.PartitionedRegionTestHelper;
 import com.gemstone.gemfire.internal.cache.execute.data.CustId;
 import com.gemstone.gemfire.internal.cache.execute.data.Customer;
 import com.gemstone.gemfire.internal.cache.execute.data.Order;
 import com.gemstone.gemfire.internal.cache.execute.data.OrderId;
 import com.gemstone.gemfire.internal.cache.functions.TestFunction;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.ThreadUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.io.Serializable;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+@Category(DistributedTest.class)
+public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase {
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.MCAST_PORT;
-
-public class PRFunctionExecutionDUnitTest extends
-    PartitionedRegionDUnitTestCase {
   private static final String TEST_FUNCTION7 = TestFunction.TEST_FUNCTION7;
   private static final String TEST_FUNCTION2 = TestFunction.TEST_FUNCTION2;
+
   static Cache cache = null;
   static String regionName = null;
-  private static final long serialVersionUID = 1L;
 
-  public PRFunctionExecutionDUnitTest(String name) {
-    super(name);
+  @Override
+  public final void postTearDown() throws Exception {
+    cache = null;
+    regionName = null;
   }
 
   /**
    * Test to validate that the function execution is successful on PR with Loner Distributed System
-   * @throws Exception
    */
+  @Test
   public void testFunctionExecution() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -103,6 +151,7 @@ public class PRFunctionExecutionDUnitTest extends
         });
   }
 
+  @Test
   public void testHAFunctionExecution() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -156,9 +205,8 @@ public class PRFunctionExecutionDUnitTest extends
   /**
    * Test remote execution by a pure accessor which doesn't have the function
    * factory present.
-   *
-   * @throws Exception
    */
+  @Test
   public void testRemoteSingleKeyExecution_byName() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -244,11 +292,9 @@ public class PRFunctionExecutionDUnitTest extends
    * FunctionInvocationTargetException. As this is the case of HA then system
    * should retry the function execution. After 5th attempt function will send
    * Boolean as last result. factory present.
-   *
-   * @throws Exception
    */
-  public void testLocalSingleKeyExecution_byName_FunctionInvocationTargetException()
-      throws Exception {
+  @Test
+  public void testLocalSingleKeyExecution_byName_FunctionInvocationTargetException() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
     final VM datastore = host.getVM(3);
@@ -289,18 +335,15 @@ public class PRFunctionExecutionDUnitTest extends
           }
         });
   }
- 
- 
+
   /**
    * Test remote execution by a pure accessor which doesn't have the function
    * factory present.Function throws the FunctionInvocationTargetException. As
    * this is the case of HA then system should retry the function execution.
    * After 5th attempt function will send Boolean as last result.
-   *
-   * @throws Exception
    */
-  public void testRemoteSingleKeyExecution_byName_FunctionInvocationTargetException()
-      throws Exception {
+  @Test
+  public void testRemoteSingleKeyExecution_byName_FunctionInvocationTargetException() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
     final VM accessor = host.getVM(2);
@@ -367,9 +410,8 @@ public class PRFunctionExecutionDUnitTest extends
   /**
    * Test remote execution by a pure accessor which doesn't have the function
    * factory present.
-   *
-   * @throws Exception
    */
+  @Test
   public void testRemoteSingleKeyExecution_byInstance() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -454,9 +496,8 @@ public class PRFunctionExecutionDUnitTest extends
 
   /**
    * Test remote execution of inline function by a pure accessor
-   *
-   * @throws Exception
    */
+  @Test
   public void testRemoteSingleKeyExecution_byInlineFunction() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -534,9 +575,8 @@ public class PRFunctionExecutionDUnitTest extends
    * function factory present.
    * ResultCollector = DefaultResultCollector
    * haveResults = true;
-   *
-   * @throws Exception
    */
+  @Test
   public void testRemoteMultiKeyExecution_byName() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -633,7 +673,7 @@ public class PRFunctionExecutionDUnitTest extends
     assertEquals(Boolean.TRUE, o);
   }
 
-  
+  @Test
   public void testRemoteMultiKeyExecution_BucketMoved() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -716,6 +756,7 @@ public class PRFunctionExecutionDUnitTest extends
     
   }
   
+  @Test
   public void testLocalMultiKeyExecution_BucketMoved() throws Exception {
     IgnoredException.addIgnoredException("BucketMovedException");
     final String rName = getUniqueName();
@@ -781,19 +822,15 @@ public class PRFunctionExecutionDUnitTest extends
     assertEquals(2, l.size());
     
   }
-  
-  
-  
+
   /**
    * Test remote execution by a pure accessor which doesn't have the function
    * factory present.Function throws the FunctionInvocationTargetException. As
    * this is the case of HA then system should retry the function execution.
    * After 5th attempt function will send Boolean as last result.
-   *
-   * @throws Exception
    */
-  public void testRemoteMultipleKeyExecution_byName_FunctionInvocationTargetException()
-      throws Exception {
+  @Test
+  public void testRemoteMultipleKeyExecution_byName_FunctionInvocationTargetException() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
     final VM accessor = host.getVM(3);
@@ -868,6 +905,7 @@ public class PRFunctionExecutionDUnitTest extends
     assertEquals(Boolean.TRUE, o);
   }
  
+  @Test
   public void testRemoteMultiKeyExecutionHA_CacheClose() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -965,6 +1003,7 @@ public class PRFunctionExecutionDUnitTest extends
     assertEquals(2, l.size());
   }
  
+  @Test
   public void testRemoteMultiKeyExecutionHA_Disconnect() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -1081,9 +1120,8 @@ public class PRFunctionExecutionDUnitTest extends
    * Test multi-key remote execution of inline function by a pure accessor
    * ResultCollector = DefaultResultCollector
    * haveResults = true;
-   *
-   * @throws Exception
    */
+  @Test
   public void testRemoteMultiKeyExecution_byInlineFunction() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -1168,14 +1206,14 @@ public class PRFunctionExecutionDUnitTest extends
     });
     assertEquals(Boolean.TRUE, o);
   }
+
   /**
    * Test multi-key remote execution by a pure accessor which doesn't have the
    * function factory present.
    * ResultCollector = CustomResultCollector
    * haveResults = true;
-   *
-   * @throws Exception
    */
+  @Test
   public void testRemoteMultiKeyExecutionWithCollector_byName() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -1250,8 +1288,8 @@ public class PRFunctionExecutionDUnitTest extends
    * function factory present.
    * ResultCollector = DefaultResultCollector
    * haveResults = false;
-   * @throws Exception
    */
+  @Test
   public void testRemoteMultiKeyExecutionNoResult_byName() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -1333,8 +1371,8 @@ public class PRFunctionExecutionDUnitTest extends
    * haveResults = true;
    * result Timeout = 10 milliseconds
    * expected result to be 0.(as the execution gets the timeout)
-   * @throws Exception
    */
+  @Test
   public void testRemoteMultiKeyExecution_timeout() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -1412,8 +1450,8 @@ public class PRFunctionExecutionDUnitTest extends
    * function factory present.
    * ResultCollector = CustomResultCollector
    * haveResults = false;
-   * @throws Exception
    */
+  @Test
   public void testRemoteMultiKeyExecutionWithCollectorNoResult_byName() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -1487,12 +1525,12 @@ public class PRFunctionExecutionDUnitTest extends
     });
     assertEquals(Boolean.TRUE, o);
   }
+
   /**
    * Test multi-key remote execution by a pure accessor which doesn't have the
    * function factory present.
-   *
-   * @throws Exception
    */
+  @Test
   public void testRemoteMultiKeyExecution_byInstance() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -1596,12 +1634,10 @@ public class PRFunctionExecutionDUnitTest extends
     assertEquals(Boolean.TRUE, o);
   }
 
-  
   /**
    * Test bucketFilter functionality
-   *
-   * @throws Exception
    */
+  @Test
   public void testBucketFilter_1() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -1731,6 +1767,7 @@ public class PRFunctionExecutionDUnitTest extends
     
   }
   
+  @Test
   public void testBucketFilterOverride() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -1813,14 +1850,13 @@ public class PRFunctionExecutionDUnitTest extends
    
     
   }
-  
-  
+
   /**
    * Test ability to execute a multi-key function by a local data store
    * ResultCollector = DefaultResultCollector
    * haveResult = true
-   * @throws Exception
    */
+  @Test
   public void testLocalMultiKeyExecution_byName() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -1899,9 +1935,8 @@ public class PRFunctionExecutionDUnitTest extends
 
   /**
    * Test ability to execute a multi-key function by a local data store
-   *
-   * @throws Exception
    */
+  @Test
   public void testLocalMultiKeyExecution_byInstance() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -1983,9 +2018,8 @@ public class PRFunctionExecutionDUnitTest extends
    * Ensure that the execution is limited to a single bucket put another way,
    * that the routing logic works correctly such that there is not extra
    * execution
-   *
-   * @throws Exception
    */
+  @Test
   public void testMultiKeyExecutionOnASingleBucket_byName() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -2066,11 +2100,9 @@ public class PRFunctionExecutionDUnitTest extends
    * Ensure that the execution is limited to a single bucket put another way,
    * that the routing logic works correctly such that there is not extra
    * execution
-   *
-   * @throws Exception
    */
-  public void testMultiKeyExecutionOnASingleBucket_byInstance()
-      throws Exception {
+  @Test
+  public void testMultiKeyExecutionOnASingleBucket_byInstance() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
     final VM datastore0 = host.getVM(0);
@@ -2148,11 +2180,9 @@ public class PRFunctionExecutionDUnitTest extends
 
   /**
    * Ensure that the execution is happening all the PR as a whole
-   *
-   * @throws Exception
    */
-  public void testExecutionOnAllNodes_byName()
-      throws Exception {
+  @Test
+  public void testExecutionOnAllNodes_byName() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
     final VM datastore0 = host.getVM(0);
@@ -2216,13 +2246,6 @@ public class PRFunctionExecutionDUnitTest extends
           assertEquals(Boolean.TRUE, l.iterator().next());
         }
         return Boolean.TRUE;
-//        for (int i=0; i<4; i++) {
-//          List l = ((List)rc1.getResult());
-//          assertIndexDetailsEquals(4, l.size());
-//          assertIndexDetailsEquals(Boolean.TRUE, l.iterator().next());
-//        }
-//
-//        return Boolean.TRUE;
       }
     });
     assertEquals(Boolean.TRUE, o);
@@ -2230,11 +2253,9 @@ public class PRFunctionExecutionDUnitTest extends
  
   /**
    * Ensure that the execution is happening all the PR as a whole
-   *
-   * @throws Exception
    */
-  public void testExecutionOnAllNodes_byInstance()
-      throws Exception {
+  @Test
+  public void testExecutionOnAllNodes_byInstance() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
     final VM datastore0 = host.getVM(0);
@@ -2319,11 +2340,9 @@ public class PRFunctionExecutionDUnitTest extends
  
   /**
    * Ensure that the execution of inline function is happening all the PR as a whole
-   *
-   * @throws Exception
    */
-  public void testExecutionOnAllNodes_byInlineFunction()
-      throws Exception {
+  @Test
+  public void testExecutionOnAllNodes_byInlineFunction() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
     final VM datastore0 = host.getVM(0);
@@ -2406,6 +2425,7 @@ public class PRFunctionExecutionDUnitTest extends
     assertEquals(Boolean.TRUE, o);
   }
    
+  @Test
   public void testBug40714() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -2514,11 +2534,9 @@ public class PRFunctionExecutionDUnitTest extends
   /**
    * Ensure that the execution is happening on all the PR as a whole
    * with LocalReadPR as LocalDataSet
-   *
-   * @throws Exception
    */
-  public void testExecutionOnAllNodes_LocalReadPR()
-      throws Exception {
+  @Test
+  public void testExecutionOnAllNodes_LocalReadPR() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
     final VM datastore0 = host.getVM(0);
@@ -2598,11 +2616,9 @@ public class PRFunctionExecutionDUnitTest extends
   /**
    * Ensure that the execution is happening on all the PR as a whole
    * with LocalReadPR as LocalDataSet
-   *
-   * @throws Exception
    */
-  public void testExecutionOnMultiNodes_LocalReadPR()
-      throws Exception {
+  @Test
+  public void testExecutionOnMultiNodes_LocalReadPR() throws Exception {
     //final String rName = getUniqueName();
     final String rName1 = "CustomerPartitionedRegionName";
     final String rName2 = "OrderPartitionedRegionName";
@@ -2731,8 +2747,8 @@ public class PRFunctionExecutionDUnitTest extends
   /**
    * Assert the {@link RegionFunctionContext} yields the proper objects.
    */
-  public void testLocalDataContext() throws Exception
-  {
+  @Test
+  public void testLocalDataContext() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
     final VM accessor = host.getVM(1);
@@ -2806,8 +2822,8 @@ public class PRFunctionExecutionDUnitTest extends
   /**
    * Assert the {@link RegionFunctionContext} yields the proper objects.
    */
-  public void testLocalDataContextWithColocation() throws Exception
-  {
+  @Test
+  public void testLocalDataContextWithColocation() throws Exception {
     String rName = getUniqueName();
     Host host = Host.getHost(0);
     final VM accessor = host.getVM(1);
@@ -2950,7 +2966,7 @@ public class PRFunctionExecutionDUnitTest extends
    * This tests make sure that, in case of LonerDistributedSystem we dont get ClassCast Exception.
    * Just making sure that the function executed on lonerDistribuedSystem
    */
- 
+  @Test
   public void testBug41118() {
     Host host = Host.getHost(0);
     final VM lonerVM = host.getVM(1);
@@ -2958,7 +2974,7 @@ public class PRFunctionExecutionDUnitTest extends
   }
  
   public static void bug41118(){
-    InternalDistributedSystem ds = new PRFunctionExecutionDUnitTest("temp").getSystem();
+    InternalDistributedSystem ds = new PRFunctionExecutionDUnitTest().getSystem();
     assertNotNull(ds);
     ds.disconnect();
     Properties props = new Properties();
@@ -3056,6 +3072,7 @@ public class PRFunctionExecutionDUnitTest extends
     }
   }
 
+  @Test
   public void testFunctionExecutionException_41779() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);

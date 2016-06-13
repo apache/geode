@@ -17,6 +17,15 @@
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
 import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.internal.cache.wan.WANTestBase;
@@ -25,13 +34,15 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
+@Category(DistributedTest.class)
 public class WANSSLDUnitTest extends WANTestBase{
 
-  public WANSSLDUnitTest(String name) {
-    super(name);
+  public WANSSLDUnitTest() {
+    super();
   }
 
   @Category(FlakyTest.class) // GEODE-1207: random ports, eats exceptions, time sensitive, waitForCriterion
+  @Test
   public void testSenderSSLReceiverSSL(){
     Integer lnPort = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
     Integer nyPort = (Integer)vm1.invoke(() -> WANTestBase.createFirstRemoteLocator( 2, lnPort ));
@@ -58,6 +69,7 @@ public class WANSSLDUnitTest extends WANTestBase{
         getTestMethodName() + "_RR", 1000 ));
   }
   
+  @Test
   public void testSenderNoSSLReceiverSSL() {
     IgnoredException.addIgnoredException("Unexpected IOException");
     IgnoredException.addIgnoredException("SSL Error");
@@ -93,6 +105,7 @@ public class WANSSLDUnitTest extends WANTestBase{
     }
   }
   
+  @Test
   public void testSenderSSLReceiverNoSSL(){
     IgnoredException.addIgnoredException("Acceptor received unknown");
     IgnoredException.addIgnoredException("failed accepting client");

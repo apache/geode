@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.wan.misc;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,11 +42,12 @@ import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 
+@Category(DistributedTest.class)
 public class WanAutoDiscoveryDUnitTest extends WANTestBase {
 
   
-  public WanAutoDiscoveryDUnitTest(String name) {
-    super(name);
+  public WanAutoDiscoveryDUnitTest() {
+    super();
   }
 
   @Override
@@ -49,6 +59,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
    * Test to validate that sender can not be started without locator started.
    * else GemFireConfigException will be thrown.
    */
+  @Test
   public void test_GatewaySender_Started_Before_Locator() {
     try {
       int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
@@ -92,6 +103,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
    * locators on Ny site recognizes each other
    * @throws Exception 
    */
+  @Test
   public void test_NY_Recognises_ALL_LN_Locators() throws Exception {
     ArrayList<Integer> locatorPorts = new ArrayList<Integer>();
     Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
@@ -122,6 +134,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
    * Test to validate that TK site's locator is recognized by LN and NY. Test to
    * validate that HK site's locator is recognized by LN , NY, TK.
    */
+  @Test
   public void test_NY_Recognises_TK_AND_HK_Through_LN_Locator() {
 
     Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
@@ -153,6 +166,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
   }
 
+  @Test
   public void test_TK_Recognises_LN_AND_NY() {
 
     Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
@@ -179,6 +193,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
   }
   
+  @Test
   public void test_NY_Recognises_TK_AND_HK_Simeltenously() {
     Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
 
@@ -232,6 +247,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   }
   
   
+  @Test
   public void test_LN_Sender_recogises_ALL_NY_Locators() {
     
     Integer lnLocPort1 = (Integer)vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId( 1 ));
@@ -273,6 +289,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   }
   
   
+  @Test
   public void test_RingTopology() {
 
     final Set<String> site1LocatorsPort = new HashSet<String>();
@@ -412,6 +429,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   }
   
   
+  @Test
   public void test_LN_Peer_Locators_Exchange_Information() {
     ArrayList<Integer> locatorPorts = new ArrayList<Integer>();
     Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
@@ -427,6 +445,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     vm1.invoke(() -> WANTestBase.checkAllSiteMetaData( dsVsPort ));
   }
   
+  @Test
   public void test_LN_NY_TK_5_PeerLocators_1_ServerLocator() {
     Map<Integer, ArrayList<Integer>> dsVsPort = new HashMap<Integer, ArrayList<Integer>>();
     
@@ -466,6 +485,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
         
   }
 
+  @Test
   public void testNoThreadLeftBehind() {
     // Get active thread count before test
     int activeThreadCountBefore = Thread.activeCount();

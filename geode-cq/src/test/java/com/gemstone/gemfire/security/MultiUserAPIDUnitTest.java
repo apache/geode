@@ -23,7 +23,7 @@ import com.gemstone.gemfire.cache.query.CqAttributesFactory;
 import com.gemstone.gemfire.cache.query.CqException;
 import com.gemstone.gemfire.cache.query.CqQuery;
 import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.PoolManagerImpl;
 import com.gemstone.gemfire.security.generator.CredentialGenerator;
@@ -297,7 +297,7 @@ public class MultiUserAPIDUnitTest extends ClientAuthorizationTestCase {
     }
 
     if (authenticator != null) {
-      authProps.setProperty(DistributedSystemConfigProperties.SECURITY_CLIENT_AUTHENTICATOR, authenticator);
+      authProps.setProperty(ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR, authenticator);
     }
 
     return SecurityTestUtils.createCacheServer(authProps, javaProps, dsPort, locatorString, 0, NO_EXCEPTION);

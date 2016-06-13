@@ -46,7 +46,7 @@ import java.net.SocketTimeoutException;
 import java.security.Principal;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * A <code>ServerHandShakeProcessor</code> verifies the client's version compatibility with server.

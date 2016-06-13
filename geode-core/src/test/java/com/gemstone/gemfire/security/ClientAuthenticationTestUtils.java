@@ -20,7 +20,7 @@ import com.gemstone.gemfire.cache.Region;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.SECURITY_CLIENT_AUTHENTICATOR;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 import static com.gemstone.gemfire.security.SecurityTestUtils.*;
 import static org.junit.Assert.assertNotNull;
 

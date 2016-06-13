@@ -16,9 +16,14 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import static org.junit.Assert.*;
+
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.AttributesFactory;
@@ -38,6 +43,7 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.ThreadUtils;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the functionality of a cache {@link Region region}
@@ -45,11 +51,8 @@ import com.gemstone.gemfire.test.dunit.VM;
  *
  * @since GemFire 3.0
  */
+@Category(DistributedTest.class)
 public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
-
-  public GlobalRegionDUnitTest(String name) {
-    super(name);
-  }
 
   /**
    * Returns region attributes for a <code>GLOBAL</code> region
@@ -70,6 +73,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
    *
    * @see Region#createSubregion
    */
+  @Test
   public void testIncompatibleSubregions()
     throws CacheException, InterruptedException {
 
@@ -145,6 +149,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
    * Tests that a value in a remote cache will be fetched by
    * <code>netSearch</code> and that no loaders are invoked.
    */
+  @Test
   public void testRemoteFetch() throws CacheException {
     assertTrue(getRegionAttributes().getScope().isDistributed());
 
@@ -198,6 +203,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
    * Tests that a bunch of threads in a bunch of VMs all atomically
    * incrementing the value of an entry get the right value.
    */
+  @Test
   public void testSynchronousIncrements()
     throws InterruptedException {
 
@@ -338,6 +344,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
    * Tests that {@link Region#put} and {@link Region#get} timeout when
    * another VM holds the distributed lock on the entry in question.
    */
+  @Test
   public void testPutGetTimeout() {
     assertEquals(Scope.GLOBAL, getRegionAttributes().getScope());
 

@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal.cache.execute;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,6 +49,7 @@ import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 
+@Category(DistributedTest.class)
 public class FunctionExecution_ExceptionDUnitTest extends
     PartitionedRegionDUnitTestCase {
 
@@ -48,10 +58,11 @@ public class FunctionExecution_ExceptionDUnitTest extends
    */
   private static final long serialVersionUID = 1L;
 
-  public FunctionExecution_ExceptionDUnitTest(String name) {
-    super(name);
+  public FunctionExecution_ExceptionDUnitTest() {
+    super();
   }
   
+  @Test
   public void testSingleKeyExecution_SendException_Datastore()
       throws Exception {
     final String rName = getUniqueName();
@@ -118,6 +129,7 @@ public class FunctionExecution_ExceptionDUnitTest extends
     assertEquals(Boolean.TRUE, o);
   }
 
+  @Test
   public void testSingleKeyExecution_SendException_MultipleTimes_Datastore()
       throws Exception {
     final String rName = getUniqueName();
@@ -169,6 +181,7 @@ public class FunctionExecution_ExceptionDUnitTest extends
     assertEquals(Boolean.TRUE, o);
   }
   
+  @Test
   public void testRemoteSingleKeyExecution_ThrowException_Datastore()
       throws Exception {
     final String rName = getUniqueName();
@@ -226,6 +239,7 @@ public class FunctionExecution_ExceptionDUnitTest extends
     assertEquals(Boolean.TRUE, o);
   }
 
+  @Test
   public void testRemoteSingleKeyExecution_SendException_Accessor()
       throws Exception {
     final String rName = getUniqueName();
@@ -303,6 +317,7 @@ public class FunctionExecution_ExceptionDUnitTest extends
     assertEquals(Boolean.TRUE, o);
   }
 
+  @Test
   public void testRemoteSingleKeyExecution_ThrowException_Accessor()
       throws Exception {
     final String rName = getUniqueName();
@@ -372,6 +387,7 @@ public class FunctionExecution_ExceptionDUnitTest extends
     assertEquals(Boolean.TRUE, o);
   }
 
+  @Test
   public void testRemoteMultiKeyExecution_SendException() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -444,6 +460,7 @@ public class FunctionExecution_ExceptionDUnitTest extends
     assertEquals(Boolean.TRUE, o);
   }
 
+  @Test
   public void testRemoteAllKeyExecution_SendException() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -510,6 +527,7 @@ public class FunctionExecution_ExceptionDUnitTest extends
     assertEquals(Boolean.TRUE, o);
   }
 
+  @Test
   public void testRemoteMultiKeyExecution_ThrowException() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);
@@ -580,6 +598,7 @@ public class FunctionExecution_ExceptionDUnitTest extends
     assertEquals(Boolean.TRUE, o);
   }
 
+  @Test
   public void testRemoteAllKeyExecution_ThrowException() throws Exception {
     final String rName = getUniqueName();
     Host host = Host.getHost(0);

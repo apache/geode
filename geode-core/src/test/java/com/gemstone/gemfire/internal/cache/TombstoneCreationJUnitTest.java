@@ -32,7 +32,7 @@ import org.junit.rules.TestName;
 import java.net.InetAddress;
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 @Category(IntegrationTest.class)
 public class TombstoneCreationJUnitTest {

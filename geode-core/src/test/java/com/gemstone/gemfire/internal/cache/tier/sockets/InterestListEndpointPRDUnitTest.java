@@ -16,19 +16,29 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.*;
 
 /**
  * subclass of InterestListEndpointDUnitTest to exercise partitioned regions
  *
  */
+@Category(DistributedTest.class)
 public class InterestListEndpointPRDUnitTest extends InterestListEndpointDUnitTest {
 
-  public InterestListEndpointPRDUnitTest(String name) {
-    super(name);
+  public InterestListEndpointPRDUnitTest() {
+    super();
   }
   public static void createImpl() {
-    impl = new InterestListEndpointPRDUnitTest("temp");
+    impl = new InterestListEndpointPRDUnitTest();
   }
   
   protected RegionAttributes createServerCacheAttributes()

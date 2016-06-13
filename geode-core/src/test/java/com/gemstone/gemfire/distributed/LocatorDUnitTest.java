@@ -16,6 +16,14 @@
  */
 package com.gemstone.gemfire.distributed;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.ForcedDisconnectException;
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.LogWriter;
@@ -40,7 +48,6 @@ import com.gemstone.gemfire.internal.logging.LocalLogWriter;
 import com.gemstone.gemfire.internal.tcp.Connection;
 import com.gemstone.gemfire.test.dunit.*;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,7 +56,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Tests the ability of the {@link Locator} API to start and stop
@@ -57,7 +64,8 @@ import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties
  *
  * @since GemFire 4.0
  */
-public class LocatorDUnitTest extends DistributedTestCase {
+@Category(DistributedTest.class)
+public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   private static volatile InternalDistributedSystem system = null;
 
@@ -66,8 +74,8 @@ public class LocatorDUnitTest extends DistributedTestCase {
   /**
    * Creates a new <code>LocatorDUnitTest</code>
    */
-  public LocatorDUnitTest(String name) {
-    super(name);
+  public LocatorDUnitTest() {
+    super();
   }
 
   private static final String WAIT2_MS_NAME = "LocatorDUnitTest.WAIT2_MS";
@@ -122,6 +130,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
    * it hung with the restarted locator trying to become elder again because
    * it put its address at the beginning of the new view it sent out.
    */
+  @Test
   public void testCollocatedLocatorWithSecurity() throws Exception {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -251,6 +260,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
    *
    * @throws Exception
    */
+  @Test
   public void testStartTwoLocators() throws Exception {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -364,6 +374,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
   /**
    * test lead member selection
    */
+  @Test
   public void testLeadMemberSelection() throws Exception {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -473,6 +484,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
    * We then kill the lead member and demonstrate that the original locator
    * (which is now the sole remaining member) shuts itself down.
    */
+  @Test
   public void testLeadAndCoordFailure() throws Exception {
     IgnoredException.addIgnoredException("Possible loss of quorum due");
     disconnectAllFromDS();
@@ -606,6 +618,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
    * We then shut down the group coordinator and observe the second locator
    * pick up the job and the remaining member continues to operate normally.
    */
+  @Test
   public void testLeadFailureAndCoordShutdown() throws Exception {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -752,6 +765,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
    */
   // disabled on trunk - should be reenabled on cedar_dev_Oct12
   // this test leaves a CloserThread around forever that logs "pausing" messages every 500 ms
+  @Test
   public void testForceDisconnectAndPeerShutdownCause() throws Exception {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -889,6 +903,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
    * We kill the coordinator and shut down the lead member and observe the second locator
    * pick up the job and the remaining member continue to operate normally.
    */
+  @Test
   public void testLeadShutdownAndCoordFailure() throws Exception {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -1014,6 +1029,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
    * Tests that attempting to connect to a distributed system in which
    * no locator is defined throws an exception.
    */
+  @Test
   public void testNoLocator() {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -1074,6 +1090,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
    * <p>The locator is then restarted and is shown to take over the
    * role of membership coordinator.
    */
+  @Test
   public void testOneLocator() throws Exception {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -1166,6 +1183,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
    * is correct.  It then restarts the locator to demonstrate that
    * it can connect to and function as the group coordinator
    */
+  @Test
   public void testLocatorBecomesCoordinator() throws Exception {
     disconnectAllFromDS();
     final String expected = "java.net.ConnectException";
@@ -1303,6 +1321,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
   /**
    * Tests starting multiple locators in multiple VMs.
    */
+  @Test
   public void testMultipleLocators() throws Exception {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -1420,6 +1439,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
    * GEODE-870
    */
   @Category(FlakyTest.class) // GEODE-1150: random ports, disk pollution, waitForCriterion, time sensitive, eats exceptions (fixed several)
+  @Test
   public void testMultipleLocatorsRestartingAtSameTime() throws Exception {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -1622,6 +1642,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
   /**
    * Tests starting multiple locators in multiple VMs.
    */
+  @Test
   public void testMultipleMcastLocators() throws Exception {
     disconnectAllFromDS();
     IgnoredException.addIgnoredException("Could not stop  Distribution Locator"); // shutdown timing issue in InternalLocator
@@ -1737,6 +1758,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
    * Tests that a VM can connect to a locator that is hosted in its
    * own VM.
    */
+  @Test
   public void testConnectToOwnLocator() throws Exception {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -1764,6 +1786,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
   /**
    * Tests that a single VM can NOT host multiple locators
    */
+  @Test
   public void testHostingMultipleLocators() throws Exception {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
@@ -1821,6 +1844,7 @@ public class LocatorDUnitTest extends DistributedTestCase {
    *
    * @since GemFire 4.1
    */
+  @Test
   public void testRestartLocator() throws Exception {
     disconnectAllFromDS();
     port1 =

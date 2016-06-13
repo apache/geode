@@ -16,19 +16,20 @@
  */
 package com.gemstone.gemfire.internal.cache.diskPerf;
 
-import java.util.*;
+import java.util.Arrays;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
-import com.gemstone.gemfire.*;
-import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.LogWriter;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.internal.cache.CacheObserverAdapter;
+import com.gemstone.gemfire.internal.cache.CacheObserverHolder;
+import com.gemstone.gemfire.internal.cache.DiskRegionHelperFactory;
+import com.gemstone.gemfire.internal.cache.DiskRegionProperties;
+import com.gemstone.gemfire.internal.cache.DiskRegionTestingBase;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.lru.LRUStatistics;
-import com.gemstone.gemfire.internal.cache.*;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -37,28 +38,22 @@ import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
  * 1) Performance of Get Operation for Entry faulting in from current Op Log 2)
  * Performance of Get operation for Entry faulting in from previous Op Log 3)
  * Performance of Get operation for Entry faulting in from H Tree
- * 
- *  
  */
 @Category(IntegrationTest.class)
-public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends
-    DiskRegionTestingBase
-{
+public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends DiskRegionTestingBase {
 
-
-  
-  LogWriter log = null;
-
-  static int counter = 0;
+  private static int counter = 0;
 
   private static int ENTRY_SIZE = 1024;
 
-  DiskRegionProperties diskProps = new DiskRegionProperties();
+  private volatile boolean afterHavingCompacted = false;
 
-  @Before
-  public void setUp() throws Exception
-  {
-    super.setUp();
+  private LogWriter log = null;
+
+  private DiskRegionProperties diskProps = new DiskRegionProperties();
+
+  @Override
+  protected final void postSetUp() throws Exception {
     diskProps.setRegionName("OverflowAsyncRollingOpLogRegion");
     diskProps.setDiskDirs(dirs);
     this.log = ds.getLogWriter();
@@ -69,13 +64,10 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends
     diskProps.setMaxOplogSize(10485760l);
     region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache,
         diskProps);
-
   }
 
-  @After
-  public void tearDown() throws Exception
-  {
-    super.tearDown();
+  @Override
+  protected final void postTearDown() throws Exception {
     if (cache != null) {
       cache.close();
     }
@@ -83,8 +75,6 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends
       ds.disconnect();
     }
   }
-
-  
 
   @Test
   public void testGetPerfRollingOpog()
@@ -94,7 +84,7 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends
     
   }
 
-  public void populateFirst0k_10Kbwrites()
+  private void populateFirst0k_10Kbwrites()
   {
     
    final byte[] value = new byte[ENTRY_SIZE];
@@ -128,9 +118,8 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends
             + statsGet);
 
   }
-  
-  protected volatile boolean afterHavingCompacted = false;
-  public void populateSecond10kto20kwrites()
+
+  private void populateSecond10kto20kwrites()
   {
     afterHavingCompacted = false;
     DiskRegionTestingBase.setCacheObserverCallBack();
@@ -208,11 +197,12 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends
             + statsGet2);
     DiskRegionTestingBase.unSetCacheObserverCallBack();
   }
-/**
- * getLRUStats
- * @param region1
- * @return
- */
+
+  /**
+   * getLRUStats
+   * @param region1
+   * @return
+   */
   protected LRUStatistics getLRUStats(Region region1)
   {
     return ((LocalRegion)region1).getEvictionController().getLRUHelper()
@@ -221,4 +211,3 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends
   }
 
 }
-

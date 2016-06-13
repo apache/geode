@@ -39,7 +39,7 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import static com.gemstone.gemfire.cache.RegionShortcut.*;
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 /**

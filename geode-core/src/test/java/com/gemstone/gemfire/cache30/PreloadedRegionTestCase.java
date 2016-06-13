@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.cache30;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import com.gemstone.gemfire.cache.AttributesFactory;
 import com.gemstone.gemfire.cache.CacheException;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -33,10 +42,11 @@ import com.gemstone.gemfire.test.dunit.VM;
  *
  * @since GemFire 3.0
  */
+@Category(DistributedTest.class)
 public class PreloadedRegionTestCase extends MultiVMRegionTestCase {
 
-  public PreloadedRegionTestCase(String name) {
-    super(name);
+  public PreloadedRegionTestCase() {
+    super();
   }
 
   /**
@@ -52,6 +62,7 @@ public class PreloadedRegionTestCase extends MultiVMRegionTestCase {
   /**
    * Tests that created entries are not propagated to other caches
    */
+  @Test
   public void testDistributedCreate() throws Exception {
     final String rgnName = getUniqueName();
 

@@ -16,7 +16,34 @@
  */
 package com.gemstone.gemfire.cache.management;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.AttributesMutator;
+import com.gemstone.gemfire.cache.CacheException;
+import com.gemstone.gemfire.cache.CacheLoader;
+import com.gemstone.gemfire.cache.CacheLoaderException;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.LoaderHelper;
+import com.gemstone.gemfire.cache.LowMemoryException;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.PoolFactory;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.client.ServerOperationException;
@@ -28,29 +55,46 @@ import com.gemstone.gemfire.cache30.ClientServerTestCase;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.cache.*;
-import com.gemstone.gemfire.internal.cache.control.*;
+import com.gemstone.gemfire.internal.cache.DistributedRegion;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.PartitionedRegionHelper;
+import com.gemstone.gemfire.internal.cache.ProxyBucketRegion;
+import com.gemstone.gemfire.internal.cache.control.InternalResourceManager;
 import com.gemstone.gemfire.internal.cache.control.InternalResourceManager.ResourceType;
+import com.gemstone.gemfire.internal.cache.control.MemoryEvent;
 import com.gemstone.gemfire.internal.cache.control.MemoryThresholds.MemoryState;
+import com.gemstone.gemfire.internal.cache.control.OffHeapMemoryMonitor;
 import com.gemstone.gemfire.internal.cache.control.OffHeapMemoryMonitor.OffHeapMemoryMonitorObserver;
+import com.gemstone.gemfire.internal.cache.control.ResourceAdvisor;
+import com.gemstone.gemfire.internal.cache.control.ResourceListener;
+import com.gemstone.gemfire.internal.cache.control.TestMemoryThresholdListener;
 import com.gemstone.gemfire.internal.cache.partitioned.RegionAdvisor;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
 
 /**
  * Tests the Off-Heap Memory thresholds of {@link ResourceManager}
  * 
  * @since Geode 1.0
  */
+@Category(DistributedTest.class)
 public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
-  private static final long serialVersionUID = -684231183212051910L;
 
   final String expectedEx = LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_CRITICAL_THRESHOLD.getRawText().replaceAll("\\{[0-9]+\\}",
       ".*?");
@@ -61,10 +105,6 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   final String addExpectedBelow = "<ExpectedException action=add>" + this.expectedBelow + "</ExpectedException>";
   final String removeExpectedBelow = "<ExpectedException action=remove>" + this.expectedBelow + "</ExpectedException>";
 
-  public MemoryThresholdsOffHeapDUnitTest(String name) {
-    super(name);
-  }
-  
   @Override
   public final void postSetUpClientServerTestCase() throws Exception {
     IgnoredException.addIgnoredException(expectedEx);
@@ -93,9 +133,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
   /**
    * Make sure appropriate events are delivered when moving between states.
-   * 
-   * @throws Exception
    */
+  @Test
   public void testEventDelivery() throws Exception {
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
@@ -191,8 +230,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   /**
    * test that disabling threshold does not cause remote event and
    * remote DISABLED events are delivered
-   * @throws Exception
    */
+  @Test
   public void testDisabledThresholds() throws Exception {
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
@@ -304,8 +343,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   /**
    * test that puts in a client are rejected when a remote VM crosses
    * critical threshold
-   * @throws Exception
    */
+  @Test
   public void testDistributedRegionRemoteClientPutRejection() throws Exception {
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
@@ -344,35 +383,39 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     setUsageBelowEviction(server2, regionName);
   }
 
+  @Test
   public void testDistributedRegionRemotePutRejectionLocalDestroy() throws Exception {
     doDistributedRegionRemotePutRejection(true, false);
   }
-  
+
+  @Test
   public void testDistributedRegionRemotePutRejectionCacheClose() throws Exception {
     doDistributedRegionRemotePutRejection(false, true);
   }
-  
+
+  @Test
   public void testDistributedRegionRemotePutRejectionBelowThreshold() throws Exception {
     doDistributedRegionRemotePutRejection(false, false);
   }
-  
+
+  @Test
   public void testGettersAndSetters() {
     getSystem(getOffHeapProperties());
     ResourceManager rm = getCache().getResourceManager();
-    assertEquals(0.0f, rm.getCriticalOffHeapPercentage());
-    assertEquals(0.0f, rm.getEvictionOffHeapPercentage());
+    assertEquals(0.0f, rm.getCriticalOffHeapPercentage(),0);
+    assertEquals(0.0f, rm.getEvictionOffHeapPercentage(),0);
     
     rm.setEvictionOffHeapPercentage(50);
     rm.setCriticalOffHeapPercentage(90);
     
     // verify
-    assertEquals(50.0f, rm.getEvictionOffHeapPercentage());
-    assertEquals(90.0f, rm.getCriticalOffHeapPercentage());
+    assertEquals(50.0f, rm.getEvictionOffHeapPercentage(),0);
+    assertEquals(90.0f, rm.getCriticalOffHeapPercentage(),0);
     
     getCache().createRegionFactory(RegionShortcut.REPLICATE_HEAP_LRU).create(getName());
     
-    assertEquals(50.0f, rm.getEvictionOffHeapPercentage());
-    assertEquals(90.0f, rm.getCriticalOffHeapPercentage());
+    assertEquals(50.0f, rm.getEvictionOffHeapPercentage(),0);
+    assertEquals(90.0f, rm.getCriticalOffHeapPercentage(),0);
   }
   
   /**
@@ -464,9 +507,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
    * Test that DistributedRegion cacheLoade and netLoad are passed through to the 
    * calling thread if the local VM is in a critical state.  Once the VM has moved
    * to a safe state then test that they are allowed.
-   * @throws Exception
    */
   @Category(FlakyTest.class) // GEODE-438: test pollution, async actions, time sensitive, waitForCriterion, TODO: consider disconnect DS in setup
+  @Test
   public void testDRLoadRejection() throws Exception {
     final Host host = Host.getHost(0);
     final VM replicate1 = host.getVM(1);
@@ -474,8 +517,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final String rName = getUniqueName();
     
     // Make sure the desired VMs will have a fresh DS.
-    AsyncInvocation d1 = replicate1.invokeAsync(() -> DistributedTestCase.disconnectFromDS());
-    AsyncInvocation d2 = replicate2.invokeAsync(() -> DistributedTestCase.disconnectFromDS());
+    AsyncInvocation d1 = replicate1.invokeAsync(() -> disconnectFromDS());
+    AsyncInvocation d2 = replicate2.invokeAsync(() -> disconnectFromDS());
     d1.join();
     assertFalse(d1.exceptionOccurred());
     d2.join();
@@ -675,28 +718,34 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
       getCache().getLoggerI18n().fine(removeExpectedBelow);
     };
   };
-  
+
+  @Test
   public void testPR_RemotePutRejectionLocalDestroy() throws Exception {
     prRemotePutRejection(false, true, false);
   }
 
+  @Test
   public void testPR_RemotePutRejectionCacheClose() throws Exception {
     prRemotePutRejection(true, false, false);
   }
 
+  @Test
   public void testPR_RemotePutRejection() throws Exception {
     prRemotePutRejection(false, false, false);
   }
 
+  @Test
   public void testPR_RemotePutRejectionLocalDestroyWithTx() throws Exception {
     prRemotePutRejection(false, true, true);
   }
 
+  @Test
   public void testPR_RemotePutRejectionCacheCloseWithTx() throws Exception {
     prRemotePutRejection(true, false, true);
   }
 
   @Category(FlakyTest.class) // GEODE-500: time sensitive, memory sensitive and GC dependent, waitForCriterions
+  @Test
   public void testPR_RemotePutRejectionWithTx() throws Exception {
     prRemotePutRejection(false, false, true);
   }
@@ -869,9 +918,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   /**
    * Test that a Partitioned Region loader invocation is rejected
    * if the VM with the bucket is in a critical state.
-   * @throws Exception
    */
   @Category(FlakyTest.class) // GEODE-551: waitForCriterion, memory sensitive
+  @Test
   public void testPRLoadRejection() throws Exception {
     final Host host = Host.getHost(0);
     final VM accessor = host.getVM(1);
@@ -879,8 +928,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final String rName = getUniqueName();
 
     // Make sure the desired VMs will have a fresh DS. TODO: convert these from AsyncInvocation to invoke
-    AsyncInvocation d0 = accessor.invokeAsync(() -> DistributedTestCase.disconnectFromDS());
-    AsyncInvocation d1 = ds1.invokeAsync(() -> DistributedTestCase.disconnectFromDS());
+    AsyncInvocation d0 = accessor.invokeAsync(() -> disconnectFromDS());
+    AsyncInvocation d1 = ds1.invokeAsync(() -> disconnectFromDS());
     d0.join();
     assertFalse(d0.exceptionOccurred());
     d1.join();
@@ -1096,14 +1145,14 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
    * Test that LocalRegion cache Loads are not stored in the Region
    * if the VM is in a critical state, then test that they are allowed
    * once the VM is no longer critical
-   * @throws Exception
    */
+  @Test
   public void testLRLoadRejection() throws Exception {
     final Host host = Host.getHost(0);
     final VM vm = host.getVM(2);
     final String rName = getUniqueName();
 
-    vm.invoke(() -> DistributedTestCase.disconnectFromDS());
+    vm.invoke(() -> disconnectFromDS());
     
     vm.invoke(new CacheSerializableRunnable("test LocalRegion load passthrough when critical") {
       @Override
@@ -1214,7 +1263,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     }
     return ret;
   }
-  
+
+  @Test
   public void testCleanAdvisorClose() throws Exception {
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
@@ -1246,11 +1296,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     verifyProfiles(server1, 2);
     verifyProfiles(server3, 2);
   }
-  
+
+  @Test
   public void testPRClientPutRejection() throws Exception {
     doClientServerTest("parRegReject", true/*createPR*/);
   }
 
+  @Test
   public void testDistributedRegionClientPutRejection() throws Exception {
     doClientServerTest("distrReject", false/*createPR*/);
   }

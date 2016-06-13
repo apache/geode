@@ -16,8 +16,25 @@
  */
 package com.gemstone.gemfire.internal;
 
-import com.gemstone.gemfire.cache.*;
-import com.gemstone.gemfire.cache30.CacheTestCase;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DiskStoreFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.pdx.PdxReader;
@@ -30,23 +47,15 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.SerializableCallable;
 import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.CopyOnWriteArrayList;
+@Category(DistributedTest.class)
+public class PdxRenameDUnitTest  extends JUnit4CacheTestCase{
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-public class PdxRenameDUnitTest  extends CacheTestCase{
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
   
-  public PdxRenameDUnitTest(String name) {
-    super(name);
-  }
-  
+  @Test
   public void testPdxRenameVersioning() throws Exception {
     final String DS_NAME = "PdxRenameDUnitTestDiskStore";
     final String DS_NAME2 = "PdxRenameDUnitTestDiskStore2";

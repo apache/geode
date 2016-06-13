@@ -16,6 +16,15 @@
  */
 package com.gemstone.gemfire.internal;
 
+import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -48,19 +57,22 @@ import com.gemstone.gemfire.test.dunit.VM;
 /**
  *
  */
-public class ClassNotFoundExceptionDUnitTest extends CacheTestCase {
+@Category(DistributedTest.class)
+public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * @param name
    */
-  public ClassNotFoundExceptionDUnitTest(String name) {
-    super(name);
+  public ClassNotFoundExceptionDUnitTest() {
+    super();
   }
   
+  @Test
   public void testDataSerializable() throws InterruptedException {
     doTest(new ObjectFactory() { public Object get() { return new ClassNotFoundDataSerializable();} });
   }
   
+  @Test
   public void testPdx() throws InterruptedException {
     doTest(new ObjectFactory() { public Object get() { return new ClassNotFoundPdx(false);} });
   }

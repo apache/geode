@@ -16,6 +16,14 @@
  */
 package com.gemstone.gemfire.internal.cache.ha;
 
+import static org.junit.Assert.*;
+
+import java.net.SocketException;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.*;
 import com.gemstone.gemfire.cache.client.PoolManager;
@@ -27,14 +35,20 @@ import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverAdapter;
 import com.gemstone.gemfire.internal.cache.ClientServerObserverHolder;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Assert;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.NetworkUtils;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.Wait;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
+import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
-import java.net.SocketException;
-import java.util.Properties;
+@Category(DistributedTest.class)
+public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
 
-import static com.gemstone.gemfire.distributed.DistributedSystemConfigProperties.*;
-
-public class HASlowReceiverDUnitTest extends DistributedTestCase {
   protected static Cache cache = null;
 
   private static VM serverVM1 = null;
@@ -56,10 +70,6 @@ public class HASlowReceiverDUnitTest extends DistributedTestCase {
   static PoolImpl pool = null;
   
   private static boolean isUnresponsiveClientRemoved = false;
-
-  public HASlowReceiverDUnitTest(String name) {
-    super(name);
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -107,7 +117,7 @@ public class HASlowReceiverDUnitTest extends DistributedTestCase {
     Properties prop = new Properties();
     prop.setProperty(REMOVE_UNRESPONSIVE_CLIENT,
         "true");
-    new HASlowReceiverDUnitTest("temp").createCache(prop);
+    new HASlowReceiverDUnitTest().createCache(prop);
 
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -137,7 +147,7 @@ public class HASlowReceiverDUnitTest extends DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new HASlowReceiverDUnitTest("temp").createCache(props);
+    new HASlowReceiverDUnitTest().createCache(props);
 
     AttributesFactory factory = new AttributesFactory();
     PoolImpl p = (PoolImpl)PoolManager.createFactory().addServer("localhost",
@@ -230,6 +240,7 @@ public class HASlowReceiverDUnitTest extends DistributedTestCase {
   }
 
   // Test slow client
+  @Test
   public void testSlowClient() throws Exception {
     setBridgeObeserverForAfterQueueDestroyMessage();
     Host host = Host.getHost(0);

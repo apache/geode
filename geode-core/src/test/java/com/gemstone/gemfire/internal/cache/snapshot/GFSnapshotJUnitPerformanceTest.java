@@ -22,25 +22,36 @@ import java.util.Map.Entry;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
-
-import junit.framework.TestCase;
 
 import com.gemstone.gemfire.cache.snapshot.SnapshotIterator;
 import com.gemstone.gemfire.internal.cache.snapshot.GFSnapshot.GFSnapshotExporter;
 import com.gemstone.gemfire.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
 import com.gemstone.gemfire.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
 import com.gemstone.gemfire.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.categories.PerformanceTest;
 
-@Category(IntegrationTest.class)
+@Category(PerformanceTest.class)
+@Ignore("Test has no assertions and will always pass")
 public class GFSnapshotJUnitPerformanceTest {
-  private final File f = new File("test.snapshot");
+
   private static final String val = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+
+  private File f;
+
+  @Before
+  public void setUp() throws Exception {
+    f = new File("test.snapshot");
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    if (f.exists()) {
+      f.delete();
+    }
+  }
 
   @Test
   public void testStreamWritePerformance() throws IOException {
@@ -146,13 +157,6 @@ public class GFSnapshotJUnitPerformanceTest {
       }
     } finally {
       out.close();
-    }
-  }
-  
-  @After
-  public void tearDown() throws Exception {
-    if (f.exists()) {
-      f.delete();
     }
   }
 }
