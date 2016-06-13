@@ -95,14 +95,15 @@ public class MemberFactory {
   /**
    * currently this is a test method but it ought to be used by InternalLocator
    * to create the peer location TcpHandler
+   * @param securityUDPDHAlgo TODO
    */
   static public NetLocator newLocatorHandler(InetAddress bindAddress,
           File stateFile,
           String locatorString,
           boolean usePreferredCoordinators,
-          boolean networkPartitionDetectionEnabled, LocatorStats stats) {
+          boolean networkPartitionDetectionEnabled, LocatorStats stats, String securityUDPDHAlgo) {
     return services.newLocatorHandler(bindAddress, stateFile, locatorString,
-        usePreferredCoordinators, networkPartitionDetectionEnabled, stats);
+        usePreferredCoordinators, networkPartitionDetectionEnabled, stats, securityUDPDHAlgo);
   }
 
 }

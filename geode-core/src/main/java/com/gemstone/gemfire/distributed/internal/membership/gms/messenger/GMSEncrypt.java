@@ -38,8 +38,9 @@ import com.gemstone.gemfire.distributed.internal.membership.NetView;
 import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 
-public class GMSEncrypt implements Cloneable{
-  
+public class GMSEncrypt implements Cloneable {
+
+  public static Map<GMSEncrypt.InternalDistributedMemberWrapper, byte[]> registrants = new ConcurrentHashMap<>();
   public static long encodingsPerformed;
   public static long decodingsPerformed;
 
@@ -76,7 +77,7 @@ public class GMSEncrypt implements Cloneable{
   private ConcurrentHashMap<InternalDistributedMember, PeerEncryptor>[] copyOfPeerEncryptors;
   private ClusterEncryptor[] clusterEncryptors;
   
-  private Map<GMSEncrypt.InternalDistrubtedMemberWrapper, byte[]> memberToPeerEncryptor = new ConcurrentHashMap<>();
+  private Map<GMSEncrypt.InternalDistributedMemberWrapper, byte[]> memberToPeerEncryptor = new ConcurrentHashMap<>();
 
   private ClusterEncryptor clusterEncryptor;
 
@@ -109,7 +110,22 @@ public class GMSEncrypt implements Cloneable{
     initEncryptors();
   }
 
-  public GMSEncrypt(Services services) throws  Exception {
+  public static void registerMember(byte[] pk, InternalDistributedMember mbr) {
+    if (pk != null) {
+      registrants.put(new GMSEncrypt.InternalDistributedMemberWrapper(mbr), pk);
+    }
+  }
+  
+  public static void clear() {
+    registrants.clear();
+  }
+  
+  public static byte[] getRegisteredPublicKey(InternalDistributedMember mbr) {
+    InternalDistributedMemberWrapper m = new InternalDistributedMemberWrapper(mbr);
+    return registrants.get(m);
+  }
+  
+  public GMSEncrypt(Services services) throws Exception {
     this.services = services;
     initEncryptors();
     initDHKeys(services.getConfig().getDistributionConfig());
@@ -168,7 +184,7 @@ public class GMSEncrypt implements Cloneable{
   protected void setPublicKey(byte[] publickey, InternalDistributedMember mbr) {
     try {
       //createPeerEncryptor(mbr, publickey);
-      memberToPeerEncryptor.put(new InternalDistrubtedMemberWrapper(mbr), publickey);
+      memberToPeerEncryptor.put(new InternalDistributedMemberWrapper(mbr), publickey);
       synchronized (copyOfPeerEncryptors) {
         //remove all the existing keys..
         for(Map m : copyOfPeerEncryptors) {
@@ -227,10 +243,10 @@ public class GMSEncrypt implements Cloneable{
     }
   }
 
-  static class InternalDistrubtedMemberWrapper {
+  static class InternalDistributedMemberWrapper {
     InternalDistributedMember mbr;
     
-    public InternalDistrubtedMemberWrapper(InternalDistributedMember m) {
+    public InternalDistributedMemberWrapper(InternalDistributedMember m) {
       this.mbr = m;
     }
 
@@ -245,7 +261,7 @@ public class GMSEncrypt implements Cloneable{
 
     @Override
     public boolean equals(Object obj) {
-      InternalDistributedMember other = ((InternalDistrubtedMemberWrapper)obj).mbr;
+      InternalDistributedMember other = ((InternalDistributedMemberWrapper)obj).mbr;
       return mbr.compareTo(other, false, false) == 0;
     }
 
@@ -263,7 +279,10 @@ public class GMSEncrypt implements Cloneable{
       synchronized (this) {
         result = m.get(member);
         if (result == null) {
-          byte[] pk = (byte[])memberToPeerEncryptor.get(new InternalDistrubtedMemberWrapper(member));
+          byte[] pk = (byte[])memberToPeerEncryptor.get(new InternalDistributedMemberWrapper(member));
+          if (pk == null) {
+            pk = getRegisteredPublicKey(member);
+          }
           result = createPeerEncryptor(member, pk != null ? pk : (byte[]) view.getPublicKey(member));
           m.put(member, result);
         }

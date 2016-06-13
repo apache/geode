@@ -1076,7 +1076,7 @@ public class GMSJoinLeaveJUnitTest {
       
       TcpClientWrapper tcpClientWrapper = mock(TcpClientWrapper.class);
       gmsJoinLeave.setTcpClientWrapper(tcpClientWrapper);
-      FindCoordinatorRequest fcreq = new FindCoordinatorRequest(gmsJoinLeaveMemberId, new HashSet<>(), -1, null, 0);
+      FindCoordinatorRequest fcreq = new FindCoordinatorRequest(gmsJoinLeaveMemberId, new HashSet<>(), -1, null, 0, "");
       int connectTimeout = (int)services.getConfig().getMemberTimeout() * 2;
       when(tcpClientWrapper.sendCoordinatorFindRequest(new InetSocketAddress("localhost", 12345), fcreq, connectTimeout)).thenReturn(fcr);
       callAsnyc(()->{gmsJoinLeave.installView(view);});
@@ -1104,7 +1104,7 @@ public class GMSJoinLeaveJUnitTest {
       
       TcpClientWrapper tcpClientWrapper = mock(TcpClientWrapper.class);
       gmsJoinLeave.setTcpClientWrapper(tcpClientWrapper);
-      FindCoordinatorRequest fcreq = new FindCoordinatorRequest(gmsJoinLeaveMemberId, new HashSet<>(), -1, null, 0);
+      FindCoordinatorRequest fcreq = new FindCoordinatorRequest(gmsJoinLeaveMemberId, new HashSet<>(), -1, null, 0, "");
       int connectTimeout = (int)services.getConfig().getMemberTimeout() * 2;
       //passing wrong port here, so ot will fail
       when(tcpClientWrapper.sendCoordinatorFindRequest(new InetSocketAddress("localhost", 12346), fcreq, connectTimeout)).thenReturn(fcr);

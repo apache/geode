@@ -44,6 +44,7 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
   private boolean usePreferredCoordinators;
   private boolean isShortForm;
   private byte[] coordinatorPublicKey;  
+  private String rejectionMessage;
 
   private int requestId;
   
@@ -71,6 +72,10 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
     this.requestId = requestId;
   }
   
+  public FindCoordinatorResponse(String m) {
+    this.rejectionMessage = m;
+  }
+  
   public FindCoordinatorResponse() {
     // no-arg constructor for serialization
   }
@@ -81,6 +86,10 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
   
   public int getRequestId() {
     return requestId;
+  }
+  
+  public String getRejectionMessage() {
+    return rejectionMessage;
   }
   
   public boolean isNetworkPartitionDetectionEnabled() {
@@ -146,6 +155,7 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
     DataSerializer.writeObject(coordinator, out);
     DataSerializer.writeObject(senderId, out);
     InternalDataSerializer.writeByteArray(coordinatorPublicKey, out);
+    InternalDataSerializer.writeString(rejectionMessage, out);
     out.writeBoolean(isShortForm);
     out.writeBoolean(fromView);
     out.writeBoolean(networkPartitionDetectionEnabled);
@@ -159,6 +169,7 @@ public class FindCoordinatorResponse  extends HighPriorityDistributionMessage
     coordinator = DataSerializer.readObject(in);
     senderId = DataSerializer.readObject(in);
     coordinatorPublicKey = InternalDataSerializer.readByteArray(in);
+    rejectionMessage = InternalDataSerializer.readString(in);
     isShortForm = in.readBoolean();    
     if (!isShortForm) {
       fromView = in.readBoolean();

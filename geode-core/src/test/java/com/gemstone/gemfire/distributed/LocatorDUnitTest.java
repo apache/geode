@@ -80,7 +80,7 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 @Category(DistributedTest.class)
 public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
-  private static volatile InternalDistributedSystem system = null;
+  static volatile InternalDistributedSystem system = null;
 
   static TestHook hook;
 
@@ -96,7 +96,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   private static final int WAIT2_MS
       = Integer.getInteger(WAIT2_MS_NAME, WAIT2_MS_DEFAULT).intValue();
 
-  private int port1;
+  protected int port1;
   private int port2;
 
   @Override
@@ -1455,7 +1455,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private SerializableRunnable getDisconnectRunnable(final String locators) {
+  SerializableRunnable getDisconnectRunnable(final String locators) {
     return new SerializableRunnable("Disconnect from " + locators) {
       public void run() {
         DistributedSystem sys = InternalDistributedSystem.getAnyInstance();
@@ -1464,6 +1464,14 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         }
       }
     };
+  }
+  
+  public void testLoop() throws Exception {
+    for(int i=0; i < 200; i++) {
+      testMultipleLocatorsRestartingAtSameTime();
+      tearDown();
+      setUp();
+    }
   }
   /**
    * Tests starting multiple locators at the same time and ensuring that the locators
@@ -1959,7 +1967,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     return MembershipManagerHelper.getLeadMember(sys);
   }
 
-  private SerializableRunnable getStopLocatorRunnable() {
+  SerializableRunnable getStopLocatorRunnable() {
     return new SerializableRunnable("stop locator") {
       public void run() {
         MembershipManagerHelper.inhibitForcedDisconnectLogging(false);

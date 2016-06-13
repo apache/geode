@@ -991,8 +991,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       return findCoordinatorFromView();
     }
 
+    String dhalgo = services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo();
     FindCoordinatorRequest request = new FindCoordinatorRequest(this.localAddress, state.alreadyTried, state.viewId, 
-        services.getMessenger().getPublickey(localAddress), services.getMessenger().getRequestId());
+        services.getMessenger().getPublickey(localAddress), services.getMessenger().getRequestId(), dhalgo);
     Set<InternalDistributedMember> possibleCoordinators = new HashSet<InternalDistributedMember>();
     Set<InternalDistributedMember> coordinatorsWithView = new HashSet<InternalDistributedMember>();
 
@@ -1012,6 +1013,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           Object o = tcpClientWrapper.sendCoordinatorFindRequest(addr, request, connectTimeout);
           FindCoordinatorResponse response = (o instanceof FindCoordinatorResponse) ? (FindCoordinatorResponse) o : null;
           if (response != null) {
+            if(response.getRejectionMessage() != null ) {
+              throw new GemFireConfigException(response.getRejectionMessage());
+            }
             setCoordinatorPublicKey(response);
             state.locatorsContacted++;
             if (!state.hasContactedAJoinedLocator &&
@@ -1121,19 +1125,20 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         state.responses.clear();
       }
       
-      if (!services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo().isEmpty()) {
+      String dhalgo = services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo(); 
+      if (!dhalgo.isEmpty()) {
         for (InternalDistributedMember mbr : v.getMembers()) {
           Set<InternalDistributedMember> r = new HashSet<>();
           r.add(mbr);
           FindCoordinatorRequest req = new FindCoordinatorRequest(localAddress, state.alreadyTried, state.viewId, services.getMessenger().getPublickey(
-              localAddress), services.getMessenger().getRequestId());
+              localAddress), services.getMessenger().getRequestId(), dhalgo);
           req.setRecipients(r);
 
           services.getMessenger().send(req, v);
         }
       } else {
         FindCoordinatorRequest req = new FindCoordinatorRequest(localAddress, state.alreadyTried, state.viewId, services.getMessenger().getPublickey(
-            localAddress), services.getMessenger().getRequestId());
+            localAddress), services.getMessenger().getRequestId(), dhalgo);
         req.setRecipients(v.getMembers());
 
         services.getMessenger().send(req, v);

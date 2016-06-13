@@ -38,18 +38,20 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
   private int lastViewId;
   private byte[] myPublicKey;
   private int requestId;   
+  private String dhalgo;
 
   public FindCoordinatorRequest(InternalDistributedMember myId) {
     this.memberID = myId;
   }
   
   public FindCoordinatorRequest(InternalDistributedMember myId, Collection<InternalDistributedMember> rejectedCoordinators, 
-      int lastViewId, byte[] pk, int requestId) {
+      int lastViewId, byte[] pk, int requestId, String dhalgo) {
     this.memberID = myId;
     this.rejectedCoordinators = rejectedCoordinators;
     this.lastViewId = lastViewId;
     this.myPublicKey = pk;
     this.requestId = requestId;
+    this.dhalgo = dhalgo;
   }
   
   public FindCoordinatorRequest() {
@@ -62,6 +64,10 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
   
   public byte[] getMyPublicKey() {
     return myPublicKey;
+  }
+  
+  public String getDHAlgo() {
+    return dhalgo;
   }
 
   public Collection<InternalDistributedMember> getRejectedCoordinators() {
@@ -109,6 +115,7 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     }
     out.writeInt(lastViewId);
     out.writeInt(requestId);
+    InternalDataSerializer.writeString(dhalgo, out);
     InternalDataSerializer.writeByteArray(this.myPublicKey, out);
   }
 
@@ -122,6 +129,7 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     }
     this.lastViewId = in.readInt();
     this.requestId = in.readInt();
+    this.dhalgo = InternalDataSerializer.readString(in);
     this.myPublicKey = InternalDataSerializer.readByteArray(in);
   }
 
@@ -135,6 +143,7 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     final int prime = 31;
     int result = 1;
     result = prime * result + lastViewId;
+    result = prime * result + ((dhalgo == null) ? 0 : dhalgo.hashCode());
     result = prime * result + ((memberID == null) ? 0 : memberID.hashCode());
     result = prime * result + ((rejectedCoordinators == null) ? 0 : rejectedCoordinators.hashCode());
     return result;
@@ -151,6 +160,9 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     FindCoordinatorRequest other = (FindCoordinatorRequest) obj;
     if (lastViewId != other.lastViewId)
       return false;
+    if(!dhalgo.equals(other.dhalgo)) {
+      return false;
+    }
     if (memberID == null) {
       if (other.memberID != null)
         return false;
