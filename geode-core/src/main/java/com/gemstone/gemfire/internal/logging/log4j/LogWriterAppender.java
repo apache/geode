@@ -22,17 +22,17 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import com.gemstone.gemfire.internal.logging.LogConfig;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.logging.ManagerLogWriter;
+import com.gemstone.gemfire.internal.logging.PureLogWriter;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
-
-import com.gemstone.gemfire.internal.logging.LogConfig;
-import com.gemstone.gemfire.internal.logging.LogService;
-import com.gemstone.gemfire.internal.logging.ManagerLogWriter;
-import com.gemstone.gemfire.internal.logging.PureLogWriter;
 
 /**
  * A Log4j Appender which will copy all output to a LogWriter.
@@ -123,6 +123,8 @@ public class LogWriterAppender extends AbstractAppender implements PropertyChang
     for (AppenderContext context : this.appenderContexts) {
       context.getLoggerContext().removePropertyChangeListener(this);
       context.getLoggerConfig().removeAppender(appenderName);
+    }
+    for (AppenderContext context : this.appenderContexts) { // do this second as log4j 2.6+ will re-add
       context.getLoggerContext().updateLoggers();
     }
     stop();
