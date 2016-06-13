@@ -25,6 +25,7 @@ import org.apache.lucene.document.Document;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
@@ -81,6 +82,26 @@ public class HeterogeneousLuceneSerializerJUnitTest {
     assertEquals(2, doc3.getFields().size());
     assertEquals("a", doc3.getField("s").stringValue());
     assertEquals(5, doc3.getField("i").numericValue());
+  }
+
+  @Test
+  public void shouldIndexPrimitiveStringIfRequested() {
+    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(new String[] {LuceneService.REGION_VALUE_FIELD});
+    Document doc = new Document();
+    mapper.toDocument("sample value", doc);
+    assertEquals(1, doc.getFields().size());
+    assertEquals("sample value", doc.getField(LuceneService.REGION_VALUE_FIELD).stringValue());
+  }
+
+  @Test
+  public void shouldIndexPrimitiveNumberIfRequested() {
+    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(new String[] {LuceneService.REGION_VALUE_FIELD});
+    Document doc = new Document();
+    mapper.toDocument(53, doc);
+
+    assertEquals(1, doc.getFields().size());
+
+    assertEquals(53, doc.getField(LuceneService.REGION_VALUE_FIELD).numericValue());
   }
 
 }

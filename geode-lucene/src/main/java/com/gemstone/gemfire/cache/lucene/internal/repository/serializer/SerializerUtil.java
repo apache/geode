@@ -22,6 +22,10 @@ package com.gemstone.gemfire.cache.lucene.internal.repository.serializer;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DoublePoint;
@@ -44,6 +48,23 @@ import com.gemstone.gemfire.internal.util.BlobHelper;
  */
 public class SerializerUtil {
   private static final String KEY_FIELD = "_KEY";
+
+  private static final Set<Class> SUPPORTED_PRIMITIVE_TYPES;
+
+  static {
+    HashSet<Class> primitiveTypes = new HashSet<>();
+    primitiveTypes.add(String.class);
+    primitiveTypes.add(long.class);
+    primitiveTypes.add(int.class);
+    primitiveTypes.add(float.class);
+    primitiveTypes.add(double.class);
+    primitiveTypes.add(Long.class);
+    primitiveTypes.add(Integer.class);
+    primitiveTypes.add(Float.class);
+    primitiveTypes.add(Double.class);
+
+    SUPPORTED_PRIMITIVE_TYPES = Collections.unmodifiableSet(primitiveTypes);
+  }
   
   /**
    * A small buffer for converting keys to byte[] arrays.
@@ -97,10 +118,11 @@ public class SerializerUtil {
    * Return true if a field type can be written to a lucene document.
    */
   public static boolean isSupported(Class<?> type) {
-    return type == String.class || type == long.class || type == int.class 
-        || type == float.class || type == double.class
-        || type == Long.class || type == Integer.class 
-        || type == Float.class || type == Double.class; 
+    return SUPPORTED_PRIMITIVE_TYPES.contains(type);
+  }
+
+  public static Collection<Class> supportedPrimitiveTypes() {
+    return SUPPORTED_PRIMITIVE_TYPES;
   }
   
   /**

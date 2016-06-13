@@ -102,6 +102,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   @Override
   public void createIndex(String indexName, String regionPath, String... fields) {
+    if(fields == null || fields.length == 0) {
+      throw new IllegalArgumentException("At least one field must be indexed");
+    }
     StandardAnalyzer analyzer = new StandardAnalyzer();
     
     createIndex(indexName, regionPath, analyzer, null, fields);
@@ -109,6 +112,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
   
   @Override
   public void createIndex(String indexName, String regionPath, Map<String, Analyzer> fieldAnalyzers) {
+    if(fieldAnalyzers == null || fieldAnalyzers.isEmpty()) {
+      throw new IllegalArgumentException("At least one field must be indexed");
+    }
     Analyzer analyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(), fieldAnalyzers);
     Set<String> fieldsSet = fieldAnalyzers.keySet();
     String[] fields = (String[])fieldsSet.toArray(new String[fieldsSet.size()]);

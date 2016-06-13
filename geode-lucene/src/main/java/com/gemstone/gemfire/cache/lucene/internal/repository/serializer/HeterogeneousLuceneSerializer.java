@@ -18,11 +18,14 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal.repository.serializer;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
+import com.gemstone.gemfire.cache.lucene.LuceneIndex;
+import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.util.concurrent.CopyOnWriteWeakHashMap;
 import com.gemstone.gemfire.pdx.PdxInstance;
@@ -42,7 +45,7 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
    * A mapper for converting a PDX object into a document
    */
   private LuceneSerializer pdxMapper;
-  
+
   /**
    * Mappers for each individual class type that this class has seen.
    * 
@@ -55,8 +58,23 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
   public HeterogeneousLuceneSerializer(String[] indexedFields) {
     this.indexedFields = indexedFields;
     pdxMapper = new PdxLuceneSerializer(indexedFields);
+
+
+    addSerializersForPrimitiveValues();
   }
-  
+
+  /**
+   * Add serializers for the primitive value types (String, Number, etc.)
+   * if the user has requested that the whole value be serialized
+   */
+  private void addSerializersForPrimitiveValues() {
+    if(Arrays.asList(indexedFields).contains(LuceneService.REGION_VALUE_FIELD)) {
+      final PrimitiveSerializer primitiveSerializer = new PrimitiveSerializer();
+      SerializerUtil.supportedPrimitiveTypes().stream()
+        .forEach(type -> mappers.put(type, primitiveSerializer));
+    }
+  }
+
   @Override
   public void toDocument(Object value, Document doc) {
     
