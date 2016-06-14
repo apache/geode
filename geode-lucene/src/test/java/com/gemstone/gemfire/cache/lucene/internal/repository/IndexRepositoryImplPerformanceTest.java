@@ -74,7 +74,7 @@ public class IndexRepositoryImplPerformanceTest {
   private static int NUM_QUERIES = 500_000;
 
   private StandardAnalyzer analyzer = new StandardAnalyzer();
-  
+
   @Test
   public  void testIndexRepository() throws Exception {
     

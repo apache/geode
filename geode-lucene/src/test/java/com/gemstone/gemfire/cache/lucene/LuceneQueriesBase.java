@@ -70,6 +70,21 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
   }
 
   @Test
+  public void defaultFieldShouldPropogateCorrectlyThroughFunction() {
+    SerializableRunnableIF createIndex = () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+    };
+    dataStore1.invoke(() -> initDataStore(createIndex));
+    dataStore2.invoke(() -> initDataStore(createIndex));
+    accessor.invoke(() -> initAccessor(createIndex));
+    putDataInRegion(accessor);
+    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    executeTextSearch(accessor, "world", "text", 3);
+    executeTextSearch(accessor, "world", "noEntriesMapped", 0);
+  }
+
+  @Test
   public void entriesFlushedToIndexAfterWaitForFlushCalled() {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
@@ -108,7 +123,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
 
       LuceneService service = LuceneServiceProvider.get(cache);
       LuceneQuery<Integer, TestObject> query;
-      query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "text:world");
+      query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "text:world", DEFAULT_FIELD);
       LuceneQueryResults<Integer, TestObject> results = query.search();
       assertEquals(3, results.size());
       List<LuceneResultStruct<Integer, TestObject>> page = results.getNextPage();
@@ -120,6 +135,18 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
 
       assertEquals(new HashMap(region),data);
       return null;
+    });
+  }
+
+  protected void executeTextSearch(VM vm, String queryString, String defaultField, int expectedResultsSize) {
+    vm.invoke(() -> {
+      Cache cache = getCache();
+
+      LuceneService service = LuceneServiceProvider.get(cache);
+      LuceneQuery<Integer, TestObject> query;
+      query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, queryString, defaultField);
+      LuceneQueryResults<Integer, TestObject> results = query.search();
+      assertEquals(results.size(), expectedResultsSize);
     });
   }
 

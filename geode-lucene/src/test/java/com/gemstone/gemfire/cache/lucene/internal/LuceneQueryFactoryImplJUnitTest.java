@@ -18,6 +18,7 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal;
 
+import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -35,6 +36,7 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class LuceneQueryFactoryImplJUnitTest {
+
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
@@ -48,7 +50,7 @@ public class LuceneQueryFactoryImplJUnitTest {
     f.setResultLimit(25);
     String[] projection = new String[] {"a", "b"};
     f.setProjectionFields(projection);
-    LuceneQuery<Object, Object> query = f.create("index", "region", new StringQueryProvider("test"));
+    LuceneQuery<Object, Object> query = f.create("index", "region", new StringQueryProvider("test", DEFAULT_FIELD));
     assertEquals(25, query.getLimit());
     assertEquals(5, query.getPageSize());
     assertArrayEquals(projection, query.getProjectedFieldNames());
@@ -61,7 +63,7 @@ public class LuceneQueryFactoryImplJUnitTest {
     Cache cache = mock(Cache.class);
     LuceneQueryFactoryImpl f = new LuceneQueryFactoryImpl(cache);
     thrown.expect(IllegalArgumentException.class);
-    LuceneQuery<Object, Object> query = f.create("index", "region", new StringQueryProvider("test"));
+    LuceneQuery<Object, Object> query = f.create("index", "region", new StringQueryProvider("test", DEFAULT_FIELD));
   }
 
 }

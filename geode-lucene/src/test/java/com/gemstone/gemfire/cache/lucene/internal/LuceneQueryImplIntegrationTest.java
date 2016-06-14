@@ -19,6 +19,7 @@
 
 package com.gemstone.gemfire.cache.lucene.internal;
 
+import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -29,8 +30,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.execute.FunctionAdapter;
@@ -68,7 +67,7 @@ public class LuceneQueryImplIntegrationTest extends LuceneIntegrationTest {
     TestLuceneFunction function = new TestLuceneFunction();
     FunctionService.registerFunction(function);
 
-    StringQueryProvider provider = new StringQueryProvider();
+    StringQueryProvider provider = new StringQueryProvider(null, DEFAULT_FIELD);
     LuceneQueryImpl<Object, Object> query = new LuceneQueryImpl<>("index", region, provider, null, LIMIT, 20);
     LuceneQueryResults<Object, Object> results = query.search();
 

@@ -76,12 +76,13 @@ public interface LuceneQueryFactory {
    * @param regionName region name
    * @param indexName index name
    * @param queryString query string in lucene QueryParser's syntax
+   * @param defaultField default field used by the Lucene Query Parser
    * @param <K> the key type in the query results
    * @param <V> the value type in the query results
    * @return LuceneQuery object
    * @throws ParseException
    */
-  public <K, V> LuceneQuery<K, V> create(String indexName, String regionName, String queryString) 
+  public <K, V> LuceneQuery<K, V> create(String indexName, String regionName, String queryString, String defaultField)
       throws ParseException;
 
   /**

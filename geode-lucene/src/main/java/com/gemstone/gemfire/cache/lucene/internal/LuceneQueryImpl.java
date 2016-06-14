@@ -42,8 +42,9 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
   /* the lucene Query object to be wrapped here */
   private LuceneQueryProvider query;
   private Region<K, V> region;
+  private String defaultField;
   
-  public LuceneQueryImpl(String indexName, Region<K, V> region, LuceneQueryProvider provider, String[] projectionFields, 
+  public LuceneQueryImpl(String indexName, Region<K, V> region, LuceneQueryProvider provider, String[] projectionFields,
       int limit, int pageSize) {
     this.indexName = indexName;
     this.region = region;

@@ -48,8 +48,8 @@ public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
   }
 
   @Override
-  public <K, V> LuceneQuery<K, V> create(String indexName, String regionName, String queryString) {
-    return create(indexName, regionName, new StringQueryProvider(queryString));
+  public <K, V> LuceneQuery<K, V> create(String indexName, String regionName, String queryString, String defaultField) {
+    return create(indexName, regionName, new StringQueryProvider(queryString, defaultField));
   }
   
   public <K, V> LuceneQuery<K, V> create(String indexName, String regionName, LuceneQueryProvider provider) {

@@ -20,12 +20,21 @@ package com.gemstone.gemfire.cache.lucene;
 
 import static com.gemstone.gemfire.cache.RegionShortcut.*;
 import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
-import static junitparams.JUnitParamsRunner.$;
+import static junitparams.JUnitParamsRunner.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+
+import com.jayway.awaitility.Awaitility;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
@@ -36,16 +45,6 @@ import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.rules.DiskDirRule;
-import com.jayway.awaitility.Awaitility;
-
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 
 /**
  * Tests of lucene index creation that use persistence
@@ -109,7 +108,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
     verifyIndexFinishFlushing(cache, INDEX_NAME, REGION_NAME);
     LuceneQuery<Object, Object> query = luceneService.createLuceneQueryFactory()
       .create(INDEX_NAME, REGION_NAME,
-        "field1:world");
+        "field1:world", DEFAULT_FIELD);
     assertEquals(1, query.search().size());
   }
 
@@ -127,7 +126,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
       .create(REGION_NAME);
     LuceneQuery<Object, Object> query = luceneService.createLuceneQueryFactory()
       .create(INDEX_NAME, REGION_NAME,
-      "field1:world");
+      "field1:world", DEFAULT_FIELD);
     assertEquals(1, query.search().size());
   }
 
@@ -138,8 +137,8 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
     LuceneServiceProvider.get(this.cache).createIndex(INDEX_NAME+"_2", REGION_NAME, "field2");
     Region region = cache.createRegionFactory(shortcut).create(REGION_NAME);
     region.put("key1", new TestObject());
-    verifyQueryResultSize(INDEX_NAME+"_1", REGION_NAME, "field1:world", 1);
-    verifyQueryResultSize(INDEX_NAME+"_2", REGION_NAME, "field2:field", 1);
+    verifyQueryResultSize(INDEX_NAME+"_1", REGION_NAME, "field1:world", DEFAULT_FIELD, 1);
+    verifyQueryResultSize(INDEX_NAME+"_2", REGION_NAME, "field2:field", DEFAULT_FIELD, 1);
   }
 
   @Test
@@ -160,8 +159,8 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
     });
   }
 
-  private void verifyQueryResultSize(String indexName, String regionName, String queryString, int size) throws ParseException {
-    LuceneQuery query = luceneService.createLuceneQueryFactory().create(indexName, regionName, queryString);
+  private void verifyQueryResultSize(String indexName, String regionName, String queryString, String defaultField, int size) throws ParseException {
+    LuceneQuery query = luceneService.createLuceneQueryFactory().create(indexName, regionName, queryString, defaultField);
     Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
       assertEquals(size, query.search().size());
     });

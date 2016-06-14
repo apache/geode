@@ -18,6 +18,7 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
+import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class LuceneFunctionContextJUnitTest {
   public void testSerialization() {
     LuceneServiceImpl.registerDataSerializables();
 
-    LuceneQueryProvider provider = new StringQueryProvider("text");
+    LuceneQueryProvider provider = new StringQueryProvider("text", DEFAULT_FIELD);
     CollectorManager<TopEntriesCollector> manager = new TopEntriesCollectorManager("test");
     LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(provider, "testIndex", manager, 123);
 

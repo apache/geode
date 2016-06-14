@@ -18,6 +18,7 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal;
 
+import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -31,7 +32,6 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import com.gemstone.gemfire.CopyHelper;
-import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
@@ -53,7 +53,7 @@ public class StringQueryProviderJUnitTest {
 
   @Test
   public void testQueryConstruction() throws QueryException {
-    StringQueryProvider provider = new StringQueryProvider("foo:bar");
+    StringQueryProvider provider = new StringQueryProvider("foo:bar", DEFAULT_FIELD);
     Query query = provider.getQuery(mockIndex);
     Assert.assertNotNull(query);
     assertEquals("foo:bar", query.toString());
@@ -62,7 +62,7 @@ public class StringQueryProviderJUnitTest {
   @Test
   @Ignore("Custom analyzer not yet supported, this is a duplicate test right now")
   public void usesCustomAnalyzer() throws QueryException {
-    StringQueryProvider provider = new StringQueryProvider("findThis");
+    StringQueryProvider provider = new StringQueryProvider("findThis", DEFAULT_FIELD);
     Query query = provider.getQuery(mockIndex);
     Assert.assertNotNull(query);
     assertEquals("field-1:findthis field-2:findthis", query.toString());
@@ -70,15 +70,24 @@ public class StringQueryProviderJUnitTest {
 
   @Test(expected = QueryException.class)
   public void errorsOnMalformedQueryString() throws QueryException {
-    StringQueryProvider provider = new StringQueryProvider("invalid:lucene:query:string");
+    StringQueryProvider provider = new StringQueryProvider("invalid:lucene:query:string", DEFAULT_FIELD);
     provider.getQuery(mockIndex);
   }
   
   @Test
   public void testSerialization() {
     LuceneServiceImpl.registerDataSerializables();
-    StringQueryProvider provider = new StringQueryProvider("text:search");
+    StringQueryProvider provider = new StringQueryProvider("text:search", DEFAULT_FIELD);
     StringQueryProvider copy = CopyHelper.deepCopy(provider);
     assertEquals("text:search", copy.getQueryString());
   }
+
+  @Test
+  public void defaultFieldParameterShouldBeUsedByQuery() throws QueryException {
+    StringQueryProvider provider = new StringQueryProvider("findThis",  "field-2");
+    Query query = provider.getQuery(mockIndex);
+    Assert.assertNotNull(query);
+    assertEquals("field-2:findthis", query.toString());
+  }
+
 }

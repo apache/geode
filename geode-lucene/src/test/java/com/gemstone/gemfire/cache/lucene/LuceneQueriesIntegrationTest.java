@@ -16,7 +16,8 @@
  */
 package com.gemstone.gemfire.cache.lucene;
 
-import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.verifyQueryKeys;
+import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
+import static javax.swing.Action.DEFAULT;
 import static org.hamcrest.Matchers.isA;
 import static org.junit.Assert.assertEquals;
 
@@ -83,28 +84,28 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     // but standard analyzer will parse value "one@three" to be "one three"
     // query will be--fields1:"one three"
     // so C will be hit by query
-    verifyQuery("field1:\"one three\"", "A", "C");
+    verifyQuery("field1:\"one three\"", DEFAULT_FIELD, "A", "C");
     
     // standard analyzer will not tokenize by '_'
     // this query string will be parsed as "one_three"
     // query will be--field1:one_three
-    verifyQuery("field1:one_three");
+    verifyQuery("field1:one_three", DEFAULT_FIELD);
     
     // standard analyzer will tokenize by '@'
     // this query string will be parsed as "one" "three"
     // query will be--field1:one field1:three
-    verifyQuery("field1:one@three", "A", "B", "C");
+    verifyQuery("field1:one@three", DEFAULT_FIELD, "A", "B", "C");
     
     // keyword analyzer, this query will only match the entry that exactly matches
     // this query string will be parsed as "one three"
     // but keyword analyzer will parse one@three to be "one three"
     // query will be--field2:one three
-    verifyQuery("field2:\"one three\"", "A");
+    verifyQuery("field2:\"one three\"", DEFAULT_FIELD, "A");
 
     // keyword analyzer without double quote. It should be the same as 
     // with double quote
     // query will be--field2:one@three
-    verifyQuery("field2:one@three", "C");
+    verifyQuery("field2:one@three", DEFAULT_FIELD, "C");
   }
 
   @Test()
@@ -130,9 +131,9 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
     index.waitUntilFlushed(60000);
 
-    verifyQuery("field1:one AND field2:two_four", "A");
-    verifyQuery("field1:one AND field2:two", "A");
-    verifyQuery("field1:three AND field2:four", "A");
+    verifyQuery("field1:one AND field2:two_four", DEFAULT_FIELD, "A");
+    verifyQuery("field1:one AND field2:two", DEFAULT_FIELD, "A");
+    verifyQuery("field1:three AND field2:four", DEFAULT_FIELD, "A");
   }
 
   @Test()
@@ -150,7 +151,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     region.put("A", new TestObject(value1, null));
     index.waitUntilFlushed(60000);
 
-    verifyQuery("field1:one", "A");
+    verifyQuery("field1:one", DEFAULT_FIELD, "A");
   }
 
   @Test()
@@ -162,7 +163,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
     //Create a query that throws an exception
     final LuceneQuery<Object, Object> query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
-      index -> {
+      (index) -> {
         throw new QueryException("Bad query");
       });
 
@@ -178,9 +179,9 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   }
 
-  private void verifyQuery(String query, String ... expectedKeys) throws ParseException {
+  private void verifyQuery(String query, String defaultField, String ... expectedKeys) throws ParseException {
     final LuceneQuery<String, Object> queryWithStandardAnalyzer = luceneService.createLuceneQueryFactory().create(
-      INDEX_NAME, REGION_NAME, query);
+      INDEX_NAME, REGION_NAME, query, defaultField);
 
     verifyQueryKeys(queryWithStandardAnalyzer, expectedKeys);
   }

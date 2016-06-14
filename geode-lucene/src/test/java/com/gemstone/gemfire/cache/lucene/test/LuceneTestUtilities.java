@@ -42,6 +42,7 @@ import com.gemstone.gemfire.internal.cache.LocalRegion;
 public class LuceneTestUtilities {
   public static final String INDEX_NAME = "index";
   public static final String REGION_NAME = "region";
+  public static final String DEFAULT_FIELD = "text";
 
   public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS = "Cannot create Lucene index index on region /region with fields [field1, field2] because another member defines the same index with fields [field1].";
   public static final String CANNOT_CREATE_LUCENE_INDEX_NO_ANALYZER_FIELD2 = "Cannot create Lucene index index on region /region with no analyzer on field field2 because another member defines the same index with analyzer org.apache.lucene.analysis.core.KeywordAnalyzer on that field.";

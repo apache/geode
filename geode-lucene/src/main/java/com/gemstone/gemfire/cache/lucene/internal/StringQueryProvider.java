@@ -52,12 +52,15 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
   // the following members hold derived objects and need not be serialized
   private transient Query luceneQuery;
 
+  private String defaultField;
+
   public StringQueryProvider() {
-    this(null);
+    this(null, null);
   }
 
-  public StringQueryProvider(String query) {
+  public StringQueryProvider(String query, String defaultField) {
     this.query = query;
+    this.defaultField = defaultField;
   }
 
   @Override
@@ -68,7 +71,7 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
       LuceneIndexImpl indexImpl = (LuceneIndexImpl) index;
       StandardQueryParser parser = new StandardQueryParser(indexImpl.getAnalyzer());
       try {
-        luceneQuery = parser.parse(query, fields[0]);
+        luceneQuery = parser.parse(query, defaultField);
         if (logger.isDebugEnabled()) {
           logger.debug("User query " + query + " is parsed to be: " + luceneQuery);
         }
@@ -100,10 +103,12 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(query, out);
+    DataSerializer.writeString(defaultField, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     query = DataSerializer.readString(in);
+    defaultField = DataSerializer.readString(in);
   }
 }

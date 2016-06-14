@@ -18,35 +18,23 @@
  */
 package com.gemstone.gemfire.cache.lucene;
 
-import static com.gemstone.gemfire.cache.RegionShortcut.*;
 import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
-import static junitparams.JUnitParamsRunner.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 import com.gemstone.gemfire.cache.EvictionAction;
 import com.gemstone.gemfire.cache.EvictionAlgorithm;
-import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionFactory;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.cache.lucene.internal.repository.serializer.Type1;
-import com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities;
-import com.gemstone.gemfire.cache.lucene.test.TestObject;
 import com.gemstone.gemfire.internal.cache.EvictionAttributesImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.rules.DiskDirRule;
-import com.jayway.awaitility.Awaitility;
 
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,7 +42,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 
 /**
  * Tests of lucene index creation that use persistence
@@ -108,7 +95,7 @@ public class LuceneQueriesPersistenceIntegrationTest extends LuceneIntegrationTe
     assertNotNull(chunkRegion);
     Assert.assertTrue(0 < userRegion.getDiskRegionStats().getNumOverflowOnDisk());
 
-    LuceneQuery<Integer, Type1> query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "s:world");
+    LuceneQuery<Integer, Type1> query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "s:world", DEFAULT_FIELD);
     LuceneQueryResults<Integer, Type1> results = query.search();
     Assert.assertEquals(3, results.size());
   }

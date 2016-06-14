@@ -19,6 +19,7 @@
 
 package com.gemstone.gemfire.cache.lucene.internal.distributed;
 
+import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -32,7 +33,6 @@ import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.ResultSender;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
-import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneIndex;
 import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneService;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexImpl;
 import com.gemstone.gemfire.cache.lucene.internal.StringQueryProvider;
@@ -272,7 +272,7 @@ public class LuceneFunctionJUnitTest {
     mockCache = mock(InternalCache.class);
     Analyzer analyzer = new StandardAnalyzer();
     Mockito.doReturn(analyzer).when(mockIndex).getAnalyzer();
-    queryProvider = new StringQueryProvider("gemfire:lucene");
+    queryProvider = new StringQueryProvider("gemfire:lucene", DEFAULT_FIELD);
     
     searchArgs = new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName");
 

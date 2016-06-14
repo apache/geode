@@ -42,4 +42,5 @@ public interface LuceneQueryProvider extends Serializable {
    * @throws QueryException if the provider fails to construct the query object
    */
   public Query getQuery(LuceneIndex index) throws QueryException;
+
 }
