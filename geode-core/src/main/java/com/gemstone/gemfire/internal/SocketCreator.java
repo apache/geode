@@ -16,6 +16,8 @@
  */
 package com.gemstone.gemfire.internal;
 
+import static javafx.scene.input.KeyCode.L;
+
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.SystemFailure;
@@ -765,16 +767,22 @@ public class SocketCreator {
    *  SSL configuration is left up to JSSE properties in java.security file.
    */
   public ServerSocket createServerSocket( int nport, int backlog, InetAddress bindAddr ) throws IOException {
-    return createServerSocket( nport, backlog, bindAddr, -1 );
+    return createServerSocket( nport, backlog, bindAddr, -1, useSSL);
   }
 
   public ServerSocket createServerSocket(int nport, int backlog,
-      InetAddress bindAddr, int socketBufferSize)
+                                         InetAddress bindAddr, int socketBufferSize)
+    throws IOException {
+    return createServerSocket(nport, backlog, bindAddr, socketBufferSize, useSSL);
+  }
+  
+  private ServerSocket createServerSocket(int nport, int backlog,
+      InetAddress bindAddr, int socketBufferSize, boolean sslConnection)
       throws IOException {
     //       rw.readLock().lockInterruptibly();
 //       try {
         printConfig();
-        if ( this.useSSL ) {
+        if ( sslConnection ) {
           if (this.sslContext == null) {
             throw new GemFireConfigException("SSL not configured correctly, Please look at previous error");
           }
@@ -830,7 +838,23 @@ public class SocketCreator {
   public ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
       boolean isBindAddress, boolean useNIO, int tcpBufferSize, int[] tcpPortRange)
       throws IOException {
-    
+    return createServerSocketUsingPortRange(ba, backlog, isBindAddress, useNIO, tcpBufferSize, tcpPortRange, this.useSSL);
+  }
+
+    /**
+     * Creates or bind server socket to a random port selected
+     * from tcp-port-range which is same as membership-port-range.
+     * @param ba
+     * @param backlog
+     * @param isBindAddress
+     * @param tcpBufferSize
+     * @param sslConnection whether to connect using SSL
+     * @return Returns the new server socket.
+     * @throws IOException
+     */
+    public ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
+    boolean isBindAddress, boolean useNIO, int tcpBufferSize, int[] tcpPortRange, boolean sslConnection)
+    throws IOException {
     ServerSocket socket = null;
     int localPort = 0;
     int startingPort = 0;
@@ -862,7 +886,8 @@ public class SocketCreator {
           InetSocketAddress addr = new InetSocketAddress(isBindAddress ? ba : null, localPort);
           socket.bind(addr, backlog);
         } else {
-          socket = SocketCreator.getDefaultInstance().createServerSocket(localPort, backlog, isBindAddress? ba : null, tcpBufferSize);
+          socket = SocketCreator.getDefaultInstance()
+                                .createServerSocket(localPort, backlog, isBindAddress? ba : null, tcpBufferSize, sslConnection);
         }
         break;
       } catch (java.net.SocketException ex) {

@@ -569,7 +569,9 @@ public class Connection implements Runnable {
     if (isSocketClosed()) {
       return true;
     }
-    if (isSocketInUse()) {
+    if (isSocketInUse()
+        || (this.sharedResource && !this.preserveOrder)) { // shared/unordered connections are used for failure-detection
+                                                           // and are not subject to idle-timeout
       return false;
     }
     boolean isIdle = !this.accessed;

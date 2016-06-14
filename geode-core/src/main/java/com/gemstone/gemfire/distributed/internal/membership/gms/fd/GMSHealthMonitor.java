@@ -19,6 +19,7 @@ package com.gemstone.gemfire.distributed.internal.membership.gms.fd;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.HEARTBEAT_REQUEST;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.HEARTBEAT_RESPONSE;
 import static com.gemstone.gemfire.internal.DataSerializableFixedID.SUSPECT_MEMBERS_MESSAGE;
+import static com.sun.corba.se.impl.naming.cosnaming.NamingUtils.debug;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -195,7 +196,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       return timeStamp;
     }
 
-    public void setTimeStamp(long timeStamp) {
+    public void setTime(long timeStamp) {
       this.timeStamp = timeStamp;
     }
   }
@@ -289,48 +290,41 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         long uuidMSBs = in.readLong();
         GMSHealthMonitor.this.stats.incFinalCheckRequestsReceived();
         GMSHealthMonitor.this.stats.incTcpFinalCheckRequestsReceived();
-        boolean debug = logger.isDebugEnabled();
         GMSMember gmbr = (GMSMember) GMSHealthMonitor.this.localAddress.getNetMember();
         UUID myUUID = gmbr.getUUID();
         // during reconnect or rapid restart we will have a zero viewId but there may still
         // be an old ID in the membership view that we do not want to respond to
         int myVmViewId = gmbr.getVmViewId();
-        if (debug) {
-          if (playingDead) {
-            logger.debug("simulating sick member in health check");
-          } else if (vmViewId == myVmViewId
-            && uuidLSBs == myUUID.getLeastSignificantBits()
-            && uuidMSBs == myUUID.getMostSignificantBits()) {
-            logger.debug("UUID matches my own - sending OK reply");
-          } else {
-            logger.debug("GMSHealthMonitor my UUID is {},{} received is {},{}.  My viewID is {} received is {}",
-              Long.toHexString(myUUID.getMostSignificantBits()),
-              Long.toHexString(myUUID.getLeastSignificantBits()),
-              Long.toHexString(uuidMSBs), Long.toHexString(uuidLSBs),
-              myVmViewId, vmViewId);
-          }
-        }
-        if (!playingDead
-            && uuidLSBs == myUUID.getLeastSignificantBits()
-            && uuidMSBs == myUUID.getMostSignificantBits()
-            && vmViewId == myVmViewId) {
+        if (playingDead) {
+          logger.debug("HealthMonitor: simulating sick member in health check");
+        } else if (uuidLSBs == myUUID.getLeastSignificantBits()
+                   && uuidMSBs == myUUID.getMostSignificantBits()
+                   && vmViewId == myVmViewId) {
+          logger.debug("HealthMonitor: sending OK reply");
           out.write(OK);
           out.flush();
           socket.shutdownOutput();
           GMSHealthMonitor.this.stats.incFinalCheckResponsesSent();
           GMSHealthMonitor.this.stats.incTcpFinalCheckResponsesSent();
           if (debug) {
-            logger.debug("GMSHealthMonitor server socket replied OK.");
+            logger.debug("HealthMonitor: server replied OK.");
           }
-        }
-        else {
+        } else {
+          if (logger.isDebugEnabled()) {
+            logger.debug("HealthMonitor: sending ERROR reply - my UUID is {},{} received is {},{}.  My viewID is {} received is {}", 
+              Long.toHexString(myUUID.getMostSignificantBits()),
+              Long.toHexString(myUUID.getLeastSignificantBits()), 
+              Long.toHexString(uuidMSBs),
+              Long.toHexString(uuidLSBs),
+              myVmViewId, vmViewId);
+          }
           out.write(ERROR);
           out.flush();
           socket.shutdownOutput();
           GMSHealthMonitor.this.stats.incFinalCheckResponsesSent();
           GMSHealthMonitor.this.stats.incTcpFinalCheckResponsesSent();
           if (debug) {
-            logger.debug("GMSHealthMonitor server socket replied ERROR.");
+            logger.debug("HealthMonitor: server replied ERROR.");
           }
         }
       } catch (IOException e) {
@@ -376,8 +370,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   private void contactedBy(InternalDistributedMember sender, long timeStamp) {
     TimeStamp cTS = new TimeStamp(timeStamp);
     cTS = memberTimeStamps.putIfAbsent(sender, cTS);
-    if (cTS != null) {
-      cTS.setTimeStamp(timeStamp);
+    if (cTS != null && cTS.getTime() < timeStamp) {
+      cTS.setTime(timeStamp);
     }
     if (suspectedMemberInView.remove(sender) != null) {
       logger.info("No longer suspecting {}", sender);
@@ -405,8 +399,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
       @Override
       public void run() {
-        // TODO GemFire used the tcp/ip connection but this is using heartbeats
-
         boolean pinged = false;
         try {
           pinged = GMSHealthMonitor.this.doCheckMember(mbr, true);
@@ -455,9 +447,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     long startTime = System.currentTimeMillis();
     logger.trace("Checking member {}", member);
     final HeartbeatRequestMessage hrm = constructHeartbeatRequestMessage(member);
-    final Response pingResp = new Response();
-    if(waitForResponse) {
+    Response pingResp = null;
+    if (waitForResponse) {
+      pingResp = new Response();
       requestIdVsResponse.put(hrm.getRequestId(), pingResp);
+    } else {
+      hrm.clearRequestId();
     }
     try {
       Set<InternalDistributedMember> membersNotReceivedMsg = this.services.getMessenger().send(hrm);
@@ -484,7 +479,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
             logger.trace("received heartbeat from {}", member);
             this.stats.incHeartbeatsReceived();
             if (ts != null) {
-              ts.setTimeStamp(System.currentTimeMillis());
+              ts.setTime(System.currentTimeMillis());
             }
             return true;
           }
@@ -547,12 +542,13 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
         GMSMember gmbr = (GMSMember) suspectMember.getNetMember();
         writeMemberToStream(gmbr, out);
-        clientSocket.shutdownOutput();
         this.stats.incFinalCheckRequestsSent();
         this.stats.incTcpFinalCheckRequestsSent();
-        logger.debug("Connected - reading response from suspect member {}", suspectMember);
+        logger.debug("Connected to suspect member - reading response");
         int b = in.read();
-        logger.debug("Received {}", (b == OK ? "OK" : (b == ERROR ? "ERROR" : b)), suspectMember);
+        if (logger.isDebugEnabled()) {
+          logger.debug("Received {}", (b == OK ? "OK" : (b == ERROR ? "ERROR" : "unknown response: " + b)));
+        }
         if (b >= 0) {
           this.stats.incFinalCheckResponsesReceived();
           this.stats.incTcpFinalCheckResponsesReceived();
@@ -560,7 +556,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         if (b == OK) {
           TimeStamp ts = memberTimeStamps.get(suspectMember);
           if (ts != null) {
-            ts.setTimeStamp(System.currentTimeMillis());
+            ts.setTime(System.currentTimeMillis());
           }
           return true;
         } else {
@@ -659,7 +655,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) {
     ServerSocket serverSocket = null;
     try {
-      serverSocket = SocketCreator.getDefaultInstance().createServerSocketUsingPortRange(socketAddress, 50/*backlog*/, true/*isBindAddress*/, false/*useNIO*/, 65536/*tcpBufferSize*/, portRange);
+      serverSocket = SocketCreator.getDefaultInstance().createServerSocketUsingPortRange(socketAddress, 50/*backlog*/, 
+        true/*isBindAddress*/, false/*useNIO*/, 65536/*tcpBufferSize*/, portRange, false);
       socketPort = serverSocket.getLocalPort();
     } catch (IOException e) {
       throw new GemFireConfigException("Unable to allocate a failure detection port in the membership-port range", e);
@@ -1285,8 +1282,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         //this will just send heartbeat request, it will not wait for response
         //if we will get heartbeat then it will change the timestamp, which we are 
         //checking below in case of tcp check failure..
-        GMSHealthMonitor.this.doCheckMember(mbr, false);
-        pinged = GMSHealthMonitor.this.doTCPCheckMember(mbr, port);
+        doCheckMember(mbr, false);
+        pinged = doTCPCheckMember(mbr, port);
       }
   
       if (!pinged && !isStopping) {
