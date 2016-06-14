@@ -1993,6 +1993,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         {
           Integer k = new Integer(4);
           assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
+          assertFalse(hmm.getState().isCritical());
+          assertTrue(r.containsKey(k));
         }
         
         // Place in a critical state for the next test
@@ -2004,6 +2006,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         {
           Integer k = new Integer(5);
           assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
+          assertTrue(hmm.getState().isCritical());
+          assertFalse(r.containsKey(k));
         }
 
         newfakeHeapUsage = Math.round(fakeHeapMaxSize * (criticalHeapThresh - 0.3f));  // below critical by 30%
@@ -2015,6 +2019,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         {
           Integer k = new Integer(6);
           assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
+          assertFalse(hmm.getState().isCritical());
+          assertTrue(r.containsKey(k));
         }
         return new Integer(expectedInvocations);
       }
