@@ -118,15 +118,15 @@ public class DistributionConfigJUnitTest {
   }
 
   @Test
-  public void testAttributeDesc(){
+  public void testAttributeDesc() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    for(String attName:attNames){
-      assertTrue("Does not contain description for attribute "+ attName, AbstractDistributionConfig.dcAttDescriptions.containsKey(attName));
+    for (String attName : attNames) {
+      assertTrue("Does not contain description for attribute " + attName, AbstractDistributionConfig.dcAttDescriptions.containsKey(attName));
     }
     List<String> attList = Arrays.asList(attNames);
-    for(Object attName:AbstractDistributionConfig.dcAttDescriptions.keySet()){
-      if(!attList.contains(attName)){
-        System.out.println("Has unused description for "+attName.toString());
+    for (Object attName : AbstractDistributionConfig.dcAttDescriptions.keySet()) {
+      if (!attList.contains(attName)) {
+        System.out.println("Has unused description for " + attName.toString());
       }
     }
   }
@@ -328,7 +328,7 @@ public class DistributionConfigJUnitTest {
 
 
   @Test
-  public void testSecurityProps(){
+  public void testSecurityProps() {
     Properties props = new Properties();
     props.put(SECURITY_MANAGER, JSONAuthorization.class.getName());
     props.put(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
@@ -341,7 +341,7 @@ public class DistributionConfigJUnitTest {
   }
 
   @Test
-  public void testSecurityPropsWithNoSetter(){
+  public void testSecurityPropsWithNoSetter() {
     Properties props = new Properties();
     props.put(SECURITY_MANAGER, JSONAuthorization.class.getName());
     props.put(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());

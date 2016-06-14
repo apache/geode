@@ -48,56 +48,58 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
  * update the {@link AbstractConfig#sameAs} method and the {@link
  * DistributionConfigImpl#DistributionConfigImpl(DistributionConfig)
  * copy constructor}.
- *
- *
  */
 @SuppressWarnings("deprecation")
-public abstract class AbstractDistributionConfig extends AbstractConfig implements DistributionConfig
-{
+public abstract class AbstractDistributionConfig extends AbstractConfig implements DistributionConfig {
 
-  protected Object checkAttribute(String attName, Object value){
+  protected Object checkAttribute(String attName, Object value) {
     // first check to see if this attribute is modifiable, this also checks if the attribute is a valid one.
     if (!isAttributeModifiable(attName)) {
       throw new UnmodifiableException(_getUnmodifiableMsg(attName));
     }
 
     ConfigAttribute attribute = attributes.get(attName);
-    if(attribute==null){
+    if (attribute == null) {
       // isAttributeModifiable already checks the validity of the attName, if reached here, then they
       // must be those special attributes that starts with ssl_system_props or sys_props, no further checking needed
       return value;
     }
     // for integer attribute, do the range check.
-    if(attribute.type().equals(Integer.class)){
-      Integer intValue = (Integer)value;
+    if (attribute.type().equals(Integer.class)) {
+      Integer intValue = (Integer) value;
       minMaxCheck(attName, intValue, attribute.min(), attribute.max());
     }
 
     Method checker = checkers.get(attName);
-    if(checker==null)
+    if (checker == null) {
       return value;
+    }
 
     // if specific checker exists for this attribute, call that with the value
     try {
       return checker.invoke(this, value);
     } catch (Exception e) {
-      if(e instanceof RuntimeException){
-        throw (RuntimeException)e;
+      if (e instanceof RuntimeException) {
+        throw (RuntimeException) e;
       }
-      if(e.getCause() instanceof RuntimeException){
-        throw (RuntimeException)e.getCause();
+      if (e.getCause() instanceof RuntimeException) {
+        throw (RuntimeException) e.getCause();
+      } else {
+        throw new InternalGemFireException("error invoking " + checker.getName() + " with value " + value);
       }
-      else
-        throw new InternalGemFireException("error invoking "+checker.getName()+" with value "+value);
     }
   }
 
 
   protected void minMaxCheck(String propName, int value, int minValue, int maxValue) {
     if (value < minValue) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[]{propName, Integer.valueOf(value), Integer.valueOf(minValue)}));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {
+        propName, Integer.valueOf(value), Integer.valueOf(minValue)
+      }));
     } else if (value > maxValue) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[]{propName, Integer.valueOf(value), Integer.valueOf(maxValue)}));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {
+        propName, Integer.valueOf(value), Integer.valueOf(maxValue)
+      }));
     }
   }
 
@@ -112,18 +114,20 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
   @ConfigAttributeChecker(name = TCP_PORT)
   protected int checkTcpPort(int value) {
-    if ( getClusterSSLEnabled() && value != 0 ) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE
-          .toLocalizedString(new Object[] { TCP_PORT, Integer.valueOf(value), CLUSTER_SSL_ENABLED }));
+    if (getClusterSSLEnabled() && value != 0) {
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE.toLocalizedString(new Object[] {
+        TCP_PORT, Integer.valueOf(value), CLUSTER_SSL_ENABLED
+      }));
     }
     return value;
   }
 
   @ConfigAttributeChecker(name = MCAST_PORT)
   protected int checkMcastPort(int value) {
-    if ( getClusterSSLEnabled() && value != 0 ) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE
-          .toLocalizedString(new Object[] { MCAST_PORT, Integer.valueOf(value), CLUSTER_SSL_ENABLED }));
+    if (getClusterSSLEnabled() && value != 0) {
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE.toLocalizedString(new Object[] {
+        MCAST_PORT, Integer.valueOf(value), CLUSTER_SSL_ENABLED
+      }));
     }
     return value;
   }
@@ -131,8 +135,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
   @ConfigAttributeChecker(name = MCAST_ADDRESS)
   protected InetAddress checkMcastAddress(InetAddress value) {
     if (!value.isMulticastAddress()) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_IT_WAS_NOT_A_MULTICAST_ADDRESS
-          .toLocalizedString(new Object[] { MCAST_ADDRESS, value }));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_IT_WAS_NOT_A_MULTICAST_ADDRESS.toLocalizedString(new Object[] {
+        MCAST_ADDRESS, value
+      }));
     }
     return value;
   }
@@ -141,10 +146,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
   protected String checkBindAddress(String value) {
     if (value != null && value.length() > 0 &&
         !SocketCreator.isLocalHost(value)) {
-      throw new IllegalArgumentException(
-        LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1
-          .toLocalizedString(new Object[]{value, SocketCreator.getMyAddresses()
-          }));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1.toLocalizedString(new Object[] {
+        value, SocketCreator.getMyAddresses()
+      }));
     }
     return value;
   }
@@ -153,52 +157,50 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
   protected String checkServerBindAddress(String value) {
     if (value != null && value.length() > 0 &&
         !SocketCreator.isLocalHost(value)) {
-      throw new IllegalArgumentException(
-        LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1
-          .toLocalizedString(new Object[]{value, SocketCreator.getMyAddresses()
-          }));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1.toLocalizedString(new Object[] {
+        value, SocketCreator.getMyAddresses()
+      }));
     }
     return value;
   }
 
-  @ConfigAttributeChecker(name=CLUSTER_SSL_ENABLED)
+  @ConfigAttributeChecker(name = CLUSTER_SSL_ENABLED)
   protected Boolean checkClusterSSLEnabled(Boolean value) {
-    if ( value.booleanValue() && (getMcastPort() != 0) ) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_FALSE_WHEN_2_IS_NOT_0
-          .toLocalizedString(new Object[] { CLUSTER_SSL_ENABLED, value, MCAST_PORT }));
+    if (value.booleanValue() && (getMcastPort() != 0)) {
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_FALSE_WHEN_2_IS_NOT_0.toLocalizedString(new Object[] {
+        CLUSTER_SSL_ENABLED, value, MCAST_PORT
+      }));
     }
     return value;
   }
 
-  @ConfigAttributeChecker(name=HTTP_SERVICE_BIND_ADDRESS)
+  @ConfigAttributeChecker(name = HTTP_SERVICE_BIND_ADDRESS)
   protected String checkHttpServiceBindAddress(String value) {
     if (value != null && value.length() > 0 &&
         !SocketCreator.isLocalHost(value)) {
-      throw new IllegalArgumentException(
-        LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1
-          .toLocalizedString(new Object[]{value, SocketCreator.getMyAddresses()
-          }));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1.toLocalizedString(new Object[] {
+        value, SocketCreator.getMyAddresses()
+      }));
     }
     return value;
   }
 
 
-  @ConfigAttributeChecker(name=DISTRIBUTED_SYSTEM_ID)
+  @ConfigAttributeChecker(name = DISTRIBUTED_SYSTEM_ID)
   protected int checkDistributedSystemId(int value) {
-    String distributedSystemListener = System
-        .getProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener");
+    String distributedSystemListener = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener");
     //this check is specific for Jayesh's use case of WAN BootStraping
-    if(distributedSystemListener == null){
+    if (distributedSystemListener == null) {
       if (value < MIN_DISTRIBUTED_SYSTEM_ID) {
-        throw new IllegalArgumentException(
-            LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2
-                .toLocalizedString(new Object[] { DISTRIBUTED_SYSTEM_ID,
-                    Integer.valueOf(value),
-                    Integer.valueOf(MIN_DISTRIBUTED_SYSTEM_ID) }));
+        throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {
+          DISTRIBUTED_SYSTEM_ID, Integer.valueOf(value), Integer.valueOf(MIN_DISTRIBUTED_SYSTEM_ID)
+        }));
       }
     }
     if (value > MAX_DISTRIBUTED_SYSTEM_ID) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {DISTRIBUTED_SYSTEM_ID, Integer.valueOf(value), Integer.valueOf(MAX_DISTRIBUTED_SYSTEM_ID)}));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {
+        DISTRIBUTED_SYSTEM_ID, Integer.valueOf(value), Integer.valueOf(MAX_DISTRIBUTED_SYSTEM_ID)
+      }));
     }
     return value;
   }
@@ -206,20 +208,18 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
   /**
    * Makes sure that the locator string used to configure discovery is
    * valid.
-   *
+   * <p>
    * <p>Starting in 4.0, we accept locators in the format
    * "host:port" in addition to the traditional "host:bind-address[port]" format.
    * See bug 32306.
-   *
+   * <p>
    * <p>Starting in 5.1.0.4, we accept locators in the format
    * "host@bind-address[port]" to allow use of numeric IPv6 addresses
-   *
    * @return The locator string in the traditional "host:bind-address[port]"
-   *         format.
+   * format.
    *
-   * @throws IllegalArgumentException
-   *         If <code>value</code> is not a valid locator
-   *         configuration
+   * @throws IllegalArgumentException If <code>value</code> is not a valid locator
+   * configuration
    */
   @ConfigAttributeChecker(name = LOCATORS)
   protected String checkLocators(String value) {
@@ -250,8 +250,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
         bindAddrIdx = locator.lastIndexOf(':', portIndex - 1);
       }
 
-      String host = locator.substring(0,
-          bindAddrIdx > -1 ? bindAddrIdx : portIndex);
+      String host = locator.substring(0, bindAddrIdx > -1 ? bindAddrIdx : portIndex);
 
       if (host.indexOf(':') >= 0) {
         bindAddrIdx = locator.lastIndexOf('@');
@@ -281,8 +280,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
         if (bindAddr.indexOf(':') >= 0) {
           locatorsb.append('@');
-        }
-        else {
+        } else {
           locatorsb.append(':');
         }
         locatorsb.append(bindAddr);
@@ -322,9 +320,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
       if (!locs.contains(sockAddr)) {
         if (!firstUniqueLocator) {
           sb.append(',');
-        }
-        else {
-          firstUniqueLocator=false;
+        } else {
+          firstUniqueLocator = false;
         }
         locs.add(new java.net.InetSocketAddress(hostAddress, portVal));
         sb.append(locatorsb);
@@ -334,119 +331,114 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     return sb.toString();
   }
 
-  /** check a new mcast flow-control setting */
-  @ConfigAttributeChecker(name=MCAST_FLOW_CONTROL)
+  /**
+   * check a new mcast flow-control setting
+   */
+  @ConfigAttributeChecker(name = MCAST_FLOW_CONTROL)
   protected FlowControlParams checkMcastFlowControl(FlowControlParams params) {
     int value = params.getByteAllowance();
     if (value < MIN_FC_BYTE_ALLOWANCE) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_BYTEALLOWANCE_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {MCAST_FLOW_CONTROL, Integer.valueOf(value), Integer.valueOf(MIN_FC_BYTE_ALLOWANCE)}));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_BYTEALLOWANCE_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2
+        .toLocalizedString(new Object[] { MCAST_FLOW_CONTROL, Integer.valueOf(value), Integer.valueOf(MIN_FC_BYTE_ALLOWANCE) }));
     }
     float fvalue = params.getRechargeThreshold();
     if (fvalue < MIN_FC_RECHARGE_THRESHOLD) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_RECHARGETHRESHOLD_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {MCAST_FLOW_CONTROL, new Float(fvalue), new Float(MIN_FC_RECHARGE_THRESHOLD)}));
-    }
-    else if (fvalue > MAX_FC_RECHARGE_THRESHOLD) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_RECHARGETHRESHOLD_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {MCAST_FLOW_CONTROL, new Float(fvalue), new Float(MAX_FC_RECHARGE_THRESHOLD)}));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_RECHARGETHRESHOLD_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2
+        .toLocalizedString(new Object[] { MCAST_FLOW_CONTROL, new Float(fvalue), new Float(MIN_FC_RECHARGE_THRESHOLD) }));
+    } else if (fvalue > MAX_FC_RECHARGE_THRESHOLD) {
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_RECHARGETHRESHOLD_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2
+        .toLocalizedString(new Object[] { MCAST_FLOW_CONTROL, new Float(fvalue), new Float(MAX_FC_RECHARGE_THRESHOLD) }));
     }
     value = params.getRechargeBlockMs();
     if (value < MIN_FC_RECHARGE_BLOCK_MS) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_RECHARGEBLOCKMS_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {MCAST_FLOW_CONTROL, Integer.valueOf(value), Integer.valueOf(MIN_FC_RECHARGE_BLOCK_MS)}));
-    }
-    else if (value > MAX_FC_RECHARGE_BLOCK_MS) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_RECHARGEBLOCKMS_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {MCAST_FLOW_CONTROL, Integer.valueOf(value), Integer.valueOf(MAX_FC_RECHARGE_BLOCK_MS)}));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_RECHARGEBLOCKMS_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2
+        .toLocalizedString(new Object[] { MCAST_FLOW_CONTROL, Integer.valueOf(value), Integer.valueOf(MIN_FC_RECHARGE_BLOCK_MS) }));
+    } else if (value > MAX_FC_RECHARGE_BLOCK_MS) {
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_RECHARGEBLOCKMS_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2
+        .toLocalizedString(new Object[] { MCAST_FLOW_CONTROL, Integer.valueOf(value), Integer.valueOf(MAX_FC_RECHARGE_BLOCK_MS) }));
     }
     return params;
   }
 
 
-  @ConfigAttributeChecker(name=MEMBERSHIP_PORT_RANGE)
+  @ConfigAttributeChecker(name = MEMBERSHIP_PORT_RANGE)
   protected int[] checkMembershipPortRange(int[] value) {
-    minMaxCheck(MEMBERSHIP_PORT_RANGE, value[0],
-        DEFAULT_MEMBERSHIP_PORT_RANGE[0],
-        value[1]);
-    minMaxCheck(MEMBERSHIP_PORT_RANGE, value[1],
-        value[0],
-        DEFAULT_MEMBERSHIP_PORT_RANGE[1]);
+    minMaxCheck(MEMBERSHIP_PORT_RANGE, value[0], DEFAULT_MEMBERSHIP_PORT_RANGE[0], value[1]);
+    minMaxCheck(MEMBERSHIP_PORT_RANGE, value[1], value[0], DEFAULT_MEMBERSHIP_PORT_RANGE[1]);
 
     // Minimum 3 ports are required to start a Gemfire data node,
     // One for each, UDP, FD_SOCk protocols and Cache Server.
     if (value[1] - value[0] < 2) {
       throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.
-          toLocalizedString(new Object[] {MEMBERSHIP_PORT_RANGE, value[0]+"-"+value[1], Integer.valueOf(3)}));
+                                                                                                                                                    toLocalizedString(new Object[] {
+                                                                                                                                                      MEMBERSHIP_PORT_RANGE,
+                                                                                                                                                      value[0] + "-" + value[1],
+                                                                                                                                                      Integer.valueOf(3)
+                                                                                                                                                    }));
     }
     return value;
   }
 
 
-  /** @since GemFire 5.7 */
-  @ConfigAttributeChecker(name=CLIENT_CONFLATION_PROP_NAME)
+  /**
+   * @since GemFire 5.7
+   */
+  @ConfigAttributeChecker(name = CLIENT_CONFLATION_PROP_NAME)
   protected String checkClientConflation(String value) {
-    if (! (value.equals(CLIENT_CONFLATION_PROP_VALUE_DEFAULT) ||
-            value.equals(CLIENT_CONFLATION_PROP_VALUE_ON) ||
-              value.equals(CLIENT_CONFLATION_PROP_VALUE_OFF)) ) {
+    if (!(value.equals(CLIENT_CONFLATION_PROP_VALUE_DEFAULT) ||
+          value.equals(CLIENT_CONFLATION_PROP_VALUE_ON) ||
+          value.equals(CLIENT_CONFLATION_PROP_VALUE_OFF))) {
       throw new IllegalArgumentException("Could not set \"" + CONFLATE_EVENTS + "\" to \"" + value + "\" because its value is not recognized");
     }
     return value;
   }
 
-  @ConfigAttributeChecker(name=SECURITY_PEER_AUTH_INIT)
+  @ConfigAttributeChecker(name = SECURITY_PEER_AUTH_INIT)
   protected String checkSecurityPeerAuthInit(String value) {
     if (value != null && value.length() > 0 && getMcastPort() != 0) {
       String mcastInfo = MCAST_PORT + "[" + getMcastPort() + "]";
-      throw new IllegalArgumentException(
-        LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_2_MUST_BE_0_WHEN_SECURITY_IS_ENABLED
-          .toLocalizedString(new Object[] {
-             SECURITY_PEER_AUTH_INIT, value, mcastInfo }));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_2_MUST_BE_0_WHEN_SECURITY_IS_ENABLED.toLocalizedString(new Object[] {
+        SECURITY_PEER_AUTH_INIT, value, mcastInfo
+      }));
     }
     return value;
   }
 
 
-  @ConfigAttributeChecker(name=SECURITY_PEER_AUTHENTICATOR)
+  @ConfigAttributeChecker(name = SECURITY_PEER_AUTHENTICATOR)
   protected String checkSecurityPeerAuthenticator(String value) {
     if (value != null && value.length() > 0 && getMcastPort() != 0) {
       String mcastInfo = MCAST_PORT + "[" + getMcastPort() + "]";
-      throw new IllegalArgumentException(
-        LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_2_MUST_BE_0_WHEN_SECURITY_IS_ENABLED
-        .toLocalizedString(
-          new Object[] {
-            SECURITY_PEER_AUTHENTICATOR,
-            value,
-            mcastInfo}));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_2_MUST_BE_0_WHEN_SECURITY_IS_ENABLED.toLocalizedString(new Object[] {
+        SECURITY_PEER_AUTHENTICATOR, value, mcastInfo
+      }));
     }
     return value;
   }
 
 
-  @ConfigAttributeChecker(name=SECURITY_LOG_LEVEL)
+  @ConfigAttributeChecker(name = SECURITY_LOG_LEVEL)
   protected int checkSecurityLogLevel(int value) {
     if (value < MIN_LOG_LEVEL) {
-      throw new IllegalArgumentException(
-        LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(
-          new Object[] {
-              SECURITY_LOG_LEVEL,
-              LogWriterImpl.levelToString(value),
-              LogWriterImpl.levelToString(MIN_LOG_LEVEL)}));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2.toLocalizedString(new Object[] {
+        SECURITY_LOG_LEVEL, LogWriterImpl.levelToString(value), LogWriterImpl.levelToString(MIN_LOG_LEVEL)
+      }));
     }
     if (value > MAX_LOG_LEVEL) {
-      throw new IllegalArgumentException(
-        LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(
-        new Object[] {
-            SECURITY_LOG_LEVEL,
-            LogWriterImpl.levelToString(value),
-            LogWriterImpl.levelToString(MAX_LOG_LEVEL)}));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2.toLocalizedString(new Object[] {
+        SECURITY_LOG_LEVEL, LogWriterImpl.levelToString(value), LogWriterImpl.levelToString(MAX_LOG_LEVEL)
+      }));
     }
     return value;
   }
 
 
-  @ConfigAttributeChecker(name=MEMCACHED_PROTOCOL)
+  @ConfigAttributeChecker(name = MEMCACHED_PROTOCOL)
   protected String checkMemcachedProtocol(String protocol) {
-    if (protocol == null
-        || (!protocol.equalsIgnoreCase(GemFireMemcachedServer.Protocol.ASCII.name()) &&
-            !protocol.equalsIgnoreCase(GemFireMemcachedServer.Protocol.BINARY.name()))) {
+    if (protocol == null || (!protocol.equalsIgnoreCase(GemFireMemcachedServer.Protocol.ASCII.name()) && !protocol.equalsIgnoreCase(GemFireMemcachedServer.Protocol.BINARY
+      .name()))) {
       throw new IllegalArgumentException(LocalizedStrings.
-          AbstractDistributionConfig_MEMCACHED_PROTOCOL_MUST_BE_ASCII_OR_BINARY.toLocalizedString());
+        AbstractDistributionConfig_MEMCACHED_PROTOCOL_MUST_BE_ASCII_OR_BINARY.toLocalizedString());
     }
     return protocol;
   }
@@ -455,26 +447,24 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     return false;
   }
 
-  @ConfigAttributeChecker(name=MEMCACHED_BIND_ADDRESS)
+  @ConfigAttributeChecker(name = MEMCACHED_BIND_ADDRESS)
   protected String checkMemcachedBindAddress(String value) {
     if (value != null && value.length() > 0 &&
         !SocketCreator.isLocalHost(value)) {
-      throw new IllegalArgumentException(
-        LocalizedStrings.AbstractDistributionConfig_MEMCACHED_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1
-          .toLocalizedString(new Object[]{value, SocketCreator.getMyAddresses()
-          }));
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_MEMCACHED_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1.toLocalizedString(new Object[] {
+        value, SocketCreator.getMyAddresses()
+      }));
     }
     return value;
   }
 
-  @ConfigAttributeChecker(name=REDIS_BIND_ADDRESS)
+  @ConfigAttributeChecker(name = REDIS_BIND_ADDRESS)
   protected String checkRedisBindAddress(String value) {
     if (value != null && value.length() > 0 &&
-            !SocketCreator.isLocalHost(value)) {
-      throw new IllegalArgumentException(
-              LocalizedStrings.AbstractDistributionConfig_REDIS_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1
-                      .toLocalizedString(new Object[]{value, SocketCreator.getMyAddresses()
-                      }));
+        !SocketCreator.isLocalHost(value)) {
+      throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_REDIS_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1.toLocalizedString(new Object[] {
+        value, SocketCreator.getMyAddresses()
+      }));
     }
     return value;
   }
@@ -483,8 +473,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
   @Override
   protected void checkAttributeName(String attName) {
-    if(!attName.startsWith(SECURITY_PREFIX) && !attName.startsWith(USERDEFINED_PREFIX_NAME)
-        && !attName.startsWith(SSL_SYSTEM_PROPS_NAME) && !attName.startsWith(SYS_PROP_NAME)) {
+    if (!attName.startsWith(SECURITY_PREFIX) && !attName.startsWith(USERDEFINED_PREFIX_NAME) && !attName.startsWith(SSL_SYSTEM_PROPS_NAME) && !attName.startsWith(SYS_PROP_NAME)) {
       super.checkAttributeName(attName);
     }
   }
@@ -499,7 +488,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     if (attValue != null) {
       // null is a "valid" value for any class
       if (!validValueClass.isInstance(attValue)) {
-        throw new InvalidValueException(LocalizedStrings.AbstractDistributionConfig_0_VALUE_1_MUST_BE_OF_TYPE_2.toLocalizedString(new Object[]{attName, attValue, validValueClass.getName()}));
+        throw new InvalidValueException(LocalizedStrings.AbstractDistributionConfig_0_VALUE_1_MUST_BE_OF_TYPE_2.toLocalizedString(new Object[] {
+          attName, attValue, validValueClass.getName()
+        }));
       }
     }
 
@@ -509,14 +500,14 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     }
 
     // special case: log-level and security-log-level attributes are String type, but the setter accepts int
-    if(attName.equalsIgnoreCase(LOG_LEVEL) || attName.equalsIgnoreCase(SECURITY_LOG_LEVEL)){
-      if(attValue instanceof String) {
+    if (attName.equalsIgnoreCase(LOG_LEVEL) || attName.equalsIgnoreCase(SECURITY_LOG_LEVEL)) {
+      if (attValue instanceof String) {
         attValue = LogWriterImpl.levelNameToCode((String) attValue);
       }
     }
 
     if (attName.startsWith(SECURITY_PREFIX)) {
-      this.setSecurity(attName,attValue.toString());
+      this.setSecurity(attName, attValue.toString());
     }
 
     if (attName.startsWith(SSL_SYSTEM_PROPS_NAME) || attName.startsWith(SYS_PROP_NAME)) {
@@ -528,8 +519,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
       // if we cann't find the defined setter, but the attributeName starts with these special characters
       // since we already set it in the respecitive properties above, we need to set the source then return
       if (attName.startsWith(SECURITY_PREFIX) ||
-        attName.startsWith(SSL_SYSTEM_PROPS_NAME) ||
-        attName.startsWith(SYS_PROP_NAME)) {
+          attName.startsWith(SSL_SYSTEM_PROPS_NAME) ||
+          attName.startsWith(SYS_PROP_NAME)) {
         getAttSourceMap().put(attName, source);
         return;
       }
@@ -537,21 +528,22 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     }
 
     Class[] pTypes = setter.getParameterTypes();
-    if (pTypes.length != 1)
+    if (pTypes.length != 1) {
       throw new InternalGemFireException("the attribute setter must have one and only one parametter");
+    }
 
 
     try {
       setter.invoke(this, attValue);
     } catch (Exception e) {
-      if(e instanceof RuntimeException){
-        throw (RuntimeException)e;
+      if (e instanceof RuntimeException) {
+        throw (RuntimeException) e;
       }
-      if(e.getCause() instanceof RuntimeException){
-        throw (RuntimeException)e.getCause();
+      if (e.getCause() instanceof RuntimeException) {
+        throw (RuntimeException) e.getCause();
+      } else {
+        throw new InternalGemFireException("error invoking " + setter.getName() + " with " + attValue, e);
       }
-      else
-        throw new InternalGemFireException("error invoking "+setter.getName()+" with "+attValue, e);
     }
 
     getAttSourceMap().put(attName, source);
@@ -570,7 +562,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     }
 
     Method getter = getters.get(attName);
-    if(getter==null) {
+    if (getter == null) {
       if (attName.startsWith(SECURITY_PREFIX)) {
         return this.getSecurity(attName);
       }
@@ -580,25 +572,27 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     try {
       return getter.invoke(this);
     } catch (Exception e) {
-      if(e instanceof RuntimeException){
-        throw (RuntimeException)e;
+      if (e instanceof RuntimeException) {
+        throw (RuntimeException) e;
       }
-      if(e.getCause() instanceof RuntimeException){
-        throw (RuntimeException)e.getCause();
-      }
-      else
+      if (e.getCause() instanceof RuntimeException) {
+        throw (RuntimeException) e.getCause();
+      } else {
         throw new InternalGemFireException("error invoking " + getter.getName(), e);
+      }
     }
   }
 
 
   public boolean isAttributeModifiable(String attName) {
     checkAttributeName(attName);
-    if(getModifiableAttributes().contains(attName))
+    if (getModifiableAttributes().contains(attName)) {
       return true;
+    }
 
-    if(getUnModifiableAttributes().contains(attName))
+    if (getUnModifiableAttributes().contains(attName)) {
       return false;
+    }
     // otherwise, return the default
     return _modifiableDefault();
   }
@@ -608,21 +602,25 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
    * child class can override this method to return a list of modifiable attributes
    * no matter what the default is
    * @return an empty list
-     */
-  public List<String> getModifiableAttributes(){
-    String[] modifiables = {HTTP_SERVICE_PORT,JMX_MANAGER_HTTP_PORT};
+   */
+  public List<String> getModifiableAttributes() {
+    String[] modifiables = { HTTP_SERVICE_PORT, JMX_MANAGER_HTTP_PORT };
     return Arrays.asList(modifiables);
-  };
+  }
+
+  ;
 
   /**
    * child class can override this method to return a list of unModifiable attributes
    * no matter what the default is
    * @return an empty list
    */
-  public List<String> getUnModifiableAttributes(){
+  public List<String> getUnModifiableAttributes() {
     String[] list = {};
     return Arrays.asList(list);
-  };
+  }
+
+  ;
 
   public Class getAttributeType(String attName) {
     checkAttributeName(attName);
@@ -631,8 +629,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
   public static Class _getAttributeType(String attName) {
     ConfigAttribute ca = attributes.get(attName);
-    if(ca==null){
-      if(attName.startsWith(SECURITY_PREFIX) || attName.startsWith(SSL_SYSTEM_PROPS_NAME) || attName.startsWith(SYS_PROP_NAME) ){
+    if (ca == null) {
+      if (attName.startsWith(SECURITY_PREFIX) || attName.startsWith(SSL_SYSTEM_PROPS_NAME) || attName.startsWith(SYS_PROP_NAME)) {
         return String.class;
       }
       throw new InternalGemFireException(LocalizedStrings.AbstractDistributionConfig_UNHANDLED_ATTRIBUTE_NAME_0.toLocalizedString(attName));
@@ -641,349 +639,216 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
   }
 
   protected static final Map dcAttDescriptions;
+
   static {
-    Map<String, String> m =  new HashMap<String, String>();
+    Map<String, String> m = new HashMap<String, String>();
 
-    m.put(ACK_WAIT_THRESHOLD,
-      LocalizedStrings.AbstractDistributionConfig_DEFAULT_ACK_WAIT_THRESHOLD_0_1_2
-      .toLocalizedString( new Object[] { 
-          Integer.valueOf(DEFAULT_ACK_WAIT_THRESHOLD),
-          Integer.valueOf(MIN_ACK_WAIT_THRESHOLD),
-          Integer.valueOf(MIN_ACK_WAIT_THRESHOLD)}));
+    m.put(ACK_WAIT_THRESHOLD, LocalizedStrings.AbstractDistributionConfig_DEFAULT_ACK_WAIT_THRESHOLD_0_1_2.toLocalizedString(new Object[] {
+      Integer.valueOf(DEFAULT_ACK_WAIT_THRESHOLD), Integer.valueOf(MIN_ACK_WAIT_THRESHOLD), Integer.valueOf(MIN_ACK_WAIT_THRESHOLD)
+    }));
 
-    m.put(ARCHIVE_FILE_SIZE_LIMIT,
-      LocalizedStrings.AbstractDistributionConfig_ARCHIVE_FILE_SIZE_LIMIT_NAME
-        .toLocalizedString());
+    m.put(ARCHIVE_FILE_SIZE_LIMIT, LocalizedStrings.AbstractDistributionConfig_ARCHIVE_FILE_SIZE_LIMIT_NAME.toLocalizedString());
 
-    m.put(ACK_SEVERE_ALERT_THRESHOLD,
-      LocalizedStrings.AbstractDistributionConfig_ACK_SEVERE_ALERT_THRESHOLD_NAME
-        .toLocalizedString( 
-           new Object[] { ACK_WAIT_THRESHOLD,
-                          Integer.valueOf(DEFAULT_ACK_SEVERE_ALERT_THRESHOLD),
-                          Integer.valueOf(MIN_ACK_SEVERE_ALERT_THRESHOLD),
-                          Integer.valueOf(MAX_ACK_SEVERE_ALERT_THRESHOLD)}));
+    m.put(ACK_SEVERE_ALERT_THRESHOLD, LocalizedStrings.AbstractDistributionConfig_ACK_SEVERE_ALERT_THRESHOLD_NAME.toLocalizedString(new Object[] {
+      ACK_WAIT_THRESHOLD,
+      Integer.valueOf(DEFAULT_ACK_SEVERE_ALERT_THRESHOLD),
+      Integer.valueOf(MIN_ACK_SEVERE_ALERT_THRESHOLD),
+      Integer.valueOf(MAX_ACK_SEVERE_ALERT_THRESHOLD)
+    }));
 
-    m.put(ARCHIVE_DISK_SPACE_LIMIT,
-      LocalizedStrings.AbstractDistributionConfig_ARCHIVE_DISK_SPACE_LIMIT_NAME
-        .toLocalizedString());
+    m.put(ARCHIVE_DISK_SPACE_LIMIT, LocalizedStrings.AbstractDistributionConfig_ARCHIVE_DISK_SPACE_LIMIT_NAME.toLocalizedString());
 
-    m.put(CACHE_XML_FILE,
-      LocalizedStrings.AbstractDistributionConfig_CACHE_XML_FILE_NAME_0
-        .toLocalizedString( DEFAULT_CACHE_XML_FILE ));
+    m.put(CACHE_XML_FILE, LocalizedStrings.AbstractDistributionConfig_CACHE_XML_FILE_NAME_0.toLocalizedString(DEFAULT_CACHE_XML_FILE));
 
-    m.put(DISABLE_TCP,
-      LocalizedStrings.AbstractDistributionConfig_DISABLE_TCP_NAME_0
-        .toLocalizedString(Boolean.valueOf(DEFAULT_DISABLE_TCP)));
+    m.put(DISABLE_TCP, LocalizedStrings.AbstractDistributionConfig_DISABLE_TCP_NAME_0.toLocalizedString(Boolean.valueOf(DEFAULT_DISABLE_TCP)));
 
-    m.put(ENABLE_TIME_STATISTICS,
-      LocalizedStrings.AbstractDistributionConfig_ENABLE_TIME_STATISTICS_NAME
-        .toLocalizedString());
+    m.put(ENABLE_TIME_STATISTICS, LocalizedStrings.AbstractDistributionConfig_ENABLE_TIME_STATISTICS_NAME.toLocalizedString());
 
-    m.put(DEPLOY_WORKING_DIR,
-        LocalizedStrings.AbstractDistributionConfig_DEPLOY_WORKING_DIR_0 
-          .toLocalizedString(DEFAULT_DEPLOY_WORKING_DIR));
+    m.put(DEPLOY_WORKING_DIR, LocalizedStrings.AbstractDistributionConfig_DEPLOY_WORKING_DIR_0.toLocalizedString(DEFAULT_DEPLOY_WORKING_DIR));
 
-    m.put(LOG_FILE,
-      LocalizedStrings.AbstractDistributionConfig_LOG_FILE_NAME_0
-        .toLocalizedString(DEFAULT_LOG_FILE));
+    m.put(LOG_FILE, LocalizedStrings.AbstractDistributionConfig_LOG_FILE_NAME_0.toLocalizedString(DEFAULT_LOG_FILE));
 
-    m.put(LOG_LEVEL,
-      LocalizedStrings.AbstractDistributionConfig_LOG_LEVEL_NAME_0_1 
-        .toLocalizedString(new Object[] { LogWriterImpl.levelToString(DEFAULT_LOG_LEVEL), LogWriterImpl.allowedLogLevels()}));
+    m.put(LOG_LEVEL, LocalizedStrings.AbstractDistributionConfig_LOG_LEVEL_NAME_0_1.toLocalizedString(new Object[] {
+      LogWriterImpl.levelToString(DEFAULT_LOG_LEVEL), LogWriterImpl.allowedLogLevels()
+    }));
 
-    m.put(LOG_FILE_SIZE_LIMIT,
-      LocalizedStrings.AbstractDistributionConfig_LOG_FILE_SIZE_LIMIT_NAME
-        .toLocalizedString());
+    m.put(LOG_FILE_SIZE_LIMIT, LocalizedStrings.AbstractDistributionConfig_LOG_FILE_SIZE_LIMIT_NAME.toLocalizedString());
 
-    m.put(LOG_DISK_SPACE_LIMIT,
-      LocalizedStrings.AbstractDistributionConfig_LOG_DISK_SPACE_LIMIT_NAME
-        .toLocalizedString());
+    m.put(LOG_DISK_SPACE_LIMIT, LocalizedStrings.AbstractDistributionConfig_LOG_DISK_SPACE_LIMIT_NAME.toLocalizedString());
 
-    m.put(LOCATORS,
-      LocalizedStrings.AbstractDistributionConfig_LOCATORS_NAME_0
-        .toLocalizedString(DEFAULT_LOCATORS));
+    m.put(LOCATORS, LocalizedStrings.AbstractDistributionConfig_LOCATORS_NAME_0.toLocalizedString(DEFAULT_LOCATORS));
 
-    m.put(LOCATOR_WAIT_TIME,
-      LocalizedStrings.AbstractDistributionConfig_LOCATOR_WAIT_TIME_NAME_0
-        .toLocalizedString(Integer.valueOf(DEFAULT_LOCATOR_WAIT_TIME)));
+    m.put(LOCATOR_WAIT_TIME, LocalizedStrings.AbstractDistributionConfig_LOCATOR_WAIT_TIME_NAME_0.toLocalizedString(Integer.valueOf(DEFAULT_LOCATOR_WAIT_TIME)));
 
-    m.put(TCP_PORT,
-      LocalizedStrings.AbstractDistributionConfig_TCP_PORT_NAME_0_1_2
-        .toLocalizedString( new Object[] {
-          Integer.valueOf(DEFAULT_TCP_PORT),
-          Integer.valueOf(MIN_TCP_PORT),
-          Integer.valueOf(MAX_TCP_PORT)}));
+    m.put(TCP_PORT, LocalizedStrings.AbstractDistributionConfig_TCP_PORT_NAME_0_1_2.toLocalizedString(new Object[] {
+      Integer.valueOf(DEFAULT_TCP_PORT), Integer.valueOf(MIN_TCP_PORT), Integer.valueOf(MAX_TCP_PORT)
+    }));
 
-    m.put(MCAST_PORT,
-      LocalizedStrings.AbstractDistributionConfig_MCAST_PORT_NAME_0_1_2
-       .toLocalizedString(new Object[] {
-          Integer.valueOf(DEFAULT_MCAST_PORT),
-          Integer.valueOf(MIN_MCAST_PORT), 
-          Integer.valueOf(MAX_MCAST_PORT)}));
+    m.put(MCAST_PORT, LocalizedStrings.AbstractDistributionConfig_MCAST_PORT_NAME_0_1_2.toLocalizedString(new Object[] {
+      Integer.valueOf(DEFAULT_MCAST_PORT), Integer.valueOf(MIN_MCAST_PORT), Integer.valueOf(MAX_MCAST_PORT)
+    }));
 
-    m.put(MCAST_ADDRESS,
-      LocalizedStrings.AbstractDistributionConfig_MCAST_ADDRESS_NAME_0_1
-       .toLocalizedString(new Object[] {
-          Integer.valueOf(DEFAULT_MCAST_PORT),
-          DEFAULT_MCAST_ADDRESS}));
+    m.put(MCAST_ADDRESS, LocalizedStrings.AbstractDistributionConfig_MCAST_ADDRESS_NAME_0_1.toLocalizedString(new Object[] {
+      Integer.valueOf(DEFAULT_MCAST_PORT), DEFAULT_MCAST_ADDRESS
+    }));
 
-    m.put(MCAST_TTL,
-      LocalizedStrings.AbstractDistributionConfig_MCAST_TTL_NAME_0_1_2
-       .toLocalizedString(new Object[] {
-          Integer.valueOf(DEFAULT_MCAST_TTL),
-          Integer.valueOf(MIN_MCAST_TTL),
-          Integer.valueOf(MAX_MCAST_TTL)}));
+    m.put(MCAST_TTL, LocalizedStrings.AbstractDistributionConfig_MCAST_TTL_NAME_0_1_2.toLocalizedString(new Object[] {
+      Integer.valueOf(DEFAULT_MCAST_TTL), Integer.valueOf(MIN_MCAST_TTL), Integer.valueOf(MAX_MCAST_TTL)
+    }));
 
-    m.put(MCAST_SEND_BUFFER_SIZE,
-      LocalizedStrings.AbstractDistributionConfig_MCAST_SEND_BUFFER_SIZE_NAME_0
-       .toLocalizedString(Integer.valueOf(DEFAULT_MCAST_SEND_BUFFER_SIZE)));
+    m.put(MCAST_SEND_BUFFER_SIZE, LocalizedStrings.AbstractDistributionConfig_MCAST_SEND_BUFFER_SIZE_NAME_0.toLocalizedString(Integer.valueOf(DEFAULT_MCAST_SEND_BUFFER_SIZE)));
 
-    m.put(MCAST_RECV_BUFFER_SIZE,
-      LocalizedStrings.AbstractDistributionConfig_MCAST_RECV_BUFFER_SIZE_NAME_0
-       .toLocalizedString(Integer.valueOf(DEFAULT_MCAST_RECV_BUFFER_SIZE)));
+    m.put(MCAST_RECV_BUFFER_SIZE, LocalizedStrings.AbstractDistributionConfig_MCAST_RECV_BUFFER_SIZE_NAME_0.toLocalizedString(Integer.valueOf(DEFAULT_MCAST_RECV_BUFFER_SIZE)));
 
-    m.put(MCAST_FLOW_CONTROL,
-      LocalizedStrings.AbstractDistributionConfig_MCAST_FLOW_CONTROL_NAME_0
-       .toLocalizedString(DEFAULT_MCAST_FLOW_CONTROL));
+    m.put(MCAST_FLOW_CONTROL, LocalizedStrings.AbstractDistributionConfig_MCAST_FLOW_CONTROL_NAME_0.toLocalizedString(DEFAULT_MCAST_FLOW_CONTROL));
 
-    m.put(MEMBER_TIMEOUT,
-        LocalizedStrings.AbstractDistributionConfig_MEMBER_TIMEOUT_NAME_0
-        .toLocalizedString(Integer.valueOf(DEFAULT_MEMBER_TIMEOUT)));
-    
+    m.put(MEMBER_TIMEOUT, LocalizedStrings.AbstractDistributionConfig_MEMBER_TIMEOUT_NAME_0.toLocalizedString(Integer.valueOf(DEFAULT_MEMBER_TIMEOUT)));
+
     // for some reason the default port range is null under some circumstances
     int[] range = DEFAULT_MEMBERSHIP_PORT_RANGE;
-    String srange = range==null? "not available" : "" + range[0] + "-" + range[1];
-    String msg = LocalizedStrings.AbstractDistributionConfig_MEMBERSHIP_PORT_RANGE_NAME_0
-                          .toLocalizedString(srange); 
-    m.put(MEMBERSHIP_PORT_RANGE,
-        msg);
+    String srange = range == null ? "not available" : "" + range[0] + "-" + range[1];
+    String msg = LocalizedStrings.AbstractDistributionConfig_MEMBERSHIP_PORT_RANGE_NAME_0.toLocalizedString(srange);
+    m.put(MEMBERSHIP_PORT_RANGE, msg);
 
-    m.put(UDP_SEND_BUFFER_SIZE,
-      LocalizedStrings.AbstractDistributionConfig_UDP_SEND_BUFFER_SIZE_NAME_0
-       .toLocalizedString(Integer.valueOf(DEFAULT_UDP_SEND_BUFFER_SIZE)));
+    m.put(UDP_SEND_BUFFER_SIZE, LocalizedStrings.AbstractDistributionConfig_UDP_SEND_BUFFER_SIZE_NAME_0.toLocalizedString(Integer.valueOf(DEFAULT_UDP_SEND_BUFFER_SIZE)));
 
-    m.put(UDP_RECV_BUFFER_SIZE,
-      LocalizedStrings.AbstractDistributionConfig_UDP_RECV_BUFFER_SIZE_NAME_0
-       .toLocalizedString(Integer.valueOf(DEFAULT_UDP_RECV_BUFFER_SIZE)));
+    m.put(UDP_RECV_BUFFER_SIZE, LocalizedStrings.AbstractDistributionConfig_UDP_RECV_BUFFER_SIZE_NAME_0.toLocalizedString(Integer.valueOf(DEFAULT_UDP_RECV_BUFFER_SIZE)));
 
-    m.put(UDP_FRAGMENT_SIZE,
-      LocalizedStrings.AbstractDistributionConfig_UDP_FRAGMENT_SIZE_NAME_0
-       .toLocalizedString(Integer.valueOf(DEFAULT_UDP_FRAGMENT_SIZE)));
+    m.put(UDP_FRAGMENT_SIZE, LocalizedStrings.AbstractDistributionConfig_UDP_FRAGMENT_SIZE_NAME_0.toLocalizedString(Integer.valueOf(DEFAULT_UDP_FRAGMENT_SIZE)));
 
-    m.put(SOCKET_LEASE_TIME,
-      LocalizedStrings.AbstractDistributionConfig_SOCKET_LEASE_TIME_NAME_0_1_2
-       .toLocalizedString(new Object[] { 
-           Integer.valueOf(DEFAULT_SOCKET_LEASE_TIME),
-           Integer.valueOf(MIN_SOCKET_LEASE_TIME), 
-           Integer.valueOf(MAX_SOCKET_LEASE_TIME)}));
- 
-    m.put(SOCKET_BUFFER_SIZE,
-      LocalizedStrings.AbstractDistributionConfig_SOCKET_BUFFER_SIZE_NAME_0_1_2
-        .toLocalizedString(new Object[] {
-           Integer.valueOf(DEFAULT_SOCKET_BUFFER_SIZE),
-           Integer.valueOf(MIN_SOCKET_BUFFER_SIZE),
-           Integer.valueOf(MAX_SOCKET_BUFFER_SIZE)}));
+    m.put(SOCKET_LEASE_TIME, LocalizedStrings.AbstractDistributionConfig_SOCKET_LEASE_TIME_NAME_0_1_2.toLocalizedString(new Object[] {
+      Integer.valueOf(DEFAULT_SOCKET_LEASE_TIME), Integer.valueOf(MIN_SOCKET_LEASE_TIME), Integer.valueOf(MAX_SOCKET_LEASE_TIME)
+    }));
 
-    m.put(CONSERVE_SOCKETS,
-      LocalizedStrings.AbstractDistributionConfig_CONSERVE_SOCKETS_NAME_0
-        .toLocalizedString(Boolean.valueOf(DEFAULT_CONSERVE_SOCKETS)));
+    m.put(SOCKET_BUFFER_SIZE, LocalizedStrings.AbstractDistributionConfig_SOCKET_BUFFER_SIZE_NAME_0_1_2.toLocalizedString(new Object[] {
+      Integer.valueOf(DEFAULT_SOCKET_BUFFER_SIZE), Integer.valueOf(MIN_SOCKET_BUFFER_SIZE), Integer.valueOf(MAX_SOCKET_BUFFER_SIZE)
+    }));
 
-    m.put(ROLES,
-      LocalizedStrings.AbstractDistributionConfig_ROLES_NAME_0
-        .toLocalizedString(DEFAULT_ROLES));
+    m.put(CONSERVE_SOCKETS, LocalizedStrings.AbstractDistributionConfig_CONSERVE_SOCKETS_NAME_0.toLocalizedString(Boolean.valueOf(DEFAULT_CONSERVE_SOCKETS)));
 
-    m.put(BIND_ADDRESS,
-      LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_NAME_0
-        .toLocalizedString(DEFAULT_BIND_ADDRESS));
+    m.put(ROLES, LocalizedStrings.AbstractDistributionConfig_ROLES_NAME_0.toLocalizedString(DEFAULT_ROLES));
 
-    m.put(SERVER_BIND_ADDRESS,
-      LocalizedStrings.AbstractDistributionConfig_SERVER_BIND_ADDRESS_NAME_0
-        .toLocalizedString(DEFAULT_BIND_ADDRESS));
+    m.put(BIND_ADDRESS, LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_NAME_0.toLocalizedString(DEFAULT_BIND_ADDRESS));
+
+    m.put(SERVER_BIND_ADDRESS, LocalizedStrings.AbstractDistributionConfig_SERVER_BIND_ADDRESS_NAME_0.toLocalizedString(DEFAULT_BIND_ADDRESS));
 
     m.put(NAME, "A name that uniquely identifies a member in its distributed system." +
-        " Multiple members in the same distributed system can not have the same name." +
-        " Defaults to \"\".");
+                " Multiple members in the same distributed system can not have the same name." +
+                " Defaults to \"\".");
 
-    m.put(STATISTIC_ARCHIVE_FILE,
-      LocalizedStrings.AbstractDistributionConfig_STATISTIC_ARCHIVE_FILE_NAME_0
-        .toLocalizedString(DEFAULT_STATISTIC_ARCHIVE_FILE));
-   
-    m.put(STATISTIC_SAMPLE_RATE,
-      LocalizedStrings.AbstractDistributionConfig_STATISTIC_SAMPLE_RATE_NAME_0_1_2
-        .toLocalizedString(new Object[] {
-           Integer.valueOf(DEFAULT_STATISTIC_SAMPLE_RATE),
-           Integer.valueOf(MIN_STATISTIC_SAMPLE_RATE),
-           Integer.valueOf(MAX_STATISTIC_SAMPLE_RATE)}));
- 
-    m.put(STATISTIC_SAMPLING_ENABLED,
-      LocalizedStrings.AbstractDistributionConfig_STATISTIC_SAMPLING_ENABLED_NAME_0
-        .toLocalizedString(
-           Boolean.valueOf(DEFAULT_STATISTIC_SAMPLING_ENABLED)));
+    m.put(STATISTIC_ARCHIVE_FILE, LocalizedStrings.AbstractDistributionConfig_STATISTIC_ARCHIVE_FILE_NAME_0.toLocalizedString(DEFAULT_STATISTIC_ARCHIVE_FILE));
 
-    m.put(CLUSTER_SSL_ENABLED,
-        LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_NAME_0
-          .toLocalizedString(
-             Boolean.valueOf(DEFAULT_CLUSTER_SSL_ENABLED)));
+    m.put(STATISTIC_SAMPLE_RATE, LocalizedStrings.AbstractDistributionConfig_STATISTIC_SAMPLE_RATE_NAME_0_1_2.toLocalizedString(new Object[] {
+      Integer.valueOf(DEFAULT_STATISTIC_SAMPLE_RATE), Integer.valueOf(MIN_STATISTIC_SAMPLE_RATE), Integer.valueOf(MAX_STATISTIC_SAMPLE_RATE)
+    }));
 
-    m.put(CLUSTER_SSL_PROTOCOLS,
-        LocalizedStrings.AbstractDistributionConfig_SSL_PROTOCOLS_NAME_0
-          .toLocalizedString(DEFAULT_CLUSTER_SSL_PROTOCOLS));
+    m.put(STATISTIC_SAMPLING_ENABLED, LocalizedStrings.AbstractDistributionConfig_STATISTIC_SAMPLING_ENABLED_NAME_0.toLocalizedString(Boolean.valueOf(DEFAULT_STATISTIC_SAMPLING_ENABLED)));
 
-    m.put(CLUSTER_SSL_CIPHERS,
-        LocalizedStrings.AbstractDistributionConfig_SSL_CIPHERS_NAME_0
-          .toLocalizedString(DEFAULT_CLUSTER_SSL_CIPHERS));
+    m.put(CLUSTER_SSL_ALIAS, LocalizedStrings.AbstractDistributionConfig_CLUSTER_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_ALIAS)));
 
-    m.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION,
-        LocalizedStrings.AbstractDistributionConfig_SSL_REQUIRE_AUTHENTICATION_NAME
-          .toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION)));
-    
-    m.put(CLUSTER_SSL_KEYSTORE,"Location of the Java keystore file containing an distributed member's own certificate and private key.");
+    m.put(CLUSTER_SSL_ENABLED, LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_NAME_0.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_ENABLED)));
 
-    m.put(CLUSTER_SSL_KEYSTORE_TYPE,
-        "For Java keystore file format, this property has the value jks (or JKS).");
+    m.put(CLUSTER_SSL_PROTOCOLS, LocalizedStrings.AbstractDistributionConfig_SSL_PROTOCOLS_NAME_0.toLocalizedString(DEFAULT_CLUSTER_SSL_PROTOCOLS));
 
-    m.put(CLUSTER_SSL_KEYSTORE_PASSWORD,"Password to access the private key from the keystore file specified by javax.net.ssl.keyStore.");
+    m.put(CLUSTER_SSL_CIPHERS, LocalizedStrings.AbstractDistributionConfig_SSL_CIPHERS_NAME_0.toLocalizedString(DEFAULT_CLUSTER_SSL_CIPHERS));
 
-    m.put(CLUSTER_SSL_TRUSTSTORE,"Location of the Java keystore file containing the collection of CA certificates trusted by distributed member (trust store).");
-    
-    m.put(CLUSTER_SSL_TRUSTSTORE_PASSWORD,"Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
-    
-    m.put(MAX_WAIT_TIME_RECONNECT,
-      LocalizedStrings.AbstractDistributionConfig_MAX_WAIT_TIME_FOR_RECONNECT
-        .toLocalizedString());
+    m.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, LocalizedStrings.AbstractDistributionConfig_SSL_REQUIRE_AUTHENTICATION_NAME.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION)));
 
-    m.put(MAX_NUM_RECONNECT_TRIES,
-      LocalizedStrings.AbstractDistributionConfig_MAX_NUM_RECONNECT_TRIES
-        .toLocalizedString());
+    m.put(CLUSTER_SSL_KEYSTORE, "Location of the Java keystore file containing an distributed member's own certificate and private key.");
 
-    m.put(ASYNC_DISTRIBUTION_TIMEOUT,
-      LocalizedStrings.AbstractDistributionConfig_ASYNC_DISTRIBUTION_TIMEOUT_NAME_0_1_2
-        .toLocalizedString( new Object[] {
-            Integer.valueOf(DEFAULT_ASYNC_DISTRIBUTION_TIMEOUT),
-            Integer.valueOf(MIN_ASYNC_DISTRIBUTION_TIMEOUT),
-            Integer.valueOf(MAX_ASYNC_DISTRIBUTION_TIMEOUT)}));
-        
+    m.put(CLUSTER_SSL_KEYSTORE_TYPE, "For Java keystore file format, this property has the value jks (or JKS).");
 
-    m.put(ASYNC_QUEUE_TIMEOUT,
-      LocalizedStrings.AbstractDistributionConfig_ASYNC_QUEUE_TIMEOUT_NAME_0_1_2   
-        .toLocalizedString( new Object[] {
-          Integer.valueOf(DEFAULT_ASYNC_QUEUE_TIMEOUT),
-          Integer.valueOf(MIN_ASYNC_QUEUE_TIMEOUT),
-          Integer.valueOf(MAX_ASYNC_QUEUE_TIMEOUT)}));
-    
-    m.put(ASYNC_MAX_QUEUE_SIZE,
-      LocalizedStrings.AbstractDistributionConfig_ASYNC_MAX_QUEUE_SIZE_NAME_0_1_2   
-        .toLocalizedString( new Object[] {
-          Integer.valueOf(DEFAULT_ASYNC_MAX_QUEUE_SIZE),
-          Integer.valueOf(MIN_ASYNC_MAX_QUEUE_SIZE),
-            Integer.valueOf(MAX_ASYNC_MAX_QUEUE_SIZE) }));
+    m.put(CLUSTER_SSL_KEYSTORE_PASSWORD, "Password to access the private key from the keystore file specified by javax.net.ssl.keyStore.");
 
-    m.put(START_LOCATOR,
-      LocalizedStrings.AbstractDistributionConfig_START_LOCATOR_NAME
-        .toLocalizedString());
+    m.put(CLUSTER_SSL_TRUSTSTORE, "Location of the Java keystore file containing the collection of CA certificates trusted by distributed member (trust store).");
 
-    m.put(DURABLE_CLIENT_ID,
-      LocalizedStrings.AbstractDistributionConfig_DURABLE_CLIENT_ID_NAME_0
-        .toLocalizedString(DEFAULT_DURABLE_CLIENT_ID));
+    m.put(CLUSTER_SSL_TRUSTSTORE_PASSWORD, "Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
 
-    m.put(CONFLATE_EVENTS,
-      LocalizedStrings.AbstractDistributionConfig_CLIENT_CONFLATION_PROP_NAME
-        .toLocalizedString());
-    
-    m.put(DURABLE_CLIENT_TIMEOUT,
-      LocalizedStrings.AbstractDistributionConfig_DURABLE_CLIENT_TIMEOUT_NAME_0
-        .toLocalizedString(Integer.valueOf(DEFAULT_DURABLE_CLIENT_TIMEOUT)));
+    m.put(MAX_WAIT_TIME_RECONNECT, LocalizedStrings.AbstractDistributionConfig_MAX_WAIT_TIME_FOR_RECONNECT.toLocalizedString());
 
-    m.put(SECURITY_CLIENT_AUTH_INIT,
-      LocalizedStrings.AbstractDistributionConfig_SECURITY_CLIENT_AUTH_INIT_NAME_0
-        .toLocalizedString(DEFAULT_SECURITY_CLIENT_AUTH_INIT));
-    
+    m.put(MAX_NUM_RECONNECT_TRIES, LocalizedStrings.AbstractDistributionConfig_MAX_NUM_RECONNECT_TRIES.toLocalizedString());
+
+    m.put(ASYNC_DISTRIBUTION_TIMEOUT, LocalizedStrings.AbstractDistributionConfig_ASYNC_DISTRIBUTION_TIMEOUT_NAME_0_1_2.toLocalizedString(new Object[] {
+      Integer.valueOf(DEFAULT_ASYNC_DISTRIBUTION_TIMEOUT), Integer.valueOf(MIN_ASYNC_DISTRIBUTION_TIMEOUT), Integer.valueOf(MAX_ASYNC_DISTRIBUTION_TIMEOUT)
+    }));
+
+
+    m.put(ASYNC_QUEUE_TIMEOUT, LocalizedStrings.AbstractDistributionConfig_ASYNC_QUEUE_TIMEOUT_NAME_0_1_2.toLocalizedString(new Object[] {
+      Integer.valueOf(DEFAULT_ASYNC_QUEUE_TIMEOUT), Integer.valueOf(MIN_ASYNC_QUEUE_TIMEOUT), Integer.valueOf(MAX_ASYNC_QUEUE_TIMEOUT)
+    }));
+
+    m.put(ASYNC_MAX_QUEUE_SIZE, LocalizedStrings.AbstractDistributionConfig_ASYNC_MAX_QUEUE_SIZE_NAME_0_1_2.toLocalizedString(new Object[] {
+      Integer.valueOf(DEFAULT_ASYNC_MAX_QUEUE_SIZE), Integer.valueOf(MIN_ASYNC_MAX_QUEUE_SIZE), Integer.valueOf(MAX_ASYNC_MAX_QUEUE_SIZE)
+    }));
+
+    m.put(START_LOCATOR, LocalizedStrings.AbstractDistributionConfig_START_LOCATOR_NAME.toLocalizedString());
+
+    m.put(DURABLE_CLIENT_ID, LocalizedStrings.AbstractDistributionConfig_DURABLE_CLIENT_ID_NAME_0.toLocalizedString(DEFAULT_DURABLE_CLIENT_ID));
+
+    m.put(CONFLATE_EVENTS, LocalizedStrings.AbstractDistributionConfig_CLIENT_CONFLATION_PROP_NAME.toLocalizedString());
+
+    m.put(DURABLE_CLIENT_TIMEOUT, LocalizedStrings.AbstractDistributionConfig_DURABLE_CLIENT_TIMEOUT_NAME_0.toLocalizedString(Integer.valueOf(DEFAULT_DURABLE_CLIENT_TIMEOUT)));
+
+    m.put(SECURITY_CLIENT_AUTH_INIT, LocalizedStrings.AbstractDistributionConfig_SECURITY_CLIENT_AUTH_INIT_NAME_0.toLocalizedString(DEFAULT_SECURITY_CLIENT_AUTH_INIT));
+
     m.put(ENABLE_NETWORK_PARTITION_DETECTION, "Whether network partitioning detection is enabled");
-    
+
     m.put(DISABLE_AUTO_RECONNECT, "Whether auto reconnect is attempted after a network partition");
 
-    m.put(SECURITY_CLIENT_AUTHENTICATOR,
-      LocalizedStrings.AbstractDistributionConfig_SECURITY_CLIENT_AUTHENTICATOR_NAME_0
-        .toLocalizedString(DEFAULT_SECURITY_CLIENT_AUTHENTICATOR));
+    m.put(SECURITY_CLIENT_AUTHENTICATOR, LocalizedStrings.AbstractDistributionConfig_SECURITY_CLIENT_AUTHENTICATOR_NAME_0.toLocalizedString(DEFAULT_SECURITY_CLIENT_AUTHENTICATOR));
 
-    m.put(SECURITY_CLIENT_DHALGO,
-      LocalizedStrings.AbstractDistributionConfig_SECURITY_CLIENT_DHALGO_NAME_0
-        .toLocalizedString(DEFAULT_SECURITY_CLIENT_DHALGO));
+    m.put(SECURITY_CLIENT_DHALGO, LocalizedStrings.AbstractDistributionConfig_SECURITY_CLIENT_DHALGO_NAME_0.toLocalizedString(DEFAULT_SECURITY_CLIENT_DHALGO));
 
-    m.put(SECURITY_PEER_AUTH_INIT,
-      LocalizedStrings.AbstractDistributionConfig_SECURITY_PEER_AUTH_INIT_NAME_0
-        .toLocalizedString(DEFAULT_SECURITY_PEER_AUTH_INIT));
+    m.put(SECURITY_PEER_AUTH_INIT, LocalizedStrings.AbstractDistributionConfig_SECURITY_PEER_AUTH_INIT_NAME_0.toLocalizedString(DEFAULT_SECURITY_PEER_AUTH_INIT));
 
-    m.put(SECURITY_PEER_AUTHENTICATOR,
-      LocalizedStrings.AbstractDistributionConfig_SECURITY_PEER_AUTHENTICATOR_NAME_0
-        .toLocalizedString(DEFAULT_SECURITY_PEER_AUTHENTICATOR));
+    m.put(SECURITY_PEER_AUTHENTICATOR, LocalizedStrings.AbstractDistributionConfig_SECURITY_PEER_AUTHENTICATOR_NAME_0.toLocalizedString(DEFAULT_SECURITY_PEER_AUTHENTICATOR));
 
-    m.put(SECURITY_CLIENT_ACCESSOR,
-      LocalizedStrings.AbstractDistributionConfig_SECURITY_CLIENT_ACCESSOR_NAME_0
-        .toLocalizedString(DEFAULT_SECURITY_CLIENT_ACCESSOR));
+    m.put(SECURITY_CLIENT_ACCESSOR, LocalizedStrings.AbstractDistributionConfig_SECURITY_CLIENT_ACCESSOR_NAME_0.toLocalizedString(DEFAULT_SECURITY_CLIENT_ACCESSOR));
 
-    m.put(SECURITY_CLIENT_ACCESSOR_PP,
-      LocalizedStrings.AbstractDistributionConfig_SECURITY_CLIENT_ACCESSOR_PP_NAME_0
-        .toLocalizedString(DEFAULT_SECURITY_CLIENT_ACCESSOR_PP));
+    m.put(SECURITY_CLIENT_ACCESSOR_PP, LocalizedStrings.AbstractDistributionConfig_SECURITY_CLIENT_ACCESSOR_PP_NAME_0.toLocalizedString(DEFAULT_SECURITY_CLIENT_ACCESSOR_PP));
 
-    m.put(SECURITY_LOG_LEVEL,
-      LocalizedStrings.AbstractDistributionConfig_SECURITY_LOG_LEVEL_NAME_0_1
-        .toLocalizedString( new Object[] {
-           LogWriterImpl.levelToString(DEFAULT_LOG_LEVEL), 
-           LogWriterImpl.allowedLogLevels()}));
+    m.put(SECURITY_LOG_LEVEL, LocalizedStrings.AbstractDistributionConfig_SECURITY_LOG_LEVEL_NAME_0_1.toLocalizedString(new Object[] {
+      LogWriterImpl.levelToString(DEFAULT_LOG_LEVEL), LogWriterImpl.allowedLogLevels()
+    }));
 
-    m.put(SECURITY_LOG_FILE,
-      LocalizedStrings.AbstractDistributionConfig_SECURITY_LOG_FILE_NAME_0
-        .toLocalizedString(DEFAULT_SECURITY_LOG_FILE));
+    m.put(SECURITY_LOG_FILE, LocalizedStrings.AbstractDistributionConfig_SECURITY_LOG_FILE_NAME_0.toLocalizedString(DEFAULT_SECURITY_LOG_FILE));
 
-    m.put(SECURITY_PEER_VERIFY_MEMBER_TIMEOUT,
-      LocalizedStrings.AbstractDistributionConfig_SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME_0
-	.toLocalizedString(Integer.valueOf(DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT)));
+    m.put(SECURITY_PEER_VERIFY_MEMBER_TIMEOUT, LocalizedStrings.AbstractDistributionConfig_SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME_0.toLocalizedString(Integer.valueOf(DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT)));
 
-    m.put(SECURITY_PREFIX,
-      LocalizedStrings.AbstractDistributionConfig_SECURITY_PREFIX_NAME
-        .toLocalizedString());
+    m.put(SECURITY_PREFIX, LocalizedStrings.AbstractDistributionConfig_SECURITY_PREFIX_NAME.toLocalizedString());
 
-    m.put(USERDEFINED_PREFIX_NAME,
-        LocalizedStrings.AbstractDistributionConfig_USERDEFINED_PREFIX_NAME
-          .toLocalizedString());
+    m.put(USERDEFINED_PREFIX_NAME, LocalizedStrings.AbstractDistributionConfig_USERDEFINED_PREFIX_NAME.toLocalizedString());
 
-    m.put(REMOVE_UNRESPONSIVE_CLIENT,
-        LocalizedStrings.AbstractDistributionConfig_REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME_0
-          .toLocalizedString(DEFAULT_REMOVE_UNRESPONSIVE_CLIENT));
+    m.put(REMOVE_UNRESPONSIVE_CLIENT, LocalizedStrings.AbstractDistributionConfig_REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME_0.toLocalizedString(DEFAULT_REMOVE_UNRESPONSIVE_CLIENT));
 
     m.put(DELTA_PROPAGATION, "Whether delta propagation is enabled");
-    
-    m.put(REMOTE_LOCATORS,
-        LocalizedStrings.AbstractDistributionConfig_REMOTE_DISTRIBUTED_SYSTEMS_NAME_0
-          .toLocalizedString(DEFAULT_REMOTE_LOCATORS));
+
+    m.put(REMOTE_LOCATORS, LocalizedStrings.AbstractDistributionConfig_REMOTE_DISTRIBUTED_SYSTEMS_NAME_0.toLocalizedString(DEFAULT_REMOTE_LOCATORS));
 
     m.put(DISTRIBUTED_SYSTEM_ID, "An id that uniquely idenitifies this distributed system. " +
-        "Required when using portable data exchange objects and the WAN." +
-    		"Must be the same on each member in this distributed system if set.");
-    m.put(ENFORCE_UNIQUE_HOST, "Whether to require partitioned regions to put " +
-    		"redundant copies of data on different physical machines");
-    
-    m.put(REDUNDANCY_ZONE, "The zone that this member is in. When this is set, " +
-    		"partitioned regions will not put two copies of the same data in the same zone.");
+                                 "Required when using portable data exchange objects and the WAN." +
+                                 "Must be the same on each member in this distributed system if set.");
+    m.put(ENFORCE_UNIQUE_HOST, "Whether to require partitioned regions to put " + "redundant copies of data on different physical machines");
 
-    m.put(GROUPS, "A comma separated list of all the groups this member belongs to." +
-        " Defaults to \"\".");
-    
+    m.put(REDUNDANCY_ZONE, "The zone that this member is in. When this is set, " + "partitioned regions will not put two copies of the same data in the same zone.");
+
+    m.put(GROUPS, "A comma separated list of all the groups this member belongs to." + " Defaults to \"\".");
+
     m.put(USER_COMMAND_PACKAGES, "A comma separated list of the names of the packages containing classes that implement user commands.");
-    
+
     m.put(JMX_MANAGER, "If true then this member is willing to be a jmx manager. Defaults to false except on a locator.");
     m.put(JMX_MANAGER_START, "If true then the jmx manager will be started when the cache is created. Defaults to false.");
     m.put(JMX_MANAGER_SSL_ENABLED, "If true then the jmx manager will only allow SSL clients to connect. Defaults to false. This property is ignored if jmx-manager-port is \"0\".");
-    m.put(JMX_MANAGER_SSL_CIPHERS, "List of available SSL cipher suites that are to be enabled for JMX Manager. Defaults to \""+DEFAULT_JMX_MANAGER_SSL_CIPHERS+"\" meaning your provider''s defaults.");
-    m.put(JMX_MANAGER_SSL_PROTOCOLS, "List of available SSL protocols that are to be enabled for JMX Manager. Defaults to \""+DEFAULT_JMX_MANAGER_SSL_PROTOCOLS+"\" meaning defaults of your provider.");
-    m.put(JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION, "If set to false, ciphers and protocols that permit anonymous JMX Clients are allowed. Defaults to \""+DEFAULT_JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION+"\".");
-    m.put(JMX_MANAGER_SSL_KEYSTORE,"Location of the Java keystore file containing jmx manager's own certificate and private key.");
+    m.put(JMX_MANAGER_SSL_ALIAS, LocalizedStrings.AbstractDistributionConfig_JMX_MANAGER_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_ALIAS)));
+    m.put(JMX_MANAGER_SSL_CIPHERS, "List of available SSL cipher suites that are to be enabled for JMX Manager. Defaults to \"" + DEFAULT_JMX_MANAGER_SSL_CIPHERS + "\" meaning your provider''s defaults.");
+    m.put(JMX_MANAGER_SSL_PROTOCOLS, "List of available SSL protocols that are to be enabled for JMX Manager. Defaults to \"" + DEFAULT_JMX_MANAGER_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
+    m.put(JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION, "If set to false, ciphers and protocols that permit anonymous JMX Clients are allowed. Defaults to \"" + DEFAULT_JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION + "\".");
+    m.put(JMX_MANAGER_SSL_KEYSTORE, "Location of the Java keystore file containing jmx manager's own certificate and private key.");
     m.put(JMX_MANAGER_SSL_KEYSTORE_TYPE, "For Java keystore file format, this property has the value jks (or JKS).");
-    m.put(JMX_MANAGER_SSL_KEYSTORE_PASSWORD,"Password to access the private key from the keystore file specified by javax.net.ssl.keyStore. ");
-    m.put(JMX_MANAGER_SSL_TRUSTSTORE,"Location of the Java keystore file containing the collection of CA certificates trusted by jmx manager.");
-    m.put(JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD,"Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
-    
+    m.put(JMX_MANAGER_SSL_KEYSTORE_PASSWORD, "Password to access the private key from the keystore file specified by javax.net.ssl.keyStore. ");
+    m.put(JMX_MANAGER_SSL_TRUSTSTORE, "Location of the Java keystore file containing the collection of CA certificates trusted by jmx manager.");
+    m.put(JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD, "Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
+
     m.put(JMX_MANAGER_PORT, "The port the jmx manager will listen on. Default is \"" + DEFAULT_JMX_MANAGER_PORT + "\". Set to zero to disable GemFire's creation of a jmx listening port.");
     m.put(JMX_MANAGER_BIND_ADDRESS, "The address the jmx manager will listen on for remote connections. Default is \"\" which causes the jmx manager to listen on the host's default address. This property is ignored if jmx-manager-port is \"0\".");
     m.put(JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "The hostname that will be given to clients when they ask a locator for the location of this jmx manager. Default is \"\" which causes the locator to report the jmx manager's actual ip address as its location. This property is ignored if jmx-manager-port is \"0\".");
@@ -1001,96 +866,57 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     m.put(USE_CLUSTER_CONFIGURATION, LocalizedStrings.AbstractDistributionConfig_USE_SHARED_CONFIGURATION.toLocalizedString());
     m.put(LOAD_CLUSTER_CONFIGURATION_FROM_DIR, LocalizedStrings.AbstractDistributionConfig_LOAD_SHARED_CONFIGURATION_FROM_DIR.toLocalizedString(SharedConfiguration.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME));
     m.put(CLUSTER_CONFIGURATION_DIR, LocalizedStrings.AbstractDistributionConfig_CLUSTER_CONFIGURATION_DIR.toLocalizedString());
-    m.put(
-        SERVER_SSL_ENABLED,
-        "If true then the cache server will only allow SSL clients to connect. Defaults to false.");
-    m.put(
-        SERVER_SSL_CIPHERS,
-        "List of available SSL cipher suites that are to be enabled for CacheServer. Defaults to \""
-            + DEFAULT_SERVER_SSL_CIPHERS
-            + "\" meaning your provider''s defaults.");
-    m.put(
-        SERVER_SSL_PROTOCOLS,
-        "List of available SSL protocols that are to be enabled for CacheServer. Defaults to \""
-            + DEFAULT_SERVER_SSL_PROTOCOLS
-            + "\" meaning defaults of your provider.");
-    m.put(
-        SERVER_SSL_REQUIRE_AUTHENTICATION,
-        "If set to false, ciphers and protocols that permit anonymous Clients are allowed. Defaults to \""
-            + DEFAULT_SERVER_SSL_REQUIRE_AUTHENTICATION + "\".");
-    
-    m.put(SERVER_SSL_KEYSTORE,"Location of the Java keystore file containing server's or client's own certificate and private key.");
+    m.put(SERVER_SSL_ALIAS, LocalizedStrings.AbstractDistributionConfig_SERVER_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_ALIAS)));
+    m.put(SERVER_SSL_ENABLED, "If true then the cache server will only allow SSL clients to connect. Defaults to false.");
+    m.put(SERVER_SSL_CIPHERS, "List of available SSL cipher suites that are to be enabled for CacheServer. Defaults to \"" + DEFAULT_SERVER_SSL_CIPHERS + "\" meaning your provider''s defaults.");
+    m.put(SERVER_SSL_PROTOCOLS, "List of available SSL protocols that are to be enabled for CacheServer. Defaults to \"" + DEFAULT_SERVER_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
+    m.put(SERVER_SSL_REQUIRE_AUTHENTICATION, "If set to false, ciphers and protocols that permit anonymous Clients are allowed. Defaults to \"" + DEFAULT_SERVER_SSL_REQUIRE_AUTHENTICATION + "\".");
 
-    m.put(SERVER_SSL_KEYSTORE_TYPE,
-        "For Java keystore file format, this property has the value jks (or JKS).");
+    m.put(SERVER_SSL_KEYSTORE, "Location of the Java keystore file containing server's or client's own certificate and private key.");
 
-    m.put(SERVER_SSL_KEYSTORE_PASSWORD,"Password to access the private key from the keystore file specified by javax.net.ssl.keyStore. ");
+    m.put(SERVER_SSL_KEYSTORE_TYPE, "For Java keystore file format, this property has the value jks (or JKS).");
 
-    m.put(SERVER_SSL_TRUSTSTORE,"Location of the Java keystore file containing the collection of CA certificates trusted by server or client(trust store).");
-    
-    m.put(SERVER_SSL_TRUSTSTORE_PASSWORD,"Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
-    
-    m.put(
-        GATEWAY_SSL_ENABLED,
-        "If true then the gateway receiver will only allow SSL gateway sender to connect. Defaults to false.");
-    m.put(
-        GATEWAY_SSL_CIPHERS,
-        "List of available SSL cipher suites that are to be enabled for Gateway Receiver. Defaults to \""
-            + DEFAULT_GATEWAY_SSL_CIPHERS
-            + "\" meaning your provider''s defaults.");
-    m.put(
-        GATEWAY_SSL_PROTOCOLS,
-        "List of available SSL protocols that are to be enabled for Gateway Receiver. Defaults to \""
-            + DEFAULT_GATEWAY_SSL_PROTOCOLS
-            + "\" meaning defaults of your provider.");
-    m.put(
-        GATEWAY_SSL_REQUIRE_AUTHENTICATION,
-        "If set to false, ciphers and protocols that permit anonymous gateway senders are allowed. Defaults to \""
-            + DEFAULT_GATEWAY_SSL_REQUIRE_AUTHENTICATION + "\".");    
-    
-    m.put(GATEWAY_SSL_KEYSTORE,"Location of the Java keystore file containing gateway's own certificate and private key.");
+    m.put(SERVER_SSL_KEYSTORE_PASSWORD, "Password to access the private key from the keystore file specified by javax.net.ssl.keyStore. ");
 
-    m.put(GATEWAY_SSL_KEYSTORE_TYPE,
-        "For Java keystore file format, this property has the value jks (or JKS).");
+    m.put(SERVER_SSL_TRUSTSTORE, "Location of the Java keystore file containing the collection of CA certificates trusted by server or client(trust store).");
 
-    m.put(GATEWAY_SSL_KEYSTORE_PASSWORD,"Password to access the private key from the keystore file specified by javax.net.ssl.keyStore.");
+    m.put(SERVER_SSL_TRUSTSTORE_PASSWORD, "Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
 
-    m.put(GATEWAY_SSL_TRUSTSTORE,"Location of the Java keystore file containing the collection of CA certificates trusted by gateway.");
-    
-    m.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD,"Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
-    
+    m.put(GATEWAY_SSL_ALIAS, LocalizedStrings.AbstractDistributionConfig_GATEWAY_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_ALIAS)));
+    m.put(GATEWAY_SSL_ENABLED, "If true then the gateway receiver will only allow SSL gateway sender to connect. Defaults to false.");
+    m.put(GATEWAY_SSL_CIPHERS, "List of available SSL cipher suites that are to be enabled for Gateway Receiver. Defaults to \"" + DEFAULT_GATEWAY_SSL_CIPHERS + "\" meaning your provider''s defaults.");
+    m.put(GATEWAY_SSL_PROTOCOLS, "List of available SSL protocols that are to be enabled for Gateway Receiver. Defaults to \"" + DEFAULT_GATEWAY_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
+    m.put(GATEWAY_SSL_REQUIRE_AUTHENTICATION, "If set to false, ciphers and protocols that permit anonymous gateway senders are allowed. Defaults to \"" + DEFAULT_GATEWAY_SSL_REQUIRE_AUTHENTICATION + "\".");
+
+    m.put(GATEWAY_SSL_KEYSTORE, "Location of the Java keystore file containing gateway's own certificate and private key.");
+
+    m.put(GATEWAY_SSL_KEYSTORE_TYPE, "For Java keystore file format, this property has the value jks (or JKS).");
+
+    m.put(GATEWAY_SSL_KEYSTORE_PASSWORD, "Password to access the private key from the keystore file specified by javax.net.ssl.keyStore.");
+
+    m.put(GATEWAY_SSL_TRUSTSTORE, "Location of the Java keystore file containing the collection of CA certificates trusted by gateway.");
+
+    m.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD, "Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
+
+    m.put(HTTP_SERVICE_SSL_ALIAS, LocalizedStrings.AbstractDistributionConfig_HTTP_SERVICE_SSL_ALIAS_0.toLocalizedString(Boolean.valueOf(DEFAULT_CLUSTER_SSL_ALIAS)));
     m.put(HTTP_SERVICE_PORT, "If non zero, then the gemfire developer REST service will be deployed and started when the cache is created. Default value is 0.");
     m.put(HTTP_SERVICE_BIND_ADDRESS, "The address where gemfire developer REST service will listen for remote REST connections. Default is \"\" which causes the Rest service to listen on the host's default address.");
-    
-    m.put(
-        HTTP_SERVICE_SSL_ENABLED,
-        "If true then the http service like REST dev api and Pulse will only allow SSL enabled clients to connect. Defaults to false.");
-    m.put(
-        HTTP_SERVICE_SSL_CIPHERS,
-        "List of available SSL cipher suites that are to be enabled for Http Service. Defaults to \""
-            + DEFAULT_HTTP_SERVICE_SSL_CIPHERS
-            + "\" meaning your provider''s defaults.");
-    m.put(
-        HTTP_SERVICE_SSL_PROTOCOLS,
-        "List of available SSL protocols that are to be enabled for Http Service. Defaults to \""
-            + DEFAULT_HTTP_SERVICE_SSL_PROTOCOLS
-            + "\" meaning defaults of your provider.");
-    m.put(
-        HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION,
-        "If set to false, ciphers and protocols that permit anonymous http clients are allowed. Defaults to \""
-            + DEFAULT_HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION + "\".");    
-    
-    m.put(HTTP_SERVICE_SSL_KEYSTORE,"Location of the Java keystore file containing Http Service's own certificate and private key.");
 
-    m.put(HTTP_SERVICE_SSL_KEYSTORE_TYPE,
-        "For Java keystore file format, this property has the value jks (or JKS).");
+    m.put(HTTP_SERVICE_SSL_ENABLED, "If true then the http service like REST dev api and Pulse will only allow SSL enabled clients to connect. Defaults to false.");
+    m.put(HTTP_SERVICE_SSL_CIPHERS, "List of available SSL cipher suites that are to be enabled for Http Service. Defaults to \"" + DEFAULT_HTTP_SERVICE_SSL_CIPHERS + "\" meaning your provider''s defaults.");
+    m.put(HTTP_SERVICE_SSL_PROTOCOLS, "List of available SSL protocols that are to be enabled for Http Service. Defaults to \"" + DEFAULT_HTTP_SERVICE_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
+    m.put(HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION, "If set to false, ciphers and protocols that permit anonymous http clients are allowed. Defaults to \"" + DEFAULT_HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION + "\".");
 
-    m.put(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD,"Password to access the private key from the keystore file specified by javax.net.ssl.keyStore.");
+    m.put(HTTP_SERVICE_SSL_KEYSTORE, "Location of the Java keystore file containing Http Service's own certificate and private key.");
 
-    m.put(HTTP_SERVICE_SSL_TRUSTSTORE,"Location of the Java keystore file containing the collection of CA certificates trusted by Http Service.");
-    
-    m.put(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD,"Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
-    
+    m.put(HTTP_SERVICE_SSL_KEYSTORE_TYPE, "For Java keystore file format, this property has the value jks (or JKS).");
+
+    m.put(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "Password to access the private key from the keystore file specified by javax.net.ssl.keyStore.");
+
+    m.put(HTTP_SERVICE_SSL_TRUSTSTORE, "Location of the Java keystore file containing the collection of CA certificates trusted by Http Service.");
+
+    m.put(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD, "Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
+
     m.put(START_DEV_REST_API, "If true then the developer(API) REST service will be started when the cache is created. Defaults to false.");
     m.put(OFF_HEAP_MEMORY_SIZE, LocalizedStrings.AbstractDistributionConfig_OFF_HEAP_MEMORY_SIZE_0.toLocalizedString(DEFAULT_OFF_HEAP_MEMORY_SIZE));
     m.put(LOCK_MEMORY, LocalizedStrings.AbstractDistributionConfig_LOCK_MEMORY.toLocalizedString(DEFAULT_LOCK_MEMORY));
@@ -1103,15 +929,18 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     dcAttDescriptions = Collections.unmodifiableMap(m);
 
   }
+
   /**
    * Used by unit tests.
    */
   static public String[] _getAttNames() {
     return dcValidAttributeNames;
   }
+
   public String[] getAttributeNames() {
     return dcValidAttributeNames;
   }
+
   public String[] getSpecificAttributeNames() {
     return dcValidAttributeNames;
   }
@@ -1133,10 +962,13 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     }
   }
 
-/**************************** static initializers to gather all the checkers in this class *************************/
+  /****************************
+   * static initializers to gather all the checkers in this class
+   *************************/
   static final Map<String, Method> checkers = new HashMap<String, Method>();
-  static{
-    for(Method method:AbstractDistributionConfig.class.getDeclaredMethods()) {
+
+  static {
+    for (Method method : AbstractDistributionConfig.class.getDeclaredMethods()) {
       if (method.isAnnotationPresent(ConfigAttributeChecker.class)) {
         ConfigAttributeChecker checker = method.getAnnotation(ConfigAttributeChecker.class);
         checkers.put(checker.name(), method);
