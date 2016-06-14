@@ -42,6 +42,8 @@ import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.lucene.test.TestObject;
 import com.gemstone.gemfire.cache.query.QueryException;
+import com.gemstone.gemfire.pdx.JSONFormatter;
+import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -95,6 +97,12 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     // this query string will be parsed as "one" "three"
     // query will be--field1:one field1:three
     verifyQuery("field1:one@three", DEFAULT_FIELD, "A", "B", "C");
+    
+    HashMap expectedResults = new HashMap();
+    expectedResults.put("A", new TestObject(value1, value1));
+    expectedResults.put("B", new TestObject(value2, value2));
+    expectedResults.put("C", new TestObject(value3, value3));
+    verifyQuery("field1:one@three", expectedResults);
     
     // keyword analyzer, this query will only match the entry that exactly matches
     // this query string will be parsed as "one three"
@@ -155,6 +163,29 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   }
 
   @Test()
+  public void queryJsonObject() throws ParseException {
+    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    fields.put("name", null);
+    fields.put("lastName", null);
+    fields.put("address", null);
+    luceneService.createIndex(INDEX_NAME, REGION_NAME, fields);
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION)
+      .create(REGION_NAME);
+    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+
+    //Put two values with some of the same tokens
+    PdxInstance pdx1 = insertAJson(region, "jsondoc1");
+    PdxInstance pdx2 = insertAJson(region, "jsondoc2");
+    PdxInstance pdx10 = insertAJson(region, "jsondoc10");
+    index.waitUntilFlushed(60000);
+
+    HashMap expectedResults = new HashMap();
+    expectedResults.put("jsondoc1", pdx1);
+    expectedResults.put("jsondoc10", pdx10);
+    verifyQuery("name:jsondoc1*", expectedResults);
+  }
+
+  @Test()
   public void throwFunctionExceptionWhenGivenBadQuery() {
     LuceneService luceneService = LuceneServiceProvider.get(cache);
     luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
@@ -178,12 +209,49 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     }
 
   }
+  
+  private PdxInstance insertAJson(Region region, String key) {
+    String jsonCustomer = "{"
+        + "\"name\": \""+key+"\","
+        + "\"lastName\": \"Smith\","
+        + " \"age\": 25,"
+        + "\"address\":"
+        + "{"
+        + "\"streetAddress\": \"21 2nd Street\","
+        + "\"city\": \"New York\","
+        + "\"state\": \"NY\","
+        + "\"postalCode\": \"10021\""
+        + "},"
+        + "\"phoneNumber\":"
+        + "["
+        + "{"
+        + " \"type\": \"home\","
+        + "\"number\": \"212 555-1234\""
+        + "},"
+        + "{"
+        + " \"type\": \"fax\","
+        + "\"number\": \"646 555-4567\""
+        + "}"
+        + "]"
+        + "}";
+
+    PdxInstance pdx = JSONFormatter.fromJSON(jsonCustomer);
+    region.put(key, pdx);
+    return pdx;
+  }
 
   private void verifyQuery(String query, String defaultField, String ... expectedKeys) throws ParseException {
     final LuceneQuery<String, Object> queryWithStandardAnalyzer = luceneService.createLuceneQueryFactory().create(
       INDEX_NAME, REGION_NAME, query, defaultField);
 
     verifyQueryKeys(queryWithStandardAnalyzer, expectedKeys);
+  }
+  
+  private void verifyQuery(String query, HashMap expectedResults) throws ParseException {
+    final LuceneQuery<String, Object> queryWithStandardAnalyzer = luceneService.createLuceneQueryFactory().create(
+      INDEX_NAME, REGION_NAME, query);
+
+    verifyQueryKeyAndValues(queryWithStandardAnalyzer, expectedResults);
   }
 
   private static class MyCharacterTokenizer extends CharTokenizer {

@@ -49,4 +49,11 @@ public class TestObject implements Serializable {
   public void setField2(final String field2) {
     this.field2 = field2;
   }
+  
+  @Override
+  public boolean equals(Object obj) {
+    TestObject testObject = (TestObject)obj;
+    return (testObject.field1.equals(field1) && testObject.field2.equals(field2));
+  }
+
 }

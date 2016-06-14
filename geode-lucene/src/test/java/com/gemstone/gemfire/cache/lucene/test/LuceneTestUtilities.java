@@ -21,10 +21,12 @@ package com.gemstone.gemfire.cache.lucene.test;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
@@ -38,6 +40,9 @@ import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexForPartitionedRegion;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.pdx.JSONFormatter;
+import com.gemstone.gemfire.pdx.PdxInstance;
 
 public class LuceneTestUtilities {
   public static final String INDEX_NAME = "index";
@@ -96,6 +101,28 @@ public class LuceneTestUtilities {
     assertEquals(expectedKeySet, actualKeySet);
   }
 
+  /**
+   * Verify that a query returns the expected map of key-value. Ordering is ignored.
+   */
+  public static <K> void verifyQueryKeyAndValues(LuceneQuery<K,Object> query, HashMap expectedResults) {
+    HashMap actualResults = new HashMap<>();
+    final LuceneQueryResults<K, Object> results = query.search();
+    while(results.hasNextPage()) {
+      results.getNextPage().stream()
+        .forEach(struct -> {
+          Object value = struct.getValue();
+          if (value instanceof PdxInstance) {
+            PdxInstance pdx = (PdxInstance)value;
+            String jsonString = JSONFormatter.toJSON(pdx);
+            actualResults.put(struct.getKey(), pdx);
+          } else {
+            actualResults.put(struct.getKey(), value);
+          }
+        });
+    }
+    assertEquals(expectedResults, actualResults);
+  }
+  
   public static void pauseSender(final Cache cache) {
     final AsyncEventQueueImpl queue = (AsyncEventQueueImpl) getIndexQueue(cache);
     queue.getSender().pause();
