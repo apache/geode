@@ -3201,7 +3201,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} value.
    * <p> Actual value of this constant is "".
-   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE
+   * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE}
    */
   String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE = "";
 

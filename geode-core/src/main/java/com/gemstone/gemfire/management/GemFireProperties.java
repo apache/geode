@@ -431,17 +431,54 @@ public class GemFireProperties {
   private String httpServiceBindAddress;
   private boolean startDevRestApi;
   private int jmxManagerUpdateRate;
-  
 
+
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLEnabled}
+   */
+  @Deprecated
   private boolean jmxManagerSSLEnabled;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLProtocols}
+   */
+  @Deprecated
   private String jmxManagerSSLProtocols;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLCiphers}
+   */
+  @Deprecated
   private String jmxManagerSSLCiphers;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLRequireAuthentication}
+   */
+  @Deprecated
   private boolean jmxManagerSSLRequireAuthentication;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLKeyStore}
+   */
+  @Deprecated
   private String jmxManagerSSLKeyStore;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLKeyStoreType}
+   */
+  @Deprecated
   private String jmxManagerSSLKeyStoreType;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLKeyStorePassword}
+   */
+  @Deprecated
   private String jmxManagerSSLKeyStorePassword;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLTrustStore}
+   */
+  @Deprecated
   private String jmxManagerSSLTrustStore;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLTrustStorePassword}
+   */
+  @Deprecated
   private String jmxManagerSSLTrustStorePassword;
+  private String jmxManagerSSLAlias;
   
   private boolean clusterSSLEnabled;
   private String clusterSSLProtocols;
@@ -452,36 +489,148 @@ public class GemFireProperties {
   private String clusterSSLKeyStorePassword;
   private String clusterSSLTrustStore;
   private String clusterSSLTrustStorePassword;
-  
+  private String clusterSSLAlias;
+
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLEnabled}
+   */
+  @Deprecated
   private boolean serverSSLEnabled;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLProtocols}
+   */
+  @Deprecated
   private String serverSSLProtocols;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLCiphers}
+   */
+  @Deprecated
   private String serverSSLCiphers;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLRequireAuthentication}
+   */
+  @Deprecated
   private boolean serverSSLRequireAuthentication;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLKeyStore}
+   */
+  @Deprecated
   private String serverSSLKeyStore;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLKeyStoreType}
+   */
+  @Deprecated
   private String serverSSLKeyStoreType;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLKeyStorePassword}
+   */
+  @Deprecated
   private String serverSSLKeyStorePassword;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLTrustStore}
+   */
+  @Deprecated
   private String serverSSLTrustStore;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLTrustStorePassword}
+   */
+  @Deprecated
   private String serverSSLTrustStorePassword;
-  
+  private String serverSSLAlias;
+
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLEnabled}
+   */
+  @Deprecated
   private boolean gatewaySSLEnabled;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLProtocols}
+   */
+  @Deprecated
   private String gatewaySSLProtocols;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLCiphers}
+   */
+  @Deprecated
   private String gatewaySSLCiphers;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLRequireAuthentication}
+   */
+  @Deprecated
   private boolean gatewaySSLRequireAuthentication;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLKeyStore}
+   */
+  @Deprecated
   private String gatewaySSLKeyStore;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLKeyStoreType}
+   */
+  @Deprecated
   private String gatewaySSLKeyStoreType;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLKeyStorePassword}
+   */
+  @Deprecated
   private String gatewaySSLKeyStorePassword;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLTrustStore}
+   */
+  @Deprecated
   private String gatewaySSLTrustStore;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLTrustStorePassword}
+   */
+  @Deprecated
   private String gatewaySSLTrustStorePassword;
-  
+  private String gatewaySSLAlias;
+
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLEnabled}
+   */
+  @Deprecated
   private boolean httpServiceSSLEnabled;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLRequireAuthentication}
+   */
+  @Deprecated
   private boolean httpServiceSSLRequireAuthentication;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLProtocols}
+   */
+  @Deprecated
   private String httpServiceSSLProtocols;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLCiphers}
+   */
+  @Deprecated
   private String httpServiceSSLCiphers;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLKeyStore}
+   */
+  @Deprecated
   private String httpServiceSSLKeyStore;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLKeyStoreType}
+   */
+  @Deprecated
   private String httpServiceSSLKeyStoreType;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLKeyStorePassword}
+   */
+  @Deprecated
   private String httpServiceSSLKeyStorePassword;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLTrustStore}
+   */
+  @Deprecated
   private String httpServiceSSLTrustStore;
+  /**
+   * @deprecated Geode 1.0 use {@link #clusterSSLTrustStorePassword}
+   */
+  @Deprecated
   private String httpServiceSSLTrustStorePassword;
+  private String httpServiceSSLAlias;
   
   /**
    * Specifies whether the default transaction mode should be distributed.
@@ -589,22 +738,6 @@ public class GemFireProperties {
   public int getLogDiskSpaceLimit() {
     return logDiskSpaceLimit;
   }
-
-//  public boolean isSslEnabled() {
-//    return sslEnabled;
-//  }
-//
-//  public String getSslCiphers() {
-//    return sslCiphers;
-//  }
-//
-//  public String getSslProtocols() {
-//    return sslProtocols;
-//  }
-//
-//  public boolean isSslRequireAuthentication() {
-//    return sslRequireAuthentication;
-//  }
 
   public int getSocketLeaseTime() {
     return socketLeaseTime;
