@@ -18,19 +18,24 @@ package com.gemstone.gemfire.cache;
 
 /**
  * Implementers of interface <code>PartitionResolver</code> enable custom
- * partitioning on the <code>PartitionedRegion</code>.<br>
+ * standard partitioning on the <code>PartitionedRegion</code>.<br>
+ * See <code>FixedPartitionResolver</code> to enable custom fixed partitioning.<br>
  * <p>
- * 1. The Key class can implement PartitionResolver interface to
- * enable custom partitioning OR <br>
- * 2. Configure your own PartitionResolver class in partition attributes (For
- * instance when the Key is a primitive type or String) Implement the
+ * 1. The key class can implement the PartitionResolver interface to
+ * enable custom partitioning. OR <br>
+ * 2. Configure your own PartitionResolver class in partition attributes (for
+ * instance when the key is a JDK class like Integer or String). Implement the
  * appropriate equals - For all implementations, you need to be sure to code the
  * class equals method so it properly verifies equality for the
  * PartitionResolver implementation. This might mean verifying that class names
  * are the same or that the returned routing objects are the same etc.. When you
  * initiate the partitioned region on multiple nodes, GemFire uses the equals
  * method to ensure you are using the same PartitionResolver implementation for
- * all of the nodes for the region.
+ * all of the nodes for the region. OR <br>
+ * 3. The callback argument passed to the Region operation methods can implement
+ * PartitionResolver. This implementation restricts you to using methods that accept
+ * a cache callback argument to manage the region entries. For a full list of the methods
+ * that take a callback argument, see the Region Javadocs.
  * </p>
  * <p>
  * GemFire uses the routing object's hashCode to determine where the data is
