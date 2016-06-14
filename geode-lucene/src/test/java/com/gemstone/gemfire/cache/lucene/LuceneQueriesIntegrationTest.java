@@ -102,7 +102,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     expectedResults.put("A", new TestObject(value1, value1));
     expectedResults.put("B", new TestObject(value2, value2));
     expectedResults.put("C", new TestObject(value3, value3));
-    verifyQuery("field1:one@three", expectedResults);
+    verifyQuery("field1:one@three", DEFAULT_FIELD, expectedResults);
     
     // keyword analyzer, this query will only match the entry that exactly matches
     // this query string will be parsed as "one three"
@@ -182,7 +182,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     HashMap expectedResults = new HashMap();
     expectedResults.put("jsondoc1", pdx1);
     expectedResults.put("jsondoc10", pdx10);
-    verifyQuery("name:jsondoc1*", expectedResults);
+    verifyQuery("name:jsondoc1*", DEFAULT_FIELD, expectedResults);
   }
 
   @Test()
@@ -247,9 +247,9 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     verifyQueryKeys(queryWithStandardAnalyzer, expectedKeys);
   }
   
-  private void verifyQuery(String query, HashMap expectedResults) throws ParseException {
+  private void verifyQuery(String query, String DEFAULT_FIELD, HashMap expectedResults) throws ParseException {
     final LuceneQuery<String, Object> queryWithStandardAnalyzer = luceneService.createLuceneQueryFactory().create(
-      INDEX_NAME, REGION_NAME, query);
+      INDEX_NAME, REGION_NAME, query, DEFAULT_FIELD);
 
     verifyQueryKeyAndValues(queryWithStandardAnalyzer, expectedResults);
   }
