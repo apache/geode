@@ -2641,51 +2641,26 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     region = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache,
         diskProps);
     final DiskStoreStats dss = ((LocalRegion)region).getDiskRegion().getDiskStore().getStats();
-    WaitCriterion evFull = new WaitCriterion() {
-      public boolean done() {
-        return dss.getQueueSize() == 100;
-      }
-      public String description() {
-        return null;
-      }
-    };
-    WaitCriterion ev = new WaitCriterion() {
-      public boolean done() {
-        return dss.getQueueSize() == 0;
-      }
-      public String description() {
-        return null;
-      }
-    };
-    WaitCriterion ev2 = new WaitCriterion() {
-      public boolean done() {
-        return dss.getFlushes() == 100;
-      }
-      public String description() {
-        return null;
-      }
-    };
-    WaitCriterion ev3 = new WaitCriterion() {
-      public boolean done() {
-        return dss.getFlushes() == 200;
-      }
-      public String description() {
-        return null;
-      }
-    };
 
     assertEquals(0, dss.getQueueSize());
     put100Int();
-    Wait.waitForCriterion(evFull, 2 * 1000, 200, true);
+    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS).timeout(10, TimeUnit.SECONDS)
+    .until(() -> assertEquals(100, dss.getQueueSize()));
+
     assertEquals(0, dss.getFlushes());
     region.writeToDisk();
-    Wait.waitForCriterion(ev, 2 * 1000, 200, true);
-    Wait.waitForCriterion(ev2, 1000, 200, true);
+    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS).timeout(10, TimeUnit.SECONDS)
+    .until(() -> assertEquals(0, dss.getQueueSize()));
+    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS).timeout(10, TimeUnit.SECONDS)
+    .until(() -> assertEquals(100, dss.getFlushes()));
     put100Int();
-    Wait.waitForCriterion(evFull, 2 * 1000, 200, true);
+    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS).timeout(10, TimeUnit.SECONDS)
+    .until(() -> assertEquals(100, dss.getQueueSize()));
     region.writeToDisk();
-    Wait.waitForCriterion(ev, 2 * 1000, 200, true);
-    Wait.waitForCriterion(ev3, 1000, 200, true);
+    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS).timeout(10, TimeUnit.SECONDS)
+    .until(() -> assertEquals(0, dss.getQueueSize()));
+    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS).timeout(10, TimeUnit.SECONDS)
+    .until(() -> assertEquals(200, dss.getFlushes()));
     closeDown();
   }
 
