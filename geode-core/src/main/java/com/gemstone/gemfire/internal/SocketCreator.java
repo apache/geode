@@ -16,8 +16,6 @@
  */
 package com.gemstone.gemfire.internal;
 
-import static javafx.scene.input.KeyCode.L;
-
 import com.gemstone.gemfire.GemFireConfigException;
 import com.gemstone.gemfire.SystemConnectException;
 import com.gemstone.gemfire.SystemFailure;
