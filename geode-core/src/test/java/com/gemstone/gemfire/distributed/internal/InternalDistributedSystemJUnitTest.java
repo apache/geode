@@ -703,7 +703,6 @@ public class InternalDistributedSystemJUnitTest
     // and its use in toProperties.
     // The other thing that is done is the ssl-* props are copied to cluster-ssl-*.
     // The following two assertions demonstrate this.
-    assertEquals(null, props1.getProperty(CLUSTER_SSL_ENABLED));
     assertEquals("true", props1.getProperty(CLUSTER_SSL_ENABLED));
     Config config2 = new DistributionConfigImpl(props1, false);
     assertEquals(true, config1.sameAs(config2));

@@ -490,7 +490,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private String httpServiceSSLAlias = clusterSSLAlias;
 
-  private String sslEnabledComponents;
+  private String sslEnabledComponents = DEFAULT_SSL_ENABLED_COMPONENTS;
 
   private Map<String, ConfigSource> sourceMap = Collections.synchronizedMap(new HashMap<String, ConfigSource>());
 
@@ -3260,6 +3260,12 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     result = prime * result + (useSharedConfiguration ? 1231 : 1237);
     result = prime * result + ((userCommandPackages == null) ? 0 : userCommandPackages.hashCode());
     result = prime * result + ((userDefinedProps == null) ? 0 : userDefinedProps.hashCode());
+    result = prime * result + ((clusterSSLAlias == null) ? 0 : clusterSSLAlias.hashCode());
+    result = prime * result + ((serverSSLAlias == null) ? 0 : serverSSLAlias.hashCode());
+    result = prime * result + ((jmxManagerSSLAlias == null) ? 0 : jmxManagerSSLAlias.hashCode());
+    result = prime * result + ((gatewaySSLAlias == null) ? 0 : gatewaySSLAlias.hashCode());
+    result = prime * result + ((httpServiceSSLAlias == null) ? 0 : httpServiceSSLAlias.hashCode());
+    result = prime * result + ((sslEnabledComponents == null) ? 0 : sslEnabledComponents.hashCode());
     return result;
   }
 

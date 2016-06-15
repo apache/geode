@@ -4126,6 +4126,8 @@ public interface DistributionConfig extends Config, LogConfig {
   @ConfigAttribute(type = String.class)
   String SSL_ENABLED_COMPONENTS_NAME = SSL_ENABLED_COMPONENTS;
 
+  String DEFAULT_SSL_ENABLED_COMPONENTS = "";
+
   //*************** Initializers to gather all the annotations in this class ************************
 
   Map<String, ConfigAttribute> attributes = new HashMap<>();

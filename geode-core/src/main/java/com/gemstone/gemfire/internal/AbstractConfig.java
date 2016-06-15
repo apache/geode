@@ -218,6 +218,7 @@ public abstract class AbstractConfig implements Config {
       if (isDeprecated(attNames[i])) {
         continue;
       }
+      System.out.println("attNames = " + attNames[i]);
       result.setProperty(attNames[i], getAttribute(attNames[i]));
     }
     return result;
