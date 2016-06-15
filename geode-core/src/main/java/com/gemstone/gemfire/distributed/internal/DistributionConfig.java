@@ -32,6 +32,7 @@ import java.util.Properties;
 
 import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.DistributedSystem;
+import com.gemstone.gemfire.distributed.SSLEnabledComponents;
 import com.gemstone.gemfire.internal.Config;
 import com.gemstone.gemfire.internal.ConfigSource;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
@@ -4104,6 +4105,26 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @ConfigAttribute(type = String.class)
   String SERVER_SSL_ALIAS_NAME = SERVER_SSL_ALIAS;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SSL_ENABLED_COMPONENTS)
+  String getSSLEnabledComponents();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SSL_ENABLED_COMPONENTS)
+  void setSSLEnabledComponents(String sslEnabledComponents);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SSL_ENABLED_COMPONENTS_NAME = SSL_ENABLED_COMPONENTS;
 
   //*************** Initializers to gather all the annotations in this class ************************
 

@@ -230,7 +230,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   /**
    * the Jgroups port ranges allowed
    */
-  protected int[] membershipPortRange = DEFAULT_MEMBERSHIP_PORT_RANGE;
+  private int[] membershipPortRange = DEFAULT_MEMBERSHIP_PORT_RANGE;
 
   /**
    * Max wait time for the member before reconnecting to the DS in case of
@@ -243,9 +243,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private int maxNumReconnectTries = DEFAULT_MAX_NUM_RECONNECT_TRIES;
 
 
-  protected int asyncDistributionTimeout = DEFAULT_ASYNC_DISTRIBUTION_TIMEOUT;
-  protected int asyncQueueTimeout = DEFAULT_ASYNC_QUEUE_TIMEOUT;
-  protected int asyncMaxQueueSize = DEFAULT_ASYNC_MAX_QUEUE_SIZE;
+  private int asyncDistributionTimeout = DEFAULT_ASYNC_DISTRIBUTION_TIMEOUT;
+  private int asyncQueueTimeout = DEFAULT_ASYNC_QUEUE_TIMEOUT;
+  private int asyncMaxQueueSize = DEFAULT_ASYNC_MAX_QUEUE_SIZE;
 
   /**
    * @since GemFire 5.7
@@ -490,6 +490,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private String httpServiceSSLAlias = clusterSSLAlias;
 
+  private String sslEnabledComponents;
+
   private Map<String, ConfigSource> sourceMap = Collections.synchronizedMap(new HashMap<String, ConfigSource>());
 
   protected String userCommandPackages = DEFAULT_USER_COMMAND_PACKAGES;
@@ -687,6 +689,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.httpServiceSSLAlias = other.getHTTPServiceSSLAlias();
     this.jmxManagerSSLAlias = other.getJMXManagerSSLAlias();
     this.serverSSLAlias = other.getServerSSLAlias();
+    this.sslEnabledComponents = ((DistributionConfigImpl) other).sslEnabledComponents;
   }
 
   /**
@@ -2360,6 +2363,16 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     serverSSLAlias = alias;
   }
 
+  @Override
+  public String getSSLEnabledComponents() {
+    return sslEnabledComponents;
+  }
+
+  @Override
+  public void setSSLEnabledComponents(final String sslEnabledComponents) {
+    this.sslEnabledComponents = sslEnabledComponents;
+  }
+
   ///////////////////////  Utility Methods  ///////////////////////
 
   /**
@@ -3059,6 +3072,24 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         return false;
       }
     } else if (!userDefinedProps.equals(other.userDefinedProps)) {
+      return false;
+    }
+    if (clusterSSLAlias != other.clusterSSLAlias) {
+      return false;
+    }
+    if (serverSSLAlias != other.serverSSLAlias) {
+      return false;
+    }
+    if (httpServiceSSLAlias != other.httpServiceSSLAlias) {
+      return false;
+    }
+    if (jmxManagerSSLAlias != other.jmxManagerSSLAlias) {
+      return false;
+    }
+    if (gatewaySSLAlias != other.gatewaySSLAlias) {
+      return false;
+    }
+    if (sslEnabledComponents != other.sslEnabledComponents) {
       return false;
     }
     return true;

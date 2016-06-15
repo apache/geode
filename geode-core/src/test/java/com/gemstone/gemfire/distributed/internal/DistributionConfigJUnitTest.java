@@ -221,6 +221,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testCheckerChecksValidAttribute() {
     for (String att : checkers.keySet()) {
+      System.out.println("att = " + att);
       assertTrue(attributes.containsKey(att));
       Method checker = checkers.get(att);
       assertEquals(checker.getParameterCount(), 1);

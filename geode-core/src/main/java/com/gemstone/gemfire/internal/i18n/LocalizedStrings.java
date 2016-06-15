@@ -3766,6 +3766,10 @@ public class LocalizedStrings {
   public static final StringId AbstractDistributionConfig_HTTP_SERVICE_SSL_ALIAS_0 = new StringId(6632,"SSL http service communication uses the this alias when determining the key to use from the keystore for SSL. Defaults to \"{0}\".");
   public static final StringId AbstractDistributionConfig_JMX_MANAGER_SSL_ALIAS_0 = new StringId(6632,"SSL jmx communication uses the this alias when determining the key to use from the keystore for SSL. Defaults to \"{0}\".");
 
+  public static final StringId AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_0_INVALID_TRY_1 = new StringId(6633,"\"{0}\" is not in the valid set of {1}");
+
+  public static final StringId AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET = new StringId(6634,"When using ssl-enabled-components one cannot use any other SSL properties other than cluster-ssl-* or the corresponding aliases");
+
   /** Testing strings, messageId 90000-99999 **/
   
   /** These are simple messages for testing, translated with Babelfish. **/
@@ -3776,7 +3780,5 @@ public class LocalizedStrings {
   public static final StringId LISTENER_PREFIX = new StringId(90004, "Listener_");
   
   public static final StringId DistributedRegion_INITIALIZING_REGION_COMPLETED_0 = new StringId(90005, "Initialization of region {0} completed");
-
-
 
 }

@@ -1632,10 +1632,21 @@ public interface ConfigurationProperties {
   String LOCK_MEMORY = "lock-memory";
   /**
    * The static String definition of the <i>"shiro-init"</i> property
+   * <U>Since</U>: Geode 1.0
    */
   String SECURITY_SHIRO_INIT = SECURITY_PREFIX + "shiro-init";
   /**
    * The static String definition of the <i>"distributed-transactions"</i> property
+   * <U>Since</U>: Geode 1.0
    */
   String DISTRIBUTED_TRANSACTIONS = "distributed-transactions";
+  /**
+   * The static String definition of the <i>"ssl-enabled-components"</i> property
+   * <a name="ssl-enabled-components"/a></p>
+   * <U>Description</U>: This setting is a comma delimited fields which works in conjunction with the {@link #CLUSTER_SSL_PREFIX} properties.
+   * This property will determine which components will use SSL for their communications.</p>
+   * <U>Options</U>: "all","server","cluster","gateway","http","jmx"  -- As described {@link SSLEnabledComponents}
+   * <U>Since</U>: Geode 1.0
+   */
+  String SSL_ENABLED_COMPONENTS = "ssl-enabled-components";
 }

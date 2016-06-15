@@ -333,19 +333,16 @@ public class SSLConfigJUnitTest {
     String  sslciphers = "any";
     boolean requireAuth = true;
 
-    boolean jmxManagerSsl = true;
     boolean jmxManagerSslenabled = true;
     String  jmxManagerSslprotocols = "SSLv7";
     String  jmxManagerSslciphers = "RSA_WITH_GARBAGE";
     boolean jmxManagerSslRequireAuth = true;
 
     Properties gemFireProps = new Properties();
-    gemFireProps.put(CLUSTER_SSL_ENABLED, String.valueOf(jmxManagerSslenabled));
-    gemFireProps.put(CLUSTER_SSL_PROTOCOLS, jmxManagerSslprotocols);
-    gemFireProps.put(CLUSTER_SSL_CIPHERS, jmxManagerSslciphers);
-    gemFireProps.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(jmxManagerSslRequireAuth));
-    //TODO -- UDO: We need to potentially have to implement JMX_MANAGER_SSL_ALIAS
-    gemFireProps.put(JMX_MANAGER_SSL_ALIAS, "");
+    gemFireProps.put(JMX_MANAGER_SSL_ENABLED, String.valueOf(jmxManagerSslenabled));
+    gemFireProps.put(JMX_MANAGER_SSL_PROTOCOLS, jmxManagerSslprotocols);
+    gemFireProps.put(JMX_MANAGER_SSL_CIPHERS, jmxManagerSslciphers);
+    gemFireProps.put(JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(jmxManagerSslRequireAuth));
     try{
       DistributionConfigImpl config = new DistributionConfigImpl( gemFireProps );
     }catch(IllegalArgumentException e){
@@ -360,6 +357,7 @@ public class SSLConfigJUnitTest {
     gemFireProps.put(CLUSTER_SSL_CIPHERS, sslciphers);
     gemFireProps.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(requireAuth));
 
+    gemFireProps.put(JMX_MANAGER_SSL_ENABLED, String.valueOf(jmxManagerSslenabled));
     gemFireProps.put(JMX_MANAGER_SSL_PROTOCOLS, jmxManagerSslprotocols);
     gemFireProps.put(JMX_MANAGER_SSL_CIPHERS, jmxManagerSslciphers);
     gemFireProps.put(JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(jmxManagerSslRequireAuth));
