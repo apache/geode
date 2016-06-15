@@ -33,6 +33,8 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
 
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.TermQuery;
 import org.junit.Test;
 
 /**
@@ -82,6 +84,30 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
     executeTextSearch(accessor, "world", "text", 3);
     executeTextSearch(accessor, "world", "noEntriesMapped", 0);
+  }
+
+  @Test
+  public void canQueryWithCustomLuceneQueryObject() {
+    SerializableRunnableIF createIndex = () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+    };
+    dataStore1.invoke(() -> initDataStore(createIndex));
+    dataStore2.invoke(() -> initDataStore(createIndex));
+    accessor.invoke(() -> initAccessor(createIndex));
+    putDataInRegion(accessor);
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
+
+    //Execute a query with a custom lucene query object
+    accessor.invoke(() -> {
+      Cache cache = getCache();
+      LuceneService service = LuceneServiceProvider.get(cache);
+      LuceneQuery query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, index ->  {
+        return new TermQuery(new Term("text", "world"));
+      });
+      final LuceneQueryResults results = query.search();
+      assertEquals(3, results.size());
+    });
   }
 
   @Test
