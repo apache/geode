@@ -42,6 +42,7 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
 
   public FindCoordinatorRequest(InternalDistributedMember myId) {
     this.memberID = myId;
+    this.dhalgo = "";
   }
   
   public FindCoordinatorRequest(InternalDistributedMember myId, Collection<InternalDistributedMember> rejectedCoordinators, 
