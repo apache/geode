@@ -2452,8 +2452,9 @@ public class LocalRegion extends AbstractRegion
             indexes.add(qs.createIndex(icd.getIndexName(), icd.getIndexType(), icd.getIndexExpression(), fromClause, icd.getIndexImportString(), !isOverflowToDisk));
           }
 
-        } catch (Exception ex) {
-          logger.error("Failed to create index {} on region {} with exception: {}", icd.getIndexName(), this.getFullPath(), ex);
+        }
+        catch (Exception ex) {
+          logger.info("Failed to create index {} on region {} with exception: {}", icd.getIndexName(), this.getFullPath(), ex);
 
           // Check if the region index creation is from cache.xml, in that case throw exception.
           // Other case is when bucket regions are created dynamically, in that case ignore the exception.
