@@ -1,7 +1,7 @@
 package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 import static org.mockito.Mockito.*;
 
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
@@ -53,7 +53,7 @@ public class GMSEncryptJUnitTest {
   
   private void initMocks(String algo) throws Exception {
     Properties nonDefault = new Properties();
-    nonDefault.put(DistributedSystemConfigProperties.SECURITY_UDP_DHALGO, algo);
+    nonDefault.put(ConfigurationProperties.SECURITY_UDP_DHALGO, algo);
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig tconfig = new RemoteTransportConfig(config,
       DistributionManager.NORMAL_DM_TYPE);

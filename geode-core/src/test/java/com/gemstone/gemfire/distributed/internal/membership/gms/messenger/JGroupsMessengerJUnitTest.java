@@ -16,6 +16,34 @@
  */
 package com.gemstone.gemfire.distributed.internal.membership.gms.messenger;
 
+import com.gemstone.gemfire.ForcedDisconnectException;
+import com.gemstone.gemfire.GemFireIOException;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
+import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
+import com.gemstone.gemfire.distributed.internal.*;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.NetView;
+import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
+import com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig;
+import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
+import com.gemstone.gemfire.distributed.internal.membership.gms.Services.Stopper;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.HealthMonitor;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.JoinLeave;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
+import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.MessageHandler;
+import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
+import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.InstallViewMessage;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messages.LeaveRequestMessage;
+import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger.JGroupsReceiver;
+import com.gemstone.gemfire.internal.*;
+import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
+import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
+import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
+import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
+
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
@@ -47,44 +75,18 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.ForcedDisconnectException;
-import com.gemstone.gemfire.GemFireIOException;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
-import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.internal.DM;
-import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.distributed.internal.DistributionConfigImpl;
 import com.gemstone.gemfire.distributed.internal.DistributionManager;
 import com.gemstone.gemfire.distributed.internal.DistributionMessage;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.distributed.internal.SerialAckedMessage;
-import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.distributed.internal.membership.NetView;
-import com.gemstone.gemfire.distributed.internal.membership.gms.GMSMember;
-import com.gemstone.gemfire.distributed.internal.membership.gms.ServiceConfig;
-import com.gemstone.gemfire.distributed.internal.membership.gms.Services;
-import com.gemstone.gemfire.distributed.internal.membership.gms.Services.Stopper;
-import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.HealthMonitor;
-import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.JoinLeave;
-import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.Manager;
-import com.gemstone.gemfire.distributed.internal.membership.gms.interfaces.MessageHandler;
-import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
-import com.gemstone.gemfire.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.InstallViewMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.JoinResponseMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messages.LeaveRequestMessage;
-import com.gemstone.gemfire.distributed.internal.membership.gms.messenger.JGroupsMessenger.JGroupsReceiver;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
 import com.gemstone.gemfire.internal.HeapDataOutputStream;
 import com.gemstone.gemfire.internal.Version;
-import com.gemstone.gemfire.internal.admin.remote.RemoteTransportConfig;
-import com.gemstone.gemfire.internal.cache.DistributedCacheOperation;
-import com.gemstone.gemfire.internal.logging.log4j.AlertAppender;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class JGroupsMessengerJUnitTest {
@@ -921,7 +923,7 @@ public class JGroupsMessengerJUnitTest {
     InternalDistributedMember otherMbr = new InternalDistributedMember("localhost", 8888);
     
     Properties p = new Properties();    
-    p.put(DistributedSystemConfigProperties.SECURITY_UDP_DHALGO, "AES:128");
+    p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
     initMocks(false, p);
     
     NetView v = createView(otherMbr);
@@ -956,7 +958,7 @@ public class JGroupsMessengerJUnitTest {
     InternalDistributedMember otherMbr = new InternalDistributedMember("localhost", 8888);
     
     Properties p = new Properties();    
-    p.put(DistributedSystemConfigProperties.SECURITY_UDP_DHALGO, "AES:128");
+    p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
     initMocks(false, p);
     
     NetView v = createView(otherMbr);
@@ -994,7 +996,7 @@ public class JGroupsMessengerJUnitTest {
     InternalDistributedMember otherMbr = new InternalDistributedMember("localhost", 8888);
     
     Properties p = new Properties();    
-    p.put(DistributedSystemConfigProperties.SECURITY_UDP_DHALGO, "AES:128");
+    p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
     initMocks(false, p);
     
     NetView v = createView(otherMbr);
@@ -1026,7 +1028,7 @@ public class JGroupsMessengerJUnitTest {
     InternalDistributedMember otherMbr = new InternalDistributedMember("localhost", 8888);
     
     Properties p = new Properties();    
-    p.put(DistributedSystemConfigProperties.SECURITY_UDP_DHALGO, "AES:128");
+    p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
     initMocks(false, p);
     
     NetView v = createView(otherMbr);

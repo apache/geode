@@ -36,7 +36,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.GemFireConfigException;
-import com.gemstone.gemfire.distributed.DistributedSystemConfigProperties;
+import com.gemstone.gemfire.distributed.ConfigurationProperties;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.membership.gms.GMSUtil;
@@ -261,7 +261,7 @@ public class MembershipJUnitTest {
       nonDefault.put(DistributionConfig.GROUPS_NAME, "red, blue");
       nonDefault.put(DistributionConfig.MEMBER_TIMEOUT_NAME, "2000");
       nonDefault.put(DistributionConfig.LOCATORS_NAME, localHost.getHostName()+'['+port+']');
-      nonDefault.put(DistributedSystemConfigProperties.SECURITY_CLIENT_DHALGO, "AES:128");
+      nonDefault.put(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
       RemoteTransportConfig transport = new RemoteTransportConfig(config,
         DistributionManager.NORMAL_DM_TYPE);
