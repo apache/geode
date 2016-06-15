@@ -16,20 +16,30 @@
  */
 package com.gemstone.gemfire.management.internal.security;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import org.junit.rules.ExternalResource;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import java.util.Properties;
 
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import org.junit.rules.ExternalResource;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
 
 public class JsonAuthorizationCacheStartRule extends ExternalResource {
   private Cache cache;
   private int jmxManagerPort = 0;
   private int httpPort = 0;
   private String jsonFile;
+  private Class postProcessor;
   private boolean doAuthorization;
+
+  public JsonAuthorizationCacheStartRule(int jmxManagerPort, String jsonFile, Class postProcessor) {
+    this.jmxManagerPort = jmxManagerPort;
+    this.jsonFile = jsonFile;
+    this.doAuthorization = true;
+    this.postProcessor = postProcessor;
+  }
+
 
   public JsonAuthorizationCacheStartRule(int jmxManagerPort, String jsonFile) {
     this.jmxManagerPort = jmxManagerPort;
@@ -64,10 +74,16 @@ public class JsonAuthorizationCacheStartRule extends ExternalResource {
     if (doAuthorization) {
       properties.put(SECURITY_CLIENT_ACCESSOR, JSONAuthorization.class.getName() + ".create");
     }
+    if(postProcessor!=null){
+      properties.put(SECURITY_CLIENT_ACCESSOR_PP, postProcessor.getName()+".create");
+    }
+
     JSONAuthorization.setUpWithJsonFile(jsonFile);
 
     cache = new CacheFactory(properties).create();
     cache.addCacheServer().start();
+
+    cache.createRegionFactory().create("region1");
   }
 
   public Cache getCache(){

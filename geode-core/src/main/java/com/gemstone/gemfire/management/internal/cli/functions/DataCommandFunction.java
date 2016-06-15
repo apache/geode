@@ -26,6 +26,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
 import com.gemstone.gemfire.cache.CacheFactory;
@@ -76,10 +80,6 @@ import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.JsonUtil;
 import com.gemstone.gemfire.pdx.PdxInstance;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
 
 /***
  * 
@@ -930,6 +930,21 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
             request.setQuery(query);
             dataResult = DataCommands.callFunctionForRegion(request, function, members);
             dataResult.setInputQuery(query);
+
+            // post process, iterate through the result for post processing
+            List<SelectResultRow> rows = dataResult.getSelectResult();
+            for(Iterator<SelectResultRow> itr = rows.iterator(); itr.hasNext();){
+              SelectResultRow row = itr.next();
+              Object newValue = GeodeSecurityUtil.postProcess(null, null, row.getValue());
+              // user is not supposed to see this row
+              if(newValue==null){
+                itr.remove();
+              }
+              else{
+                row.setValue(newValue);
+              }
+            }
+
             return (dataResult);
           } else {
             return (dataResult = DataCommandResult.createSelectInfoResult(null, null, -1, null,

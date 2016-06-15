@@ -52,6 +52,7 @@ import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.internal.util.Breadcrumbs;
 
 public class PutAll80 extends BaseCommand {
@@ -140,7 +141,9 @@ public class PutAll80 extends BaseCommand {
         servConn.setAsTrue(RESPONDED);
         return;
       }
-      
+
+      GeodeSecurityUtil.authorizeRegionWrite(regionName);
+
       final int BASE_PART_COUNT = getBasePartCount();
       
       // part 1: eventID

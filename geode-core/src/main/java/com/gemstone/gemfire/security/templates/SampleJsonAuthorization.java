@@ -31,11 +31,14 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
 import javax.management.remote.JMXPrincipal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gemstone.gemfire.internal.logging.LogService;
+import org.apache.commons.io.IOUtils;
+import org.apache.shiro.authz.Permission;
+
 import com.gemstone.gemfire.management.internal.security.ResourceConstants;
 import com.gemstone.gemfire.security.AccessControl;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
@@ -43,9 +46,6 @@ import com.gemstone.gemfire.security.Authenticator;
 import com.gemstone.gemfire.security.ExternalSecurity;
 import com.gemstone.gemfire.security.GeodePermission;
 import com.gemstone.gemfire.security.NotAuthorizedException;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.shiro.authz.Permission;
 
 /**
  * This class provides a sample implementation for authentication and authorization via the {@link AccessControl}
@@ -163,6 +163,7 @@ public class SampleJsonAuthorization implements ExternalSecurity {
       Role role = new Role();
       role.name = r.get("name").asText();
       String regionNames = null;
+      String keys = null;
 
       JsonNode regions = r.get("regions");
       if (regions != null) {
@@ -179,8 +180,16 @@ public class SampleJsonAuthorization implements ExternalSecurity {
         String[] parts = op.asText().split(":");
         String resourcePart = (parts.length > 0) ? parts[0] : null;
         String operationPart = (parts.length > 1) ? parts[1] : null;
+        if(parts.length>2){
+          regionNames = parts[2];
+        }
+        if(parts.length>3){
+          keys = parts[3];
+        }
         String regionPart = (regionNames != null) ? regionNames : "*";
-        role.permissions.add(new GeodePermission(resourcePart, operationPart, regionPart));
+        String keyPart = (keys !=null) ? keys : "*";
+
+        role.permissions.add(new GeodePermission(resourcePart, operationPart, regionPart, keyPart));
       }
 
       roleMap.put(role.name, role);
@@ -232,7 +241,6 @@ public class SampleJsonAuthorization implements ExternalSecurity {
       throw new AuthenticationFailedException("Wrong username/password");
     }
 
-    LogService.getLogger().info("User=" + user + " pwd=" + pwd);
     if (user != null && !userObj.pwd.equals(pwd) && !"".equals(user)) {
       throw new AuthenticationFailedException("Wrong username/password");
     }

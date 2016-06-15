@@ -17,6 +17,21 @@
 package com.gemstone.gemfire.test.dunit.internal;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
 
 import com.gemstone.gemfire.admin.internal.AdminDistributedSystemImpl;
 import com.gemstone.gemfire.cache.Cache;
@@ -33,7 +48,11 @@ import com.gemstone.gemfire.distributed.internal.DistributionMessageObserver;
 import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
 import com.gemstone.gemfire.internal.SocketCreator;
 import com.gemstone.gemfire.internal.admin.ClientStatsManager;
-import com.gemstone.gemfire.internal.cache.*;
+import com.gemstone.gemfire.internal.cache.DiskStoreObserver;
+import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.HARegion;
+import com.gemstone.gemfire.internal.cache.InitialImageOperation;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.tier.InternalClientMembership;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerTestUtil;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -41,22 +60,13 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.xmlcache.CacheCreation;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.internal.cli.LogWrapper;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.DistributedTestUtils;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.Invoke;
+import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.standalone.DUnitLauncher;
 import com.gemstone.gemfire.test.junit.rules.serializable.SerializableTestName;
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-
-import java.io.Serializable;
-import java.text.DecimalFormat;
-import java.util.*;
-
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * This class is the base class for all distributed tests using JUnit 4.
@@ -474,7 +484,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   }
 
   private final void tearDownDistributedTestCase() throws Exception {
-    Invoke.invokeInEveryVM(()->tearDownCreationStackGenerator());
+    Invoke.invokeInEveryVM("tearDownCreationStackGenerator", ()->tearDownCreationStackGenerator());
     if (logPerTest) {
       disconnectAllFromDS();
     }
@@ -524,7 +534,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
 
   private static final void cleanupAllVms() {
     tearDownVM();
-    Invoke.invokeInEveryVM(()->tearDownVM());
+    Invoke.invokeInEveryVM("tearDownVM", ()->tearDownVM());
     Invoke.invokeInLocator(()->{
       DistributionMessageObserver.setInstance(null);
       DistributedTestUtils.unregisterInstantiatorsInThisVM();

@@ -21,6 +21,7 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import java.lang.reflect.Method;
 import java.security.AccessController;
+import java.security.Principal;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -54,6 +55,7 @@ import com.gemstone.gemfire.security.GeodePermission;
 import com.gemstone.gemfire.security.GeodePermission.Operation;
 import com.gemstone.gemfire.security.GeodePermission.Resource;
 import com.gemstone.gemfire.security.NotAuthorizedException;
+import com.gemstone.gemfire.security.PostProcessor;
 
 public class GeodeSecurityUtil {
 
@@ -212,21 +214,37 @@ public class GeodeSecurityUtil {
     authorize("DATA", "MANAGE", regionName);
   }
 
+  public static void authorizeRegionManage(String regionName, String key) {
+    authorize("DATA", "MANAGE", regionName, key);
+  }
+
   public static void authorizeRegionWrite(String regionName) {
     authorize("DATA", "WRITE", regionName);
+  }
+
+  public static void authorizeRegionWrite(String regionName, String key) {
+    authorize("DATA", "WRITE", regionName, key);
   }
 
   public static void authorizeRegionRead(String regionName) {
     authorize("DATA", "READ", regionName);
   }
 
+  public static void authorizeRegionRead(String regionName, String key) {
+    authorize("DATA", "READ", regionName, key);
+  }
+
   public static void authorize(String resource, String operation) {
     authorize(resource, operation, null);
   }
 
-  private static void authorize(String resource, String operation, String regionName) {
+  private static void authorize(String resource, String operation, String regionName){
+    authorize(resource, operation, regionName, null);
+  }
+
+  private static void authorize(String resource, String operation, String regionName, String key) {
     regionName = StringUtils.stripStart(regionName, "/");
-    authorize(new GeodePermission(resource, operation, regionName));
+    authorize(new GeodePermission(resource, operation, regionName, key));
   }
 
   public static void authorize(GeodePermission context) {
@@ -247,8 +265,8 @@ public class GeodeSecurityUtil {
       currentUser.checkPermission(context);
     }
     catch (ShiroException e) {
-      logger.info(currentUser.getPrincipal() + " not authorized for " + context);
-      throw new NotAuthorizedException(e.getMessage(), e);
+      String msg = currentUser.getPrincipal() + " not authorized for " + context;
+      throw new NotAuthorizedException(msg, e);
     }
   }
 
@@ -262,6 +280,8 @@ public class GeodeSecurityUtil {
     return true;
   }
 
+  private static PostProcessor postProcessor;
+
   /**
    * initialize Shiro's Security Manager and Security Utilities
    * @param securityProps
@@ -274,8 +294,7 @@ public class GeodeSecurityUtil {
     String shiroConfig = securityProps.getProperty(SECURITY_SHIRO_INIT);
     String customAuthenticator = securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
 
-    Object auth = getAuthenticatorObject(customAuthenticator);
-
+    Object authenticatorObject = getObject(customAuthenticator);
     if (!com.gemstone.gemfire.internal.lang.StringUtils.isBlank(shiroConfig)) {
       IniSecurityManagerFactory factory = new IniSecurityManagerFactory("classpath:" + shiroConfig);
 
@@ -289,26 +308,46 @@ public class GeodeSecurityUtil {
       SecurityManager securityManager = factory.getInstance();
       SecurityUtils.setSecurityManager(securityManager);
     }
+
     // only set up shiro realm if user has implemented ExternalSecurity
-    else if (auth != null && auth instanceof ExternalSecurity) {
-      ExternalSecurity externalSecurity = (ExternalSecurity) auth;
-      externalSecurity.init(securityProps);
-      Realm realm = new CustomAuthRealm(externalSecurity);
+    else if (authenticatorObject != null && authenticatorObject instanceof ExternalSecurity) {
+      ExternalSecurity authenticator = (ExternalSecurity) authenticatorObject;
+      authenticator.init(securityProps);
+      Realm realm = new CustomAuthRealm(authenticator);
       SecurityManager securityManager = new DefaultSecurityManager(realm);
       SecurityUtils.setSecurityManager(securityManager);
     }
     else {
       SecurityUtils.setSecurityManager(null);
     }
+
+    // this initializes the post processor
+    String customPostProcessor = securityProps.getProperty(SECURITY_CLIENT_ACCESSOR_PP);
+    Object postProcessObject = getObject(customPostProcessor);
+    if(postProcessObject instanceof PostProcessor){
+      postProcessor = (PostProcessor) postProcessObject;
+      postProcessor.init(securityProps);
+    }
   }
 
-  public static Object getAuthenticatorObject(String authenticatorFactoryName) {
-    if (StringUtils.isBlank(authenticatorFactoryName)) {
+  public static Object postProcess(String regionPath, Object key, Object result){
+    if(postProcessor == null)
+      return result;
+
+    Subject subject = getSubject();
+
+    if(subject == null)
+      return result;
+
+    return postProcessor.processRegionValue((Principal)subject.getPrincipal(), regionPath, key,  result);
+  }
+
+  public static Object getObject(String factoryName) {
+    if (StringUtils.isBlank(factoryName)) {
       return null;
     }
-
     try {
-      Method instanceGetter = ClassLoadUtil.methodFromName(authenticatorFactoryName);
+      Method instanceGetter = ClassLoadUtil.methodFromName(factoryName);
       return instanceGetter.invoke(null, (Object[]) null);
     }
     catch (Exception ex) {
@@ -317,7 +356,7 @@ public class GeodeSecurityUtil {
   }
 
   public static boolean isIntegratedSecurity(String authenticatorFactoryName) {
-    Object auth = getAuthenticatorObject(authenticatorFactoryName);
+    Object auth = getObject(authenticatorFactoryName);
     return (auth instanceof ExternalSecurity);
   }
 

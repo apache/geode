@@ -16,10 +16,10 @@
  */
 package com.gemstone.gemfire.cache.client.internal;
 
+import java.io.EOFException;
+
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
-
-import java.io.EOFException;
 
 /**
  * Tell a server that a connection is being closed

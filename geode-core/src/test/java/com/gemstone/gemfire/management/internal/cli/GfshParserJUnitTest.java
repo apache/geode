@@ -16,7 +16,6 @@
  */
 package com.gemstone.gemfire.management.internal.cli;
 
-import static com.gemstone.gemfire.cache.operations.OperationContext.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
@@ -49,6 +48,8 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.parser.SyntaxConstants;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
+import com.gemstone.gemfire.security.GeodePermission.Operation;
+import com.gemstone.gemfire.security.GeodePermission.Resource;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
@@ -688,7 +689,7 @@ public class GfshParserJUnitTest {
   static class Commands implements CommandMarker {
 
     @CliCommand(value = { COMMAND1_NAME, COMMAND1_NAME_ALIAS }, help = COMMAND1_HELP)
-    @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+    @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public static String command1(@CliArgument(name = ARGUMENT1_NAME, argumentContext = ARGUMENT1_CONTEXT, help = ARGUMENT1_HELP, mandatory = true) String argument1,
                                   @CliArgument(name = ARGUMENT2_NAME, argumentContext = ARGUMENT2_CONTEXT, help = ARGUMENT2_HELP, mandatory = false, unspecifiedDefaultValue = ARGUMENT2_UNSPECIFIED_DEFAULT_VALUE, systemProvided = false) String argument2,
                                   @CliOption(key = {
@@ -704,13 +705,13 @@ public class GfshParserJUnitTest {
     }
 
     @CliCommand(value = { COMMAND2_NAME })
-    @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+    @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public static String command2() {
       return null;
     }
 
     @CliCommand(value = { "testParamConcat" })
-    @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+    @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public static Result testParamConcat(@CliOption(key = { "string" }) String string,
                                          @CliOption(key = { "stringArray" }) @CliMetaData(valueSeparator = ",") String[] stringArray,
                                          @CliOption(key = { "stringList" }, optionContext = ConverterHint.STRING_LIST) @CliMetaData(valueSeparator = ",") List<String> stringList,
@@ -720,7 +721,7 @@ public class GfshParserJUnitTest {
     }
 
     @CliCommand(value = { "testMultiWordArg" })
-    @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+    @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public static Result testMultiWordArg(@CliArgument(name = "arg1") String arg1,
                                           @CliArgument(name = "arg2") String arg2) {
       return null;
@@ -778,13 +779,13 @@ public class GfshParserJUnitTest {
     static final String C2_MSG_AVAILABLE = C2_NAME + " is available.";
 
     @CliCommand(value = { C1_NAME })
-    @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+    @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public Result command1() {
       return ResultBuilder.createInfoResult(C1_MSG_AVAILABLE);
     }
 
     @CliCommand(value = { C2_NAME })
-    @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
+    @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
     public Result command2() {
       return ResultBuilder.createInfoResult(C2_MSG_AVAILABLE);
     }

@@ -22,6 +22,7 @@ import org.apache.shiro.authz.permission.WildcardPermission;
 public class GeodePermission extends WildcardPermission {
 
   public static String ALL_REGIONS = "*";
+  public static String ALL_KEYS = "*";
 
   public enum Resource {
     NULL,
@@ -48,45 +49,61 @@ public class GeodePermission extends WildcardPermission {
     return regionName;
   }
 
+  public String getKey() {
+    return key;
+  }
+
   // these default values are used when creating a lock around an operation
   private Resource resource = Resource.NULL;
   private Operation operation = Operation.NULL;
   private String regionName = ALL_REGIONS;
+  private String key = ALL_KEYS;
 
   public GeodePermission() {
     this(Resource.NULL, Operation.NULL);
   }
 
   public GeodePermission(String resource, String operation) {
-    this(Resource.valueOf(resource), Operation.valueOf(operation));
+    this(resource, operation, ALL_REGIONS);
+  }
+
+  public GeodePermission(String resource, String operation, String regionName) {
+    this(resource, operation, regionName, ALL_KEYS);
+  }
+
+  public GeodePermission(String resource, String operation, String regionName, String key) {
+    this((resource==null) ? Resource.NULL : Resource.valueOf(resource),
+      (operation == null) ? Operation.NULL : Operation.valueOf(operation),
+      regionName,
+      key);
   }
 
   public GeodePermission(Resource resource, Operation operation){
     this(resource, operation, ALL_REGIONS);
   }
 
-  public GeodePermission(String resource, String operation, String regionName) {
-    if(resource != null) this.resource = Resource.valueOf(resource);
-    if(operation != null) this.operation = Operation.valueOf(operation);
-    if(regionName != null) this.regionName = regionName;
-
-    setParts(this.resource+":"+this.operation+":"+this.regionName, true);
+  public GeodePermission(Resource resource, Operation operation, String regionName){
+    this(resource, operation, regionName, ALL_KEYS);
   }
 
-  public GeodePermission(Resource resource, Operation operation, String regionName){
+  public GeodePermission(Resource resource, Operation operation, String regionName, String key){
     if(resource != null) this.resource = resource;
     if(operation != null) this.operation = operation;
     if(regionName != null) this.regionName = regionName;
+    if(key != null) this.key = key;
 
-    setParts(this.resource+":"+this.operation+":"+this.regionName, true);
+    setParts(this.resource+":"+this.operation+":"+this.regionName+":"+this.key, true);
   }
 
   @Override
   public String toString() {
-    if (ALL_REGIONS.equals(getRegionName())) {
+    if (ALL_REGIONS.equals(regionName)) {
       return getResource() + ":" + getOperation();
-    } else {
-      return getResource() + ":" + getOperation() + ":" + getRegionName();
+    } else if(ALL_KEYS.equals(key)) {
+      return resource + ":" + operation + ":" + regionName;
+    }
+    else{
+      return resource + ":" + operation + ":" + regionName + ":" + key;
     }
   }
 

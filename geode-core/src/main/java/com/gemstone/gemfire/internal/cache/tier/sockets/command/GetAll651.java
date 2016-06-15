@@ -17,9 +17,12 @@
 
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Set;
+
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.operations.GetOperationContext;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
@@ -34,11 +37,8 @@ import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.NotAuthorizedException;
-
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Set;
 
 public class GetAll651 extends BaseCommand {
 
@@ -200,6 +200,8 @@ public class GetAll651 extends BaseCommand {
         }
       }
 
+      GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());
+
       // Get the value and update the statistics. Do not deserialize
       // the value if it is a byte[].
       // Getting a value in serialized form is pretty nasty. I split this out
@@ -236,13 +238,13 @@ public class GetAll651 extends BaseCommand {
         }
       }
 
+      value = GeodeSecurityUtil.postProcess(regionName, key, value);
+
       if (isDebugEnabled) {
         logger.debug("{}: Returning value for key={}: {}", servConn.getName(), key, value);
       }
 
       // Add the value to the list of values
-      
-
       if(keyNotPresent) {
         if (logger.isDebugEnabled()) {
           logger.debug("{}: key={} is not present on server.", servConn.getName(), key);

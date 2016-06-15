@@ -83,6 +83,7 @@ import com.gemstone.gemfire.distributed.internal.DistributionConfig;
 import com.gemstone.gemfire.pdx.PdxReader;
 import com.gemstone.gemfire.pdx.PdxSerializable;
 import com.gemstone.gemfire.pdx.PdxWriter;
+import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 
@@ -201,6 +202,12 @@ public final class SecurityTestUtils {
     SecurityTestUtils.ignoredExceptions = expectedExceptions;
   }
 
+  protected static int createCacheServer(String authenticatorFactoryMethodName){
+    Properties authProps = new Properties();
+    authProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR, authenticatorFactoryMethodName);
+    return createCacheServer(authProps, null, 0, null, 0, false, NO_EXCEPTION);
+  }
+
   protected static int createCacheServer(final Properties authProps,
                                          final Properties javaProps,
                                          final int locatorPort,
@@ -301,6 +308,15 @@ public final class SecurityTestUtils {
     return server1.getPort();
   }
 
+  protected static Cache createCacheClient(String userName, String password, int serverPort, int expectedResult){
+    Properties authProps = new Properties();
+    authProps.setProperty(UserPasswordAuthInit.USER_NAME, userName);
+    authProps.setProperty(UserPasswordAuthInit.PASSWORD, password);
+    int[] ports = new int[1];
+    ports[0] = serverPort;
+    return createCacheClient(UserPasswordAuthInit.class.getName()+".create", authProps, null, ports, 0, false, false, true, expectedResult);
+  }
+
   // 1
   protected static void createCacheClient(final String authInitModule,
                                           final Properties authProps,
@@ -333,7 +349,7 @@ public final class SecurityTestUtils {
                                                            final boolean setupDynamicRegionFactory,
                                                            final int expectedResult)
   {
-    createCacheClient(authInitModule, authProps, javaProps, ports, numConnections, setupDynamicRegionFactory, false, expectedResult);
+     createCacheClient(authInitModule, authProps, javaProps, ports, numConnections, setupDynamicRegionFactory, false, expectedResult);
   }
 
   // 4
@@ -350,7 +366,7 @@ public final class SecurityTestUtils {
   }
 
   // 5
-  protected static void createCacheClient(final String authInitModule,
+  protected static Cache createCacheClient(final String authInitModule,
                                           Properties authProps,
                                           final Properties javaProps,
                                           int[] ports,
@@ -425,13 +441,13 @@ public final class SecurityTestUtils {
 
       RegionAttributes attrs = factory.create();
 
-      cache.createRegion(REGION_NAME, attrs);
+      cache.createRegionFactory(attrs).create(REGION_NAME);
 
-      if (expectedResult != NO_EXCEPTION && expectedResult != NOFORCE_AUTHREQ_EXCEPTION) {
-        if (!multiUserAuthMode) {
-          fail("Expected an exception when starting client");
-        }
-      }
+//      if (expectedResult != NO_EXCEPTION && expectedResult != NOFORCE_AUTHREQ_EXCEPTION) {
+//        if (!multiUserAuthMode) {
+//          fail("Expected an exception when starting client");
+//        }
+//      }
 
     }
     catch (AuthenticationRequiredException ex) {
@@ -464,6 +480,7 @@ public final class SecurityTestUtils {
     catch (Exception ex) {
       fail("Got unexpected exception when starting client", ex);
     }
+    return cache;
   }
 
   protected static void createCacheClientForMultiUserMode(final int numOfUsers,

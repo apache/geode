@@ -30,6 +30,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import com.gemstone.gemfire.LogWriter;
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -74,11 +79,6 @@ import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.security.GeodePermission.Operation;
 import com.gemstone.gemfire.security.GeodePermission.Resource;
-
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
 
 /**
  * 
@@ -1027,7 +1027,7 @@ public class DataCommands implements CommandMarker {
       @CliOption(key = { CliStrings.GET__VALUEKLASS }, help = CliStrings.GET__VALUEKLASS__HELP) String valueClass,
       @CliOption(key = CliStrings.GET__LOAD, unspecifiedDefaultValue = "true", specifiedDefaultValue = "true", help = CliStrings.GET__LOAD__HELP) Boolean loadOnCacheMiss)
   {
-    GeodeSecurityUtil.authorizeRegionRead(regionPath);
+    GeodeSecurityUtil.authorizeRegionRead(regionPath, key);
 
     Cache cache = CacheFactory.getAnyInstance();
     DataCommandResult dataResult = null;
@@ -1069,6 +1069,10 @@ public class DataCommands implements CommandMarker {
     dataResult.setKeyClass(keyClass);
     if (valueClass != null)
       dataResult.setValueClass(valueClass);
+
+    Object result = GeodeSecurityUtil.postProcess(regionPath, key, dataResult.getGetResult());
+    dataResult.setGetResult(result);
+
     return makePresentationResult(dataResult);
   }
 
@@ -1083,8 +1087,8 @@ public class DataCommands implements CommandMarker {
       @CliOption(key = { CliStrings.LOCATE_ENTRY__VALUEKLASS }, help = CliStrings.LOCATE_ENTRY__VALUEKLASS__HELP) String valueClass,
       @CliOption(key = { CliStrings.LOCATE_ENTRY__RECURSIVE }, help = CliStrings.LOCATE_ENTRY__RECURSIVE__HELP, unspecifiedDefaultValue = "false") boolean recursive) {
 
-    GeodeSecurityUtil.authorizeRegionRead(regionPath);
-    // Cache cache = CacheFactory.getAnyInstance();
+    GeodeSecurityUtil.authorizeRegionRead(regionPath, key);
+
     DataCommandResult dataResult = null;
 
     if (regionPath == null || regionPath.isEmpty()) {
@@ -1118,6 +1122,7 @@ public class DataCommands implements CommandMarker {
     dataResult.setKeyClass(keyClass);
     if (valueClass != null)
       dataResult.setValueClass(valueClass);
+
     return makePresentationResult(dataResult);
   }
 

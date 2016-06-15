@@ -48,6 +48,10 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     this.useHttp = useHttp;
   }
 
+  public GfshShellConnectionRule(int jmxPort) {
+    this.jmxPort = jmxPort;
+  }
+
   protected void before(Description description) throws Throwable {
     JMXConnectionConfiguration config = description.getAnnotation(JMXConnectionConfiguration.class);
     if(config==null)

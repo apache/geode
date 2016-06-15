@@ -19,12 +19,6 @@ package com.gemstone.gemfire.internal.security.shiro;
 import java.security.Principal;
 import java.util.Properties;
 
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
-import com.gemstone.gemfire.management.internal.security.ResourceConstants;
-import com.gemstone.gemfire.security.ExternalSecurity;
-import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.security.GeodePermission;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.authc.AuthenticationException;
@@ -36,6 +30,12 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.management.internal.security.ResourceConstants;
+import com.gemstone.gemfire.security.ExternalSecurity;
+import com.gemstone.gemfire.security.GemFireSecurityException;
+import com.gemstone.gemfire.security.GeodePermission;
 
 public class CustomAuthRealm extends AuthorizingRealm{
   public static final String REALM_NAME = "CUSTOMAUTHREALM";
@@ -49,7 +49,7 @@ public class CustomAuthRealm extends AuthorizingRealm{
 
 
   public CustomAuthRealm (String authenticatorFactory) {
-    Object auth = GeodeSecurityUtil.getAuthenticatorObject(authenticatorFactory);
+    Object auth = GeodeSecurityUtil.getObject(authenticatorFactory);
 
     if(!(auth instanceof ExternalSecurity)){
       throw new GemFireSecurityException("Integrated Security requires ExternalSecurity interface.");
@@ -57,7 +57,7 @@ public class CustomAuthRealm extends AuthorizingRealm{
     externalSecurity = (ExternalSecurity) auth;
   }
 
-    @Override
+  @Override
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
     UsernamePasswordToken authToken = (UsernamePasswordToken) token;
     String username = authToken.getUsername();

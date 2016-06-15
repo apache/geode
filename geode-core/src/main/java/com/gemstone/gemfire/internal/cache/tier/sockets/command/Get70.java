@@ -145,7 +145,7 @@ public class Get70 extends BaseCommand {
     }
 
     // for integrated security
-    GeodeSecurityUtil.authorizeRegionRead(regionName);
+    GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());
 
     Region region = crHelper.getRegion(regionName);
     if (region == null) {
@@ -189,7 +189,6 @@ public class Get70 extends BaseCommand {
       VersionTag versionTag = entry.versionTag;
       boolean keyNotPresent = entry.keyNotPresent;
 
-
       try {
         AuthorizeRequestPP postAuthzRequest = servConn.getPostAuthzRequest();
         if (postAuthzRequest != null) {
@@ -216,11 +215,13 @@ public class Get70 extends BaseCommand {
         servConn.setAsTrue(RESPONDED);
         return;
       }
-      {
-        long oldStart = start;
-        start = DistributionStats.getStatTime();
-        stats.incProcessGetTime(start - oldStart);
-      }
+
+      // post process
+      data = GeodeSecurityUtil.postProcess(regionName, key, data);
+
+      long oldStart = start;
+      start = DistributionStats.getStatTime();
+      stats.incProcessGetTime(start - oldStart);
 
       if (region instanceof PartitionedRegion) {
         PartitionedRegion pr = (PartitionedRegion) region;

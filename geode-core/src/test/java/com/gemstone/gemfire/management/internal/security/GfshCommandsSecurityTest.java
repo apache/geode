@@ -21,6 +21,13 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
+import org.apache.shiro.authz.permission.WildcardPermission;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.internal.AvailablePortHelper;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.cli.Result;
@@ -29,13 +36,6 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.ErrorResultData;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
-
-import org.apache.shiro.authz.permission.WildcardPermission;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category(IntegrationTest.class)
 public class GfshCommandsSecurityTest {
@@ -171,6 +171,18 @@ public class GfshCommandsSecurityTest {
       assertTrue(resultMessage+" does not contain "+permString,resultMessage.contains("["+permString+"]"));
     }
   }
+
+  @Test
+  @JMXConnectionConfiguration(user = "data-user", password = "1234567")
+  public void testGetPostProcess() throws Exception {
+    gfsh.executeCommand("put --region=region1 --key=key2 --value=value2");
+    gfsh.executeCommand("put --region=region1 --key=key2 --value=value2");
+    gfsh.executeCommand("put --region=region1 --key=key3 --value=value3");
+
+    //gfsh.executeCommand("get --region=region1 --key=key1");
+    gfsh.executeCommand("query --query=\"select * from /region1\"");
+  }
+
 
 
 }

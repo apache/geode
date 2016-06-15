@@ -17,16 +17,25 @@
 
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Set;
+
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.operations.GetOperationContext;
 import com.gemstone.gemfire.cache.operations.internal.GetOperationContextImpl;
-import com.gemstone.gemfire.i18n.LogWriterI18n;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.*;
+import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ChunkedMessage;
+import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ObjectPartList;
+import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
+import com.gemstone.gemfire.internal.cache.tier.sockets.VersionedObjectList;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
@@ -34,11 +43,8 @@ import com.gemstone.gemfire.internal.offheap.OffHeapHelper;
 import com.gemstone.gemfire.internal.offheap.annotations.Retained;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.NotAuthorizedException;
-
-import java.io.IOException  ;
-import java.util.Iterator;
-import java.util.Set;
 
 public class GetAll70 extends BaseCommand {
 
@@ -210,6 +216,15 @@ public class GetAll70 extends BaseCommand {
         }
       }
 
+      try {
+        GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());
+      }
+      catch (NotAuthorizedException ex) {
+        logger.warn(LocalizedMessage.create(LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1, new Object[]{servConn.getName(), key}), ex);
+        values.addExceptionPart(key, ex);
+        continue;
+      }
+
       // Get the value and update the statistics. Do not deserialize
       // the value if it is a byte[].
       // Getting a value in serialized form is pretty nasty. I split this out
@@ -248,6 +263,9 @@ public class GetAll70 extends BaseCommand {
             }
           }
         }
+
+        data = GeodeSecurityUtil.postProcess(regionName, key, data);
+
         // Add the entry to the list that will be returned to the client
         if (keyNotPresent) {
           values.addObjectPartForAbsentKey(key, data, versionTag);

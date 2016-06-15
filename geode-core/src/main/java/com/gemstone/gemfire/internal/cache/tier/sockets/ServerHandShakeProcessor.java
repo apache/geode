@@ -17,6 +17,23 @@
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.security.Principal;
+import java.util.Properties;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
+
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.cache.IncompatibleVersionException;
 import com.gemstone.gemfire.cache.UnsupportedVersionException;
@@ -36,17 +53,6 @@ import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
-import org.apache.logging.log4j.Logger;
-
-import java.io.*;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.security.Principal;
-import java.util.Properties;
-
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * A <code>ServerHandShakeProcessor</code> verifies the client's version compatibility with server.
@@ -219,55 +225,11 @@ public class ServerHandShakeProcessor {
       ClientProxyMembershipID proxyId = handshake.getMembership();
       connection.setProxyId(proxyId);
       //hitesh: it gets principals
-      //Hitesh:for older version we should set this 
+      //Hitesh:for older version we should set this
       if (clientVersion.compareTo(Version.GFE_65) < 0
           || connection.getCommunicationMode() == Acceptor.GATEWAY_TO_GATEWAY) {
-       /* Principal principal = handshake.verifyCredentials();
-        connection.setPrincipal(principal);
-         if (principal != null) {
-          if (connection.getSecurityLogger().fineEnabled())
-            securityLogger.fine(connection.getName()
-                + ": successfully verified credentials for proxyID [" + proxyId
-                + "] having principal: " + principal.getName());
-        } else if (socket instanceof SSLSocket) {
-          // Test whether we are using SSL connection in mutual authentication
-          // mode and use its principal.
-          SSLSocket sslSocket = (SSLSocket) socket;
-          SSLSession sslSession = sslSocket.getSession();
-          if (!sslSession.getCipherSuite().equals("SSL_NULL_WITH_NULL_NULL")
-              && sslSocket.getNeedClientAuth()) {
-            try {
-              Certificate[] certs = sslSession.getPeerCertificates();
-              if (certs[0] instanceof X509Certificate) {
-                principal = ((X509Certificate) certs[0])
-                    .getSubjectX500Principal();
-                if (securityLogger.fineEnabled())
-                  securityLogger.fine(connection.getName()
-                      + ": successfully verified credentials for proxyID ["
-                      + proxyId
-                      + "] using SSL mutual authentication with principal: "
-                      + principal.getName());
-              } else {
-                if (securityLogger.warningEnabled())
-                  securityLogger.warning(
-                      LocalizedStrings.ServerHandShakeProcessor_0_UNEXPECTED_CERTIFICATE_TYPE_1_FOR_PROXYID_2,
-                      new Object[] {connection.getName(), certs[0].getType(), proxyId});
-              }
-            } catch (SSLPeerUnverifiedException ex) {
-              // this is the case where client has not verified itself
-              // i.e. not in mutual authentication mode
-              if (securityLogger.errorEnabled())
-                securityLogger.error(
-                    LocalizedStrings.ServerHandShakeProcessor_SSL_EXCEPTION_SHOULD_NOT_HAVE_HAPPENED,
-                    ex);
-              connection.setPrincipal(null);//TODO:hitesh ??
-            }
-          }
-        }
-        */
          long uniqueId = setAuthAttributes(connection);
          connection.setUserAuthId(uniqueId);//for older clients < 6.5
-
       }
     }
     catch (SocketTimeoutException timeout) {
@@ -347,9 +309,17 @@ public class ServerHandShakeProcessor {
     throws Exception{
     try {
       logger.debug("setAttributes()");
-      Principal principal = ((HandShake)connection.getHandshake()).verifyCredentials();
-      connection.setPrincipal(principal);//TODO:hitesh is this require now ???
-      return getUniqueId(connection, principal);
+      Object principal = ((HandShake)connection.getHandshake()).verifyCredentials();
+
+      long uniqueId;
+      if(principal instanceof Subject){
+        uniqueId = connection.getClientUserAuths().putSubject((Subject)principal);
+      }
+      else {
+        //this sets principal in map as well....
+        uniqueId = getUniqueId(connection, (Principal)principal);
+      }
+      return uniqueId;
     }catch(Exception ex) {
       throw ex;
     }

@@ -19,25 +19,29 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
-import com.gemstone.gemfire.i18n.LogWriterI18n;
-import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
-import com.gemstone.gemfire.internal.cache.tier.Command;
-import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.*;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
-import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
-import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
-import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.security.NotAuthorizedException;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.operations.KeySetOperationContext;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.operations.KeySetOperationContext;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
+import com.gemstone.gemfire.internal.cache.tier.Command;
+import com.gemstone.gemfire.internal.cache.tier.MessageType;
+import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ChunkedMessage;
+import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
+import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
+import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
+import com.gemstone.gemfire.internal.security.AuthorizeRequest;
+import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.security.NotAuthorizedException;
 
 
 public class KeySet extends BaseCommand {
@@ -161,6 +165,7 @@ public class KeySet extends BaseCommand {
     final boolean isTraceEnabled = logger.isTraceEnabled();
     for (Iterator it = keySet.iterator(); it.hasNext();) {
       Object entryKey = it.next();
+      GeodeSecurityUtil.authorizeRegionRead(regionName, entryKey.toString());
       keyList.add(entryKey);
       if (isTraceEnabled) {
         logger.trace("{}: fillAndSendKeySetResponseKey <{}>; list size was {}; region: {}", servConn.getName(), entryKey, keyList.size(), region.getFullPath());

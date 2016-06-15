@@ -17,6 +17,52 @@
 
 package com.gemstone.gemfire.internal.cache.tier.sockets;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Method;
+import java.math.BigInteger;
+import java.net.Socket;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Signature;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyAgreement;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.DHParameterSpec;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import javax.net.ssl.SSLSocket;
+
+import org.apache.logging.log4j.Logger;
+
 import com.gemstone.gemfire.CancelCriterion;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.InternalGemFireException;
@@ -26,37 +72,32 @@ import com.gemstone.gemfire.cache.client.ServerRefusedConnectionException;
 import com.gemstone.gemfire.cache.client.internal.Connection;
 import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.DistributedSystem;
-import com.gemstone.gemfire.distributed.internal.*;
+import com.gemstone.gemfire.distributed.internal.DM;
+import com.gemstone.gemfire.distributed.internal.DistributionConfig;
+import com.gemstone.gemfire.distributed.internal.InternalDistributedSystem;
+import com.gemstone.gemfire.distributed.internal.LonerDistributionManager;
+import com.gemstone.gemfire.distributed.internal.ServerLocation;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
-import com.gemstone.gemfire.internal.*;
+import com.gemstone.gemfire.internal.ClassLoadUtil;
+import com.gemstone.gemfire.internal.HeapDataOutputStream;
+import com.gemstone.gemfire.internal.InternalDataSerializer;
+import com.gemstone.gemfire.internal.InternalInstantiator;
+import com.gemstone.gemfire.internal.Version;
+import com.gemstone.gemfire.internal.VersionedDataInputStream;
+import com.gemstone.gemfire.internal.VersionedDataOutputStream;
 import com.gemstone.gemfire.internal.cache.tier.Acceptor;
 import com.gemstone.gemfire.internal.cache.tier.ClientHandShake;
 import com.gemstone.gemfire.internal.cache.tier.ConnectionProxy;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.internal.logging.LogService;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.pdx.internal.PeerTypeRegistration;
-import com.gemstone.gemfire.security.*;
-import org.apache.logging.log4j.Logger;
-
-import javax.crypto.Cipher;
-import javax.crypto.KeyAgreement;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.DHParameterSpec;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import javax.net.ssl.SSLSocket;
-import java.io.*;
-import java.lang.reflect.Method;
-import java.math.BigInteger;
-import java.net.Socket;
-import java.security.*;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.*;
-
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import com.gemstone.gemfire.security.AuthInitialize;
+import com.gemstone.gemfire.security.AuthenticationFailedException;
+import com.gemstone.gemfire.security.AuthenticationRequiredException;
+import com.gemstone.gemfire.security.Authenticator;
+import com.gemstone.gemfire.security.GemFireSecurityException;
 
 public class HandShake implements ClientHandShake
 {
@@ -1747,40 +1788,54 @@ public class HandShake implements ClientHandShake
     }
     return credentials;
   }
-  
-  public static Principal verifyCredentials(String authenticatorMethod,
+
+  /**
+   * this could return either a Subject or a Principal depending on if it's integrated security or not
+   * @param authenticatorMethod
+   * @param credentials
+   * @param securityProperties
+   * @param logWriter
+   * @param securityLogWriter
+   * @param member
+   * @return
+   * @throws AuthenticationRequiredException
+   * @throws AuthenticationFailedException
+   */
+  public static Object verifyCredentials(String authenticatorMethod,
       Properties credentials, Properties securityProperties, InternalLogWriter logWriter,
       InternalLogWriter securityLogWriter, DistributedMember member)
       throws AuthenticationRequiredException, AuthenticationFailedException {
 
+    if (authenticatorMethod == null || authenticatorMethod.length() == 0) {
+      return null;
+    }
+
     Authenticator auth = null;
     try {
-      if (authenticatorMethod == null || authenticatorMethod.length() == 0) {
-        return null;
+      if(AcceptorImpl.isIntegratedSecurity()){
+        String username = credentials.getProperty("security-username");
+        String password = credentials.getProperty("security-password");
+        return GeodeSecurityUtil.login(username, password);
       }
-      Method instanceGetter = ClassLoadUtil.methodFromName(authenticatorMethod);
-      auth = (Authenticator)instanceGetter.invoke(null, (Object[])null);
+      else {
+        Method instanceGetter = ClassLoadUtil.methodFromName(authenticatorMethod);
+        auth = (Authenticator) instanceGetter.invoke(null, (Object[]) null);
+        auth.init(securityProperties, logWriter, securityLogWriter);
+        return auth.authenticate(credentials, member);
+      }
+    }
+    catch(AuthenticationFailedException ex){
+      throw ex;
     }
     catch (Exception ex) {
-      throw new AuthenticationFailedException(
-          LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHENTICATOR_OBJECT.toLocalizedString(), ex);
-    }
-    if (auth == null) {
-      throw new AuthenticationFailedException(
-        LocalizedStrings.HandShake_AUTHENTICATOR_INSTANCE_COULD_NOT_BE_OBTAINED.toLocalizedString()); 
-    }
-    auth.init(securityProperties, logWriter, securityLogWriter);
-    Principal principal;
-    try {
-      principal = auth.authenticate(credentials, member);
+      throw new AuthenticationFailedException(ex.getMessage(), ex);
     }
     finally {
-      auth.close();
+      if(auth!=null) auth.close();
     }
-    return principal;
   }
 
-  public Principal verifyCredentials() throws AuthenticationRequiredException,
+  public Object verifyCredentials() throws AuthenticationRequiredException,
       AuthenticationFailedException {
 
     String methodName = this.system.getProperties().getProperty(

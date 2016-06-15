@@ -35,6 +35,10 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadState;
+
 import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.DataSerializer;
 import com.gemstone.gemfire.SystemFailure;
@@ -66,10 +70,6 @@ import com.gemstone.gemfire.internal.util.Breadcrumbs;
 import com.gemstone.gemfire.security.AuthenticationFailedException;
 import com.gemstone.gemfire.security.AuthenticationRequiredException;
 import com.gemstone.gemfire.security.GemFireSecurityException;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadState;
 
 /**
  * Provides an implementation for the server socket end of the hierarchical
@@ -413,6 +413,10 @@ public class ServerConnection implements Runnable {
   public Version getClientVersion() {
     return this.handshake.getVersion();
   }
+
+  public ClientUserAuths getClientUserAuths(){
+    return this.clientUserAuths;
+  }
   
   protected void setProxyId(ClientProxyMembershipID proxyId) {
     this.proxyId = proxyId;
@@ -428,14 +432,6 @@ public class ServerConnection implements Runnable {
 
  protected void setPrincipal(Principal principal) {
     this.principal = principal;
-  }
-
-  protected void setAuthorizeRequest(AuthorizeRequest authzRequest) {
-    this.authzRequest = authzRequest;
-  }
-
-  protected void setPostAuthorizeRequest(AuthorizeRequestPP postAuthzRequest) {
-    this.postAuthzRequest = postAuthzRequest;
   }
   
   //hitesh:this is for backward compability
@@ -454,23 +450,6 @@ public class ServerConnection implements Runnable {
         throw new IOException("Server connection is terminated.");
       }
       throw npe;
-    }
-  }
-  //this is backward compability only, if any race condition happens.
-  //where server is unregistering the client and client is creating new connection.
-  private void resetUserAuthorizeAndPostAuthorizeRequest()
-  {
-    if (AcceptorImpl.isAuthenticationRequired()
-        && (this.handshake.getVersion().compareTo(Version.GFE_65) < 0
-            || this.getCommunicationMode() == Acceptor.GATEWAY_TO_GATEWAY))
-    {
-      ClientUserAuths cua = proxyIdVsClientUserAuths.get(this.proxyId);
-      if (cua != this.clientUserAuths)
-      {
-        UserAuthAttributes uaa = this.clientUserAuths.getUserAuthAttributes(this.userAuthId);
-        initializeClientUserAuths();
-        this.userAuthId = this.clientUserAuths.putUserAuth(uaa);
-      }
     }
   }
 
@@ -806,10 +785,14 @@ public class ServerConnection implements Runnable {
         }
 
         // if a subject exists for this uniqueId, binds the subject to this thread so that we can do authorization later
-        if(AcceptorImpl.isIntegratedSecurity()) {
+        if(AcceptorImpl.isIntegratedSecurity() && !isInternalMessage()) {
           long uniqueId = getUniqueId();
+          logger.info(command + " received with uniqueId "+uniqueId);
           Subject subject = this.clientUserAuths.getSubject(uniqueId);
-          threadState = GeodeSecurityUtil.bindSubject(subject);
+          if(subject!=null) {
+            threadState = GeodeSecurityUtil.bindSubject(subject);
+            logger.info("binding " + subject.getPrincipal() + " to the current thread");
+          }
         }
 
         command.execute(msg, this);
@@ -1061,30 +1044,27 @@ public class ServerConnection implements Runnable {
       DataInputStream dinp = new DataInputStream(bis);
       Properties credentials = DataSerializer.readProperties(dinp);
 
-      String username = credentials.getProperty("security-username");
-      String password = credentials.getProperty("security-password");
-
       // When here, security is enfored on server, if login returns a subject, then it's the newly integrated security, otherwise, do it the old way.
       long uniqueId;
-      Subject subject = GeodeSecurityUtil.login(username, password);
-      if(subject!=null){
+
+      DistributedSystem system = this.getDistributedSystem();
+      String methodName = system.getProperties().getProperty(
+        SECURITY_CLIENT_AUTHENTICATOR);
+
+      Object principal = HandShake.verifyCredentials(methodName, credentials,
+        system.getSecurityProperties(), (InternalLogWriter) system.getLogWriter(), (InternalLogWriter) system
+          .getSecurityLogWriter(), this.proxyId.getDistributedMember());
+      if(principal instanceof Subject){
+        Subject subject = (Subject)principal;
         uniqueId = this.clientUserAuths.putSubject(subject);
+        logger.info("Put subject in Map: "+uniqueId+" for "+ subject.getPrincipal());
       }
       else {
-        DistributedSystem system = this.getDistributedSystem();
-        String methodName = system.getProperties().getProperty(
-          SECURITY_CLIENT_AUTHENTICATOR);
-
-        Principal principal = HandShake.verifyCredentials(methodName, credentials,
-          system.getSecurityProperties(), (InternalLogWriter) system.getLogWriter(), (InternalLogWriter) system
-            .getSecurityLogWriter(), this.proxyId.getDistributedMember());
-
         //this sets principal in map as well....
-        uniqueId = ServerHandShakeProcessor.getUniqueId(this, principal);
+        uniqueId = ServerHandShakeProcessor.getUniqueId(this, (Principal)principal);
       }
-      
-      //create secure part which will be send in respones    
-      
+
+      //create secure part which will be send in respones
       return encryptId(uniqueId, this);
     } catch (AuthenticationFailedException afe) {
       throw afe;
@@ -1124,11 +1104,25 @@ public class ServerConnection implements Runnable {
         && this.handshake.getVersion().compareTo(Version.GFE_65) >= 0
         && (this.communicationMode != Acceptor.GATEWAY_TO_GATEWAY)
         && (!this.requestMsg.getAndResetIsMetaRegion())
-        && (!(this.requestMsg.msgType == MessageType.CLIENT_READY
+        && (!isInternalMessage())) {
+      setSecurityPart();
+      return this.securePart;
+    }
+    else {
+      if (AcceptorImpl.isAuthenticationRequired() && logger.isDebugEnabled()) {
+        logger.debug("ServerConnection.updateAndGetSecurityPart() not adding security part for msg type {}",
+            MessageType.getString(this.requestMsg.msgType));
+      }
+    }
+    return null;
+ }
+
+  private boolean isInternalMessage(){
+    return (this.requestMsg.msgType == MessageType.CLIENT_READY
             || this.requestMsg.msgType == MessageType.CLOSE_CONNECTION
             || this.requestMsg.msgType == MessageType.GETCQSTATS_MSG_TYPE
             || this.requestMsg.msgType == MessageType.GET_CLIENT_PARTITION_ATTRIBUTES
-            || this.requestMsg.msgType == MessageType.GET_CLIENT_PR_METADATA 
+            || this.requestMsg.msgType == MessageType.GET_CLIENT_PR_METADATA
             || this.requestMsg.msgType == MessageType.INVALID
             || this.requestMsg.msgType == MessageType.MAKE_PRIMARY
             || this.requestMsg.msgType == MessageType.MONITORCQ_MSG_TYPE
@@ -1150,18 +1144,8 @@ public class ServerConnection implements Runnable {
             || this.requestMsg.msgType == MessageType.GET_PDX_TYPES
             || this.requestMsg.msgType == MessageType.GET_PDX_ENUMS
             || this.requestMsg.msgType == MessageType.COMMIT
-            || this.requestMsg.msgType == MessageType.ROLLBACK))) {
-      setSecurityPart();
-      return this.securePart;
-    }
-    else {
-      if (AcceptorImpl.isAuthenticationRequired() && logger.isDebugEnabled()) {
-        logger.debug("ServerConnection.updateAndGetSecurityPart() not adding security part for msg type {}",
-            MessageType.getString(this.requestMsg.msgType));
-      }
-    }
-    return null;
- }
+            || this.requestMsg.msgType == MessageType.ROLLBACK);
+  }
   
   public void run() {
     setOwner();

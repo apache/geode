@@ -17,6 +17,19 @@
 
 package com.gemstone.gemfire.management.internal.security;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import com.jayway.awaitility.Awaitility;
+import org.json.JSONException;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.management.cli.Result.Status;
 import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
@@ -30,18 +43,6 @@ import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.SecurityTest;
-import com.jayway.awaitility.Awaitility;
-import org.json.JSONException;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.*;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 @Category({ DistributedTest.class, SecurityTest.class })
 public class MultiUserDUnitTest extends CliCommandTestBase {
@@ -97,7 +98,7 @@ public class MultiUserDUnitTest extends CliCommandTestBase {
           ((ErrorResultData) result.getResultData()).getErrorCode());
         String resultMessage = result.getContent().toString();
         String permString = command.getPermission().toString();
-        assertTrue(resultMessage + " does not contain " + permString, resultMessage.contains("[" + permString + "]"));
+        assertTrue(resultMessage + " does not contain " + permString, resultMessage.contains(permString));
       }
       LogService.getLogger().info("vm 2 done!");
     });
@@ -135,6 +136,9 @@ public class MultiUserDUnitTest extends CliCommandTestBase {
     // only wait until vm2 and vm3 are done. vm1 will close when test finishes
     vm2Invoke.join();
     vm3Invoke.join();
+
+    vm2Invoke.checkException();
+    vm3Invoke.checkException();
 
     IgnoredException.removeAllExpectedExceptions();
   }
