@@ -22,3 +22,6 @@
 ## check if gfsh script is accessible and print version
 : ${GEODE_HOME/bin/gfsh?"gfsh doesn't seem to be available. Please check $GEODE_HOME"}
 echo "Geode version: `$GEODE_HOME/bin/gfsh version`"
+
+## prefer GEODE_HOME for finding gfsh
+export PATH=$GEODE_HOME/bin:$PATH

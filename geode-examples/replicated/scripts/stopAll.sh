@@ -19,4 +19,6 @@ set -e
 
 cd `dirname $0`
 
+. ./setEnv.sh
+
 gfsh -e "connect" -e "shutdown --include-locators=true"
