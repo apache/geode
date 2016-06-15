@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexWriter;
@@ -60,7 +61,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
    * 
    * It is weak so that the old BucketRegion will be garbage collected. 
    */
-  CopyOnWriteHashMap<Integer, IndexRepository> indexRepositories = new CopyOnWriteHashMap<Integer, IndexRepository>();
+  private final ConcurrentHashMap<Integer, IndexRepository> indexRepositories = new ConcurrentHashMap<Integer, IndexRepository>();
   
   /** The user region for this index */
   private final PartitionedRegion userRegion;
@@ -128,45 +129,49 @@ public class PartitionedRepositoryManager implements RepositoryManager {
    */
   private IndexRepository getRepository(Integer bucketId) throws BucketNotFoundException {
     IndexRepository repo = indexRepositories.get(bucketId);
-    
-    //Remove the repository if it has been destroyed (due to rebalancing)
-    if(repo != null && repo.isClosed()) {
-      indexRepositories.remove(bucketId, repo);
-      repo = null;
+    if(repo != null && !repo.isClosed()) {
+      return repo;
     }
-    
-    if(repo == null) {
+
+    repo = indexRepositories.compute(bucketId, (key, oldRepository) -> {
+      if(oldRepository != null && !oldRepository.isClosed()) {
+        return oldRepository;
+      }
+      if(oldRepository != null) {
+        oldRepository.cleanup();
+      }
+
       try {
         BucketRegion fileBucket = getMatchingBucket(fileRegion, bucketId);
         BucketRegion chunkBucket = getMatchingBucket(chunkRegion, bucketId);
+        if(fileBucket == null || chunkBucket == null) {
+          return null;
+        }
         RegionDirectory dir = new RegionDirectory(fileBucket, chunkBucket, fileSystemStats);
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         IndexWriter writer = new IndexWriter(dir, config);
-        repo = new IndexRepositoryImpl(fileBucket, writer, serializer, indexStats);
-        IndexRepository oldRepo = indexRepositories.putIfAbsent(bucketId, repo);
-        if(oldRepo != null) {
-          repo = oldRepo;
-        }
+        return new IndexRepositoryImpl(fileBucket, writer, serializer, indexStats);
+
       } catch(IOException e) {
         throw new InternalGemFireError("Unable to create index repository", e);
       }
+
+    });
+
+    if(repo == null) {
+      throw new BucketNotFoundException("Colocated index buckets not found for regions " + chunkRegion + ", " + fileRegion + " bucket id " + bucketId);
     }
-    
+
     return repo;
   }
 
   /**
    * Find the bucket in region2 that matches the bucket id from region1.
    */
-  private BucketRegion getMatchingBucket(PartitionedRegion region, Integer bucketId) throws BucketNotFoundException {
+  private BucketRegion getMatchingBucket(PartitionedRegion region, Integer bucketId) {
     //Force the bucket to be created if it is not already
     region.getOrCreateNodeForBucketWrite(bucketId, null);
     
-    BucketRegion result = region.getDataStore().getLocalBucketById(bucketId);
-    if(result == null) {
-      throw new BucketNotFoundException("Bucket not found for region " + region + " bucekt id " + bucketId);
-    }
-    
-    return result;
+    return region.getDataStore().getLocalBucketById(bucketId);
   }
 }

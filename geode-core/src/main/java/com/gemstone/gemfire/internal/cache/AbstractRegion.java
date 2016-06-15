@@ -276,13 +276,13 @@ public abstract class AbstractRegion implements Region, RegionAttributes,
     return destroy(key, null);
   }
 
-  public final Object get(Object name) throws CacheLoaderException,
+  public Object get(Object name) throws CacheLoaderException,
       TimeoutException
   {
     return get(name, null, true, null);
   }
 
-  public final Object put(Object name, Object value) throws TimeoutException,
+  public Object put(Object name, Object value) throws TimeoutException,
       CacheWriterException
   {
     return put(name, value, null);

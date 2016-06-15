@@ -138,7 +138,7 @@ public class LuceneIndexStats {
     stats.incInt(commitsId, 1);
   }
 
-  public void addDocumentsSuppplier(IntSupplier supplier) {
+  public void addDocumentsSupplier(IntSupplier supplier) {
     this.documentsSuppliers.add(supplier);
   }
 

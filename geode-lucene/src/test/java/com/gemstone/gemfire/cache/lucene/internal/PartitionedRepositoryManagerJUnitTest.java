@@ -20,6 +20,7 @@ package com.gemstone.gemfire.cache.lucene.internal;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -51,6 +52,7 @@ import com.gemstone.gemfire.internal.cache.PartitionedRegion;
 import com.gemstone.gemfire.internal.cache.PartitionedRegion.RetryTimeKeeper;
 import com.gemstone.gemfire.internal.cache.PartitionedRegionDataStore;
 import com.gemstone.gemfire.internal.cache.execute.InternalRegionFunctionContext;
+import com.gemstone.gemfire.test.fake.Fakes;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -73,14 +75,14 @@ public class PartitionedRepositoryManagerJUnitTest {
   public void setUp() {
     userRegion = Mockito.mock(PartitionedRegion.class);
     userDataStore = Mockito.mock(PartitionedRegionDataStore.class);
-    Mockito.when(userRegion.getDataStore()).thenReturn(userDataStore);
+    when(userRegion.getDataStore()).thenReturn(userDataStore);
     
     fileRegion = Mockito.mock(PartitionedRegion.class);
     fileDataStore = Mockito.mock(PartitionedRegionDataStore.class);
-    Mockito.when(fileRegion.getDataStore()).thenReturn(fileDataStore);
+    when(fileRegion.getDataStore()).thenReturn(fileDataStore);
     chunkRegion = Mockito.mock(PartitionedRegion.class);
     chunkDataStore = Mockito.mock(PartitionedRegionDataStore.class);
-    Mockito.when(chunkRegion.getDataStore()).thenReturn(chunkDataStore);
+    when(chunkRegion.getDataStore()).thenReturn(chunkDataStore);
     serializer = new HeterogeneousLuceneSerializer(new String[] {"a", "b"} );
     indexStats = Mockito.mock(LuceneIndexStats.class);
     fileSystemStats = Mockito.mock(FileSystemStats.class);
@@ -112,7 +114,7 @@ public class PartitionedRepositoryManagerJUnitTest {
    * Test what happens when a bucket is destroyed.
    */
   @Test
-  public void destroyBucket() throws BucketNotFoundException, IOException {
+  public void destroyBucketShouldCreateNewIndexRepository() throws BucketNotFoundException, IOException {
     PartitionedRepositoryManager repoManager = new PartitionedRepositoryManager(userRegion, fileRegion, chunkRegion, serializer, new StandardAnalyzer(),
       indexStats, fileSystemStats);
     
@@ -127,12 +129,14 @@ public class PartitionedRepositoryManagerJUnitTest {
     
     //Simulate rebalancing of a bucket by marking the old bucket is destroyed
     //and creating a new bucket
-    Mockito.when(fileBucket0.isDestroyed()).thenReturn(true);
+    when(fileBucket0.isDestroyed()).thenReturn(true);
     setUpMockBucket(0);
     
     IndexRepositoryImpl newRepo0 = (IndexRepositoryImpl) repoManager.getRepository(userRegion, 0, null);
     assertNotEquals(repo0, newRepo0);
     checkRepository(newRepo0, 0);
+    assertTrue(repo0.isClosed());
+    assertFalse(repo0.getWriter().isOpen());
   }
   
   /**
@@ -151,12 +155,12 @@ public class PartitionedRepositoryManagerJUnitTest {
       indexStats, fileSystemStats);
     setUpMockBucket(0);
     
-    Mockito.when(fileDataStore.getLocalBucketById(eq(0))).thenReturn(null);
+    when(fileDataStore.getLocalBucketById(eq(0))).thenReturn(null);
     
-    Mockito.when(fileRegion.getOrCreateNodeForBucketWrite(eq(0), (RetryTimeKeeper) any())).then(new Answer() {
+    when(fileRegion.getOrCreateNodeForBucketWrite(eq(0), (RetryTimeKeeper) any())).then(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        Mockito.when(fileDataStore.getLocalBucketById(eq(0))).thenReturn(fileBuckets.get(0));
+        when(fileDataStore.getLocalBucketById(eq(0))).thenReturn(fileBuckets.get(0));
         return null;
       }
     });
@@ -174,7 +178,7 @@ public class PartitionedRepositoryManagerJUnitTest {
 
     Set<Integer> buckets = new LinkedHashSet<Integer>(Arrays.asList(0, 1));
     InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
-    Mockito.when(ctx.getLocalBucketSet((any()))).thenReturn(buckets);
+    when(ctx.getLocalBucketSet((any()))).thenReturn(buckets);
     Collection<IndexRepository> repos = repoManager.getRepositories(ctx);
     assertEquals(2, repos.size());
 
@@ -203,7 +207,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     Set<Integer> buckets = new LinkedHashSet<Integer>(Arrays.asList(0, 1));
 
     InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
-    Mockito.when(ctx.getLocalBucketSet((any()))).thenReturn(buckets);
+    when(ctx.getLocalBucketSet((any()))).thenReturn(buckets);
     repoManager.getRepositories(ctx);
   }
   
@@ -218,14 +222,16 @@ public class PartitionedRepositoryManagerJUnitTest {
   private BucketRegion setUpMockBucket(int id) {
     BucketRegion mockBucket = Mockito.mock(BucketRegion.class);
     BucketRegion fileBucket = Mockito.mock(BucketRegion.class);
+    //Allowing the fileBucket to behave like a map so that the IndexWriter operations don't fail
+    Fakes.addMapBehavior(fileBucket);
     BucketRegion chunkBucket = Mockito.mock(BucketRegion.class);
-    Mockito.when(mockBucket.getId()).thenReturn(id);
-    Mockito.when(userRegion.getBucketRegion(eq(id), eq(null))).thenReturn(mockBucket);
-    Mockito.when(userDataStore.getLocalBucketById(eq(id))).thenReturn(mockBucket);
-    Mockito.when(userRegion.getBucketRegion(eq(id + 113), eq(null))).thenReturn(mockBucket);
-    Mockito.when(userDataStore.getLocalBucketById(eq(id + 113))).thenReturn(mockBucket);
-    Mockito.when(fileDataStore.getLocalBucketById(eq(id))).thenReturn(fileBucket);
-    Mockito.when(chunkDataStore.getLocalBucketById(eq(id))).thenReturn(chunkBucket);
+    when(mockBucket.getId()).thenReturn(id);
+    when(userRegion.getBucketRegion(eq(id), eq(null))).thenReturn(mockBucket);
+    when(userDataStore.getLocalBucketById(eq(id))).thenReturn(mockBucket);
+    when(userRegion.getBucketRegion(eq(id + 113), eq(null))).thenReturn(mockBucket);
+    when(userDataStore.getLocalBucketById(eq(id + 113))).thenReturn(mockBucket);
+    when(fileDataStore.getLocalBucketById(eq(id))).thenReturn(fileBucket);
+    when(chunkDataStore.getLocalBucketById(eq(id))).thenReturn(chunkBucket);
     
     fileBuckets.put(id, fileBucket);
     chunkBuckets.put(id, chunkBucket);

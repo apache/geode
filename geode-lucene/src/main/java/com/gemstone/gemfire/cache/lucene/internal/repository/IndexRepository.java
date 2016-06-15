@@ -81,4 +81,9 @@ public interface IndexRepository {
    * For debugging purposes, return the underlying IndexWriter
    */
   IndexWriter getWriter();
+
+  /**
+   * Clean up any resources associated with this index repository.
+   */
+  void cleanup();
 }

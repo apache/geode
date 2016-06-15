@@ -48,6 +48,7 @@ public class IndexRepositoryImpl implements IndexRepository {
   private final SearcherManager searcherManager;
   private Region<?,?> region;
   private LuceneIndexStats stats;
+  private DocumentCountSupplier documentCountSupplier;
 
   private static final Logger logger = LogService.getLogger();
   
@@ -57,7 +58,8 @@ public class IndexRepositoryImpl implements IndexRepository {
     searcherManager = new SearcherManager(writer, APPLY_ALL_DELETES, true, null);
     this.serializer = serializer;
     this.stats = stats;
-    stats.addDocumentsSuppplier(new DocumentCountSupplier());
+    documentCountSupplier = new DocumentCountSupplier();
+    stats.addDocumentsSupplier(documentCountSupplier);
   }
 
   @Override
@@ -146,6 +148,17 @@ public class IndexRepositoryImpl implements IndexRepository {
   @Override
   public boolean isClosed() {
     return region.isDestroyed();
+  }
+
+  @Override
+  public void cleanup() {
+    stats.removeDocumentsSupplier(documentCountSupplier);
+    try {
+      writer.close();
+    }
+    catch (IOException e) {
+      logger.warn("Unable to clean up index repository", e);
+    }
   }
 
   private class DocumentCountSupplier implements IntSupplier {
