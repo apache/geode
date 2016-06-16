@@ -32,7 +32,8 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import com.gemstone.gemfire.CopyHelper;
-import com.gemstone.gemfire.cache.query.QueryException;
+
+import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -52,7 +53,7 @@ public class StringQueryProviderJUnitTest {
   }
 
   @Test
-  public void testQueryConstruction() throws QueryException {
+  public void testQueryConstruction() throws LuceneQueryException {
     StringQueryProvider provider = new StringQueryProvider("foo:bar", DEFAULT_FIELD);
     Query query = provider.getQuery(mockIndex);
     Assert.assertNotNull(query);
@@ -61,15 +62,15 @@ public class StringQueryProviderJUnitTest {
 
   @Test
   @Ignore("Custom analyzer not yet supported, this is a duplicate test right now")
-  public void usesCustomAnalyzer() throws QueryException {
+  public void usesCustomAnalyzer() throws LuceneQueryException {
     StringQueryProvider provider = new StringQueryProvider("findThis", DEFAULT_FIELD);
     Query query = provider.getQuery(mockIndex);
     Assert.assertNotNull(query);
     assertEquals("field-1:findthis field-2:findthis", query.toString());
   }
 
-  @Test(expected = QueryException.class)
-  public void errorsOnMalformedQueryString() throws QueryException {
+  @Test(expected = LuceneQueryException.class)
+  public void errorsOnMalformedQueryString() throws LuceneQueryException {
     StringQueryProvider provider = new StringQueryProvider("invalid:lucene:query:string", DEFAULT_FIELD);
     provider.getQuery(mockIndex);
   }
@@ -83,7 +84,7 @@ public class StringQueryProviderJUnitTest {
   }
 
   @Test
-  public void defaultFieldParameterShouldBeUsedByQuery() throws QueryException {
+  public void defaultFieldParameterShouldBeUsedByQuery() throws LuceneQueryException {
     StringQueryProvider provider = new StringQueryProvider("findThis",  "field-2");
     Query query = provider.getQuery(mockIndex);
     Assert.assertNotNull(query);

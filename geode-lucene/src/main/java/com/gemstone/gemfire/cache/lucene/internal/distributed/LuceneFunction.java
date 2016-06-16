@@ -32,6 +32,7 @@ import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
 import com.gemstone.gemfire.cache.execute.ResultSender;
+import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
@@ -80,7 +81,7 @@ public class LuceneFunction extends FunctionAdapter implements InternalEntity {
     Query query = null;
     try {
       query = queryProvider.getQuery(index);
-    } catch (QueryException e) {
+    } catch (LuceneQueryException e) {
       logger.warn("", e);
       throw new FunctionException(e);
     }

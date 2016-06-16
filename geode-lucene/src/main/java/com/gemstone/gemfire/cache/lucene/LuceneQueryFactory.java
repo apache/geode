@@ -80,10 +80,8 @@ public interface LuceneQueryFactory {
    * @param <K> the key type in the query results
    * @param <V> the value type in the query results
    * @return LuceneQuery object
-   * @throws ParseException
    */
-  public <K, V> LuceneQuery<K, V> create(String indexName, String regionName, String queryString, String defaultField)
-      throws ParseException;
+  public <K, V> LuceneQuery<K, V> create(String indexName, String regionName, String queryString, String defaultField);
 
   /**
    * Creates a wrapper object for Lucene's Query object. This {@link LuceneQuery} builder method could be used in

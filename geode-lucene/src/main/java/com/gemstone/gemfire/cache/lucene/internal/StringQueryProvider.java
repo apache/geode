@@ -29,7 +29,10 @@ import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.search.Query;
 
 import com.gemstone.gemfire.DataSerializer;
+import com.gemstone.gemfire.GemFireCheckedException;
+import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
+import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
 import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.internal.DataSerializableFixedID;
@@ -64,10 +67,9 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
   }
 
   @Override
-  public synchronized Query getQuery(LuceneIndex index) throws QueryException {
+  public synchronized Query getQuery(LuceneIndex index) throws LuceneQueryException {
     if (luceneQuery == null) {
       String[] fields = index.getFieldNames();
-
       LuceneIndexImpl indexImpl = (LuceneIndexImpl) index;
       StandardQueryParser parser = new StandardQueryParser(indexImpl.getAnalyzer());
       try {
@@ -77,7 +79,7 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
         }
       } catch (QueryNodeException e) {
         logger.debug("Query node exception:" + query, e);
-        throw new QueryException(e);
+        throw new LuceneQueryException("Malformed lucene query: " + query, e);
       }
     }
     return luceneQuery;
