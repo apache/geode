@@ -223,7 +223,7 @@ public class JoptOptionParserTest {
   }
 
   @Test
-  public void parseInputWithUndefinedArgumentShouldThrow() throws Exception {
+  public void parseInputWithUndefinedArgumentShouldNotThrow() throws Exception {
     LinkedList<Argument> arguments = new LinkedList<>();
     LinkedList<Option> options = new LinkedList<>();
 
@@ -233,7 +233,8 @@ public class JoptOptionParserTest {
     optionParser.setArguments(arguments);
     optionParser.setOptions(options);
 
-    assertThatThrownBy(() -> optionParser.parse("command1 argument1_value? argument2_value")).isOfAnyClassIn(CliCommandOptionNotApplicableException.class);
+    OptionSet optionSet = optionParser.parse("command1 argument1_value? argument2_value");
+    assertThat(optionSet.getUserInput()).isEqualTo("command1 argument1_value? argument2_value");
   }
 
   @Test

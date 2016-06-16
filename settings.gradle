@@ -17,7 +17,6 @@
 rootProject.name = 'geode'
 
 include 'geode-common'
-include 'geode-joptsimple'
 include 'geode-json'
 include 'geode-junit'
 include 'geode-core'

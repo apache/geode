@@ -63,6 +63,8 @@ dependencies {
   }
   compile ('net.java.dev.jna:jna:' + project.'jna.version')
 
+  compile ('net.sf.jopt-simple:jopt-simple:' + project.'jopt-simple.version')
+
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
   runtime ('org.fusesource.jansi:jansi:' + project.'jansi.version') {
@@ -101,7 +103,6 @@ dependencies {
   compile 'org.apache.shiro:shiro-core:' + project.'shiro.version'
  
   compile project(':geode-common')
-  compile project(':geode-joptsimple')
   compile project(':geode-json')
   
   jcaCompile sourceSets.main.output
