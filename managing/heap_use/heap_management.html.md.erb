@@ -2,16 +2,38 @@
 
 # Managing Heap and Off-heap Memory
 
-By default, <span class="keyword">Pivotal GemFire</span> uses the JVM heap. <span class="keyword">Pivotal GemFire</span> also offers an option to store data off heap. This section describes how to manage heap and off-heap memory to best support your application.
+By default, <span class="keyword">Apache Geode</span> uses the JVM heap. <span class="keyword">Apache Geode</span> also offers an option to store data off heap. This section describes how to manage heap and off-heap memory to best support your application.
+
+-   **[Tuning the JVM's Garbage Collection Parameters](../../managing/heap_use/heap_management.html#section_590DA955523246ED980E4E351FF81F71)**
+
+    Because <span class="keyword">Apache Geode</span> is specifically designed to manipulate data held in memory, you can optimize your application's performance by tuning the way <span class="keyword">Apache Geode</span> uses the JVM heap.
+
+-   **[Using the Geode Resource Manager](../../managing/heap_use/heap_management.html#how_the_resource_manager_works)**
+
+    The <span class="keyword">Geode</span> resource manager works with your JVM's tenured garbage collector to control heap use and protect your member from hangs and crashes due to memory overload.
+
+-   **[Controlling Heap Use with the Resource Manager](../../managing/heap_use/heap_management.html#configuring_resource_manager)**
+
+    Resource manager behavior is closely tied to the triggering of Garbage Collection (GC) activities, the use of concurrent garbage collectors in the JVM, and the number of parallel GC threads used for concurrency.
+
+-   **[Resource Manager Example Configurations](../../managing/heap_use/heap_management.html#resource_manager_example_configurations)**
+
+-   **[Managing Off-Heap Memory](../../managing/heap_use/off_heap_management.html)**
+
+    <span class="keyword">Geode</span> can be configured to store region values in off-heap memory, which is memory within the JVM that is not subject to Java garbage collection.
+
+-   **[Locking Memory (Linux Systems Only)](../../managing/heap_use/lock_memory.html)**
+
+    On Linux systems, you can lock memory to prevent the operating system from paging out heap or off-heap memory.
 
 ## Tuning the JVM's Garbage Collection Parameters
 
-Because <span class="keyword">Pivotal GemFire</span> is specifically designed to manipulate data held in memory, you can optimize your application's performance by tuning the way <span class="keyword">Pivotal GemFire</span> uses the JVM heap.
+Because <span class="keyword">Apache Geode</span> is specifically designed to manipulate data held in memory, you can optimize your application's performance by tuning the way <span class="keyword">Apache Geode</span> uses the JVM heap.
 
 See your JVM documentation for all JVM-specific settings that can be used to improve garbage collection (GC) response. At a minimum, do the following:
 1.  Set the initial and maximum heap switches, `-Xms` and `-Xmx`, to the same values. The `gfsh start server` options `--initial-heap` and `--max-heap` accomplish the same purpose, with the added value of providing resource manager defaults such as eviction threshold and critical threshold.
 2.  Configure your JVM for concurrent mark-sweep (CMS) garbage collection.
-3.  If your JVM allows, configure it to initiate CMS collection when heap use is at least 10% lower than your setting for the resource manager `eviction-heap-percentage`. You want the collector to be working when <span class="keyword">GemFire</span> is evicting or the evictions will not result in more free memory. For example, if the `eviction-heap-percentage` is set to 65, set your garbage collection to start when the heap use is no higher than 55%.
+3.  If your JVM allows, configure it to initiate CMS collection when heap use is at least 10% lower than your setting for the resource manager `eviction-heap-percentage`. You want the collector to be working when <span class="keyword">Geode</span> is evicting or the evictions will not result in more free memory. For example, if the `eviction-heap-percentage` is set to 65, set your garbage collection to start when the heap use is no higher than 55%.
 
 | JVM         | CMS switch flag           | CMS initiation (begin at heap % N)     |
 |-------------|---------------------------|----------------------------------------|
@@ -34,12 +56,12 @@ $ gfsh start server --name=app.MyApplication --initial-heap=30m --max-heap=30m \
 --J=-XX:+UseConcMarkSweepGC --J=-XX:CMSInitiatingOccupancyFraction=60
 ```
 
-## Using the <span class="keyword">GemFire</span> Resource Manager
+## Using the <span class="keyword">Geode</span> Resource Manager
 
-The <span class="keyword">GemFire</span> resource manager works with your JVM's tenured garbage collector to control heap use and protect your member from hangs and crashes due to memory overload.
+The <span class="keyword">Geode</span> resource manager works with your JVM's tenured garbage collector to control heap use and protect your member from hangs and crashes due to memory overload.
 
 <a id="how_the_resource_manager_works__section_53E80B61991447A2915E8A754383B32D"></a>
-The <span class="keyword">GemFire</span> resource manager prevents the cache from consuming too much memory by evicting old data. If the garbage collector is unable to keep up, the resource manager refuses additions to the cache until the collector has freed an adequate amount of memory.
+The <span class="keyword">Geode</span> resource manager prevents the cache from consuming too much memory by evicting old data. If the garbage collector is unable to keep up, the resource manager refuses additions to the cache until the collector has freed an adequate amount of memory.
 
 The resource manager has two threshold settings, each expressed as a percentage of the total tenured heap. Both are disabled by default.
 1.  **Eviction Threshold**. Above this, the manager orders evictions for all regions with `eviction-attributes` set to `lru-heap-percentage`. This prompts dedicated background evictions, independent of any application threads and it also tells all application threads adding data to the regions to evict at least as much data as they add. The JVM garbage collector removes the evicted data, reducing heap use. The evictions continue until the manager determines that heap use is again below the eviction threshold.
@@ -53,7 +75,7 @@ The resource manager has two threshold settings, each expressed as a percentage 
 <img src="../../images/DataManagement-9.gif" id="how_the_resource_manager_works__image_C3568D47EE1B4F2C9F0742AE9C291BF1" class="image" />
 When heap use passes the eviction threshold in either direction, the manager logs an info-level message.
 
-When heap use exceeds the critical threshold, the manager logs an error-level message. Avoid exceeding the critical threshold. Once identified as critical, the <span class="keyword">GemFire</span> member becomes a read-only member that refuses cache updates for all of its regions, including incoming distributed updates.
+When heap use exceeds the critical threshold, the manager logs an error-level message. Avoid exceeding the critical threshold. Once identified as critical, the <span class="keyword">Geode</span> member becomes a read-only member that refuses cache updates for all of its regions, including incoming distributed updates.
 
 For more information, see `com.gemstone.gemfire.cache.control.ResourceManager` in the online API documentation.
 
@@ -74,17 +96,17 @@ Resource manager behavior is closely tied to the triggering of Garbage Collectio
 <a id="configuring_resource_manager__section_B47A78E7BA0048C89FBBDB7441C308BE"></a>
 The recommendations provided here for using the manager assume you have a solid understanding of your Java VM's heap management and garbage collection service.
 
-The resource manager is available for use in any <span class="keyword">Pivotal GemFire</span> member, but you may not want to activate it everywhere. For some members it might be better to occasionally restart after a hang or OME crash than to evict data and/or refuse distributed caching activities. Also, members that do not risk running past their memory limits would not benefit from the overhead the resource manager consumes. Cache servers are often configured to use the manager because they generally host more data and have more data activity than other members, requiring greater responsiveness in data cleanup and collection.
+The resource manager is available for use in any <span class="keyword">Apache Geode</span> member, but you may not want to activate it everywhere. For some members it might be better to occasionally restart after a hang or OME crash than to evict data and/or refuse distributed caching activities. Also, members that do not risk running past their memory limits would not benefit from the overhead the resource manager consumes. Cache servers are often configured to use the manager because they generally host more data and have more data activity than other members, requiring greater responsiveness in data cleanup and collection.
 
 For the members where you want to activate the resource manager:
-1.  Configure <span class="keyword">GemFire</span> for heap LRU management.
-2.  Set the JVM GC tuning parameters to handle heap and garbage collection in conjunction with the <span class="keyword">GemFire</span> manager.
+1.  Configure <span class="keyword">Geode</span> for heap LRU management.
+2.  Set the JVM GC tuning parameters to handle heap and garbage collection in conjunction with the <span class="keyword">Geode</span> manager.
 3.  Monitor and tune heap LRU configurations and your GC configurations.
 4.  Before going into production, run your system tests with application behavior and data loads that approximate your target systems so you can tune as well as possible for production needs.
 5.  In production, keep monitoring and tuning to meet changing needs.
 
 <a id="configuring_resource_manager__section_4949882892DA46F6BB8588FA97037F45"></a>
-## Configure <span class="keyword">GemFire</span> for Heap LRU Management
+## Configure <span class="keyword">Geode</span> for Heap LRU Management
 
 The configuration terms used here are `cache.xml` elements and attributes, but you can also configure through `gfsh` and the `com.gemstone.gemfire.cache.control.ResourceManager` and `Region` APIs.
 1.  When starting up your server, set `initial-heap` and `max-heap` to the same value.
@@ -115,17 +137,17 @@ cache.xml example:
 
 ## Set the JVM GC Tuning Parameters
 
-If your JVM allows, configure it to initiate concurrent mark-sweep (CMS) garbage collection when heap use is at least 10% lower than your setting for the resource manager `eviction-heap-percentage`. You want the collector to be working when <span class="keyword">GemFire</span> is evicting or the evictions will not result in more free memory. For example, if the `eviction-heap-percentage` is set to 65, set your garbage collection to start when the heap use is no higher than 55%.
+If your JVM allows, configure it to initiate concurrent mark-sweep (CMS) garbage collection when heap use is at least 10% lower than your setting for the resource manager `eviction-heap-percentage`. You want the collector to be working when <span class="keyword">Geode</span> is evicting or the evictions will not result in more free memory. For example, if the `eviction-heap-percentage` is set to 65, set your garbage collection to start when the heap use is no higher than 55%.
 
 <a id="configuring_resource_manager__section_DE1CC494C2B547B083AA00821250972A"></a>
 
 ## Monitor and Tune Heap LRU Configurations
 
-In tuning the resource manager, your central focus should be keeping the member below the critical threshold. The critical threshold is provided to avoid member hangs and crashes, but because of its exception-throwing behavior for distributed updates, the time spent in critical negatively impacts the entire distributed system. To stay below critical, tune so that the <span class="keyword">GemFire</span> eviction and the JVM's GC respond adequately when the eviction threshold is reached.
+In tuning the resource manager, your central focus should be keeping the member below the critical threshold. The critical threshold is provided to avoid member hangs and crashes, but because of its exception-throwing behavior for distributed updates, the time spent in critical negatively impacts the entire distributed system. To stay below critical, tune so that the <span class="keyword">Geode</span> eviction and the JVM's GC respond adequately when the eviction threshold is reached.
 
 Use the statistics provided by your JVM to make sure your memory and GC settings are sufficient for your needs.
 
-The <span class="keyword">GemFire</span> `ResourceManagerStats` provide information about memory use and the manager thresholds and eviction activities.
+The <span class="keyword">Geode</span> `ResourceManagerStats` provide information about memory use and the manager thresholds and eviction activities.
 
 If your application spikes above the critical threshold on a regular basis, try lowering the eviction threshold. If the application never goes near critical, you might raise the eviction threshold to gain more usable memory without the overhead of unneeded evictions or GC cycles.
 

@@ -2,7 +2,7 @@
 
 # Sample REST Applications
 
-This section provides examples that illustrate how multiple clients, both REST and native, can access the same <span class="keyword">GemFire</span> region data.
+This section provides examples that illustrate how multiple clients, both REST and native, can access the same <span class="keyword">Geode</span> region data.
 
 **Note:**
 You must set PDX read-serialized to true when starting the cache server to achieve interoperability between different clients. See [Setup and Configuration](setup_config.html#topic_e21_qc5_m4) for instructions on starting up REST-enabled cache servers.
@@ -10,7 +10,7 @@ You must set PDX read-serialized to true when starting the cache server to achie
 The following examples demonstrate the following:
 
 1.  A Java REST client creates a Person object on key 1. This client references the following supporting examples (also provided):
-    1.  <span class="keyword">GemFire</span> cache client
+    1.  <span class="keyword">Geode</span> cache client
     2.  REST client utility
     3.  Date Time utility
     4.  Person class
@@ -89,7 +89,7 @@ package com.gemstone.gemfire.restclient;
 }
 ```
 
-## \#1a. <span class="keyword">GemFire</span> Cache Java Client (MyJavaClient.java)
+## \#1a. <span class="keyword">Geode</span> Cache Java Client (MyJavaClient.java)
 
 ``` pre
 package com.gemstone.gemfire.javaclient;

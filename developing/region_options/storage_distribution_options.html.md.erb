@@ -2,12 +2,12 @@
 title:  Storage and Distribution Options
 ---
 
-<span class="keyword">GemFire</span> provides several models for data storage and distribution including partitioned or replicated as well as distributed or non-distributed (local cache storage).
+<span class="keyword">Geode</span> provides several models for data storage and distribution including partitioned or replicated as well as distributed or non-distributed (local cache storage).
 
 <a id="concept_B18B7754E7C7485BA6D66F2DDB7A11FB__section_787D674A64244871AE49CBB58475088E"></a>
 ## Peer-to-Peer Region Storage and Distribution
 
-At its most general, data management means having current data available when and where your applications need it. In a properly configured <span class="keyword">GemFire</span> installation, you store your data in your local members and <span class="keyword">GemFire</span> automatically distributes it to the other members that need it according to your cache configuration settings. You may be storing very large data objects that require special consideration, or you may have a high volume of data requiring careful configuration to safeguard your application's performance or memory use. You may need to be able to explicitly lock some data during particular operations. Most data management features are available as configuration options, which you can specify either using gfsh's cluster configuration service, `cache.xml` file or the API. Once configured, <span class="keyword">GemFire</span> manages the data automatically. For example, this is how you manage data distribution, disk storage, data expiration activities, and data partitioning. A few features are managed at run-time through the API.
+At its most general, data management means having current data available when and where your applications need it. In a properly configured <span class="keyword">Geode</span> installation, you store your data in your local members and <span class="keyword">Geode</span> automatically distributes it to the other members that need it according to your cache configuration settings. You may be storing very large data objects that require special consideration, or you may have a high volume of data requiring careful configuration to safeguard your application's performance or memory use. You may need to be able to explicitly lock some data during particular operations. Most data management features are available as configuration options, which you can specify either using gfsh's cluster configuration service, `cache.xml` file or the API. Once configured, <span class="keyword">Geode</span> manages the data automatically. For example, this is how you manage data distribution, disk storage, data expiration activities, and data partitioning. A few features are managed at run-time through the API.
 
 At the architectural level, data distribution runs between peers in a single system and between clients and servers.
 

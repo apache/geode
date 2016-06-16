@@ -4,39 +4,39 @@ title:  Partitioned Regions
 
 In addition to basic region management, partitioned regions include options for high availability, data location control, and data balancing across the distributed system.
 
--   **[Understanding Partitioning](../../../latest/developing/partitioned_regions/how_partitioning_works.html)**
+-   **[Understanding Partitioning](../../developing/partitioned_regions/how_partitioning_works.html)**
 
     To use partitioned regions, you should understand how they work and your options for managing them.
 
--   **[Configuring Partitioned Regions](../../../latest/developing/partitioned_regions/managing_partitioned_regions.html)**
+-   **[Configuring Partitioned Regions](../../developing/partitioned_regions/managing_partitioned_regions.html)**
 
     Plan the configuration and ongoing management of your partitioned region for host and accessor members and configure the regions for startup.
 
--   **[Configuring the Number of Buckets for a Partitioned Region](../../../latest/developing/partitioned_regions/configuring_bucket_for_pr.html)**
+-   **[Configuring the Number of Buckets for a Partitioned Region](../../developing/partitioned_regions/configuring_bucket_for_pr.html)**
 
     Decide how many buckets to assign to your partitioned region and set the configuration accordingly.
 
--   **[Custom-Partitioning and Colocating Data](../../../latest/developing/partitioned_regions/overview_custom_partitioning_and_data_colocation.html)**
+-   **[Custom-Partitioning and Colocating Data](../../developing/partitioned_regions/overview_custom_partitioning_and_data_colocation.html)**
 
-    You can customize how <span class="keyword">Pivotal GemFire</span> groups your partitioned region data with custom partitioning and data colocation.
+    You can customize how <span class="keyword">Apache Geode</span> groups your partitioned region data with custom partitioning and data colocation.
 
--   **[Configuring High Availability for Partitioned Regions](../../../latest/developing/partitioned_regions/overview_how_pr_ha_works.html)**
+-   **[Configuring High Availability for Partitioned Regions](../../developing/partitioned_regions/overview_how_pr_ha_works.html)**
 
-    By default, <span class="keyword">Pivotal GemFire</span> stores only a single copy of your partitioned region data among the region's data stores. You can configure <span class="keyword">GemFire</span> to maintain redundant copies of your partitioned region data for high availability.
+    By default, <span class="keyword">Apache Geode</span> stores only a single copy of your partitioned region data among the region's data stores. You can configure <span class="keyword">Geode</span> to maintain redundant copies of your partitioned region data for high availability.
 
--   **[Configuring Single-Hop Client Access to Server-Partitioned Regions](../../../latest/developing/partitioned_regions/overview_how_pr_single_hop_works.html)**
+-   **[Configuring Single-Hop Client Access to Server-Partitioned Regions](../../developing/partitioned_regions/overview_how_pr_single_hop_works.html)**
 
     Single-hop data access enables the client pool to track where a partitioned region’s data is hosted in the servers. To access a single entry, the client directly contacts the server that hosts the key, in a single hop.
 
--   **[Rebalancing Partitioned Region Data](../../../latest/developing/partitioned_regions/rebalancing_pr_data.html)**
+-   **[Rebalancing Partitioned Region Data](../../developing/partitioned_regions/rebalancing_pr_data.html)**
 
     In a distributed system with minimal contention to the concurrent threads reading or updating from the members, you can use rebalancing to dynamically increase or decrease your data and processing capacity.
 
--   **[Checking Redundancy in Partitioned Regions](../../../latest/developing/partitioned_regions/checking_region_redundancy.html)**
+-   **[Checking Redundancy in Partitioned Regions](../../developing/partitioned_regions/checking_region_redundancy.html)**
 
     Under some circumstances, it can be important to verify that your partitioned region data is redundant and that upon member restart, redundancy has been recovered properly across partitioned region members.
 
--   **[Moving Partitioned Region Data to Another Member](../../../latest/developing/partitioned_regions/moving_partitioned_data.html)**
+-   **[Moving Partitioned Region Data to Another Member](../../developing/partitioned_regions/moving_partitioned_data.html)**
 
     You can use the `PartitionRegionHelper` `moveBucketByKey` and `moveData` methods to explicitly move partitioned region data from one member to another.
 

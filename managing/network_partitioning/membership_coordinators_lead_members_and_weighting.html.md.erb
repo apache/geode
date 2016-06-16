@@ -7,7 +7,7 @@ Network partition detection uses a designated membership coordinator and a weigh
 <a id="concept_23C2606D59754106AFBFE17515DF4330__section_7C67F1D30C1645CC8489E481873691D9"></a>
 ## Membership Coordinators and Lead Members
 
-The membership coordinator is a member that manages entry and exit of other members of the distributed system. With network partition detection enabled, the coordinator can be any <span class="keyword">GemFire</span> member but locators are preferred. In a locator-based system, if all locators are in the reconnecting state, the system continues to function, but new members are not able to join until a locator has successfully reconnected. After a locator has reconnected, the reconnected locator will take over the role of coordinator.
+The membership coordinator is a member that manages entry and exit of other members of the distributed system. With network partition detection enabled, the coordinator can be any <span class="keyword">Geode</span> member but locators are preferred. In a locator-based system, if all locators are in the reconnecting state, the system continues to function, but new members are not able to join until a locator has successfully reconnected. After a locator has reconnected, the reconnected locator will take over the role of coordinator.
 
 When a coordinator is shutting down, it sends out a view that removes itself from the list and the other members must determine who the new coordinator is.
 

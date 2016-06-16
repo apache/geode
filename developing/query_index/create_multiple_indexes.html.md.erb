@@ -44,7 +44,7 @@ Message : Region ' /r3' not found: from  /r3Occurred on following members
     List<Index> indexes = queryService.createDefinedIndexes();
 ```
 
-If one or more index population fails, <span class="keyword">GemFire</span> collect the Exceptions and continues to populate the rest of the indexes. The collected `Exceptions` are stored in a Map of index names and exceptions that can be accessed through `MultiIndexCreationException`.
+If one or more index population fails, <span class="keyword">Geode</span> collect the Exceptions and continues to populate the rest of the indexes. The collected `Exceptions` are stored in a Map of index names and exceptions that can be accessed through `MultiIndexCreationException`.
 
 Index definitions are stored locally on the `gfsh` client. If you want to create a new set of indexes or if one or more of the index creations fail, you might want to clear the definitions stored by using `clear defined indexes`command. The defined indexes can be cleared by using the Java API:
 

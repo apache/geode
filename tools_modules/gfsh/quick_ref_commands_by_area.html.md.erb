@@ -1,6 +1,6 @@
 <a id="topic_77DA6E3929404EB4AC24230CC7C21493"></a>
 
-# Basic <span class="keyword">GemFire</span> gfsh Commands
+# Basic <span class="keyword">Geode</span> gfsh Commands
 
 <a id="topic_77DA6E3929404EB4AC24230CC7C21493__table_pk5_vw1_3l"></a>
 
@@ -72,7 +72,7 @@
 </tr>
 <tr class="even">
 <td>[export cluster-configuration](command-pages/export.html#topic_mdv_jgz_ck)</td>
-<td>Exports a shared configuration zip file that contains cache.xml files, gemfire.properties files and jar files needed to configure and operate a <span class="keyword">GemFire</span> distributed system.</td>
+<td>Exports a shared configuration zip file that contains cache.xml files, gemfire.properties files and jar files needed to configure and operate a <span class="keyword">Geode</span> distributed system.</td>
 <td>online</td>
 </tr>
 <tr class="odd">
@@ -96,15 +96,15 @@
 
 <a id="topic_C7DB8A800D6244AE8FF3ADDCF139DCE4__table_rcv_jz1_3l"></a>
 
-| Command                                                                                                                                                   | Description                                                       | Availability |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|--------------|
-| [export data](command-pages/export.html#topic_263B70069BFC4A7185F86B3272011734) | Export user data from a region to a file.                         | online       |
-| [get](command-pages/get.html)                                                               | Display an entry in a region.                                     | online       |
-| [import data](command-pages/import.html#topic_jw2_2ld_2l)                       |                                                                   | online       |
-| [locate entry](command-pages/locate.html#concept_73B980C1138743DDBBFACE68009BD1E3__section_04BD7EC0032147DFA9CCD1331EE3B694)      | Locate a region entry on a member.                                | online       |
-| [put](command-pages/put.html)                                                               | Add or update a region entry.                                     | online       |
-| [query](command-pages/query.html)                                                    | Run queries against <span class="keyword">GemFire</span> regions. | online       |
-| [remove](command-pages/remove.html)                                                        | Remove an entry from a region.                                    | online       |
+| Command                                                                                                                                                   | Description                                                     | Availability |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|--------------|
+| [export data](command-pages/export.html#topic_263B70069BFC4A7185F86B3272011734) | Export user data from a region to a file.                       | online       |
+| [get](command-pages/get.html)                                                               | Display an entry in a region.                                   | online       |
+| [import data](command-pages/import.html#topic_jw2_2ld_2l)                       |                                                                 | online       |
+| [locate entry](command-pages/locate.html#concept_73B980C1138743DDBBFACE68009BD1E3__section_04BD7EC0032147DFA9CCD1331EE3B694)      | Locate a region entry on a member.                              | online       |
+| [put](command-pages/put.html)                                                               | Add or update a region entry.                                   | online       |
+| [query](command-pages/query.html)                                                      | Run queries against <span class="keyword">Geode</span> regions. | online       |
+| [remove](command-pages/remove.html)                                                        | Remove an entry from a region.                                  | online       |
 
 : <span class="tablecap">Table 3. Commands</span>
 
@@ -130,7 +130,7 @@
 
 | Command                                                                                                                                                                                                                                                 | Description                                                                                                                              | Availability    |
 |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|-----------------|
-| [alter disk-store](command-pages/alter.html#topic_99BCAD98BDB5470189662D2F308B68EB)                                                                               | Modify an existing <span class="keyword">GemFire</span> resource.                                                                        | online          |
+| [alter disk-store](command-pages/alter.html#topic_99BCAD98BDB5470189662D2F308B68EB)                                                                               | Modify an existing <span class="keyword">Geode</span> resource.                                                                          | online          |
 | [backup disk-store](command-pages/backup.html#topic_E74ED23CB60342538B2175C326E7D758)                                                              | Back up persistent data from all members to the specified directory.                                                                     | online          |
 | [compact disk-store](command-pages/compact.html#topic_F113C95C076F424E9AA8AC4F1F6324CC)                                                                       | Compact online disk-stores.                                                                                                              | online          |
 | [compact offline-disk-store](command-pages/compact.html#topic_9CCFCB2FA2154E16BD775439C8ABC8FB)                                                                                          | Compact an offline disk store.                                                                                                           | online, offline |
@@ -138,7 +138,7 @@
 | [describe disk-store](command-pages/describe.html#topic_C635B500BE6A4F1D9572D0BC98A224F2)                                                                          | Display information about a member's disk store.                                                                                         | online          |
 | [describe offline-disk-store](command-pages/describe.html#topic_kys_yvk_2l)                                                                               | Display information about an offline member's disk store                                                                                 | online, offline |
 | [destroy disk-store](command-pages/destroy.html#topic_yfr_l2z_ck)              | Deletes a disk store and all files on disk used by the disk store. Data for closed regions that previously used this disk store is lost. | online          |
-| [list disk-stores](command-pages/list.html#topic_BC14AD57EA304FB3845766898D01BD04)                                                                            | List all available disk stores in a <span class="keyword">GemFire</span> cluster.                                                        | online          |
+| [list disk-stores](command-pages/list.html#topic_BC14AD57EA304FB3845766898D01BD04)                                                                              | List all available disk stores in a <span class="keyword">Geode</span> cluster.                                                          | online          |
 | [revoke missing-disk-store](command-pages/revoke.html)                                                                 | Instruct the member(s) of a distributed system to stop waiting for a disk store to be available.                                         | online          |
 | [show missing-disk-stores](command-pages/show.html#topic_7B3D624D5B4F41D1A0F8A9C3C8B2E780)                                   | Display a summary of the disk stores that are currently missing from a distributed system.                                               | online          |
 | [validate offline-disk-store](command-pages/validate.html)                                                                                                                                | Validate offline disk stores.                                                                                                            | online, offline |
@@ -201,7 +201,7 @@
 
 <a id="topic_F0AE5CE40D6D49BF92247F5EF4F871D3"></a>
 
-## <span class="keyword">GemFire</span>AsyncEventQueue Commands
+## <span class="keyword">Geode</span>AsyncEventQueue Commands
 
 <a id="topic_F0AE5CE40D6D49BF92247F5EF4F871D3__table_vp5_mz1_3l"></a>
 
@@ -214,27 +214,27 @@
 
 <a id="topic_B742E9E862BA457082E2346581C97D03"></a>
 
-## <span class="keyword">GemFire</span> Monitoring Commands
+## <span class="keyword">Geode</span> Monitoring Commands
 
 <a id="topic_B742E9E862BA457082E2346581C97D03__table_pkf_nz1_3l"></a>
 
-| Command                                                                                                                                                                                                                                                             | Description                                                                                                                                            | Availability    |
-|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|
-| [describe client](command-pages/describe.html#topic_gyr_jgz_ck)                                                                                                                          | Displays details about a specified client.                                                                                                             | online          |
-| [describe member](command-pages/describe.html#topic_D62F3D42B1D84CF68F03D54D5122806A)                                                                                               | Display details of a member with given name/id.                                                                                                        | online          |
-| [export logs](command-pages/export.html#topic_B80978CC659244AE91E2B8CE56EBDFE3)                                                                                                                   | Export/dump logs to a given directory.                                                                                                                 | online          |
-| [export stack-traces](command-pages/export.html#topic_195D27B8B2B64A4E84CF2256636D54BD)                                                                                             | Export the stack trace for a member or members.                                                                                                        | online          |
-| [gc](command-pages/gc.html)                                                                                                                                                   | Force garbage collection on a member or members.                                                                                                       | online          |
-| [list clients](command-pages/list.html#topic_ts1_qb1_dk)                                                                                                                                      | Displays a list of connected clients.                                                                                                                  | online          |
-| [list members](command-pages/list.html#topic_5B5BFB2E5F314210858641BE3A689637)                                                                                                                  | Display all or a subset of members.                                                                                                                    | online          |
-| [netstat](command-pages/netstat.html)                                                                                               | Report network information and statistics via the "netstat" operating system command.                                                                  | online          |
+| Command                                                                                                                                                                                                                                                           | Description                                                                                                                                            | Availability    |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|
+| [describe client](command-pages/describe.html#topic_gyr_jgz_ck)                                                                                                                        | Displays details about a specified client.                                                                                                             | online          |
+| [describe member](command-pages/describe.html#topic_D62F3D42B1D84CF68F03D54D5122806A)                                                                                             | Display details of a member with given name/id.                                                                                                        | online          |
+| [export logs](command-pages/export.html#topic_B80978CC659244AE91E2B8CE56EBDFE3)                                                                                                                 | Export/dump logs to a given directory.                                                                                                                 | online          |
+| [export stack-traces](command-pages/export.html#topic_195D27B8B2B64A4E84CF2256636D54BD)                                                                                           | Export the stack trace for a member or members.                                                                                                        | online          |
+| [gc](command-pages/gc.html)                                                                                                                                                 | Force garbage collection on a member or members.                                                                                                       | online          |
+| [list clients](command-pages/list.html#topic_ts1_qb1_dk)                                                                                                                                    | Displays a list of connected clients.                                                                                                                  | online          |
+| [list members](command-pages/list.html#topic_5B5BFB2E5F314210858641BE3A689637)                                                                                                                | Display all or a subset of members.                                                                                                                    | online          |
+| [netstat](command-pages/netstat.html)                                                                                             | Report network information and statistics via the "netstat" operating system command.                                                                  | online          |
 | [show dead-locks](command-pages/show.html#topic_1125347FAD6541DF995C9999650165B1)                                                                                          | Display deadlocks, logs, metrics and missing disk-stores.                                                                                              | online          |
-| [show log](command-pages/show.html#topic_45AAEDAC3AFF46EC9BB68B24FC9A32B3)                                                                                                                            | Display the log for a member.                                                                                                                          | online          |
-| [show metrics](command-pages/show.html#topic_6EB786C63AEB46179EEE8FA18624295A)                                                                   | Display or export metrics for the entire distributed system, a member or a region.                                                                     | online          |
-| [shutdown](command-pages/shutdown.html)                                                                                                                                                                           | Shut down all members that have a cache.                                                                                                               | online          |
-| [start jconsole](command-pages/start.html#topic_D00507416F3944DFAB48D2FA2B9E4A31)                                                                              | Start the JDK JConsole monitoring application in a separate process. JConsole automatically connects to a running JMX Manager node if one is available | online, offline |
-| [start jvisualvm](command-pages/start.html#topic_5B5BF8BEE905463D8B7762B89E2D65E7)                                                                  | Start the JDK's Java VisualVM monitoring application in a separate process.                                                                            | online, offline |
-| [start pulse](command-pages/start.html#topic_E906BA7D9E7F4C5890FEFA7ECD40DD77) | Launch the <span class="keyword">GemFire</span> Pulse monitoring dashboard tool in the user's default system browser.                                  | online, offline |
+| [show log](command-pages/show.html#topic_45AAEDAC3AFF46EC9BB68B24FC9A32B3)                                                                                                                          | Display the log for a member.                                                                                                                          | online          |
+| [show metrics](command-pages/show.html#topic_6EB786C63AEB46179EEE8FA18624295A)                                                                 | Display or export metrics for the entire distributed system, a member or a region.                                                                     | online          |
+| [shutdown](command-pages/shutdown.html)                                                                                                                                                                         | Shut down all members that have a cache.                                                                                                               | online          |
+| [start jconsole](command-pages/start.html#topic_D00507416F3944DFAB48D2FA2B9E4A31)                                                                            | Start the JDK JConsole monitoring application in a separate process. JConsole automatically connects to a running JMX Manager node if one is available | online, offline |
+| [start jvisualvm](command-pages/start.html#topic_5B5BF8BEE905463D8B7762B89E2D65E7)                                                                | Start the JDK's Java VisualVM monitoring application in a separate process.                                                                            | online, offline |
+| [start pulse](command-pages/start.html#topic_E906BA7D9E7F4C5890FEFA7ECD40DD77) | Launch the <span class="keyword">Geode</span> Pulse monitoring dashboard tool in the user's default system browser.                                    | online, offline |
 
 : <span class="tablecap">Table 10. Commands</span>
 
@@ -302,14 +302,14 @@
 
 <a id="topic_EF03119A40EE492984F3B6248596E1DD__table_a5k_r31_3l"></a>
 
-| Command                                                                                                                                                                                                                                        | Description                                                                                                                                                  | Availability |
-|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
-| [alter region](command-pages/alter.html#topic_E74ED23CB60342538B2175C326E7D758)                                                                                          | Alters the configuration of a region.                                                                                                                        | online       |
-| [create region](command-pages/create.html#topic_54B0985FEC5241CA9D26B0CE0A5EA863)                                                                           | Create and configure a region.                                                                                                                               | online       |
-| [describe region](command-pages/describe.html#topic_DECF7D3D33F54071B6B8AD4EA7E3F90B)                                                                  | Display the attributes and key information of a region.                                                                                                      | online       |
-| [destroy region](command-pages/destroy.html#topic_BEDACECF4599407794ACBC0E56B30F65)                                                                                                | Destroy or remove a region.                                                                                                                                  | online       |
-| [list regions](command-pages/list.html#topic_F0ECEFF26086474498598035DD83C588) | Display regions of a member or members. If no parameter is specified, all regions in the <span class="keyword">GemFire</span> distributed system are listed. | online       |
-| [rebalance](command-pages/rebalance.html)                                                                                                                                       | Rebalance partitioned regions.                                                                                                                               | online       |
+| Command                                                                                                                                                                                                                                      | Description                                                                                                                                                | Availability |
+|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
+| [alter region](command-pages/alter.html#topic_E74ED23CB60342538B2175C326E7D758)                                                                                        | Alters the configuration of a region.                                                                                                                      | online       |
+| [create region](command-pages/create.html#topic_54B0985FEC5241CA9D26B0CE0A5EA863)                                                                         | Create and configure a region.                                                                                                                             | online       |
+| [describe region](command-pages/describe.html#topic_DECF7D3D33F54071B6B8AD4EA7E3F90B)                                                                | Display the attributes and key information of a region.                                                                                                    | online       |
+| [destroy region](command-pages/destroy.html#topic_BEDACECF4599407794ACBC0E56B30F65)                                                                                              | Destroy or remove a region.                                                                                                                                | online       |
+| [list regions](command-pages/list.html#topic_F0ECEFF26086474498598035DD83C588) | Display regions of a member or members. If no parameter is specified, all regions in the <span class="keyword">Geode</span> distributed system are listed. | online       |
+| [rebalance](command-pages/rebalance.html)                                                                                                                                     | Rebalance partitioned regions.                                                                                                                             | online       |
 
 : <span class="tablecap">Table 15. Commands</span>
 
@@ -319,11 +319,11 @@
 
 <a id="topic_8A341FF86958466E9E64CF06CD21FED9__table_ehj_n31_3l"></a>
 
-| Command                                                                                                                                                                     | Description                                                                            | Availability    |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|-----------------|
-| [start server](command-pages/start.html#topic_3764EE2DB18B4AE4A625E0354471738A)                       | Start a <span class="keyword">GemFire</span> cache server process.                     | online, offline |
-| [status server](command-pages/status.html#topic_E5DB49044978404D9D6B1971BF5D400D) | Display the status of the specified <span class="keyword">GemFire</span> cache server. | online, offline |
-| [stop server](command-pages/stop.html#topic_723EE395A63A40D6819618AFC2902115)                                  | Stop a <span class="keyword">GemFire</span> cache server.                              | online, offline |
+| Command                                                                                                                                                                   | Description                                                                          | Availability    |
+|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|-----------------|
+| [start server](command-pages/start.html#topic_3764EE2DB18B4AE4A625E0354471738A)                       | Start a <span class="keyword">Geode</span> cache server process.                     | online, offline |
+| [status server](command-pages/status.html#topic_E5DB49044978404D9D6B1971BF5D400D) | Display the status of the specified <span class="keyword">Geode</span> cache server. | online, offline |
+| [stop server](command-pages/stop.html#topic_723EE395A63A40D6819618AFC2902115)                                  | Stop a <span class="keyword">Geode</span> cache server.                              | online, offline |
 
 : <span class="tablecap">Table 16. Server Commands</span>
 

@@ -2,7 +2,7 @@
 title:  Configuring Peer Communication
 ---
 
-By default <span class="keyword">Pivotal GemFire</span> uses TCP for communication between members of a single distributed system. You can modify this at the member and region levels.
+By default <span class="keyword">Apache Geode</span> uses TCP for communication between members of a single distributed system. You can modify this at the member and region levels.
 
 <a id="setting_up_communication__section_34509F5B17A943D8BBF19A3497E32BAE"></a>
 Before you begin, you should have already determined the address and port settings for multicast, including any bind addresses. See [Topology and Communication General Concepts](../topology_concepts/chapter_overview.html).
@@ -40,7 +40,7 @@ See the [Reference](../../reference/book_intro.html#reference).
         ```
 
         **Note:**
-        Improperly configured multicast can affect production systems. If you intend to use multicast on a shared network, work with your network administrator and system administrator from the planning stage of the project. In addition, you may need to address interrelated setup and tuning issues at the <span class="keyword">GemFire</span>, operating system, and network level.
+        Improperly configured multicast can affect production systems. If you intend to use multicast on a shared network, work with your network administrator and system administrator from the planning stage of the project. In addition, you may need to address interrelated setup and tuning issues at the <span class="keyword">Geode</span>, operating system, and network level.
 
 Once your members establish their connections to each other, they will send distributed data and messages according to your configuration.
 

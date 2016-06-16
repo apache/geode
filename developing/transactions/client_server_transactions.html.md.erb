@@ -2,19 +2,19 @@
 
 # Client Transactions
 
-The syntax for writing client transactions is the same on the Java client as with any other <span class="keyword">GemFire</span> member, but the underlying behavior in a client-run transaction is different from general transaction behavior.
+The syntax for writing client transactions is the same on the Java client as with any other <span class="keyword">Geode</span> member, but the underlying behavior in a client-run transaction is different from general transaction behavior.
 
-For general information about running a transaction, refer to [How to Run a GemFire Cache Transaction](run_a_cache_transaction.html#task_f15_mr3_5k).
+For general information about running a transaction, refer to [How to Run a Geode Cache Transaction](run_a_cache_transaction.html#task_f15_mr3_5k).
 
--   **[How GemFire Runs Client Transactions](../../../latest/developing/transactions/client_server_transactions.html#how_gemfire_runs_clients)**
+-   **[How Geode Runs Client Transactions](../../developing/transactions/client_server_transactions.html#how_gemfire_runs_clients)**
 
--   **[Client Cache Access During a Transaction](../../../latest/developing/transactions/client_server_transactions.html#client_cache_access)**
+-   **[Client Cache Access During a Transaction](../../developing/transactions/client_server_transactions.html#client_cache_access)**
 
--   **[Client Transactions and Client Application Plug-Ins](../../../latest/developing/transactions/client_server_transactions.html#client_app_plugins)**
+-   **[Client Transactions and Client Application Plug-Ins](../../developing/transactions/client_server_transactions.html#client_app_plugins)**
 
--   **[Client Transaction Failures](../../../latest/developing/transactions/client_server_transactions.html#client_transaction_failures)**
+-   **[Client Transaction Failures](../../developing/transactions/client_server_transactions.html#client_transaction_failures)**
 
-## How <span class="keyword">GemFire</span> Runs Client Transactions
+## How <span class="keyword">Geode</span> Runs Client Transactions
 
 When a client performs a transaction, the transaction is delegated to a server that acts as the transaction initiator in the server system. As with regular, non-client transactions, this server delegate may or may not be the transaction host.
 
@@ -24,7 +24,7 @@ In this figure, the application code on the client makes changes to data entries
 
 ## Client Cache Access During a Transaction
 
-To maintain cache consistency, <span class="keyword">GemFire</span> blocks access to the local client cache during a transaction. The local client cache may reflect information inconsistent with the transaction in progress. When the transaction completes, the local cache is accessible again.
+To maintain cache consistency, <span class="keyword">Geode</span> blocks access to the local client cache during a transaction. The local client cache may reflect information inconsistent with the transaction in progress. When the transaction completes, the local cache is accessible again.
 
 ## Client Transactions and Client Application Plug-Ins
 

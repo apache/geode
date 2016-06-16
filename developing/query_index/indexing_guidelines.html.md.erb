@@ -16,7 +16,7 @@ When creating indexes, keep in mind the following:
 
 ## Tips for Writing Queries that Use Indexes
 
-As with query processors that run against relational databases, the way a query is written can greatly affect execution performance. Among other things, whether indexes are used depends on how each query is stated. These are some of the things to consider when optimizing your <span class="keyword">GemFire</span> queries for performance:
+As with query processors that run against relational databases, the way a query is written can greatly affect execution performance. Among other things, whether indexes are used depends on how each query is stated. These are some of the things to consider when optimizing your <span class="keyword">Geode</span> queries for performance:
 
 -   In general an index will improve query performance if the FROM clauses of the query and index match exactly.
 -   The query evaluation engine does not have a sophisticated cost-based optimizer. It has a simple optimizer which selects best index (one) or multiple indexes based on the index size and the operator that is being evaluated.

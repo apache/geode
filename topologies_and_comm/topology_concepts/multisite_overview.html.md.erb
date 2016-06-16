@@ -14,38 +14,38 @@ Gateway senders and receivers are defined at startup in the distributed system m
 
 ## Consistency for WAN Updates
 
-<span class="keyword">GemFire</span> ensures that all copies of a region eventually reach a consistent state on all members and clients that host the region, including <span class="keyword">GemFire</span> members that distribute region events across a WAN.
+<span class="keyword">Geode</span> ensures that all copies of a region eventually reach a consistent state on all members and clients that host the region, including <span class="keyword">Geode</span> members that distribute region events across a WAN.
 
 By default, potential WAN conflicts are resolved using a timestamp mechanism. You can optionally install a custom conflict resolver to apply custom logic when determining whether to apply a potentially conflicting update received over a WAN.
 
-[Consistency for Region Updates](../../developing/distributed_regions/region_entry_versions.html#topic_CF2798D3E12647F182C2CEC4A46E2045) describes how <span class="keyword">GemFire</span> ensures consistency within a cluster, in client caches, and when applying updates over a WAN. [Resolving Conflicting Events](../../developing/events/resolving_multisite_conflicts.html#topic_E97BB68748F14987916CD1A50E4B4542) provides more details about implementing a custom conflict resolver for WAN updates.
+[Consistency for Region Updates](../../developing/distributed_regions/region_entry_versions.html#topic_CF2798D3E12647F182C2CEC4A46E2045) describes how <span class="keyword">Geode</span> ensures consistency within a cluster, in client caches, and when applying updates over a WAN. [Resolving Conflicting Events](../../developing/events/resolving_multisite_conflicts.html#topic_E97BB68748F14987916CD1A50E4B4542) provides more details about implementing a custom conflict resolver for WAN updates.
 
 <a id="topic_1742957C8D4B4F7590847EB8DB6CD4F7"></a>
 
 ## Discovery for Multi-Site Systems
 
-Each <span class="keyword">GemFire</span> cluster in a WAN configuration uses locators to discover remote clusters as well as local members.
+Each <span class="keyword">Geode</span> cluster in a WAN configuration uses locators to discover remote clusters as well as local members.
 
 Each locator in a WAN configuration defines a unique `distributed-system-id` property that identifies the local cluster to which it belongs. A locator uses the `remote-locators` property to define the addresses of one or more locators in remote clusters to use for WAN distribution.
 
-When a locator starts up, it contacts each locator that is configured in the `remote-locators` property to exchange information about the available locators and gateway receivers in the cluster. The locator also shares information about locators and gateway receivers in any other <span class="keyword">GemFire</span> clusters that have connected to the cluster. Connected clusters can then use the shared gateway receiver information to distribute region events according to their configured gateway senders.
+When a locator starts up, it contacts each locator that is configured in the `remote-locators` property to exchange information about the available locators and gateway receivers in the cluster. The locator also shares information about locators and gateway receivers in any other <span class="keyword">Geode</span> clusters that have connected to the cluster. Connected clusters can then use the shared gateway receiver information to distribute region events according to their configured gateway senders.
 
-Each time a new locator starts up or an existing locator shuts down, the changed information is broadcast to other connected <span class="keyword">GemFire</span> clusters.
+Each time a new locator starts up or an existing locator shuts down, the changed information is broadcast to other connected <span class="keyword">Geode</span> clusters.
 
 <a id="topic_9AA37B43642D4DE19072CA3367C849BA"></a>
 
 ## Gateway Senders
 
-A <span class="keyword">GemFire</span> cluster uses a *gateway sender* to distribute region events to another, remote <span class="keyword">GemFire</span> cluster. You can create multiple gateway sender configurations to distribute region events to multiple remote clusters, and/or to distribute region events concurrently to another remote cluster.
+A <span class="keyword">Geode</span> cluster uses a *gateway sender* to distribute region events to another, remote <span class="keyword">Geode</span> cluster. You can create multiple gateway sender configurations to distribute region events to multiple remote clusters, and/or to distribute region events concurrently to another remote cluster.
 
 A gateway sender always communicates with a gateway receiver in a remote cluster. Gateway senders do not communicate directly with other cache server instances. See [Gateway Receivers](multisite_overview.html#topic_4DB3D9CF01AD4F4899457D1250468D00).
 
-<span class="keyword">GemFire</span> provides two types of gateway sender configurations: *serial* gateway senders and *parallel* gateway senders.
+<span class="keyword">Geode</span> provides two types of gateway sender configurations: *serial* gateway senders and *parallel* gateway senders.
 
 <a id="topic_9AA37B43642D4DE19072CA3367C849BA__section_F7B3A17597B344F19A9E3546097AC5DB"></a>
 ## Serial Gateway Senders
 
-A *serial gateway sender* distributes region events from a single <span class="keyword">GemFire</span> server in the local cluster to a remote <span class="keyword">GemFire</span> cluster. Although multiple regions can use the same serial gateway for distribution, a serial gateway uses a single logical event queue to dispatch events for all regions that use the gateway sender.
+A *serial gateway sender* distributes region events from a single <span class="keyword">Geode</span> server in the local cluster to a remote <span class="keyword">Geode</span> cluster. Although multiple regions can use the same serial gateway for distribution, a serial gateway uses a single logical event queue to dispatch events for all regions that use the gateway sender.
 
 <img src="../../images/serial_sender.png" id="topic_9AA37B43642D4DE19072CA3367C849BA__image_CEF888583FAC4CCBB0445F2BF8F15F20" class="image" width="576" />
 
@@ -55,24 +55,24 @@ Because a serial gateway sender distributes all of a region's events from a sing
 
 ## Parallel Gateway Senders
 
-A *parallel gateway sender* distributes region events simultaneously from each <span class="keyword">GemFire</span> server that hosts the region. For a partitioned region, this means that each server that hosts buckets for the region uses its own logical queue to distribute events for those buckets. As you add new servers to scale the partitioned region, WAN distribution throughput scales automatically with each new instance of the parallel gateway sender.
+A *parallel gateway sender* distributes region events simultaneously from each <span class="keyword">Geode</span> server that hosts the region. For a partitioned region, this means that each server that hosts buckets for the region uses its own logical queue to distribute events for those buckets. As you add new servers to scale the partitioned region, WAN distribution throughput scales automatically with each new instance of the parallel gateway sender.
 
 <img src="../../images/parallel_sender.png" id="topic_9AA37B43642D4DE19072CA3367C849BA__image_D3BEABE6269543758DD0FAF4FFCD713A" class="image" width="576" />
 
-A parallel gateway sender uses multiple queues on multiple <span class="keyword">GemFire</span> members to simultaneously distribute region events to a remote <span class="keyword">GemFire</span> cluster. Each queue distributes only part of the events for a configured region. For example, for a partitioned region, each queue distributes only those events for the local partition.
+A parallel gateway sender uses multiple queues on multiple <span class="keyword">Geode</span> members to simultaneously distribute region events to a remote <span class="keyword">Geode</span> cluster. Each queue distributes only part of the events for a configured region. For example, for a partitioned region, each queue distributes only those events for the local partition.
 
-Distributed, non-replicated regions can also use a parallel gateway sender for distribution. With a distributed region, <span class="keyword">GemFire</span> creates a separate gateway sender and queue on each member that hosts the region, and then hashes region events to place them into a distinct queue. This provides a level of scalability for distributed regions that is similar to that provided for partitioned regions.
+Distributed, non-replicated regions can also use a parallel gateway sender for distribution. With a distributed region, <span class="keyword">Geode</span> creates a separate gateway sender and queue on each member that hosts the region, and then hashes region events to place them into a distinct queue. This provides a level of scalability for distributed regions that is similar to that provided for partitioned regions.
 
 **Note:**
 Replicated regions cannot use a parallel gateway sender.
 
-Although parallel gateway senders provide the best throughput for WAN distribution, they provide less control for ordering events. With a parallel gateway sender, you cannot preserve event ordering for the region as a whole because multiple <span class="keyword">GemFire</span> servers distribute the regions events at the same time. However, the ordering of events for a given partition (or in a given queue of a distributed region) can be preserved. See [Configuring Multi-Site (WAN) Event Queues](../../developing/events/configure_multisite_event_messaging.html#configure_multisite_event_messaging).
+Although parallel gateway senders provide the best throughput for WAN distribution, they provide less control for ordering events. With a parallel gateway sender, you cannot preserve event ordering for the region as a whole because multiple <span class="keyword">Geode</span> servers distribute the regions events at the same time. However, the ordering of events for a given partition (or in a given queue of a distributed region) can be preserved. See [Configuring Multi-Site (WAN) Event Queues](../../developing/events/configure_multisite_event_messaging.html#configure_multisite_event_messaging).
 
 <a id="topic_9AA37B43642D4DE19072CA3367C849BA__section_75F4588FEA404712963CE83FACB8ED1B"></a>
 
 ## Gateway Sender Queues
 
-The queue that a gateway sender uses to distribute events to a remote site overflows to disk as needed, in order to prevent the <span class="keyword">GemFire</span> member from running out of memory. You can configure the maximum amount of memory that each queue uses, as well as the batch size and frequency for processing batches in the queue. You can also configure these queues to persist to disk, so that a gateway sender can pick up where it left off when its member shuts down and is later restarted.
+The queue that a gateway sender uses to distribute events to a remote site overflows to disk as needed, in order to prevent the <span class="keyword">Geode</span> member from running out of memory. You can configure the maximum amount of memory that each queue uses, as well as the batch size and frequency for processing batches in the queue. You can also configure these queues to persist to disk, so that a gateway sender can pick up where it left off when its member shuts down and is later restarted.
 
 By default gateway sender queues use 5 threads to dispatch queued events. With a serial gateway sender, the single, logical queue that is hosted on a member is divided into multiple physical queues (5 by default) each with a dedicated dispatcher thread. You can configure whether the threads dispatch queued events by key, by thread, or in the same order in which events were added to the queue. For a parallel gateway sender, each logical queue that is hosted on a member is processed simultaneously by multiple threads.
 
@@ -82,9 +82,9 @@ See [Configuring Multi-Site (WAN) Event Queues](../../developing/events/configur
 
 ## High Availability for Gateway Senders
 
-When a serial gateway sender configuration is deployed to multiple <span class="keyword">GemFire</span> members, only one "primary" sender is active at a given time. All other serial gateway sender instances are inactive "secondaries" that are available as backups if the primary sender shuts down. <span class="keyword">GemFire</span> designates the first gateway sender to start up as the primary sender, and all other senders become secondaries. As gateway senders start and shut down in the distributed system, <span class="keyword">GemFire</span> ensures that the oldest running gateway sender operates as the primary.
+When a serial gateway sender configuration is deployed to multiple <span class="keyword">Geode</span> members, only one "primary" sender is active at a given time. All other serial gateway sender instances are inactive "secondaries" that are available as backups if the primary sender shuts down. <span class="keyword">Geode</span> designates the first gateway sender to start up as the primary sender, and all other senders become secondaries. As gateway senders start and shut down in the distributed system, <span class="keyword">Geode</span> ensures that the oldest running gateway sender operates as the primary.
 
-A parallel gateway sender is deployed to multiple <span class="keyword">GemFire</span> members by default, and each member that hosts primary buckets for a partitioned region actively distributes data to the remote <span class="keyword">GemFire</span> site. When you use parallel gateway senders, high availability for WAN distribution is provided if you configure the partitioned region for redundancy. With a redundant partitioned region, if a member that hosts primary buckets fails or is shut down, then a <span class="keyword">GemFire</span> member that hosts a redundant copy of those buckets takes over WAN distribution for those buckets.
+A parallel gateway sender is deployed to multiple <span class="keyword">Geode</span> members by default, and each member that hosts primary buckets for a partitioned region actively distributes data to the remote <span class="keyword">Geode</span> site. When you use parallel gateway senders, high availability for WAN distribution is provided if you configure the partitioned region for redundancy. With a redundant partitioned region, if a member that hosts primary buckets fails or is shut down, then a <span class="keyword">Geode</span> member that hosts a redundant copy of those buckets takes over WAN distribution for those buckets.
 
 <a id="topic_9AA37B43642D4DE19072CA3367C849BA__section_aqm_2js_bq"></a>
 
@@ -107,11 +107,11 @@ Similar to stopping a gateway sender, the scope of pausing a gateway sender is t
 
 ## Gateway Receivers
 
-A gateway receiver configures a physical connection for receiving region events from gateway senders in one or more remote <span class="keyword">GemFire</span> clusters.
+A gateway receiver configures a physical connection for receiving region events from gateway senders in one or more remote <span class="keyword">Geode</span> clusters.
 
-A gateway receiver applies each region event to the same region or partition that is hosted in the local <span class="keyword">GemFire</span> member. (An exception is thrown if the receiver receives an event for a region that it does not define.)
+A gateway receiver applies each region event to the same region or partition that is hosted in the local <span class="keyword">Geode</span> member. (An exception is thrown if the receiver receives an event for a region that it does not define.)
 
-Gateway senders use any available gateway receiver in the target cluster to send region events. You can deploy gateway receiver configurations to multiple <span class="keyword">GemFire</span> members as needed for high availability and load balancing, however you can only host one gateway receiver per member.
+Gateway senders use any available gateway receiver in the target cluster to send region events. You can deploy gateway receiver configurations to multiple <span class="keyword">Geode</span> members as needed for high availability and load balancing, however you can only host one gateway receiver per member.
 
 After you create a gateway receiver, you can configure the gateway receiver to start automatically or to require a manual start. The current default is to require a manual start for the gateway receiver (`manual-start` is set to true).
 

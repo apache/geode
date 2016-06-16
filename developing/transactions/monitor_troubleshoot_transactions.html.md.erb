@@ -2,16 +2,16 @@
 title:  Monitoring and Troubleshooting Transactions
 ---
 
-This topic covers errors that may occur when running transactions in <span class="keyword">GemFire</span>.
+This topic covers errors that may occur when running transactions in <span class="keyword">Geode</span>.
 
 <a id="monitor_troubleshoot_transactions__section_881D2FF6761B4D689DDB46C650E2A2E1"></a>
-Unlike database transactions, <span class="keyword">GemFire</span> does not write a transaction log to disk. To get the full details about committed operations, use a transaction listener to monitor the transaction events and their contained cache events for each of your transactions.
+Unlike database transactions, <span class="keyword">Geode</span> does not write a transaction log to disk. To get the full details about committed operations, use a transaction listener to monitor the transaction events and their contained cache events for each of your transactions.
 
 <a id="monitor_troubleshoot_transactions__section_2B66338C851A4FF386B60CC5CF4DCF77"></a>
 
 ## Statistics on Cache Transactions
 
-During the operation of <span class="keyword">GemFire</span> cache transactions, if statistics are enabled, transaction-related statistics are calculated and accessible from the CachePerfStats statistic resource. Because the transaction’s data scope is the cache, these statistics are collected on a per-cache basis.
+During the operation of <span class="keyword">Geode</span> cache transactions, if statistics are enabled, transaction-related statistics are calculated and accessible from the CachePerfStats statistic resource. Because the transaction’s data scope is the cache, these statistics are collected on a per-cache basis.
 
 <a id="monitor_troubleshoot_transactions__section_EA9277E6CFD7423F95BA4D04955FDE2A"></a>
 
@@ -27,7 +27,7 @@ A transaction can create data beyond the capacity limit set in the region’s ev
 
 ## Interaction with the Resource Manager
 
-The <span class="keyword">GemFire</span> resource manager, which controls overall heap use, either allows all transactional operations or blocks the entire transaction. If a cache reaches the critical threshold in the middle of a commit, the commit is allowed to finish before the manager starts blocking operations.
+The <span class="keyword">Geode</span> resource manager, which controls overall heap use, either allows all transactional operations or blocks the entire transaction. If a cache reaches the critical threshold in the middle of a commit, the commit is allowed to finish before the manager starts blocking operations.
 
 <a id="monitor_troubleshoot_transactions__section_8942ABA6F23C4ED58877C894B13F4F21"></a>
 

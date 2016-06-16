@@ -4,19 +4,19 @@ title:  Starting Up and Shutting Down Your System
 
 Determine the proper startup and shutdown procedures, and write your startup and shutdown scripts.
 
-Well-designed procedures for starting and stopping your system can speed startup and protect your data. The processes you need to start and stop include server and locator processes and your other <span class="keyword">GemFire</span> applications, including clients. The procedures you use depend in part on your system’s configuration and the dependencies between your system processes.
+Well-designed procedures for starting and stopping your system can speed startup and protect your data. The processes you need to start and stop include server and locator processes and your other <span class="keyword">Geode</span> applications, including clients. The procedures you use depend in part on your system’s configuration and the dependencies between your system processes.
 
-Use the following guidelines to create startup and shutdown procedures and scripts. Some of these instructions use [gfsh (GemFire SHell)](../../tools_modules/gfsh/chapter_overview.html).
+Use the following guidelines to create startup and shutdown procedures and scripts. Some of these instructions use [gfsh (Geode SHell)](../../tools_modules/gfsh/chapter_overview.html).
 
 <a id="starting_up_shutting_down__section_3D111558326D4A38BE48C17D44BB66DB"></a>
 ## Starting Up Your System
 
-You should follow certain order guidelines when starting your <span class="keyword">GemFire</span> system.
+You should follow certain order guidelines when starting your <span class="keyword">Geode</span> system.
 
 Start server-distributed systems before you start their client applications. In each distributed system, follow these guidelines for member startup:
 
--   Start locators first. See [Running GemFire Locator Processes](running_the_locator.html) for examples of locator start up commands.
--   Start cache servers before the rest of your processes unless the implementation requires that other processes be started ahead of them. See [Running GemFire Server Processes](running_the_cacheserver.html) for examples of server start up commands.
+-   Start locators first. See [Running Geode Locator Processes](running_the_locator.html) for examples of locator start up commands.
+-   Start cache servers before the rest of your processes unless the implementation requires that other processes be started ahead of them. See [Running Geode Server Processes](running_the_cacheserver.html) for examples of server start up commands.
 -   If your distributed system uses both persistent replicated and non-persistent replicated regions, you should start up all the persistent replicated members in parallel before starting the non-persistent regions. This way, persistent members will not delay their startup for other persistent members with later data.
 -   For a system that includes persistent regions, see [Start Up and Shut Down with Disk Stores](../../managing/disk_storage/starting_system_with_disk_stores.html).
 -   If you are running producer processes and consumer or event listener processes, start the consumers first. This ensures the consumers and listeners do not miss any notifications or updates.
@@ -33,7 +33,7 @@ You can optionally override the default timeout period for shutting down individ
 
 ## Starting Up After Losing Data on Disk
 
-This information pertains to catastrophic loss of <span class="keyword">GemFire</span> disk store files. If you lose disk store files, your next startup may hang, waiting for the lost disk stores to come back online. If your system hangs at startup, use the `gfsh` command `show missing-disk-store` to list missing disk stores and, if needed, revoke missing disk stores so your system startup can complete. You must use the Disk Store ID to revoke a disk store. These are the two commands:
+This information pertains to catastrophic loss of <span class="keyword">Geode</span> disk store files. If you lose disk store files, your next startup may hang, waiting for the lost disk stores to come back online. If your system hangs at startup, use the `gfsh` command `show missing-disk-store` to list missing disk stores and, if needed, revoke missing disk stores so your system startup can complete. You must use the Disk Store ID to revoke a disk store. These are the two commands:
 
 ``` pre
 gfsh>show missing-disk-stores
@@ -52,7 +52,7 @@ This gfsh commands require that you are connected to the distributed system via 
 
 ## Shutting Down the System
 
-Shut down your <span class="keyword">GemFire</span> system by using either `gfsh`'s `shutdown` command or by shutting down individual members one at a time.
+Shut down your <span class="keyword">Geode</span> system by using either `gfsh`'s `shutdown` command or by shutting down individual members one at a time.
 
 <a id="starting_up_shutting_down__section_0EB4DDABB6A348BA83B786EEE7C84CF1"></a>
 
@@ -94,7 +94,7 @@ If you are not using persistent regions, you can shut down the distributed syste
 
 Shut down the distributed system members according to the type of member. For example, use the following mechanisms to shut down members:
 
--   Use the appropriate mechanism to shut down any <span class="keyword">GemFire</span>-connected client applications that are running in the distributed system.
+-   Use the appropriate mechanism to shut down any <span class="keyword">Geode</span>-connected client applications that are running in the distributed system.
 -   Shut down any cache servers. To shut down a server, issue the following `gfsh` command:
 
     ``` pre
@@ -123,7 +123,7 @@ Shut down the distributed system members according to the type of member. For ex
 
 ## Option for System Member Shutdown Behavior
 
-The `DISCONNECT_WAIT` command line argument sets the maximum time for each individual step in the shutdown process. If any step takes longer than the specified amount, it is forced to end. Each operation is given this grace period, so the total length of time the cache member takes to shut down depends on the number of operations and the `DISCONNECT_WAIT` setting. During the shutdown process, <span class="keyword">GemFire</span> produces messages such as:
+The `DISCONNECT_WAIT` command line argument sets the maximum time for each individual step in the shutdown process. If any step takes longer than the specified amount, it is forced to end. Each operation is given this grace period, so the total length of time the cache member takes to shut down depends on the number of operations and the `DISCONNECT_WAIT` setting. During the shutdown process, <span class="keyword">Geode</span> produces messages such as:
 
 ``` pre
 Disconnect listener still running

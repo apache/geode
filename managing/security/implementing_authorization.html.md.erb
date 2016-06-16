@@ -8,7 +8,7 @@ To set up authorized access control for the cache:
 
 1.  Determine the degree of control you want over client access to the server cache
 2.  Program and configure the authorization plug-in:
-    1.  Create an implementation of the <span class="keyword">GemFire</span> `com.gemstone.gemfire.security.AccessControl` interface
+    1.  Create an implementation of the <span class="keyword">Geode</span> `com.gemstone.gemfire.security.AccessControl` interface
         1.  Program a public static method to return an instance of the class.
         2.  Program the `init` method to store all properties required by the `AccessControl.authorizeOperation` method at the time the client makes its connection to the server.
             **Note:**

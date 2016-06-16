@@ -1,5 +1,5 @@
 ---
-title:  Executing a Function in <span class="keyword">Pivotal GemFire</span>
+title:  Executing a Function in <span class="keyword">Apache Geode</span>
 ---
 
 <a id="function_execution__section_BE483D79B81C49EE9855F506ED5AB014"></a>
@@ -22,7 +22,7 @@ Code the methods you need for the function. These steps do not have to be done i
 
 1.  Code `getId` to return a unique name for your function. You can use this name to access the function through the `FunctionService` API.
 2.  For high availability:
-    1.  Code `isHa` to return true to indicate to <span class="keyword">GemFire</span> that it can re-execute your function after one or more members fails
+    1.  Code `isHa` to return true to indicate to <span class="keyword">Geode</span> that it can re-execute your function after one or more members fails
     2.  Code your function to return a result
     3.  Code `hasResult` to return true
 
@@ -42,7 +42,7 @@ Code the methods you need for the function. These steps do not have to be done i
             **Note:**
             When you use `PartitionRegionHelper.getLocalDataForContext`, `putIfAbsent` may not return expected results if you are working on local data set instead of the region.
 
-    4.  To propagate an error condition or exception back to the caller of the function, throw a FunctionException from the `execute` method. <span class="keyword">GemFire</span> transmits the exception back to the caller as if it had been thrown on the calling side. See the Java API documentation for [FunctionException](/releases/latest/javadoc/com/gemstone/gemfire/cache/execute/FunctionException.html/) for more information.
+    4.  To propagate an error condition or exception back to the caller of the function, throw a FunctionException from the `execute` method. <span class="keyword">Geode</span> transmits the exception back to the caller as if it had been thrown on the calling side. See the Java API documentation for [FunctionException](/releases/latest/javadoc/com/gemstone/gemfire/cache/execute/FunctionException.html/) for more information.
 
 Example function code:
 
@@ -101,7 +101,7 @@ When you deploy a JAR file that contains a Function (in other words, contains a 
 To register a function by using `gfsh`:
 
 1.  Package your class files into a JAR file.
-2.  Start a `gfsh` prompt. If necessary, start a Locator and connect to the <span class="keyword">GemFire</span> distributed system where you want to run the function.
+2.  Start a `gfsh` prompt. If necessary, start a Locator and connect to the <span class="keyword">Geode</span> distributed system where you want to run the function.
 3.  At the gfsh prompt, type the following command:
 
     ``` pre
@@ -112,7 +112,7 @@ To register a function by using `gfsh`:
 
 If another JAR file is deployed (either with the same JAR filename or another filename) with the same Function, the new implementation of the Function will be registered, overwriting the old one. If a JAR file is undeployed, any Functions that were auto-registered at the time of deployment will be unregistered. Since deploying a JAR file that has the same name multiple times results in the JAR being un-deployed and re-deployed, Functions in the JAR will be unregistered and re-registered each time this occurs. If a Function with the same ID is registered from multiple differently named JAR files, the Function will be unregistered if either of those JAR files is re-deployed or un-deployed.
 
-See [Deploying Application JARs to Pivotal GemFire Members](../../configuring/cluster_config/deploying_application_jars.html#concept_4436C021FB934EC4A330D27BD026602C) for more details on deploying JAR files.
+See [Deploying Application JARs to Apache Geode Members](../../configuring/cluster_config/deploying_application_jars.html#concept_4436C021FB934EC4A330D27BD026602C) for more details on deploying JAR files.
 
 <a id="function_execution__section_1D1056F843044F368FB76F47061FCD50"></a>
 
@@ -160,7 +160,7 @@ In every member where you want to explicitly execute the function and process th
 **Running the Function Using gfsh**
 
 1.  Start a gfsh prompt.
-2.  If necessary, start a Locator and connect to the <span class="keyword">GemFire</span> distributed system where you want to run the function.
+2.  If necessary, start a Locator and connect to the <span class="keyword">Geode</span> distributed system where you want to run the function.
 3.  At the gfsh prompt, type the following command:
 
     ``` pre
@@ -221,12 +221,12 @@ ResultCollector rc = execution.execute(function);
 List result = (List)rc.getResult();
 ```
 
-<span class="keyword">GemFire</span>’s default `ResultCollector` collects all results into an `ArrayList`. Its `getResult` methods block until all results are received. Then they return the full result set.
+<span class="keyword">Geode</span>’s default `ResultCollector` collects all results into an `ArrayList`. Its `getResult` methods block until all results are received. Then they return the full result set.
 
 To customize results collecting:
 
 1.  Write a class that extends `ResultCollector` and code the methods to store and retrieve the results as you need. Note that the methods are of two types:
-    1.  `addResult` and `endResults` are called by <span class="keyword">GemFire</span> when results arrive from the `Function` instance `SendResults` methods
+    1.  `addResult` and `endResults` are called by <span class="keyword">Geode</span> when results arrive from the `Function` instance `SendResults` methods
     2.  `getResult` is available to your executing application (the one that calls `Execution.execute`) to retrieve the results
 
 2.  Use high availability for `onRegion` functions that have been coded for it:

@@ -2,7 +2,7 @@
 title:  List of Event Handlers and Events
 ---
 
-<span class="keyword">GemFire</span> provides many types of events and event handlers to help you manage your different data and application needs.
+<span class="keyword">Geode</span> provides many types of events and event handlers to help you manage your different data and application needs.
 
 <a id="event_handlers_and_events__section_E7B7502F673B43E794884D0F6BF537CF"></a>
 ## Event Handlers
@@ -63,7 +63,7 @@ Use either cache handlers or membership handlers in any single application. Do n
 <td><code class="ph codeph">MembershipListener</code>
 <p><span class="keyword apiname">(com.gemstone.gemfire.management.membership.MembershipListener) </span></p></td>
 <td><code class="ph codeph">MembershipEvent</code></td>
-<td>Use this interface to receive membership events only about peers. This listener's callback methods are invoked when peer members join or leave the <span class="keyword">GemFire</span> distributed system. Callback methods include <code class="ph codeph">memberCrashed</code>, <code class="ph codeph">memberJoined</code>, and <code class="ph codeph">memberLeft</code> (graceful exit).</td>
+<td>Use this interface to receive membership events only about peers. This listener's callback methods are invoked when peer members join or leave the <span class="keyword">Geode</span> distributed system. Callback methods include <code class="ph codeph">memberCrashed</code>, <code class="ph codeph">memberJoined</code>, and <code class="ph codeph">memberLeft</code> (graceful exit).</td>
 </tr>
 <tr class="odd">
 <td><code class="ph codeph">RegionMembershipListener</code></td>
@@ -137,7 +137,7 @@ The events in this table are cache events unless otherwise noted.
 <tr class="odd">
 <td><code class="ph codeph">EntryEvent</code></td>
 <td><code class="ph codeph">CacheListener</code>, <code class="ph codeph">CacheWriter</code>, <code class="ph codeph">TransactionListener</code> (inside the <code class="ph codeph">TransactionEvent</code>)</td>
-<td>Extends <code class="ph codeph">CacheEvent</code> for entry events. Contains information about an event affecting a data entry in the cache. The information includes the key, the value before this event, and the value after this event. <code class="ph codeph">EntryEvent.getNewValue</code> returns the current value of the data entry. <code class="ph codeph">EntryEvent.getOldValue</code> returns the value before this event if it is available. For a partitioned region, returns the old value if the local cache holds the primary copy of the entry. <code class="ph codeph">EntryEvent</code> provides the <span class="keyword">GemFire</span> transaction ID if available.
+<td>Extends <code class="ph codeph">CacheEvent</code> for entry events. Contains information about an event affecting a data entry in the cache. The information includes the key, the value before this event, and the value after this event. <code class="ph codeph">EntryEvent.getNewValue</code> returns the current value of the data entry. <code class="ph codeph">EntryEvent.getOldValue</code> returns the value before this event if it is available. For a partitioned region, returns the old value if the local cache holds the primary copy of the entry. <code class="ph codeph">EntryEvent</code> provides the <span class="keyword">Geode</span> transaction ID if available.
 <p>You can retrieve serialized values from <code class="ph codeph">EntryEvent</code> using the <code class="ph codeph">getSerialized</code>* methods. This is useful if you get values from one region’s events just to put them into a separate cache region. There is no counterpart <code class="ph codeph">put</code> function as the put recognizes that the value is serialized and bypasses the serialization step.</p></td>
 </tr>
 <tr class="even">

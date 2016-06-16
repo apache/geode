@@ -2,7 +2,7 @@
 title:  Exporting and Importing Cluster Configurations
 ---
 
-The cluster configuration service exports and imports configurations created using `gfsh` for an entire <span class="keyword">Pivotal GemFire</span> cluster.
+The cluster configuration service exports and imports configurations created using `gfsh` for an entire <span class="keyword">Apache Geode</span> cluster.
 
 The cluster configuration service saves the cluster configuration as you create a regions, disk-stores and other objects using gfsh commands. You can export this configuration as well as any jar files that contain application files to a zip file and then import this configuration to create a new cluster.
 
@@ -10,7 +10,7 @@ The cluster configuration service saves the cluster configuration as you create 
 
 You issue the gfsh `export cluster-configuration` command to save the configuration data for you cluster in a zip file. This zip file contains subdirectories for cluster-level configurations and a directory for each group specified in the cluster. The contents of these directories are described in [Cluster Configuration Files and Troubleshooting](gfsh_config_troubleshooting.html#concept_ylt_2cb_y4).
 
-To export a cluster configuration, run the `export cluster-configuration` gfsh command while connected to a <span class="keyword">GemFire</span> cluster. For example:
+To export a cluster configuration, run the `export cluster-configuration` gfsh command while connected to a <span class="keyword">Geode</span> cluster. For example:
 
 ``` pre
 export cluster-configuration --zip-file-name=myClusterConfig.zip --dir=/home/username/configs

@@ -6,7 +6,7 @@ Applications use memcached clients to access data stored in embedded Gemcached s
 
 Applications can use memcached clients that are written in Python, C\#, Ruby, PHP, and other programming languages. Each memcached server in a cluster stores data as key/value pairs. A memcached client maintains a list of these servers, determines which server has the required data, and accesses the data directly on that server.
 
-To integrate memcached with <span class="keyword">Pivotal GemFire</span>, you embed a Gemcached server within a <span class="keyword">GemFire</span> cache server. These *Gemcached* servers take the place of memcached servers. The memcached client uses its normal wire protocol to communicate with the Gemcached servers, which appear to the client as memcached servers. No code changes in the clients are needed. <span class="keyword">GemFire</span> manages the distribution and access to data among the embedded Gemcached servers.
+To integrate memcached with <span class="keyword">Apache Geode</span>, you embed a Gemcached server within a <span class="keyword">Geode</span> cache server. These *Gemcached* servers take the place of memcached servers. The memcached client uses its normal wire protocol to communicate with the Gemcached servers, which appear to the client as memcached servers. No code changes in the clients are needed. <span class="keyword">Geode</span> manages the distribution and access to data among the embedded Gemcached servers.
 
 As shown in [Gemcached Architecture](about_gemcached.html#concept_4C654CA7F6B34E4CA1B0318BC9644536__fig_8BF351B5FAF1490F8B0D0E7F3098BC73), memcached clients, which ordinarily maintain a list of memcached servers, now maintain a list of embedded Gemcached servers. If more embedded Gemcached servers are added to the cluster, the new servers automatically become part of the cluster. The memcached clients can continue to communicate with the servers on the list, without having to update their list of servers.
 
@@ -15,11 +15,11 @@ As shown in [Gemcached Architecture](about_gemcached.html#concept_4C654CA7F6B34E
 
 <img src="../../images/Gemcached.png" id="concept_4C654CA7F6B34E4CA1B0318BC9644536__image_98B6222F29B940CD93381D03325C4455" class="image" />
 
-Memcached clients use the memcached API to read and write data that is stored in memcached servers; therefore, client-side <span class="keyword">GemFire</span> features are not available to these clients. Gemcached servers, however, can use <span class="keyword">GemFire</span>'s server-side features and API. These features include the following. (For more detail, see [Advantages of Gemcached over Memcached](advantages.html#topic_849581E507544E63AF23793FBC47D778).)
+Memcached clients use the memcached API to read and write data that is stored in memcached servers; therefore, client-side <span class="keyword">Geode</span> features are not available to these clients. Gemcached servers, however, can use <span class="keyword">Geode</span>'s server-side features and API. These features include the following. (For more detail, see [Advantages of Gemcached over Memcached](advantages.html#topic_849581E507544E63AF23793FBC47D778).)
 
 -   Data consistency and scalability.
 -   High availability.
--   Read-through, write through, and write behind to a database, implemented from within the distributed <span class="keyword">GemFire</span> cache.
+-   Read-through, write through, and write behind to a database, implemented from within the distributed <span class="keyword">Geode</span> cache.
 -   Storage keys and values of any type and size.
 -   For applications, a choice among partitioned and replicated region configurations.
 -   Automatic overflow of data to disk in low-memory scenarios.

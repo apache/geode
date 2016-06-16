@@ -13,7 +13,7 @@ To recover from a machine crash:
 
 1.  Determine which processes run on this machine.
 2.  Reboot the machine.
-3.  If a <span class="keyword">GemFire</span> locator runs here, start it first.
+3.  If a <span class="keyword">Geode</span> locator runs here, start it first.
     **Note:**
     At least one locator must be running before you start any applications or cache servers.
 
@@ -27,9 +27,9 @@ If you have to move a locator process to a different machine, the locator isn’
 
 The partitioned region initializes itself correctly regardless of the order in which the data stores rejoin. The applications and cache servers recreate their data automatically as they return to active work.
 
-If the partitioned region is configured for data redundancy, <span class="keyword">GemFire</span> may be able to handle a machine crash automatically with no data loss, depending on how many redundant copies there are and how many members have to be restarted. See also [Recovery for Partitioned Regions](recovering_from_p2p_crashes.html#rec_app_p2p_crash__section_0E7D482DD8E84250A10070431B29AAC5).
+If the partitioned region is configured for data redundancy, <span class="keyword">Geode</span> may be able to handle a machine crash automatically with no data loss, depending on how many redundant copies there are and how many members have to be restarted. See also [Recovery for Partitioned Regions](recovering_from_p2p_crashes.html#rec_app_p2p_crash__section_0E7D482DD8E84250A10070431B29AAC5).
 
-If the partitioned region does not have redundant copies, the system members recreate the data through normal operation. If the member that crashed was an application, check whether it was designed to write its data to an external data source. If so, decide whether data recovery is possible and preferable to starting with new data generated through the <span class="keyword">GemFire</span> distributed system.
+If the partitioned region does not have redundant copies, the system members recreate the data through normal operation. If the member that crashed was an application, check whether it was designed to write its data to an external data source. If so, decide whether data recovery is possible and preferable to starting with new data generated through the <span class="keyword">Geode</span> distributed system.
 
 <a id="rec_system_crash__section_D3E3002D6C864853B1517A310BD05BDF"></a>
 

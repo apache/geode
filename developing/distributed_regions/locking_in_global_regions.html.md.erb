@@ -9,7 +9,7 @@ In regions with global scope, locking helps ensure cache consistency.
 
 Locking of regions and entries is done in two ways:
 
-1.  **Implicit**. <span class="keyword">GemFire</span> automatically locks global regions and their data entries during most operations. Region invalidation and destruction do not acquire locks.
+1.  **Implicit**. <span class="keyword">Geode</span> automatically locks global regions and their data entries during most operations. Region invalidation and destruction do not acquire locks.
 2.  **Explicit**. You can use the API to explicitly lock the region and its entries. Do this to guarantee atomicity in tasks with multi-step distributed operations. The `Region` methods `com.gemstone.gemfire.cache.Region.getDistributedLock` and `com.gemstone.gemfire.cache.Region.getRegionDistributedLock` return instances of `java.util.concurrent.locks.Lock` for a region and a specified key.
     **Note:**
     You must use the `Region` API to lock regions and region entries. Do not use the `DistributedLockService` in the `com.gemstone.gemfire.distributed` package. That service is available only for locking in arbitrary distributed applications. It is not compatible with the `Region` locking methods.

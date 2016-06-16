@@ -11,9 +11,9 @@ In this example, the feeder client is connected to the first server, and the rec
 
 The example demonstrates the following operations:
 
-1.  In the Feeder client, the application updates the entry object and puts the entry. In response to the `put`, <span class="keyword">GemFire</span> calls `hasDelta`, which returns true, so <span class="keyword">GemFire</span> calls `toDelta` and forwards the extracted delta to the server. If `hasDelta` returned false, <span class="keyword">GemFire</span> would distribute the full entry value.
-2.  In Server1, <span class="keyword">GemFire</span> applies the delta to the cache, distributes the received delta to the server's peers, and forwards it to any other clients with interest in the entry (there are no other clients to Server1 in this example)
-3.  In Server2, <span class="keyword">GemFire</span> applies the delta to the cache and forwards it to its interested clients, which in this case is just the Receiver client.
+1.  In the Feeder client, the application updates the entry object and puts the entry. In response to the `put`, <span class="keyword">Geode</span> calls `hasDelta`, which returns true, so <span class="keyword">Geode</span> calls `toDelta` and forwards the extracted delta to the server. If `hasDelta` returned false, <span class="keyword">Geode</span> would distribute the full entry value.
+2.  In Server1, <span class="keyword">Geode</span> applies the delta to the cache, distributes the received delta to the server's peers, and forwards it to any other clients with interest in the entry (there are no other clients to Server1 in this example)
+3.  In Server2, <span class="keyword">Geode</span> applies the delta to the cache and forwards it to its interested clients, which in this case is just the Receiver client.
 
 <a id="delta_propagation_example__section_185444FC51FB467587A62DFEC07C9C7D"></a>
 

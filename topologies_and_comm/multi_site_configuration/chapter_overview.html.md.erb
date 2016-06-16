@@ -4,23 +4,23 @@ title:  Multi-site (WAN) Configuration
 
 Use the multi-site configuration to scale horizontally between disparate, loosely-coupled distributed systems. A wide-area network (WAN) is the main use case for the multi-site topology.
 
--   **[How Multi-site (WAN) Systems Work](../../../latest/topologies_and_comm/topology_concepts/how_multisite_systems_work.html)**
+-   **[How Multi-site (WAN) Systems Work](../../topologies_and_comm/topology_concepts/how_multisite_systems_work.html)**
 
-    The <span class="keyword">Pivotal GemFire</span> multi-site implementation connects disparate distributed systems. The systems act as one when they are coupled, and they act as independent systems when communication between sites fails. The coupling is tolerant of weak or slow links between distributed system sites. A wide-area network (WAN) is the main use case for the multi-site topology.
+    The <span class="keyword">Apache Geode</span> multi-site implementation connects disparate distributed systems. The systems act as one when they are coupled, and they act as independent systems when communication between sites fails. The coupling is tolerant of weak or slow links between distributed system sites. A wide-area network (WAN) is the main use case for the multi-site topology.
 
--   **[Multi-site (WAN) Topologies](../../../latest/topologies_and_comm/multi_site_configuration/multisite_topologies.html)**
+-   **[Multi-site (WAN) Topologies](../../topologies_and_comm/multi_site_configuration/multisite_topologies.html)**
 
     To configure your multi-site topology, you should understand the recommended topologies and the topologies to avoid.
 
--   **[Configuring a Multi-site (WAN) System](../../../latest/topologies_and_comm/multi_site_configuration/setting_up_a_multisite_system.html)**
+-   **[Configuring a Multi-site (WAN) System](../../topologies_and_comm/multi_site_configuration/setting_up_a_multisite_system.html)**
 
     Plan and configure your multi-site topology, and configure the regions that will be shared between systems.
 
--   **[Filtering Events for Multi-Site (WAN) Distribution](../../../latest/developing/events/filtering_multisite_events.html)**
+-   **[Filtering Events for Multi-Site (WAN) Distribution](../../developing/events/filtering_multisite_events.html)**
 
-    You can optionally create gateway sender and/or gateway receiver filters to control which events are queued and distributed to a remote site, or to modify the data stream that is transmitted between <span class="keyword">GemFire</span> sites.
+    You can optionally create gateway sender and/or gateway receiver filters to control which events are queued and distributed to a remote site, or to modify the data stream that is transmitted between <span class="keyword">Geode</span> sites.
 
--   **[Resolving Conflicting Events](../../../latest/developing/events/resolving_multisite_conflicts.html)**
+-   **[Resolving Conflicting Events](../../developing/events/resolving_multisite_conflicts.html)**
 
     You can optionally create a `GatewayConflictResolver` cache plug-in to decide whether a potentially conflicting event that was delivered from another site should be applied to the local cache.
 

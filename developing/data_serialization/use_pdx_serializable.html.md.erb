@@ -29,8 +29,8 @@ For a domain object with source that you can modify, implement the `PdxSerializa
     ```
 
 3.  Program `PdxSerializable.toData.`
-    1.  Write each standard Java data field of your domain class using the `PdxWriter` write methods. <span class="keyword">GemFire</span> automatically provides `PdxWriter` to the `toData` method for `PdxSerializable` objects.
-    2.  Call the `PdxWriter` `markIdentifyField` method for each field you want to have <span class="keyword">GemFire</span> use to identify your object. Put this after the field's write method. <span class="keyword">GemFire</span> uses this information to compare objects for operations like distinct queries. If you do not set as least one identity field, then the `equals` and `hashCode` methods will use all PDX fields to compare objects and consequently, will not perform as well. It is important that the fields used by your `equals` and `hashCode` implementations are the same fields that you mark as identity fields.
+    1.  Write each standard Java data field of your domain class using the `PdxWriter` write methods. <span class="keyword">Geode</span> automatically provides `PdxWriter` to the `toData` method for `PdxSerializable` objects.
+    2.  Call the `PdxWriter` `markIdentifyField` method for each field you want to have <span class="keyword">Geode</span> use to identify your object. Put this after the field's write method. <span class="keyword">Geode</span> uses this information to compare objects for operations like distinct queries. If you do not set as least one identity field, then the `equals` and `hashCode` methods will use all PDX fields to compare objects and consequently, will not perform as well. It is important that the fields used by your `equals` and `hashCode` implementations are the same fields that you mark as identity fields.
     3.  For a particular version of your class, you need to consistently write the same named field each time. The field names or number of fields must not change from one instance to another for the same class version.
     4.  For best performance, do fixed width fields first and then variable length fields.
 
@@ -68,7 +68,7 @@ For a domain object with source that you can modify, implement the `PdxSerializa
 
     Provide the same names that you did in `toData` and call the read operations in the same order as you called the write operations in your `toData` implementation.
 
-    <span class="keyword">GemFire</span> automatically provides `PdxReader` to the `fromData` method for `PdxSerializable` objects.
+    <span class="keyword">Geode</span> automatically provides `PdxReader` to the `fromData` method for `PdxSerializable` objects.
 
     Example `fromData` code:
 
@@ -93,6 +93,6 @@ For a domain object with source that you can modify, implement the `PdxSerializa
 
 **What to do next**
 
--   As needed, configure and program your <span class="keyword">GemFire</span> applications to use `PdxInstance` for selective object deserialization. See [Programming Your Application to Use PdxInstances](program_application_for_pdx.html).
+-   As needed, configure and program your <span class="keyword">Geode</span> applications to use `PdxInstance` for selective object deserialization. See [Programming Your Application to Use PdxInstances](program_application_for_pdx.html).
 
 

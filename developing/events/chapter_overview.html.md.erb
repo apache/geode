@@ -2,26 +2,26 @@
 title:  Events and Event Handling
 ---
 
-<span class="keyword">GemFire</span> provides versatile and reliable event distribution and handling for your cached data and system member events.
+<span class="keyword">Geode</span> provides versatile and reliable event distribution and handling for your cached data and system member events.
 
--   **[How Events Work](../../../latest/developing/events/how_events_work.html)**
+-   **[How Events Work](../../developing/events/how_events_work.html)**
 
-    Members in your <span class="keyword">GemFire</span> distributed system receive cache updates from other members through cache events. The other members can be peers to the member, clients or servers or other distributed systems.
+    Members in your <span class="keyword">Geode</span> distributed system receive cache updates from other members through cache events. The other members can be peers to the member, clients or servers or other distributed systems.
 
--   **[Implementing GemFire Event Handlers](../../../latest/developing/events/event_handler_overview.html)**
+-   **[Implementing Geode Event Handlers](../../developing/events/event_handler_overview.html)**
 
     You can specify event handlers for region and region entry operations and for administrative events.
 
--   **[Configuring Peer-to-Peer Event Messaging](../../../latest/developing/events/configure_p2p_event_messaging.html)**
+-   **[Configuring Peer-to-Peer Event Messaging](../../developing/events/configure_p2p_event_messaging.html)**
 
     You can receive events from distributed system peers for any region that is not a local region. Local regions receive only local cache events.
 
--   **[Configuring Client/Server Event Messaging](../../../latest/developing/events/configure_client_server_event_messaging.html)**
+-   **[Configuring Client/Server Event Messaging](../../developing/events/configure_client_server_event_messaging.html)**
 
     You can receive events from your servers for server-side cache events and query result changes.
 
--   **[Configuring Multi-Site (WAN) Event Queues](../../../latest/developing/events/configure_multisite_event_messaging.html)**
+-   **[Configuring Multi-Site (WAN) Event Queues](../../developing/events/configure_multisite_event_messaging.html)**
 
-    In a multi-site (WAN) installation, <span class="keyword">GemFire</span> uses gateway sender queues to distribute events for regions that are configured with a gateway sender. AsyncEventListeners also use an asynchronous event queue to distribute events for configured regions. This section describes additional options for configuring the event queues that are used by gateway senders or AsyncEventListener implementations.
+    In a multi-site (WAN) installation, <span class="keyword">Geode</span> uses gateway sender queues to distribute events for regions that are configured with a gateway sender. AsyncEventListeners also use an asynchronous event queue to distribute events for configured regions. This section describes additional options for configuring the event queues that are used by gateway senders or AsyncEventListener implementations.
 
 

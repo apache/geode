@@ -2,47 +2,47 @@
 
 # list
 
-List existing <span class="keyword">GemFire</span> resources such as deployed applications, disk-stores, functions, members, servers, and regions.
+List existing <span class="keyword">Geode</span> resources such as deployed applications, disk-stores, functions, members, servers, and regions.
 
--   **[list async-event-queues](../../../../latest/tools_modules/gfsh/command-pages/list.html#topic_j22_kzk_2l)**
+-   **[list async-event-queues](../../../tools_modules/gfsh/command-pages/list.html#topic_j22_kzk_2l)**
 
     Display a list of async event queues for all members.
 
--   **[list clients](../../../../latest/tools_modules/gfsh/command-pages/list.html#topic_ts1_qb1_dk)**
+-   **[list clients](../../../tools_modules/gfsh/command-pages/list.html#topic_ts1_qb1_dk)**
 
     Displays a list of connected clients.
 
--   **[list deployed](../../../../latest/tools_modules/gfsh/command-pages/list.html#topic_59DF60DE71AD4097B281749425254BFF)**
+-   **[list deployed](../../../tools_modules/gfsh/command-pages/list.html#topic_59DF60DE71AD4097B281749425254BFF)**
 
     Display a list of JARs that were deployed to members using the deploy command.
 
--   **[list disk-stores](../../../../latest/tools_modules/gfsh/command-pages/list.html#topic_BC14AD57EA304FB3845766898D01BD04)**
+-   **[list disk-stores](../../../tools_modules/gfsh/command-pages/list.html#topic_BC14AD57EA304FB3845766898D01BD04)**
 
-    List all available disk stores across the <span class="keyword">GemFire</span> cluster
+    List all available disk stores across the <span class="keyword">Geode</span> cluster
 
--   **[list durable-cqs](../../../../latest/tools_modules/gfsh/command-pages/list.html#topic_66016A698C334F4EBA19B99F51B0204B)**
+-   **[list durable-cqs](../../../tools_modules/gfsh/command-pages/list.html#topic_66016A698C334F4EBA19B99F51B0204B)**
 
     List durable client CQs associated with the specified durable client id.
 
--   **[list functions](../../../../latest/tools_modules/gfsh/command-pages/list.html#topic_DCC7CCBBEF5942B783A8F2A4A5B2FABF)**
+-   **[list functions](../../../tools_modules/gfsh/command-pages/list.html#topic_DCC7CCBBEF5942B783A8F2A4A5B2FABF)**
 
     Display a list of registered functions. The default is to display functions for all members.
 
--   **[list gateways](../../../../latest/tools_modules/gfsh/command-pages/list.html#topic_B1D89671C7B74074899C7D52F15849ED)**
+-   **[list gateways](../../../tools_modules/gfsh/command-pages/list.html#topic_B1D89671C7B74074899C7D52F15849ED)**
 
     Displays the gateway senders and receivers for a member or members.
 
--   **[list indexes](../../../../latest/tools_modules/gfsh/command-pages/list.html#topic_B3B51B6DEA484EE086C4F657EC9831F2)**
+-   **[list indexes](../../../tools_modules/gfsh/command-pages/list.html#topic_B3B51B6DEA484EE086C4F657EC9831F2)**
 
     Display the list of indexes created for all members.
 
--   **[list members](../../../../latest/tools_modules/gfsh/command-pages/list.html#topic_5B5BFB2E5F314210858641BE3A689637)**
+-   **[list members](../../../tools_modules/gfsh/command-pages/list.html#topic_5B5BFB2E5F314210858641BE3A689637)**
 
     Display all or a subset of members.
 
--   **[list regions](../../../../latest/tools_modules/gfsh/command-pages/list.html#topic_F0ECEFF26086474498598035DD83C588)**
+-   **[list regions](../../../tools_modules/gfsh/command-pages/list.html#topic_F0ECEFF26086474498598035DD83C588)**
 
-    Display regions of a member or members. If no parameter is specified, all regions in the <span class="keyword">GemFire</span> distributed system are listed.
+    Display regions of a member or members. If no parameter is specified, all regions in the <span class="keyword">Geode</span> distributed system are listed.
 
 <a id="topic_j22_kzk_2l"></a>
 
@@ -149,7 +149,7 @@ No JAR Files Found
 
 ## list disk-stores
 
-List all available disk stores across the <span class="keyword">GemFire</span> cluster
+List all available disk stores across the <span class="keyword">Geode</span> cluster
 
 The command also lists the configured disk directories and any Regions, Cache Servers, Gateways, PDX Serialization and Async Event Queues using Disk Stores to either overflow and/or persist information to disk. Use the `describe                         disk-store` command to see the details for a particular Disk Store.
 
@@ -299,7 +299,7 @@ gfsh> list functions --matches=reconcile.*
   excalibur | reconcileDailyExpenses
 
 
-Example of 'list functions' when no functions are found in GemFire :
+Example of 'list functions' when no functions are found in Geode :
 
 gfsh> list functions
 No Functions Found.
@@ -387,7 +387,7 @@ ps...        | 10...     | /producers  | pidIdx   | RANGE | id                 |
 
 **Error Messages:**
 
-Example of output when no indexes are found in <span class="keyword">GemFire</span>:
+Example of output when no indexes are found in <span class="keyword">Geode</span>:
 
 ``` pre
 gfsh> list indexes
@@ -438,7 +438,7 @@ locator1 | localhost(locator1:216:locator):33368
 
 ## list regions
 
-Display regions of a member or members. If no parameter is specified, all regions in the <span class="keyword">GemFire</span> distributed system are listed.
+Display regions of a member or members. If no parameter is specified, all regions in the <span class="keyword">Geode</span> distributed system are listed.
 
 **Syntax:**
 

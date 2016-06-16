@@ -2,60 +2,60 @@
 title:  Working with Indexes
 ---
 
-The <span class="keyword">GemFire</span> query engine supports indexing. An index can provide significant performance gains for query execution.
+The <span class="keyword">Geode</span> query engine supports indexing. An index can provide significant performance gains for query execution.
 
 <a id="indexing__section_565C080FBDD0443C8504DF372E3C32C8"></a>
 A query run without the aid of an index iterates through every object in the collection. If an index is available that matches part or all of the query specification, the query iterates only over the indexed set, and query processing time can be reduced.
 
--   **[Tips and Guidelines on Using Indexes](../../../latest/developing/query_index/indexing_guidelines.html)**
+-   **[Tips and Guidelines on Using Indexes](../../developing/query_index/indexing_guidelines.html)**
 
     Optimizing your queries with indexes requires a cycle of careful planning, testing, and tuning. Poorly-defined indexes can degrade the performance of your queries instead of improving it. This section gives guidelines for index usage in the query service.
 
--   **[Creating, Listing and Removing Indexes](../../../latest/developing/query_index/creating_an_index.html)**
+-   **[Creating, Listing and Removing Indexes](../../developing/query_index/creating_an_index.html)**
 
-    The <span class="keyword">GemFire</span> `QueryService` API provides methods to create, list and remove the index. You can also use `gfsh` command-line interface to create, list and remove indexes, and use cache.xml to create an index.
+    The <span class="keyword">Geode</span> `QueryService` API provides methods to create, list and remove the index. You can also use `gfsh` command-line interface to create, list and remove indexes, and use cache.xml to create an index.
 
--   **[Creating Key Indexes](../../../latest/developing/query_index/creating_key_indexes.html)**
+-   **[Creating Key Indexes](../../developing/query_index/creating_key_indexes.html)**
 
     Creating a key index is a good way to improve query performance when data is partitioned using a key or a field value. You can create key indexes by using the `createKeyIndex` method of the QueryService or by defining the index in `cache.xml`. Creating a key index makes the query service aware of the relationship between the values in the region and the keys in the region.
 
--   **[Creating Hash Indexes](../../../latest/developing/query_index/creating_hash_indexes.html)**
+-   **[Creating Hash Indexes](../../developing/query_index/creating_hash_indexes.html)**
 
-    <span class="keyword">GemFire</span> supports the creation of hash indexes for the purposes of performing equality-based queries.
+    <span class="keyword">Geode</span> supports the creation of hash indexes for the purposes of performing equality-based queries.
 
--   **[Creating Indexes on Map Fields ("Map Indexes")](../../../latest/developing/query_index/creating_map_indexes.html)**
+-   **[Creating Indexes on Map Fields ("Map Indexes")](../../developing/query_index/creating_map_indexes.html)**
 
     To assist with the quick lookup of multiple values in a Map (or HashMap) type field, you can create an index (sometimes referred to as a "map index") on specific (or all) keys in that field.
 
--   **[Creating Multiple Indexes at Once](../../../latest/developing/query_index/create_multiple_indexes.html)**
+-   **[Creating Multiple Indexes at Once](../../developing/query_index/create_multiple_indexes.html)**
 
     In order to speed and promote efficiency when creating indexes, you can define multiple indexes and then create them all at once.
 
--   **[Maintaining Indexes (Synchronously or Asynchronously) and Index Storage](../../../latest/developing/query_index/maintaining_indexes.html)**
+-   **[Maintaining Indexes (Synchronously or Asynchronously) and Index Storage](../../developing/query_index/maintaining_indexes.html)**
 
     Indexes are automatically kept current with the region data they reference. The region attribute `IndexMaintenanceSynchronous` specifies whether the region indexes are updated synchronously when a region is modified or asynchronously in a background thread.
 
--   **[Using Query Index Hints](../../../latest/developing/query_index/query_index_hints.html)**
+-   **[Using Query Index Hints](../../developing/query_index/query_index_hints.html)**
 
-    You can use the hint keyword to allow <span class="keyword">GemFire</span>'s query engine to prefer certain indexes.
+    You can use the hint keyword to allow <span class="keyword">Geode</span>'s query engine to prefer certain indexes.
 
--   **[Using Indexes on Single Region Queries](../../../latest/developing/query_index/indexes_on_single_region_queries.html)**
+-   **[Using Indexes on Single Region Queries](../../developing/query_index/indexes_on_single_region_queries.html)**
 
     Queries with one comparison operation may be improved with either a key or range index, depending on whether the attribute being compared is also the primary key.
 
--   **[Using Indexes with Equi-Join Queries](../../../latest/developing/query_index/using_indexes_with_equijoin_queries.html)**
+-   **[Using Indexes with Equi-Join Queries](../../developing/query_index/using_indexes_with_equijoin_queries.html)**
 
     Equi-join queries are queries in which two regions are joined through an equality condition in the WHERE clause.
 
--   **[Using Indexes with Overflow Regions](../../../latest/developing/query_index/indexes_with_overflow_regions.html)**
+-   **[Using Indexes with Overflow Regions](../../developing/query_index/indexes_with_overflow_regions.html)**
 
     You can use indexes when querying on overflow regions; however, there are caveats.
 
--   **[Using Indexes on Equi-Join Queries using Multiple Regions](../../../latest/developing/query_index/using_indexes_with_equijoin_queries_multiple_regions.html)**
+-   **[Using Indexes on Equi-Join Queries using Multiple Regions](../../developing/query_index/using_indexes_with_equijoin_queries_multiple_regions.html)**
 
     To query across multiple regions, identify all equi-join conditions. Then, create as few indexes for the equi-join conditions as you can while still joining all regions.
 
--   **[Index Samples](../../../latest/developing/query_index/index_samples.html)**
+-   **[Index Samples](../../developing/query_index/index_samples.html)**
 
     This topic provides code samples for creating query indexes.
 

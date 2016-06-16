@@ -2,11 +2,11 @@
 
 # Pulse Quick Start (Embedded Mode)
 
-Use Pulse in embedded mode to monitor a <span class="keyword">GemFire</span> deployment directly from a <span class="keyword">GemFire</span> JMX Manager. By default, the embedded Pulse application connects to the local JMX Manager that hosts the Pulse application. Optionally, configure Pulse to connect to a <span class="keyword">GemFire</span> system of your choice.
+Use Pulse in embedded mode to monitor a <span class="keyword">Geode</span> deployment directly from a <span class="keyword">Geode</span> JMX Manager. By default, the embedded Pulse application connects to the local JMX Manager that hosts the Pulse application. Optionally, configure Pulse to connect to a <span class="keyword">Geode</span> system of your choice.
 
 To run Pulse in embedded mode:
 
-1.  Configure a <span class="keyword">GemFire</span> member to run as a JMX Manager node, specifying the HTTP port on which you will access the Pulse Web application (port 7070 by default). For example, the following command starts a <span class="keyword">GemFire</span> locator as a JMX Manager node, using the default HTTP port 7070 for the Pulse application:
+1.  Configure a <span class="keyword">Geode</span> member to run as a JMX Manager node, specifying the HTTP port on which you will access the Pulse Web application (port 7070 by default). For example, the following command starts a <span class="keyword">Geode</span> locator as a JMX Manager node, using the default HTTP port 7070 for the Pulse application:
 
     ``` pre
     gfsh
@@ -14,13 +14,13 @@ To run Pulse in embedded mode:
     ```
 
     **Note:**
-    <span class="keyword">GemFire</span> locators become JMX Manager nodes by default. To start a non-locator member as a JMX Manager node, include the `--J=-Dgemfire.jmx-manager=true` option. To specify a non-default port number for the HTTP service that hosts the Pulse application, include the `--J=-Dgemfire.http-service-port=port_number` option when starting the JMX Manager node.
+    <span class="keyword">Geode</span> locators become JMX Manager nodes by default. To start a non-locator member as a JMX Manager node, include the `--J=-Dgemfire.jmx-manager=true` option. To specify a non-default port number for the HTTP service that hosts the Pulse application, include the `--J=-Dgemfire.http-service-port=port_number` option when starting the JMX Manager node.
 
     When the JMX Manager node boots, it starts an embedded Jetty instance and deploys the Pulse Web application at the specified or default HTTP port or 7070 by default.
 
     `gfsh` automatically connects to the manager when you start it in this way. If you already started a manager process earlier, use the `connect` command in `gfsh` to connect to that process.
 
-2.  Access the embedded Pulse application from a Web browser. If you are connected to the <span class="keyword">GemFire</span> cluster using gfsh, use the `start pulse` command to load the correct URL in your browser:
+2.  Access the embedded Pulse application from a Web browser. If you are connected to the <span class="keyword">Geode</span> cluster using gfsh, use the `start pulse` command to load the correct URL in your browser:
 
     ``` pre
     gfsh> start pulse
@@ -45,7 +45,7 @@ Host Pulse on a dedicated Web application server to make the Pulse application a
 
 To host Pulse on a Web application server:
 
-1.  Set the `http-service-port` property to zero (`-Dgemfire.http-service-port=0`) when you start your <span class="keyword">GemFire</span> JMX Manager nodes. Setting this property to zero disables the embedded Web server for hosting the Pulse application.
+1.  Set the `http-service-port` property to zero (`-Dgemfire.http-service-port=0`) when you start your <span class="keyword">Geode</span> JMX Manager nodes. Setting this property to zero disables the embedded Web server for hosting the Pulse application.
 2.  Create a `pulse.properties` file somewhere in the classpath of your Web application server. For example, if you are hosting Pulse on Tomcat, create the `pulse.properties` file in the `$TOMCAT_SERVER/lib` directory.
 
 3.  Define the following configuration properties in the `pulse.properties` file:
@@ -64,22 +64,22 @@ To host Pulse on a Web application server:
     <tbody>
     <tr class="odd">
     <td><code class="ph codeph">pulse.useLocator</code></td>
-    <td>Specify &quot;true&quot; to configure Pulse to connect to a <span class="keyword">GemFire</span> Locator member, or &quot;false&quot; to connect directly to a JMX Manager.
-    <p>When Pulse connects to a <span class="keyword">GemFire</span> locator, the locator provides the address and port of an available JMX Manager to use for monitoring the distributed system. In most production deployments, you should connect Pulse to a locator instance; this allows Pulse to provide monitoring services using any available JMX Manager.</p>
+    <td>Specify &quot;true&quot; to configure Pulse to connect to a <span class="keyword">Geode</span> Locator member, or &quot;false&quot; to connect directly to a JMX Manager.
+    <p>When Pulse connects to a <span class="keyword">Geode</span> locator, the locator provides the address and port of an available JMX Manager to use for monitoring the distributed system. In most production deployments, you should connect Pulse to a locator instance; this allows Pulse to provide monitoring services using any available JMX Manager.</p>
     <p>If you specify &quot;false,&quot; Pulse connects directly to a specific JMX Manager. If this manager is not available, the Pulse connection fails, even if another JMX Manager is available in the distributed system.</p></td>
     </tr>
     <tr class="even">
     <td><code class="ph codeph">pulse.host</code></td>
-    <td>Specify the DNS name or IP address of the <span class="keyword">GemFire</span> locator or JMX Manager machine to which Pulse should connect. You specify either a locator or JMX Manager address depending on how you configured the <code class="ph codeph">pulse.useLocator</code> property.</td>
+    <td>Specify the DNS name or IP address of the <span class="keyword">Geode</span> locator or JMX Manager machine to which Pulse should connect. You specify either a locator or JMX Manager address depending on how you configured the <code class="ph codeph">pulse.useLocator</code> property.</td>
     </tr>
     <tr class="odd">
     <td><code class="ph codeph">pulse.port</code></td>
-    <td>Specify the port number of the <span class="keyword">GemFire</span> locator or the HTTP port number of the JMX Manager to which Pulse should connect. You specify either a locator or JMX Manager port depending on how you configured the <code class="ph codeph">pulse.useLocator</code> property.
+    <td>Specify the port number of the <span class="keyword">Geode</span> locator or the HTTP port number of the JMX Manager to which Pulse should connect. You specify either a locator or JMX Manager port depending on how you configured the <code class="ph codeph">pulse.useLocator</code> property.
     <p>If you configured <code class="ph codeph">pulse.useLocator=false</code>, then <code class="ph codeph">pulse.port</code> must correspond to the <code class="ph codeph">http-service-port</code> setting of the JMX Manager.</p></td>
     </tr>
     <tr class="even">
     <td><code class="ph codeph">pulse.jmxUserName</code></td>
-    <td>If you configured authentication for the <span class="keyword">GemFire</span> JMX Manager node, specify a valid JMX user name that the Pulse application will use to authenticate to the JMX Manager.
+    <td>If you configured authentication for the <span class="keyword">Geode</span> JMX Manager node, specify a valid JMX user name that the Pulse application will use to authenticate to the JMX Manager.
     <div class="note note">
     **Note:**
     <p>The JMX account that Pulse uses must have both read and write privileges.</p>
@@ -114,7 +114,7 @@ To host Pulse on a Web application server:
     ```
 
 4.  (Optional.) Configure authentication for the Pulse Web application using the instructions in [Configuring Pulse Authentication](quickstart.html#topic_AC9FFAA6FB044279BAED7A3E099E07AC).
-5.  Deploy the Pulse Web application to your application server. <span class="keyword">GemFire</span> installs the `pulse.war` file in the `tools/Pulse` subdirectory of your <span class="keyword">GemFire</span> installation directory. Depending on your application server, you may need to copy the `pulse.war` file to a deployment directory or use a configuration tool to deploy the file.
+5.  Deploy the Pulse Web application to your application server. <span class="keyword">Geode</span> installs the `pulse.war` file in the `tools/Pulse` subdirectory of your <span class="keyword">Geode</span> installation directory. Depending on your application server, you may need to copy the `pulse.war` file to a deployment directory or use a configuration tool to deploy the file.
 6.  Access the Pulse application using the address, port, and application URL that you configure in your Web application server. For example, with Tomcat the default URL is http://*address*:8080/pulse. Your application server provides options for configuring the address, port, and application name; substitute the correct items to access the deployed Pulse application.
 
     Pulse connects to the locator or JMX Manager that you configured in the `pulse.properties` file, authenticating using the credentials that you configured in the file.
@@ -129,14 +129,14 @@ To host Pulse on a Web application server:
 
 ## Configuring Pulse Authentication
 
-Pulse requires all users to authenticate themselves before they can use the Pulse Web application. If you have configured JMX authentication on the <span class="keyword">GemFire</span> JMX Manager node, the Pulse Web application itself may also need to authenticate itself to the <span class="keyword">GemFire</span> JMX Manager node on startup.
+Pulse requires all users to authenticate themselves before they can use the Pulse Web application. If you have configured JMX authentication on the <span class="keyword">Geode</span> JMX Manager node, the Pulse Web application itself may also need to authenticate itself to the <span class="keyword">Geode</span> JMX Manager node on startup.
 
 <a id="topic_AC9FFAA6FB044279BAED7A3E099E07AC__section_D31C25130C3D470083DAC76AE64DD1B6"></a>
 ## Authenticating the Pulse Application to the JMX Manager
 
 If you run Pulse in embedded mode, the Pulse application runs on the JMX Manager node and no JMX authentication is required. You do not need to specify valid JMX credentials to start an embedded Pulse application.
 
-If you host Pulse on a Web Application server (non-embedded mode) and you configure JMX authentication on the <span class="keyword">GemFire</span> manager node, then the Pulse Web application must authenticate itself with the manager node when it starts. Specify the credentials of a valid JMX user account in the `pulse.properties` file, as described in [Hosting Pulse on a Web Application Server](quickstart.html#topic_795C97B46B9843528961A094EE520782).
+If you host Pulse on a Web Application server (non-embedded mode) and you configure JMX authentication on the <span class="keyword">Geode</span> manager node, then the Pulse Web application must authenticate itself with the manager node when it starts. Specify the credentials of a valid JMX user account in the `pulse.properties` file, as described in [Hosting Pulse on a Web Application Server](quickstart.html#topic_795C97B46B9843528961A094EE520782).
 
 **Note:**
 The credentials that you specify must have both read and write privileges in the JMX Manager node. See [Configuring a JMX Manager](../../managing/management/jmx_manager_operations.html#topic_263072624B8D4CDBAD18B82E07AA44B6).
@@ -170,7 +170,7 @@ You can also configure Pulse to use a custom authentication configuration by spe
 Using a custom configuration enables you to use either the simple in-memory User Details Service or an external properties file to authenticate users to the application. Even if you choose to use the default Spring security simple in-memory User Details Service, using a custom authentication configuration enables you to define your own user credentials rather than using the default "admin" account.
 
 **Note:**
-<span class="keyword">GemFire</span> also supports using an LDAP provider for Pulse authentication. See [Using LDAP Authentication in Pulse](#topic_AC9FFAA6FB044279BAED7A3E099E07AC__section_kjx_ylq_kq)
+<span class="keyword">Geode</span> also supports using an LDAP provider for Pulse authentication. See [Using LDAP Authentication in Pulse](#topic_AC9FFAA6FB044279BAED7A3E099E07AC__section_kjx_ylq_kq)
 
 To configure and use a custom authentication configuration:
 
@@ -234,7 +234,7 @@ To configure and use a custom authentication configuration:
     admin=admin,ROLE_USER,enabled
     ```
 
-5.  When you start <span class="keyword">GemFire</span> members, specify the custom authentication profile using the `-Dspring.profiles.active=pulse.authentication.custom` system property. For example:
+5.  When you start <span class="keyword">Geode</span> members, specify the custom authentication profile using the `-Dspring.profiles.active=pulse.authentication.custom` system property. For example:
 
     ``` pre
     gfsh> start server --name=server1 --J=-Dspring.profiles.active=pulse.authentication.custom
@@ -258,7 +258,7 @@ To configure LDAP for Pulse:
     $ mkdir /opt/pulse-config
     ```
 
-    The directory name and location are up to you-- just make sure you use the same name when specifying the CLASSPATH for the <span class="keyword">GemFire</span> JMX Manager process.
+    The directory name and location are up to you-- just make sure you use the same name when specifying the CLASSPATH for the <span class="keyword">Geode</span> JMX Manager process.
 
 2.  Create a file named `pulse-authentication-custom.xml` with contents similar to the following and place it under the directory you created in step 1. For example:
 
@@ -364,7 +364,7 @@ You can configure Pulse to use HTTPS in either embedded or non-embedded mode.
 
 In non-embedded mode where you are running Pulse on a standalone Web application server, you must use the Web server's SSL configuration to make the HTTP requests secure.
 
-In embedded mode, the <span class="keyword">GemFire</span> uses an embedded Jetty server to host the Pulse Web application. To make the embedded server use HTTPS, you must configure the following <span class="keyword">GemFire</span> configuration parameters in `gemfire.properties` or `gfsecurity-properties`:
+In embedded mode, the <span class="keyword">Geode</span> uses an embedded Jetty server to host the Pulse Web application. To make the embedded server use HTTPS, you must configure the following <span class="keyword">Geode</span> configuration parameters in `gemfire.properties` or `gfsecurity-properties`:
 
 -   http-service-ssl-enabled
 -   http-service-ssl-require-authentication
@@ -390,7 +390,7 @@ When the above properties are configured, all HTTP services become SSL-enabled a
 
 ## Using Pulse Views
 
-Pulse provides a variety of different views to help you monitor <span class="keyword">GemFire</span> clusters, members, and regions.
+Pulse provides a variety of different views to help you monitor <span class="keyword">Geode</span> clusters, members, and regions.
 
 The following sections provide an overview of the main Pulse views:
 
@@ -403,29 +403,29 @@ The following sections provide an overview of the main Pulse views:
 <a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_9794B5754E474E10ABFBCD8B1DA240F8"></a>
 ## Cluster View
 
-The cluster view is a high-level overview of the <span class="keyword">GemFire</span> distributed system. It is displayed immediately after you log into Pulse. Information displays around the perimeter of the cluster view show statistics such as memory usage, JVM pauses, and throughput. You can use the cluster view to drill down into details for individual members and regions in the distributed system.
+The cluster view is a high-level overview of the <span class="keyword">Geode</span> distributed system. It is displayed immediately after you log into Pulse. Information displays around the perimeter of the cluster view show statistics such as memory usage, JVM pauses, and throughput. You can use the cluster view to drill down into details for individual members and regions in the distributed system.
 
 <img src="../../images/pulse_cluster_view.png" id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__image_CC7B54903DF24030850E55965CDB6EC4" class="image imageleft" width="624" />
 
 Use these basic controls while in Cluster view:
 
-1.  Click Members or Data to display information about <span class="keyword">GemFire</span> members or data regions in the distributed system.
-2.  Click the display icons to display the <span class="keyword">GemFire</span> members using icon view, block view, or table view. Note that icon view is available only when displaying Members.
+1.  Click Members or Data to display information about <span class="keyword">Geode</span> members or data regions in the distributed system.
+2.  Click the display icons to display the <span class="keyword">Geode</span> members using icon view, block view, or table view. Note that icon view is available only when displaying Members.
 
-    For example, the following shows <span class="keyword">GemFire</span> Members displayed in table view:
+    For example, the following shows <span class="keyword">Geode</span> Members displayed in table view:
 
     <img src="../../images/member_view_list.png" id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__image_npw_sq3_wn" class="image" />
 
-    -   While in block view or table view, click the name of a <span class="keyword">GemFire</span> member to display additional information in the [Member View](quickstart.html#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_3629814A3DF64D31A190495782DB0DBF).
+    -   While in block view or table view, click the name of a <span class="keyword">Geode</span> member to display additional information in the [Member View](quickstart.html#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_3629814A3DF64D31A190495782DB0DBF).
     -   Click Topology, Server Groups, or Redundancy Zones to filter the view based on all members in the topology, configured server groups, or configured redundancy zones.
 
-    The following shows <span class="keyword">GemFire</span> Regions displayed in table view:
+    The following shows <span class="keyword">Geode</span> Regions displayed in table view:
 
     <img src="../../images/pulse-region-detail.png" id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__image_glp_1jr_54" class="image" />
 
-    -   While in block view or table view, click the name of a <span class="keyword">GemFire</span> region to display additional information in the [Region View](quickstart.html#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_D151776BAC8B4704A71F37F8B5CE063D).
+    -   While in block view or table view, click the name of a <span class="keyword">Geode</span> region to display additional information in the [Region View](quickstart.html#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_D151776BAC8B4704A71F37F8B5CE063D).
 
-3.  While in icon view, click a host machine icon to display the <span class="keyword">GemFire</span> members on that machine.
+3.  While in icon view, click a host machine icon to display the <span class="keyword">Geode</span> members on that machine.
 4.  In the Alerts pane, click the severity tabs to filter the message display by the level of severity.
 
 **Cluster View Screen Components**
@@ -504,8 +504,8 @@ The following table describes the data pieces displayed on the Cluster View scre
 <td>Host Machine</td>
 <td>When you mouse over a machine icon in Topology View, a pop-up appears with the following machine statistics:
 <ul>
-<li><em>CPU Usage</em>. Percentage of CPU being used by <span class="keyword">GemFire</span> processes on the machine.</li>
-<li><em>Memory Usage</em>. Amount of memory (in MB) being used by <span class="keyword">GemFire</span> processes.</li>
+<li><em>CPU Usage</em>. Percentage of CPU being used by <span class="keyword">Geode</span> processes on the machine.</li>
+<li><em>Memory Usage</em>. Amount of memory (in MB) being used by <span class="keyword">Geode</span> processes.</li>
 <li><em>Load Avg</em>. Average number of threads on the host machine that are in the run queue or are waiting for disk I/O over the last minutes. Corresponds to the Linux System statistic loadAverage1. If the load average is not available, a negative value is shown.</li>
 <li><em>Sockets</em>. Number of sockets currently open on the machine.</li>
 </ul></td>
@@ -514,14 +514,14 @@ The following table describes the data pieces displayed on the Cluster View scre
 <td>Member</td>
 <td>When you mouse over a member icon in Graphical View, a pop-up appears with the following member statistics:
 <ul>
-<li><em>CPU Usage</em>. Percentage of CPU being used by the <span class="keyword">GemFire</span> member process.</li>
+<li><em>CPU Usage</em>. Percentage of CPU being used by the <span class="keyword">Geode</span> member process.</li>
 <li><em>Threads</em>. Number of threads running on the member.</li>
 <li><em>JVM Pauses</em>. Number of times the JVM used by the member process has paused due to garbage collection or excessive CPU usage.</li>
 <li><em>Regions</em>. Number of regions hosted on the member process.</li>
 <li><em>Clients</em>. Number of client currently connected to the member process.</li>
 <li><em>Gateway Sender</em>. Number of gateway senders configured on the member.</li>
 <li><em>Port</em>. Server port of the cache server member where clients can connect and perform cache operations.</li>
-<li><em>GemFire Version</em>. The version of the <span class="keyword">GemFire</span> member.</li>
+<li><em>GemFire Version</em>. The version of the <span class="keyword">Geode</span> member.</li>
 </ul></td>
 </tr>
 <tr class="odd">
@@ -532,7 +532,7 @@ The following table describes the data pieces displayed on the Cluster View scre
 <li><em>Name</em>. Name of the member.</li>
 <li><em>Host</em>. Hostname or IP address where the member is running.</li>
 <li><em>Heap Usage</em>. Amount of JVM heap memory being used by the member process.</li>
-<li><em>CPU Usage</em>. Percentage of CPU being used by the <span class="keyword">GemFire</span> member process.</li>
+<li><em>CPU Usage</em>. Percentage of CPU being used by the <span class="keyword">Geode</span> member process.</li>
 <li><em>Uptime</em>. How long the member has been up and running.</li>
 <li><em>Clients</em>. Number of clients currently connected to the member. It will have a value only if the member acts as a CacheServer.</li>
 </ul></td>
@@ -576,7 +576,7 @@ The following table describes the data pieces displayed on the Cluster View scre
 
 ## Member View
 
-When you select an individual <span class="keyword">GemFire</span> member in Cluster View, Pulse displays the regions available on that member, as well as member-specific information such as the configured listen ports.
+When you select an individual <span class="keyword">Geode</span> member in Cluster View, Pulse displays the regions available on that member, as well as member-specific information such as the configured listen ports.
 
 <img src="../../images/pulse_member_view.png" id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__image_EDBD3D333B2741DCAA5CB94719B507B7" class="image imageleft" width="624" />
 
@@ -710,7 +710,7 @@ The following table describes the data elements displayed on the Member View scr
 
 ## Region View
 
-The Pulse Region View provides a comprehensive overview of all regions in the <span class="keyword">GemFire</span> distributed system:
+The Pulse Region View provides a comprehensive overview of all regions in the <span class="keyword">Geode</span> distributed system:
 
 <img src="../../images/pulse_data_view.png" id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__image_A533852E38654E79BE5628E938E170EB" class="image imageleft" width="624" />
 
@@ -742,13 +742,13 @@ The following table describes the data elements displayed on the Region View scr
 <tbody>
 <tr class="odd">
 <td><strong>Region Members</strong></td>
-<td>Lists information about <span class="keyword">GemFire</span> members that host the region, either in block view or table view.</td>
+<td>Lists information about <span class="keyword">Geode</span> members that host the region, either in block view or table view.</td>
 </tr>
 <tr class="even">
 <td>Region Member (Detail View)</td>
 <td>When you hover over a region member in block view, a pop-up appears with the following data fields:
 <ul>
-<li><em>Member Name</em>. The name of the <span class="keyword">GemFire</span> member hosting the region.</li>
+<li><em>Member Name</em>. The name of the <span class="keyword">Geode</span> member hosting the region.</li>
 <li><em>EntryCount</em>. Number of entries for the region on that member.</li>
 <li><em>EntrySize</em>. The aggregate entry size (in bytes) of all entries on that member. For replicated regions this field will only provide a value if the eviction algorithm has been set to EvictionAlgorithm#LRU_ MEMORY. All partition regions will have this value. However, the value includes redundant entries and will also count the size of all the secondary entries on the node.</li>
 <li><em>Accessor</em>. Indicates whether the member is an accessor member.</li>
@@ -791,7 +791,7 @@ The following table describes the data elements displayed on the Region View scr
 
 ## Data Browser
 
-The Pulse Data Browser enables you to query region data. Note that there are two key attributes available on DistributedSystemMXBean (see [List of GemFire JMX MBeans](../../managing/management/list_of_mbeans.html#topic_4BCF867697C3456D96066BAD7F39FC8B)) that you can use to configure limits for the result sets displayed in Data Browser:
+The Pulse Data Browser enables you to query region data. Note that there are two key attributes available on DistributedSystemMXBean (see [List of Geode JMX MBeans](../../managing/management/list_of_mbeans.html#topic_4BCF867697C3456D96066BAD7F39FC8B)) that you can use to configure limits for the result sets displayed in Data Browser:
 
 -   `QueryResultSetLimit` limits the number of rows that Data Browser queries return. 1000 rows are displayed by default.
 -   `QueryCollectionsDepth` limits the number of elements of a collection that Data Browser queries return. This attribute applies to query results contain collections such as Map, List, and so forth. The default value is 100 elements.
@@ -805,7 +805,7 @@ The following shows an example Data Browser view:
 Use these basic controls while in Data Browser view:
 
 1.  Search for the name of a specific region.
-2.  Select one or more regions to display the <span class="keyword">GemFire</span> members that host those regions. The hosting <span class="keyword">GemFire</span> members appear in the Region Members section.
+2.  Select one or more regions to display the <span class="keyword">Geode</span> members that host those regions. The hosting <span class="keyword">Geode</span> members appear in the Region Members section.
 3.  Select one or more members from the Region Members section to restrict query results to those members.
 4.  Type in the text of a query to execute. See [Querying](../../developing/querying_basics/chapter_overview.html).
 5.  Display a list of previously-executed queries. Double-click on a query from the history list to copy it to the Query Editor, or delete the query from your history.

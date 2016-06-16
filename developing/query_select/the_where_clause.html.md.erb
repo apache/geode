@@ -154,7 +154,7 @@ SELECT * FROM /exampleRegion portfolio1, portfolio1.positions.values positions1,
 
 ## LIKE
 
-<span class="keyword">GemFire</span> offers limited support for the LIKE predicate. LIKE can be used to mean 'equals to'. If you terminate the string with a wildcard ('%'), it behaves like 'starts with'. You can also place a wildcard (either '%' or '\_') at any other position in the comparison string. You can escape the wildcard characters to represent the characters themselves.
+<span class="keyword">Geode</span> offers limited support for the LIKE predicate. LIKE can be used to mean 'equals to'. If you terminate the string with a wildcard ('%'), it behaves like 'starts with'. You can also place a wildcard (either '%' or '\_') at any other position in the comparison string. You can escape the wildcard characters to represent the characters themselves.
 
 **Note:**
 The '\*' wildcard is not supported in OQL LIKE predicates.
@@ -318,7 +318,7 @@ One problem is that you cannot create indexes on Set or List types (collection t
 
 ## Double.NaN and Float.NaN Comparisons
 
-The comparison behavior of Double.NaN and Float.NaN within <span class="keyword">GemFire</span> queries follow the semantics of the JDK methods Float.compareTo and Double.compareTo.
+The comparison behavior of Double.NaN and Float.NaN within <span class="keyword">Geode</span> queries follow the semantics of the JDK methods Float.compareTo and Double.compareTo.
 
 
 -   Double.NaN \[Float.NaN\] is considered to be equal to itself and greater than all other double \[float\] values (including Double.POSITIVE\_INFINITY \[Float.POSITIVE\_INFINITY\]).

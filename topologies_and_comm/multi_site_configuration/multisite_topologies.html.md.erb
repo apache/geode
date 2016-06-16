@@ -5,9 +5,9 @@ title:  Multi-site (WAN) Topologies
 To configure your multi-site topology, you should understand the recommended topologies and the topologies to avoid.
 
 <a id="multisite_topologies__section_26A561471249495A847B4C3854EE04C9"></a>
-This section describes <span class="keyword">GemFire</span>'s support for various topologies. Depending on your application needs, there may be several topologies that work. These are considerations to keep in mind:
+This section describes <span class="keyword">Geode</span>'s support for various topologies. Depending on your application needs, there may be several topologies that work. These are considerations to keep in mind:
 
--   When a <span class="keyword">GemFire</span> site receives a message from a gateway sender, it forwards it to the other sites it knows about, excluding those sites that it knows have already seen the message. Each message contains the initial sender's ID and the ID of each of the sites the initial sender sent to, so no site forwards to those sites. However, messages do not pick up the ID of the sites they pass through, so it is possible in certain topologies for more than one copy of a message to be sent to one site.
+-   When a <span class="keyword">Geode</span> site receives a message from a gateway sender, it forwards it to the other sites it knows about, excluding those sites that it knows have already seen the message. Each message contains the initial sender's ID and the ID of each of the sites the initial sender sent to, so no site forwards to those sites. However, messages do not pick up the ID of the sites they pass through, so it is possible in certain topologies for more than one copy of a message to be sent to one site.
 -   In some configurations, the loss of one site affects how other sites communicate with one another.
 
 <a id="multisite_topologies__section_7ECE1AFB1F94446FAA0A9FD504217C76"></a>

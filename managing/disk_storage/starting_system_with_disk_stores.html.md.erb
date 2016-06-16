@@ -41,7 +41,7 @@ If the member's disk store has data for a region that is never created, the data
 Each member’s persistent regions load and go online as quickly as possible, not waiting unnecessarily for other members to complete. For performance reasons, these actions occur asynchronously:
 
 -   Once at least one copy of each and every bucket is recovered from disk, the region is available. Secondary buckets will load asynchronously.
--   Entry keys are loaded from the key file in the disk store before considering entry values. Once all keys are loaded, <span class="keyword">GemFire</span> loads the entry values asynchronously. If a value is requested before it has loaded, the value will immediately be fetched from the disk store.
+-   Entry keys are loaded from the key file in the disk store before considering entry values. Once all keys are loaded, <span class="keyword">Geode</span> loads the entry values asynchronously. If a value is requested before it has loaded, the value will immediately be fetched from the disk store.
 
 <a id="starting_system_with_disk_stores__section_D0A7403707B847749A22BF9221A2C823"></a>
 ## Start Up Procedure

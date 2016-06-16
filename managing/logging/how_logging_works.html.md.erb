@@ -1,22 +1,22 @@
 ---
-title:  How <span class="keyword">GemFire</span> Logging Works
+title:  How <span class="keyword">Geode</span> Logging Works
 ---
 
-<span class="keyword">Pivotal GemFire</span> uses Apache Log4j 2 as the basis for its logging system.
+<span class="keyword">Apache Geode</span> uses Apache Log4j 2 as the basis for its logging system.
 
-<span class="keyword">GemFire</span> uses [Apache Log4j 2](http://logging.apache.org/log4j/2.x/) API and Core libraries as the basis for its logging system. Log4j 2 API is a popular and powerful front-end logging API used by all the <span class="keyword">GemFire</span> classes to generate log statements. Log4j 2 Core is a backend implementation for logging; you can route any of the front-end logging API libraries to log to this backend. <span class="keyword">GemFire</span> uses the Core backend to run two custom Log4j 2 Appenders: **AlertAppender** and **LogWriterAppender**.
+<span class="keyword">Geode</span> uses [Apache Log4j 2](http://logging.apache.org/log4j/2.x/) API and Core libraries as the basis for its logging system. Log4j 2 API is a popular and powerful front-end logging API used by all the <span class="keyword">Geode</span> classes to generate log statements. Log4j 2 Core is a backend implementation for logging; you can route any of the front-end logging API libraries to log to this backend. <span class="keyword">Geode</span> uses the Core backend to run two custom Log4j 2 Appenders: **AlertAppender** and **LogWriterAppender**.
 
-<span class="keyword">GemFire</span> has been tested with Log4j 2.1.
+<span class="keyword">Geode</span> has been tested with Log4j 2.1.
 
 **Note:**
-For this reason, <span class="keyword">GemFire</span> now always requires the following JARs to be in the classpath: `log4j-api-2.1.jar`, `log4j-core-2.1.jar`. Both of these JARs are distributed in the `$GEMFIRE/lib` directory and included in the appropriate `*-dependencies.jar` convenience libraries.
+For this reason, <span class="keyword">Geode</span> now always requires the following JARs to be in the classpath: `log4j-api-2.1.jar`, `log4j-core-2.1.jar`. Both of these JARs are distributed in the `$GEMFIRE/lib` directory and included in the appropriate `*-dependencies.jar` convenience libraries.
 
-**AlertAppender** is the component that generates <span class="keyword">GemFire</span> alerts that are then managed by the JMX Management and Monitoring system. See [Notification Federation](../management/notification_federation_and_alerts.html#topic_212EE5A2ABAB4E8E8EF71807C9ECEF1A) for more details.
+**AlertAppender** is the component that generates <span class="keyword">Geode</span> alerts that are then managed by the JMX Management and Monitoring system. See [Notification Federation](../management/notification_federation_and_alerts.html#topic_212EE5A2ABAB4E8E8EF71807C9ECEF1A) for more details.
 
-**LogWriterAppender** is the component that is configured by all the `log-*` <span class="keyword">GemFire</span> properties such as `log-file`, `log-file-size-limit` and `log-disk-space-limit`.
+**LogWriterAppender** is the component that is configured by all the `log-*` <span class="keyword">Geode</span> properties such as `log-file`, `log-file-size-limit` and `log-disk-space-limit`.
 
-Both of these appenders are created and controlled programmatically. You configure their behavior with the `log-*` <span class="keyword">GemFire</span> properties and the alert level that is configured within the JMX Management & Monitoring system. These appenders do not currently support configuration within a `log4j2.xml` config file.
+Both of these appenders are created and controlled programmatically. You configure their behavior with the `log-*` <span class="keyword">Geode</span> properties and the alert level that is configured within the JMX Management & Monitoring system. These appenders do not currently support configuration within a `log4j2.xml` config file.
 
-Advanced users may wish to define their own `log4j2.xml`. See [Advanced Users—Configuring Log4j 2 for GemFire](configuring_log4j2.html) for more details.
+Advanced users may wish to define their own `log4j2.xml`. See [Advanced Users—Configuring Log4j 2 for Geode](configuring_log4j2.html) for more details.
 
 

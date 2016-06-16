@@ -27,7 +27,7 @@ JMX Managers will emit notifications for all distributed system members with two
 
 ## System Alert Notifications
 
-System alerts are <span class="keyword">GemFire</span> alerts wrapped within a JMX notification. The JMX Manager registers itself as an alert listener with each member of the system, and by default, it receives all messages logged with the SEVERE alert level by any node in the distributed system. Consequently, the DistributedSystemMXBean will then emit notifications for these alerts on behalf of the DistributedSystem.
+System alerts are <span class="keyword">Geode</span> alerts wrapped within a JMX notification. The JMX Manager registers itself as an alert listener with each member of the system, and by default, it receives all messages logged with the SEVERE alert level by any node in the distributed system. Consequently, the DistributedSystemMXBean will then emit notifications for these alerts on behalf of the DistributedSystem.
 
 By default, the JMX Manager registers itself to send notifications only for SEVERE level alerts. To change the alert level that the JMX Manager will send notifications for, use the `DistributedMXBean.changeAlertLevel` method. Possible alert levels to set are WARNING, ERROR, SEVERE, and NONE. After changing the level, the JMX Manager will only emit that level of log message as notifications.
 

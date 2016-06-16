@@ -2,12 +2,12 @@
 title:  Implementing Authentication
 ---
 
-<span class="keyword">Pivotal GemFire</span> provides a flexible framework for your security authentication plug-ins. You choose the method of authentication, such as LDAP or PKCS, and program the plug-ins accordingly.
+<span class="keyword">Apache Geode</span> provides a flexible framework for your security authentication plug-ins. You choose the method of authentication, such as LDAP or PKCS, and program the plug-ins accordingly.
 
 <a id="implementing_authentication__section_C31BA8EEE6134F0EBE6761D70EF7DE41"></a>
 ## Procedure
 
-Use the following procedure to implement authentication in your <span class="keyword">GemFire</span> application:
+Use the following procedure to implement authentication in your <span class="keyword">Geode</span> application:
 
 1.  Determine the method of authentication, such as LDAP or PKCS, that you will use. It is assumed that you know how to use it.
 2.  Determine any special properties required for your authentication's credentials initialization and decide how you will get the properties to the initialization method. Depending on how sensitive the properties are and on your application requirements, you may do a combination of these:
@@ -15,7 +15,7 @@ Use the following procedure to implement authentication in your <span class="key
     -   Obtain the properties dynamically in the `AuthInitialize.getCredentials` method.
 
 3.  For joining members, program and configure the credentials initialization plug-in:
-    1.  Create an implementation of the <span class="keyword">GemFire</span> `com.gemstone.gemfire.security.AuthInitialize` interface.
+    1.  Create an implementation of the <span class="keyword">Geode</span> `com.gemstone.gemfire.security.AuthInitialize` interface.
         1.  Program a public static method to return an instance of the class.
         2.  Program the `getCredentials` method to create all properties required by the `Authorize` method via the member's credentials.
 
@@ -38,7 +38,7 @@ Use the following procedure to implement authentication in your <span class="key
     4.  For all members, set any additional `gemfire.properties` (or `gfsecurity.properties` file if you are creating a special restricted access file for security configuration) `security-*` properties required by your `AuthInitialize` implementation.
 
 4.  For authorizing members, program and configure the credentials authorization plug-in:
-    1.  Implement the <span class="keyword">GemFire</span> `com.gemstone.gemfire.security.Authenticator` interface:
+    1.  Implement the <span class="keyword">Geode</span> `com.gemstone.gemfire.security.Authenticator` interface:
         1.  Program a public static, zero-argument method to return an instance of the class.
         2.  Program the `authenticate` method to authenticate the credentials and return a `java.security.Principal` object.
 

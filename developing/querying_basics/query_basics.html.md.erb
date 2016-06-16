@@ -2,12 +2,12 @@
 title:  Basic Querying
 ---
 
-This section provides a high-level introduction to <span class="keyword">GemFire</span> querying such as building a query string and describes query language features.
+This section provides a high-level introduction to <span class="keyword">Geode</span> querying such as building a query string and describes query language features.
 
 <a id="querying_with_oql__section_828A9660B5014DCAA883A58A45E6B51A"></a>
-<span class="keyword">GemFire</span> provides a SQL-like querying language that allows you to access data stored in <span class="keyword">GemFire</span> regions. Since <span class="keyword">GemFire</span> regions are key-value stores where values can range from simple byte arrays to complex nested objects, <span class="keyword">GemFire</span> uses a query syntax based on OQL (Object Query Language) to query region data. OQL and SQL have many syntactical similarities, however they have significant differences. For example, while OQL does not offer all of the capabilities of SQL like aggregates, OQL does allow you to execute queries on complex object graphs, query object attributes and invoke object methods.
+<span class="keyword">Geode</span> provides a SQL-like querying language that allows you to access data stored in <span class="keyword">Geode</span> regions. Since <span class="keyword">Geode</span> regions are key-value stores where values can range from simple byte arrays to complex nested objects, <span class="keyword">Geode</span> uses a query syntax based on OQL (Object Query Language) to query region data. OQL and SQL have many syntactical similarities, however they have significant differences. For example, while OQL does not offer all of the capabilities of SQL like aggregates, OQL does allow you to execute queries on complex object graphs, query object attributes and invoke object methods.
 
-The syntax of a typical <span class="keyword">GemFire</span> OQL query is:
+The syntax of a typical <span class="keyword">Geode</span> OQL query is:
 
 ``` pre
 [IMPORT package]
@@ -17,24 +17,24 @@ FROM collection1, [collection2, …]
 [ORDER BY order_criteria [desc]]
 ```
 
-Therefore, a simple <span class="keyword">GemFire</span> OQL query resembles the following:
+Therefore, a simple <span class="keyword">Geode</span> OQL query resembles the following:
 
 ``` pre
 SELECT DISTINCT * FROM /exampleRegion WHERE status = ‘active’
 ```
 
-An important characteristic of <span class="keyword">GemFire</span> querying to note is that by default, <span class="keyword">GemFire</span> queries on the values of a region and not on keys. To obtain keys from a region, you must use the keySet path expression on the queried region. For example, `/exampleRegion.keySet`.
+An important characteristic of <span class="keyword">Geode</span> querying to note is that by default, <span class="keyword">Geode</span> queries on the values of a region and not on keys. To obtain keys from a region, you must use the keySet path expression on the queried region. For example, `/exampleRegion.keySet`.
 
-For those new to the <span class="keyword">GemFire</span> querying, see also the [GemFire Querying FAQ and Examples](../../getting_started/querying_quick_reference.html#reference_D5CE64F5FD6F4A808AEFB748C867189E).
+For those new to the <span class="keyword">Geode</span> querying, see also the [Geode Querying FAQ and Examples](../../getting_started/querying_quick_reference.html#reference_D5CE64F5FD6F4A808AEFB748C867189E).
 
--   **[Advantages of OQL](../../../latest/developing/querying_basics/oql_compared_to_sql.html)**
+-   **[Advantages of OQL](../../developing/querying_basics/oql_compared_to_sql.html)**
 
--   **[Writing and Executing a Query in GemFire](../../../latest/developing/querying_basics/running_a_query.html)**
+-   **[Writing and Executing a Query in Geode](../../developing/querying_basics/running_a_query.html)**
 
--   **[Building a Query String](../../../latest/developing/querying_basics/what_is_a_query_string.html)**
+-   **[Building a Query String](../../developing/querying_basics/what_is_a_query_string.html)**
 
--   **[OQL Syntax and Semantics](../../../latest/developing/query_additional/query_language_features.html)**
+-   **[OQL Syntax and Semantics](../../developing/query_additional/query_language_features.html)**
 
--   **[Query Language Restrictions and Unsupported Features](../../../latest/developing/querying_basics/restrictions_and_unsupported_features.html)**
+-   **[Query Language Restrictions and Unsupported Features](../../developing/querying_basics/restrictions_and_unsupported_features.html)**
 
 

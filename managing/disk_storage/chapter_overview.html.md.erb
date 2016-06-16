@@ -2,37 +2,37 @@
 title:  Disk Storage
 ---
 
-With <span class="keyword">Pivotal GemFire</span> disk stores, you can persist data to disk as a backup to your in-memory copy and overflow data to disk when memory use gets too high.
+With <span class="keyword">Apache Geode</span> disk stores, you can persist data to disk as a backup to your in-memory copy and overflow data to disk when memory use gets too high.
 
--   **[How Disk Stores Work](../../../latest/managing/disk_storage/how_disk_stores_work.html)**
+-   **[How Disk Stores Work](../../managing/disk_storage/how_disk_stores_work.html)**
 
     Overflow and persistence use disk stores individually or together to store data.
 
--   **[Disk Store File Names and Extensions](../../../latest/managing/disk_storage/file_names_and_extensions.html)**
+-   **[Disk Store File Names and Extensions](../../managing/disk_storage/file_names_and_extensions.html)**
 
     Disk store files include store management files, access control files, and the operation log, or oplog, files, consisting of one file for deletions and another for all other operations.
 
--   **[Disk Store Operation Logs](../../../latest/managing/disk_storage/operation_logs.html)**
+-   **[Disk Store Operation Logs](../../managing/disk_storage/operation_logs.html)**
 
-    At creation, each operation log is initialized at the disk store's `max-oplog-size`, with the size divided between the `crf` and `drf` files. When the oplog is closed, <span class="keyword">Pivotal GemFire</span> shrinks the files to the space used in each file.
+    At creation, each operation log is initialized at the disk store's `max-oplog-size`, with the size divided between the `crf` and `drf` files. When the oplog is closed, <span class="keyword">Apache Geode</span> shrinks the files to the space used in each file.
 
--   **[Configuring Disk Stores](../../../latest/managing/disk_storage/overview_using_disk_stores.html)**
+-   **[Configuring Disk Stores](../../managing/disk_storage/overview_using_disk_stores.html)**
 
-    In addition to the disk stores you specify, <span class="keyword">Pivotal GemFire</span> has a default disk store that it uses when disk use is configured with no disk store name specified. You can modify default disk store behavior.
+    In addition to the disk stores you specify, <span class="keyword">Apache Geode</span> has a default disk store that it uses when disk use is configured with no disk store name specified. You can modify default disk store behavior.
 
--   **[Optimizing a System with Disk Stores](../../../latest/managing/disk_storage/optimize_availability_and_performance.html)**
+-   **[Optimizing a System with Disk Stores](../../managing/disk_storage/optimize_availability_and_performance.html)**
 
     Optimize availability and performance by following the guidelines in this section.
 
--   **[Start Up and Shut Down with Disk Stores](../../../latest/managing/disk_storage/starting_system_with_disk_stores.html)**
+-   **[Start Up and Shut Down with Disk Stores](../../managing/disk_storage/starting_system_with_disk_stores.html)**
 
     This section describes what happens during startup and shutdown and provides procedures for those operations.
 
--   **[Disk Store Management](../../../latest/managing/disk_storage/managing_disk_stores.html)**
+-   **[Disk Store Management](../../managing/disk_storage/managing_disk_stores.html)**
 
     The `gfsh` command-line tool has a number of options for examining and managing your disk stores. The `gfsh` tool, the `cache.xml` file and the DiskStore APIs are your management tools for online and offline disk stores.
 
--   **[Creating Backups for System Recovery and Operational Management](../../../latest/managing/disk_storage/backup_restore_disk_store.html)**
+-   **[Creating Backups for System Recovery and Operational Management](../../managing/disk_storage/backup_restore_disk_store.html)**
 
     A backup is a copy of persisted data from a disk store. A backup is used to restore the disk store to the state it was in when the backup was made. The appropriate back up and restore procedures differ based upon whether the distributed system is online or offline. An online system has currently running members. An offline system does not have any running members.
 

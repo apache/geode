@@ -2,15 +2,15 @@
 title:  How Network Partitioning Management Works
 ---
 
-<span class="keyword">GemFire</span> handles network outages by using a weighting system to determine whether the remaining available members have a sufficient quorum to continue as a distributed system.
+<span class="keyword">Geode</span> handles network outages by using a weighting system to determine whether the remaining available members have a sufficient quorum to continue as a distributed system.
 
 <a id="how_network_partitioning_management_works__section_548146BB8C24412CB7B43E6640272882"></a>
 Individual members are each assigned a weight, and the quorum is determined by comparing the total weight of currently responsive members to the previous total weight of responsive members.
 
-Your distributed system can split into separate running systems when members lose the ability to see each other. The typical cause of this problem is a failure in the network. When a partitioned system is detected, <span class="keyword">Pivotal GemFire</span> only one side of the system keeps running and the other side automatically shuts down.
+Your distributed system can split into separate running systems when members lose the ability to see each other. The typical cause of this problem is a failure in the network. When a partitioned system is detected, <span class="keyword">Apache Geode</span> only one side of the system keeps running and the other side automatically shuts down.
 
 **Note:**
-The network partitioning detection feature is only enabled when `enable-network-partition-detection` is set to true in `gemfire.properties`. By default, this property is set to false. See [Configure Pivotal GemFire to Handle Network Partitioning](handling_network_partitioning.html#handling_network_partitioning) for details. Quorum weight calculations are always performed and logged regardless of this configuration setting.
+The network partitioning detection feature is only enabled when `enable-network-partition-detection` is set to true in `gemfire.properties`. By default, this property is set to false. See [Configure Apache Geode to Handle Network Partitioning](handling_network_partitioning.html#handling_network_partitioning) for details. Quorum weight calculations are always performed and logged regardless of this configuration setting.
 
 The overall process for detecting a network partition is as follows:
 

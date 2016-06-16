@@ -2,7 +2,7 @@
 title:  Multi-Site (WAN) Deployment Security
 ---
 
-In addition to peer and client authentication, <span class="keyword">Pivotal GemFire</span> can authenticate remote sites.
+In addition to peer and client authentication, <span class="keyword">Apache Geode</span> can authenticate remote sites.
 
 The following list covres guidelines for implementing security in multi-site (WAN) deployments:
 -   Implement membership authentication. Depending on your installation and security requirements, you may use a combination of peer-to-peer, client/server, and multi-site settings.
@@ -70,6 +70,6 @@ The following table lists the SSL configuration property names used to configure
 
 : <span class="tablecap">Table 1. SSL Configuration Property Names by Connection Type</span>
 
-If you configure the above peer-to-peer SSL properties, then by default <span class="keyword">GemFire</span> uses the same SSL property values for all stream-socket communication. This includes communication between cache servers and clients, between the JMX manager and JMX clients, and between two <span class="keyword">GemFire</span> distributed systems connected by a WAN gateway.
+If you configure the above peer-to-peer SSL properties, then by default <span class="keyword">Geode</span> uses the same SSL property values for all stream-socket communication. This includes communication between cache servers and clients, between the JMX manager and JMX clients, and between two <span class="keyword">Geode</span> distributed systems connected by a WAN gateway.
 
 

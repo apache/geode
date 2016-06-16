@@ -1,12 +1,12 @@
 ---
-title:  Setting Up the <span class="keyword">GemFire</span> Hibernate Cache Module
+title:  Setting Up the <span class="keyword">Geode</span> Hibernate Cache Module
 ---
 
 Edit the `hibernate.cfg.xml` file to use the Hibernate Cache module.
 
 1.  **Turn on L2 Cache**
 
-    In the `hibernate.cfg.xml` file, turn on the L2 cache and identify the <span class="keyword">GemFire</span> locator(s):
+    In the `hibernate.cfg.xml` file, turn on the L2 cache and identify the <span class="keyword">Geode</span> locator(s):
 
     ``` pre
     <property name="hibernate.cache.use_second_level_cache">true</property>
@@ -79,17 +79,17 @@ Edit the `hibernate.cfg.xml` file to use the Hibernate Cache module.
 
 6.  **Start Hibernate**
 
-    You are now ready to build, deploy, and run your Hibernate application, which will also launch <span class="keyword">GemFire</span>. See the [Hibernate website documentation](http://hibernate.org/docs) for further information about performing these actions.
+    You are now ready to build, deploy, and run your Hibernate application, which will also launch <span class="keyword">Geode</span>. See the [Hibernate website documentation](http://hibernate.org/docs) for further information about performing these actions.
 
-7.  **Verify that <span class="keyword">GemFire</span> Started Successfully**
+7.  **Verify that <span class="keyword">Geode</span> Started Successfully**
 
-    Similar to Hibernate, <span class="keyword">GemFire</span> uses Simple Logging Facade for Java (SLF4J) to log messages. Upon successful startup, <span class="keyword">GemFire</span> will log the following message:
+    Similar to Hibernate, <span class="keyword">Geode</span> uses Simple Logging Facade for Java (SLF4J) to log messages. Upon successful startup, <span class="keyword">Geode</span> will log the following message:
 
     ``` pre
     2010-11-15 INFO [com.gemstone.gemfire.modules.hibernate.GemFireRegionFactory] - 
         <Initializing Apache Geode Modules Version 1.1>
     ```
 
-    SLF4J can send this and other <span class="keyword">GemFire</span> log messages to several logging frameworks. Refer to the [SLF4J](http://www.slf4j.org/) website for additional information.
+    SLF4J can send this and other <span class="keyword">Geode</span> log messages to several logging frameworks. Refer to the [SLF4J](http://www.slf4j.org/) website for additional information.
 
 

@@ -1,14 +1,14 @@
 ---
-title:  gemfire.properties and gfsecurity.properties (<span class="keyword">GemFire</span> Properties)
+title:  gemfire.properties and gfsecurity.properties (<span class="keyword">Geode</span> Properties)
 ---
 
-You use the `gemfire.properties` settings to join a distributed system and configure system member behavior. Distributed system members include applications, the cache server, the locator, and other <span class="keyword">GemFire</span> processes.
+You use the `gemfire.properties` settings to join a distributed system and configure system member behavior. Distributed system members include applications, the cache server, the locator, and other <span class="keyword">Geode</span> processes.
 
 You can place any security-related (properties that begin with `security-*`) configuration properties in `gemfire.properties` into a separate `gfsecurity.properties` file. Placing these configuration settings in a separate file allows you to restrict access to security configuration data. This way, you can still allow read or write access for your `gemfire.properties` file.
 
 You can also define provider-specific properties ("ssl" properties) in `gfsecurity.properties` instead of defining them at the command-line or in your environment.
 
-You can specify non-ASCII text in your properties files by using Unicode escape sequences. See [Using Non-ASCII Strings in Pivotal GemFire Property Files](non-ascii_strings_in_config_files.html) for more details.
+You can specify non-ASCII text in your properties files by using Unicode escape sequences. See [Using Non-ASCII Strings in Apache Geode Property Files](non-ascii_strings_in_config_files.html) for more details.
 
 **Note:**
 Unless otherwise indicated, these settings only affect activities within this distributed system - not activities between clients and servers or between a gateway sender and gateway receiver in a multi-site installation.
@@ -80,7 +80,7 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="even">
 <td>bind-address</td>
-<td>Relevant only for multi-homed hosts - machines with multiple network interface cards. Specifies the adapter card the cache binds to for peer-to-peer communication. Also specifies the default location for <span class="keyword">GemFire</span> servers to listen on, which is used unless overridden by the <code class="ph codeph">server-bind-address</code>. An empty string causes the member to listen on the default card for the machine. This is a machine-wide attribute used for system member and client/server communication. It has no effect on locator location, unless the locator is embedded in a member process.
+<td>Relevant only for multi-homed hosts - machines with multiple network interface cards. Specifies the adapter card the cache binds to for peer-to-peer communication. Also specifies the default location for <span class="keyword">Geode</span> servers to listen on, which is used unless overridden by the <code class="ph codeph">server-bind-address</code>. An empty string causes the member to listen on the default card for the machine. This is a machine-wide attribute used for system member and client/server communication. It has no effect on locator location, unless the locator is embedded in a member process.
 <p>Specify the IP address, not the hostname, because each network card may not have a unique hostname. An empty string (the default) causes the member to listen on the default card for the machine.</p></td>
 <td><em>not set</em></td>
 </tr>
@@ -96,17 +96,17 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="odd">
 <td>cluster-ssl-ciphers</td>
-<td>Used for SSL security. A space-separated list of the valid SSL ciphers for peer-to-peer connections in the cluster. A setting of 'any' uses any ciphers that are enabled by default in the configured JSSE provider. This attribute must be consistent across all members of the distributed system. <span class="keyword">GemFire</span> applies this peer-to-peer connection property setting to client/server, JMX manager, WAN gateway and HTTP service connections unless the corresponding SSL property (<code class="ph codeph">server-ssl-ciphers</code>, <code class="ph codeph">jmx-manager-ssl-ciphers</code>, <code class="ph codeph">gateway-ssl-ciphers</code>, or <code class="ph codeph">http-service-ssl-ciphers</code>) is defined. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Used for SSL security. A space-separated list of the valid SSL ciphers for peer-to-peer connections in the cluster. A setting of 'any' uses any ciphers that are enabled by default in the configured JSSE provider. This attribute must be consistent across all members of the distributed system. <span class="keyword">Geode</span> applies this peer-to-peer connection property setting to client/server, JMX manager, WAN gateway and HTTP service connections unless the corresponding SSL property (<code class="ph codeph">server-ssl-ciphers</code>, <code class="ph codeph">jmx-manager-ssl-ciphers</code>, <code class="ph codeph">gateway-ssl-ciphers</code>, or <code class="ph codeph">http-service-ssl-ciphers</code>) is defined. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
 <td>any</td>
 </tr>
 <tr class="even">
 <td>cluster-ssl-enabled</td>
-<td>Used for SSL security. Boolean indicating whether to use SSL for peer-to-peer communications. A true setting requires the use of locators. This attribute must be consistent across all members of the distributed system. <span class="keyword">GemFire</span> applies this peer-to-peer connection property setting to client/server, JMX manager, WAN gateway, and HTTP service connections unless the corresponding SSL property (<code class="ph codeph">server-ssl-enabled</code>, <code class="ph codeph">jmx-manager-ssl-enabled</code>, <code class="ph codeph">gateway-ssl-enabled</code>, or <code class="ph codeph">http-service-ssl-enabled</code>) is defined. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Used for SSL security. Boolean indicating whether to use SSL for peer-to-peer communications. A true setting requires the use of locators. This attribute must be consistent across all members of the distributed system. <span class="keyword">Geode</span> applies this peer-to-peer connection property setting to client/server, JMX manager, WAN gateway, and HTTP service connections unless the corresponding SSL property (<code class="ph codeph">server-ssl-enabled</code>, <code class="ph codeph">jmx-manager-ssl-enabled</code>, <code class="ph codeph">gateway-ssl-enabled</code>, or <code class="ph codeph">http-service-ssl-enabled</code>) is defined. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
 <td>false</td>
 </tr>
 <tr class="odd">
 <td>cluster-ssl-keystore, gateway-ssl-keystore, http-service-ssl-keystore, jmx-manager-ssl-keystore, server-ssl-keystore</td>
-<td>Properties that dentify the keystores to use for SSL connections.<code class="ph codeph">cluster-ssl-keystore</code> defines the keystore for <span class="keyword">GemFire</span> peer-to-peer connections. If you specify only <code class="ph codeph">cluster-ssl-keystore</code>, then the same keystore is also used for client/server, JMX manager, WAN gateway and HTTP service connections. Specify the gateway, jmx-manager, server- or http-service- prefix with this property to use a different keystore for the respective SSL connection type. See [Configuring SSL](../../managing/security/implementing_ssl.html).
+<td>Properties that dentify the keystores to use for SSL connections.<code class="ph codeph">cluster-ssl-keystore</code> defines the keystore for <span class="keyword">Geode</span> peer-to-peer connections. If you specify only <code class="ph codeph">cluster-ssl-keystore</code>, then the same keystore is also used for client/server, JMX manager, WAN gateway and HTTP service connections. Specify the gateway, jmx-manager, server- or http-service- prefix with this property to use a different keystore for the respective SSL connection type. See [Configuring SSL](../../managing/security/implementing_ssl.html).
 <div class="note note">
 **Note:**
 <p>javax.net.ssl.keyStore is deprecated. Use <code class="ph codeph">cluster-ssl-keystore</code> instead.</p>
@@ -133,17 +133,17 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="even">
 <td>cluster-ssl-protocols</td>
-<td>Used for SSL security. A space-separated list of the valid SSL protocols for peer-to-peer connections in the cluster. A setting of 'any' uses any protocol that is enabled by default in the configured JSSE provider. <span class="keyword">GemFire</span> applies this peer-to-peer connection property setting to client/server, JMX manager, WAN gateway and HTTP service connections unless the corresponding SSL property (<code class="ph codeph">server-ssl-protocols</code>, <code class="ph codeph">jmx-manager-ssl-protocols</code>, <code class="ph codeph">gateway-ssl-protocols</code>, or <code class="ph codeph">http-service-ssl-protocols</code>) is defined. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Used for SSL security. A space-separated list of the valid SSL protocols for peer-to-peer connections in the cluster. A setting of 'any' uses any protocol that is enabled by default in the configured JSSE provider. <span class="keyword">Geode</span> applies this peer-to-peer connection property setting to client/server, JMX manager, WAN gateway and HTTP service connections unless the corresponding SSL property (<code class="ph codeph">server-ssl-protocols</code>, <code class="ph codeph">jmx-manager-ssl-protocols</code>, <code class="ph codeph">gateway-ssl-protocols</code>, or <code class="ph codeph">http-service-ssl-protocols</code>) is defined. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
 <td>any</td>
 </tr>
 <tr class="odd">
 <td>cluster-ssl-require-authentication</td>
-<td>Used for SSL security. Boolean indicating whether to require authentication for member communication. <span class="keyword">GemFire</span> applies this peer-to-peer connection property setting to client/server, JMX manager, WAN gateway and HTTP service connections unless the corresponding SSL property (<code class="ph codeph">server-ssl-require-authentication</code>, <code class="ph codeph">jmx-manager-ssl-require-authentication</code>, <code class="ph codeph">gateway-ssl-require-authentication</code>, or <code class="ph codeph">http-service-ssl-require-authentication</code>) is defined. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Used for SSL security. Boolean indicating whether to require authentication for member communication. <span class="keyword">Geode</span> applies this peer-to-peer connection property setting to client/server, JMX manager, WAN gateway and HTTP service connections unless the corresponding SSL property (<code class="ph codeph">server-ssl-require-authentication</code>, <code class="ph codeph">jmx-manager-ssl-require-authentication</code>, <code class="ph codeph">gateway-ssl-require-authentication</code>, or <code class="ph codeph">http-service-ssl-require-authentication</code>) is defined. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
 <td>true</td>
 </tr>
 <tr class="even">
 <td>cluster-ssl-truststore, gateway-ssl-truststore, http-service-ssl-truststore, jmx-manager-ssl-truststore, server-ssl-truststore</td>
-<td>Properties that identify the truststores to use for SSL connections. <code class="ph codeph">cluster-ssl-truststore</code> defines the truststore for <span class="keyword">GemFire</span> peer-to-peer connections. If you specify only <code class="ph codeph">cluster-ssl-truststore</code>, then the same truststore is also used for client/server, JMX manager, WAN gateway and HTTP service connections. Specify the gateway-, jmx-manager, server-, or http-service- prefix with this property to use a different truststore for the respective SSL connection type. See [Configuring SSL](../../managing/security/implementing_ssl.html).
+<td>Properties that identify the truststores to use for SSL connections. <code class="ph codeph">cluster-ssl-truststore</code> defines the truststore for <span class="keyword">Geode</span> peer-to-peer connections. If you specify only <code class="ph codeph">cluster-ssl-truststore</code>, then the same truststore is also used for client/server, JMX manager, WAN gateway and HTTP service connections. Specify the gateway-, jmx-manager, server-, or http-service- prefix with this property to use a different truststore for the respective SSL connection type. See [Configuring SSL](../../managing/security/implementing_ssl.html).
 <div class="note note">
 **Note:**
 <p>javax.net.ssl.trustStore is deprecated. Use <code class="ph codeph">cluster-ssl-truststore</code> instead.</p>
@@ -162,7 +162,7 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="odd">
 <td>conserve-sockets</td>
-<td>Specifies whether sockets are shared by the system member’s threads. If true, threads share, and a minimum number of sockets are used to connect to the distributed system. If false, every application thread has its own sockets for distribution purposes. You can override this setting for individual threads inside your application. Where possible, it is better to set conserve-sockets to true and enable the use of specific extra sockets in the application code if needed. WAN deployments increase the messaging demands on a <span class="keyword">GemFire</span> system. To avoid hangs related to WAN messaging, always set <code class="ph codeph">conserve-sockets=false</code> for <span class="keyword">GemFire</span> members that participate in a WAN deployment.</td>
+<td>Specifies whether sockets are shared by the system member’s threads. If true, threads share, and a minimum number of sockets are used to connect to the distributed system. If false, every application thread has its own sockets for distribution purposes. You can override this setting for individual threads inside your application. Where possible, it is better to set conserve-sockets to true and enable the use of specific extra sockets in the application code if needed. WAN deployments increase the messaging demands on a <span class="keyword">Geode</span> system. To avoid hangs related to WAN messaging, always set <code class="ph codeph">conserve-sockets=false</code> for <span class="keyword">Geode</span> members that participate in a WAN deployment.</td>
 <td>true</td>
 </tr>
 <tr class="even">
@@ -172,12 +172,12 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="odd">
 <td>deploy-working-dir</td>
-<td>Working directory used when deploying JAR application files to distributed system members. This directory can be local and unique to the member or a shared resource. See [Deploying Application JARs to Pivotal GemFire Members](../../configuring/cluster_config/deploying_application_jars.html) for more information.</td>
+<td>Working directory used when deploying JAR application files to distributed system members. This directory can be local and unique to the member or a shared resource. See [Deploying Application JARs to Apache Geode Members](../../configuring/cluster_config/deploying_application_jars.html) for more information.</td>
 <td>. (current directory)</td>
 </tr>
 <tr class="even">
 <td>disable-auto-reconnect</td>
-<td>By default, a <span class="keyword">GemFire</span> member (both locators and servers) will attempt to reconnect and reinitialize the cache after it has been forced out of the distributed system by a network partition event or has otherwise been shunned by other members. Use this property to turn off the autoreconnect behavior. See [Handling Forced Cache Disconnection Using Autoreconnect](../../managing/autoreconnect/member-reconnect.html) for more details.</td>
+<td>By default, a <span class="keyword">Geode</span> member (both locators and servers) will attempt to reconnect and reinitialize the cache after it has been forced out of the distributed system by a network partition event or has otherwise been shunned by other members. Use this property to turn off the autoreconnect behavior. See [Handling Forced Cache Disconnection Using Autoreconnect](../../managing/autoreconnect/member-reconnect.html) for more details.</td>
 <td>false</td>
 </tr>
 <tr class="odd">
@@ -217,27 +217,27 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="even">
 <td>enforce-unique-host</td>
-<td>Whether partitioned regions will put redundant copies of the same data in different members running on the same physical machine. By default, <span class="keyword">GemFire</span> tries to put redundant copies on different machines, but it will put them on the same machine if no other machines are available. Setting this property to true prevents this and requires different machines for redundant copies.</td>
+<td>Whether partitioned regions will put redundant copies of the same data in different members running on the same physical machine. By default, <span class="keyword">Geode</span> tries to put redundant copies on different machines, but it will put them on the same machine if no other machines are available. Setting this property to true prevents this and requires different machines for redundant copies.</td>
 <td>false</td>
 </tr>
 <tr class="odd">
 <td>gateway-ssl-ciphers</td>
-<td>A space-separated list of the valid SSL ciphers for WAN gateway connections. A setting of 'any' uses any ciphers that are enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">GemFire</span> uses the value of <code class="ph codeph">cluster-ssl-ciphers</code> to determine which SSL ciphers are used for WAN connections. See [Multi-Site (WAN) Deployment Security](../../managing/security/security_multisite.html).</td>
+<td>A space-separated list of the valid SSL ciphers for WAN gateway connections. A setting of 'any' uses any ciphers that are enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-ciphers</code> to determine which SSL ciphers are used for WAN connections. See [Multi-Site (WAN) Deployment Security](../../managing/security/security_multisite.html).</td>
 <td>value of <code class="ph codeph">ssl-ciphers</code></td>
 </tr>
 <tr class="even">
 <td>gateway-ssl-enabled</td>
-<td>Enables or disables SSL for WAN gateway connections. If this property is not set, then <span class="keyword">GemFire</span> uses the value of <code class="ph codeph">cluster-ssl-enabled</code> to determine whether JMX connections use SSL. See [Multi-Site (WAN) Deployment Security](../../managing/security/security_multisite.html).</td>
+<td>Enables or disables SSL for WAN gateway connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-enabled</code> to determine whether JMX connections use SSL. See [Multi-Site (WAN) Deployment Security](../../managing/security/security_multisite.html).</td>
 <td>value of <code class="ph codeph">ssl-enabled</code></td>
 </tr>
 <tr class="odd">
 <td>gateway-ssl-protocols</td>
-<td>A space-separated list of the valid SSL protocols for WAN gateway connections. A setting of 'any' uses any protocol that is enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">GemFire</span> uses the value of <code class="ph codeph">cluster-ssl-protocols</code> to determine which SSL protocols are used by WAN connections. See [Multi-Site (WAN) Deployment Security](../../managing/security/security_multisite.html).</td>
+<td>A space-separated list of the valid SSL protocols for WAN gateway connections. A setting of 'any' uses any protocol that is enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-protocols</code> to determine which SSL protocols are used by WAN connections. See [Multi-Site (WAN) Deployment Security](../../managing/security/security_multisite.html).</td>
 <td>value of <code class="ph codeph">ssl-protocols</code></td>
 </tr>
 <tr class="even">
 <td>gateway-ssl-require-authentication</td>
-<td>Boolean indicating whether to require authentication for WAN gateway connections. If this property is not set, then <span class="keyword">GemFire</span> uses the value of <code class="ph codeph">cluster-ssl-require-authentication</code> to determine whether WAN connections require authentication. See [Multi-Site (WAN) Deployment Security](../../managing/security/security_multisite.html).</td>
+<td>Boolean indicating whether to require authentication for WAN gateway connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-require-authentication</code> to determine whether WAN connections require authentication. See [Multi-Site (WAN) Deployment Security](../../managing/security/security_multisite.html).</td>
 <td>value of <code class="ph codeph">ssl-require-authentication</code></td>
 </tr>
 <tr class="odd">
@@ -247,12 +247,12 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="even">
 <td>http-service-bind-address</td>
-<td>If set, then the <span class="keyword">GemFire</span> member binds the embedded HTTP service to the specified address. If this property is not set but the HTTP service is enabled using <code class="ph codeph">http-service-port</code>, then <span class="keyword">GemFire</span> binds the HTTP service to the member's local address. Used by the <span class="keyword">GemFire</span> Pulse Web application and the developer REST API service.</td>
+<td>If set, then the <span class="keyword">Geode</span> member binds the embedded HTTP service to the specified address. If this property is not set but the HTTP service is enabled using <code class="ph codeph">http-service-port</code>, then <span class="keyword">Geode</span> binds the HTTP service to the member's local address. Used by the <span class="keyword">Geode</span> Pulse Web application and the developer REST API service.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
 <td>http-service-port</td>
-<td>If non-zero, then <span class="keyword">GemFire</span> starts an embedded HTTP service that listens on this port. The HTTP service is used to host the <span class="keyword">GemFire</span> Pulse Web application and the development REST API service. If you are hosting the Pulse web app on your own Web server and are not using the development REST API service, then disable this embedded HTTP service by setting this property to zero. Ignored if <code class="ph codeph">jmx-manager</code> and <code class="ph codeph">start-dev-rest-api</code> are both set to false.</td>
+<td>If non-zero, then <span class="keyword">Geode</span> starts an embedded HTTP service that listens on this port. The HTTP service is used to host the <span class="keyword">Geode</span> Pulse Web application and the development REST API service. If you are hosting the Pulse web app on your own Web server and are not using the development REST API service, then disable this embedded HTTP service by setting this property to zero. Ignored if <code class="ph codeph">jmx-manager</code> and <code class="ph codeph">start-dev-rest-api</code> are both set to false.</td>
 <td>7070</td>
 </tr>
 <tr class="even">
@@ -272,7 +272,7 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="odd">
 <td>http-service-ssl-require-authentication</td>
-<td>Boolean indicating whether to require authentication for HTTP service connections. If this property is not set, then <span class="keyword">GemFire</span> uses the value of <code class="ph codeph">cluster-ssl-require-authentication</code> to determine whether HTTP service connections require authentication.</td>
+<td>Boolean indicating whether to require authentication for HTTP service connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-require-authentication</code> to determine whether HTTP service connections require authentication.</td>
 <td>false</td>
 </tr>
 <tr class="even">
@@ -307,27 +307,27 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="even">
 <td>jmx-manager-port</td>
-<td>The port this JMX Manager will listen to for client connections. If this property is set to zero then <span class="keyword">GemFire</span> will not allow remote client connections but you can alternatively use the standard system properties supported by the JVM for configuring access from remote JMX clients. Ignored if <code class="ph codeph">jmx-manager</code> is false.</td>
+<td>The port this JMX Manager will listen to for client connections. If this property is set to zero then <span class="keyword">Geode</span> will not allow remote client connections but you can alternatively use the standard system properties supported by the JVM for configuring access from remote JMX clients. Ignored if <code class="ph codeph">jmx-manager</code> is false.</td>
 <td>1099</td>
 </tr>
 <tr class="odd">
 <td>jmx-manager-ssl-enabled</td>
-<td>Enables or disables SSL for connections to the JMX Manager. If true and <code class="ph codeph">jmx-manager-port</code> is not zero, then the JMX Manager will only accept SSL connections. If this property is not set, then <span class="keyword">GemFire</span> uses the value of <code class="ph codeph">cluster-ssl-enabled</code> to determine whether JMX connections should use SSL. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Enables or disables SSL for connections to the JMX Manager. If true and <code class="ph codeph">jmx-manager-port</code> is not zero, then the JMX Manager will only accept SSL connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-enabled</code> to determine whether JMX connections should use SSL. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
 <td>value of <code class="ph codeph">cluster-ssl-enabled</code></td>
 </tr>
 <tr class="even">
 <td>jmx-manager-ssl-ciphers</td>
-<td>A space-separated list of the valid SSL ciphers for JMX manager connections. A setting of 'any' uses any ciphers that are enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">GemFire</span> uses the value of <code class="ph codeph">cluster-ssl-ciphers</code> to determine which SSL ciphers are used for JMX connections. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>A space-separated list of the valid SSL ciphers for JMX manager connections. A setting of 'any' uses any ciphers that are enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-ciphers</code> to determine which SSL ciphers are used for JMX connections. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
 <td>value of <code class="ph codeph">cluster-ssl-ciphers</code></td>
 </tr>
 <tr class="odd">
 <td>jmx-manager-ssl-protocols</td>
-<td>A space-separated list of the valid SSL protocols for JMX manager connections. A setting of 'any' uses any protocol that is enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">GemFire</span> uses the value of <code class="ph codeph">cluster-ssl-protocols</code> to determine which SSL protocols are used for JMX connections. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>A space-separated list of the valid SSL protocols for JMX manager connections. A setting of 'any' uses any protocol that is enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-protocols</code> to determine which SSL protocols are used for JMX connections. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
 <td>value of <code class="ph codeph">cluster-ssl-ciphers</code></td>
 </tr>
 <tr class="even">
 <td>jmx-manager-ssl-require-authentication</td>
-<td>Boolean indicating whether to require authentication for JMX Manager connections. If this property is not set, then <span class="keyword">GemFire</span> uses the value of <code class="ph codeph">cluster-ssl-require-authentication</code> to determine whether JMX connections require authentication. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Boolean indicating whether to require authentication for JMX Manager connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-require-authentication</code> to determine whether JMX connections require authentication. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
 <td>value of <code class="ph codeph">cluster-ssl-require-authentication</code></td>
 </tr>
 <tr class="odd">
@@ -337,7 +337,7 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="even">
 <td>jmx-manager-update-rate</td>
-<td>The rate, in milliseconds, at which this member will push updates to any JMX Managers. Currently this value should be greater than or equal to the statistic-sample-rate. Setting this value too high will cause stale values to be seen by gfsh and <span class="keyword">GemFire</span> Pulse.</td>
+<td>The rate, in milliseconds, at which this member will push updates to any JMX Managers. Currently this value should be greater than or equal to the statistic-sample-rate. Setting this value too high will cause stale values to be seen by gfsh and <span class="keyword">Geode</span> Pulse.</td>
 <td>2000</td>
 </tr>
 <tr class="odd">
@@ -408,7 +408,7 @@ Valid values are in the range 0...2147483647</td>
 <tr class="even">
 <td>mcast-address</td>
 <td>Address used to discover other members of the distributed system. Only used if mcast-port is non-zero. This attribute must be consistent across the distributed system. Select different multicast addresses and different ports for different distributed systems. Do not just use different addresses. Some operating systems may not keep communication separate between systems that use unique addresses but the same port number.
-<p>This default multicast address was assigned by IANA ([http://www.iana.org/assignments/multicast-addresses](http://www.iana.org/assignments/multicast-addresses)). Consult the IANA chart when selecting another multicast address to use with <span class="keyword">GemFire</span>.</p>
+<p>This default multicast address was assigned by IANA ([http://www.iana.org/assignments/multicast-addresses](http://www.iana.org/assignments/multicast-addresses)). Consult the IANA chart when selecting another multicast address to use with <span class="keyword">Geode</span>.</p>
 <div class="note note">
 **Note:**
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication. If multicast is enabled, distributed regions use it for most communication. Partitioned regions only use multicast for a few purposes, and mainly use either TCP or UDP unicast.</p>
@@ -476,17 +476,17 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="even">
 <td>member-timeout</td>
-<td><span class="keyword">GemFire</span> uses the <code class="ph codeph">member-timeout</code> server configuration, specified in milliseconds, to detect the abnormal termination of members. The configuration setting is used in two ways: 1) First it is used during the UDP heartbeat detection process. When a member detects that a heartbeat datagram is missing from the member that it is monitoring after the time interval of 2 * the value of <code class="ph codeph">member-timeout</code>, the detecting member attempts to form a TCP/IP stream-socket connection with the monitored member as described in the next case. 2) The property is then used again during the TCP/IP stream-socket connection. If the suspected process does not respond to the <em>are you alive</em> datagram within the time period specified in <code class="ph codeph">member-timeout</code>, the membership coordinator sends out a new membership view that notes the member's failure.
+<td><span class="keyword">Geode</span> uses the <code class="ph codeph">member-timeout</code> server configuration, specified in milliseconds, to detect the abnormal termination of members. The configuration setting is used in two ways: 1) First it is used during the UDP heartbeat detection process. When a member detects that a heartbeat datagram is missing from the member that it is monitoring after the time interval of 2 * the value of <code class="ph codeph">member-timeout</code>, the detecting member attempts to form a TCP/IP stream-socket connection with the monitored member as described in the next case. 2) The property is then used again during the TCP/IP stream-socket connection. If the suspected process does not respond to the <em>are you alive</em> datagram within the time period specified in <code class="ph codeph">member-timeout</code>, the membership coordinator sends out a new membership view that notes the member's failure.
 <p>Valid values are in the range 1000..600000.</p></td>
 <td>5000</td>
 </tr>
 <tr class="odd">
 <td>membership-port-range</td>
 <td>The range of ports available for unicast UDP messaging and for TCP failure detection. This is specified as two integers separated by a hyphen. Different members can use different ranges.
-<p><span class="keyword">GemFire</span> randomly chooses at least two unique integers from this range for the member, one for UDP unicast messaging and the other for TCP failure detection messaging. If tcp-port is configured to 0, it will also randomly select a port from this range for TCP sockets used for peer-to-peer communication only.</p>
+<p><span class="keyword">Geode</span> randomly chooses at least two unique integers from this range for the member, one for UDP unicast messaging and the other for TCP failure detection messaging. If tcp-port is configured to 0, it will also randomly select a port from this range for TCP sockets used for peer-to-peer communication only.</p>
 <p>Therefore, the specified range must include at least three available port numbers (UDP, FD_SOCK, and TCP DirectChannel).</p>
 <p>The system uniquely identifies the member using the combined host IP address and UDP port number.</p>
-<p>You may want to restrict the range of ports that <span class="keyword">GemFire</span> uses so the product can run in an environment where routers only allow traffic on certain ports.</p></td>
+<p>You may want to restrict the range of ports that <span class="keyword">Geode</span> uses so the product can run in an environment where routers only allow traffic on certain ports.</p></td>
 <td>1024-65535</td>
 </tr>
 <tr class="even">
@@ -513,7 +513,7 @@ off-heap-memory-size=120g</code></pre></td>
 </tr>
 <tr class="even">
 <td>redundancy-zone</td>
-<td>Defines this member's redundancy zone. Used to separate member's into different groups for satisfying partitioned region redundancy. If this property is set, <span class="keyword">GemFire</span> will not put redundant copies of data in members with the same redundancy zone setting. See [Configure High Availability for a Partitioned Region](../../developing/partitioned_regions/configuring_ha_for_pr.html) for more details.</td>
+<td>Defines this member's redundancy zone. Used to separate member's into different groups for satisfying partitioned region redundancy. If this property is set, <span class="keyword">Geode</span> will not put redundant copies of data in members with the same redundancy zone setting. See [Configure High Availability for a Partitioned Region](../../developing/partitioned_regions/configuring_ha_for_pr.html) for more details.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
@@ -592,7 +592,7 @@ off-heap-memory-size=120g</code></pre></td>
 </tr>
 <tr class="even">
 <td>server-bind-address</td>
-<td>Relevant only for multi-homed hosts - machines with multiple network interface cards. Network adapter card a <span class="keyword">GemFire</span> server binds to for client/server communication. You can use this to separate the server’s client/server communication from its peer-to-peer communication, spreading the traffic load.
+<td>Relevant only for multi-homed hosts - machines with multiple network interface cards. Network adapter card a <span class="keyword">Geode</span> server binds to for client/server communication. You can use this to separate the server’s client/server communication from its peer-to-peer communication, spreading the traffic load.
 <p>This is a machine-wide attribute used for communication with clients in client/server and multi-site installations. This setting has no effect on locator configuration.</p>
 <p>Specify the IP address, not the hostname, because each network card may not have a unique hostname.</p>
 <p>An empty string causes the servers to listen on the same card used for peer-to-peer communication. This is either the <code class="ph codeph">bind-address</code> or, if that is not set, the machine’s default card.</p></td>
@@ -600,22 +600,22 @@ off-heap-memory-size=120g</code></pre></td>
 </tr>
 <tr class="odd">
 <td>server-ssl-ciphers</td>
-<td>A space-separated list of the valid SSL ciphers for client/server connections. A setting of 'any' uses any ciphers that are enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">GemFire</span> uses the value of <code class="ph codeph">cluster-ssl-ciphers</code> to determine which ciphers are used for client connections. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>A space-separated list of the valid SSL ciphers for client/server connections. A setting of 'any' uses any ciphers that are enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-ciphers</code> to determine which ciphers are used for client connections. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
 <td>value of <code class="ph codeph">cluster-ssl-ciphers</code></td>
 </tr>
 <tr class="even">
 <td>server-ssl-enabled</td>
-<td>Enables or disables SSL for client/server connections. If this property is not set, then <span class="keyword">GemFire</span> uses the value of <code class="ph codeph">cluster-ssl-enabled</code> to determine whether client connections use SSL. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Enables or disables SSL for client/server connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-enabled</code> to determine whether client connections use SSL. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
 <td>value of <code class="ph codeph">cluster-ssl-enabled</code></td>
 </tr>
 <tr class="odd">
 <td>server-ssl-protocols</td>
-<td>A space-separated list of the valid SSL protocols for client/server connections. A setting of 'any' uses any protocol that is enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">GemFire</span> uses the value of <code class="ph codeph">cluster-ssl-protocols</code> to determine which SSL protocols are used for client connections. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>A space-separated list of the valid SSL protocols for client/server connections. A setting of 'any' uses any protocol that is enabled by default in the configured JSSE provider. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-protocols</code> to determine which SSL protocols are used for client connections. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
 <td>value of <code class="ph codeph">cluster-ssl-protocols</code></td>
 </tr>
 <tr class="even">
 <td>server-ssl-require-authentication</td>
-<td>Boolean indicating whether to require authentication for client/server connections. If this property is not set, then <span class="keyword">GemFire</span> uses the value of <code class="ph codeph">cluster-ssl-require-authentication</code> to determine whether client connections require authentication. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
+<td>Boolean indicating whether to require authentication for client/server connections. If this property is not set, then <span class="keyword">Geode</span> uses the value of <code class="ph codeph">cluster-ssl-require-authentication</code> to determine whether client connections require authentication. See [Configuring SSL](../../managing/security/implementing_ssl.html).</td>
 <td>value of <code class="ph codeph">cluster-ssl-require-authentication</code></td>
 </tr>
 <tr class="odd">
@@ -672,13 +672,13 @@ If you only specify the port, the address assigned to the member is used for the
 </tr>
 <tr class="odd">
 <td>tcp-port</td>
-<td>The TCP port to listen on for cache communications. If set to zero, the operating system selects an available port. Each process on a machine must have its own TCP port. Note that some operating systems restrict the range of ports usable by non-privileged users, and using restricted port numbers can cause runtime errors in <span class="keyword">GemFire</span> startup.
+<td>The TCP port to listen on for cache communications. If set to zero, the operating system selects an available port. Each process on a machine must have its own TCP port. Note that some operating systems restrict the range of ports usable by non-privileged users, and using restricted port numbers can cause runtime errors in <span class="keyword">Geode</span> startup.
 <p>Valid values are in the range 0..65535.</p></td>
 <td>0</td>
 </tr>
 <tr class="even">
 <td>tombstone-gc-threshold</td>
-<td>The number of tombstones that can accumulate before the <span class="keyword">GemFire</span> member triggers garbage collection for tombstones. See [How Destroy and Clear Operations Are Resolved](../../developing/distributed_regions/how_region_versioning_works.html#topic_321B05044B6641FCAEFABBF5066BD399).</td>
+<td>The number of tombstones that can accumulate before the <span class="keyword">Geode</span> member triggers garbage collection for tombstones. See [How Destroy and Clear Operations Are Resolved](../../developing/distributed_regions/how_region_versioning_works.html#topic_321B05044B6641FCAEFABBF5066BD399).</td>
 <td>100000</td>
 </tr>
 <tr class="odd">
@@ -713,8 +713,8 @@ If you only specify the port, the address assigned to the member is used for the
 </tbody>
 </table>
 
--   **[Using Non-ASCII Strings in Pivotal GemFire Property Files](../../../latest/reference/topics/non-ascii_strings_in_config_files.html)**
+-   **[Using Non-ASCII Strings in Apache Geode Property Files](../../reference/topics/non-ascii_strings_in_config_files.html)**
 
-    You can specify Unicode (non-ASCII) characters in <span class="keyword">Pivotal GemFire</span> property files by using a `\uXXXX` escape sequence.
+    You can specify Unicode (non-ASCII) characters in <span class="keyword">Apache Geode</span> property files by using a `\uXXXX` escape sequence.
 
 

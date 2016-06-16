@@ -4,6 +4,34 @@
 
 Start servers, locators, gateway senders and gateway receivers, and monitoring tools.
 
+-   **[start gateway-receiver](../../../tools_modules/gfsh/command-pages/start.html#topic_67738A5B68E84DEE95D1C92DAB2E26E5)**
+
+    Start the gateway receiver on a given member or group of members.
+
+-   **[start gateway-sender](../../../tools_modules/gfsh/command-pages/start.html#topic_AB8BA3F42B9645A8BE9BD97CE2F839A8)**
+
+    Start the gateway sender on a member or members.
+
+-   **[start jconsole](../../../tools_modules/gfsh/command-pages/start.html#topic_D00507416F3944DFAB48D2FA2B9E4A31)**
+
+    Start the JDK JConsole monitoring application in a separate process.
+
+-   **[start jvisualvm](../../../tools_modules/gfsh/command-pages/start.html#topic_5B5BF8BEE905463D8B7762B89E2D65E7)**
+
+    Start the JDK's Java VisualVM monitoring application in a separate process.
+
+-   **[start locator](../../../tools_modules/gfsh/command-pages/start.html#topic_591260CF25D64562A0EDD7260D2AC6D4)**
+
+    Start a locator.
+
+-   **[start pulse](../../../tools_modules/gfsh/command-pages/start.html#topic_E906BA7D9E7F4C5890FEFA7ECD40DD77)**
+
+    Launch the <span class="keyword">Geode</span> Pulse monitoring dashboard tool in the user's default system browser and navigates the user to the landing page (login page).
+
+-   **[start server](../../../tools_modules/gfsh/command-pages/start.html#topic_3764EE2DB18B4AE4A625E0354471738A)**
+
+    Start a <span class="keyword">Geode</span> cache server process.
+
 <a id="topic_67738A5B68E84DEE95D1C92DAB2E26E5"></a>
 
 ## start gateway-receiver
@@ -123,7 +151,7 @@ JConsole automatically connects to a running JMX Manager node if one is availabl
 
 Note that you must have a JDK installed (not just a JRE) and the correct PATH and JAVA\_HOME environment variables set.
 
-See [Browsing GemFire MBeans through JConsole](../../../managing/management/mbeans_jconsole.html) for an example of using JConsole with the <span class="keyword">GemFire</span><span class="keyword">GemFire</span> management and monitoring system.
+See [Browsing Geode MBeans through JConsole](../../../managing/management/mbeans_jconsole.html) for an example of using JConsole with the <span class="keyword">Geode</span><span class="keyword">Geode</span> management and monitoring system.
 
 **Availability:** Online or offline.
 
@@ -174,7 +202,7 @@ The JConsole application appears and auto-connects to a JMX Manager node if one 
 ``` pre
 An error occurred while launching JConsole = %1$s
 
-Connecting by the GemFire member's name or ID is not currently supported.
+Connecting by the Geode member's name or ID is not currently supported.
 Please specify the member as '<hostname|IP>[PORT].
 
 An IO error occurred while launching JConsole.
@@ -227,7 +255,7 @@ The command creates a subdirectory and log file named after the locator. If the 
 
 In addition, if gfsh is not already connected to a JMX Manager, the gfsh console will automatically connect to the new embedded JMX Manager started by the new locator.
 
-**Note:** When both `--max-heap` and `--initial-heap` are specified during locator startup, additional GC parameters are specified internally by <span class="keyword">GemFire</span>'s Resource Manager. If you do not want the additional default GC properties set by the Resource Manager, then use the`-Xms` and `-Xmx` JVM options. See [Controlling Heap Use with the Resource Manager](../../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
+**Note:** When both `--max-heap` and `--initial-heap` are specified during locator startup, additional GC parameters are specified internally by <span class="keyword">Geode</span>'s Resource Manager. If you do not want the additional default GC properties set by the Resource Manager, then use the`-Xms` and `-Xmx` JVM options. See [Controlling Heap Use with the Resource Manager](../../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
 
 **Availability:** Online or offline.
 
@@ -260,7 +288,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 <tbody>
 <tr class="odd">
 <td><span class="keyword parmname">--name</span></td>
-<td><em>Required.</em> Name to be used for this <span class="keyword">GemFire</span><span class="keyword">GemFire</span> locator service.</td>
+<td><em>Required.</em> Name to be used for this <span class="keyword">Geode</span><span class="keyword">Geode</span> locator service.</td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -285,7 +313,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">--locators</span></td>
-<td>List of locators used by this locator to join the appropriate <span class="keyword">GemFire</span><span class="keyword">GemFire</span> cluster.</td>
+<td>List of locators used by this locator to join the appropriate <span class="keyword">Geode</span><span class="keyword">Geode</span> cluster.</td>
 <td> </td>
 </tr>
 <tr class="odd">
@@ -295,12 +323,12 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">--mcast-address </span></td>
-<td>IP address or hostname used to bind the UPD socket for multi-cast networking so the locator can locate other members in the <span class="keyword">GemFire</span><span class="keyword">GemFire</span> cluster. If mcast-port is zero, then mcast-address is ignored.</td>
+<td>IP address or hostname used to bind the UPD socket for multi-cast networking so the locator can locate other members in the <span class="keyword">Geode</span><span class="keyword">Geode</span> cluster. If mcast-port is zero, then mcast-address is ignored.</td>
 <td> </td>
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">--mcast-port</span></td>
-<td>Port used for multi-cast networking so the locator can locate other members of the <span class="keyword">GemFire</span> cluster. A zero value disables mcast.</td>
+<td>Port used for multi-cast networking so the locator can locate other members of the <span class="keyword">Geode</span> cluster. A zero value disables mcast.</td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -327,7 +355,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 <td><span class="keyword parmname">--initial-heap</span></td>
 <td>Size has the same format as the <code class="ph codeph">-Xmx</code>/<code class="ph codeph">-Xms</code> JVM options.
 <div class="note note">
-**Note:** If you use the <code class="ph codeph">-J-Xms</code> and <code class="ph codeph">-J-Xmx</code> JVM properties instead of <code class="ph codeph">-initial-heap</code> and <code class="ph codeph">-max-heap</code>, then <span class="keyword">GemFire</span><span class="keyword">GemFire</span> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
+**Note:** If you use the <code class="ph codeph">-J-Xms</code> and <code class="ph codeph">-J-Xmx</code> JVM properties instead of <code class="ph codeph">-initial-heap</code> and <code class="ph codeph">-max-heap</code>, then <span class="keyword">Geode</span><span class="keyword">Geode</span> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
 </div></td>
 <td> </td>
 </tr>
@@ -335,7 +363,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 <td><span class="keyword parmname">--max-heap</span></td>
 <td>Size has the same format as the <code class="ph codeph">-Xmx</code>/<code class="ph codeph">-Xms</code> JVM options
 <div class="note note">
-**Note:** If you use the <code class="ph codeph">-J-Xms</code> and <code class="ph codeph">-J-Xmx</code> JVM properties instead of <code class="ph codeph">-initial-heap</code> and <code class="ph codeph">-max-heap</code>, then <span class="keyword">GemFire</span><span class="keyword">GemFire</span> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
+**Note:** If you use the <code class="ph codeph">-J-Xms</code> and <code class="ph codeph">-J-Xmx</code> JVM properties instead of <code class="ph codeph">-initial-heap</code> and <code class="ph codeph">-max-heap</code>, then <span class="keyword">Geode</span><span class="keyword">Geode</span> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
 </div></td>
 <td> </td>
 </tr>
@@ -409,9 +437,9 @@ Cluster configuration service is up and running.
 
 ## start pulse
 
-Launch the <span class="keyword">GemFire</span> Pulse monitoring dashboard tool in the user's default system browser and navigates the user to the landing page (login page).
+Launch the <span class="keyword">Geode</span> Pulse monitoring dashboard tool in the user's default system browser and navigates the user to the landing page (login page).
 
-For more information on <span class="keyword">GemFire</span> Pulse, see [GemFire Pulse](../../pulse/chapter_overview.html).
+For more information on <span class="keyword">Geode</span> Pulse, see [Geode Pulse](../../pulse/chapter_overview.html).
 
 **Availability:** Online or offline.
 
@@ -436,15 +464,15 @@ start pulse
 start pulse --url=http://gemfire.mycompany.com:7070/pulse
 ```
 
-**Sample Output:** See [GemFire Pulse](../../pulse/chapter_overview.html) for examples of Pulse.
+**Sample Output:** See [Geode Pulse](../../pulse/chapter_overview.html) for examples of Pulse.
 
 <a id="topic_3764EE2DB18B4AE4A625E0354471738A"></a>
 
 ## start server
 
-Start a <span class="keyword">GemFire</span> cache server process.
+Start a <span class="keyword">Geode</span> cache server process.
 
-**Note:** When both <span class="keyword parmname">--max-heap</span> and <span class="keyword parmname">--initial-heap</span> are specified during locator startup, additional GC parameters are specified internally by <span class="keyword">GemFire</span>'s Resource Manager. If you do not want the additional default GC properties set by the Resource Manager, then use the `-Xms` and `-Xmx` JVM options. See [Controlling Heap Use with the Resource Manager](../../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
+**Note:** When both <span class="keyword parmname">--max-heap</span> and <span class="keyword parmname">--initial-heap</span> are specified during locator startup, additional GC parameters are specified internally by <span class="keyword">Geode</span>'s Resource Manager. If you do not want the additional default GC properties set by the Resource Manager, then use the `-Xms` and `-Xmx` JVM options. See [Controlling Heap Use with the Resource Manager](../../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
 
 **Availability:** Online or offline.
 
@@ -487,7 +515,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <tbody>
 <tr class="odd">
 <td><span class="keyword parmname">--name</span></td>
-<td><em>Required.</em> Member name for this <span class="keyword">GemFire</span> Cache Server service.</td>
+<td><em>Required.</em> Member name for this <span class="keyword">Geode</span> Cache Server service.</td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -522,7 +550,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">--enable-time-statistics</span></td>
-<td>Causes additional time-based statistics to be gathered for <span class="keyword">GemFire</span> operations.</td>
+<td>Causes additional time-based statistics to be gathered for <span class="keyword">Geode</span> operations.</td>
 <td>true</td>
 </tr>
 <tr class="odd">
@@ -547,7 +575,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">--locators </span></td>
-<td>Sets the list of locators used by the Cache Server to join the appropriate <span class="keyword">GemFire</span> cluster.</td>
+<td>Sets the list of locators used by the Cache Server to join the appropriate <span class="keyword">Geode</span> cluster.</td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -562,12 +590,12 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">--mcast-address</span></td>
-<td>The IP address or hostname used to bind the UDP socket for multi-cast networking so the Cache Server can locate other members in the <span class="keyword">GemFire</span> cluster. If mcast-port is zero, then mcast-address is ignored.</td>
+<td>The IP address or hostname used to bind the UDP socket for multi-cast networking so the Cache Server can locate other members in the <span class="keyword">Geode</span> cluster. If mcast-port is zero, then mcast-address is ignored.</td>
 <td> </td>
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">--mcast-port</span></td>
-<td>Sets the port used for multi-cast networking so the Cache Server can locate other members of the <span class="keyword">GemFire</span> cluster. A zero value disables mcast.</td>
+<td>Sets the port used for multi-cast networking so the Cache Server can locate other members of the <span class="keyword">Geode</span> cluster. A zero value disables mcast.</td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -592,12 +620,12 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">--spring-xml-location</span></td>
-<td>Specifies the location of a Spring XML configuration file(s) for bootstrapping and configuring a <span class="keyword">GemFire</span> Server. This configuration file can exist on the CLASSPATH (default) or any location supported by Spring's Resource(Loader) location specifiers (for example, classpath:, file:, etc). ResourceLoader is described in the [Spring documentation](http://docs.spring.io/spring/docs/4.0.9.RELEASE/spring-framework-reference/htmlsingle/#resources-resourceloader).</td>
+<td>Specifies the location of a Spring XML configuration file(s) for bootstrapping and configuring a <span class="keyword">Geode</span> Server. This configuration file can exist on the CLASSPATH (default) or any location supported by Spring's Resource(Loader) location specifiers (for example, classpath:, file:, etc). ResourceLoader is described in the [Spring documentation](http://docs.spring.io/spring/docs/4.0.9.RELEASE/spring-framework-reference/htmlsingle/#resources-resourceloader).</td>
 <td> </td>
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">--rebalance</span></td>
-<td>Whether to initiate rebalancing across the <span class="keyword">GemFire</span> cluster.</td>
+<td>Whether to initiate rebalancing across the <span class="keyword">Geode</span> cluster.</td>
 <td>false</td>
 </tr>
 <tr class="even">
@@ -614,7 +642,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <td><span class="keyword parmname">--initial-heap</span></td>
 <td>Initial size of the heap in the same format as the JVM -Xms parameter.
 <div class="note note">
-**Note:** If you use the <code class="ph codeph">--J=-Xms</code> and <code class="ph codeph">--J=-Xmx</code> JVM properties instead of <code class="ph codeph">--initial-heap</code> and <code class="ph codeph">--max-heap</code>, then <span class="keyword">GemFire</span> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
+**Note:** If you use the <code class="ph codeph">--J=-Xms</code> and <code class="ph codeph">--J=-Xmx</code> JVM properties instead of <code class="ph codeph">--initial-heap</code> and <code class="ph codeph">--max-heap</code>, then <span class="keyword">Geode</span> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
 </div></td>
 <td> </td>
 </tr>
@@ -622,7 +650,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <td><span class="keyword parmname">--max-heap</span></td>
 <td>Maximum size of the heap in the same format as the JVM -Xmx parameter.
 <div class="note note">
-**Note:** If you use the <code class="ph codeph">--J=-Xms</code> and <code class="ph codeph">--J=-Xmx</code> JVM properties instead of <code class="ph codeph">--initial-heap</code> and <code class="ph codeph">--max-heap</code>, then <span class="keyword">GemFire</span> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
+**Note:** If you use the <code class="ph codeph">--J=-Xms</code> and <code class="ph codeph">--J=-Xmx</code> JVM properties instead of <code class="ph codeph">--initial-heap</code> and <code class="ph codeph">--max-heap</code>, then <span class="keyword">Geode</span> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
 </div></td>
 <td> </td>
 </tr>

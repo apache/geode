@@ -2,9 +2,9 @@
 title:  Configuring Dispatcher Threads and Order Policy for Event Distribution
 ---
 
-By default, <span class="keyword">GemFire</span> uses multiple dispatcher threads to process region events simultaneously in a gateway sender queue for distribution between sites, or in an asynchronous event queue for distributing events for write-behind caching. With serial queues, you can also configure the ordering policy for dispatching those events.
+By default, <span class="keyword">Geode</span> uses multiple dispatcher threads to process region events simultaneously in a gateway sender queue for distribution between sites, or in an asynchronous event queue for distributing events for write-behind caching. With serial queues, you can also configure the ordering policy for dispatching those events.
 
-By default, a gateway sender queue or asynchronous event queue uses 5 dispatcher threads per queue. This provides support for applications that have the ability to process queued events concurrently for distribution to another <span class="keyword">GemFire</span> site or listener. If your application does not require concurrent distribution, or if you do not have enough resources to support the requirements of multiple dispatcher threads, then you can configure a single dispatcher thread to process a queue.
+By default, a gateway sender queue or asynchronous event queue uses 5 dispatcher threads per queue. This provides support for applications that have the ability to process queued events concurrently for distribution to another <span class="keyword">Geode</span> site or listener. If your application does not require concurrent distribution, or if you do not have enough resources to support the requirements of multiple dispatcher threads, then you can configure a single dispatcher thread to process a queue.
 
 -   [Using Multiple Dispatcher Threads to Process a Queue](configuring_gateway_concurrency_levels.html#concept_6C52A037E39E4FD6AE4C6A982A4A1A85__section_20E8EFCE89EB4DC7AA822D03C8E0F470)
 -   [Performance and Memory Considerations](configuring_gateway_concurrency_levels.html#concept_6C52A037E39E4FD6AE4C6A982A4A1A85__section_C4C83B5C0FDD4913BA128365EE7E4E35)
@@ -14,9 +14,9 @@ By default, a gateway sender queue or asynchronous event queue uses 5 dispatcher
 <a id="concept_6C52A037E39E4FD6AE4C6A982A4A1A85__section_20E8EFCE89EB4DC7AA822D03C8E0F470"></a>
 ## Using Multiple Dispatcher Threads to Process a Queue
 
-When multiple dispatcher threads are configured for a parallel queue, <span class="keyword">GemFire</span> simply uses multiple threads to process the contents of each individual queue. The total number of queues that are created is still determined by the number of <span class="keyword">GemFire</span> members that host the region.
+When multiple dispatcher threads are configured for a parallel queue, <span class="keyword">Geode</span> simply uses multiple threads to process the contents of each individual queue. The total number of queues that are created is still determined by the number of <span class="keyword">Geode</span> members that host the region.
 
-When multiple dispatcher threads are configured for a serial queue, <span class="keyword">GemFire</span> creates an additional copy of the queue for each thread on each member that hosts the queue. To obtain the maximum throughput, increase the number of dispatcher threads until your network is saturated.
+When multiple dispatcher threads are configured for a serial queue, <span class="keyword">Geode</span> creates an additional copy of the queue for each thread on each member that hosts the queue. To obtain the maximum throughput, increase the number of dispatcher threads until your network is saturated.
 
 The following diagram illustrates a serial gateway sender queue that is configured with multiple dispatcher threads.
 <img src="../../images/MultisiteConcurrency_WAN_Gateway.png" id="concept_6C52A037E39E4FD6AE4C6A982A4A1A85__image_093DAC58EBEE456485562C92CA79899F" class="image" width="624" />
@@ -36,8 +36,8 @@ When a serial gateway sender or an asynchronous event queue uses multiple dispat
 
 When using multiple `dispatcher-threads` (greater than 1) with a serial event queue, you can also configure the `order-policy` that those threads use to distribute events from the queue. The valid order policy values are:
 
--   **key (default)**. All updates to the same key are distributed in order. <span class="keyword">GemFire</span> preserves key ordering by placing all updates to the same key in the same dispatcher thread queue. You typically use key ordering when updates to entries have no relationship to each other, such as for an application that uses a single feeder to distribute stock updates to several other systems.
--   **thread**. All region updates from a given thread are distributed in order. <span class="keyword">GemFire</span> preserves thread ordering by placing all region updates from the same thread into the same dispatcher thread queue. In general, use thread ordering when updates to one region entry affect updates to another region entry.
+-   **key (default)**. All updates to the same key are distributed in order. <span class="keyword">Geode</span> preserves key ordering by placing all updates to the same key in the same dispatcher thread queue. You typically use key ordering when updates to entries have no relationship to each other, such as for an application that uses a single feeder to distribute stock updates to several other systems.
+-   **thread**. All region updates from a given thread are distributed in order. <span class="keyword">Geode</span> preserves thread ordering by placing all region updates from the same thread into the same dispatcher thread queue. In general, use thread ordering when updates to one region entry affect updates to another region entry.
 -   **partition**. All region events that share the same partitioning key are distributed in order. Specify partition ordering when applications use a [PartitionResolver](/releases/latest/javadoc/com/gemstone/gemfire/cache/PartitionResolver.html) to implement [custom partitioning](../partitioned_regions/using_custom_partition_resolvers.html). With partition ordering, all entries that share the same "partitioning key" (RoutingObject) are placed into the same dispatcher thread queue.
 
 You cannot configure the `order-policy` for a parallel event queue, because parallel queues cannot preserve event ordering for regions. Only the ordering of events for a given partition (or in a given queue of a distributed region) can be preserved.

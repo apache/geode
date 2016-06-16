@@ -2,22 +2,22 @@
 title:  Setup and Configuration
 ---
 
-The <span class="keyword">Pivotal GemFire</span> developer REST interface runs as an embedded HTTP or HTTPS service (Jetty server) within a <span class="keyword">GemFire</span> data node.
+The <span class="keyword">Apache Geode</span> developer REST interface runs as an embedded HTTP or HTTPS service (Jetty server) within a <span class="keyword">Geode</span> data node.
 
-All <span class="keyword">GemFire</span> REST interface classes and required JAR files are distributed as a WAR file with the <span class="keyword">GemFire</span> product distribution. You can locate the file in the following location:
+All <span class="keyword">Geode</span> REST interface classes and required JAR files are distributed as a WAR file with the <span class="keyword">Geode</span> product distribution. You can locate the file in the following location:
 
 ``` pre
 $GEMFIRE/tools/Extensions/gemfire-api.war
 ```
 
-To enable the developer REST API service in <span class="keyword">Pivotal GemFire</span>, set the `start-dev-rest-api` <span class="keyword">GemFire</span> property to `true` when starting a data node using either `gfsh` or the ServerLauncher API. Setting this property to true on a data node will start up an embedded Jetty server and deploy the REST developer API WAR file.
+To enable the developer REST API service in <span class="keyword">Apache Geode</span>, set the `start-dev-rest-api` <span class="keyword">Geode</span> property to `true` when starting a data node using either `gfsh` or the ServerLauncher API. Setting this property to true on a data node will start up an embedded Jetty server and deploy the REST developer API WAR file.
 
 **Note:**
-The REST API service for application development can only be started on servers; you cannot use locators to host the developer <span class="keyword">GemFire</span> REST API services.
+The REST API service for application development can only be started on servers; you cannot use locators to host the developer <span class="keyword">Geode</span> REST API services.
 
 You can have multiple REST enabled data nodes in a single distributed system. Each data node should have a separate host name and unique end point. To ensure that the data node is reachable on a machine with multiple NIC addresses, you can use `http-service-bind-address` to bind an address to the REST API service (as well as the other embedded web services such as Pulse.)
 
-You can also configure the Developer REST API service to run over HTTPS by configuring the following <span class="keyword">GemFire</span> properties in `gemfire.properties` or `gfsecurity.properties` or on server startup:
+You can also configure the Developer REST API service to run over HTTPS by configuring the following <span class="keyword">Geode</span> properties in `gemfire.properties` or `gfsecurity.properties` or on server startup:
 
 -   http-service-ssl-enabled
 -   http-service-ssl-require-authentication
@@ -37,7 +37,7 @@ The above parameters apply to all HTTP services hosted on the configured server,
 -   Management REST API service (for remote cluster management)
 -   Pulse monitoring tool
 
-The following procedure starts up a REST API service-enabled <span class="keyword">GemFire</span> deployment:
+The following procedure starts up a REST API service-enabled <span class="keyword">Geode</span> deployment:
 
 1.  Configure PDX for your cluster. You must configure PDX if either or both of the following conditions apply: 
     -   Application peer member caches will access REST-accessible Regions (resources) with the `Region.get(key)`.
@@ -72,7 +72,7 @@ The following procedure starts up a REST API service-enabled <span class="keywor
 
     After you have configured PDX for your caches, then proceed with starting up your REST-enabled servers and other data nodes.
 
-2.  Start a server node with the <span class="keyword">GemFire</span> property `start-dev-rest-api` set to `true`. For example:
+2.  Start a server node with the <span class="keyword">Geode</span> property `start-dev-rest-api` set to `true`. For example:
     ``` pre
     gfsh>start server --name=server1 --J=-Dgemfire.start-dev-rest-api=true \
     --J=-Dgemfire.http-service-port=8080 --J=-Dgemfire.http-service-bind-address=localhost
@@ -110,7 +110,7 @@ The following procedure starts up a REST API service-enabled <span class="keywor
     start-dev-rest-api=true
     ```
 
-5.  Verify that the <span class="keyword">GemFire</span> REST API service is up and running. To validate this, you can perform the following checks:
+5.  Verify that the <span class="keyword">Geode</span> REST API service is up and running. To validate this, you can perform the following checks:
     1.  Test the list resources endpoint (this step assumes that you have regions defined on your cluster):
         ``` pre
         curl -i http://localhost:8080/gemfire-api/v1
@@ -138,7 +138,7 @@ The following procedure starts up a REST API service-enabled <span class="keywor
 
 ## Programmatic Startup
 
-You can also start up and configure <span class="keyword">GemFire</span> REST services programmatically. For example:
+You can also start up and configure <span class="keyword">Geode</span> REST services programmatically. For example:
 ``` pre
 import com.gemstone.gemfire.distributed.ServerLauncher;
 

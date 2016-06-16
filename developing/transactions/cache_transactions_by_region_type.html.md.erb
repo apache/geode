@@ -2,7 +2,7 @@
 
 # Transactions by Region Type
 
-A transaction is managed on a per-cache basis, so multiple regions in the cache can participate in a single transaction. The data scope of a <span class="keyword">GemFire</span> cache transaction is the cache that hosts the transactional data. For partitioned regions, this may be a remote host to the one running the transaction application. Any transaction that includes one or more partitioned regions is run on the member storing the primary copy of the partitioned region data. Otherwise, the transaction host is the same one running the application.
+A transaction is managed on a per-cache basis, so multiple regions in the cache can participate in a single transaction. The data scope of a <span class="keyword">Geode</span> cache transaction is the cache that hosts the transactional data. For partitioned regions, this may be a remote host to the one running the transaction application. Any transaction that includes one or more partitioned regions is run on the member storing the primary copy of the partitioned region data. Otherwise, the transaction host is the same one running the application.
 
 -   The client executing the transaction code is called the transaction initiator.
 
@@ -15,11 +15,11 @@ The transaction host may be the same member or different member from the transac
 **Note:**
 If you have consistency checking enabled in your region, the transaction will generate all necessary version information for the region update when the transaction commits. See [Transactions and Consistent Regions](working_with_transactions.html#transactions_and_consistency) for more details.
 
--   **[Transactions and Partitioned Regions](../../../latest/developing/transactions/cache_transactions_by_region_type.html#concept_ysk_xj1_wk)**
+-   **[Transactions and Partitioned Regions](../../developing/transactions/cache_transactions_by_region_type.html#concept_ysk_xj1_wk)**
 
--   **[Transactions and Replicated Regions](../../../latest/developing/transactions/cache_transactions_by_region_type.html#concept_nl5_pk1_wk)**
+-   **[Transactions and Replicated Regions](../../developing/transactions/cache_transactions_by_region_type.html#concept_nl5_pk1_wk)**
 
--   **[Transactions and Persistent Regions](../../../latest/developing/transactions/cache_transactions_by_region_type.html#concept_omy_341_wk)**
+-   **[Transactions and Persistent Regions](../../developing/transactions/cache_transactions_by_region_type.html#concept_omy_341_wk)**
 
 ## Transactions and Partitioned Regions
 
@@ -68,7 +68,7 @@ The region’s scope affects how data is distributed during the commit phase. Tr
 Transactions on non-replicated regions (regions that use the old API with DataPolicy EMPTY, NORMAL and PRELOADED) are always transaction initiators, and the transaction data host is always a member with a replicated region. This is similar to the way transactions using the PARTITION\_PROXY shortcut are forwarded to members with primary bucket.
 
 **Note:**
-When you have transactions operating on EMPTY, NORMAL or PARTITION regions, make sure that the <span class="keyword">GemFire</span> property `conserve-sockets` is set to false to avoid distributed deadlocks. An empty region is a region created with the API `RegionShortcut.REPLICATE_PROXY` or a region with that uses the old API of `DataPolicy` set to `EMPTY`.
+When you have transactions operating on EMPTY, NORMAL or PARTITION regions, make sure that the <span class="keyword">Geode</span> property `conserve-sockets` is set to false to avoid distributed deadlocks. An empty region is a region created with the API `RegionShortcut.REPLICATE_PROXY` or a region with that uses the old API of `DataPolicy` set to `EMPTY`.
 
 ## Conflicting Transactions in Distributed-Ack Regions
 
@@ -82,7 +82,7 @@ In this series of figures, even after the commit operation is launched, the tran
 
 <img src="../../images_svg/transactions_replicate_2.svg" id="concept_nl5_pk1_wk__image_sbh_21k_54" class="image" />
 
-**Step 3:** Changes are in transit. T1 commits and its changes are merged into the local cache. The commit does not complete until <span class="keyword">GemFire</span> distributes the changes to the remote regions and acknowledgment is received.
+**Step 3:** Changes are in transit. T1 commits and its changes are merged into the local cache. The commit does not complete until <span class="keyword">Geode</span> distributes the changes to the remote regions and acknowledgment is received.
 
 <img src="../../images_svg/transactions_replicate_3.svg" id="concept_nl5_pk1_wk__image_qgl_k1k_54" class="image" />
 
@@ -98,7 +98,7 @@ These figures show how using the no-ack scope can produce unexpected results. Th
 
 <img src="../../images_svg/transactions_replicate_1.svg" id="concept_nl5_pk1_wk__image_jn2_cbk_54" class="image" />
 
-**Step 2:** Changes are in transit. Transactions T1 and T2 commit and merge their changes into the local cache. <span class="keyword">GemFire</span> then distributes changes to the remote regions.
+**Step 2:** Changes are in transit. Transactions T1 and T2 commit and merge their changes into the local cache. <span class="keyword">Geode</span> then distributes changes to the remote regions.
 
 <img src="../../images_svg/transactions_replicate_no_ack_1.svg" id="concept_nl5_pk1_wk__image_fk1_hbk_54" class="image" />
 
@@ -115,18 +115,18 @@ When encountering conflicts with local scope, the first transaction to start the
 
 ## Transactions and Persistent Regions
 
-By default, <span class="keyword">GemFire</span> does not allow transactions on persistent regions. You can enable the use of transactions on persistent regions by setting the property `gemfire.ALLOW_PERSISTENT_TRANSACTIONS` to true. This may also be accomplished at server startup using gfsh:
+By default, <span class="keyword">Geode</span> does not allow transactions on persistent regions. You can enable the use of transactions on persistent regions by setting the property `gemfire.ALLOW_PERSISTENT_TRANSACTIONS` to true. This may also be accomplished at server startup using gfsh:
 
 ``` pre
 gfsh start server --name=server1 --dir=server1_dir \
 --J=-Dgemfire.ALLOW_PERSISTENT_TRANSACTIONS=true \
 ```
 
-Since <span class="keyword">GemFire</span> does not provide atomic disk persistence guarantees, the default behavior is to disallow disk-persistent regions from participating in transactions. However, when choosing to enable transactions on persistent regions, consider the following:
+Since <span class="keyword">Geode</span> does not provide atomic disk persistence guarantees, the default behavior is to disallow disk-persistent regions from participating in transactions. However, when choosing to enable transactions on persistent regions, consider the following:
 
--   <span class="keyword">GemFire</span> does ensure atomicity for in-memory updates.
+-   <span class="keyword">Geode</span> does ensure atomicity for in-memory updates.
 -   When any failed member is unable to complete the logic triggered by a transaction (including subsequent disk writes), that failed member is removed from the distributed system and, if restarted, must rebuild its state from surviving nodes that successfully complete the updates.
--   The chances of multiple nodes failing to complete the disk writes that result from a transaction commit due to nodes crashing for unrelated reasons are small. The real risk is that the file system buffers holding the persistent updates do not get written to disk in the case of operating system or hardware failure. If only the <span class="keyword">GemFire</span> process crashes, atomicity still exists. The overall risk of losing disk updates can also be mitigated by enabling synchronized disk file mode for the disk stores, but this incurs a high performance penalty.
+-   The chances of multiple nodes failing to complete the disk writes that result from a transaction commit due to nodes crashing for unrelated reasons are small. The real risk is that the file system buffers holding the persistent updates do not get written to disk in the case of operating system or hardware failure. If only the <span class="keyword">Geode</span> process crashes, atomicity still exists. The overall risk of losing disk updates can also be mitigated by enabling synchronized disk file mode for the disk stores, but this incurs a high performance penalty.
 
 To mitigate the risk of data not get fully written to disk on all copies of the participating persistent disk stores:
 

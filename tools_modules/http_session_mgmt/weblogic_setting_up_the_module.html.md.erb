@@ -15,7 +15,7 @@ $ modify_war -h
 
 To modify your war or ear file manually, make the following updates:
 
--   **web.xml** needs a filter and listener added as follows. If you have your own filters, the <span class="keyword">GemFire</span> Module filter **must** be the first one.
+-   **web.xml** needs a filter and listener added as follows. If you have your own filters, the <span class="keyword">Geode</span> Module filter **must** be the first one.
 
     ``` pre
     <filter>
@@ -95,7 +95,7 @@ If you are deploying an ear file:
 
 <img src="../../images_svg/http_module_p2p_with_locator.svg" id="weblogic_setting_up_the_module__image_86E949E0F1AD4E9EB67605EFA4E97E13" class="image" />
 
-To run <span class="keyword">GemFire</span> in a peer-to-peer configuration, use the `modify_war` script with options
+To run <span class="keyword">Geode</span> in a peer-to-peer configuration, use the `modify_war` script with options
 
 ``` pre
 -t peer-to-peer  -p gemfire.property.locators=localhost[10334]
@@ -127,9 +127,9 @@ to result in the following `web.xml` content:
 
 <img src="../../images_svg/http_module_cs_with_locator.svg" id="weblogic_setting_up_the_module__image_BDF2273487EA4FEB9895D02A6F6FD445" class="image" />
 
-To run <span class="keyword">GemFire</span> in a client/server configuration, you make the application server operate as a <span class="keyword">GemFire</span> client. Use the `-t client-server` option to the `modify_war` script. This adds the following filter to application server's `web.xml` file:
+To run <span class="keyword">Geode</span> in a client/server configuration, you make the application server operate as a <span class="keyword">Geode</span> client. Use the `-t client-server` option to the `modify_war` script. This adds the following filter to application server's `web.xml` file:
 
-To run <span class="keyword">GemFire</span> in a client/server configuration, you make the application server operate as a <span class="keyword">GemFire</span> client. Use the `modify_war` script with options
+To run <span class="keyword">Geode</span> in a client/server configuration, you make the application server operate as a <span class="keyword">Geode</span> client. Use the `modify_war` script with options
 
 ``` pre
 -t client-server -p gemfire.property.cache-xml-file=<module dir>/conf/cache-client.xml
@@ -177,13 +177,13 @@ $ gfsh start server \
 <moduleDir>/lib/geode-modules-session-internal-1.0.0-incubating.M3-SNAPSHOT.jar
 ```
 
-Once the application server is started, the <span class="keyword">GemFire</span> client will automatically launch within the application server process.
+Once the application server is started, the <span class="keyword">Geode</span> client will automatically launch within the application server process.
 
 <a id="weblogic_setting_up_the_module__section_3E186713737E4D5383E23B41CDFED59B"></a>
 
-## Verifying that <span class="keyword">GemFire</span> Started
+## Verifying that <span class="keyword">Geode</span> Started
 
-You can verify that <span class="keyword">GemFire</span> has successfully started by inspecting the application server log file. For example:
+You can verify that <span class="keyword">Geode</span> has successfully started by inspecting the application server log file. For example:
 
 ``` pre
 info 2016/04/18 10:04:18.685 PDT <localhost-startStop-2> tid=0x1a] 
@@ -196,7 +196,7 @@ Source repository: develop
 Running on: /10.118.33.250, 8 cpu(s), x86_64 Mac OS X 10.11.4
 ```
 
-Information is also logged within the <span class="keyword">GemFire</span> log file, which by default is named `gemfire_modules.<date>.log`.
+Information is also logged within the <span class="keyword">Geode</span> log file, which by default is named `gemfire_modules.<date>.log`.
 
 <a id="weblogic_setting_up_the_module__section_E0E0E5A1C9484D4AA13878273F16A920"></a>
 

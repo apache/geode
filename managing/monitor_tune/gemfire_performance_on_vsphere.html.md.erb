@@ -1,47 +1,47 @@
 ---
-title:  Improving <span class="keyword">GemFire</span> Performance on vSphere
+title:  Improving <span class="keyword">Geode</span> Performance on vSphere
 ---
 
-This topic provides guidelines for tuning vSphere virtualized environments that host <span class="keyword">Pivotal GemFire</span> deployments.
+This topic provides guidelines for tuning vSphere virtualized environments that host <span class="keyword">Apache Geode</span> deployments.
 
-Without tuning, <span class="keyword">GemFire</span> can suffer a performance drop in virtual environments, including the VMware vSphere virtual platform.
+Without tuning, <span class="keyword">Geode</span> can suffer a performance drop in virtual environments, including the VMware vSphere virtual platform.
 
-You can expect to see significant performance degradation when running <span class="keyword">GemFire</span> on vSphere versus running <span class="keyword">GemFire</span> on dedicated hardware.
+You can expect to see significant performance degradation when running <span class="keyword">Geode</span> on vSphere versus running <span class="keyword">Geode</span> on dedicated hardware.
 
--   **[Operating System Guidelines](../../../latest/managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_F48990A6A37144988D49E132E17E117C)**
+-   **[Operating System Guidelines](../../managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_F48990A6A37144988D49E132E17E117C)**
 
     Use the latest supported version of the guest OS, and use Java large paging.
 
--   **[NUMA, CPU, and BIOS Settings](../../../latest/managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_D8393B1A75364E46B0F959F0DE820E9E)**
+-   **[NUMA, CPU, and BIOS Settings](../../managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_D8393B1A75364E46B0F959F0DE820E9E)**
 
     This section provides VMware- recommended NUMA, CPU, and BIOS settings for your hardware and virtual machines.
 
--   **[Physical and Virtual NIC Settings](../../../latest/managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_7A5F1EAD7A6C4E21BB1FF7CF3B625BC5)**
+-   **[Physical and Virtual NIC Settings](../../managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_7A5F1EAD7A6C4E21BB1FF7CF3B625BC5)**
 
     These guidelines help you reduce latency.
 
--   **[VMware vSphere vMotion and DRS Cluster Usage](../../../latest/managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_E6EB8AB6CCEF435A98B48B867FE9BFEB)**
+-   **[VMware vSphere vMotion and DRS Cluster Usage](../../managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_E6EB8AB6CCEF435A98B48B867FE9BFEB)**
 
     This topic discusses use limitations of vSphere vMotion, including the use of it with DRS.
 
--   **[Placement and Organization of Virtual Machines](../../../latest/managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_E53BBF3D09A54953B02DCE2BD00D51E0)**
+-   **[Placement and Organization of Virtual Machines](../../managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_E53BBF3D09A54953B02DCE2BD00D51E0)**
 
     This section provides guidelines on JVM instances and placement of redundant copies of cached data.
 
--   **[Virtual Machine Memory Reservation](../../../latest/managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_567308E9DE07406BB5BF420BE77B6558)**
+-   **[Virtual Machine Memory Reservation](../../managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_567308E9DE07406BB5BF420BE77B6558)**
 
     This section provides guidelines for sizing and setting memory.
 
--   **[vSphere High Availability and Pivotal GemFire](../../../latest/managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_424B940584044CF6A685E86802548A27)**
+-   **[vSphere High Availability and Apache Geode](../../managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_424B940584044CF6A685E86802548A27)**
 
-    On <span class="keyword">Pivotal GemFire</span> virtual machines, disable vSphere High Availability (HA).
+    On <span class="keyword">Apache Geode</span> virtual machines, disable vSphere High Availability (HA).
 
--   **[Storage Guidelines](../../../latest/managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_913B15841C4249A68697F3D91281A645)**
+-   **[Storage Guidelines](../../managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_913B15841C4249A68697F3D91281A645)**
 
     This section provides storage guidelines for persistence files, binaries, logs, and more.
 
--   **[Additional Resources](../../../latest/managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_628F038FD4954E56BF4192F17FD3D119)**
+-   **[Additional Resources](../../managing/monitor_tune/gemfire_performance_on_vsphere_guidelines.html#topic_628F038FD4954E56BF4192F17FD3D119)**
 
-    VMware provides additional resources for optimizing vSphere, Java applications, and <span class="keyword">Pivotal GemFire</span>.
+    VMware provides additional resources for optimizing vSphere, Java applications, and <span class="keyword">Apache Geode</span>.
 
 

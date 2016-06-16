@@ -3,9 +3,9 @@ title:  Running Compaction on Disk Store Log Files
 ---
 
 <a id="compacting_disk_stores__section_64BA304595364E38A28098EB09494531"></a>
-When a cache operation is added to a disk store, any preexisting operation record for the same entry becomes obsolete, and <span class="keyword">Pivotal GemFire</span> marks it as garbage. For example, when you create an entry, the create operation is added to the store. If you update the entry later, the update operation is added and the create operation becomes garbage. <span class="keyword">GemFire</span> does not remove garbage records as it goes, but it tracks the percentage of garbage in each operation log, and provides mechanisms for removing garbage to compact your log files.
+When a cache operation is added to a disk store, any preexisting operation record for the same entry becomes obsolete, and <span class="keyword">Apache Geode</span> marks it as garbage. For example, when you create an entry, the create operation is added to the store. If you update the entry later, the update operation is added and the create operation becomes garbage. <span class="keyword">Geode</span> does not remove garbage records as it goes, but it tracks the percentage of garbage in each operation log, and provides mechanisms for removing garbage to compact your log files.
 
-<span class="keyword">GemFire</span> compacts an old operation log by copying all non-garbage records into the current log and discarding the old files. As with logging, oplogs are rolled as needed during compaction to stay within the max oplog setting.
+<span class="keyword">Geode</span> compacts an old operation log by copying all non-garbage records into the current log and discarding the old files. As with logging, oplogs are rolled as needed during compaction to stay within the max oplog setting.
 
 You can configure the system to automatically compact any closed operation log when its garbage content reaches a certain percentage. You can also manually request compaction for online and offline disk stores. For the online disk store, the current operation log is not available for compaction, no matter how much garbage it contains.
 
@@ -23,10 +23,10 @@ Offline compaction runs essentially in the same way, but without the incoming ca
 
 Old log files become eligible for online compaction when their garbage content surpasses a configured percentage of the total file. A record is garbage when its operation is superseded by a more recent operation for the same object. During compaction, the non-garbage records are added to the current log along with new cache operations. Online compaction does not block current system operations.
 
--   **Automatic compaction**. When `auto-compact` is true, <span class="keyword">GemFire</span> automatically compacts each oplog when its garbage content surpasses the `compaction-threshold`. This takes cycles from your other operations, so you may want to disable this and only do manual compaction, to control the timing.
+-   **Automatic compaction**. When `auto-compact` is true, <span class="keyword">Geode</span> automatically compacts each oplog when its garbage content surpasses the `compaction-threshold`. This takes cycles from your other operations, so you may want to disable this and only do manual compaction, to control the timing.
 -   **Manual compaction**. To run manual compaction:
-    -   Set the disk store attribute `allow-force-compaction` to true. This causes <span class="keyword">GemFire</span> to maintain extra data about the files so it can compact on demand. This is disabled by default to save space. You can run manual online compaction at any time while the system is running. Oplogs eligible for compaction based on the `compaction-threshold` are compacted into the current oplog.
-    -   Run manual compaction as needed. <span class="keyword">GemFire</span> has two types of manual compaction:
+    -   Set the disk store attribute `allow-force-compaction` to true. This causes <span class="keyword">Geode</span> to maintain extra data about the files so it can compact on demand. This is disabled by default to save space. You can run manual online compaction at any time while the system is running. Oplogs eligible for compaction based on the `compaction-threshold` are compacted into the current oplog.
+    -   Run manual compaction as needed. <span class="keyword">Geode</span> has two types of manual compaction:
         -   Compact the logs for a single online disk store through the API, with the `forceCompaction` method. This method first rolls the oplogs and then compacts them. Example:
 
             ``` pre
@@ -62,7 +62,7 @@ gfsh>compact offline-disk-store --name=Disk2 --disk-dirs=/Disks/Disk2
 **Note:**
 Do not perform offline compaction on the baseline directory of an incremental backup.
 
-You must provide all of the directories in the disk store. If no oplog max size is specified, <span class="keyword">GemFire</span> uses the system default.
+You must provide all of the directories in the disk store. If no oplog max size is specified, <span class="keyword">Geode</span> uses the system default.
 
 Offline compaction can take a lot of memory. If you get a `java.lang.OutOfMemory` error while running this, you may need to increase your heap size with the `-J=-Xmx` parameter.
 

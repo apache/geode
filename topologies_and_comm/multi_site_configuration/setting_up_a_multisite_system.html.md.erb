@@ -9,7 +9,7 @@ Plan and configure your multi-site topology, and configure the regions that will
 
 Before you start, you should understand how to configure membership and communication in peer-to-peer systems using locators. See [Configuring Peer-to-Peer Discovery](../p2p_configuration/setting_up_a_p2p_system.html) and [Configuring Peer Communication](../p2p_configuration/setting_up_peer_communication.html).
 
-WAN deployments increase the messaging demands on a <span class="keyword">GemFire</span> system. To avoid hangs related to WAN messaging, always set `conserve-sockets=false` for <span class="keyword">GemFire</span> members that participate in a WAN deployment. See [Configuring Sockets in Multi-Site (WAN) Deployments](../../managing/monitor_tune/sockets_and_gateways.html) and [Making Sure You Have Enough Sockets](../../managing/monitor_tune/socket_communication_have_enough_sockets.html).
+WAN deployments increase the messaging demands on a <span class="keyword">Geode</span> system. To avoid hangs related to WAN messaging, always set `conserve-sockets=false` for <span class="keyword">Geode</span> members that participate in a WAN deployment. See [Configuring Sockets in Multi-Site (WAN) Deployments](../../managing/monitor_tune/sockets_and_gateways.html) and [Making Sure You Have Enough Sockets](../../managing/monitor_tune/socket_communication_have_enough_sockets.html).
 
 <a id="setting_up_a_multisite_system__section_86F9FE9D786D407FB438C56E43FC5DB1"></a>
 
@@ -29,7 +29,7 @@ Use the following steps to configure a multi-site system:
 
 3.  Configure the gateway senders that you will use to distribute region events to remote systems. See [Configure Gateway Senders](setting_up_a_multisite_system.html#setting_up_a_multisite_system__section_1500299A8F9A4C2385680E337F5D3DEC).
 4.  Create the data regions that you want to participate in the multi-site system, specifying the gateway sender(s) that each region should use for WAN distribution. Configure the same regions in the target clusters to apply the distributed events. See [Create Data Regions for Multi-site Communication](setting_up_a_multisite_system.html#setting_up_a_multisite_system__section_E1DEDD0743D54831AFFBCCDC750F8879).
-5.  Configure gateway receivers in each <span class="keyword">GemFire</span> cluster that will receive region events from another cluster. See [Configure Gateway Receivers](setting_up_a_multisite_system.html#setting_up_a_multisite_system__section_E3A44F85359046C7ADD12861D261637B).
+5.  Configure gateway receivers in each <span class="keyword">Geode</span> cluster that will receive region events from another cluster. See [Configure Gateway Receivers](setting_up_a_multisite_system.html#setting_up_a_multisite_system__section_E3A44F85359046C7ADD12861D261637B).
 6.  Start distributed system member processes in the correct order (locators first, followed by data nodes) to ensure efficient discovery of WAN resources. See [Starting Up and Shutting Down Your System](../../configuring/running/starting_up_shutting_down.html).
 7.  (Optional.) Deploy custom conflict resolvers to handle resolve potential conflicts that are detected when applying events from over a WAN. See [Resolving Conflicting Events](../../developing/events/resolving_multisite_conflicts.html#topic_E97BB68748F14987916CD1A50E4B4542).
 8.  (Optional.) Deploy WAN filters to determine which events are distributed over the WAN, or to modify events as they are distributed over the WAN. See [Filtering Events for Multi-Site (WAN) Distribution](../../developing/events/filtering_multisite_events.html#topic_E97BB68748F14987916CD1A50E4B4542).
@@ -51,11 +51,11 @@ To configure a gateway sender that uses gfsh to create the cache.xml configurati
 
 See [WAN Configuration](../../reference/topics/elements_ref.html#topic_7B1CABCAD056499AA57AF3CFDBF8ABE3) for more information about individual configuration properties.
 
-1.  For each <span class="keyword">GemFire</span> system, choose the members that will host a gateway sender configuration and distribute region events to remote sites:
-    -   You must deploy a parallel gateway sender configuration on each <span class="keyword">GemFire</span> member that hosts a region that uses the sender.
-    -   You may choose to deploy a serial gateway sender configuration on one or more <span class="keyword">GemFire</span> members in order to provide high availability. However, only one instance of a given serial gateway sender configuration distributes region events at any given time.
+1.  For each <span class="keyword">Geode</span> system, choose the members that will host a gateway sender configuration and distribute region events to remote sites:
+    -   You must deploy a parallel gateway sender configuration on each <span class="keyword">Geode</span> member that hosts a region that uses the sender.
+    -   You may choose to deploy a serial gateway sender configuration on one or more <span class="keyword">Geode</span> members in order to provide high availability. However, only one instance of a given serial gateway sender configuration distributes region events at any given time.
 
-2.  Configure each gateway sender on a <span class="keyword">GemFire</span> member using gfsh, `cache.xml` or Java API:
+2.  Configure each gateway sender on a <span class="keyword">Geode</span> member using gfsh, `cache.xml` or Java API:
     -   **gfsh configuration command**
 
         ``` pre
@@ -66,7 +66,7 @@ See [WAN Configuration](../../reference/topics/elements_ref.html#topic_7B1CABCAD
 
     -   **cache.xml configuration**
 
-        These example `cache.xml` entries configure two parallel gateway senders to distribute region events to two remote <span class="keyword">GemFire</span> clusters (clusters "2" and "3"):
+        These example `cache.xml` entries configure two parallel gateway senders to distribute region events to two remote <span class="keyword">Geode</span> clusters (clusters "2" and "3"):
 
         ``` pre
         <cache>
@@ -169,7 +169,7 @@ See [WAN Configuration](../../reference/topics/elements_ref.html#topic_7B1CABCAD
     ```
 
 **Note:**
-The gateway sender configuration for a specific sender `id` must be identical on each <span class="keyword">GemFire</span> member that hosts the gateway sender.
+The gateway sender configuration for a specific sender `id` must be identical on each <span class="keyword">Geode</span> member that hosts the gateway sender.
 
 <a id="setting_up_a_multisite_system__section_E1DEDD0743D54831AFFBCCDC750F8879"></a>
 
@@ -224,14 +224,14 @@ In addition to configuring regions with gateway senders to distribute events, yo
 
 ## Configure Gateway Receivers
 
-Always configure a gateway receiver in each <span class="keyword">GemFire</span> cluster that will receive and apply region events from another cluster.
+Always configure a gateway receiver in each <span class="keyword">Geode</span> cluster that will receive and apply region events from another cluster.
 
-A gateway receiver configuration can be applied to multiple <span class="keyword">GemFire</span> servers for load balancing and high availability. However, each <span class="keyword">GemFire</span> member that hosts a gateway receiver must also define all of the regions for which the receiver may receive an event. If a gateway receiver receives an event for a region that the local member does not define, <span class="keyword">GemFire</span> throws an exception. See [Create Data Regions for Multi-site Communication](setting_up_a_multisite_system.html#setting_up_a_multisite_system__section_E1DEDD0743D54831AFFBCCDC750F8879).
+A gateway receiver configuration can be applied to multiple <span class="keyword">Geode</span> servers for load balancing and high availability. However, each <span class="keyword">Geode</span> member that hosts a gateway receiver must also define all of the regions for which the receiver may receive an event. If a gateway receiver receives an event for a region that the local member does not define, <span class="keyword">Geode</span> throws an exception. See [Create Data Regions for Multi-site Communication](setting_up_a_multisite_system.html#setting_up_a_multisite_system__section_E1DEDD0743D54831AFFBCCDC750F8879).
 
 **Note:**
 You can only host one gateway receiver per member.
 
-A gateway receiver configuration specifies a range of possible port numbers on which to listen. The <span class="keyword">GemFire</span> server picks an unused port number from the specified range to use for the receiver process. You can use this functionality to easily deploy the same gateway receiver configuration to multiple members.
+A gateway receiver configuration specifies a range of possible port numbers on which to listen. The <span class="keyword">Geode</span> server picks an unused port number from the specified range to use for the receiver process. You can use this functionality to easily deploy the same gateway receiver configuration to multiple members.
 
 You can optionally configure gateway receivers to provide a specific IP address or host name for gateway sender connections. If you configure hostname-for-senders, locators will use the provided host name or IP address when instructing gateway senders on how to connect to gateway receivers. If you provide "" or null as the value, by default the gateway receiver's bind-address will be sent to clients.
 

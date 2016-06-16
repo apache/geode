@@ -9,7 +9,7 @@ This section provides guidelines for improving the efficiency of the authorizati
 
 For each new connection request from the client, the system authenticates the connection, and instantiates the callback for authorization of data requests and data updates coming in on that connection. Program to cache as much information as you can in the `AccessControl.init` method phase for quick authorization of each operation on the connection. Then you can use the cached information in `AccessControl.authorizeOperation`, which is called for every client operation.
 
-The efficiency of the `authorizeOperation` method directly affects the overall throughput of the <span class="keyword">GemFire</span> cache.
+The efficiency of the `authorizeOperation` method directly affects the overall throughput of the <span class="keyword">Geode</span> cache.
 
 <a id="authorization_whats_next__section_96657E491DDD47569C4E375B0355E1A3"></a>
 

@@ -7,9 +7,9 @@ You can configure and deploy Gemcached servers in a Java class or by using the g
 The following sections describe how to configure and deploy an embedded Gemcached server. You can configure and start a GemCached server either by invoking a Java class that calls the cache server's `start()` method, or by starting the cache server using the gfsh command line.
 
 <a id="topic_7B158074B27A4FEF9D38E7C369905C72__section_17E7E4058D914334B9C5AC2E3DC1F7F2"></a>
-## Embedding a Gemcached server in a <span class="keyword">GemFire</span> Java Application
+## Embedding a Gemcached server in a <span class="keyword">Geode</span> Java Application
 
-The `com.gemstone.gemfire.memcached` package contains a single class, `GemFireMemcachedServer`. (See the [<span class="keyword">GemFire</span> Javadocs](http://static.springsource.org/spring-gemfire/docs/current/api/).) Use this class to configure and embed a Gemcached server in a <span class="keyword">GemFire</span> cache server. For example, the following statement creates and starts an embedded Gemcached server on port number 5555 using the binary protocol:
+The `com.gemstone.gemfire.memcached` package contains a single class, `GemFireMemcachedServer`. (See the [<span class="keyword">Geode</span> Javadocs](http://static.springsource.org/spring-gemfire/docs/current/api/).) Use this class to configure and embed a Gemcached server in a <span class="keyword">Geode</span> cache server. For example, the following statement creates and starts an embedded Gemcached server on port number 5555 using the binary protocol:
 
 ``` pre
 GemFireMemcachedServer server = 

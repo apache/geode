@@ -9,7 +9,7 @@ This section describes these features.
 
 **To view a list of available gfsh commands, press Tab at an empty prompt.**
 
-The list of commands you see depends on whether you are connected to a <span class="keyword">GemFire</span> distributed system. If you are not connected, you see a list of local commands that are available.
+The list of commands you see depends on whether you are connected to a <span class="keyword">Geode</span> distributed system. If you are not connected, you see a list of local commands that are available.
 
 ``` pre
 gfsh>
@@ -51,7 +51,7 @@ rebalance     : Rebalance partitioned regions. The default is for all partitione
 remove        : Remove an entry from a region. If using a region whose key class has been set, then specifying --key-class is unnecessary.
 ```
 
-Type `hint server` to view a description of servers in <span class="keyword">GemFire</span> and a list of commands available for managing and monitoring them.
+Type `hint server` to view a description of servers in <span class="keyword">Geode</span> and a list of commands available for managing and monitoring them.
 
 ``` pre
 gfsh>hint server
@@ -92,7 +92,7 @@ Statistics
 
 Depending on the command, typing `help <command-name>` displays usage information for that particular command or a list of commands related to the command.
 
-For example, type `help start` to display a list of start commands with short descriptions. The descriptions indicate whether the command is available, depending on your connection status. In the following example, you are not currently connected to a <span class="keyword">GemFire</span> distributed system (via connection to a JMX Manager node), so some start commands are unavailable.
+For example, type `help start` to display a list of start commands with short descriptions. The descriptions indicate whether the command is available, depending on your connection status. In the following example, you are not currently connected to a <span class="keyword">Geode</span> distributed system (via connection to a JMX Manager node), so some start commands are unavailable.
 
 ``` pre
 gfsh>help start

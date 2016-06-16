@@ -2,7 +2,7 @@
 title:  Changing Default Configuration of the Hibernate Cache Module
 ---
 
-To edit <span class="keyword">GemFire</span> configuration information (such as how members locate each other), you can add <span class="keyword">GemFire</span> properties to Hibernate's `hibernate.cfg.xml` file.
+To edit <span class="keyword">Geode</span> configuration information (such as how members locate each other), you can add <span class="keyword">Geode</span> properties to Hibernate's `hibernate.cfg.xml` file.
 
 When adding properties, use the following syntax:
 
@@ -10,10 +10,10 @@ When adding properties, use the following syntax:
 <property name="gemfire.PROPERTY_NAME">PROPERTY_VALUE</property>
 ```
 
-In the preceding code snippet, `PROPERTY_NAME` is the property name and `PROPERTY_VALUE` is the property value. The list of configurable system properties include any of the properties that can be specified in <span class="keyword">GemFire</span>'s `gemfire.properties` file. The property changes associated with the most common configurations are described below.
+In the preceding code snippet, `PROPERTY_NAME` is the property name and `PROPERTY_VALUE` is the property value. The list of configurable system properties include any of the properties that can be specified in <span class="keyword">Geode</span>'s `gemfire.properties` file. The property changes associated with the most common configurations are described below.
 
 <a id="changing_gemfire_default_cfg__changing_gemfire_topology"></a>
-## Changing the <span class="keyword">GemFire</span> Topology
+## Changing the <span class="keyword">Geode</span> Topology
 
 By default, the topology is set for a peer-to-peer configuration rather than a client/server configuration. To use the peer-to-peer configuration, you don't have to make any changes. If you want to change the configuration to a client/server topology, alter this line of the Hibernate configuration file to be:
 
@@ -21,7 +21,7 @@ By default, the topology is set for a peer-to-peer configuration rather than a c
 <property name="gemfire.cache-topology">client-server</property>
 ```
 
-Since the Hibernate process operates as a <span class="keyword">GemFire</span> client in this configuration, you must manually launch a <span class="keyword">GemFire</span> cache server. Do this after starting the locator. Make sure the Hibernate jar and the <span class="keyword">GemFire</span> modules jar are in the classpath, along with any dependencies. This command to start the server assumes that gfsh is in your path and sets the classpath on the command line needs to be altered to fill in the path to the directory in which contains the Hibernate jar files and correct the names of the jar files:
+Since the Hibernate process operates as a <span class="keyword">Geode</span> client in this configuration, you must manually launch a <span class="keyword">Geode</span> cache server. Do this after starting the locator. Make sure the Hibernate jar and the <span class="keyword">Geode</span> modules jar are in the classpath, along with any dependencies. This command to start the server assumes that gfsh is in your path and sets the classpath on the command line needs to be altered to fill in the path to the directory in which contains the Hibernate jar files and correct the names of the jar files:
 
 ``` pre
 $ gfsh start server \
@@ -60,15 +60,15 @@ In this example, com.foo.Bar is the name of your class and REGION\_ATTRIBUTE can
 
 ## Changing Region Names
 
-By default, the <span class="keyword">GemFire</span> Hibernate module puts entities in a region whose name is the fully qualified path of the entity. The module uses these region names to eagerly prefetch related entities. Therefore, we recommend that you do not change the default names of the regions that are created by Hibernate.
+By default, the <span class="keyword">Geode</span> Hibernate module puts entities in a region whose name is the fully qualified path of the entity. The module uses these region names to eagerly prefetch related entities. Therefore, we recommend that you do not change the default names of the regions that are created by Hibernate.
 
 <a id="changing_gemfire_default_cfg__changing_cs_region_atts"></a>
 
 ## Changing Client/Server Region Attributes
 
-When using a client/server configuration, the default region attribute for the <span class="keyword">GemFire</span> servers is a PARTITION region. This means that the data is partitioned across the pool of <span class="keyword">GemFire</span> servers. You can modify this behavior using the same instructions specified in [Changing Peer-to-Peer Region Attributes](changing_gemfire_default_cfg.html#changing_gemfire_default_cfg__changing_p2p_region_atts).
+When using a client/server configuration, the default region attribute for the <span class="keyword">Geode</span> servers is a PARTITION region. This means that the data is partitioned across the pool of <span class="keyword">Geode</span> servers. You can modify this behavior using the same instructions specified in [Changing Peer-to-Peer Region Attributes](changing_gemfire_default_cfg.html#changing_gemfire_default_cfg__changing_p2p_region_atts).
 
-In addition to the region attribute of the servers, you can also modify the region attributes for the <span class="keyword">GemFire</span> client, which is the process running Hibernate. By default this region is set to PROXY. This means that the client will not cache data.
+In addition to the region attribute of the servers, you can also modify the region attributes for the <span class="keyword">Geode</span> client, which is the process running Hibernate. By default this region is set to PROXY. This means that the client will not cache data.
 
 You can change the client region attributes from within the hibernate.cfg.xml file using the same client region shortcuts specified in [Region Shortcuts and Custom Named Region Attributes](../../basic_config/data_regions/region_shortcuts.html).
 
@@ -94,7 +94,7 @@ In this example, com.foo.Bar is the name of your class and CLIENT\_REGION\_ATTRI
 
 ## Turning On Persistence
 
-If you change the region type to any one of the persistent modes (such as PARTITION\_PERSISTENT and REPLICATE\_PERSISTENT), cache data will get stored into the current working directory. To change this location, supply disk storage information in <span class="keyword">GemFire</span>'s `cache.xml` configuration file. For example:
+If you change the region type to any one of the persistent modes (such as PARTITION\_PERSISTENT and REPLICATE\_PERSISTENT), cache data will get stored into the current working directory. To change this location, supply disk storage information in <span class="keyword">Geode</span>'s `cache.xml` configuration file. For example:
 
 ``` pre
 <cache>
@@ -132,15 +132,15 @@ You must also change Hibernate's `hibernate.cfg.xml` file to point to this xml f
 
 ## **Caching Query Results**
 
-In a Hibernate application, the caching of query results is recommended for queries that are run frequently with the same parameters. However, most applications using Hibernate do not benefit from query results caching because Hibernate will invalidate cached results when even a single entity involved in the query is updated. For example, suppose that a query on the Person entity is cached. As soon as any instance of Person is updated, created or deleted, Hibernate will invalidate this query because it cannot predict the impact of the change on the cached query results. Therefore, the <span class="keyword">GemFire</span> Hibernate Cache Module does not distribute query results to other <span class="keyword">GemFire</span> member caches. The query results are always cached only in the <span class="keyword">GemFire</span> cache local to the Hibernate session.
+In a Hibernate application, the caching of query results is recommended for queries that are run frequently with the same parameters. However, most applications using Hibernate do not benefit from query results caching because Hibernate will invalidate cached results when even a single entity involved in the query is updated. For example, suppose that a query on the Person entity is cached. As soon as any instance of Person is updated, created or deleted, Hibernate will invalidate this query because it cannot predict the impact of the change on the cached query results. Therefore, the <span class="keyword">Geode</span> Hibernate Cache Module does not distribute query results to other <span class="keyword">Geode</span> member caches. The query results are always cached only in the <span class="keyword">Geode</span> cache local to the Hibernate session.
 
 <a id="changing_gemfire_default_cfg__section_E884BF4251D6494695408B30D1F350B1"></a>
 
-## Remapping the Hibernate EnumType with the <span class="keyword">GemFire</span> EnumType
+## Remapping the Hibernate EnumType with the <span class="keyword">Geode</span> EnumType
 
-Due to an issue with Hibernate in a client-server topology, application classes must be present on the <span class="keyword">GemFire</span> cache server when a Hibernate application uses annotations. If you do not want to place the application classes on the <span class="keyword">GemFire</span> cache server, you can modify the Hibernate configuration to use the `com.gemstone.gemfire.modules.hibernate.EnumType` in place of `org.hibernate.type.EnumType`.
+Due to an issue with Hibernate in a client-server topology, application classes must be present on the <span class="keyword">Geode</span> cache server when a Hibernate application uses annotations. If you do not want to place the application classes on the <span class="keyword">Geode</span> cache server, you can modify the Hibernate configuration to use the `com.gemstone.gemfire.modules.hibernate.EnumType` in place of `org.hibernate.type.EnumType`.
 
-To configure Hibernate to use the <span class="keyword">GemFire</span> EnumType, modify `hibernate.cfg.xml` to add a property for the mapping. For example:
+To configure Hibernate to use the <span class="keyword">Geode</span> EnumType, modify `hibernate.cfg.xml` to add a property for the mapping. For example:
 
 ``` pre
 <property name="myEnum">

@@ -2,9 +2,9 @@
 title:  Topology Types
 ---
 
-The <span class="keyword">Pivotal GemFire</span> topology options allow you to scale horizontally and vertically.
+The <span class="keyword">Apache Geode</span> topology options allow you to scale horizontally and vertically.
 
-<span class="keyword">Pivotal GemFire</span> provides a variety of cache topologies:
+<span class="keyword">Apache Geode</span> provides a variety of cache topologies:
 
 -   At the core of all systems is the single, peer-to-peer distributed system.
 -   For horizontal and vertical scaling, you can combine individual systems into client/server and multi-site (WAN) topologies:
@@ -14,7 +14,7 @@ The <span class="keyword">Pivotal GemFire</span> topology options allow you to s
 <a id="concept_7628F498DB534A2D8A99748F5DA5DC94__section_333142A36A3E4AF7A1EC31856ED99FCA"></a>
 ## Peer-to-Peer Configuration
 
-The peer-to-peer distributed system is the building block for all <span class="keyword">GemFire</span> installations. Peer-to-peer alone is the simplest topology. Each cache instance, or member, directly communicates with every other member in the distributed system. This cache configuration is primarily designed for applications that need to embed a cache within the application process space and participate in a cluster. A typical example is an application server cluster in which the application and the cache are co-located and share the same heap.
+The peer-to-peer distributed system is the building block for all <span class="keyword">Geode</span> installations. Peer-to-peer alone is the simplest topology. Each cache instance, or member, directly communicates with every other member in the distributed system. This cache configuration is primarily designed for applications that need to embed a cache within the application process space and participate in a cluster. A typical example is an application server cluster in which the application and the cache are co-located and share the same heap.
 
 <img src="../../images_svg/p2p_topology.svg" id="concept_7628F498DB534A2D8A99748F5DA5DC94__image_vzs_qwn_4r" class="image" />
 
@@ -22,7 +22,7 @@ The peer-to-peer distributed system is the building block for all <span class="k
 
 ## Client/Server Configuration
 
-The client/server topology is the model for vertical scaling, where clients typically host a small subset of the data in the application process space and delegate to the server system for the rest. Compared to peer-to-peer by itself, the client/server architecture provides better data isolation, high fetch performance, and more scalability. If data distribution will put a very heavy load on the network, a client/server architecture usually gives better performance. In any client/server installation, the server system is itself a peer-to-peer system, with data distributed between servers. A client system has a connection pool, which it uses to communicate with servers and other <span class="keyword">GemFire</span> members. A client may also contain a local cache.
+The client/server topology is the model for vertical scaling, where clients typically host a small subset of the data in the application process space and delegate to the server system for the rest. Compared to peer-to-peer by itself, the client/server architecture provides better data isolation, high fetch performance, and more scalability. If data distribution will put a very heavy load on the network, a client/server architecture usually gives better performance. In any client/server installation, the server system is itself a peer-to-peer system, with data distributed between servers. A client system has a connection pool, which it uses to communicate with servers and other <span class="keyword">Geode</span> members. A client may also contain a local cache.
 
 <img src="../../images_svg/cs_topology.svg" id="concept_7628F498DB534A2D8A99748F5DA5DC94__image_073094D7ED05419A9EE8E6AE552BE3F3" class="image" />
 
@@ -30,7 +30,7 @@ The client/server topology is the model for vertical scaling, where clients typi
 
 ## Multi-site Configuration
 
-For horizontal scaling, you can use a loosely coupled multi-site topology. With multi-site, multiple <span class="keyword">GemFire</span> systems are loosely coupled, generally across geographical distances with slower connections, such as with a WAN. This topology provides better performance than the tight coupling of a single system, and greater independence between locations, so that each site can function on its own if the connection or remote site become unavailable. In a multi-site installation, each individual site is a peer-to-peer or Client/Server system.
+For horizontal scaling, you can use a loosely coupled multi-site topology. With multi-site, multiple <span class="keyword">Geode</span> systems are loosely coupled, generally across geographical distances with slower connections, such as with a WAN. This topology provides better performance than the tight coupling of a single system, and greater independence between locations, so that each site can function on its own if the connection or remote site become unavailable. In a multi-site installation, each individual site is a peer-to-peer or Client/Server system.
 
 <img src="../../images/consistent_multisite.png" id="concept_7628F498DB534A2D8A99748F5DA5DC94__image_6501FD66F0F94273A1F7EEE5747B3925" class="image" />
 

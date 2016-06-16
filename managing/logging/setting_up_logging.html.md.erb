@@ -7,7 +7,7 @@ You configure logging in a member's `gemfire.properties` or at startup with `gfs
 <a id="setting_up_logging__section_35F8A9028A91441785BCACD6CD40A498"></a>
 Before you begin, make sure you understand [Basic Configuration and Programming](../../basic_config/book_intro.html).
 
-1.  Run a time synchronization service such as NTP on all <span class="keyword">GemFire</span> host machines. This is the only way to produce logs that are useful for troubleshooting. Synchronized time stamps ensure that log messages from different hosts can be merged to accurately reproduce a chronological history of a distributed run.
+1.  Run a time synchronization service such as NTP on all <span class="keyword">Geode</span> host machines. This is the only way to produce logs that are useful for troubleshooting. Synchronized time stamps ensure that log messages from different hosts can be merged to accurately reproduce a chronological history of a distributed run.
 2.  Use a sniffer to monitor your logs Look for new or unexpected warnings, errors, or severe messages. The logs output by your system have their own characteristics, indicative of your system configuration and of the particular behavior of your applications, so you must become familiar with your applications' logs to use them effectively.
 3.  Configure member logging in each member's `gemfire.properties` as needed:
 

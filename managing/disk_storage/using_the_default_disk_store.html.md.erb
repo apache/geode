@@ -5,7 +5,7 @@ title:  Modifying the Default Disk Store
 You can modify the behavior of the default disk store by specifying the attributes you want for the disk store named "DEFAULT".
 
 <a id="using_the_default_disk_store__section_7D6E1A05D28840AC8606EF0D88E9B373"></a>
-Whenever you use disk stores without specifying the disk store to use, <span class="keyword">GemFire</span> uses the disk store named "DEFAULT".
+Whenever you use disk stores without specifying the disk store to use, <span class="keyword">Geode</span> uses the disk store named "DEFAULT".
 
 For example, these region and queue configurations specify persistence and/or overflow, but do not specify the disk-store-name. Because no disk store is specified, these use the disk store named "DEFAULT".
 
@@ -35,7 +35,7 @@ Example of using the default disk store for server subscription queue overflow (
 
 ## Change the Behavior of the Default Disk Store
 
-<span class="keyword">GemFire</span> initializes the default disk store with the default disk store configuration settings. You can modify the behavior of the default disk store by specifying the attributes you want for the disk store named "DEFAULT". The only thing you can’t change about the default disk store is the name.
+<span class="keyword">Geode</span> initializes the default disk store with the default disk store configuration settings. You can modify the behavior of the default disk store by specifying the attributes you want for the disk store named "DEFAULT". The only thing you can’t change about the default disk store is the name.
 
 The following example changes the default disk store to allow manual compaction and to use multiple, non-default directories:
 

@@ -1,34 +1,34 @@
 ---
-title:  Overview of <span class="keyword">GemFire</span> Management and Monitoring Tools
+title:  Overview of <span class="keyword">Geode</span> Management and Monitoring Tools
 ---
 
-<span class="keyword">GemFire</span> provides a variety of management tools you can use to manage a <span class="keyword">GemFire</span> distributed system.
+<span class="keyword">Geode</span> provides a variety of management tools you can use to manage a <span class="keyword">Geode</span> distributed system.
 
-The <span class="keyword">GemFire</span> management and monitoring tools allow you to configure all members and processes of a distributed system, monitor operations in the system, and start and stop the members. Internally, <span class="keyword">GemFire</span> uses Java MBeans, specifically MXBeans, to expose management controls and monitoring features. You can monitor and control <span class="keyword">GemFire</span> by writing Java programs that use these MXBeans, or you can use one of several tools provided with <span class="keyword">GemFire</span> to monitor and manage your distributed system. The primary tool for these tasks is the gfsh command-line tool, as described in this section.
+The <span class="keyword">Geode</span> management and monitoring tools allow you to configure all members and processes of a distributed system, monitor operations in the system, and start and stop the members. Internally, <span class="keyword">Geode</span> uses Java MBeans, specifically MXBeans, to expose management controls and monitoring features. You can monitor and control <span class="keyword">Geode</span> by writing Java programs that use these MXBeans, or you can use one of several tools provided with <span class="keyword">Geode</span> to monitor and manage your distributed system. The primary tool for these tasks is the gfsh command-line tool, as described in this section.
 
-<span class="keyword">GemFire</span> provides the following tools to manage a <span class="keyword">GemFire</span> installation:
+<span class="keyword">Geode</span> provides the following tools to manage a <span class="keyword">Geode</span> installation:
 
 ## gfsh Command-line tool
 
-The gfsh command line tool provides a set of commands you use to configure, manage, and monitor a <span class="keyword">GemFire</span> distributed system. gfsh is the recommended tool for managing your distributed system.
+The gfsh command line tool provides a set of commands you use to configure, manage, and monitor a <span class="keyword">Geode</span> distributed system. gfsh is the recommended tool for managing your distributed system.
 
 Use gfsh to:
 
--   Start and stop <span class="keyword">GemFire</span> processes, such as locators and cache servers
+-   Start and stop <span class="keyword">Geode</span> processes, such as locators and cache servers
 -   Deploy applications
 -   Create and destroy regions
 -   Execute functions
 -   Manage disk stores
 -   Import and export data
--   Monitor <span class="keyword">GemFire</span> processes
--   Launch <span class="keyword">GemFire</span> monitoring tools
+-   Monitor <span class="keyword">Geode</span> processes
+-   Launch <span class="keyword">Geode</span> monitoring tools
 -   Shut down a distributed system
--   Script various operations involving <span class="keyword">GemFire</span> members
+-   Script various operations involving <span class="keyword">Geode</span> members
 -   Save the configuration for all members of a distributed system
 
 gfsh runs in its own shell, or you can [execute gfsh commands directly from the OS command line](../../tools_modules/gfsh/os_command_line_execution.html#topic_fpf_y1g_tp). gfsh can interact with remote systems [using the http protocol](../../configuring/cluster_config/gfsh_remote.html). You can also [write scripts that run in a gfsh shell](../../tools_modules/gfsh/command_scripting.html#concept_9B2F7550F16C4717831AD40A56922259) to automate system startup.
 
-You can use gfsh to create shared cluster configurations for your distributed system. You can define configurations that apply to the entire cluster, or that apply only to groups of similar members that all share a common configuration. <span class="keyword">GemFire</span> locators maintain these configurations as a hidden region and distribute the configuration to all locators in the distributed system. The locator also persists the shared configurations on disk as `cluster.xml` and `cluster.properties` files. You can use those shared cluster configuration files to re-start your system, migrate the system to a new environment, add new members to a distributed system, or to restore existing members after a failure.
+You can use gfsh to create shared cluster configurations for your distributed system. You can define configurations that apply to the entire cluster, or that apply only to groups of similar members that all share a common configuration. <span class="keyword">Geode</span> locators maintain these configurations as a hidden region and distribute the configuration to all locators in the distributed system. The locator also persists the shared configurations on disk as `cluster.xml` and `cluster.properties` files. You can use those shared cluster configuration files to re-start your system, migrate the system to a new environment, add new members to a distributed system, or to restore existing members after a failure.
 
 A basic cluster configuration consists of:
 
@@ -38,40 +38,40 @@ A basic cluster configuration consists of:
 
 See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html) and [Cluster Configuration Files and Troubleshooting](../../configuring/cluster_config/gfsh_config_troubleshooting.html#concept_ylt_2cb_y4) for additional details on gfsh cluster configuration files.
 
-Using the gfsh tool, you can easily migrate a <span class="keyword">GemFire</span>-based application from a development environment into a testing or production environment.
+Using the gfsh tool, you can easily migrate a <span class="keyword">Geode</span>-based application from a development environment into a testing or production environment.
 
 ## Executing gfsh commands with the management API
 
-You can also use <span class="keyword">GemFire</span>'s management APIs to execute gfsh commands in a Java class. See [Executing gfsh Commands through the Management API](gfsh_and_management_api.html#concept_451F0978285245E69C3E8DE795BD8635).
+You can also use <span class="keyword">Geode</span>'s management APIs to execute gfsh commands in a Java class. See [Executing gfsh Commands through the Management API](gfsh_and_management_api.html#concept_451F0978285245E69C3E8DE795BD8635).
 
 ## Member Configuration Management
 
-When you issue gfsh commands and have the cluster configuration service enabled (on a locator), <span class="keyword">GemFire</span> saves the configurations created within gfsh by building a `cluster.xml` and `cluster.properties` files for the entire cluster, or group of members.
+When you issue gfsh commands and have the cluster configuration service enabled (on a locator), <span class="keyword">Geode</span> saves the configurations created within gfsh by building a `cluster.xml` and `cluster.properties` files for the entire cluster, or group of members.
 
 You can also directly create configurations using `cache.xml` and `gemfire.properties` files and manage the members individually.
 
 ## Java Management Extension (JMX) MBeans
 
-<span class="keyword">GemFire</span> uses a federated Open MBean strategy to manage and monitor all members of the distributed system. Your Java classes interact with a single MBeanServer that aggregates MBeans from other local and remote members. Using this strategy gives you a consolidated, single-agent view of the distributed system.
+<span class="keyword">Geode</span> uses a federated Open MBean strategy to manage and monitor all members of the distributed system. Your Java classes interact with a single MBeanServer that aggregates MBeans from other local and remote members. Using this strategy gives you a consolidated, single-agent view of the distributed system.
 
-<span class="keyword">GemFire</span>'s implementation of JMX is industry-standard and friendly to generic JMX clients. You can monitor or manage the distributed system by using any third-party tool that is compliant with JMX. For example, JConsole.
+<span class="keyword">Geode</span>'s implementation of JMX is industry-standard and friendly to generic JMX clients. You can monitor or manage the distributed system by using any third-party tool that is compliant with JMX. For example, JConsole.
 
-See [Pivotal GemFire Management and Monitoring](management_and_monitoring.html)
+See [Apache Geode Management and Monitoring](management_and_monitoring.html)
 
-## <span class="keyword">GemFire</span> Java API
+## <span class="keyword">Geode</span> Java API
 
-The <span class="keyword">GemFire</span> API provides a set of Java classes you can use to manage and monitor a distributed system. See the <span class="keyword apiname">com.gemstone.gemfire.management</span> package in the <span class="keyword">GemFire</span> JavaDocs .
+The <span class="keyword">Geode</span> API provides a set of Java classes you can use to manage and monitor a distributed system. See the <span class="keyword apiname">com.gemstone.gemfire.management</span> package in the <span class="keyword">Geode</span> JavaDocs .
 
-## <span class="keyword">GemFire</span> Pulse
+## <span class="keyword">Geode</span> Pulse
 
-<span class="keyword">GemFire</span> Pulse is a Web Application that provides a graphical dashboard for monitoring vital, real-time health and performance of <span class="keyword">GemFire</span> clusters, members, and regions.
+<span class="keyword">Geode</span> Pulse is a Web Application that provides a graphical dashboard for monitoring vital, real-time health and performance of <span class="keyword">Geode</span> clusters, members, and regions.
 
-Use Pulse to examine total memory, CPU, and disk space used by members, uptime statistics, client connections, and critical notifications. Pulse communicates with a <span class="keyword">GemFire</span> JMX manager to provide a complete view of your <span class="keyword">GemFire</span> deployment.
+Use Pulse to examine total memory, CPU, and disk space used by members, uptime statistics, client connections, and critical notifications. Pulse communicates with a <span class="keyword">Geode</span> JMX manager to provide a complete view of your <span class="keyword">Geode</span> deployment.
 
-See [GemFire Pulse](../../tools_modules/pulse/chapter_overview.html).
+See [Geode Pulse](../../tools_modules/pulse/chapter_overview.html).
 
 ## JConsole
 
-JConsole is a JMX monitoring utility provided with a Java Development Kit (JDK). You use gfsh to connect to <span class="keyword">GemFire</span>, and then launch JConsole with a gfsh command. The JConsole application allows you to browse MBeans, attributes, operations, and notifications. See [Browsing GemFire MBeans through JConsole](mbeans_jconsole.html).
+JConsole is a JMX monitoring utility provided with a Java Development Kit (JDK). You use gfsh to connect to <span class="keyword">Geode</span>, and then launch JConsole with a gfsh command. The JConsole application allows you to browse MBeans, attributes, operations, and notifications. See [Browsing Geode MBeans through JConsole](mbeans_jconsole.html).
 
 

@@ -48,7 +48,7 @@ When an application or cache server crashes, any data in local memory is lost, i
 
 If the partitioned region is configured for redundancy and a member crashes, the system continues to operate with the remaining copies of the data. You may need to perform recovery actions depending on how many members you have lost and how you have configured redundancy in your system.
 
-By default, <span class="keyword">GemFire</span> does not make new copies of the data until a new member is brought online to replace the member that crashed. You can control this behavior using the recovery delay attributes. For more information, see [Configure High Availability for a Partitioned Region](../../developing/partitioned_regions/configuring_ha_for_pr.html).
+By default, <span class="keyword">Geode</span> does not make new copies of the data until a new member is brought online to replace the member that crashed. You can control this behavior using the recovery delay attributes. For more information, see [Configure High Availability for a Partitioned Region](../../developing/partitioned_regions/configuring_ha_for_pr.html).
 
 To recover, start a replacement member. The new member regenerates the lost copies and returns them to the configured redundancy level.
 
@@ -63,7 +63,7 @@ You can also lose access to all copies of your data through network failure. See
 
 **Recovery Without Data Redundancy**
 
-If a member crashes and there are no redundant copies, any logic that tries to interact with the bucket data is *blocked* until the primary buckets are restored from disk. (If you do not have persistence enabled, <span class="keyword">GemFire</span> will reallocate the buckets on any available remaining nodes, however you will need to recover any lost data using external mechanisms.)
+If a member crashes and there are no redundant copies, any logic that tries to interact with the bucket data is *blocked* until the primary buckets are restored from disk. (If you do not have persistence enabled, <span class="keyword">Geode</span> will reallocate the buckets on any available remaining nodes, however you will need to recover any lost data using external mechanisms.)
 
 To recover, restart the member. The application returns to active work and automatically begins to create new data.
 

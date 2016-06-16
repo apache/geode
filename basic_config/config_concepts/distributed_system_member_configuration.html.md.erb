@@ -2,12 +2,12 @@
 title:  Distributed System Members
 ---
 
-Distributed system members are programs that connect to a <span class="keyword">GemFire</span> distributed system. You configure members to belong to a single distributed system, and you can optionally configure them to be clients or servers to members in other distributed systems, and to communicate with other distributed systems.
+Distributed system members are programs that connect to a <span class="keyword">Geode</span> distributed system. You configure members to belong to a single distributed system, and you can optionally configure them to be clients or servers to members in other distributed systems, and to communicate with other distributed systems.
 
 <a id="distributed_system_member_configuration__section_326B2609B67E4FBE9BF2074C3B211E50"></a>
 ## Member Overview
 
-Distributed system members (or simply "members") connect to the <span class="keyword">GemFire</span> system when they create the <span class="keyword">GemFire</span> data cache. The members' distributed system is configured through <span class="keyword">GemFire</span> properties. See [gemfire.properties and gfsecurity.properties (GemFire Properties)](../../reference/topics/gemfire_properties.html). <span class="keyword">GemFire</span> properties specify all necessary information for system member startup, initialization, and communication.
+Distributed system members (or simply "members") connect to the <span class="keyword">Geode</span> system when they create the <span class="keyword">Geode</span> data cache. The members' distributed system is configured through <span class="keyword">Geode</span> properties. See [gemfire.properties and gfsecurity.properties (Geode Properties)](../../reference/topics/gemfire_properties.html). <span class="keyword">Geode</span> properties specify all necessary information for system member startup, initialization, and communication.
 
 **Note:**
 You cannot change a member's properties while the member is connected to the distributed system.
@@ -23,10 +23,10 @@ Use the properties to define:
 
 ## Distributed System Membership and System Topologies
 
-Every <span class="keyword">GemFire</span> process is a member of a distributed system, even if the distributed system is defined as standalone, with just one member. You can run an individual distributed system in isolation or you can combine systems for vertical and horizontal scaling. See [Topology and Communication General Concepts](../../topologies_and_comm/topology_concepts/chapter_overview.html).
+Every <span class="keyword">Geode</span> process is a member of a distributed system, even if the distributed system is defined as standalone, with just one member. You can run an individual distributed system in isolation or you can combine systems for vertical and horizontal scaling. See [Topology and Communication General Concepts](../../topologies_and_comm/topology_concepts/chapter_overview.html).
 
 -   **Peer-to-Peer Distributed Systems**. Members that define the same member discovery properties belong to the same distributed system and are peers to one another.
--   **Client/Server Installations**. The client/server topology uses relationships that you configure between members of multiple distributed systems. You configure some or all of the peers in one distributed system to act as cache servers to clients connecting from outside the system. Each server can host many client processes, managing cache access for all in an efficient, vertically hierarchical cache configuration. You configure the client applications to connect to the servers, using a client cache configuration. Clients run as members of standalone <span class="keyword">GemFire</span> distributed systems, with no peers, so all data updates and requests go to the servers.
+-   **Client/Server Installations**. The client/server topology uses relationships that you configure between members of multiple distributed systems. You configure some or all of the peers in one distributed system to act as cache servers to clients connecting from outside the system. Each server can host many client processes, managing cache access for all in an efficient, vertically hierarchical cache configuration. You configure the client applications to connect to the servers, using a client cache configuration. Clients run as members of standalone <span class="keyword">Geode</span> distributed systems, with no peers, so all data updates and requests go to the servers.
 
 ## **Multi-site Installations**
 

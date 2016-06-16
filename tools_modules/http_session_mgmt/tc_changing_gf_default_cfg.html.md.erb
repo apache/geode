@@ -1,15 +1,15 @@
 ---
-title:  Changing the Default <span class="keyword">GemFire</span> Configuration in the tc Server Module
+title:  Changing the Default <span class="keyword">Geode</span> Configuration in the tc Server Module
 ---
 
-By default, the tc Server HTTP module will run <span class="keyword">GemFire</span> automatically with pre-configured settings. You can change these <span class="keyword">GemFire</span> settings.
+By default, the tc Server HTTP module will run <span class="keyword">Geode</span> automatically with pre-configured settings. You can change these <span class="keyword">Geode</span> settings.
 
-Here are the default <span class="keyword">GemFire</span> settings:
+Here are the default <span class="keyword">Geode</span> settings:
 
--   <span class="keyword">GemFire</span> peer-to-peer members use locators for discovery.
+-   <span class="keyword">Geode</span> peer-to-peer members use locators for discovery.
 -   The region name is set to `gemfire_modules_sessions`.
 -   The cache region is replicated for peer-to-peer configurations and partitioned (with redundancy turned on) for client/server configurations.
--   <span class="keyword">GemFire</span> clients have local caching turned on and when the local cache needs to evict data, it will evict least-recently-used (LRU) data first.
+-   <span class="keyword">Geode</span> clients have local caching turned on and when the local cache needs to evict data, it will evict least-recently-used (LRU) data first.
 
 **Note:**
 On the application server side, the default inactive interval for session expiration is set to 30 minutes. To change this value, refer to [Session Expiration](tc_additional_info.html#tc_additional_info__section_C7C4365EA2D84636AE1586F187007EC4).
@@ -49,7 +49,7 @@ For information on setting up your instance for the most common types of configu
 <a id="tc_changing_gf_default_cfg__use_a_diff_mc_port"></a>
 ## Using a Different Locator Port
 
-For a <span class="keyword">GemFire</span> peer-to-peer member to communicate on a different port than the default (10334), answer the following question in the tc Server HTTP module's interactive mode:
+For a <span class="keyword">Geode</span> peer-to-peer member to communicate on a different port than the default (10334), answer the following question in the tc Server HTTP module's interactive mode:
 
 ``` pre
 Please enter the list of locators used by GemFire members to discover each other. 
@@ -77,8 +77,8 @@ Then on the cache server side, reference the modified region attributes template
 <region name="gemfire_modules_sessions" refid="MY_SESSIONS"/>
 ```
 
--   **[Interactive Configuration Reference for the tc Server Module](../../../latest/tools_modules/http_session_mgmt/interactive_mode_ref.html)**
+-   **[Interactive Configuration Reference for the tc Server Module](../../tools_modules/http_session_mgmt/interactive_mode_ref.html)**
 
-    This section describes each prompt when entering into interactive configuration mode of the <span class="keyword">GemFire</span> HTTP Session Management Module for tc Server.
+    This section describes each prompt when entering into interactive configuration mode of the <span class="keyword">Geode</span> HTTP Session Management Module for tc Server.
 
 

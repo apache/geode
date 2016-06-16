@@ -2,7 +2,7 @@
 title:  Setting Up the HTTP Module for Tomcat
 ---
 
-To use the <span class="keyword">GemFire</span> HTTP module with Tomcat application servers, you will need to modify Tomcat's `server.xml` and `context.xml` files.
+To use the <span class="keyword">Geode</span> HTTP module with Tomcat application servers, you will need to modify Tomcat's `server.xml` and `context.xml` files.
 
 Configuration is slightly different depending on the topology you are setting up. Refer to [Common Topologies for HTTP Session Management](common_gemfire_topologies.html#common_gemfire_topologies) for more information.
 
@@ -10,7 +10,7 @@ Configuration is slightly different depending on the topology you are setting up
 ## Peer-to-Peer Setup
 
 <img src="../../images_svg/http_module_p2p_with_locator.svg" id="tomcat_setting_up_the_module__image_bsm_2gf_sv" class="image" />
-To run <span class="keyword">GemFire</span> in a peer-to-peer configuration, add the following line to Tomcat's `$CATALINA_HOME$/conf/server.xml` within the `<Server>` tag:
+To run <span class="keyword">Geode</span> in a peer-to-peer configuration, add the following line to Tomcat's `$CATALINA_HOME$/conf/server.xml` within the `<Server>` tag:
 
 ``` pre
 <Listener className="com.gemstone.gemfire.modules.session.catalina.
@@ -40,7 +40,7 @@ For Tomcat 7.0 and above:
 
 <img src="../../images_svg/http_module_cs_with_locator.svg" id="tomcat_setting_up_the_module__image_aqn_jjf_sv" class="image" />
 
-To run <span class="keyword">GemFire</span> in a client/server configuration, the application server will operate as a <span class="keyword">GemFire</span> client. To do this, add the following line to `$CATALINA_HOME$/conf/server.xml` within the `<Server>` tag:
+To run <span class="keyword">Geode</span> in a client/server configuration, the application server will operate as a <span class="keyword">Geode</span> client. To do this, add the following line to `$CATALINA_HOME$/conf/server.xml` within the `<Server>` tag:
 
 ``` pre
 <Listener className="com.gemstone.gemfire.modules.session.catalina.
@@ -63,7 +63,7 @@ For Tomcat 7.0 and above:
                          Tomcat7DeltaSessionManager"/> 
 ```
 
-The application server operates as a <span class="keyword">GemFire</span> client in this configuration. With a similar environment to this example that is for a client/server set up,
+The application server operates as a <span class="keyword">Geode</span> client in this configuration. With a similar environment to this example that is for a client/server set up,
 
 ``` pre
 TC_VER=tomcat-8.0.30.C.RELEASE
@@ -87,16 +87,16 @@ $ gfsh start server --name=server1 --locators=localhost[10334] --server-port=0 \
 
 ## Starting the Application Server
 
-Once you've updated the configuration, you are now ready to start your tc Server or Tomcat instance. Refer to your application server documentation for starting the application server. Once started, <span class="keyword">GemFire</span> will automatically launch within the application server process.
+Once you've updated the configuration, you are now ready to start your tc Server or Tomcat instance. Refer to your application server documentation for starting the application server. Once started, <span class="keyword">Geode</span> will automatically launch within the application server process.
 
 **Note:**
-<span class="keyword">GemFire</span> session state management provides its own clustering functionality. If you are using <span class="keyword">GemFire</span>, you should NOT turn on Tomcat clustering as well.
+<span class="keyword">Geode</span> session state management provides its own clustering functionality. If you are using <span class="keyword">Geode</span>, you should NOT turn on Tomcat clustering as well.
 
 <a id="tomcat_setting_up_the_module__section_3E186713737E4D5383E23B41CDFED59B"></a>
 
-## Verifying that <span class="keyword">GemFire</span> Started
+## Verifying that <span class="keyword">Geode</span> Started
 
-You can verify that <span class="keyword">GemFire</span> has successfully started by inspecting the Tomcat log file. For example:
+You can verify that <span class="keyword">Geode</span> has successfully started by inspecting the Tomcat log file. For example:
 
 ``` pre
 Nov 8, 2010 12:12:12 PM
@@ -107,4 +107,4 @@ INFO: Created GemFireCache[id = 2066231378; isClosing = false;
    copyOnRead = false; lockLease = 120; lockTimeout = 60]
 ```
 
-Information is also logged within the <span class="keyword">GemFire</span> log file, which by default is named `gemfire_modules.log`.
+Information is also logged within the <span class="keyword">Geode</span> log file, which by default is named `gemfire_modules.log`.

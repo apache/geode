@@ -2,18 +2,18 @@
 title:  Management and Monitoring Features
 ---
 
-<span class="keyword">Pivotal GemFire</span> uses a federated Open MBean strategy to manage and monitor all members of the distributed system. This strategy gives you a consolidated, single-agent view of the distributed system.
+<span class="keyword">Apache Geode</span> uses a federated Open MBean strategy to manage and monitor all members of the distributed system. This strategy gives you a consolidated, single-agent view of the distributed system.
 
 <a id="concept_F7B9EE348DA744D3BBDFD68E7F48A604__section_37CECE9B26644505A79784EA0CD1FDAE"></a>
 Application and manager development is much easier because you do not have to find the right MBeanServer to make a request on an MBean. Instead, you interact with a single MBeanServer that aggregates MBeans from all other local and remote MBeanServers.
 
-Some other key advantages and features of <span class="keyword">GemFire</span> administration architecture:
+Some other key advantages and features of <span class="keyword">Geode</span> administration architecture:
 
--   <span class="keyword">GemFire</span> monitoring is tightly integrated into <span class="keyword">GemFire</span>'s processes instead of running in a separately installed and configured monitoring agent. You can use the same framework to actually manage <span class="keyword">GemFire</span> and perform administrative operations, not just monitor it.
--   All <span class="keyword">GemFire</span> MBeans are *MXBeans*. They represent useful and relevant information on the state of the distributed system and all its members. Because MXBeans use the Open MBean model with a predefined set of types, clients and remote management programs no longer require access to model-specific classes representing your MBean types. Using MXBeans adds flexibility to your selection of clients and makes the <span class="keyword">GemFire</span> management and monitoring much easier to use.
+-   <span class="keyword">Geode</span> monitoring is tightly integrated into <span class="keyword">Geode</span>'s processes instead of running in a separately installed and configured monitoring agent. You can use the same framework to actually manage <span class="keyword">Geode</span> and perform administrative operations, not just monitor it.
+-   All <span class="keyword">Geode</span> MBeans are *MXBeans*. They represent useful and relevant information on the state of the distributed system and all its members. Because MXBeans use the Open MBean model with a predefined set of types, clients and remote management programs no longer require access to model-specific classes representing your MBean types. Using MXBeans adds flexibility to your selection of clients and makes the <span class="keyword">Geode</span> management and monitoring much easier to use.
 -   Each member in the distributed system is manageable through MXBeans, and each member hosts its own MXBeans in a Platform MBeanServer.
--   Any <span class="keyword">GemFire</span> member can be configured to provide a federated view of all the MXBeans for all members in a <span class="keyword">GemFire</span> cluster.
--   <span class="keyword">GemFire</span> has also modified its use of JMX to be industry-standard and friendly to generic JMX clients. You can now easily monitor or manage the distributed system by using any third-party tool that is compliant with JMX. For example, JConsole.
+-   Any <span class="keyword">Geode</span> member can be configured to provide a federated view of all the MXBeans for all members in a <span class="keyword">Geode</span> cluster.
+-   <span class="keyword">Geode</span> has also modified its use of JMX to be industry-standard and friendly to generic JMX clients. You can now easily monitor or manage the distributed system by using any third-party tool that is compliant with JMX. For example, JConsole.
 
 <a id="concept_F7B9EE348DA744D3BBDFD68E7F48A604__section_A3166A9657044E088DA0FE2C2B8325BE"></a>
 

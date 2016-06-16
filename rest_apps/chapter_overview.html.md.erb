@@ -1,15 +1,15 @@
 ---
-title:  <span class="keyword">GemFire</span> REST API Overview
+title:  <span class="keyword">Geode</span> REST API Overview
 ---
 
-By using the <span class="keyword">GemFire</span> REST application interface, you can immediately access <span class="keyword">GemFire</span>'s data management capabilities in languages other than the natively supported Java language.
+By using the <span class="keyword">Geode</span> REST application interface, you can immediately access <span class="keyword">Geode</span>'s data management capabilities in languages other than the natively supported Java language.
 
-You can write REST-enabled client applications for <span class="keyword">GemFire</span> in a variety of languages that use the open and standard HTTP protocol-- for example, Ruby, Python, JavaScript and Scala, as well as already supported languages such as Java.
+You can write REST-enabled client applications for <span class="keyword">Geode</span> in a variety of languages that use the open and standard HTTP protocol-- for example, Ruby, Python, JavaScript and Scala, as well as already supported languages such as Java.
 
-When you access <span class="keyword">GemFire</span> through the REST interface, objects are stored in <span class="keyword">GemFire</span> as PdxInstances. A PdxInstance is a light-weight wrapper around PDX serialized bytes. It provides applications with run-time access to fields of a PDX serialized object. This interoperable format allows your Java applications to operate on the same data as your REST applications.
+When you access <span class="keyword">Geode</span> through the REST interface, objects are stored in <span class="keyword">Geode</span> as PdxInstances. A PdxInstance is a light-weight wrapper around PDX serialized bytes. It provides applications with run-time access to fields of a PDX serialized object. This interoperable format allows your Java applications to operate on the same data as your REST applications.
 
-As an added benefit, because <span class="keyword">GemFire</span>'s REST interface stores objects as PdxInstances, you do not need to write corresponding Java classes to translate JSON data (which you must do with other REST interface providers such as Oracle Coherence.) For example, consider the use case where a non-Java REST client application (Python, Ruby or Scala) performs <span class="keyword">GemFire</span> region operations with JSON data that represents employee data. Since the object is stored in <span class="keyword">GemFire</span> as a PdxInstance that can be automatically mapped to JSON, the user does not need to write a corresponding Employee.java class and also does not need to worry about related issues such as keeping the Employee object in the CLASSPATH.
+As an added benefit, because <span class="keyword">Geode</span>'s REST interface stores objects as PdxInstances, you do not need to write corresponding Java classes to translate JSON data (which you must do with other REST interface providers such as Oracle Coherence.) For example, consider the use case where a non-Java REST client application (Python, Ruby or Scala) performs <span class="keyword">Geode</span> region operations with JSON data that represents employee data. Since the object is stored in <span class="keyword">Geode</span> as a PdxInstance that can be automatically mapped to JSON, the user does not need to write a corresponding Employee.java class and also does not need to worry about related issues such as keeping the Employee object in the CLASSPATH.
 
-See [GemFire PDX Serialization](../developing/data_serialization/gemfire_pdx_serialization.html#gemfire_pdx_serialization) for more information on PDX serialization.
+See [Geode PDX Serialization](../developing/data_serialization/gemfire_pdx_serialization.html#gemfire_pdx_serialization) for more information on PDX serialization.
 
 

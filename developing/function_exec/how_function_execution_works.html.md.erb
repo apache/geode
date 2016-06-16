@@ -5,7 +5,7 @@ title:  How Function Execution Works
 <a id="how_function_execution_works__section_881D2FF6761B4D689DDB46C650E2A2E1"></a>
 ## Where Functions Are Executed
 
-You can execute data-independent functions or data-dependent functions in <span class="keyword">GemFire</span> in the following places:
+You can execute data-independent functions or data-dependent functions in <span class="keyword">Geode</span> in the following places:
 
 **For Data-independent Functions**
 
@@ -25,7 +25,7 @@ See the `com.gemstone.gemfire.cache.execute.FunctionService` Java API documentat
 
 The following things occur when executing a function:
 
-1.  When you call the `execute` method on the `Execution` object, <span class="keyword">GemFire</span> invokes the function on all members where it needs to run. The locations are determined by the `FunctionService` `on*` method calls, region configuration, and any filters.
+1.  When you call the `execute` method on the `Execution` object, <span class="keyword">Geode</span> invokes the function on all members where it needs to run. The locations are determined by the `FunctionService` `on*` method calls, region configuration, and any filters.
 2.  If the function has results, they are returned to the `addResult` method call in a `ResultCollector` object.
 3.  The originating member collects results using `ResultCollector.getResult`.
 
@@ -33,7 +33,7 @@ The following things occur when executing a function:
 
 ## Highly Available Functions
 
-Generally, function execution errors are returned to the calling application. You can code for high availability for `onRegion` functions that return a result, so <span class="keyword">GemFire</span> automatically retries a function if it does not execute successfully. You must code and configure the function to be highly available, and the calling application must invoke the function using the results collector `getResult` method.
+Generally, function execution errors are returned to the calling application. You can code for high availability for `onRegion` functions that return a result, so <span class="keyword">Geode</span> automatically retries a function if it does not execute successfully. You must code and configure the function to be highly available, and the calling application must invoke the function using the results collector `getResult` method.
 
 When a failure (such as an execution error or member crash while executing) occurs, the system responds by:
 

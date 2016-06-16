@@ -2,7 +2,7 @@
 title:  Importing Cache and Region Snapshots
 ---
 
-To import a <span class="keyword">GemFire</span> cache or region data snapshot that you previously exported into another distributed system or region, use the `cache.getSnapshotService.load` API, `region.getSnapshotService.load` API, or the `gfsh` command-line interface (`import data`).
+To import a <span class="keyword">Geode</span> cache or region data snapshot that you previously exported into another distributed system or region, use the `cache.getSnapshotService.load` API, `region.getSnapshotService.load` API, or the `gfsh` command-line interface (`import data`).
 
 <a id="concept_62B1E24DA7F342E9BB16C0818F7A7B70__section_4B2C73CA1A734D9D96693A52BF99D75A"></a>
 ## Import Requirements
@@ -52,7 +52,7 @@ region.getSnapshotService().load(mySnapshot, SnapshotFormat.GEMFIRE);
 
 **gfsh:**
 
-Open a gfsh prompt. After connecting to a <span class="keyword">GemFire</span> distributed system, at the prompt type:
+Open a gfsh prompt. After connecting to a <span class="keyword">Geode</span> distributed system, at the prompt type:
 
 ``` pre
 gfsh>import data --region=Region --file=filename.gfd 

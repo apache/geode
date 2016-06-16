@@ -7,7 +7,7 @@ Custom partitioning and data colocation can be used separately or in conjunction
 <a id="custom_partitioning_and_data_colocation__section_ABFEE9CB17AF44F1AE252AC10FB5E999"></a>
 ## Custom Partitioning
 
-Use custom partitioning to group like entries into region buckets within a region. By default, <span class="keyword">GemFire</span> assigns new entries to buckets based on the entry key contents. With custom partitioning, you can assign your entries to buckets in whatever way you want.
+Use custom partitioning to group like entries into region buckets within a region. By default, <span class="keyword">Geode</span> assigns new entries to buckets based on the entry key contents. With custom partitioning, you can assign your entries to buckets in whatever way you want.
 
 You can generally get better performance if you use custom partitioning to group similar data within a region. For example, a query run on all accounts created in January runs faster if all January account data is hosted by a single member. Grouping all data for a single customer can improve performance of data operations that work on customer data. Data aware function execution takes advantage of custom partitioning.
 
@@ -17,21 +17,21 @@ This figure shows a region with customer data that is grouped into buckets by cu
 
 With custom partitioning, you have two choices:
 
--   **Standard custom partitioning**. With standard partitioning, you group entries into buckets, but you do not specify where the buckets reside. <span class="keyword">GemFire</span> always keeps the entries in the buckets you have specified, but may move the buckets around for load balancing.
+-   **Standard custom partitioning**. With standard partitioning, you group entries into buckets, but you do not specify where the buckets reside. <span class="keyword">Geode</span> always keeps the entries in the buckets you have specified, but may move the buckets around for load balancing.
 -   **Fixed custom partitioning**. With fixed partitioning, you provide standard partitioning plus you specify the exact member where each data entry resides. You do this by assigning the data entry to a bucket and to a partition and by naming specific members as primary and secondary hosts of each partition.
 
     This gives you complete control over the locations of your primary and any secondary buckets for the region. This can be useful when you want to store specific data on specific physical machines or when you need to keep data close to certain hardware elements.
 
     Fixed partitioning has these requirements and caveats:
 
-    -   <span class="keyword">GemFire</span> cannot rebalance fixed partition region data because it cannot move the buckets around among the host members. You must carefully consider your expected data loads for the partitions you create.
+    -   <span class="keyword">Geode</span> cannot rebalance fixed partition region data because it cannot move the buckets around among the host members. You must carefully consider your expected data loads for the partitions you create.
     -   With fixed partitioning, the region configuration is different between host members. Each member identifies the named partitions it hosts, and whether it is hosting the primary copy or a secondary copy. You then program fixed partition resolver to return the partition id, so the entry is placed on the right members. Only one member can be primary for a particular partition name and that member cannot be the partition's secondary.
 
 <a id="custom_partitioning_and_data_colocation__section_D2C66951FE38426F9C05050D2B9028D8"></a>
 
 ## Data Colocation Between Regions
 
-With data colocation, <span class="keyword">GemFire</span> stores entries that are related across multiple data regions in a single member. <span class="keyword">GemFire</span> does this by storing all of the regions' buckets with the same ID together in the same member. During rebalancing operations, <span class="keyword">GemFire</span> moves these bucket groups together or not at all.
+With data colocation, <span class="keyword">Geode</span> stores entries that are related across multiple data regions in a single member. <span class="keyword">Geode</span> does this by storing all of the regions' buckets with the same ID together in the same member. During rebalancing operations, <span class="keyword">Geode</span> moves these bucket groups together or not at all.
 
 So, for example, if you have one region with customer contact information and another region with customer orders, you can use colocation to keep all contact information and all orders for a single customer in a single member. This way, any operation done for a single customer uses the cache of only a single member.
 
@@ -39,6 +39,6 @@ This figure shows two regions with data colocation where the data is partitioned
 
 <img src="../../images_svg/colocated_partitioned_regions.svg" id="custom_partitioning_and_data_colocation__image_525AC474950F473ABCDE8E372583C5DF" class="image" />
 
-Data colocation requires the same data partitioning mechanism for all of the colocated regions. You can use the default partitioning provided by <span class="keyword">GemFire</span> or custom partitioning.
+Data colocation requires the same data partitioning mechanism for all of the colocated regions. You can use the default partitioning provided by <span class="keyword">Geode</span> or custom partitioning.
 
 You must use the same high availability settings across your colocated regions.

@@ -2,9 +2,9 @@
 title:  Creating a Region Through the cache.xml File
 ---
 
-A common way to create a data region in the <span class="keyword">Pivotal GemFire</span> cache is through `cache.xml` declarations.
+A common way to create a data region in the <span class="keyword">Apache Geode</span> cache is through `cache.xml` declarations.
 
-Before you start, configure your `<cache>` or `<client-cache>` in your `cache.xml` file and determine the region shortcut and other attributes settings your region needs. The `cache.xml` file must conform to the schema definition provided in the product's `cache-8.1.xsd`.
+Before you start, configure your `<cache>` or `<client-cache>` in your `cache.xml` file and determine the region shortcut and other attributes settings your region needs. The `cache.xml` file must conform to the schema definition provided in the product's `cache-1.0.xsd`.
 
 Region creation is subject to attribute consistency checks, both internal to the cache and, if the region is not local, between all caches where the region is defined. The requirements for consistency between region attributes are detailed in the online Java API documentation.
 

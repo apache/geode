@@ -2,13 +2,13 @@
 title:  Setting Properties
 ---
 
-<span class="keyword">GemFire</span> provides a default distributed system configuration for out-of-the-box systems. To use non-default configurations and to fine-tune your member communication, you can use a mix of various options to customize your distributed system configuration.
+<span class="keyword">Geode</span> provides a default distributed system configuration for out-of-the-box systems. To use non-default configurations and to fine-tune your member communication, you can use a mix of various options to customize your distributed system configuration.
 
 <a id="setting_distributed_properties__section_67EBCC53EB174B108DA7271E2CD2B76C"></a>
-<span class="keyword">GemFire</span> properties are used to join a distributed system and configure system member behavior. Configure your <span class="keyword">GemFire</span> properties through the `gemfire.properties` file, the Java API, or command-line input. Generally, you store all your properties in the `gemfire.properties` file, but you may need to provide properties through other means, for example, to pass in security properties for username and password that you have received from keyboard input.
+<span class="keyword">Geode</span> properties are used to join a distributed system and configure system member behavior. Configure your <span class="keyword">Geode</span> properties through the `gemfire.properties` file, the Java API, or command-line input. Generally, you store all your properties in the `gemfire.properties` file, but you may need to provide properties through other means, for example, to pass in security properties for username and password that you have received from keyboard input.
 
 **Note:**
-Check with your <span class="keyword">GemFire</span> system administrator before changing properties through the API, including the `gemfire.properties` and `gfsecurity.properties` settings. The system administrator may need to set properties at the command line or in configuration files. Any change made through the API overrides those other settings.
+Check with your <span class="keyword">Geode</span> system administrator before changing properties through the API, including the `gemfire.properties` and `gfsecurity.properties` settings. The system administrator may need to set properties at the command line or in configuration files. Any change made through the API overrides those other settings.
 
 **Note:**
 The product `defaultConfigs` directory has a sample `gemfire.properties` file with all default settings.
@@ -54,7 +54,7 @@ Set distributed system properties by any combination of the following. The syste
         gfsh>start server --name=server_name --mcast-port=10338 --properties-file=serverConfig/gemfire.properties --security-properties-file=gfsecurity.properties
         ```
 
-        See [Running GemFire Server Processes](../../configuring/running/running_the_cacheserver.html) for more information on running cache servers.
+        See [Running Geode Server Processes](../../configuring/running/running_the_cacheserver.html) for more information on running cache servers.
 
 3.  Entry in a `gemfire.properties` file. See [Deploying Configuration Files without the Cluster Configuration Service](../../configuring/running/deploying_config_files.html). Example:
 

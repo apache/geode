@@ -2,10 +2,10 @@
 title:  How Server Discovery Works
 ---
 
-<span class="keyword">Pivotal GemFire</span> locators provide reliable and flexible server discovery services for your clients. You can use all servers for all client requests, or group servers according to function, with the locators directing each client request to the right group of servers.
+<span class="keyword">Apache Geode</span> locators provide reliable and flexible server discovery services for your clients. You can use all servers for all client requests, or group servers according to function, with the locators directing each client request to the right group of servers.
 
 <a id="how_server_discovery_works__section_91AC081D4C48408B9ABA40430F161E73"></a>
-By default, <span class="keyword">GemFire</span> clients and servers discover each other on a predefined port (40404) on the localhost. This works, but is not typically the way you would deploy a client/server configuration. The recommended solution is to use one or more dedicated locators. A locator provides both discovery and load balancing services. With server locators, clients are configured with a locator list and locators maintain a dynamic server list. The locator listens at an address and port for connecting clients and gives the clients server information. The clients are configured with locator information and have no configuration specific to the servers.
+By default, <span class="keyword">Geode</span> clients and servers discover each other on a predefined port (40404) on the localhost. This works, but is not typically the way you would deploy a client/server configuration. The recommended solution is to use one or more dedicated locators. A locator provides both discovery and load balancing services. With server locators, clients are configured with a locator list and locators maintain a dynamic server list. The locator listens at an address and port for connecting clients and gives the clients server information. The clients are configured with locator information and have no configuration specific to the servers.
 
 <a id="how_server_discovery_works__section_95B62F09EF954A99ABBDEBC2756812E3"></a>
 

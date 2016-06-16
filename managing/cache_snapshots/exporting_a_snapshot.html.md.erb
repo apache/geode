@@ -2,7 +2,7 @@
 title:  Exporting Cache and Region Snapshots
 ---
 
-To save <span class="keyword">GemFire</span> cache or region data to a snapshot that you can later load into another distributed system or region, use the `cache.getSnapshotService.save` API, `region.getSnapshotService.save` API, or the `gfsh` command-line interface (`export data`).
+To save <span class="keyword">Geode</span> cache or region data to a snapshot that you can later load into another distributed system or region, use the `cache.getSnapshotService.save` API, `region.getSnapshotService.save` API, or the `gfsh` command-line interface (`export data`).
 
 If an error occurs during export, the export halts and the snapshot operation is canceled. Typical errors that halt an export include scenarios such as full disk, problems with file permissions, and network partitioning.
 
@@ -43,7 +43,7 @@ region.getSnapshotService().save(mySnapshot, SnapshotFormat.GEMFIRE);
 
 **gfsh:**
 
-Open a gfsh prompt. After connecting to a <span class="keyword">GemFire</span> distributed system, at the prompt type:
+Open a gfsh prompt. After connecting to a <span class="keyword">Geode</span> distributed system, at the prompt type:
 
 ``` pre
 gfsh>export data --region=Region --file=filename.gfd 

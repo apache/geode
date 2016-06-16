@@ -64,7 +64,7 @@ The `PdxSerializer` `toData` and `fromData` methods differ from those for `PdxSe
 3.  Program `PdxSerializer.toData` to recognize, cast, and handle your domain object:
 
     1.  Write each standard Java data field of your domain class using the `PdxWriter` write methods.
-    2.  Call the `PdxWriter` `markIdentityField` method for each field you want to have <span class="keyword">GemFire</span> use to identify your object. Put this after the field's write method. <span class="keyword">GemFire</span> uses this information to compare objects for operations like distinct queries. If you do not set as least one identity field, then the `equals` and `hashCode` methods will use all PDX fields to compare objects and consequently, will not perform as well. It is important that the fields used by your `equals` and `hashCode` implementations are the same fields that you mark as identity fields.
+    2.  Call the `PdxWriter` `markIdentityField` method for each field you want to have <span class="keyword">Geode</span> use to identify your object. Put this after the field's write method. <span class="keyword">Geode</span> uses this information to compare objects for operations like distinct queries. If you do not set as least one identity field, then the `equals` and `hashCode` methods will use all PDX fields to compare objects and consequently, will not perform as well. It is important that the fields used by your `equals` and `hashCode` implementations are the same fields that you mark as identity fields.
     3.  For a particular version of your class, you need to consistently write the same named field each time. The field names or number of fields must not change from one instance to another for the same class version.
     4.  For best performance, do fixed width fields first and then variable length fields.
     5.  If desired, you can check the portability of the object before serializing it by adding the `checkPortability` parameter when using the`                                 PdxWriter` `writeObject`, `writeObjectArray`, and `writeField` methods.
@@ -98,7 +98,7 @@ The `PdxSerializer` `toData` and `fromData` methods differ from those for `PdxSe
 
         Provide the same names that you did in `toData` and call the read operations in the same order as you called the write operations in your `toData` implementation.
 
-        <span class="keyword">GemFire</span> provides the domain class type and `PdxReader` to the `fromData` method.
+        <span class="keyword">Geode</span> provides the domain class type and `PdxReader` to the `fromData` method.
 
         Example `fromData` code:
 

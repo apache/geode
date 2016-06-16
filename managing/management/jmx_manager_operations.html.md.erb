@@ -2,14 +2,14 @@
 
 # Starting a JMX Manager
 
-JMX Manager nodes are members that manage other <span class="keyword">GemFire</span> members (as well as themselves). A JMX Manager node can manage all other members in the distributed system. Typically a locator will function as the JMX Manager, but you can also turn any other distributed system member such as a server into a JMX Manager node as well.
+JMX Manager nodes are members that manage other <span class="keyword">Geode</span> members (as well as themselves). A JMX Manager node can manage all other members in the distributed system. Typically a locator will function as the JMX Manager, but you can also turn any other distributed system member such as a server into a JMX Manager node as well.
 
-To allow a server to become a JMX Manager you configure <span class="keyword">GemFire</span> property `jmx-manager=true`, in the server's`gemfire.properties` file. This property configures the node to become a JMX Manager node passively; if gfsh cannot locate a JMX Manager when connecting to the distributed system, the server node will be started as a JMX Manager node.
+To allow a server to become a JMX Manager you configure <span class="keyword">Geode</span> property `jmx-manager=true`, in the server's`gemfire.properties` file. This property configures the node to become a JMX Manager node passively; if gfsh cannot locate a JMX Manager when connecting to the distributed system, the server node will be started as a JMX Manager node.
 
 **Note:**
 The default property setting for all locators is `gemfire.jmx-manager=true`. For other members, the default property setting is `gemfire.jmx-manager=false`.
 
-To force a server to become a JMX Manager node whenever it is started, set the <span class="keyword">GemFire</span> properties `jmx-manager-start=true` and `jmx-manager=true` in the server's gemfire.properties file. Note that both of these properties must be set to true for the node.
+To force a server to become a JMX Manager node whenever it is started, set the <span class="keyword">Geode</span> properties `jmx-manager-start=true` and `jmx-manager=true` in the server's gemfire.properties file. Note that both of these properties must be set to true for the node.
 
 To start the member as a JMX Manager node on the command line, provide`                     --J=-Dgemfire.jmx-manager-start=true and --J=-Dgemfire.jmx-manager=true` as arguments to either the `start server` or `start                     locator` command.
 
@@ -76,7 +76,7 @@ At any point, you can determine whether a node is a JMX Manager by using the Mem
 Using the Java API, any managed node that has been configured with `jmx-manager=true` can also be turned into a JMX Manager Node by invoking the ManagementService startManager() method.
 
 **Note:**
-If you start the JMX Manager programmatically and wish to enable command processing, you must also add the absolute path of `gfsh-dependencies.jar` (located in `$GEMFIRE/lib` of your <span class="keyword">GemFire</span> installation) to the CLASSPATH of your application. Do not copy this library to your CLASSPATH because this library refers to other dependencies in `$GEMFIRE/lib` by a relative path.
+If you start the JMX Manager programmatically and wish to enable command processing, you must also add the absolute path of `gfsh-dependencies.jar` (located in `$GEMFIRE/lib` of your <span class="keyword">Geode</span> installation) to the CLASSPATH of your application. Do not copy this library to your CLASSPATH because this library refers to other dependencies in `$GEMFIRE/lib` by a relative path.
 
 <a id="topic_263072624B8D4CDBAD18B82E07AA44B6"></a>
 
@@ -100,12 +100,12 @@ In the `gemfire.properties` file, you configure a JMX manager as follows.
 <tbody>
 <tr class="odd">
 <td>http-service-port</td>
-<td>If non-zero, then <span class="keyword">GemFire</span> starts an embedded HTTP service that listens on this port. The HTTP service is used to host the <span class="keyword">GemFire</span> Pulse Web application. If you are hosting the Pulse web app on your own Web server, then disable this embedded HTTP service by setting this property to zero. Ignored if <code class="ph codeph">jmx-manager</code> is false.</td>
+<td>If non-zero, then <span class="keyword">Geode</span> starts an embedded HTTP service that listens on this port. The HTTP service is used to host the <span class="keyword">Geode</span> Pulse Web application. If you are hosting the Pulse web app on your own Web server, then disable this embedded HTTP service by setting this property to zero. Ignored if <code class="ph codeph">jmx-manager</code> is false.</td>
 <td>7070</td>
 </tr>
 <tr class="even">
 <td>http-service-bind-address</td>
-<td>If set, then the <span class="keyword">GemFire</span> member binds the embedded HTTP service to the specified address. If this property is not set but the HTTP service is enabled using <code class="ph codeph">http-service-port</code>, then <span class="keyword">GemFire</span> binds the HTTP service to the member's local address.</td>
+<td>If set, then the <span class="keyword">Geode</span> member binds the embedded HTTP service to the specified address. If this property is not set but the HTTP service is enabled using <code class="ph codeph">http-service-port</code>, then <span class="keyword">Geode</span> binds the HTTP service to the member's local address.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
@@ -116,12 +116,12 @@ In the `gemfire.properties` file, you configure a JMX manager as follows.
 </tr>
 <tr class="even">
 <td>jmx-manager-access-file</td>
-<td><p>By default the JMX Manager allows full access to all MBeans by any client. If this property is set to the name of a file, then it can restrict clients to only reading MBeans; they cannot modify MBeans. The access level can be configured differently in this file for each user name defined in the password file. For more information about the format of this file see Oracle's documentation of the <code class="ph codeph">com.sun.management.jmxremote.access.file</code> system property. Ignored if <code class="ph codeph">jmx-manager</code> is false or if <code class="ph codeph">jmx-manager-port</code> is zero. See [Setting Up JMX Authentication for GemFire Management and Monitoring](../security/management_system_jmx_authentication.html#topic_06B28974C3D34C019418C92B1FC189C8) for more information.</p></td>
+<td><p>By default the JMX Manager allows full access to all MBeans by any client. If this property is set to the name of a file, then it can restrict clients to only reading MBeans; they cannot modify MBeans. The access level can be configured differently in this file for each user name defined in the password file. For more information about the format of this file see Oracle's documentation of the <code class="ph codeph">com.sun.management.jmxremote.access.file</code> system property. Ignored if <code class="ph codeph">jmx-manager</code> is false or if <code class="ph codeph">jmx-manager-port</code> is zero. See [Setting Up JMX Authentication for Geode Management and Monitoring](../security/management_system_jmx_authentication.html#topic_06B28974C3D34C019418C92B1FC189C8) for more information.</p></td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
 <td>jmx-manager-bind-address</td>
-<td>By default, the JMX Manager when configured with a port listens on all the local host's addresses. You can use this property to configure which particular IP address or host name the JMX Manager will listen on. This property is ignored if <code class="ph codeph">jmx-manager</code> is false or <code class="ph codeph">jmx-manager-port</code> is zero. This address also applies to the <span class="keyword">GemFire</span> Pulse server if you are hosting a Pulse web application.</td>
+<td>By default, the JMX Manager when configured with a port listens on all the local host's addresses. You can use this property to configure which particular IP address or host name the JMX Manager will listen on. This property is ignored if <code class="ph codeph">jmx-manager</code> is false or <code class="ph codeph">jmx-manager-port</code> is zero. This address also applies to the <span class="keyword">Geode</span> Pulse server if you are hosting a Pulse web application.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
@@ -131,17 +131,17 @@ In the `gemfire.properties` file, you configure a JMX manager as follows.
 </tr>
 <tr class="odd">
 <td>jmx-manager-password-file</td>
-<td>By default the JMX Manager allows clients without credentials to connect. If this property is set to the name of a file, only clients that connect with credentials that match an entry in this file will be allowed. Most JVMs require that the file is only readable by the owner. For more information about the format of this file see Oracle's documentation of the com.sun.management.jmxremote.password.file system property. Ignored if jmx-manager is false or if jmx-manager-port is zero.See [Setting Up JMX Authentication for GemFire Management and Monitoring](../security/management_system_jmx_authentication.html#topic_06B28974C3D34C019418C92B1FC189C8) for more information.</td>
+<td>By default the JMX Manager allows clients without credentials to connect. If this property is set to the name of a file, only clients that connect with credentials that match an entry in this file will be allowed. Most JVMs require that the file is only readable by the owner. For more information about the format of this file see Oracle's documentation of the com.sun.management.jmxremote.password.file system property. Ignored if jmx-manager is false or if jmx-manager-port is zero.See [Setting Up JMX Authentication for Geode Management and Monitoring](../security/management_system_jmx_authentication.html#topic_06B28974C3D34C019418C92B1FC189C8) for more information.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>jmx-manager-port</td>
-<td>Port on which this JMX Manager listens for client connections. If this property is set to zero, <span class="keyword">GemFire</span> does not allow remote client connections. Alternatively, use the standard system properties supported by the JVM for configuring access from remote JMX clients. Ignored if jmx-manager is false. The Default RMI port is 1099.</td>
+<td>Port on which this JMX Manager listens for client connections. If this property is set to zero, <span class="keyword">Geode</span> does not allow remote client connections. Alternatively, use the standard system properties supported by the JVM for configuring access from remote JMX clients. Ignored if jmx-manager is false. The Default RMI port is 1099.</td>
 <td>1099</td>
 </tr>
 <tr class="odd">
 <td>jmx-manager-ssl</td>
-<td>If true and <code class="ph codeph">jmx-manager-port</code> is not zero, the JMX Manager accepts only SSL connections. The ssl-enabled property does not apply to the JMX Manager, but the other SSL properties do. This allows SSL to be configured for just the JMX Manager without needing to configure it for the other <span class="keyword">GemFire</span> connections. Ignored if <code class="ph codeph">jmx-manager</code> is false.</td>
+<td>If true and <code class="ph codeph">jmx-manager-port</code> is not zero, the JMX Manager accepts only SSL connections. The ssl-enabled property does not apply to the JMX Manager, but the other SSL properties do. This allows SSL to be configured for just the JMX Manager without needing to configure it for the other <span class="keyword">Geode</span> connections. Ignored if <code class="ph codeph">jmx-manager</code> is false.</td>
 <td>false</td>
 </tr>
 <tr class="even">
@@ -151,7 +151,7 @@ In the `gemfire.properties` file, you configure a JMX manager as follows.
 </tr>
 <tr class="odd">
 <td>jmx-manager-update-rate</td>
-<td>The rate, in milliseconds, at which this member pushes updates to any JMX Managers. Currently this value should be greater than or equal to the <code class="ph codeph">statistic-sample-rate</code>. Setting this value too high causes <code class="ph codeph">gfsh</code> and <span class="keyword">GemFire</span> Pulse to see stale values.</td>
+<td>The rate, in milliseconds, at which this member pushes updates to any JMX Managers. Currently this value should be greater than or equal to the <code class="ph codeph">statistic-sample-rate</code>. Setting this value too high causes <code class="ph codeph">gfsh</code> and <span class="keyword">Geode</span> Pulse to see stale values.</td>
 <td>2000</td>
 </tr>
 </tbody>

@@ -1,60 +1,56 @@
 ---
-title:  Developing with <span class="keyword">Pivotal GemFire</span>
+title:  Developing with <span class="keyword">Apache Geode</span>
 ---
 
-*Developing with <span class="keyword">Pivotal GemFire</span>* explains main concepts of application programming with <span class="keyword">Pivotal GemFire</span>. It describes how to plan and implement regions, data serialization, event handling, delta propagation, transactions, and more.
+*Developing with <span class="keyword">Apache Geode</span>* explains main concepts of application programming with <span class="keyword">Apache Geode</span>. It describes how to plan and implement regions, data serialization, event handling, delta propagation, transactions, and more.
 
-For information about <span class="keyword">GemFire</span> REST application development, see [Developing REST Applications for Pivotal GemFire](../rest_apps/book_intro.html).
+For information about <span class="keyword">Geode</span> REST application development, see [Developing REST Applications for Apache Geode](../rest_apps/book_intro.html).
 
--   **[Region Data Storage and Distribution](../../latest/developing/region_options/chapter_overview.html)**
+-   **[Region Data Storage and Distribution](../developing/region_options/chapter_overview.html)**
 
-    The <span class="keyword">Pivotal GemFire</span> data storage and distribution models put your data in the right place at the right time. You should understand all the options for data storage in <span class="keyword">GemFire</span> before you start configuring your data regions.
+    The <span class="keyword">Apache Geode</span> data storage and distribution models put your data in the right place at the right time. You should understand all the options for data storage in <span class="keyword">Geode</span> before you start configuring your data regions.
 
--   **[Partitioned Regions](../../latest/developing/partitioned_regions/chapter_overview.html)**
+-   **[Partitioned Regions](../developing/partitioned_regions/chapter_overview.html)**
 
     In addition to basic region management, partitioned regions include options for high availability, data location control, and data balancing across the distributed system.
 
--   **[Distributed and Replicated Regions](../../latest/developing/distributed_regions/chapter_overview.html)**
+-   **[Distributed and Replicated Regions](../developing/distributed_regions/chapter_overview.html)**
 
-    In addition to basic region management, distributed and replicated regions include options for things like push and pull distribution models, global locking, and region entry versions to ensure consistency across <span class="keyword">GemFire</span> members.
+    In addition to basic region management, distributed and replicated regions include options for things like push and pull distribution models, global locking, and region entry versions to ensure consistency across <span class="keyword">Geode</span> members.
 
--   **[Consistency for Region Updates](../../latest/developing/distributed_regions/region_entry_versions.html)**
+-   **[Consistency for Region Updates](../developing/distributed_regions/region_entry_versions.html)**
 
-    <span class="keyword">GemFire</span> ensures that all copies of a region eventually reach a consistent state on all members and clients that host the region, including <span class="keyword">GemFire</span> members that distribute region events.
+    <span class="keyword">Geode</span> ensures that all copies of a region eventually reach a consistent state on all members and clients that host the region, including <span class="keyword">Geode</span> members that distribute region events.
 
--   **[How Consistency Is Achieved in WAN Deployments](../../latest/developing/distributed_regions/how_region_versioning_works_wan.html)**
-
-    When two or more <span class="keyword">GemFire</span> systems are configured to distribute events over a WAN, each system performs local consistency checking before it distributes an event to a configured gateway sender. Discarded events are not distributed across the WAN.
-
--   **[General Region Data Management](../../latest/developing/management_all_region_types/chapter_overview.html)**
+-   **[General Region Data Management](../developing/management_all_region_types/chapter_overview.html)**
 
     For all regions, you have options to control memory use, back up your data to disk, and keep stale data out of your cache.
 
--   **[Data Serialization](../../latest/developing/data_serialization/chapter_overview.html)**
+-   **[Data Serialization](../developing/data_serialization/chapter_overview.html)**
 
-    Data that you manage in <span class="keyword">GemFire</span> must be serialized and deserialized for storage and transmittal between processes. You can choose among several options for data serialization.
+    Data that you manage in <span class="keyword">Geode</span> must be serialized and deserialized for storage and transmittal between processes. You can choose among several options for data serialization.
 
--   **[Events and Event Handling](../../latest/developing/events/chapter_overview.html)**
+-   **[Events and Event Handling](../developing/events/chapter_overview.html)**
 
-    <span class="keyword">GemFire</span> provides versatile and reliable event distribution and handling for your cached data and system member events.
+    <span class="keyword">Geode</span> provides versatile and reliable event distribution and handling for your cached data and system member events.
 
--   **[Delta Propagation](../../latest/developing/delta_propagation/chapter_overview.html)**
+-   **[Delta Propagation](../developing/delta_propagation/chapter_overview.html)**
 
     Delta propagation allows you to reduce the amount of data you send over the network by including only changes to objects rather than the entire object.
 
--   **[Querying](../../latest/developing/querying_basics/chapter_overview.html)**
+-   **[Querying](../developing/querying_basics/chapter_overview.html)**
 
-    <span class="keyword">GemFire</span> provides a SQL-like querying language called OQL that allows you to access data stored in <span class="keyword">GemFire</span> regions.
+    <span class="keyword">Geode</span> provides a SQL-like querying language called OQL that allows you to access data stored in <span class="keyword">Geode</span> regions.
 
--   **[Continuous Querying](../../latest/developing/continuous_querying/chapter_overview.html)**
+-   **[Continuous Querying](../developing/continuous_querying/chapter_overview.html)**
 
     Continuous querying continuously returns events that match the queries you set up.
 
--   **[Transactions](../../latest/developing/transactions/chapter_overview.html)**
+-   **[Transactions](../developing/transactions/chapter_overview.html)**
 
-    <span class="keyword">GemFire</span> provides a transactions API, with `begin`, `commit`, and `rollback` methods. These methods are much the same as the familiar relational database transactions methods.
+    <span class="keyword">Geode</span> provides a transactions API, with `begin`, `commit`, and `rollback` methods. These methods are much the same as the familiar relational database transactions methods.
 
--   **[Function Execution](../../latest/developing/function_exec/chapter_overview.html)**
+-   **[Function Execution](../developing/function_exec/chapter_overview.html)**
 
     A function is a body of code that resides on a server and that an application can invoke from a client or from another server without the need to send the function code itself. The caller can direct a data-dependent function to operate on a particular dataset, or can direct a data-independent function to operate on a particular server, member, or member group.
 

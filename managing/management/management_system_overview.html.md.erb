@@ -2,7 +2,7 @@
 title:  Architecture and Components
 ---
 
-<span class="keyword">GemFire</span>'s management and monitoring system consists of one JMX Manager node (there should only be one) and one or more managed nodes within a distributed system. All members in the distributed system are manageable through MBeans and <span class="keyword">GemFire</span> Management Service APIs.
+<span class="keyword">Geode</span>'s management and monitoring system consists of one JMX Manager node (there should only be one) and one or more managed nodes within a distributed system. All members in the distributed system are manageable through MBeans and <span class="keyword">Geode</span> Management Service APIs.
 
 <a id="concept_1BAE2CE1146B4347ABD61F50B9F9781F__section_ABE7007BE3C244FBA0418C4B5BE7E1F2"></a>
 ## Architecture
@@ -11,7 +11,7 @@ The following diagram depicts the architecture of the management and monitoring 
 
 <img src="../../images_svg/JMX_Architecture.svg" id="concept_1BAE2CE1146B4347ABD61F50B9F9781F__image_1E9E8575E13D4087BC47B6A288097B7A" class="image" />
 
-In this architecture every <span class="keyword">GemFire</span> member is manageable. All <span class="keyword">GemFire</span> MBeans for the local <span class="keyword">GemFire</span> processes are automatically registered in the Platform MBeanServer (the default MBeanServer of each JVM that hosts platform MXBeans.)
+In this architecture every <span class="keyword">Geode</span> member is manageable. All <span class="keyword">Geode</span> MBeans for the local <span class="keyword">Geode</span> processes are automatically registered in the Platform MBeanServer (the default MBeanServer of each JVM that hosts platform MXBeans.)
 
 <a id="concept_1BAE2CE1146B4347ABD61F50B9F9781F__section_1CF2B237C16F4095A609E62F0C7146C1"></a>
 
@@ -19,16 +19,16 @@ In this architecture every <span class="keyword">GemFire</span> member is manage
 
 Each member of a distributed system is a managed node. Any node that is not currently also acting as a JMX Manager node is referred to simply as a managed node. A managed node has the following resources so that it can answer JMX queries both locally and remotely:
 
--   Local MXBeans that represent the locally monitored components on the node. See [List of GemFire JMX MBeans](list_of_mbeans.html#topic_4BCF867697C3456D96066BAD7F39FC8B) for a list of possible MXBeans existing for the managed node.
+-   Local MXBeans that represent the locally monitored components on the node. See [List of Geode JMX MBeans](list_of_mbeans.html#topic_4BCF867697C3456D96066BAD7F39FC8B) for a list of possible MXBeans existing for the managed node.
 -   Built-in platform MBeans.
 
 <a id="concept_1BAE2CE1146B4347ABD61F50B9F9781F__section_8604838507194C8B86F1420FBA46894C"></a>
 
 ## JMX Manager Node
 
-A JMX Manager node is a member that can manage other <span class="keyword">GemFire</span> members --that is, other managed nodes -- as well as itself. A JMX Manager node can manage all other members in the distributed system.
+A JMX Manager node is a member that can manage other <span class="keyword">Geode</span> members --that is, other managed nodes -- as well as itself. A JMX Manager node can manage all other members in the distributed system.
 
-To convert a managed node to a JMX Manager node, you configure the <span class="keyword">GemFire</span> property `jmx-manager=true`, in the `gemfire.properties` file, and start the member as a JMX Manager node.
+To convert a managed node to a JMX Manager node, you configure the <span class="keyword">Geode</span> property `jmx-manager=true`, in the `gemfire.properties` file, and start the member as a JMX Manager node.
 
 You start the member as a JMX Manager node when you provide`                     --J=-Dgemfire.jmx-manager=true` as an argument to either the`                     start server` or `start locator` command. See [Starting a JMX Manager](jmx_manager_operations.html#topic_686158E9AFBD47518BE1B4BEB232C190) for more information.
 
@@ -48,15 +48,15 @@ The JMX Manager node has the following extra resources allocated so that it can 
 
 ## JMX Integration
 
-Management and monitoring tools such as gfsh command-line interface and Pulse use JMX/RMI as the communication layer to connect to <span class="keyword">GemFire</span> nodes. All <span class="keyword">GemFire</span> processes by default allow JMX connections to the Platform MBeanServer from localhost. By default, both managed nodes and JMX manager nodes have RMI connectors enabled to allow JMX client connections.
+Management and monitoring tools such as gfsh command-line interface and Pulse use JMX/RMI as the communication layer to connect to <span class="keyword">Geode</span> nodes. All <span class="keyword">Geode</span> processes by default allow JMX connections to the Platform MBeanServer from localhost. By default, both managed nodes and JMX manager nodes have RMI connectors enabled to allow JMX client connections.
 
 JConsole (and other similar JMX clients that support Sun's Attach API) can connect to any local JVM without requiring an RMI connector by using the Attach API. This allows connections from the same machine.
 
 JConsole (and other JMX clients) can connect to any JVM if that JVM is configured to start an RMI connector. This allows remote connections from other machines.
 
-JConsole can connect to any <span class="keyword">GemFire</span> member, but if it connects to a non-JMX-Manager member, JConsole only detects the local MBeans for the node, and not MBeans for the cluster.
+JConsole can connect to any <span class="keyword">Geode</span> member, but if it connects to a non-JMX-Manager member, JConsole only detects the local MBeans for the node, and not MBeans for the cluster.
 
-When a <span class="keyword">GemFire</span> locator or server becomes a JMX Manager for the cluster, it enables the RMI connector. JConsole can then connect only to that one JVM to view the MBeans for the entire cluster. It does not need to connect to all the other JVMs. <span class="keyword">GemFire</span> manages the inter-JVM communication required to provide a federated view of all MBeans in the distributed system.
+When a <span class="keyword">Geode</span> locator or server becomes a JMX Manager for the cluster, it enables the RMI connector. JConsole can then connect only to that one JVM to view the MBeans for the entire cluster. It does not need to connect to all the other JVMs. <span class="keyword">Geode</span> manages the inter-JVM communication required to provide a federated view of all MBeans in the distributed system.
 
 `gfsh` can only connect to a JMX Manager or to a locator. If connected to a locator, the locator provides the necessary connection information for the existing JMX Manager. If the locator detects a JMX Manager is not already running in the cluster, the locator makes itself a JMX Manager. gfsh cannot connect to other non-Manager or non-locator members.
 
@@ -66,9 +66,9 @@ For information on how to configure the RMI registry and RMI connector, see [Con
 
 ## Management APIs
 
-<span class="keyword">GemFire</span> management APIs represent the <span class="keyword">GemFire</span> cluster to a JMX user. However, they do not provide functionality that is otherwise present in JMX. They only provide a gateway into various services exclusively offered by <span class="keyword">GemFire</span> monitoring and management.
+<span class="keyword">Geode</span> management APIs represent the <span class="keyword">Geode</span> cluster to a JMX user. However, they do not provide functionality that is otherwise present in JMX. They only provide a gateway into various services exclusively offered by <span class="keyword">Geode</span> monitoring and management.
 
-The entry point to <span class="keyword">GemFire</span> management is through the ManagementService interface. For example, to create an instance of the Management Service:
+The entry point to <span class="keyword">Geode</span> management is through the ManagementService interface. For example, to create an instance of the Management Service:
 
 ``` pre
 ManagementService service = ManagementService.getManagementService(cache);
@@ -76,12 +76,12 @@ ManagementService service = ManagementService.getManagementService(cache);
 
 The resulting ManagementService instance is specific to the provided cache and its distributed system. The implementation of getManagementService is a singleton for now but may eventually support multiple cache instances.
 
-You can use the <span class="keyword">GemFire</span> management APIs to accomplish the following tasks:
+You can use the <span class="keyword">Geode</span> management APIs to accomplish the following tasks:
 
 -   Monitor the health status of clients.
 -   Obtain the status and results of individual disk backups.
 -   View metrics related to disk usage and performance for a particular member.
--   Browse <span class="keyword">GemFire</span> properties set for a particular member.
+-   Browse <span class="keyword">Geode</span> properties set for a particular member.
 -   View JVM metrics such as memory, heap, and thread usage.
 -   View network metrics, such as bytes received and sent.
 -   View partition region attributes such as total number of buckets, redundant copy, and maximum memory information.
@@ -94,13 +94,13 @@ You can also execute gfsh commands using the ManagementService API. See [Executi
 
 <a id="concept_1BAE2CE1146B4347ABD61F50B9F9781F__section_E69A93A6309E4747B52850D81FE1674E"></a>
 
-## <span class="keyword">GemFire</span> Management and Monitoring Tools
+## <span class="keyword">Geode</span> Management and Monitoring Tools
 
-This section lists the currently available tools for managing and monitoring <span class="keyword">GemFire</span>:
+This section lists the currently available tools for managing and monitoring <span class="keyword">Geode</span>:
 
--   **gfsh**. <span class="keyword">Pivotal GemFire</span> command-line interface that provides a simple & powerful command shell that supports the administration, debugging and deployment of <span class="keyword">GemFire</span> applications. It features context sensitive help, scripting and the ability to invoke any commands from within the application using a simple API. See [gfsh](../../tools_modules/gfsh/chapter_overview.html).
--   **<span class="keyword">GemFire</span> Pulse**. Easy-to-use, browser-based dashboard for monitoring <span class="keyword">GemFire</span> deployments. <span class="keyword">GemFire</span> Pulse provides an integrated view of all <span class="keyword">GemFire</span> members within a distributed system. See [GemFire Pulse](../../tools_modules/pulse/chapter_overview.html).
--   **Pulse Data Browser**. This <span class="keyword">GemFire</span> Pulse utility provides a graphical interface for performing OQL ad-hoc queries in a <span class="keyword">GemFire</span> distributed system. See [Data Browser](../../tools_modules/pulse/quickstart.html#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__sec_pulsedatabrowser).
+-   **gfsh**. <span class="keyword">Apache Geode</span> command-line interface that provides a simple & powerful command shell that supports the administration, debugging and deployment of <span class="keyword">Geode</span> applications. It features context sensitive help, scripting and the ability to invoke any commands from within the application using a simple API. See [gfsh](../../tools_modules/gfsh/chapter_overview.html).
+-   **<span class="keyword">Geode</span> Pulse**. Easy-to-use, browser-based dashboard for monitoring <span class="keyword">Geode</span> deployments. <span class="keyword">Geode</span> Pulse provides an integrated view of all <span class="keyword">Geode</span> members within a distributed system. See [Geode Pulse](../../tools_modules/pulse/chapter_overview.html).
+-   **Pulse Data Browser**. This <span class="keyword">Geode</span> Pulse utility provides a graphical interface for performing OQL ad-hoc queries in a <span class="keyword">Geode</span> distributed system. See [Data Browser](../../tools_modules/pulse/quickstart.html#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__sec_pulsedatabrowser).
 -   **Other Java Monitoring Tools such as JConsole and jvisualvm.** JConsole is a JMX-based management and monitoring tool provided in the Java 2 Platform that provides information on the performance and consumption of resources by Java applications. See [http://docs.oracle.com/javase/6/docs/technotes/guides/management/jconsole.html](http://docs.oracle.com/javase/6/docs/technotes/guides/management/jconsole.html). **Java VisualVM (jvisualvm)** is a profiling tool for analyzing your Java Virtual Machine. Java VisualVM is useful to Java application developers to troubleshoot applications and to monitor and improve the applications' performance. Java VisualVM can allow developers to generate and analyse heap dumps, track down memory leaks, perform and monitor garbage collection, and perform lightweight memory and CPU profiling. For more details on using jvisualvm, see [http://docs.oracle.com/javase/6/docs/technotes/tools/share/jvisualvm.html](http://docs.oracle.com/javase/6/docs/technotes/tools/share/jvisualvm.html).
 
 

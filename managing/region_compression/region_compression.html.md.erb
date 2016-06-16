@@ -4,7 +4,7 @@
 
 This section describes region compression, its benefits and usage.
 
-One way to reduce memory consumption by <span class="keyword">GemFire</span> is to enable compression in your regions. <span class="keyword">GemFire</span> allows you to compress in-memory region values using pluggable compressors (compression codecs). <span class="keyword">GemFire</span> includes the [Snappy](https://code.google.com/p/snappy/) compressor as the built-in compression codec; however, you can implement and specify a different compressor for each compressed region.
+One way to reduce memory consumption by <span class="keyword">Geode</span> is to enable compression in your regions. <span class="keyword">Geode</span> allows you to compress in-memory region values using pluggable compressors (compression codecs). <span class="keyword">Geode</span> includes the [Snappy](https://code.google.com/p/snappy/) compressor as the built-in compression codec; however, you can implement and specify a different compressor for each compressed region.
 
 ## What Gets Compressed
 
@@ -14,19 +14,19 @@ When compression is enabled, each value in the region is compressed, and each re
 
 You can have a mix of compressed and non-compressed regions in the same cache.
 
--   **[Guidelines on Using Compression](../../../latest/managing/region_compression/region_compression.html#concept_a2c_rhc_gl)**
+-   **[Guidelines on Using Compression](../../managing/region_compression/region_compression.html#concept_a2c_rhc_gl)**
 
     This topic describes factors to consider when deciding on whether to use compression.
 
--   **[How to Enable Compression in a Region](../../../latest/managing/region_compression/region_compression.html#topic_inm_whc_gl)**
+-   **[How to Enable Compression in a Region](../../managing/region_compression/region_compression.html#topic_inm_whc_gl)**
 
     This topic describes how to enable compression on your region.
 
--   **[Working with Compressors](../../../latest/managing/region_compression/region_compression.html#topic_hqf_syj_g4)**
+-   **[Working with Compressors](../../managing/region_compression/region_compression.html#topic_hqf_syj_g4)**
 
-    When using region compression, you can use the default Snappy compressor included with <span class="keyword">GemFire</span> or you can specify your own compressor.
+    When using region compression, you can use the default Snappy compressor included with <span class="keyword">Geode</span> or you can specify your own compressor.
 
--   **[Comparing Performance of Compressed and Non-Compressed Regions](../../../latest/managing/region_compression/region_compression.html#topic_omw_j3c_gl)**
+-   **[Comparing Performance of Compressed and Non-Compressed Regions](../../managing/region_compression/region_compression.html#topic_omw_j3c_gl)**
 
     The comparative performance of compressed regions versus non-compressed regions can vary depending on how the region is being used and whether the region is hosted in a memory-bound JVM.
 
@@ -48,9 +48,9 @@ Review the following guidelines when deciding on whether or not to enable compre
 
 -   **Consider the types and lengths of the fields in the region's entries.** Since compression is performed on each entry separately (and not on the region as a whole), consider the potential for duplicate data across a single entry. Duplicate bytes are compressed more easily. Also, since region entries are first serialized into a byte area before being compressed, how well the data might compress is determined by the number and length of duplicate bytes across the entire entry and not just a single field. Finally, the larger the entry the more likely compression will achieve good results as the potential for duplicate bytes, and a series of duplicate bytes, increases.
 -   **Consider the type of data you wish to compress.** The type of data stored has a significant impact on how well the data may compress. String data will generally compress better than numeric data simply because string bytes are far more likely to repeat; however, that may not always be the case. For example, a region entry that holds a couple of short, unique strings may not provide as much memory savings when compressed as another region entry that holds a large number of integer values. In short, when evaluating the potential gains of compressing a region, consider the likelihood of having duplicate bytes, and more importantly the length of a series of duplicate bytes, for a single, serialized region entry. In addition, data that has already been compressed, such as JPEG format files, can actually cause more memory to be used.
--   **Compress if you are storing large text values.** Compression is beneficial if you are storing large text values (such as JSON or XML) or blobs in <span class="keyword">GemFire</span> that would benefit from compression.
+-   **Compress if you are storing large text values.** Compression is beneficial if you are storing large text values (such as JSON or XML) or blobs in <span class="keyword">Geode</span> that would benefit from compression.
 -   **Consider whether fields being queried against are indexed.** You can query against compressed regions; however, if the fields you are querying against have not been indexed, then the fields must be decompressed before they can be used for comparison. In short, you may incur some query performance costs when querying against non-indexed fields.
--   **Objects stored in the compression region must be serializable.** Compression only operates on byte arrays, therefore objects being stored in a compressed region must be serializable and deserializable. The objects can either implement the Serializable interface or use one of the other <span class="keyword">GemFire</span> serialization mechanisms (such as PdxSerializable). Implementers should always be aware that when compression is enabled the instance of an object put into a region will not be the same instance when taken out. Therefore, transient attributes will lose their value when the containing object is put into and then taken out of a region.
+-   **Objects stored in the compression region must be serializable.** Compression only operates on byte arrays, therefore objects being stored in a compressed region must be serializable and deserializable. The objects can either implement the Serializable interface or use one of the other <span class="keyword">Geode</span> serialization mechanisms (such as PdxSerializable). Implementers should always be aware that when compression is enabled the instance of an object put into a region will not be the same instance when taken out. Therefore, transient attributes will lose their value when the containing object is put into and then taken out of a region.
 
 -   **Compressed regions will enable cloning by default.** Setting a compressor and then disabling cloning results in an exception. The options are incompatible because the process of compressing/serializing and then decompressing/deserializing will result in a different instance of the object being created and that may be interpreted as cloning the object.
 
@@ -64,10 +64,10 @@ To enable compression on your region, set the following region attribute in your
 
 ``` pre
 <?xml version="1.0" encoding= "UTF-8"?>
-<cache xmlns="http://schema.pivotal.io/gemfire/cache"
+<cache xmlns="http://geode.incubator.apache.org/schema/cache"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
-    version="8.1” lock-lease="120"  lock-timeout= "60" search-timeout= "300"  is-server= "true"  copy-on-read= "false" > 
+    xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+    version="1.0” lock-lease="120"  lock-timeout= "60" search-timeout= "300"  is-server= "true"  copy-on-read= "false" > 
    <region name="compressedRegion" > 
       <region-attributes data-policy="replicate" ... /> 
          <Compressor>
@@ -79,7 +79,7 @@ To enable compression on your region, set the following region attribute in your
 </cache>
 ```
 
-In the Compressor element, specify the class-name for your compressor implementation. This example specifies the Snappy compressor, which is bundled with <span class="keyword">GemFire</span> . You can also specify a custom compressor. See [Working with Compressors](#topic_hqf_syj_g4) for an example.
+In the Compressor element, specify the class-name for your compressor implementation. This example specifies the Snappy compressor, which is bundled with <span class="keyword">Geode</span> . You can also specify a custom compressor. See [Working with Compressors](#topic_hqf_syj_g4) for an example.
 
 Compression can be enabled during region creation using gfsh or programmatically as well.
 
@@ -114,12 +114,12 @@ Region myRegion = cache.getRegion("myRegion");
 
 ## Working with Compressors
 
-When using region compression, you can use the default Snappy compressor included with <span class="keyword">GemFire</span> or you can specify your own compressor.
+When using region compression, you can use the default Snappy compressor included with <span class="keyword">Geode</span> or you can specify your own compressor.
 
 The compression API consists of a single interface that compression providers must implement. The default compressor (SnappyCompressor) is the single compression implementation that comes bundled with the product. Note that since the Compressor is stateless, there only needs to be a single instance in any JVM; however, multiple instances may be used without issue. The single, default instance of the SnappyCompressor may be retrieved with the `SnappyCompressor.getDefaultInstance()` static method.
 
 **Note:**
-The Snappy codec included with <span class="keyword">GemFire</span> cannot be used with Solaris deployments. Snappy is only supported on Linux, Windows, and OSX deployments of <span class="keyword">GemFire</span>.
+The Snappy codec included with <span class="keyword">Geode</span> cannot be used with Solaris deployments. Snappy is only supported on Linux, Windows, and OSX deployments of <span class="keyword">Geode</span>.
 
 This example provides a custom Compressor implementation:
 

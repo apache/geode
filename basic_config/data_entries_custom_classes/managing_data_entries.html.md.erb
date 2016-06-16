@@ -6,7 +6,7 @@ Program your applications to create, modify, and manage your cached data entries
 
 <a id="managing_data_entries__section_AACC36127F17411F86D1E409B86C6E5C"></a>
 **Note:**
-If you do not have the cache's `copy-on-read` attribute set to true, do not change the objects returned from the Java entry access methods. Instead, create a copy of the object, then modify the copy and pass it to the Java `put` method. Modifying a value in place bypasses the entire distribution framework provided by <span class="keyword">GemFire</span>, including cache listeners and expiration activities, and can produce undesired results.
+If you do not have the cache's `copy-on-read` attribute set to true, do not change the objects returned from the Java entry access methods. Instead, create a copy of the object, then modify the copy and pass it to the Java `put` method. Modifying a value in place bypasses the entire distribution framework provided by <span class="keyword">Geode</span>, including cache listeners and expiration activities, and can produce undesired results.
 
 <a id="managing_data_entries__section_B095A4073EFB4A3C91AF7C03632EEBFB"></a>
 
@@ -29,7 +29,7 @@ If you want only to create the entry (with a null value and with method failure 
 
 ## Batch Operations (getAll, putAll, removeAll)
 
-<span class="keyword">GemFire</span> provides three APIs to perform batch operations on multiple region entries:
+<span class="keyword">Geode</span> provides three APIs to perform batch operations on multiple region entries:
 
 -   `Region.getAll`
 -   `Region.putAll`
@@ -67,7 +67,7 @@ The `removeAll` method takes a collection of keys and removes all of the entries
 When you get an entry value from the cache, by default, the retrieval methods return a direct reference to the cached object. This provides the value as quickly as possible, but also opens the cache to direct, in-place changes.
 
 **Note:**
-Do not directly modify cached values. Modifying a value in place bypasses the <span class="keyword">GemFire</span> distribution framework, including cache writers and listeners, expiration activities, and transaction management, and can produce undesired results.
+Do not directly modify cached values. Modifying a value in place bypasses the <span class="keyword">Geode</span> distribution framework, including cache writers and listeners, expiration activities, and transaction management, and can produce undesired results.
 
 Always change your entries using copies of the retrieved objects—never directly modify the returned objects. You can do this in one of two ways:
 

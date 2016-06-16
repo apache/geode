@@ -2,7 +2,7 @@
 title:  Data Region Management
 ---
 
-<span class="keyword">Pivotal GemFire</span> provides different APIs and XML configuration models to support configuration and management of your data regions.
+<span class="keyword">Apache Geode</span> provides different APIs and XML configuration models to support configuration and management of your data regions.
 
 <a id="data_regions__section_18A9481217204613958897FE64105097"></a>
 You store your data in region entry key/value pairs, with keys and values being any object types your application needs.
@@ -20,7 +20,7 @@ If you change attributes that define a region, you must restart the member for t
 
 ## The Region APIs
 
-<span class="keyword">GemFire</span>'s regions APIs provide specialized behavior for different system member types.
+<span class="keyword">Geode</span>'s regions APIs provide specialized behavior for different system member types.
 
 -   **Peer/Server Region APIs**. Use these methods, interfaces, and classes for peer/server region creation. These are in the `com.gemstone.gemfire.cache` package. They correspond to declarations in the `<cache>` element for creating and configuring regions.
     -   **`com.gemstone.gemfire.cache.Cache.createRegionFactory`** . This method takes a `RegionShortcut` `enum` to initiate region configuration, and returns a `RegionFactory`. Use `createRegionFactory()`, not "`new                                     RegionFactory`," to create a RegionFactory.
@@ -58,10 +58,10 @@ Before you start, have your cache configuration defined, along with any cache-wi
         ``` pre
         <?xml version="1.0" encoding="UTF-8"?>
         <cache
-            xmlns="http://schema.pivotal.io/gemfire/cache"
+            xmlns="http://geode.incubator.apache.org/schema/cache"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
-            version="8.1"
+            xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+            version="1.0"
             lock-lease="120"
             lock-timeout="60"
             search-timeout="300">
@@ -102,10 +102,10 @@ You can create subregions using one of the following methods:
         ``` pre
         <?xml version="1.0"?>
         <cache
-            xmlns="http://schema.pivotal.io/gemfire/cache"
+            xmlns="http://geode.incubator.apache.org/schema/cache"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
-            version="8.1"
+            xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+            version="1.0"
             lock-lease="120"
             lock-timeout="60"
             search-timeout="300">
@@ -193,7 +193,7 @@ Event notification occurs for a destroy region operation.
 
 A region can be destroyed by removing the region's specification from the `cache.xml` file.
 
-Destroying the region by an API invocation or by using the `gfsh                     destroy` command while all members are online is the best way to remove a region, as <span class="keyword">GemFire</span> handles all aspects of the removal, including removing the region's persistent disk stores across the online members hosting the region. Destroying the region by removing its specification from the `cache.xml` file does not remove the region's existing persistent disk stores.
+Destroying the region by an API invocation or by using the `gfsh                     destroy` command while all members are online is the best way to remove a region, as <span class="keyword">Geode</span> handles all aspects of the removal, including removing the region's persistent disk stores across the online members hosting the region. Destroying the region by removing its specification from the `cache.xml` file does not remove the region's existing persistent disk stores.
 
 The destroy operation can be propagated only to online members. The system will encounter restart issues if a region is destroyed while some members are online and others are offline. As those members that were offline restart, they will block indefinitely, waiting for persistent region data that no longer exists. To fix this issue, shut down all members that are blocked waiting for the removed region. Once those members are in the offline state, use the `gfsh alter                     disk-store` command with the `--remove` option on each offline member to remove the region. Then, restart each member.
 

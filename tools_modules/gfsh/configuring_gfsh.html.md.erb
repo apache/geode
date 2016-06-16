@@ -2,7 +2,7 @@
 title:  Configuring the gfsh Environment
 ---
 
-The `gfsh.bat` and `gfsh` bash script automatically append the required <span class="keyword">Pivotal GemFire</span> and JDK .jar libraries to your existing CLASSPATH. There are user-configurable properties you can set for security, environment variables, logging, and troubleshooting.
+The `gfsh.bat` and `gfsh` bash script automatically append the required <span class="keyword">Apache Geode</span> and JDK .jar libraries to your existing CLASSPATH. There are user-configurable properties you can set for security, environment variables, logging, and troubleshooting.
 
 -   [JAR Libraries in CLASSPATH](configuring_gfsh.html#concept_3B9C6CE2F64841E98C33D9F6441DF487__section_0D2EEA7A9ED54DFDB2E1EE955E47921E)
 -   [Configuring gfsh Security](configuring_gfsh.html#concept_3B9C6CE2F64841E98C33D9F6441DF487__section_3FA4CD2B451B4A30A12D30DDE8DF8619)
@@ -16,7 +16,7 @@ The `gfsh.bat` and `gfsh` bash script automatically append the required <span cl
 
 When you start up `gfsh`, it will automatically load required JAR files that have been packaged in the `gfsh-dependencies.jar` file. You do not need to modify your CLASSPATH to run gfsh. When starting servers and locators in gfsh, the start server and start locator commands will load `server-dependencies.jar` and `locator-dependencies.jar` files into the process CLASSPATH for you.
 
-These dependency JAR files are packaged in your <span class="keyword">Pivotal GemFire</span> installation in the `$GEMFIRE/lib` (or on Windows, the `%GEMFIRE%\lib`) directory.
+These dependency JAR files are packaged in your <span class="keyword">Apache Geode</span> installation in the `$GEMFIRE/lib` (or on Windows, the `%GEMFIRE%\lib`) directory.
 
 **Note:**
 The `gfsh` command-line utility also searches for `tools.jar` (included with JDK) and adds it to gfsh's CLASSPATH. If you do not have a JDK installed, gfsh uses file-based communication instead for the `status` and `stop` commands. If using a JRE instead of JDK, gfsh must have read-write permissions in the working directory of the server and locator processes.
@@ -31,7 +31,7 @@ On some operating systems, you may need to ensure that the hostname of your mach
 
 ## Configuring gfsh Security
 
-Since `gfsh` must connect to a JMX Manager member to run certain commands (namely those commands that manage and monitor other members), JMX Manager configuration properties can affect `gfsh` security. In `gemfire.properties`, the following <span class="keyword">GemFire</span> properties can affect `gfsh` connection settings to the JMX Manager:
+Since `gfsh` must connect to a JMX Manager member to run certain commands (namely those commands that manage and monitor other members), JMX Manager configuration properties can affect `gfsh` security. In `gemfire.properties`, the following <span class="keyword">Geode</span> properties can affect `gfsh` connection settings to the JMX Manager:
 
 -   `jmx-manager-ssl`
 -   `jmx-manager-port`
@@ -116,9 +116,9 @@ A history of commands that have been executed successfully is logged in `.gfsh.h
 
 ## JMX Manager Update Rate and System Monitoring
 
-When you perform data operations (such as put) and then monitor the state of the system (such as using the gfsh `show metrics` command or <span class="keyword">Pivotal GemFire</span> Pulse), the monitored system may not immediately reflect the most recent operations. For example, if you perform a put operation and then immediately execute the `show metrics` gfsh command, you may not see the correct number of entries in the region. The management layer updates every 2 seconds. Wait a few seconds after performing operational activity to see the most accurate results.
+When you perform data operations (such as put) and then monitor the state of the system (such as using the gfsh `show metrics` command or <span class="keyword">Apache Geode</span> Pulse), the monitored system may not immediately reflect the most recent operations. For example, if you perform a put operation and then immediately execute the `show metrics` gfsh command, you may not see the correct number of entries in the region. The management layer updates every 2 seconds. Wait a few seconds after performing operational activity to see the most accurate results.
 
-You can modify the `jmx-manager-update-rate` property in `gemfire.properties` to increase or decrease the rate (specified in milliseconds) at which updates are pushed to the JMX Manager. This property setting should be greater than or equal to the `statistic-sample-rate`. You may want to increase this rate if you are experiencing performance issues; however, setting this value too high will cause stale values to be seen in `gfsh` and <span class="keyword">Pivotal GemFire</span> Pulse.
+You can modify the `jmx-manager-update-rate` property in `gemfire.properties` to increase or decrease the rate (specified in milliseconds) at which updates are pushed to the JMX Manager. This property setting should be greater than or equal to the `statistic-sample-rate`. You may want to increase this rate if you are experiencing performance issues; however, setting this value too high will cause stale values to be seen in `gfsh` and <span class="keyword">Apache Geode</span> Pulse.
 
 ## Formatting of Results
 

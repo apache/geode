@@ -1,11 +1,11 @@
 ---
-title:  Behavior of <span class="keyword">GemFire</span> Cache Writers and Loaders Under JTA
+title:  Behavior of <span class="keyword">Geode</span> Cache Writers and Loaders Under JTA
 ---
 
-When <span class="keyword">GemFire</span> participates in a global transactions, you can still have <span class="keyword">GemFire</span> cache writers and cache loaders operating in the usual way.
+When <span class="keyword">Geode</span> participates in a global transactions, you can still have <span class="keyword">Geode</span> cache writers and cache loaders operating in the usual way.
 
 For example, in addition to the transactional connection to the database, the region could also have a cache writer and cache loader configured to exchange data with that same database. As long as the data source is transactional, which means that it can detect the transaction manager, the cache writer and cache loader participate in the transaction. If the JTA rolls back its transaction, the changes made by the cache loader and the cache writer are rolled back. For more on transactional data sources, see the discussion of XAPooledDataSource and ManagedDataSource in[Configuring Database Connections Using JNDI](configuring_db_connections_using_JNDI.html#topic_A5E3A67C808D48C08E1F0DC167C5C494).
 
-If you are using a <span class="keyword">GemFire</span> cache or transaction listener with global transactions, be aware that the EntryEvent returned by a transaction has the <span class="keyword">GemFire</span> transaction ID, not the JTA transaction ID.
+If you are using a <span class="keyword">Geode</span> cache or transaction listener with global transactions, be aware that the EntryEvent returned by a transaction has the <span class="keyword">Geode</span> transaction ID, not the JTA transaction ID.
 
 

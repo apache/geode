@@ -5,7 +5,7 @@ title:  Implementing Cache Event Handlers
 Depending on your installation and configuration, cache events can come from local operations, peers, servers, and remote sites. Event handlers register their interest in one or more events and are notified when the events occur.
 
 <a id="implementing_cache_event_handlers__section_9286E8C6B3C54089888E1680B4F43692"></a>
-For each type of handler, <span class="keyword">GemFire</span> provides a convenience class with empty stubs for the interface callback methods.
+For each type of handler, <span class="keyword">Geode</span> provides a convenience class with empty stubs for the interface callback methods.
 
 **Note:**
 Write-behind cache listeners are created by extending the `AsyncEventListener` interface, and they are configured with an `AsyncEventQueue` that you assign to one or more regions.

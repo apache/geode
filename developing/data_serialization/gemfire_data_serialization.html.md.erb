@@ -1,13 +1,13 @@
 ---
-title:  <span class="keyword">GemFire</span> Data Serialization (DataSerializable and DataSerializer)
+title:  <span class="keyword">Geode</span> Data Serialization (DataSerializable and DataSerializer)
 ---
 
-<span class="keyword">GemFire</span>'s `DataSerializable` interface gives you quick serialization of your objects.
+<span class="keyword">Geode</span>'s `DataSerializable` interface gives you quick serialization of your objects.
 
 <a id="gemfire_data_serialization__section_0C84D6BF5E9748CB865E6BB944A077DE"></a>
 ## Data Serialization with the DataSerializable Interface
 
-<span class="keyword">GemFire</span>'s `DataSerializable` interface gives you faster and more compact data serialization than the standard Java serialization or <span class="keyword">GemFire</span> PDX serialization. However, while <span class="keyword">GemFire</span> `DataSerializable` interface is generally more performant than <span class="keyword">GemFire</span>'s `PdxSerializable`, it requires full deserialization on the server and then reserialization to send the data back to the client.
+<span class="keyword">Geode</span>'s `DataSerializable` interface gives you faster and more compact data serialization than the standard Java serialization or <span class="keyword">Geode</span> PDX serialization. However, while <span class="keyword">Geode</span> `DataSerializable` interface is generally more performant than <span class="keyword">Geode</span>'s `PdxSerializable`, it requires full deserialization on the server and then reserialization to send the data back to the client.
 
 You can further speed serialization by registering the instantiator for your `DataSerializable` class through `Instantiator`, eliminating the need for reflection to find the right serializer. You can provide your own serialization through the API.
 

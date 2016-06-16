@@ -13,17 +13,17 @@ This section documents cache.xml file requirements and variables. It also points
 
 The cache.xml file has these requirements:
 
--   The contents must conform to the XML schema definition provided in <span class="keyword">cache-8.1.xsd</span>. The schema definition file is available in the product distribution at `$GEMFIRE/schemas/schema.pivotal.io/gemfire/cache/cache-8.1.xsd`.
+-   The contents must conform to the XML schema definition provided in <span class="keyword">cache-1.0.xsd</span>. The schema definition file is available in the product distribution at `$GEMFIRE/schemas/geode.apache.org/schema/cache/cache-1.0.xsd`.
 -   The file must include a &lt;cache&gt; schema declaration of one of the following forms:
     -   Server or peer cache:
 
         ``` pre
         <?xml version="1.0" encoding="UTF-8"?>
         <cache
-            xmlns="http://schema.pivotal.io/gemfire/cache"
+            xmlns="http://geode.incubator.apache.org/schema/cache"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
-            version="8.1">
+            xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+            version="1.0">
         ...
         </cache>
         ```
@@ -33,10 +33,10 @@ The cache.xml file has these requirements:
         ``` pre
         <?xml version="1.0" encoding="UTF-8"?>
         <client-cache
-            xmlns="http://schema.pivotal.io/gemfire/cache"
+            xmlns="http://geode.incubator.apache.org/schema/cache"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
-            version="8.1">
+            xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+            version="1.0">
         ...
         </client-cache>
         ```
@@ -56,10 +56,10 @@ Example cache.xml with variables and the gfsh `start server` command that sets t
 ``` pre
 <?xml version="1.0" encoding="UTF-8"?>
 <cache
-    xmlns="http://schema.pivotal.io/gemfire/cache"
+    xmlns="http://geode.incubator.apache.org/schema/cache"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
-    version="8.1">
+    xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+    version="1.0">
   <cache-server port="${PORT}" max-connections="${MAXCNXS}"/>
   <region name="root">
     <region-attributes refid="REPLICATE"/>
@@ -96,9 +96,9 @@ To configure cache servers, clients, and WAN topologies, see the following secti
 
 -   Multi-site (WAN) Configuration and Asynchronous Event Queue Configuration
 
-    -   [&lt;gateway-sender&gt;](gfe_cache_xml.html#gateway-sender)
-    -   [&lt;gateway-receiver&gt;](gfe_cache_xml.html#gateway-receiver)
-    -   [&lt;async-event-queue&gt;](gfe_cache_xml.html#id_zrr_scq_rr)
+    -   [&lt;gateway-sender&gt;](../../reference/topics/gfe_cache_xml.html#gateway-sender)
+    -   [&lt;gateway-receiver&gt;](../../reference/topics/gfe_cache_xml.html#gateway-receiver)
+    -   [&lt;async-event-queue&gt;](../../reference/topics/gfe_cache_xml.html#id_zrr_scq_rr)
 
     The gateway sender and receiver APIs in <span class="keyword apiname">com.gemstone.gemfire.cache.util</span> provide corresponding getter and setter methods for these attributes.
 

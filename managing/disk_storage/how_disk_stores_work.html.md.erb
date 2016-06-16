@@ -10,7 +10,7 @@ Disk storage is available for these items:
 -   **Regions**. Persist and/or overflow data from regions.
 -   **Server’s client subscription queues**. Overflow the messaging queues to control memory use.
 -   **Gateway sender queues**. Persist these for high availability. These queues always overflow.
--   **PDX serialization metadata**. Persist metadata about objects you serialize using <span class="keyword">GemFire</span> PDX serialization.
+-   **PDX serialization metadata**. Persist metadata about objects you serialize using <span class="keyword">Geode</span> PDX serialization.
 
 Each member has its own set of disk stores, and they are completely separate from the disk stores of any other member. For each disk store, define where and how the data is stored to disk. You can store data from multiple regions and queues in a single disk store.
 
@@ -20,9 +20,9 @@ This figure shows a member with disk stores D through R defined. The member has 
 
 <a id="how_disk_stores_work__section_433EEEA1560D40DD9842200181EB1D0A"></a>
 
-## What <span class="keyword">GemFire</span> Writes to the Disk Store
+## What <span class="keyword">Geode</span> Writes to the Disk Store
 
-This list describes the items that <span class="keyword">GemFire</span> comprise the disk store:
+This list describes the items that <span class="keyword">Geode</span> comprise the disk store:
 
 -   The members that host the store, and information on their status, such as which members are online and which members are offline and time stamps.
 -   A disk store identifier.
@@ -30,13 +30,13 @@ This list describes the items that <span class="keyword">GemFire</span> comprise
 -   Colocated regions that the regions in the disk store are dependent upon.
 -   A set of files that specify all keys for the regions, as well as all operations on the regions. Given both keys and operations, a region can be recreated when a member is restarted.
 
-<span class="keyword">GemFire</span> does not write indexes to disk.
+<span class="keyword">Geode</span> does not write indexes to disk.
 
 <a id="how_disk_stores_work__section_C1A047CD5518499D94A0E9A0328F6DB8"></a>
 
 ## Disk Store State
 
-The files for a disk store are used by <span class="keyword">GemFire</span> as a group. Treat them as a single entity. If you copy them, copy them all together. Do not change the file names.
+The files for a disk store are used by <span class="keyword">Geode</span> as a group. Treat them as a single entity. If you copy them, copy them all together. Do not change the file names.
 
 Disk store access and management differs according to whether the member is online or offline.
 

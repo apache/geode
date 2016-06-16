@@ -2,17 +2,17 @@
 title:  Prerequisites and Limitations for Writing REST Applications
 ---
 
-Before development, understand the prerequisites and limitations of the current REST implementation in <span class="keyword">GemFire</span>.
+Before development, understand the prerequisites and limitations of the current REST implementation in <span class="keyword">Geode</span>.
 
-<span class="keyword">GemFire</span> and REST-enabled applications accessing <span class="keyword">GemFire</span> are subject to the following rules and limitations:
+<span class="keyword">Geode</span> and REST-enabled applications accessing <span class="keyword">Geode</span> are subject to the following rules and limitations:
 
--   All domain objects, functions and function-arg classes must be properly configured and registered in the <span class="keyword">GemFire</span> deployment. Any functions that you wish to execute through the REST API must be available on the target member’s CLASSPATH.
+-   All domain objects, functions and function-arg classes must be properly configured and registered in the <span class="keyword">Geode</span> deployment. Any functions that you wish to execute through the REST API must be available on the target member’s CLASSPATH.
 -   The current implementation only supports the **application/json** MIME type. At time of publication, any other return types (XML, objects, and so on) are not supported. Plain text is supported as a return type for some error messages.
 -   Keys are strictly of type String for this release. For example, the request `PUT http://localhost:8080/gemfire-api/v1/customers/123.456` will add entry for key ("123.456") of type String.
--   Some special formats of JSON documents are not supported in <span class="keyword">GemFire</span> REST. See [Key Types and JSON Support](troubleshooting.html#concept_gsv_zd5_m4) for examples.
--   To achieve interoperability between <span class="keyword">GemFire</span> Java clients (or <span class="keyword">GemFire</span> native clients) and REST clients, the following rules must be followed:
-    -   All <span class="keyword">GemFire</span> Java and native client classes operating on data also accessed by the REST interface must be PDX serialized either via PDX autoserialization or by implementing `PdxSerializable`.
-    -   <span class="keyword">GemFire</span> Java clients and native clients can retrieve REST-enabled data either as a `PdxInstance` or as an actual object by using the `PdxInstance.getObject` method. If you use the latter method, first you must declare the object type (@type) in your POST or PUT request payload when creating the object in REST; and secondly, the Java client must have the actual domain class in its CLASSPATH.
+-   Some special formats of JSON documents are not supported in <span class="keyword">Geode</span> REST. See [Key Types and JSON Support](troubleshooting.html#concept_gsv_zd5_m4) for examples.
+-   To achieve interoperability between <span class="keyword">Geode</span> Java clients (or <span class="keyword">Geode</span> native clients) and REST clients, the following rules must be followed:
+    -   All <span class="keyword">Geode</span> Java and native client classes operating on data also accessed by the REST interface must be PDX serialized either via PDX autoserialization or by implementing `PdxSerializable`.
+    -   <span class="keyword">Geode</span> Java clients and native clients can retrieve REST-enabled data either as a `PdxInstance` or as an actual object by using the `PdxInstance.getObject` method. If you use the latter method, first you must declare the object type (@type) in your POST or PUT request payload when creating the object in REST; and secondly, the Java client must have the actual domain class in its CLASSPATH.
 -   Objects returned by REST-invoked functions must be returned as PdxInstance objects or other data types that can be written to JSON. You cannot return Java objects.
 -   REST client applications do not support single hop access or notification features.
 -   Specifying subregions as endpoints is not currently supported.

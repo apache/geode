@@ -4,7 +4,7 @@ title:  Making Sure You Have Enough Sockets
 
 The number of sockets available to your applications is governed by operating system limits.
 
-Sockets use file descriptors and the operating system’s view of your application’s socket use is expressed in terms of file descriptors. There are two limits, one on the maximum descriptors available to a single application and the other on the total number of descriptors available in the system. If you get error messages telling you that you have too many files open, you might be hitting the operating system limits with your use of sockets. Your system administrator might be able to increase the system limits so that you have more available. You can also tune your members to use fewer sockets for their outgoing connections. This section discusses socket use in <span class="keyword">GemFire</span> and ways to limit socket consumption in your <span class="keyword">GemFire</span> members.
+Sockets use file descriptors and the operating system’s view of your application’s socket use is expressed in terms of file descriptors. There are two limits, one on the maximum descriptors available to a single application and the other on the total number of descriptors available in the system. If you get error messages telling you that you have too many files open, you might be hitting the operating system limits with your use of sockets. Your system administrator might be able to increase the system limits so that you have more available. You can also tune your members to use fewer sockets for their outgoing connections. This section discusses socket use in <span class="keyword">Geode</span> and ways to limit socket consumption in your <span class="keyword">Geode</span> members.
 
 <a id="socket_comm__section_31B4EFAD6F384AB1BEBCF148D3DEA514"></a>
 ## Socket Sharing
@@ -143,7 +143,7 @@ In this table, M is the total number of members in the distributed system.
 </tbody>
 </table>
 
-With client/server installations, the number of client connections to any single server is undetermined, but <span class="keyword">GemFire</span>’s server load balancing and conditioning keeps the connections fairly evenly distributed among servers.
+With client/server installations, the number of client connections to any single server is undetermined, but <span class="keyword">Geode</span>’s server load balancing and conditioning keeps the connections fairly evenly distributed among servers.
 
 Servers are peers in their own distributed system and have the additional socket requirements as noted in the Peer-to-Peer section above.
 

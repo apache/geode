@@ -14,15 +14,15 @@ If approved, the connection request returns a `java.security.Principal` object, 
 Locators maintain and distribute the authenticated member list. The distributed member list is also authenticated by all members, which prevents an unauthorized application from introducing itself into membership by distributing an member list that includes itself.
 
 <img src="../../images/security-1.gif" id="how_authentication_works__image_D3AE53AB4E0441A5A078E5D07EC20C5D" class="image" />
-<span class="keyword">GemFire</span> authentication provides a flexible plug-in framework. Any security infrastructure can be plugged in to the system as long as the plug-ins implement the required <span class="keyword">GemFire</span> interfaces.
+<span class="keyword">Geode</span> authentication provides a flexible plug-in framework. Any security infrastructure can be plugged in to the system as long as the plug-ins implement the required <span class="keyword">Geode</span> interfaces.
 
 <a id="how_authentication_works__section_3C5F1D7D27CC4C85B01F6F91AA602ED6"></a>
 ## Client Authentication Options
 
-The <span class="keyword">GemFire</span> client can connect in two different ways:
+The <span class="keyword">Geode</span> client can connect in two different ways:
 
 1.  **Process level**. Each pool creates a configured minimum number of connections across the server group. The pool accesses the least loaded server for each cache operation. This type of connection is required. Process level connections represent the overall client process and are the default way a client accesses the server cache.
-2.  **User level**. Each client user/pool pair creates a connection to one server and then sticks with it for operations. If the server is unable to respond to a request, the pool selects a new one for the user. This type of connection is created *from* the process level connection. These connections represent individual users established within the client process. These connections are generally used by application servers or web servers that act as clients to <span class="keyword">GemFire</span> servers. A single application or web server process can service a large number of users, each with their own unique identification and with varied access permissions.
+2.  **User level**. Each client user/pool pair creates a connection to one server and then sticks with it for operations. If the server is unable to respond to a request, the pool selects a new one for the user. This type of connection is created *from* the process level connection. These connections represent individual users established within the client process. These connections are generally used by application servers or web servers that act as clients to <span class="keyword">Geode</span> servers. A single application or web server process can service a large number of users, each with their own unique identification and with varied access permissions.
 
 By default, the server pools in clients use process level authentication. You can enable user level authentication by setting the pool’s multiuser-authentication attribute to true. Process level and user level pools can be used inside one client if needed.
 

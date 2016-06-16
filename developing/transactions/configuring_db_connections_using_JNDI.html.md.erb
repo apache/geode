@@ -11,9 +11,9 @@ The following are a list of `DataSource` connection types used in JTA transactio
 -   **PooledDataSource**. Pooled SQL connections.
 -   **SimpleDataSource**. Single SQL connection. No pooling of SQL connections is done. Connections are generated on the fly and cannot be reused.
 
-The `jndi-name` attribute of the `jndi-binding` element is the key binding parameter. If the value of `jndi-name` is a DataSource, it is bound as `java:/`*myDatabase*, where *myDatabase* is the name you assign to your data source. If the data source cannot be bound to JNDI at runtime, <span class="keyword">GemFire</span> logs a warning. For information on the `DataSource` interface, see: [http://docs.oracle.com/javase/6/docs/api/javax/sql/DataSource.html](http://docs.oracle.com/javase/6/docs/api/javax/sql/DataSource.html)
+The `jndi-name` attribute of the `jndi-binding` element is the key binding parameter. If the value of `jndi-name` is a DataSource, it is bound as `java:/`*myDatabase*, where *myDatabase* is the name you assign to your data source. If the data source cannot be bound to JNDI at runtime, <span class="keyword">Geode</span> logs a warning. For information on the `DataSource` interface, see: [http://docs.oracle.com/javase/6/docs/api/javax/sql/DataSource.html](http://docs.oracle.com/javase/6/docs/api/javax/sql/DataSource.html)
 
-<span class="keyword">GemFire</span> supports JDBC 2.0 and 3.0.
+<span class="keyword">Geode</span> supports JDBC 2.0 and 3.0.
 
 **Note:**
 Include any data source JAR files in your CLASSPATH.
@@ -35,10 +35,10 @@ When specifying the configuration properties for JCA-implemented database driver
 ``` pre
 <?xml version="1.0" encoding="UTF-8"?>
 <cache
-    xmlns="http://schema.pivotal.io/gemfire/cache"
+    xmlns="http://geode.incubator.apache.org/schema/cache"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
-    version="8.1"
+    xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+    version="1.0"
     lock-lease="120" lock-timeout="60" search-timeout="300"> 
    <region name="root">
       <region-attributes scope="distributed-no-ack" data-policy="cached" initial-capacity="16"
@@ -178,10 +178,10 @@ The following are some example data source configurations for different database
 
 ``` pre
 <?xml version="1.0"?>
-<cache xmlns="http://schema.pivotal.io/gemfire/cache"
+<cache xmlns="http://geode.incubator.apache.org/schema/cache"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
-    version="8.1"
+    xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+    version="1.0"
     lock-lease="120" 
     lock-timeout="60"
     search-timeout="300">
@@ -229,10 +229,10 @@ Use the `PooledDataSource` and `SimpleDataSource` connections for operations exe
 
 ``` pre
 <?xml version="1.0"?>
-<cache xmlns="http://schema.pivotal.io/gemfire/cache"
+<cache xmlns="http://geode.incubator.apache.org/schema/cache"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
-    version="8.1"
+    xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+    version="1.0"
     lock-lease="120"
     lock-timeout="60"
     search-timeout="300">
@@ -283,10 +283,10 @@ A simple data source connection does not generally require vendor-specific prope
 
 ``` pre
 <?xml version="1.0"?>
-<cache xmlns="http://schema.pivotal.io/gemfire/cache"
+<cache xmlns="http://geode.incubator.apache.org/schema/cache"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
-    version="8.1"
+    xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+    version="1.0"
     lock-lease="120" 
     lock-timeout="60" 
     search-timeout="300">

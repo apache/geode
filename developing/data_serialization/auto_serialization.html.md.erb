@@ -16,7 +16,7 @@ Your custom PDX autoserializable classes cannot use the `com.gemstone` package. 
 
 **Prerequisites**
 
--   Understand generally how to configure the <span class="keyword">GemFire</span> cache.
+-   Understand generally how to configure the <span class="keyword">Geode</span> cache.
 -   Understand how PDX serialization works and how to configure your application to use `PdxSerializer`.
 
 <a id="auto_serialization__section_43F6E45FF69E470897FD9D002FBE896D"><strong>Procedure</strong></a>
@@ -116,11 +116,11 @@ For each domain class you provide, all fields are considered for serialization e
 **Note:**
 The `ReflectionBasedAutoSerializer` traverses the given domain object's class hierarchy to retrieve all fields to be considered for serialization. So if `DomainObjectB` inherits from `DomainObjectA`, you only need to register `DomainObjectB` to have all of `DomainObjectB` serialized.
 
--   **[Customizing Serialization with Class Pattern Strings](../../../latest/developing/data_serialization/autoserialization_with_class_pattern_strings.html)**
+-   **[Customizing Serialization with Class Pattern Strings](../../developing/data_serialization/autoserialization_with_class_pattern_strings.html)**
 
-    Use class pattern strings to name the classes that you want to serialize using <span class="keyword">GemFire</span>'s reflection-based autoserializer and to specify object identity fields and to specify fields to exclude from serialization.
+    Use class pattern strings to name the classes that you want to serialize using <span class="keyword">Geode</span>'s reflection-based autoserializer and to specify object identity fields and to specify fields to exclude from serialization.
 
--   **[Extending the ReflectionBasedAutoSerializer](../../../latest/developing/data_serialization/extending_the_autoserializer.html)**
+-   **[Extending the ReflectionBasedAutoSerializer](../../developing/data_serialization/extending_the_autoserializer.html)**
 
     You can extend the `ReflectionBasedAutoSerializer` to handle serialization in a customized manner. This section provides an overview of the available method-based customization options and an example of extending the serializer to support BigDecimal and BigInteger types.
 

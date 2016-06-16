@@ -2,21 +2,21 @@
 title:  Filtering Events for Multi-Site (WAN) Distribution
 ---
 
-You can optionally create gateway sender and/or gateway receiver filters to control which events are queued and distributed to a remote site, or to modify the data stream that is transmitted between <span class="keyword">GemFire</span> sites.
+You can optionally create gateway sender and/or gateway receiver filters to control which events are queued and distributed to a remote site, or to modify the data stream that is transmitted between <span class="keyword">Geode</span> sites.
 
 You can implement and deploy two different types of filter for multi-site events:
 
 -   `GatewayEventFilter`. A `GatewayEventFilter` implementation determines whether a region event is placed in a gateway sender queue and/or whether an event in a gateway queue is distributed to a remote site. You can optionally add one or more `GatewayEventFilter` implementations to a gateway sender, etiher in the `cache.xml` configuration file or using the Java API.
 
-    <span class="keyword">GemFire</span> makes a synchronous call to the filter's `beforeEnqueue` method before it places a region event in the gateway sender queue. The filter returns a boolean value that specifies whether the event should be added to the queue.
+    <span class="keyword">Geode</span> makes a synchronous call to the filter's `beforeEnqueue` method before it places a region event in the gateway sender queue. The filter returns a boolean value that specifies whether the event should be added to the queue.
 
-    <span class="keyword">GemFire</span> asynchronously calls the filter's `beforeTransmit` method to determine whether the gateway sender dispatcher thread should distribute the event to a remote gateway receiver.
+    <span class="keyword">Geode</span> asynchronously calls the filter's `beforeTransmit` method to determine whether the gateway sender dispatcher thread should distribute the event to a remote gateway receiver.
 
-    For events that are distributed to another site, <span class="keyword">GemFire</span> calls the listener's `afterAcknowledgement` method to indicate that is has received an ack from the remote site after the event was received.
+    For events that are distributed to another site, <span class="keyword">Geode</span> calls the listener's `afterAcknowledgement` method to indicate that is has received an ack from the remote site after the event was received.
 
--   GatewayTransportFilter. Use a `GatewayTransportFilter` implementation to process the TCP stream that sends a batch of events that is distributed from one <span class="keyword">GemFire</span> cluster to another over a WAN. A `GatewayTransportFilter` is typically used to perform encryption or compression on the data that distributed. You install the same `GatewayTransportFilter` implementation on both a gateway sender and gateway receiver.
+-   GatewayTransportFilter. Use a `GatewayTransportFilter` implementation to process the TCP stream that sends a batch of events that is distributed from one <span class="keyword">Geode</span> cluster to another over a WAN. A `GatewayTransportFilter` is typically used to perform encryption or compression on the data that distributed. You install the same `GatewayTransportFilter` implementation on both a gateway sender and gateway receiver.
 
-    When a gateway sender processes a batch of events for distribution, <span class="keyword">GemFire</span> delivers the stream to the `getInputStream` method of a configured `GatewayTransportFilter` implementation. The filter processes and returns the stream, which is then transmitted to the gateway receiver. When the gateway receiver receives the batch, <span class="keyword">GemFire</span> calls the `getOutputStream` method of a configured filter, which again processes and returns the stream so that the events can be applied in the local cluster.
+    When a gateway sender processes a batch of events for distribution, <span class="keyword">Geode</span> delivers the stream to the `getInputStream` method of a configured `GatewayTransportFilter` implementation. The filter processes and returns the stream, which is then transmitted to the gateway receiver. When the gateway receiver receives the batch, <span class="keyword">Geode</span> calls the `getOutputStream` method of a configured filter, which again processes and returns the stream so that the events can be applied in the local cluster.
 
 <a id="topic_E97BB68748F14987916CD1A50E4B4542__section_E20B4A8A98FD4EDAAA8C14B8059AA7F7"></a>
 ## Configuring Multi-Site Event Filters

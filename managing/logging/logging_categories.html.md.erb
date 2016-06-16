@@ -4,7 +4,7 @@ title:  Understanding Log Messages and Their Categories
 
 System logging messages typically pertain to startup; logging management; connection and system membership; distribution; or cache, region, and entry management.
 
--   **Startup information**. Describe the Java version, the <span class="keyword">GemFire</span> native version, the host system, current working directory, and environment settings. These messages contain all information about the system and configuration the process is running with.
+-   **Startup information**. Describe the Java version, the <span class="keyword">Geode</span> native version, the host system, current working directory, and environment settings. These messages contain all information about the system and configuration the process is running with.
 -   **Logging management**. Pertain to the maintenance of the log files themselves. This information is always in the main log file (see the discussion at Log File Name).
 -   **Connections and system membership**. Report on the arrival and departure of distributed system members (including the current member) and any information related to connection activities or failures. This includes information on communication between tiers in a hierarchical cache.
 -   **Distribution**. Report on the distribution of data between system members. These messages include information about region configuration, entry creation and modification, and region and entry invalidation and destruction.
@@ -30,11 +30,11 @@ Cache initialized using "file:/Samples/quickstart/xml/PushConsumer.xml".
 
 ## Log File Name
 
-Specify your <span class="keyword">GemFire</span> system member's main log in the gemfire property `log-file` setting.
+Specify your <span class="keyword">Geode</span> system member's main log in the gemfire property `log-file` setting.
 
-<span class="keyword">GemFire</span> uses this name for the most recent log file, actively in use if the member is running, or used for the last run. <span class="keyword">GemFire</span> creates the main log file when the application starts.
+<span class="keyword">Geode</span> uses this name for the most recent log file, actively in use if the member is running, or used for the last run. <span class="keyword">Geode</span> creates the main log file when the application starts.
 
-By default, the main log contains the entire log for the member session. If you specify a `log-file-size-limit`, <span class="keyword">GemFire</span> splits the logging into these files:
+By default, the main log contains the entire log for the member session. If you specify a `log-file-size-limit`, <span class="keyword">Geode</span> splits the logging into these files:
 
 -   **The main, current log**. Holding current logging entries. Named with the string you specified in `log-file`.
 -   **Child logs**. Holding older logging entries. These are created by renaming the main, current log when it reaches the size limit.
@@ -122,7 +122,7 @@ These are the levels, in descending order, with sample output:
 
 -   **error**. This level indicates that something is wrong in your system. You should be able to continue running, but the operation noted in the error message failed.
 
-    This error was produced by throwing a `Throwable` from a `CacheListener`. While dispatching events to a customer-implemented cache listener, <span class="keyword">GemFire</span> catches any `Throwable` thrown by the listener and logs it as an error. The text shown here is followed by the output from the `Throwable` itself.
+    This error was produced by throwing a `Throwable` from a `CacheListener`. While dispatching events to a customer-implemented cache listener, <span class="keyword">Geode</span> catches any `Throwable` thrown by the listener and logs it as an error. The text shown here is followed by the output from the `Throwable` itself.
 
     ``` pre
     [error 2007/09/05 11:45:30.542 PDT gemfire1_newton_18222
@@ -234,6 +234,6 @@ These are the levels, in descending order, with sample output:
     Do not use these settings unless asked to do so by technical support.
 
 **Note:**
-<span class="keyword">GemFire</span> no longer supports setting system properties for VERBOSE logging. To enable VERBOSE logging, see [Advanced Users—Configuring Log4j 2 for GemFire](configuring_log4j2.html)
+<span class="keyword">Geode</span> no longer supports setting system properties for VERBOSE logging. To enable VERBOSE logging, see [Advanced Users—Configuring Log4j 2 for Geode](configuring_log4j2.html)
 
 

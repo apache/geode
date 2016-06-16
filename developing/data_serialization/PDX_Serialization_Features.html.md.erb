@@ -1,21 +1,21 @@
 ---
-title:  <span class="keyword">GemFire</span> PDX Serialization Features
+title:  <span class="keyword">Geode</span> PDX Serialization Features
 ---
 
-<span class="keyword">GemFire</span> PDX serialization offers several advantages in terms of functionality.
+<span class="keyword">Geode</span> PDX serialization offers several advantages in terms of functionality.
 
 <a id="concept_F02E40517C4B42F2A75B133BB507C626__section_A0EEB4DA3E9F4EA4B65FE727D3951EA1"></a>
 ## Application Versioning of PDX Domain Objects
 
 Domain objects evolve along with your application code. You might create an address object with two address lines, then realize later that a third line is required for some situations. Or you might realize that a particular field is not used and want to get rid of it. With PDX, you can use old and new versions of domain objects together in a distributed system if the versions differ by the addition or removal of fields. This compatibility lets you gradually introduce modified code and data into the system, without bringing the system down.
 
-<span class="keyword">GemFire</span> maintains a central registry of the PDX domain object metadata. Using the registry, <span class="keyword">GemFire</span> preserves fields in each member's cache regardless of whether the field is defined. When a member receives an object with a registered field that the member is not aware of, the member does not access the field, but preserves it and passes it along with the entire object to other members. When a member receives an object that is missing one or more fields according to the member's version, <span class="keyword">GemFire</span> assigns the Java default values for the field types to the missing fields.
+<span class="keyword">Geode</span> maintains a central registry of the PDX domain object metadata. Using the registry, <span class="keyword">Geode</span> preserves fields in each member's cache regardless of whether the field is defined. When a member receives an object with a registered field that the member is not aware of, the member does not access the field, but preserves it and passes it along with the entire object to other members. When a member receives an object that is missing one or more fields according to the member's version, <span class="keyword">Geode</span> assigns the Java default values for the field types to the missing fields.
 
 <a id="concept_F02E40517C4B42F2A75B133BB507C626__section_D68A6A9C2C0C4D32AE7DADA2A4C3104D"></a>
 
 ## Portability of PDX Serializable Objects
 
-When you serialize an object using PDX, <span class="keyword">GemFire</span> stores the object's type information in the central registry. The information is passed among clients and servers, peers, and distributed systems.
+When you serialize an object using PDX, <span class="keyword">Geode</span> stores the object's type information in the central registry. The information is passed among clients and servers, peers, and distributed systems.
 
 This centralization of object type information is advantageous for client/server installations in which clients and servers are written in different languages. Clients pass registry information to servers automatically when they store a PDX serialized object. Clients can run queries and functions against the data in the servers without compatibility between server and the stored objects. One client can store data on the server to be retrieved by another client, with no requirements on the part of the server.
 

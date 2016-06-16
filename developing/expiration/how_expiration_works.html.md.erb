@@ -15,7 +15,7 @@ This figure shows two basic expiration settings for a producer/consumer system. 
 
 ## Expiration Types
 
-<span class="keyword">Pivotal GemFire</span> uses the following expiration types:
+<span class="keyword">Apache Geode</span> uses the following expiration types:
 
 -   **Time to live (TTL)**. The amount of time, in seconds, the object may remain in the cache after the last creation or update. For entries, the counter is set to zero for create and put operations. Region counters are reset when the region is created and when an entry has its counter reset. The TTL expiration attributes are `region-time-to-live` and `entry-time-to-live`.
 -   **Idle timeout**. The amount of time, in seconds, the object may remain in the cache after the last access. The idle timeout counter for an object is reset any time its TTL counter is reset. In addition, an entry’s idle timeout counter is reset any time the entry is accessed through a get operation or a netSearch . The idle timeout counter for a region is reset whenever the idle timeout is reset for one of its entries. Idle timeout expiration attributes are: `region-idle-time` and `entry-idle-time`.
@@ -24,7 +24,7 @@ This figure shows two basic expiration settings for a producer/consumer system. 
 
 ## Expiration Actions
 
-<span class="keyword">Pivotal GemFire</span> uses the following expiration actions:
+<span class="keyword">Apache Geode</span> uses the following expiration actions:
 
 -   destroy
 -   local destroy

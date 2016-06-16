@@ -1,13 +1,13 @@
 ---
-title:  <span class="keyword">GemFire</span> Querying FAQ and Examples
+title:  <span class="keyword">Geode</span> Querying FAQ and Examples
 ---
 
-This topic answers some frequently asked questions on querying functionality. It provides examples to help you get started with <span class="keyword">GemFire</span> querying.
+This topic answers some frequently asked questions on querying functionality. It provides examples to help you get started with <span class="keyword">Geode</span> querying.
 
 <a id="reference_D5CE64F5FD6F4A808AEFB748C867189E__section_AFAD97A4BA2D45CF91ED1525A54DDFD6"></a>
-For additional information on <span class="keyword">GemFire</span> querying, see [Querying](../developing/querying_basics/chapter_overview.html).
+For additional information on <span class="keyword">Geode</span> querying, see [Querying](../developing/querying_basics/chapter_overview.html).
 
--   [How do I write and execute a query against a GemFire region?](querying_quick_reference.html#reference_D5CE64F5FD6F4A808AEFB748C867189E__section_7A4D2C6A4E2C4F4384C158FFCA9CA1C0)
+-   [How do I write and execute a query against a Geode region?](querying_quick_reference.html#reference_D5CE64F5FD6F4A808AEFB748C867189E__section_7A4D2C6A4E2C4F4384C158FFCA9CA1C0)
 -   [Can I see query string examples, listed by query type?](querying_quick_reference.html#reference_D5CE64F5FD6F4A808AEFB748C867189E__section_641D97CD874D4182961C85429ACA1B05)
 -   [Which APIs should I use to write my queries?](querying_quick_reference.html#reference_D5CE64F5FD6F4A808AEFB748C867189E__section_5383407F9D004D4EB4E695252EBA1EF0)
 -   [How do I invoke an object's method in a query?](querying_quick_reference.html#reference_D5CE64F5FD6F4A808AEFB748C867189E__section_3E6E4B33D57846008EF4404D2B687597)
@@ -17,22 +17,22 @@ For additional information on <span class="keyword">GemFire</span> querying, see
 -   [How do I create an index?](querying_quick_reference.html#reference_D5CE64F5FD6F4A808AEFB748C867189E__section_76CDCCFBDB134A339DBE556C28D48F11)
 -   [Can I query a partitioned region? Can I perform a join query on a partitioned region?](querying_quick_reference.html#reference_D5CE64F5FD6F4A808AEFB748C867189E__section_EDD17817450C4FC0B510CD87DB2FCD16)
 -   [How can I improve the performance of a partitioned region query?](querying_quick_reference.html#reference_D5CE64F5FD6F4A808AEFB748C867189E__section_5FF905E0D10D4CDF9E6F49A70848AF69)
--   [Which query language elements are supported in GemFire?](querying_quick_reference.html#reference_D5CE64F5FD6F4A808AEFB748C867189E__section_FBC59A5420FD40D6907A302A1D50DF7E)
+-   [Which query language elements are supported in Geode?](querying_quick_reference.html#reference_D5CE64F5FD6F4A808AEFB748C867189E__section_FBC59A5420FD40D6907A302A1D50DF7E)
 -   [How do I debug queries?](querying_quick_reference.html#reference_D5CE64F5FD6F4A808AEFB748C867189E__section_314B88A55B514B88A12DC36227A2D4EF)
 -   [Can I use implicit attributes or methods in my query?](#reference_D5CE64F5FD6F4A808AEFB748C867189E__implicit_attributes)
 -   [How do I perform a case-insensitive search on a field in OQL?](#reference_D5CE64F5FD6F4A808AEFB748C867189E__section_ayq_hqw_1r)
 
 <a id="reference_D5CE64F5FD6F4A808AEFB748C867189E__section_7A4D2C6A4E2C4F4384C158FFCA9CA1C0"></a>
 
-## How do I write and execute a query against a <span class="keyword">GemFire</span> region?
+## How do I write and execute a query against a <span class="keyword">Geode</span> region?
 
-To write and execute a query in <span class="keyword">GemFire</span>, you can use any of the following mechanisms. Sample query code follows.
+To write and execute a query in <span class="keyword">Geode</span>, you can use any of the following mechanisms. Sample query code follows.
 
--   <span class="keyword">GemFire</span> querying APIs
+-   <span class="keyword">Geode</span> querying APIs
 -   [gfsh](../tools_modules/gfsh/chapter_overview.html) command-line interface; in particular the [query](../tools_modules/gfsh/command-pages/query.html) command
 -   REST API [query endpoints](../rest_apps/rest_queries.html#concept_mmg_d35_m4)
 
-**Sample <span class="keyword">GemFire</span> Query Code (Java)**
+**Sample <span class="keyword">Geode</span> Query Code (Java)**
 
 ``` pre
 // Identify your query string.
@@ -76,7 +76,7 @@ class Position implements DataSerializable {
 
 **Basic WHERE Clause Examples**
 
-In the following examples, the status field is type String and the ID field is type int. See [Supported Literals](../developing/query_additional/literals.html#literals) for a complete list of literals supported in <span class="keyword">GemFire</span> querying.
+In the following examples, the status field is type String and the ID field is type int. See [Supported Literals](../developing/query_additional/literals.html#literals) for a complete list of literals supported in <span class="keyword">Geode</span> querying.
 
 1.  Select all active portfolios.
 
@@ -624,7 +624,7 @@ If you know the data you need to query, you can target particular nodes in your 
 
 <a id="reference_D5CE64F5FD6F4A808AEFB748C867189E__section_FBC59A5420FD40D6907A302A1D50DF7E"></a>
 
-## Which query language elements are supported in <span class="keyword">GemFire</span>?
+## Which query language elements are supported in <span class="keyword">Geode</span>?
 
 <table>
 <colgroup>
@@ -680,7 +680,7 @@ You can also write:
 <TRACE> SELECT * FROM /exampleRegion
 ```
 
-When the query is executed, <span class="keyword">GemFire</span> will log a message in `$GEMFIRE_DIR/system.log` with the following information:
+When the query is executed, <span class="keyword">Geode</span> will log a message in `$GEMFIRE_DIR/system.log` with the following information:
 
 ``` pre
 [info 2011/08/29 11:24:35.472 PDT CqServer <main> tid=0x1] Query Executed in 9.619656 ms; rowCount = 99; 
@@ -703,7 +703,7 @@ System.setProperty("gemfire.Query.VERBOSE","true");
 
 ## Can I use implicit attributes or methods in my query?
 
-If an implicit attribute or method name can only be associated with one untyped iterator, the <span class="keyword">GemFire</span> query processor will assume that it is associated with that iterator. However, if more than one untyped iterator is in scope, then the query will fail with a `TypeMismatchException`. The following query fails because the query processor does not fully type expressions:
+If an implicit attribute or method name can only be associated with one untyped iterator, the <span class="keyword">Geode</span> query processor will assume that it is associated with that iterator. However, if more than one untyped iterator is in scope, then the query will fail with a `TypeMismatchException`. The following query fails because the query processor does not fully type expressions:
 
 ``` pre
 select distinct value.secId from /pos , getPositions(23)

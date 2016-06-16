@@ -2,7 +2,7 @@
 title:  Region Shortcuts and Custom Named Region Attributes
 ---
 
-<span class="keyword">GemFire</span> provides region shortcut settings, with preset region configurations for the most common region types. For the easiest configuration, start with a shortcut setting and customize as needed. You can also store your own custom configurations in the cache for use by multiple regions.
+<span class="keyword">Geode</span> provides region shortcut settings, with preset region configurations for the most common region types. For the easiest configuration, start with a shortcut setting and customize as needed. You can also store your own custom configurations in the cache for use by multiple regions.
 
 <a id="region_shortcuts__section_D9E58754D2B0435FA2986DBBF3063D4C"></a>
 You configure automated management of data regions and their entries through region shortcuts and region attributes. These region configuration settings determine such things as where the data resides, how the region is managed in memory, reliability behavior, and the automatic loading, distribution, and expiration of data entries.
@@ -10,7 +10,7 @@ You configure automated management of data regions and their entries through reg
 **Note:**
 Whenever possible, use region shortcuts to configure your region, and further customize behavior using region attributes. The shortcut settings are preset with the most common region configurations.
 
-<span class="keyword">GemFire</span> provides a number of predefined, shortcut region attributes settings for your use. You can also define your own custom region attributes and store them with an identifier for later retrieval. Both types of stored attributes are referred to as named region attributes. You can create and store your attribute settings in the `cache.xml` file and through the API.
+<span class="keyword">Geode</span> provides a number of predefined, shortcut region attributes settings for your use. You can also define your own custom region attributes and store them with an identifier for later retrieval. Both types of stored attributes are referred to as named region attributes. You can create and store your attribute settings in the `cache.xml` file and through the API.
 
 Retrieve region shortcuts and custom named attributes by providing the ID to the region creation, in the `refid` attribute setting. This example uses the shortcut REPLICATE attributes to create a region:
 
@@ -42,12 +42,12 @@ You can create your own named attributes as needed, by providing an `id` in your
 
 ## Shortcut Attribute Options
 
-You can select the most common region attributes settings from <span class="keyword">GemFire</span>’s predefined named region attributes in these classes:
+You can select the most common region attributes settings from <span class="keyword">Geode</span>’s predefined named region attributes in these classes:
 
 -   **`com.gemstone.gemfire.cache.RegionShortcut`**. For peers and servers.
 -   **`com.gemstone.gemfire.cache.client.ClientRegionShortcut`**. For clients.
 
-Shortcut attributes are a convenience only. They are just named attributes that <span class="keyword">GemFire</span> has already stored for you. You can override their settings by storing new attributes with the same id as the predefined attributes.
+Shortcut attributes are a convenience only. They are just named attributes that <span class="keyword">Geode</span> has already stored for you. You can override their settings by storing new attributes with the same id as the predefined attributes.
 
 For a full list of all available region shortcuts, see [Region Shortcuts Quick Reference](../../reference/topics/region_shortcuts_table.html#reference_ufj_5kz_4k).
 
@@ -70,7 +70,7 @@ These are the primary options available in the region shortcut settings. The nam
 
 **Data Eviction**
 
--   **`HEAP_LRU`**. Causes least recently used data to be evicted from memory when the <span class="keyword">GemFire</span> resource manager determines that the cache has reached configured storage limits.
+-   **`HEAP_LRU`**. Causes least recently used data to be evicted from memory when the <span class="keyword">Geode</span> resource manager determines that the cache has reached configured storage limits.
 
 **Disk Storage**
 
@@ -93,7 +93,7 @@ These are the primary options available in the client region shortcut settings. 
 
 **Data Eviction**
 
--   **`HEAP_LRU`**. Causes least recently used data to be evicted from memory when the <span class="keyword">GemFire</span> resource manager determines that the cache has reached configured storage limits.
+-   **`HEAP_LRU`**. Causes least recently used data to be evicted from memory when the <span class="keyword">Geode</span> resource manager determines that the cache has reached configured storage limits.
 
 **Disk Storage**
 

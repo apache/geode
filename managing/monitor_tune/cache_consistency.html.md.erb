@@ -2,7 +2,7 @@
 title:  Maintaining Cache Consistency
 ---
 
-Maintaining data consistency between caches in a distributed <span class="keyword">GemFire</span> system is vital for ensuring its functional integrity and preventing data loss.
+Maintaining data consistency between caches in a distributed <span class="keyword">Geode</span> system is vital for ensuring its functional integrity and preventing data loss.
 
 <a id="cache_const__section_lf3_lvn_nr"></a>
 ## General Guidelines
@@ -12,7 +12,7 @@ Maintaining data consistency between caches in a distributed <span class="keywor
 **Note:**
 If you revoke a member’s disk store, do not restart that member with its disk stores—in isolation—at a later time.
 
-<span class="keyword">GemFire</span> stores information about your persisted data and prevents you from starting a member with a revoked disk store in the running system. But <span class="keyword">GemFire</span> cannot stop you from starting a revoked member in isolation, and running with its revoked data. This is an unlikely situation, but it is possible to do:
+<span class="keyword">Geode</span> stores information about your persisted data and prevents you from starting a member with a revoked disk store in the running system. But <span class="keyword">Geode</span> cannot stop you from starting a revoked member in isolation, and running with its revoked data. This is an unlikely situation, but it is possible to do:
 
 1.  Members A and B are running, both storing Region data to disk.
 2.  Member A goes down.
@@ -27,7 +27,7 @@ If you revoke a member’s disk store, do not restart that member with its disk 
 
 **Understand Cache Transactions**
 
-Understanding the operation of <span class="keyword">GemFire</span> transactions can help you minimize situations where the cache could get out of sync.
+Understanding the operation of <span class="keyword">Geode</span> transactions can help you minimize situations where the cache could get out of sync.
 
 Transactions do not work in distributed regions with global scope.
 
@@ -43,7 +43,7 @@ If a cache writer exists during a transaction, then each transaction write opera
 
 A region in a cache with transactions may not stay in sync with a region of the same name in another cache without transactions.
 
-Two applications running the same sequence of operations in their transactions may get different results. This could occur because operations happening outside a transaction in one of the members can overwrite the transaction, even in the process of committing. This could also occur if the results of a large transaction exceed the machine’s memory or the capacity of <span class="keyword">GemFire</span>. Those limits can vary by machine, so the two members may not be in sync.
+Two applications running the same sequence of operations in their transactions may get different results. This could occur because operations happening outside a transaction in one of the members can overwrite the transaction, even in the process of committing. This could also occur if the results of a large transaction exceed the machine’s memory or the capacity of <span class="keyword">Geode</span>. Those limits can vary by machine, so the two members may not be in sync.
 
 <a id="cache_const__section_qxx_kvn_nr"></a>
 

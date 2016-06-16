@@ -22,11 +22,11 @@ Transactional cache operations are handled somewhat differently inside transacti
         put (A, valY)
         ```
 
-2.  At commit and after commit. When the transaction is committed, <span class="keyword">GemFire</span> passes the `TransactionEvent` to the transaction writer local to the transactional view, if one is available. After commit, <span class="keyword">GemFire</span> :
+2.  At commit and after commit. When the transaction is committed, <span class="keyword">Geode</span> passes the `TransactionEvent` to the transaction writer local to the transactional view, if one is available. After commit, <span class="keyword">Geode</span> :
     -   Passes the `TransactionEvent` to each installed transaction listener.
     -   Walks the `CacheEvent` list, calling all locally installed listeners for each operation listed.
     -   Distributes the `TransactionEvent` to all interested caches.
         **Note:**
-        For <span class="keyword">GemFire</span> and global JTA transactions, the `EntryEvent` object contains the <span class="keyword">GemFire</span> transaction ID. JTA transaction events do not contain the JTA transaction ID.
+        For <span class="keyword">Geode</span> and global JTA transactions, the `EntryEvent` object contains the <span class="keyword">Geode</span> transaction ID. JTA transaction events do not contain the JTA transaction ID.
 
 

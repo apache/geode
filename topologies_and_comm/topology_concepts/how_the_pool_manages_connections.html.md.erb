@@ -2,7 +2,7 @@
 title:  How Client/Server Connections Work
 ---
 
-The server pools in your <span class="keyword">Pivotal GemFire</span> client processes manage all client connection requests to the server tier. To make the best use of the pool functionality, you should understand how the pool manages the server connections.
+The server pools in your <span class="keyword">Apache Geode</span> client processes manage all client connection requests to the server tier. To make the best use of the pool functionality, you should understand how the pool manages the server connections.
 
 <a id="how_the_pool_manages_connections__section_2C419926908B4A3599FF0B8EAB7E69A1">Client/server communication is done in two distinct ways. Each kind of communication uses a different type of connection for maximum performance and availability.</a>
 -   **Pool connections**. The pool connection is used to send individual operations to the server to update cached data, to satisfy a local cache miss, or to run an ad hoc query. Each pool connection goes to a host/port location where a server is listening. The server responds to the request on the same connection. Generally, client threads use a pool connection for an individual operation and then return the connection to the pool for reuse, but you can configure to have connections owned by threads. This figure shows pool connections for one client and one server. At any time, a pool may have from zero to many pool connections to any of the servers.

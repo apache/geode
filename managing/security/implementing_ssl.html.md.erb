@@ -2,12 +2,12 @@
 title:  Configuring SSL
 ---
 
-You configure SSL for mutual authentication between members and to protect your data during distribution. You can use SSL alone or in conjunction with the other <span class="keyword">GemFire</span> security options.
+You configure SSL for mutual authentication between members and to protect your data during distribution. You can use SSL alone or in conjunction with the other <span class="keyword">Geode</span> security options.
 
 <a id="implementing_ssl__section_03DE7CDA9EEF4B088EF04BE5AE3ACE53"></a>
 ## Overview
 
-<span class="keyword">GemFire</span> uses SSL connections from the Java Secure Sockets Extension (JSSE) package. You use <span class="keyword">GemFire</span> configuration properties to enable or disable SSL, to identify SSL ciphers and protocols, and to provide the location and credentials for key and trust stores. For example, the following properties configure the basic SSL settings for peer-to-peer connections between <span class="keyword">GemFire</span> members in a cluster:
+<span class="keyword">Geode</span> uses SSL connections from the Java Secure Sockets Extension (JSSE) package. You use <span class="keyword">Geode</span> configuration properties to enable or disable SSL, to identify SSL ciphers and protocols, and to provide the location and credentials for key and trust stores. For example, the following properties configure the basic SSL settings for peer-to-peer connections between <span class="keyword">Geode</span> members in a cluster:
 
 | Property                           | Description                                                                                                                                                                                     |
 |------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -21,11 +21,11 @@ You configure SSL for mutual authentication between members and to protect your 
 | cluster-ssl-truststore             | Identifies the truststore file for peer-to-peer connections.                                                                                                                                    |
 | cluster-ssl-keystore-password      | Identifies the truststore password for peer-to-peer connections.                                                                                                                                |
 
-If you configure the above peer-to-peer SSL properties, then by default <span class="keyword">GemFire</span> uses the same SSL property values for all stream-socket communication. This includes communication between cache servers and clients and between the JMX manager and JMX clients.
+If you configure the above peer-to-peer SSL properties, then by default <span class="keyword">Geode</span> uses the same SSL property values for all stream-socket communication. This includes communication between cache servers and clients and between the JMX manager and JMX clients.
 
 You can independently configure SSL for client/server connections, JMX connections, or HTTP connections by including the appropriate prefix for the connection type you want to configure. For example, the property used to configure the SSL protocols for client/server communication is `server-ssl-protocols`. The property used to configure SSL protocols for the JMX manager is `jmx-manager-ssl-protocols`.
 
-The following table lists the SSL configuration property names used to configure SSL for peer-to-peer, client/server, JMX manager, and HTTP Service connections. Remember that if you do not define a client/server, JMX, or HTTP property, then <span class="keyword">GemFire</span> uses the property value defined for peer-to-peer communication (`cluster-ssl*`) or the default peer-to-peer property value if unspecified.
+The following table lists the SSL configuration property names used to configure SSL for peer-to-peer, client/server, JMX manager, and HTTP Service connections. Remember that if you do not define a client/server, JMX, or HTTP property, then <span class="keyword">Geode</span> uses the property value defined for peer-to-peer communication (`cluster-ssl*`) or the default peer-to-peer property value if unspecified.
 
 The HTTP Service connection properties configure SSL connections for all HTTP-based services hosted on the configured server. This can include the Developer REST API service, the Management REST API service (used for remote cluster management) and the Pulse monitoring tool.
 

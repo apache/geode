@@ -2,7 +2,7 @@
 title:  High Level Steps for Using PDX Serialization
 ---
 
-To use PDX serialization, you can configure and use <span class="keyword">GemFire</span>'s reflection-based autoserializer, or you can program the serialization of your objects by using the PDX interfaces and classes.
+To use PDX serialization, you can configure and use <span class="keyword">Geode</span>'s reflection-based autoserializer, or you can program the serialization of your objects by using the PDX interfaces and classes.
 
 <a id="concept_A7C8890826394B4293C036DD739835BD__section_7F357A8E56B54BFB9A5778C0F89E034E"></a>
 Optionally, program your application code to deserialize individual fields out of PDX representations of your serialized objects. You may also need to persist your PDX metadata to disk for recovery on startup.
@@ -22,7 +22,7 @@ Optionally, program your application code to deserialize individual fields out o
 
     By using gfsh, this configuration can propagated across the cluster through the [Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html). Alternately, you would need to configure `pdx read-serialized` in each server's `cache.xml` file.
 
-3.  If you are storing any <span class="keyword">GemFire</span> data on disk, then you must configure PDX serialization to use persistence. See [Persisting PDX Metadata to Disk](persist_pdx_metadata_to_disk.html) for more information.
+3.  If you are storing any <span class="keyword">Geode</span> data on disk, then you must configure PDX serialization to use persistence. See [Persisting PDX Metadata to Disk](persist_pdx_metadata_to_disk.html) for more information.
 4.  (Optional) Wherever you run explicit application code to retrieve and manage your cached entries, you may want to manage your data objects without using full deserialization. To do this, see [Programming Your Application to Use PdxInstances](program_application_for_pdx.html).
 
 ## PDX and Multi-Site (WAN) Deployments

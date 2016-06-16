@@ -1,10 +1,10 @@
 ---
-title:  Deploying Application JARs to <span class="keyword">Pivotal GemFire</span> Members
+title:  Deploying Application JARs to <span class="keyword">Apache Geode</span> Members
 ---
 
-You can dynamically deploy your application JAR files to specific members or to all members in your distributed system. <span class="keyword">GemFire</span> automatically keeps track of JAR file versions; autoloads the deployed JAR files to the CLASSPATH; and auto-registers any functions that the JAR contains.
+You can dynamically deploy your application JAR files to specific members or to all members in your distributed system. <span class="keyword">Geode</span> automatically keeps track of JAR file versions; autoloads the deployed JAR files to the CLASSPATH; and auto-registers any functions that the JAR contains.
 
-To deploy and undeploy application JAR files in <span class="keyword">Pivotal GemFire</span>, use the gfsh `deploy` or `undeploy` command. You can deploy a single JAR or multiple JARs (by either specifying the JAR filenames or by specifying a directory that contains the JAR files), and you can also target the deployment to a member group or multiple member group. For example, after connecting to the distributed system where you want to deploy the JARs, you could type at the `gfsh` prompt:
+To deploy and undeploy application JAR files in <span class="keyword">Apache Geode</span>, use the gfsh `deploy` or `undeploy` command. You can deploy a single JAR or multiple JARs (by either specifying the JAR filenames or by specifying a directory that contains the JAR files), and you can also target the deployment to a member group or multiple member group. For example, after connecting to the distributed system where you want to deploy the JARs, you could type at the `gfsh` prompt:
 
 ``` pre
 gfsh> deploy --jar=group1_functions.jar
@@ -70,12 +70,12 @@ datanode1 | group1_functions.jar | /usr/local/gemfire/deploy/vf.gf#group1_functi
 datanode2 | group1_functions.jar | /usr/local/gemfire/deploy/vf.gf#group1_functions.jar#1
 ```
 
-For more information on `gfsh` usage, see [gfsh (GemFire SHell)](../../tools_modules/gfsh/chapter_overview.html).
+For more information on `gfsh` usage, see [gfsh (Geode SHell)](../../tools_modules/gfsh/chapter_overview.html).
 
 <a id="concept_4436C021FB934EC4A330D27BD026602C__section_D36E345C6E254D27B0F4B0C8711F5E6A"></a>
 ## Deployment Location for JAR Files
 
-The system location where JAR files are written on each member is determined by the `deploy-working-dir` <span class="keyword">GemFire</span> property configured for that member. For example, you could have the following configured in the `gemfire.properties` file for your member:
+The system location where JAR files are written on each member is determined by the `deploy-working-dir` <span class="keyword">Geode</span> property configured for that member. For example, you could have the following configured in the `gemfire.properties` file for your member:
 
 ``` pre
 #gemfire.properties

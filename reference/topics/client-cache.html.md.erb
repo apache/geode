@@ -2,9 +2,9 @@
 
 # &lt;client-cache&gt; Element Reference
 
-This section documents all `cache.xml` elements that you use to configure <span class="keyword">GemFire</span> clients. All elements are sub-elements of the `<client-cache>` element.
+This section documents all `cache.xml` elements that you use to configure <span class="keyword">Geode</span> clients. All elements are sub-elements of the `<client-cache>` element.
 
-For <span class="keyword">GemFire</span> server configuration, see [&lt;cache&gt; Element Reference](cache_xml.html).
+For <span class="keyword">Geode</span> server configuration, see [&lt;cache&gt; Element Reference](cache_xml.html).
 
 API: `com.gemstone.gemfire.cache.client.ClientCacheFactory` and `PoolFactory` interfaces.
 
@@ -112,7 +112,7 @@ Use for client caches. Defines a client's server pool used to communicate with s
 
 **API:** `com.gemstone.gemfire.cache.client.PoolFactory`
 
-<a id="cc-pool__d373e1224"></a>
+<a id="cc-pool__d93e1224"></a>
 
 <table>
 <caption><span class="tablecap">Table 2. Attributes</span></caption>
@@ -278,7 +278,7 @@ Provide a locator list or `server` list, but not both.
 
 **API:** `com.gemstone.gemfire.distributed.LocatorLauncher`
 
-<a id="cc-locator__d373e1608"></a>
+<a id="cc-locator__d93e1608"></a>
 
 | Attribute | Description                | Default |
 |-----------|----------------------------|---------|
@@ -309,7 +309,7 @@ Provide a server list or `locator` list, but not both.
 
 **API:** `com.gemstone.gemfire.distributed.ServerLauncher`
 
-<a id="cc-server__d373e1711"></a>
+<a id="cc-server__d93e1711"></a>
 
 | Attribute | Description               | Default |
 |-----------|---------------------------|---------|
@@ -338,7 +338,7 @@ Defines a pool of one or more disk stores, which can be used by regions, and cli
 
 **API:** `com.gemstone.gemfire.cache.DiskStore`
 
-<a id="cc-disk-store__d373e1805"></a>
+<a id="cc-disk-store__d93e1805"></a>
 
 <table>
 <caption><span class="tablecap">Table 5. Attributes</span></caption>
@@ -439,7 +439,7 @@ An element of a disk store that defines a set of `<disk-dir>` elements.
 
 Specifies a region or disk store's disk directory.
 
-<a id="cc-disk-dir__d373e2002"></a>
+<a id="cc-disk-dir__d93e2002"></a>
 
 <table>
 <caption><span class="tablecap">Table 6. Attributes</span></caption>
@@ -482,7 +482,7 @@ Specifies the configuration for the Portable Data eXchange (PDX) method of seria
 
 **API:** `com.gemstone.gemfire.cache.CacheFactory.setPdxReadSerialized`, `setPdxDiskStore`, `setPdxPersistent`, `setPdxIgnoreUnreadFields` and `com.gemstone.gemfire.cache.ClientCacheFactory.setPdxReadSerialized`, `setPdxDiskStore`, `setPdxPersistent`, `setPdxIgnoreUnreadFields`
 
-<a id="cc-pdx__d373e2104"></a>
+<a id="cc-pdx__d93e2104"></a>
 
 | Attribute            | Description                                                                                                                                                                                                | Default |
 |----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
@@ -515,7 +515,7 @@ Specifies the configuration for the Portable Data eXchange (PDX) method of seria
 
 ## &lt;pdx-serializer&gt;
 
-Allows you to configure the PdxSerializer for this <span class="keyword">GemFire</span> member.
+Allows you to configure the PdxSerializer for this <span class="keyword">Geode</span> member.
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](cache_xml.html#class-name_parameter).
 
@@ -544,7 +544,7 @@ Specifies a region attributes template that can be named (by `id`) and reference
 
 **API:** `com.gemstone.gemfire.cache.RegionFactory` or `com.gemstone.gemfire.cache.ClientRegionFactory`
 
-<a id="cc-region-attributes__d373e2274"></a>
+<a id="cc-region-attributes__d93e2274"></a>
 
 <table>
 <caption><span class="tablecap">Table 8. Attributes</span></caption>
@@ -563,7 +563,7 @@ Specifies a region attributes template that can be named (by `id`) and reference
 <tbody>
 <tr class="odd">
 <td>concurrency-level</td>
-<td>Gives an estimate of the maximum number of application threads that will concurrently access a region entry at one time. This attribute does not apply to partitioned regions. This attribute helps <span class="keyword">GemFire</span> optimize the use of system resources and reduce thread contention. This sets an initial parameter on the underlying <code class="ph codeph">java.util.ConcurrentHashMap</code> used for storing region entries.
+<td>Gives an estimate of the maximum number of application threads that will concurrently access a region entry at one time. This attribute does not apply to partitioned regions. This attribute helps <span class="keyword">Geode</span> optimize the use of system resources and reduce thread contention. This sets an initial parameter on the underlying <code class="ph codeph">java.util.ConcurrentHashMap</code> used for storing region entries.
 <div class="note note">
 **Note:**
 <p>Before you modify this, read the concurrency level description, then see the Java API documentation for <code class="ph codeph">java.util.ConcurrentHashMap</code>.</p>
@@ -665,7 +665,7 @@ Used only with GemFire version 6.x gateway configurations. For GemFire 7.0 confi
 </tr>
 <tr class="even">
 <td>gateway-sender-ids</td>
-<td><p>Specifies one or more gateway sender IDs to use for distributing region events to remote <span class="keyword">GemFire</span> sites. Specify multiple IDs as a comma-separated list.</p>
+<td><p>Specifies one or more gateway sender IDs to use for distributing region events to remote <span class="keyword">Geode</span> sites. Specify multiple IDs as a comma-separated list.</p>
 <p><strong>API:</strong> <code class="ph codeph">addGatewaySenderId</code></p>
 <p><strong>Example:</strong></p>
 <pre class="pre codeblock language-xml"><code>&lt;region-attributes 
@@ -842,7 +842,7 @@ Used only with GemFire version 6.x gateway configurations. For GemFire 7.0 confi
 <td><p>Definition: Determines how updates to region entries are distributed to the other caches in the distributed system where the region and entry are defined. Scope also determines whether to allow remote invocation of some of the region’s event handlers, and wether to use region entry versions to provide consistent updates across replicated regions.</p>
 <div class="note note">
 **Note:**
-<p>You can configure the most common of these options with <span class="keyword">GemFire</span>’s region shortccuts in <code class="ph codeph">RegionShortcut</code> and <code class="ph codeph">ClientRegionShortcut</code>.</p>
+<p>You can configure the most common of these options with <span class="keyword">Geode</span>’s region shortccuts in <code class="ph codeph">RegionShortcut</code> and <code class="ph codeph">ClientRegionShortcut</code>.</p>
 </div>
 <div class="note note">
 **Note:**
@@ -880,7 +880,7 @@ Used only with GemFire version 6.x gateway configurations. For GemFire 7.0 confi
 </tr>
 <tr class="even">
 <td>statistics-enabled</td>
-<td>Boolean specifying whether to gather statistics on the region. Must be true to use expiration on the region. <span class="keyword">GemFire</span> provides a standard set of statistics for cached regions and region entries, which give you information for fine-tuning your distributed system. Unlike other <span class="keyword">GemFire</span> statistics, statistics for local and distributed regions are not archived and cannot be charted. They are kept in instances of <code class="ph codeph">com.gemstone.gemfire.cache.CacheStatistics</code> and made available through the region and its entries through the <code class="ph codeph">Region.getStatistics</code> and <code class="ph codeph">Region.Entry.getStatistics</code> methods.
+<td>Boolean specifying whether to gather statistics on the region. Must be true to use expiration on the region. <span class="keyword">Geode</span> provides a standard set of statistics for cached regions and region entries, which give you information for fine-tuning your distributed system. Unlike other <span class="keyword">Geode</span> statistics, statistics for local and distributed regions are not archived and cannot be charted. They are kept in instances of <code class="ph codeph">com.gemstone.gemfire.cache.CacheStatistics</code> and made available through the region and its entries through the <code class="ph codeph">Region.getStatistics</code> and <code class="ph codeph">Region.Entry.getStatistics</code> methods.
 <p><strong>API:</strong> <code class="ph codeph">setStatisticsEnabled</code></p>
 <p><strong>Example:</strong></p>
 <pre class="pre codeblock language-xml"><code>&lt;region-attributes 
@@ -903,7 +903,7 @@ Used only with GemFire version 6.x gateway configurations. For GemFire 7.0 confi
 <td><p>Determines whether members perform checks to provide consistent handling for concurrent or out-of-order updates to distributed regions. See [Consistency for Region Updates](../../developing/distributed_regions/region_entry_versions.html#topic_CF2798D3E12647F182C2CEC4A46E2045).</p>
 <div class="note note">
 **Note:**
-<p>Applications that use a <code class="ph codeph">client-cache</code> may want to disable concurrency checking in order to see all events for a region. <span class="keyword">GemFire</span> server members can continue using concurrency checks for the region, but they will pass all events to the client cache. This configuration ensures that the client sees all events, but it does not prevent the client cache from becoming out-of-sync with the server cache.</p>
+<p>Applications that use a <code class="ph codeph">client-cache</code> may want to disable concurrency checking in order to see all events for a region. <span class="keyword">Geode</span> server members can continue using concurrency checks for the region, but they will pass all events to the client cache. This configuration ensures that the client sees all events, but it does not prevent the client cache from becoming out-of-sync with the server cache.</p>
 </div>
 <p><strong>API:</strong> <code class="ph codeph">setConcurrencyChecksEnabled</code></p>
 <p><strong>Example:</strong></p>
@@ -1004,7 +1004,7 @@ Within the `entry-time-to-live` or `entry-idle-time` element, this element speci
 
 **API:** See APIs for `entry-time-to-live`, `entry-idle-time`, `region-time-to-live`, `region-idle-time`
 
-<a id="cc-expiration-attributes__d373e3594"></a>
+<a id="cc-expiration-attributes__d93e3594"></a>
 
 <table>
 <caption><span class="tablecap">Table 9. Attributes</span></caption>
@@ -1132,7 +1132,7 @@ Within the `entry-time-to-live` or `entry-idle-time` element, this element speci
 
 **API:** See APIs for `entry-time-to-live`, `entry-idle-time`, `region-time-to-live`, `region-idle-time`
 
-<a id="cc-rit-expiration-attributes__d373e3594"></a>
+<a id="cc-rit-expiration-attributes__d93e3594"></a>
 
 <table>
 <caption><span class="tablecap">Table 10. Attributes</span></caption>
@@ -1258,7 +1258,7 @@ Within the `entry-time-to-live` or `entry-idle-time` element, this element speci
 
 **API:** See APIs for `entry-time-to-live`, `entry-idle-time`, `region-time-to-live`, `region-idle-time`
 
-<a id="cc-ettl-expiration-attributes__d373e3594"></a>
+<a id="cc-ettl-expiration-attributes__d93e3594"></a>
 
 <table>
 <caption><span class="tablecap">Table 11. Attributes</span></caption>
@@ -1386,7 +1386,7 @@ Within the `entry-time-to-live` or `entry-idle-time` element, this element speci
 
 **API:** See APIs for `entry-time-to-live`, `entry-idle-time`, `region-time-to-live`, `region-idle-time`
 
-<a id="cc-eit-expiration-attributes__d373e3594"></a>
+<a id="cc-eit-expiration-attributes__d93e3594"></a>
 
 <table>
 <caption><span class="tablecap">Table 12. Attributes</span></caption>
@@ -1523,7 +1523,7 @@ An event-handler plug-in that allows you to receive before-event notification fo
 
 ## &lt;cache-listener&gt;
 
-An event-handler plug-in that receives after-event notification of changes to the region and its entries. Any number of cache listeners can be defined for a region in any member. <span class="keyword">GemFire</span> offers several listener types with callbacks to handle data and process events. Depending on the `data-policy` and the `interest-policy` subscription attributes, a cache listener may receive only events that originate in the local cache, or it may receive those events along with events that originate remotely.
+An event-handler plug-in that receives after-event notification of changes to the region and its entries. Any number of cache listeners can be defined for a region in any member. <span class="keyword">Geode</span> offers several listener types with callbacks to handle data and process events. Depending on the `data-policy` and the `interest-policy` subscription attributes, a cache listener may receive only events that originate in the local cache, or it may receive those events along with events that originate remotely.
 
 Specify the Java class for the cache listener and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](cache_xml.html#class-name_parameter).
 
@@ -1545,7 +1545,7 @@ Specify the Java class for the cache listener and its initialization parameters 
 
 ## &lt;eviction-attributes&gt;
 
-Specifies whether and how to control a region’s size. Size is controlled by removing least recently used (LRU) entries to make space for new ones. This may be done through destroy or overflow actions. You can configure your region for lru-heap-percentage with an eviction action of local-destroy using <span class="keyword">GemFire</span>’s stored region attributes.
+Specifies whether and how to control a region’s size. Size is controlled by removing least recently used (LRU) entries to make space for new ones. This may be done through destroy or overflow actions. You can configure your region for lru-heap-percentage with an eviction action of local-destroy using <span class="keyword">Geode</span>’s stored region attributes.
 
 **Default:** Uses the lru-entry-count algorithm.
 
@@ -1569,7 +1569,7 @@ Specifies whether and how to control a region’s size. Size is controlled by re
 
 Using the maximum attribute, specifies maximum region capacity based on entry count.
 
-<a id="cc-lru-entry-count__d373e4926"></a>
+<a id="cc-lru-entry-count__d93e4926"></a>
 
 <table>
 <caption><span class="tablecap">Table 13. Attributes</span></caption>
@@ -1619,11 +1619,11 @@ Using the maximum attribute, specifies maximum region capacity based on entry co
 
 ## &lt;lru-heap-percentage&gt;
 
-Runs evictions when the <span class="keyword">GemFire</span> resource manager says to. The manager orders evictions when the total cache size is over the heap percentage limit specified in the manager configuration. You can declare a Java class that implements the ObjectSizer interface to measure the size of objects in the Region.
+Runs evictions when the <span class="keyword">Geode</span> resource manager says to. The manager orders evictions when the total cache size is over the heap percentage limit specified in the manager configuration. You can declare a Java class that implements the ObjectSizer interface to measure the size of objects in the Region.
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](cache_xml.html#class-name_parameter).
 
-<a id="cc-lru-heap-percentage__d373e5034"></a>
+<a id="cc-lru-heap-percentage__d93e5034"></a>
 
 <table>
 <caption><span class="tablecap">Table 14. Attributes</span></caption>
@@ -1672,7 +1672,7 @@ Using the maximum attribute, specifies maximum region capacity based on the amou
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](cache_xml.html#class-name_parameter).
 
-<a id="cc-lru-memory-size__d373e5129"></a>
+<a id="cc-lru-memory-size__d93e5129"></a>
 
 <table>
 <caption><span class="tablecap">Table 15. Attributes</span></caption>
@@ -1762,11 +1762,11 @@ Specifies the binding for a data-source used in transaction management. See [Con
 
 ## &lt;jndi-binding&gt;
 
-For every datasource that is bound to the JNDI tree, there should be one `<jndi-binding>` element. This element describes the property and the configuration of the datasource. <span class="keyword">GemFire</span> uses the attributes of the `<jndi-binding>` element for configuration. Use the `<config-property>` element to configure properties for the datasource.
+For every datasource that is bound to the JNDI tree, there should be one `<jndi-binding>` element. This element describes the property and the configuration of the datasource. <span class="keyword">Geode</span> uses the attributes of the `<jndi-binding>` element for configuration. Use the `<config-property>` element to configure properties for the datasource.
 
 Pivotal recommends that you set the username and password with the `user-name` and `password` jndi-binding attributes rather than using the `<config-property>` element.
 
-<a id="cc-jndi-binding__d373e5323"></a>
+<a id="cc-jndi-binding__d93e5323"></a>
 
 <table>
 <caption><span class="tablecap">Table 16. Attributes</span></caption>
@@ -1819,7 +1819,7 @@ Pivotal recommends that you set the username and password with the `user-name` a
 </tr>
 <tr class="odd">
 <td>jndi-name</td>
-<td>The <code class="ph codeph">jndi-name</code> attribute is the key binding parameter. If the value of jndi-name is a DataSource, it is bound as java:/myDatabase, where myDatabase is the name you assign to your data source. If the data source cannot be bound to JNDI at runtime, <span class="keyword">GemFire</span> logs a warning.</td>
+<td>The <code class="ph codeph">jndi-name</code> attribute is the key binding parameter. If the value of jndi-name is a DataSource, it is bound as java:/myDatabase, where myDatabase is the name you assign to your data source. If the data source cannot be bound to JNDI at runtime, <span class="keyword">Geode</span> logs a warning.</td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -1853,7 +1853,7 @@ Pivotal recommends that you set the username and password with the `user-name` a
 <tbody>
 <tr class="odd">
 <td>XATransaction</td>
-<td>Select this option when you want to use a<span class="keyword apiname">ManagedConnection</span> interface with a Java Transaction Manager to define transaction boundries. This option allows a <span class="keyword apiname">ManagedDataSource</span> to participate in a transaction with a <span class="keyword">GemFire</span> cache.</td>
+<td>Select this option when you want to use a<span class="keyword apiname">ManagedConnection</span> interface with a Java Transaction Manager to define transaction boundries. This option allows a <span class="keyword apiname">ManagedDataSource</span> to participate in a transaction with a <span class="keyword">Geode</span> cache.</td>
 </tr>
 <tr class="even">
 <td>NoTransaction</td>
@@ -1960,11 +1960,11 @@ Defines a region in the cache. See [&lt;region-attributes&gt;](cache_xml.html#re
 
 **API:** `com.gemstone.gemfire.cache.RegionFactory` or `com.gemstone.gemfire.cache.ClientRegionFactory`
 
-<a id="cc-region__d373e5816"></a>
+<a id="cc-region__d93e5816"></a>
 
-| Attribute | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Default |
-|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| name      | Specify the name for the region. See [Creating a Region Through the cache.xml File](../../basic_config/data_regions/create_a_region_with_cacheXML.html) for details.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |         |
+| Attribute | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Default |
+|-----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| name      | Specify the name for the region. See [Creating a Region Through the cache.xml File](../../basic_config/data_regions/create_a_region_with_cacheXML.html) for details.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |         |
 | refid     | Used to apply predefined attributes to the region being defined. If the nested "region-attributes" element has its own "refid", then it will cause the "refid" on the region to be ignored. The "refid" region attriibute can be set to the name of a RegionShortcut or a ClientRegionShortcut. For more information, see [Region Shortcuts and Custom Named Region Attributes](../../basic_config/data_regions/region_shortcuts.html) and [Storing and Retrieving Region Shortcuts and Custom Named Region Attributes](../../basic_config/data_regions/store_retrieve_region_shortcuts.html). |         |
 
 : <span class="tablecap">Table 17. Attributes</span>
@@ -2001,7 +2001,7 @@ Specifies a region attributes template that can be named (by `id`) and reference
 
 **API:** `com.gemstone.gemfire.cache.RegionFactory` or `com.gemstone.gemfire.cache.ClientRegionFactory`
 
-<a id="cc-r-region-attributes__d373e2274"></a>
+<a id="cc-r-region-attributes__d93e2274"></a>
 
 <table>
 <caption><span class="tablecap">Table 18. Attributes</span></caption>
@@ -2020,7 +2020,7 @@ Specifies a region attributes template that can be named (by `id`) and reference
 <tbody>
 <tr class="odd">
 <td>concurrency-level</td>
-<td>Gives an estimate of the maximum number of application threads that will concurrently access a region entry at one time. This attribute does not apply to partitioned regions. This attribute helps <span class="keyword">GemFire</span> optimize the use of system resources and reduce thread contention. This sets an initial parameter on the underlying <code class="ph codeph">java.util.ConcurrentHashMap</code> used for storing region entries.
+<td>Gives an estimate of the maximum number of application threads that will concurrently access a region entry at one time. This attribute does not apply to partitioned regions. This attribute helps <span class="keyword">Geode</span> optimize the use of system resources and reduce thread contention. This sets an initial parameter on the underlying <code class="ph codeph">java.util.ConcurrentHashMap</code> used for storing region entries.
 <div class="note note">
 **Note:**
 <p>Before you modify this, read the concurrency level description, then see the Java API documentation for <code class="ph codeph">java.util.ConcurrentHashMap</code>.</p>
@@ -2122,7 +2122,7 @@ Used only with GemFire version 6.x gateway configurations. For GemFire 7.0 confi
 </tr>
 <tr class="even">
 <td>gateway-sender-ids</td>
-<td><p>Specifies one or more gateway sender IDs to use for distributing region events to remote <span class="keyword">GemFire</span> sites. Specify multiple IDs as a comma-separated list.</p>
+<td><p>Specifies one or more gateway sender IDs to use for distributing region events to remote <span class="keyword">Geode</span> sites. Specify multiple IDs as a comma-separated list.</p>
 <p><strong>API:</strong> <code class="ph codeph">addGatewaySenderId</code></p>
 <p><strong>Example:</strong></p>
 <pre class="pre codeblock language-xml"><code>&lt;region-attributes 
@@ -2299,7 +2299,7 @@ Used only with GemFire version 6.x gateway configurations. For GemFire 7.0 confi
 <td><p>Definition: Determines how updates to region entries are distributed to the other caches in the distributed system where the region and entry are defined. Scope also determines whether to allow remote invocation of some of the region’s event handlers, and wether to use region entry versions to provide consistent updates across replicated regions.</p>
 <div class="note note">
 **Note:**
-<p>You can configure the most common of these options with <span class="keyword">GemFire</span>’s region shortccuts in <code class="ph codeph">RegionShortcut</code> and <code class="ph codeph">ClientRegionShortcut</code>.</p>
+<p>You can configure the most common of these options with <span class="keyword">Geode</span>’s region shortccuts in <code class="ph codeph">RegionShortcut</code> and <code class="ph codeph">ClientRegionShortcut</code>.</p>
 </div>
 <div class="note note">
 **Note:**
@@ -2337,7 +2337,7 @@ Used only with GemFire version 6.x gateway configurations. For GemFire 7.0 confi
 </tr>
 <tr class="even">
 <td>statistics-enabled</td>
-<td>Boolean specifying whether to gather statistics on the region. Must be true to use expiration on the region. <span class="keyword">GemFire</span> provides a standard set of statistics for cached regions and region entries, which give you information for fine-tuning your distributed system. Unlike other <span class="keyword">GemFire</span> statistics, statistics for local and distributed regions are not archived and cannot be charted. They are kept in instances of <code class="ph codeph">com.gemstone.gemfire.cache.CacheStatistics</code> and made available through the region and its entries through the <code class="ph codeph">Region.getStatistics</code> and <code class="ph codeph">Region.Entry.getStatistics</code> methods.
+<td>Boolean specifying whether to gather statistics on the region. Must be true to use expiration on the region. <span class="keyword">Geode</span> provides a standard set of statistics for cached regions and region entries, which give you information for fine-tuning your distributed system. Unlike other <span class="keyword">Geode</span> statistics, statistics for local and distributed regions are not archived and cannot be charted. They are kept in instances of <code class="ph codeph">com.gemstone.gemfire.cache.CacheStatistics</code> and made available through the region and its entries through the <code class="ph codeph">Region.getStatistics</code> and <code class="ph codeph">Region.Entry.getStatistics</code> methods.
 <p><strong>API:</strong> <code class="ph codeph">setStatisticsEnabled</code></p>
 <p><strong>Example:</strong></p>
 <pre class="pre codeblock language-xml"><code>&lt;region-attributes 
@@ -2360,7 +2360,7 @@ Used only with GemFire version 6.x gateway configurations. For GemFire 7.0 confi
 <td><p>Determines whether members perform checks to provide consistent handling for concurrent or out-of-order updates to distributed regions. See [Consistency for Region Updates](../../developing/distributed_regions/region_entry_versions.html#topic_CF2798D3E12647F182C2CEC4A46E2045).</p>
 <div class="note note">
 **Note:**
-<p>Applications that use a <code class="ph codeph">client-cache</code> may want to disable concurrency checking in order to see all events for a region. <span class="keyword">GemFire</span> server members can continue using concurrency checks for the region, but they will pass all events to the client cache. This configuration ensures that the client sees all events, but it does not prevent the client cache from becoming out-of-sync with the server cache.</p>
+<p>Applications that use a <code class="ph codeph">client-cache</code> may want to disable concurrency checking in order to see all events for a region. <span class="keyword">Geode</span> server members can continue using concurrency checks for the region, but they will pass all events to the client cache. This configuration ensures that the client sees all events, but it does not prevent the client cache from becoming out-of-sync with the server cache.</p>
 </div>
 <p><strong>API:</strong> <code class="ph codeph">setConcurrencyChecksEnabled</code></p>
 <p><strong>Example:</strong></p>
@@ -2394,7 +2394,7 @@ Describes an index to be created on a region. The index node, if any, should all
 
 **API:** `com.gemstone.gemfire.cache.query.QueryService.createIndex, createKeyIndex,                     createHashIndex`
 
-<a id="cc-index__d373e5930"></a>
+<a id="cc-index__d93e5930"></a>
 
 | Attribute   | Description                                                                                                                                                                                                                                                                           | Default |
 |-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
@@ -2561,11 +2561,11 @@ Defines a region in the cache. See [&lt;region-attributes&gt;](cache_xml.html#re
 
 **API:** `com.gemstone.gemfire.cache.RegionFactory` or `com.gemstone.gemfire.cache.ClientRegionFactory`
 
-<a id="cc-ra-region__d373e5816"></a>
+<a id="cc-ra-region__d93e5816"></a>
 
-| Attribute | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Default |
-|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| name      | Specify the name for the region. See [Creating a Region Through the cache.xml File](../../basic_config/data_regions/create_a_region_with_cacheXML.html) for details.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |         |
+| Attribute | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Default |
+|-----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| name      | Specify the name for the region. See [Creating a Region Through the cache.xml File](../../basic_config/data_regions/create_a_region_with_cacheXML.html) for details.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |         |
 | refid     | Used to apply predefined attributes to the region being defined. If the nested "region-attributes" element has its own "refid", then it will cause the "refid" on the region to be ignored. The "refid" region attriibute can be set to the name of a RegionShortcut or a ClientRegionShortcut. For more information, see [Region Shortcuts and Custom Named Region Attributes](../../basic_config/data_regions/region_shortcuts.html) and [Storing and Retrieving Region Shortcuts and Custom Named Region Attributes](../../basic_config/data_regions/store_retrieve_region_shortcuts.html). |         |
 
 : <span class="tablecap">Table 20. Attributes</span>
@@ -2643,7 +2643,7 @@ A memory monitor that tracks cache size as a percentage of total heap or off-hea
 
 **API:** `com.gemstone.gemfire.cache.control.ResourceManager`
 
-<a id="cc-resource-manager__d373e6323"></a>
+<a id="cc-resource-manager__d93e6323"></a>
 
 <table>
 <caption><span class="tablecap">Table 21. Attributes </span></caption>
@@ -2727,7 +2727,7 @@ Set of serializer or instantiator tags to register customer DataSerializer exten
 
 ## &lt;serializer&gt;
 
-Allows you to configure the DataSerializer for this <span class="keyword">GemFire</span> member. It registers a custom class which extends DataSerializer to support custom serialization of non-modifiable object types inside <span class="keyword">GemFire</span>.
+Allows you to configure the DataSerializer for this <span class="keyword">Geode</span> member. It registers a custom class which extends DataSerializer to support custom serialization of non-modifiable object types inside <span class="keyword">Geode</span>.
 
 Specify the Java class for the `DataSerializer` and its initialization parameters with the `<class-name>` sub-element.
 
@@ -2737,7 +2737,7 @@ Specify the Java class for the `DataSerializer` and its initialization parameter
 
 ## &lt;instantiator&gt;
 
-An Instantiator registers a custom class which implements the `DataSerializable` interface to support custom object serialization inside <span class="keyword">GemFire</span>.
+An Instantiator registers a custom class which implements the `DataSerializable` interface to support custom object serialization inside <span class="keyword">Geode</span>.
 
 Specify the Java class and its initialization parameters with the `<class-name>` sub-element.
 
@@ -2745,7 +2745,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 You can also directly specify `<instantiator>` as a sub-element of `<cache>`. Use the `com.gemstone.gemfire.Instantiator` API to register a `DataSerializable` implementation as the serialization framework for the cache. The following table lists the attribute that can be specified for an `<instantiator>`.
 
-<a id="cc-instantiator__d373e6583"></a>
+<a id="cc-instantiator__d93e6583"></a>
 
 | Attribute | Description                                                                           | Default |
 |-----------|---------------------------------------------------------------------------------------|---------|

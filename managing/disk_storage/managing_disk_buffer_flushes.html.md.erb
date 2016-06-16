@@ -2,9 +2,9 @@
 title:  Altering When Buffers Are Flushed to Disk
 ---
 
-You can configure <span class="keyword">GemFire</span> to write immediately to disk and you may be able to modify your operating system behavior to perform buffer flushes more frequently.
+You can configure <span class="keyword">Geode</span> to write immediately to disk and you may be able to modify your operating system behavior to perform buffer flushes more frequently.
 
-Typically, <span class="keyword">GemFire</span> writes disk data into the operating system's disk buffers and the operating system periodically flushes the buffers to disk. Increasing the frequency of writes to disk decreases the likelihood of data loss from application or machine crashes, but it impacts performance. Your other option, which may give you better performance, is to use <span class="keyword">GemFire</span>'s in-memory data backups. Do this by storing your data in multiple replicated regions or in partitioned regions that are configured with redundant copies. See [Region Types](../../developing/region_options/region_types.html#region_types).
+Typically, <span class="keyword">Geode</span> writes disk data into the operating system's disk buffers and the operating system periodically flushes the buffers to disk. Increasing the frequency of writes to disk decreases the likelihood of data loss from application or machine crashes, but it impacts performance. Your other option, which may give you better performance, is to use <span class="keyword">Geode</span>'s in-memory data backups. Do this by storing your data in multiple replicated regions or in partitioned regions that are configured with redundant copies. See [Region Types](../../developing/region_options/region_types.html#region_types).
 
 <a id="disk_buffer_flushes__section_448348BD28B14F478D81CC2EDC6C7049"></a>
 ## Modifying Disk Flushes for the Operating System
@@ -13,11 +13,11 @@ You may be able to change the operating system settings for periodic flushes. Yo
 
 <a id="disk_buffer_flushes__section_D1068505581A43EE8395DBE97297C60F"></a>
 
-## Modifying <span class="keyword">GemFire</span> to Flush Buffers on Disk Writes
+## Modifying <span class="keyword">Geode</span> to Flush Buffers on Disk Writes
 
-You can have <span class="keyword">GemFire</span> flush the disk buffers on every disk write. Do this by setting the system property `gemfire.syncWrites` to true at the command line when you start your <span class="keyword">GemFire</span> member. You can only modify this setting when you start a member. When this is set, <span class="keyword">GemFire</span> uses a Java `RandomAccessFile` with the flags "rwd", which causes every file update to be written synchronously to the storage device. This only guarantees your data if your disk stores are on a local device. See the Java documentation for `java.IO.RandomAccessFile`.
+You can have <span class="keyword">Geode</span> flush the disk buffers on every disk write. Do this by setting the system property `gemfire.syncWrites` to true at the command line when you start your <span class="keyword">Geode</span> member. You can only modify this setting when you start a member. When this is set, <span class="keyword">Geode</span> uses a Java `RandomAccessFile` with the flags "rwd", which causes every file update to be written synchronously to the storage device. This only guarantees your data if your disk stores are on a local device. See the Java documentation for `java.IO.RandomAccessFile`.
 
-To modify the setting for a <span class="keyword">GemFire</span> application, add this to the java command line when you start the member:
+To modify the setting for a <span class="keyword">Geode</span> application, add this to the java command line when you start the member:
 
 ``` pre
 -Dgemfire.syncWrites=true

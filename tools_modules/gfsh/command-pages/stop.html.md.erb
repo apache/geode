@@ -4,21 +4,21 @@
 
 Stop gateway receivers, gateway senders, locators and servers.
 
--   **[stop gateway-receiver](../../../../latest/tools_modules/gfsh/command-pages/stop.html#topic_CD1D526FD6F84A7B80B25C741129ED30)**
+-   **[stop gateway-receiver](../../../tools_modules/gfsh/command-pages/stop.html#topic_CD1D526FD6F84A7B80B25C741129ED30)**
 
     Stop the gateway receiver on a member or members.
 
--   **[stop gateway-sender](../../../../latest/tools_modules/gfsh/command-pages/stop.html#topic_0BBDD4B3B8A44A65A610F766C9E85519)**
+-   **[stop gateway-sender](../../../tools_modules/gfsh/command-pages/stop.html#topic_0BBDD4B3B8A44A65A610F766C9E85519)**
 
     Stop a gateway sender with a given id on a specified member or members of a specified member group.
 
--   **[stop locator](../../../../latest/tools_modules/gfsh/command-pages/stop.html#topic_EF61C54B35BA4AB7B14E58CF911F283E)**
+-   **[stop locator](../../../tools_modules/gfsh/command-pages/stop.html#topic_EF61C54B35BA4AB7B14E58CF911F283E)**
 
     Stop a locator.
 
--   **[stop server](../../../../latest/tools_modules/gfsh/command-pages/stop.html#topic_723EE395A63A40D6819618AFC2902115)**
+-   **[stop server](../../../tools_modules/gfsh/command-pages/stop.html#topic_723EE395A63A40D6819618AFC2902115)**
 
-    Stop a <span class="keyword">GemFire</span> cache server.
+    Stop a <span class="keyword">Geode</span> cache server.
 
 <a id="topic_CD1D526FD6F84A7B80B25C741129ED30"></a>
 
@@ -145,11 +145,11 @@ stop locator [--name=value] [--host=value] [--port=value] [--pid=value]
 
 <a id="topic_EF61C54B35BA4AB7B14E58CF911F283E__table_ojb_x5g_2w"></a>
 
-| Name                                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                       | Default Value     |
-|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
-| <span class="keyword parmname">--name</span> | The <span class="keyword">GemFire</span> member name or id of the Locator to stop. You must be connected to the JMX Manager to use this option. Can be used to stop remote locators. See [Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../../configuring/cluster_config/gfsh_remote.html). |                   |
-| <span class="keyword parmname">--pid</span>  | The process id (PID) of the running Locator.                                                                                                                                                                                                                                                                                                                                                                                                      |                   |
-| <span class="keyword parmname">--dir</span>  | Directory in which the Locator was started.                                                                                                                                                                                                                                                                                                                                                                                                       | current directory |
+| Name                                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                     | Default Value     |
+|----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
+| <span class="keyword parmname">--name</span> | The <span class="keyword">Geode</span> member name or id of the Locator to stop. You must be connected to the JMX Manager to use this option. Can be used to stop remote locators. See [Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../../configuring/cluster_config/gfsh_remote.html). |                   |
+| <span class="keyword parmname">--pid</span>  | The process id (PID) of the running Locator.                                                                                                                                                                                                                                                                                                                                                                                                    |                   |
+| <span class="keyword parmname">--dir</span>  | Directory in which the Locator was started.                                                                                                                                                                                                                                                                                                                                                                                                     | current directory |
 
 : <span class="tablecap">Table 3. Parameters</span>
 
@@ -176,7 +176,7 @@ gfsh>
 
 ## stop server
 
-Stop a <span class="keyword">GemFire</span> cache server.
+Stop a <span class="keyword">Geode</span> cache server.
 
 **Availability:** Online or offline. If you want to stop a cache server while you are offline, use the `--dir` or the `--pid` parameter.
 
@@ -188,11 +188,11 @@ stop server [--name=value] [--pid=value] [--dir=value]
 
 <a id="topic_723EE395A63A40D6819618AFC2902115__table_f12_2vg_2w"></a>
 
-| Name                                          | Description                                                                                                                                                                                                                                                                                                                                                                                                                             | Default Value     |
-|-----------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
-| <span class="keyword parmname">--name </span> | Name/Id of the <span class="keyword">GemFire</span> Cache Server to stop. You must be connected to the JMX Manager to use this option. Can be used to stop remote servers. See [Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../../configuring/cluster_config/gfsh_remote.html). |                   |
-| <span class="keyword parmname">--pid </span>  | Process ID (PID) of the running <span class="keyword">GemFire</span> Cache Server.                                                                                                                                                                                                                                                                                                                                                      |                   |
-| <span class="keyword parmname">--dir </span>  | Directory in which the <span class="keyword">GemFire</span> Cache Server was started.                                                                                                                                                                                                                                                                                                                                                   | current directory |
+| Name                                          | Description                                                                                                                                                                                                                                                                                                                                                                                                                           | Default Value     |
+|-----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
+| <span class="keyword parmname">--name </span> | Name/Id of the <span class="keyword">Geode</span> Cache Server to stop. You must be connected to the JMX Manager to use this option. Can be used to stop remote servers. See [Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../../configuring/cluster_config/gfsh_remote.html). |                   |
+| <span class="keyword parmname">--pid </span>  | Process ID (PID) of the running <span class="keyword">Geode</span> Cache Server.                                                                                                                                                                                                                                                                                                                                                      |                   |
+| <span class="keyword parmname">--dir </span>  | Directory in which the <span class="keyword">Geode</span> Cache Server was started.                                                                                                                                                                                                                                                                                                                                                   | current directory |
 
 : <span class="tablecap">Table 4. Parameters</span>
 
