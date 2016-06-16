@@ -18,13 +18,17 @@
  */
 package com.gemstone.gemfire.cache.lucene.internal;
 
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
@@ -34,7 +38,9 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
+import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Unit test that async event listener dispatched the events
@@ -98,5 +104,20 @@ public class LuceneEventListenerJUnitTest {
     verify(repo2, atLeast(numEntries / 6)).update(any(), any());
     verify(repo1, times(1)).commit();
     verify(repo2, times(1)).commit();
+  }
+
+  @Test
+  public void shouldHandleBucketNotFoundExceptionWithoutLoggingError() throws BucketNotFoundException {
+    RepositoryManager manager = Mockito.mock(RepositoryManager.class);
+    Logger log=Mockito.mock(Logger.class);
+    Mockito.when(manager.getRepository(any(), any(), any()))
+      .thenThrow(BucketNotFoundException.class);
+
+    LuceneEventListener listener = new LuceneEventListener(manager);
+    listener.logger = log;
+    AsyncEvent event = Mockito.mock(AsyncEvent.class);
+    boolean result = listener.processEvents(Arrays.asList(new AsyncEvent[] {event}));
+    assertFalse(result);
+    verify(log, never()).error(anyString(), any(Exception.class));
   }
 }
