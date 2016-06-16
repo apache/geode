@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
  */
 // @original-author Ben Alex
 public class CommentSkipHelper {
+
   private boolean inBlockComment;
   
   public String skipComments(String line) {
@@ -44,7 +45,7 @@ public class CommentSkipHelper {
     }
     if (inBlockComment) {
       if (!line.contains("*/")) {
-        return null;
+        return null; // TODO: should this throw an exception instead?
       }
       blockCommentFinish();
       line = line.substring(line.lastIndexOf("*/") + 2);
@@ -59,19 +60,19 @@ public class CommentSkipHelper {
     return line;
   }
 
-  public void blockCommentBegin() {
+  private void blockCommentBegin() {
     /**asdsfsdf /*asdsdfsdsd */
     //why dis-allow this??? It's allowed in Java. It was probably because '/*' is considered as a command by Roo.
     Assert.isTrue(!inBlockComment, "Cannot open a new block comment when one already active");
     inBlockComment = true;
   }
 
-  public void blockCommentFinish() {
+  private void blockCommentFinish() {
     Assert.isTrue(inBlockComment, "Cannot close a block comment when it has not been opened");
     inBlockComment = false;
   }
 
-  public void reset() {
+  private void reset() { // TODO: delete
     inBlockComment = false;
   }
 }

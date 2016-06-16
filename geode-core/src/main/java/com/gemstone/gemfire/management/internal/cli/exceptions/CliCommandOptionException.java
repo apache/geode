@@ -36,6 +36,10 @@ public class CliCommandOptionException extends CliCommandException {
     this(commandTarget, option, null, cause);
   }
 
+  public CliCommandOptionException(final Throwable cause) {
+    this(null, null, null, cause);
+  }
+
   public CliCommandOptionException(final CommandTarget commandTarget, final Option option, final OptionSet optionSet, final Throwable cause) {
     super(commandTarget, optionSet, cause);
     this.setOption(option);

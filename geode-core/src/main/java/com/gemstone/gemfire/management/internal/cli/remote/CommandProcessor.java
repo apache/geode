@@ -30,6 +30,7 @@ import com.gemstone.gemfire.management.internal.cli.GfshParser;
 import com.gemstone.gemfire.management.internal.cli.LogWrapper;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 import com.gemstone.gemfire.management.internal.cli.util.CommentSkipHelper;
+import com.gemstone.gemfire.management.internal.cli.util.OptionJFormatter;
 import com.gemstone.gemfire.management.internal.security.ResourceOperation;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 
@@ -90,13 +91,14 @@ public class CommandProcessor {
 
     CommentSkipHelper commentSkipper = new CommentSkipHelper();
     String commentLessLine = commentSkipper.skipComments(cmdStmt.getCommandString());
+
     if (commentLessLine != null && !commentLessLine.isEmpty()) {
       CommandExecutionContext.setShellEnv(cmdStmt.getEnv());
 
       final RemoteExecutionStrategy executionStrategy = getExecutionStrategy();
       try {
         ParseResult parseResult = ((CommandStatementImpl)cmdStmt).getParseResult();
-        
+
         if (parseResult == null) {
           parseResult = parseCommand(commentLessLine);
           if (parseResult == null) {//TODO-Abhishek: Handle this in GfshParser Implementation

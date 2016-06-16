@@ -147,11 +147,12 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.START_LOCATOR, help = CliStrings.START_LOCATOR__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_LOCATOR, CliStrings.TOPIC_GEMFIRE_LIFECYCLE })
-  public Result startLocator(@CliOption(key = CliStrings.START_LOCATOR__MEMBER_NAME,
-      mandatory = true,
-      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-      help = CliStrings.START_LOCATOR__MEMBER_NAME__HELP)
-  final String memberName,
+  public Result startLocator(
+      @CliOption(key = CliStrings.START_LOCATOR__MEMBER_NAME,
+          mandatory = true,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.START_LOCATOR__MEMBER_NAME__HELP)
+      final String memberName,
       @CliOption(key = CliStrings.START_LOCATOR__BIND_ADDRESS,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.START_LOCATOR__BIND_ADDRESS__HELP)
