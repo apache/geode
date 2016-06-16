@@ -36,6 +36,7 @@ import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.cache.CacheObserverHolder;
+import com.gemstone.gemfire.internal.cache.partitioned.Bucket;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy.TestHook;
 import com.gemstone.gemfire.internal.logging.LogService;
 
@@ -68,7 +69,7 @@ public class LuceneEventListener implements AsyncEventListener {
         Region region = event.getRegion();
         Object key = event.getKey();
         Object callbackArgument = event.getCallbackArgument();
-        
+
         IndexRepository repository = repositoryManager.getRepository(region, key, callbackArgument);
 
         Operation op = event.getOperation();
@@ -86,12 +87,15 @@ public class LuceneEventListener implements AsyncEventListener {
         }
         affectedRepos.add(repository);
       }
-      
+
       for(IndexRepository repo : affectedRepos) {
         repo.commit();
       }
       return true;
-    } catch(IOException | BucketNotFoundException e) {
+    } catch(BucketNotFoundException e) {
+      logger.debug("Bucket not found while saving to lucene index: " + e.getMessage());
+      return false;
+    } catch(IOException e) {
       logger.error("Unable to save to lucene index", e);
       return false;
     } finally {
