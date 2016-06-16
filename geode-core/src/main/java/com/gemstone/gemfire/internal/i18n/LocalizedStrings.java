@@ -3551,7 +3551,7 @@ public class LocalizedStrings {
   public static final StringId Region_REGION_0_HAS_1_ASYNC_EVENT_QUEUE_IDS_ANOTHER_CACHE_HAS_THE_SAME_REGION_WITH_2_ASYNC_EVENT_QUEUE_IDS_FOR_REGION_ACROSS_ALL_MEMBERS_IN_DS_ASYNC_EVENT_QUEUE_IDS_SHOULD_BE_SAME = new StringId(
       5304,
       "Region {0} has {1} AsyncEvent queue IDs. Another cache has same region with {2} AsyncEvent queue IDs. For region across all members, AsyncEvent queue IDs should be same.");
-  public static final StringId GatewayEventFilter_EXCEPTION_OCCURED_WHILE_HANDLING_CALL_TO_0_AFTER_ACKNOWLEDGEMENT_FOR_EVENT_1 = new StringId(5305, "Exception occured while handling call to {0}.afterAcknowledgement for event {1}:"); 
+  public static final StringId GatewayEventFilter_EXCEPTION_OCCURED_WHILE_HANDLING_CALL_TO_0_AFTER_ACKNOWLEDGEMENT_FOR_EVENT_1 = new StringId(5305, "Exception occured while handling call to {0}.afterAcknowledgement for event {1}:");
   public static final StringId GatewayReceiverImpl_USING_LOCAL_HOST = new StringId(5399, "No bind-address or hostname-for-sender is specified, Using local host ");
   public static final StringId GatewayReceiverImpl_COULD_NOT_GET_HOST_NAME = new StringId(5400, "Could not get host name");
   public static final StringId CqService_ERROR_SENDING_CQ_CONNECTION_STATUS = new StringId(5401, "Error while sending connection status to cq listeners");
@@ -3616,7 +3616,7 @@ public class LocalizedStrings {
   public static final StringId PERCENTAGE_MOVE_DIRECTORY_SOURCE_NOT_DATA_STORE = new StringId(5450, "Source member does not exist or is not a data store for the partitioned region {0}: {1}");
   public static final StringId PERCENTAGE_MOVE_DIRECTORY_TARGET_NOT_DATA_STORE = new StringId(5451, "Target member does not exist or is not a data store for the partitioned region {0}: {1}");
   public static final StringId PERCENTAGE_MOVE_TARGET_SAME_AS_SOURCE = new StringId(5452, "Target member is the same as source member for the partitioned region {0}: {1}");
-  
+
   public static final StringId GatewaySender_SEQUENCENUMBER_GENERATED_FOR_EVENT_IS_INVALID = new StringId(5453, "ERROR! The sequence number {0} generated for the bucket {1} is incorrect.");
 
   public static final StringId CacheXmlParser_A_0_MUST_BE_DEFINED_IN_THE_CONTEXT_OF_GATEWAY_SENDER_OR_ASYNC_EVENT_QUEUE = new StringId(5456, "A  {0}  must be defined in the context of gateway-sender or async-event-queue.");
@@ -3627,7 +3627,7 @@ public class LocalizedStrings {
   public static final StringId DistributedPutAllOperation_MISSING_VERSION = new StringId(5459,"memberID cannot be null for persistent regions: {0}");
 
   public static final StringId Server_Ping_Failure = new StringId(5460, "Could not ping one of the following servers: {0}");
-  
+
   public static final StringId DistributionManager_PR_META_DATA_CLEANUP_MESSAGE_PROCESSOR = new StringId(5500, "PrMetaData cleanup Message Processor ");
   public static final StringId RegionCreation_REGION_DESTROYED_DURING_INITIALIZATION = new StringId(5501, "Region was globally destroyed during cache initialization: {0}");
   public static final StringId SnappyCompressor_UNABLE_TO_LOAD_NATIVE_SNAPPY_LIBRARY = new StringId(5502, "Unable to load native Snappy library.");
@@ -3654,7 +3654,7 @@ public class LocalizedStrings {
   public static final StringId DiskStoreMonitor_DISK_WARNING = new StringId(5616, "The disk volume {0} for disk store {1} has exceeded the warning usage threshold and is {2} full");
   public static final StringId DiskStoreMonitor_DISK_CRITICAL = new StringId(5617, "The disk volume {0} for disk store {1} has exceeded the critical usage threshold and is {2} full");
   public static final StringId DiskStoreMonitor_DISK_NORMAL = new StringId(5618, "The disk volume {0} for disk store {1} has returned to normal usage levels and is {2} full");
-  
+
   public static final StringId DiskStoreMonitor_ERR = new StringId(5619, "The DiskStore Monitor has encountered an error");
   public static final StringId DiskStoreMonitor_ThreadGroup = new StringId(5620, "DiskStoreMonitorss");
 
@@ -3665,7 +3665,7 @@ public class LocalizedStrings {
   public static final StringId Oplog_Close_Failed = new StringId(5640, "Failed to close file {0}");
   public static final StringId Oplog_PreAllocate_Failure = new StringId(5641, "Could not pre-allocate file {0} with size={1}");
   public static final StringId Oplog_PreAllocate_Failure_Init = new StringId(5642, "Could not create and pre grow file in dir {0} with size={1}");
-  
+
   public static final StringId InternalInstantiator_REGISTERED = new StringId(5650, "Instantiator registered with id {0} class {1}");
   public static final StringId InternalInstantiator_REGISTERED_HOLDER = new StringId(5651, "Instantiator registered with holder id {0} class {1}");
   public static final StringId RegisterInstantiators_BAD_CLIENT = new StringId(5652, "Client {0} failed to register instantiators: {1}");
@@ -3717,7 +3717,7 @@ public class LocalizedStrings {
 
   public static final StringId AbstractDistributionConfig_LOCATOR_WAIT_TIME_NAME_0 = new StringId(6599, "The amount of time, in seconds, to wait for a locator to be available before throwing an exception during startup.  The default is {0}.");
   public static final StringId CliLegacyMessage_ERROR = new StringId(6600, "Error processing request {0}.");
-  
+
   public static final StringId AbstractDistributionConfig_MEMCACHED_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1 = new StringId(6601, "The memcached-bind-address \"{0}\" is not a valid address for this machine.  These are the valid addresses for this machine: {1}");
   public static final StringId GemFireCacheImpl_STARTING_GEMFIRE_MEMCACHED_SERVER_ON_BIND_ADDRESS_0_PORT_1_FOR_2_PROTOCOL = new StringId(6602, "Starting GemFireMemcachedServer on bind address {0} on port {1} for {2} protocol");
 
@@ -3729,7 +3729,7 @@ public class LocalizedStrings {
   public static final StringId LOCATOR_UNABLE_TO_RECOVER_VIEW = new StringId(6606, "Unable to recover previous membership view from {0}");
 
   public static final StringId Network_partition_detected = new StringId(6607, "Exiting due to possible network partition event due to loss of {0} cache processes: {1}");
-  
+
   // GMSAuthenticator
   public static final StringId AUTH_PEER_AUTHENTICATION_FAILED_WITH_EXCEPTION = new StringId(6608, "Authentication failed for [{0}]. {1}");
   public static final StringId AUTH_PEER_AUTHENTICATION_FAILED = new StringId(6609, "Authentication failed. See coordinator [{0}] logs for details.");
@@ -3766,19 +3766,19 @@ public class LocalizedStrings {
   public static final StringId AbstractDistributionConfig_HTTP_SERVICE_SSL_ALIAS_0 = new StringId(6636,"SSL http service communication uses the this alias when determining the key to use from the keystore for SSL. Defaults to \"{0}\".");
   public static final StringId AbstractDistributionConfig_JMX_MANAGER_SSL_ALIAS_0 = new StringId(6637,"SSL jmx communication uses the this alias when determining the key to use from the keystore for SSL. Defaults to \"{0}\".");
 
-  public static final StringId AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_0_INVALID_TRY_1 = new StringId(6638,"\"{0}\" is not in the valid set of {1}");
+  public static final StringId AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_0_INVALID_TRY_1 = new StringId(6638,"\"{0}\" is not in the valid set of options \"{1}\"");
 
   public static final StringId AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET = new StringId(6639,"When using ssl-enabled-components one cannot use any other SSL properties other than cluster-ssl-* or the corresponding aliases");
 
   /** Testing strings, messageId 90000-99999 **/
-  
+
   /** These are simple messages for testing, translated with Babelfish. **/
   public static final StringId TESTING_THIS_IS_A_TEST_MESSAGE = new StringId(90000, "This is a test message.");
   public static final StringId TESTING_THIS_MESSAGE_HAS_0_MEMBERS = new StringId(90001, "Please ignore: This message has {0} members.");
   public static final StringId OBJECT_PREFIX = new StringId(90002, "Object_");
   public static final StringId REGION_PREFIX = new StringId(90003, "Region_");
   public static final StringId LISTENER_PREFIX = new StringId(90004, "Listener_");
-  
+
   public static final StringId DistributedRegion_INITIALIZING_REGION_COMPLETED_0 = new StringId(90005, "Initialization of region {0} completed");
 
 }

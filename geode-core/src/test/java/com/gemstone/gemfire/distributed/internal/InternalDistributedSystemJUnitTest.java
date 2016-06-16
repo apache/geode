@@ -16,12 +16,36 @@
  */
 package com.gemstone.gemfire.distributed.internal;
 
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.logging.Level;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
+
 import com.gemstone.gemfire.distributed.DistributedSystem;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
 import com.gemstone.gemfire.distributed.Locator;
 import com.gemstone.gemfire.internal.AvailablePort;
 import com.gemstone.gemfire.internal.Config;
 import com.gemstone.gemfire.internal.ConfigSource;
+import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.InternalLogWriter;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import org.junit.After;
@@ -44,16 +68,16 @@ import static org.junit.Assert.*;
 /**
  * Tests the functionality of the {@link InternalDistributedSystem}
  * class.  Mostly checks configuration error checking.
- *
- *
  * @since GemFire 2.1
  */
 @Category(IntegrationTest.class)
-public class InternalDistributedSystemJUnitTest 
+public class InternalDistributedSystemJUnitTest
   //implements DistributionConfig
 {
 
-  /** A connection to a distributed system created by this test */
+  /**
+   * A connection to a distributed system created by this test
+   */
   private InternalDistributedSystem system;
 
   /**
@@ -62,14 +86,12 @@ public class InternalDistributedSystemJUnitTest
    */
   protected InternalDistributedSystem createSystem(Properties props) {
     assertFalse(com.gemstone.gemfire.distributed.internal.DistributionManager.isDedicatedAdminVM);
-    this.system =
-      (InternalDistributedSystem) DistributedSystem.connect(props);
+    this.system = (InternalDistributedSystem) DistributedSystem.connect(props);
     return this.system;
   }
 
   /**
    * Disconnects any distributed system that was created by this test
-   *
    * @see DistributedSystem#disconnect
    */
   @After
@@ -78,9 +100,9 @@ public class InternalDistributedSystemJUnitTest
       this.system.disconnect();
     }
   }
-  
+
   ////////  Test methods
-  
+
   @Test
   public void testUnknownArgument() {
     Properties props = new Properties();
@@ -109,7 +131,7 @@ public class InternalDistributedSystemJUnitTest
     assertEquals(DistributionConfig.DEFAULT_NAME, config.getName());
 
     assertEquals(0, config.getMcastPort());
-    
+
     assertEquals(DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[0], config.getMembershipPortRange()[0]);
     assertEquals(DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1], config.getMembershipPortRange()[1]);
 
@@ -123,30 +145,27 @@ public class InternalDistributedSystemJUnitTest
     assertEquals(DistributionConfig.DEFAULT_LOG_FILE, config.getLogFile());
 
     //default log level gets overrided by the gemfire.properties created for unit tests.
-//    assertIndexDetailsEquals(DistributionConfig.DEFAULT_LOG_LEVEL, config.getLogLevel());
+    //    assertIndexDetailsEquals(DistributionConfig.DEFAULT_LOG_LEVEL, config.getLogLevel());
 
-    assertEquals(DistributionConfig.DEFAULT_STATISTIC_SAMPLING_ENABLED,
-                 config.getStatisticSamplingEnabled());
+    assertEquals(DistributionConfig.DEFAULT_STATISTIC_SAMPLING_ENABLED, config.getStatisticSamplingEnabled());
 
-    assertEquals(DistributionConfig.DEFAULT_STATISTIC_SAMPLE_RATE,
-                 config.getStatisticSampleRate());
+    assertEquals(DistributionConfig.DEFAULT_STATISTIC_SAMPLE_RATE, config.getStatisticSampleRate());
 
-    assertEquals(DistributionConfig.DEFAULT_STATISTIC_ARCHIVE_FILE,
-                 config.getStatisticArchiveFile());
+    assertEquals(DistributionConfig.DEFAULT_STATISTIC_ARCHIVE_FILE, config.getStatisticArchiveFile());
 
     // ack-wait-threadshold is overridden on VM's command line using a
     // system property.  This is not a valid test.  Hrm.
-//     assertIndexDetailsEquals(DistributionConfig.DEFAULT_ACK_WAIT_THRESHOLD, config.getAckWaitThreshold());
+    //     assertIndexDetailsEquals(DistributionConfig.DEFAULT_ACK_WAIT_THRESHOLD, config.getAckWaitThreshold());
 
     assertEquals(DistributionConfig.DEFAULT_ACK_SEVERE_ALERT_THRESHOLD, config.getAckSevereAlertThreshold());
-    
+
     assertEquals(DistributionConfig.DEFAULT_CACHE_XML_FILE, config.getCacheXmlFile());
 
     assertEquals(DistributionConfig.DEFAULT_ARCHIVE_DISK_SPACE_LIMIT, config.getArchiveDiskSpaceLimit());
     assertEquals(DistributionConfig.DEFAULT_ARCHIVE_FILE_SIZE_LIMIT, config.getArchiveFileSizeLimit());
     assertEquals(DistributionConfig.DEFAULT_LOG_DISK_SPACE_LIMIT, config.getLogDiskSpaceLimit());
     assertEquals(DistributionConfig.DEFAULT_LOG_FILE_SIZE_LIMIT, config.getLogFileSizeLimit());
-    
+
     assertEquals(DistributionConfig.DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION, config.getEnableNetworkPartitionDetection());
   }
 
@@ -163,7 +182,7 @@ public class InternalDistributedSystemJUnitTest
     DistributionConfig config = createSystem(props).getOriginalConfig();
     assertEquals(name, config.getName());
   }
-  
+
   @Test
   public void testMemberTimeout() {
     Properties props = new Properties();
@@ -233,10 +252,7 @@ public class InternalDistributedSystemJUnitTest
   /**
    * Creates a new <code>DistributionConfigImpl</code> with the given
    * locators string.
-   *
-   * @throws IllegalArgumentException
-   *         If <code>locators</code> is malformed
-   *
+   * @throws IllegalArgumentException If <code>locators</code> is malformed
    * @since GemFire 4.0
    */
   private void checkLocator(String locator) {
@@ -248,18 +264,15 @@ public class InternalDistributedSystemJUnitTest
   /**
    * Tests that both the traditional syntax ("host[port]") and post
    * bug-32306 syntax ("host:port") can be used with locators.
-   *
    * @since GemFire 4.0
    */
   @Test
   public void testLocatorSyntax() throws Exception {
-    String localhost =
-      java.net.InetAddress.getLocalHost().getCanonicalHostName();
+    String localhost = java.net.InetAddress.getLocalHost().getCanonicalHostName();
     checkLocator(localhost + "[12345]");
     checkLocator(localhost + ":12345");
 
-    String bindAddress = 
-      getHostAddress(java.net.InetAddress.getLocalHost());
+    String bindAddress = getHostAddress(java.net.InetAddress.getLocalHost());
     if (bindAddress.indexOf(':') < 0) {
       checkLocator(localhost + ":" + bindAddress + "[12345]");
     }
@@ -275,7 +288,6 @@ public class InternalDistributedSystemJUnitTest
   /**
    * Test a configuration with an <code>mcastPort</code> of zero and
    * an empty <code>locators</code>.
-   *
    * @deprecated This test creates a "loner" distributed system
    */
   @Ignore
@@ -613,6 +625,7 @@ public class InternalDistributedSystemJUnitTest
       }
     }
   }
+
   /**
    * Create a <Code>DistributedSystem</code> with a non-default name.
    */
@@ -640,7 +653,7 @@ public class InternalDistributedSystemJUnitTest
     assertEquals(level.intValue(), system.getConfig().getLogLevel());
     assertEquals(level.intValue(), ((InternalLogWriter) system.getLogWriter()).getLogWriterLevel());
   }
-  
+
   @Test
   public void testStartLocator() {
     Properties props = new Properties();
@@ -653,19 +666,19 @@ public class InternalDistributedSystemJUnitTest
     Assert.assertEquals(1, locators.size());
     Locator locator = (Locator) locators.iterator().next();
     Assert.assertTrue(locator.isPeerLocator());
-//    Assert.assertFalse(locator.isServerLocator()); server location is forced on while licensing is disabled in GemFire
-//    Assert.assertIndexDetailsEquals("127.0.0.1", locator.getBindAddress().getHostAddress());  removed this check for ipv6 testing
+    //    Assert.assertFalse(locator.isServerLocator()); server location is forced on while licensing is disabled in GemFire
+    //    Assert.assertIndexDetailsEquals("127.0.0.1", locator.getBindAddress().getHostAddress());  removed this check for ipv6 testing
     Assert.assertEquals(unusedPort, locator.getPort().intValue());
     deleteStateFile(unusedPort);
   }
 
   private void deleteStateFile(int port) {
-    File stateFile = new File("locator"+port+"state.dat");
+    File stateFile = new File("locator" + port + "state.dat");
     if (stateFile.exists()) {
       stateFile.delete();
     }
   }
-  
+
   @Test
   public void testValidateProps() {
     Properties props = new Properties();
@@ -676,19 +689,20 @@ public class InternalDistributedSystemJUnitTest
     try {
 
       props.put(MCAST_PORT, "1");
-    Config config2 = new DistributionConfigImpl(props, false);
+      Config config2 = new DistributionConfigImpl(props, false);
 
-    try {
-      sys.validateSameProperties(config2.toProperties(), true);
-      fail("should have detected different mcast-ports");
-    } catch (IllegalStateException iex) {
-      // This passes the test
-    }
-    
+      try {
+        sys.validateSameProperties(config2.toProperties(), true);
+        fail("should have detected different mcast-ports");
+      } catch (IllegalStateException iex) {
+        // This passes the test
+      }
+
     } finally {
       sys.disconnect();
     }
   }
+
   @Test
   public void testDeprecatedSSLProps() {
     Properties props = new Properties();
@@ -711,11 +725,84 @@ public class InternalDistributedSystemJUnitTest
     Config config3 = new DistributionConfigImpl(props3, false);
     assertEquals(false, config1.sameAs(config3));
   }
+
+  @Test
+  public void testSSLEnabledComponents() {
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(CLUSTER_SSL_ENABLED, "true");
+    props.setProperty(SSL_ENABLED_COMPONENTS, "cluster,server");
+    Config config1 = new DistributionConfigImpl(props, false);
+    assertEquals("cluster,server", config1.getAttribute(SSL_ENABLED_COMPONENTS));
+  }
+
+  @Rule
+  public ExpectedException illegalArgumentException = ExpectedException.none();
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testSSLEnabledComponentsWrongComponentName() {
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(CLUSTER_SSL_ENABLED, "true");
+    props.setProperty(SSL_ENABLED_COMPONENTS, "testing");
+    new DistributionConfigImpl(props, false);
+    illegalArgumentException.expect(IllegalArgumentException.class);
+    illegalArgumentException.expectMessage("\"testing\" is not in the valid set of options \"all,cluster,server,gateway,jmx,http\"");
+  }
+
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testSSLEnabledComponentsWithLegacyJMXSSLSettings() {
+    Properties props = new Properties();
+    props.setProperty(CLUSTER_SSL_ENABLED, "true");
+    props.setProperty(JMX_MANAGER_SSL_ENABLED, "true");
+    props.setProperty(SSL_ENABLED_COMPONENTS, "all");
+    new DistributionConfigImpl(props, false);
+    illegalArgumentException.expect(IllegalArgumentException.class);
+    illegalArgumentException.expectMessage(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET.getRawText());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testSSLEnabledComponentsWithLegacyGatewaySSLSettings() {
+    Properties props = new Properties();
+    props.setProperty(CLUSTER_SSL_ENABLED, "true");
+    props.setProperty(GATEWAY_SSL_ENABLED, "true");
+    props.setProperty(SSL_ENABLED_COMPONENTS, "all");
+    new DistributionConfigImpl(props, false);
+
+    illegalArgumentException.expect(IllegalArgumentException.class);
+    illegalArgumentException.expectMessage(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET.getRawText());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testSSLEnabledComponentsWithLegacyServerSSLSettings() {
+    Properties props = new Properties();
+    props.setProperty(CLUSTER_SSL_ENABLED, "true");
+    props.setProperty(SERVER_SSL_ENABLED, "true");
+    props.setProperty(SSL_ENABLED_COMPONENTS, "all");
+    new DistributionConfigImpl(props, false);
+
+    illegalArgumentException.expect(IllegalArgumentException.class);
+    illegalArgumentException.expectMessage(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET.getRawText());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testSSLEnabledComponentsWithLegacyHTTPServiceSSLSettings() {
+    Properties props = new Properties();
+    props.setProperty(CLUSTER_SSL_ENABLED, "true");
+    props.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    props.setProperty(SSL_ENABLED_COMPONENTS, "all");
+    new DistributionConfigImpl(props, false);
+
+    illegalArgumentException.expect(IllegalArgumentException.class);
+    illegalArgumentException.expectMessage(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET.getRawText());
+  }
+
   public static String getHostAddress(InetAddress addr) {
     String address = addr.getHostAddress();
-    if (addr instanceof Inet4Address
-        || (!addr.isLinkLocalAddress() && !addr.isLoopbackAddress()))
-    {
+    if (addr instanceof Inet4Address || (!addr.isLinkLocalAddress() && !addr.isLoopbackAddress())) {
       int idx = address.indexOf('%');
       if (idx >= 0) {
         address = address.substring(0, idx);
@@ -725,10 +812,9 @@ public class InternalDistributedSystemJUnitTest
   }
 
   public static InetAddress getIPAddress() {
-    return Boolean.getBoolean("java.net.preferIPv6Addresses") ? getIPv6Address()
-                                                      : getIPv4Address();
+    return Boolean.getBoolean("java.net.preferIPv6Addresses") ? getIPv6Address() : getIPv4Address();
   }
-  
+
   protected static InetAddress getIPv4Address() {
     InetAddress host = null;
     try {
@@ -736,29 +822,26 @@ public class InternalDistributedSystemJUnitTest
       if (host instanceof Inet4Address) {
         return host;
       }
-    }
-    catch (UnknownHostException e) {
+    } catch (UnknownHostException e) {
       String s = "Local host not found";
       throw new RuntimeException(s, e);
     }
     try {
       Enumeration i = NetworkInterface.getNetworkInterfaces();
       while (i.hasMoreElements()) {
-        NetworkInterface ni = (NetworkInterface)i.nextElement();
+        NetworkInterface ni = (NetworkInterface) i.nextElement();
         Enumeration j = ni.getInetAddresses();
         while (j.hasMoreElements()) {
-          InetAddress addr = (InetAddress)j.nextElement();
+          InetAddress addr = (InetAddress) j.nextElement();
           // gemfire won't form connections using link-local addresses
-          if (!addr.isLinkLocalAddress() && !addr.isLoopbackAddress()
-                                         && (addr instanceof Inet4Address)) {
+          if (!addr.isLinkLocalAddress() && !addr.isLoopbackAddress() && (addr instanceof Inet4Address)) {
             return addr;
           }
         }
       }
       String s = "IPv4 address not found";
       throw new RuntimeException(s);
-    }
-    catch (SocketException e) {
+    } catch (SocketException e) {
       String s = "Problem reading IPv4 address";
       throw new RuntimeException(s, e);
     }
@@ -768,22 +851,19 @@ public class InternalDistributedSystemJUnitTest
     try {
       Enumeration i = NetworkInterface.getNetworkInterfaces();
       while (i.hasMoreElements()) {
-        NetworkInterface ni = (NetworkInterface)i.nextElement();
+        NetworkInterface ni = (NetworkInterface) i.nextElement();
         Enumeration j = ni.getInetAddresses();
         while (j.hasMoreElements()) {
-          InetAddress addr = (InetAddress)j.nextElement();
+          InetAddress addr = (InetAddress) j.nextElement();
           // gemfire won't form connections using link-local addresses
-          if (!addr.isLinkLocalAddress() && !addr.isLoopbackAddress()
-               && (addr instanceof Inet6Address)
-               && !isIPv6LinkLocalAddress((Inet6Address) addr)) {
+          if (!addr.isLinkLocalAddress() && !addr.isLoopbackAddress() && (addr instanceof Inet6Address) && !isIPv6LinkLocalAddress((Inet6Address) addr)) {
             return addr;
           }
         }
       }
       String s = "IPv6 address not found";
       throw new RuntimeException(s);
-    }
-    catch (SocketException e) {
+    } catch (SocketException e) {
       String s = "Problem reading IPv6 address";
       throw new RuntimeException(s, e);
     }

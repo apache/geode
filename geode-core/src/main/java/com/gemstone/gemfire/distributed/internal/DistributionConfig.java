@@ -3064,6 +3064,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLEnabled()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_ENABLED)
   boolean getHttpServiceSSLEnabled();
 
@@ -3072,6 +3073,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLEnabled(boolean)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_ENABLED)
   void setHttpServiceSSLEnabled(boolean httpServiceSSLEnabled);
 
@@ -3080,6 +3082,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is <code>false</code>.
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_ENABLED}
    */
+  @Deprecated
   boolean DEFAULT_HTTP_SERVICE_SSL_ENABLED = false;
 
   /**
@@ -3087,6 +3090,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
    */
+  @Deprecated
   @ConfigAttribute(type = Boolean.class)
   String HTTP_SERVICE_SSL_ENABLED_NAME = HTTP_SERVICE_SSL_ENABLED;
 
@@ -3095,6 +3099,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLRequireAuthentication()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION)
   boolean getHttpServiceSSLRequireAuthentication();
 
@@ -3103,6 +3108,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLRequireAuthentication(boolean)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION)
   void setHttpServiceSSLRequireAuthentication(boolean httpServiceSSLRequireAuthentication);
 
@@ -3111,6 +3117,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is <code>true</code>.
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
+  @Deprecated
   boolean DEFAULT_HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION = false;
 
   /**
@@ -3118,6 +3125,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
+  @Deprecated
   @ConfigAttribute(type = Boolean.class)
   String HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION_NAME = HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION;
 
@@ -3126,6 +3134,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLProtocols()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_PROTOCOLS)
   String getHttpServiceSSLProtocols();
 
@@ -3134,6 +3143,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLProtocols(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_PROTOCOLS)
   void setHttpServiceSSLProtocols(String protocols);
 
@@ -3142,6 +3152,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is <code>any</code>.
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_PROTOCOLS}
    */
+  @Deprecated
   String DEFAULT_HTTP_SERVICE_SSL_PROTOCOLS = "any";
 
   /**
@@ -3149,6 +3160,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String HTTP_SERVICE_SSL_PROTOCOLS_NAME = HTTP_SERVICE_SSL_PROTOCOLS;
 
@@ -3157,6 +3169,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLCiphers()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_CIPHERS)
   String getHttpServiceSSLCiphers();
 
@@ -3165,6 +3178,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_CIPHERS)
   void setHttpServiceSSLCiphers(String ciphers);
 
@@ -3173,6 +3187,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is <code>any</code>.
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_CIPHERS}
    */
+  @Deprecated
   String DEFAULT_HTTP_SERVICE_SSL_CIPHERS = "any";
 
   /**
@@ -3180,6 +3195,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String HTTP_SERVICE_SSL_CIPHERS_NAME = HTTP_SERVICE_SSL_CIPHERS;
 
@@ -3188,6 +3204,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStore()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE)
   String getHttpServiceSSLKeyStore();
 
@@ -3196,6 +3213,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStore(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE)
   void setHttpServiceSSLKeyStore(String keyStore);
 
@@ -3204,6 +3222,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is "".
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE}
    */
+  @Deprecated
   String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE = "";
 
   /**
@@ -3211,6 +3230,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String HTTP_SERVICE_SSL_KEYSTORE_NAME = HTTP_SERVICE_SSL_KEYSTORE;
 
@@ -3219,6 +3239,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStorePassword()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE_PASSWORD)
   String getHttpServiceSSLKeyStorePassword();
 
@@ -3227,6 +3248,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStorePassword(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE_PASSWORD)
   void setHttpServiceSSLKeyStorePassword(String keyStorePassword);
 
@@ -3235,6 +3257,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is "".
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_PASSWORD}
    */
+  @Deprecated
   String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE_PASSWORD = "";
 
   /**
@@ -3242,6 +3265,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String HTTP_SERVICE_SSL_KEYSTORE_PASSWORD_NAME = HTTP_SERVICE_SSL_KEYSTORE_PASSWORD;
 
@@ -3250,6 +3274,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStoreType()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_KEYSTORE_TYPE)
   String getHttpServiceSSLKeyStoreType();
 
@@ -3266,6 +3291,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is "".
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE}
    */
+  @Deprecated
   String DEFAULT_HTTP_SERVICE_SSL_KEYSTORE_TYPE = "";
 
   /**
@@ -3281,6 +3307,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStore()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_TRUSTSTORE)
   String getHttpServiceSSLTrustStore();
 
@@ -3289,6 +3316,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStore(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_TRUSTSTORE)
   void setHttpServiceSSLTrustStore(String trustStore);
 
@@ -3304,6 +3332,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String HTTP_SERVICE_SSL_TRUSTSTORE_NAME = HTTP_SERVICE_SSL_TRUSTSTORE;
 
@@ -3312,6 +3341,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStorePassword()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD)
   String getHttpServiceSSLTrustStorePassword();
 
@@ -3320,6 +3350,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStorePassword(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD)
   void setHttpServiceSSLTrustStorePassword(String trustStorePassword);
 
@@ -3328,6 +3359,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is "".
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
+  @Deprecated
   String DEFAULT_HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD = "";
 
   /**
@@ -3335,12 +3367,14 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD_NAME = HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD;
 
   /**
    * @deprecated Geode 1.0 use {@link #getClusterSSLProperties()}
    */
+  @Deprecated
   Properties getHttpServiceSSLProperties();
 
   //Added for API REST
@@ -3352,6 +3386,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * @return the value of the property
    * @since GemFire 8.0
    */
+
   @ConfigAttributeGetter(name = START_DEV_REST_API)
   boolean getStartDevRestApi();
 
@@ -3411,6 +3446,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * @deprecated Geode 1.0 use {@link #getClusterSSLProperties()}
    */
+  @Deprecated
   Properties getServerSSLProperties();
 
   /**
@@ -3418,6 +3454,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLEnabled()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = SERVER_SSL_ENABLED)
   boolean getServerSSLEnabled();
 
@@ -3426,12 +3463,14 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is <code>false</code>.
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_ENABLED}
    */
+  @Deprecated
   boolean DEFAULT_SERVER_SSL_ENABLED = false;
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_ENABLED} property
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_ENABLED} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_ENABLED}
    */
+  @Deprecated
   @ConfigAttribute(type = Boolean.class)
   String SERVER_SSL_ENABLED_NAME = SERVER_SSL_ENABLED;
 
@@ -3440,6 +3479,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLEnabled(boolean)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = SERVER_SSL_ENABLED)
   void setServerSSLEnabled(boolean enabled);
 
@@ -3448,6 +3488,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLProtocols()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = SERVER_SSL_PROTOCOLS)
   String getServerSSLProtocols();
 
@@ -3469,6 +3510,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_PROTOCOLS} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String SERVER_SSL_PROTOCOLS_NAME = SERVER_SSL_PROTOCOLS;
 
@@ -3477,6 +3519,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLCiphers()} 
    */
+  @Deprecated
   @ConfigAttributeGetter(name = SERVER_SSL_CIPHERS)
   String getServerSSLCiphers();
 
@@ -3485,6 +3528,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String)} 
    */
+  @Deprecated
   @ConfigAttributeSetter(name = SERVER_SSL_CIPHERS)
   void setServerSSLCiphers(String ciphers);
 
@@ -3499,6 +3543,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_CIPHERS} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS} 
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String SERVER_SSL_CIPHERS_NAME = SERVER_SSL_CIPHERS;
 
@@ -3507,6 +3552,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLRequireAuthentication()} 
    */
+  @Deprecated
   @ConfigAttributeGetter(name = SERVER_SSL_REQUIRE_AUTHENTICATION)
   boolean getServerSSLRequireAuthentication();
 
@@ -3515,6 +3561,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLRequireAuthentication(boolean)} 
    */
+  @Deprecated
   @ConfigAttributeSetter(name = SERVER_SSL_REQUIRE_AUTHENTICATION)
   void setServerSSLRequireAuthentication(boolean enabled);
 
@@ -3523,12 +3570,14 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is <code>true</code>.
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
+  @Deprecated
   boolean DEFAULT_SERVER_SSL_REQUIRE_AUTHENTICATION = true;
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION} property
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
+  @Deprecated
   @ConfigAttribute(type = Boolean.class)
   String SERVER_SSL_REQUIRE_AUTHENTICATION_NAME = SERVER_SSL_REQUIRE_AUTHENTICATION;
 
@@ -3537,6 +3586,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStore()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE)
   String getServerSSLKeyStore();
 
@@ -3545,6 +3595,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStore(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE)
   void setServerSSLKeyStore(String keyStore);
 
@@ -3553,6 +3604,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is "".
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE}
    */
+  @Deprecated
   String DEFAULT_SERVER_SSL_KEYSTORE = "";
 
   /**
@@ -3560,6 +3612,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String SERVER_SSL_KEYSTORE_NAME = SERVER_SSL_KEYSTORE;
 
@@ -3568,13 +3621,16 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStoreType()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE_TYPE)
   String getServerSSLKeyStoreType();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE}
    * property.
+   * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStoreType(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE_TYPE)
   void setServerSSLKeyStoreType(String keyStoreType);
 
@@ -3583,6 +3639,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is "".
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE}
    */
+  @Deprecated
   String DEFAULT_SERVER_SSL_KEYSTORE_TYPE = "";
 
   /**
@@ -3590,6 +3647,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String SERVER_SSL_KEYSTORE_TYPE_NAME = SERVER_SSL_KEYSTORE_TYPE;
 
@@ -3598,13 +3656,16 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStorePassword()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = SERVER_SSL_KEYSTORE_PASSWORD)
   String getServerSSLKeyStorePassword();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD}
    * property.
+   * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStorePassword(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = SERVER_SSL_KEYSTORE_PASSWORD)
   void setServerSSLKeyStorePassword(String keyStorePassword);
 
@@ -3613,6 +3674,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is "".
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_PASSWORD}
    */
+  @Deprecated
   String DEFAULT_SERVER_SSL_KEYSTORE_PASSWORD = "";
 
   /**
@@ -3620,6 +3682,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String SERVER_SSL_KEYSTORE_PASSWORD_NAME = SERVER_SSL_KEYSTORE_PASSWORD;
 
@@ -3628,6 +3691,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStore()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = SERVER_SSL_TRUSTSTORE)
   String getServerSSLTrustStore();
 
@@ -3636,6 +3700,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setServerSSLTrustStore(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = SERVER_SSL_TRUSTSTORE)
   void setServerSSLTrustStore(String trustStore);
 
@@ -3651,6 +3716,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String SERVER_SSL_TRUSTSTORE_NAME = SERVER_SSL_TRUSTSTORE;
 
@@ -3659,6 +3725,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStorePassword()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = SERVER_SSL_TRUSTSTORE_PASSWORD)
   String getServerSSLTrustStorePassword();
 
@@ -3667,6 +3734,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStorePassword(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = SERVER_SSL_TRUSTSTORE_PASSWORD)
   void setServerSSLTrustStorePassword(String trusStorePassword);
 
@@ -3675,6 +3743,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is "".
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
+  @Deprecated
   String DEFAULT_SERVER_SSL_TRUSTSTORE_PASSWORD = "";
 
   /**
@@ -3682,6 +3751,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String SERVER_SSL_TRUSTSTORE_PASSWORD_NAME = SERVER_SSL_TRUSTSTORE_PASSWORD;
 
@@ -3690,6 +3760,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLEnabled()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = GATEWAY_SSL_ENABLED)
   boolean getGatewaySSLEnabled();
 
@@ -3698,12 +3769,14 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is <code>false</code>.
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_ENABLED}
    */
+  @Deprecated
   boolean DEFAULT_GATEWAY_SSL_ENABLED = false;
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_ENABLED} property
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_ENABLED} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
    */
+  @Deprecated
   @ConfigAttribute(type = Boolean.class)
   String GATEWAY_SSL_ENABLED_NAME = GATEWAY_SSL_ENABLED;
 
@@ -3712,6 +3785,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLEnabled()}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = GATEWAY_SSL_ENABLED)
   void setGatewaySSLEnabled(boolean enabled);
 
@@ -3720,6 +3794,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLProtocols()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = GATEWAY_SSL_PROTOCOLS)
   String getGatewaySSLProtocols();
 
@@ -3728,6 +3803,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStorePassword(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = GATEWAY_SSL_PROTOCOLS)
   void setGatewaySSLProtocols(String protocols);
 
@@ -3742,6 +3818,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String GATEWAY_SSL_PROTOCOLS_NAME = GATEWAY_SSL_PROTOCOLS;
 
@@ -3750,6 +3827,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLCiphers()} 
    */
+  @Deprecated
   @ConfigAttributeGetter(name = GATEWAY_SSL_CIPHERS)
   String getGatewaySSLCiphers();
 
@@ -3758,6 +3836,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLCiphers(String)} 
    */
+  @Deprecated
   @ConfigAttributeSetter(name = GATEWAY_SSL_CIPHERS)
   void setGatewaySSLCiphers(String ciphers);
 
@@ -3772,6 +3851,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_CIPHERS} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS} 
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String GATEWAY_SSL_CIPHERS_NAME = GATEWAY_SSL_CIPHERS;
 
@@ -3780,6 +3860,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLRequireAuthentication()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = GATEWAY_SSL_REQUIRE_AUTHENTICATION)
   boolean getGatewaySSLRequireAuthentication();
 
@@ -3788,6 +3869,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setGatewaySSLRequireAuthentication(boolean)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = GATEWAY_SSL_REQUIRE_AUTHENTICATION)
   void setGatewaySSLRequireAuthentication(boolean enabled);
 
@@ -3802,6 +3884,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
+  @Deprecated
   @ConfigAttribute(type = Boolean.class)
   String GATEWAY_SSL_REQUIRE_AUTHENTICATION_NAME = GATEWAY_SSL_REQUIRE_AUTHENTICATION;
 
@@ -3810,6 +3893,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStore()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE)
   String getGatewaySSLKeyStore();
 
@@ -3818,6 +3902,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStore(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE)
   void setGatewaySSLKeyStore(String keyStore);
 
@@ -3826,6 +3911,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is "".
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE}
    */
+  @Deprecated
   String DEFAULT_GATEWAY_SSL_KEYSTORE = "";
 
   /**
@@ -3833,13 +3919,16 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String GATEWAY_SSL_KEYSTORE_NAME = GATEWAY_SSL_KEYSTORE;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE}
    * property.
+   * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStoreType()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE_TYPE)
   String getGatewaySSLKeyStoreType();
 
@@ -3848,6 +3937,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStoreType(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE_TYPE)
   void setGatewaySSLKeyStoreType(String keyStoreType);
 
@@ -3856,6 +3946,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is "".
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE}
    */
+  @Deprecated
   String DEFAULT_GATEWAY_SSL_KEYSTORE_TYPE = "";
 
   /**
@@ -3863,6 +3954,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String GATEWAY_SSL_KEYSTORE_TYPE_NAME = GATEWAY_SSL_KEYSTORE_TYPE;
 
@@ -3871,6 +3963,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLKeyStorePassword()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = GATEWAY_SSL_KEYSTORE_PASSWORD)
   String getGatewaySSLKeyStorePassword();
 
@@ -3879,6 +3972,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStorePassword(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = GATEWAY_SSL_KEYSTORE_PASSWORD)
   void setGatewaySSLKeyStorePassword(String keyStorePassword);
 
@@ -3887,6 +3981,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is "".
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_KEYSTORE_PASSWORD}
    */
+  @Deprecated
   String DEFAULT_GATEWAY_SSL_KEYSTORE_PASSWORD = "";
 
   /**
@@ -3894,6 +3989,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String GATEWAY_SSL_KEYSTORE_PASSWORD_NAME = GATEWAY_SSL_KEYSTORE_PASSWORD;
 
@@ -3902,6 +3998,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStore()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = GATEWAY_SSL_TRUSTSTORE)
   String getGatewaySSLTrustStore();
 
@@ -3910,6 +4007,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStore(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = GATEWAY_SSL_TRUSTSTORE)
   void setGatewaySSLTrustStore(String trustStore);
 
@@ -3918,6 +4016,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is "".
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_TRUSTSTORE}
    */
+  @Deprecated
   String DEFAULT_GATEWAY_SSL_TRUSTSTORE = "";
 
   /**
@@ -3925,6 +4024,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link com.gemstone.gemfire.distributed.ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} property
    * @deprecated Geode 1.0 use {@link com.gemstone.gemfire.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String GATEWAY_SSL_TRUSTSTORE_NAME = GATEWAY_SSL_TRUSTSTORE;
 
@@ -3933,6 +4033,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #getClusterSSLTrustStorePassword()}
    */
+  @Deprecated
   @ConfigAttributeGetter(name = GATEWAY_SSL_TRUSTSTORE_PASSWORD)
   String getGatewaySSLTrustStorePassword();
 
@@ -3941,6 +4042,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStorePassword(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = GATEWAY_SSL_TRUSTSTORE_PASSWORD)
   void setGatewaySSLTrustStorePassword(String trusStorePassword);
 
@@ -3949,6 +4051,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p> Actual value of this constant is "".
    * @deprecated Geode 1.0 use {@link #DEFAULT_CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
+  @Deprecated
   String DEFAULT_GATEWAY_SSL_TRUSTSTORE_PASSWORD = "";
 
   /**
@@ -3962,6 +4065,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * @deprecated Geode 1.0 use {@link #getClusterSSLProperties()}
    */
+  @Deprecated
   Properties getGatewaySSLProperties();
 
   ConfigSource getConfigSource(String attName);
@@ -4007,6 +4111,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_ALIAS}
    * property.
+   * @since Geode 1.0
    */
   @ConfigAttributeGetter(name = CLUSTER_SSL_ALIAS)
   String getClusterSSLAlias();
@@ -4014,14 +4119,20 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Sets the value of the {@link ConfigurationProperties#CLUSTER_SSL_ALIAS}
    * property.
+   * @since Geode 1.0
    */
   @ConfigAttributeSetter(name = CLUSTER_SSL_ALIAS)
   void setClusterSSLAlias(String alias);
 
+  /**
+   * The Default Cluster SSL alias
+   * @since Geode 1.0
+   */
   String DEFAULT_CLUSTER_SSL_ALIAS = "";
 
   /**
    * The name of the {@link ConfigurationProperties#CLUSTER_SSL_ALIAS} property
+   * @since Geode 1.0
    */
   @ConfigAttribute(type = String.class)
   String CLUSTER_SSL_ALIAS_NAME = CLUSTER_SSL_ALIAS;
@@ -4029,6 +4140,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#GATEWAY_SSL_ALIAS}
    * property.
+   * @since Geode 1.0
    */
   @ConfigAttributeGetter(name = GATEWAY_SSL_ALIAS)
   String getGatewaySSLAlias();
@@ -4036,12 +4148,14 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_ALIAS}
    * property.
+   * @since Geode 1.0
    */
   @ConfigAttributeSetter(name = GATEWAY_SSL_ALIAS)
   void setGatewaySSLAlias(String alias);
 
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_ALIAS} property
+   * @since Geode 1.0
    */
   @ConfigAttribute(type = String.class)
   String GATEWAY_SSL_ALIAS_NAME = GATEWAY_SSL_ALIAS;
@@ -4049,6 +4163,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#CLUSTER_SSL_ALIAS}
    * property.
+   * @since Geode 1.0
    */
   @ConfigAttributeGetter(name = HTTP_SERVICE_SSL_ALIAS)
   String getHTTPServiceSSLAlias();
@@ -4056,12 +4171,14 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Sets the value of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_ALIAS}
    * property.
+   * @since Geode 1.0
    */
   @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_ALIAS)
   void setHTTPServiceSSLAlias(String alias);
 
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_ALIAS} property
+   * @since Geode 1.0
    */
   @ConfigAttribute(type = String.class)
   String HTTP_SERVICE_SSL_ALIAS_NAME = HTTP_SERVICE_SSL_ALIAS;
@@ -4069,6 +4186,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ALIAS}
    * property.
+   * @since Geode 1.0
    */
   @ConfigAttributeGetter(name = JMX_MANAGER_SSL_ALIAS)
   String getJMXManagerSSLAlias();
@@ -4076,12 +4194,14 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Sets the value of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ALIAS}
    * property.
+   * @since Geode 1.0
    */
   @ConfigAttributeSetter(name = JMX_MANAGER_SSL_ALIAS)
   void setJMXManagerSSLAlias(String alias);
 
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ALIAS} property
+   * @since Geode 1.0
    */
   @ConfigAttribute(type = String.class)
   String JMX_MANAGER_SSL_ALIAS_NAME = JMX_MANAGER_SSL_ALIAS;
@@ -4089,6 +4209,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#SERVER_SSL_ALIAS}
    * property.
+   * @since Geode 1.0
    */
   @ConfigAttributeGetter(name = SERVER_SSL_ALIAS)
   String getServerSSLAlias();
@@ -4096,12 +4217,14 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_ALIAS}
    * property.
+   * @since Geode 1.0
    */
   @ConfigAttributeSetter(name = SERVER_SSL_ALIAS)
   void setServerSSLAlias(String alias);
 
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_ALIAS} property
+   * @since Geode 1.0
    */
   @ConfigAttribute(type = String.class)
   String SERVER_SSL_ALIAS_NAME = SERVER_SSL_ALIAS;
@@ -4109,6 +4232,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS}
    * property.
+   * @since Geode 1.0
    */
   @ConfigAttributeGetter(name = SSL_ENABLED_COMPONENTS)
   String getSSLEnabledComponents();
@@ -4116,16 +4240,22 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Sets the value of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS}
    * property.
+   * @since Geode 1.0
    */
   @ConfigAttributeSetter(name = SSL_ENABLED_COMPONENTS)
   void setSSLEnabledComponents(String sslEnabledComponents);
 
   /**
    * The name of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS} property
+   * @since Geode 1.0
    */
   @ConfigAttribute(type = String.class)
   String SSL_ENABLED_COMPONENTS_NAME = SSL_ENABLED_COMPONENTS;
 
+  /**
+   * The default ssl enabled components
+   * @since Geode 1.0
+   */
   String DEFAULT_SSL_ENABLED_COMPONENTS = "";
 
   //*************** Initializers to gather all the annotations in this class ************************

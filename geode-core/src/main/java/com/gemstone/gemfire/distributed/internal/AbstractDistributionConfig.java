@@ -21,6 +21,7 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,7 +56,7 @@ import com.gemstone.gemfire.memcached.GemFireMemcachedServer;
 @SuppressWarnings("deprecation")
 public abstract class AbstractDistributionConfig extends AbstractConfig implements DistributionConfig {
 
-  protected Object checkAttribute(String attName, Object value) {
+  protected void checkAttribute(String attName, Object value) {
     // first check to see if this attribute is modifiable, this also checks if the attribute is a valid one.
     if (!isAttributeModifiable(attName)) {
       throw new UnmodifiableException(_getUnmodifiableMsg(attName));
@@ -65,7 +66,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     if (attribute == null) {
       // isAttributeModifiable already checks the validity of the attName, if reached here, then they
       // must be those special attributes that starts with ssl_system_props or sys_props, no further checking needed
-      return value;
+      return;
     }
     // for integer attribute, do the range check.
     if (attribute.type().equals(Integer.class)) {
@@ -75,12 +76,12 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
 
     Method checker = checkers.get(attName);
     if (checker == null) {
-      return value;
+      return;
     }
 
     // if specific checker exists for this attribute, call that with the value
     try {
-      return checker.invoke(this, value);
+      checker.invoke(this, value);
     } catch (Exception e) {
       if (e instanceof RuntimeException) {
         throw (RuntimeException) e;
@@ -499,10 +500,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
             }));
         }
       }
-      if(getJmxManagerSSLEnabled() || getHttpServiceSSLEnabled() || getServerSSLEnabled() || getGatewaySSLEnabled())
-      {
-        throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET
-          .toLocalizedString());
+      if (getJmxManagerSSLEnabled() || getHttpServiceSSLEnabled() || getServerSSLEnabled() || getGatewaySSLEnabled()) {
+        throw new IllegalArgumentException(LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET.toLocalizedString());
       }
     }
     return value;
@@ -655,11 +654,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
    * @return an empty list
    */
   public List<String> getUnModifiableAttributes() {
-    String[] list = {};
-    return Arrays.asList(list);
+    return new ArrayList<>();
   }
-
-  ;
 
   public Class getAttributeType(String attName) {
     checkAttributeName(attName);
@@ -965,7 +961,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     m.put(SECURITY_MANAGER, "User defined fully qualified class name implementing SecurityManager interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing SecurityManager that is present in the classpath.");
     m.put(SECURITY_POST_PROCESSOR, "User defined fully qualified class name implementing PostProcessor interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing PostProcessor that is present in the classpath.");
 
-    m.put(SSL_ENABLED_COMPONENTS,"A comma delimited list of components that require SSL communications");
+    m.put(SSL_ENABLED_COMPONENTS, "A comma delimited list of components that require SSL communications");
 
     dcAttDescriptions = Collections.unmodifiableMap(m);
 
