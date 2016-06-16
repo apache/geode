@@ -873,43 +873,48 @@ public class JGroupsMessenger implements Messenger {
   }
   
   void writeEncryptedMessage(DistributionMessage gfmsg, short version, HeapDataOutputStream out) throws Exception {
-    InternalDataSerializer.writeDSFIDHeader(gfmsg.getDSFID(), out);
-    byte[] pk = null;
-    int requestId = 0;
-    InternalDistributedMember pkMbr = null;
-    switch (gfmsg.getDSFID()) {
-    case FIND_COORDINATOR_REQ:
-    case JOIN_REQUEST:
-      //need to append mine PK
-      pk = encrypt.getPublicKey(localAddress);
-      
-      pkMbr = gfmsg.getRecipients()[0];      
-      requestId = getRequestId(gfmsg, true);
-      break;
-    case FIND_COORDINATOR_RESP:
-    case JOIN_RESPONSE:
-      pkMbr = gfmsg.getRecipients()[0];
-      requestId = getRequestId(gfmsg, false);
-    default:
-      break;
-    }
-    logger.debug("writeEncryptedMessage gfmsg.getDSFID() = {}  for {} with requestid  {}", gfmsg.getDSFID(), pkMbr, requestId);
-    out.writeInt(requestId);
-    if (pk != null) {      
-      InternalDataSerializer.writeByteArray(pk, out);
-    }
+    long start = services.getStatistics().startUDPMsgEncryption();
+    try {
+      InternalDataSerializer.writeDSFIDHeader(gfmsg.getDSFID(), out);
+      byte[] pk = null;
+      int requestId = 0;
+      InternalDistributedMember pkMbr = null;
+      switch (gfmsg.getDSFID()) {
+      case FIND_COORDINATOR_REQ:
+      case JOIN_REQUEST:
+        // need to append mine PK
+        pk = encrypt.getPublicKey(localAddress);
 
-    HeapDataOutputStream out_stream = new HeapDataOutputStream(Version.fromOrdinalOrCurrent(version));
-    byte[] messageBytes = serializeMessage(gfmsg, out_stream);
-    
-    if (pkMbr != null) {
-      // using members private key
-      messageBytes = encrypt.encryptData(messageBytes, pkMbr);
-    } else {
-      // using cluster secret key
-      messageBytes = encrypt.encryptData(messageBytes);
+        pkMbr = gfmsg.getRecipients()[0];
+        requestId = getRequestId(gfmsg, true);
+        break;
+      case FIND_COORDINATOR_RESP:
+      case JOIN_RESPONSE:
+        pkMbr = gfmsg.getRecipients()[0];
+        requestId = getRequestId(gfmsg, false);
+      default:
+        break;
+      }
+      logger.debug("writeEncryptedMessage gfmsg.getDSFID() = {}  for {} with requestid  {}", gfmsg.getDSFID(), pkMbr, requestId);
+      out.writeInt(requestId);
+      if (pk != null) {
+        InternalDataSerializer.writeByteArray(pk, out);
+      }
+
+      HeapDataOutputStream out_stream = new HeapDataOutputStream(Version.fromOrdinalOrCurrent(version));
+      byte[] messageBytes = serializeMessage(gfmsg, out_stream);
+
+      if (pkMbr != null) {
+        // using members private key
+        messageBytes = encrypt.encryptData(messageBytes, pkMbr);
+      } else {
+        // using cluster secret key
+        messageBytes = encrypt.encryptData(messageBytes);
+      }
+      InternalDataSerializer.writeByteArray(messageBytes, out);
+    } finally {
+      services.getStatistics().endUDPMsgEncryption(start);
     }
-    InternalDataSerializer.writeByteArray(messageBytes, out);
   }
   
   int getRequestId(DistributionMessage gfmsg, boolean add) {
@@ -1049,7 +1054,7 @@ public class JGroupsMessenger implements Messenger {
   DistributionMessage readEncryptedMessage(DataInputStream dis, short ordinal, GMSEncrypt encryptLocal) throws Exception {
     int dfsid = InternalDataSerializer.readDSFIDHeader(dis);
     int requestId = dis.readInt();
-
+    long start = services.getStatistics().startUDPMsgDecryption();
     try {
       // TODO seems like we don't need this, just set bit that PK is appended
 
@@ -1120,6 +1125,8 @@ public class JGroupsMessenger implements Messenger {
       }
     } catch (Exception e) {
       throw new Exception("Message id is " + dfsid, e);
+    } finally {
+      services.getStatistics().endUDPMsgDecryption(start);
     }
 
   }
