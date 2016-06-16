@@ -1741,6 +1741,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1484
   @Test
   public void testRebalanceCommandForSimulate() {
     setupTestRebalanceForEntireDS();
@@ -1762,6 +1763,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Category(FlakyTest.class)
   @Test
   public void testRebalanceCommandForSimulateWithNoMember() {
     setupTestRebalanceForEntireDS();
@@ -1786,6 +1788,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1483
   @Test
   public void testRebalanceForIncludeRegionFunction() {
     // setup();
@@ -1831,6 +1834,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1487
   @Test
   public void testRebalanceForEntireDS() {
     setupTestRebalanceForEntireDS();
@@ -1921,6 +1925,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Category(FlakyTest.class)
   @Test
   public void testRebalanceForExcludeRegionFunction() {
     setupWith2Regions();
