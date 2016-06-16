@@ -41,6 +41,7 @@ import com.gemstone.gemfire.internal.Banner;
 import com.gemstone.gemfire.internal.GemFireVersion;
 import com.gemstone.gemfire.internal.lang.ClassUtils;
 import com.gemstone.gemfire.internal.process.signal.AbstractSignalNotificationHandler;
+import com.gemstone.gemfire.internal.util.HostName;
 import com.gemstone.gemfire.internal.util.SunAPINotFoundException;
 import com.gemstone.gemfire.management.cli.CommandProcessingException;
 import com.gemstone.gemfire.management.cli.Result;
@@ -280,7 +281,7 @@ public class Gfsh extends JLineShell {
   private void initializeEnvironment() {
     env.put(ENV_SYS_USER,              System.getProperty("user.name"));
     env.put(ENV_SYS_USER_HOME,         System.getProperty("user.home"));
-    env.put(ENV_SYS_HOST_NAME,         determineHostName());
+    env.put(ENV_SYS_HOST_NAME,         new HostName().determineHostName());
     env.put(ENV_SYS_CLASSPATH,         System.getProperty("java.class.path"));
     env.put(ENV_SYS_JAVA_VERSION,      System.getProperty("java.version"));
     env.put(ENV_SYS_OS,                System.getProperty("os.name"));
@@ -295,9 +296,6 @@ public class Gfsh extends JLineShell {
     readonlyAppEnv.add(ENV_APP_LOG_FILE);
     env.put(ENV_APP_PWD,                        System.getProperty("user.dir"));
     readonlyAppEnv.add(ENV_APP_PWD);
-// Enable when "use region" command is required. See #46110
-//    env.put(CliConstants.ENV_APP_CONTEXT_PATH,               CliConstants.DEFAULT_APP_CONTEXT_PATH);
-//    readonlyAppEnv.add(CliConstants.ENV_APP_CONTEXT_PATH);
     env.put(ENV_APP_FETCH_SIZE,                 String.valueOf(DEFAULT_APP_FETCH_SIZE));
     env.put(ENV_APP_LAST_EXIT_STATUS,           String.valueOf(DEFAULT_APP_LAST_EXIT_STATUS));
     readonlyAppEnv.add(ENV_APP_LAST_EXIT_STATUS);
@@ -305,40 +303,6 @@ public class Gfsh extends JLineShell {
     env.put(ENV_APP_QUERY_RESULTS_DISPLAY_MODE, DEFAULT_APP_QUERY_RESULTS_DISPLAY_MODE);
     env.put(ENV_APP_QUIET_EXECUTION,            String.valueOf(DEFAULT_APP_QUIET_EXECUTION));
     env.put(ENV_APP_RESULT_VIEWER,            String.valueOf(DEFAULT_APP_RESULT_VIEWER));
-  }
-
-  private static String execReadToString(String execCommand) throws IOException {
-    Process proc = Runtime.getRuntime().exec(execCommand);
-    try (InputStream stream = proc.getInputStream()) {
-      try (Scanner s = new Scanner(stream).useDelimiter("\\A")) {
-        return s.hasNext() ? s.next().trim() : "";
-      }
-    }
-  }
-
-  private String determineHostName()
-  {
-    // Windows
-    String hostname = System.getenv("COMPUTERNAME");
-    if (hostname == null) {
-      // Unix / Mac / Cygwin sometimes has this set
-      hostname = System.getenv("HOSTNAME");
-    }
-    if (hostname == null) {
-      try {
-        // Unix / Mac / Windows / Cygwin
-        hostname = execReadToString("hostname");
-      }
-      catch (IOException io) {
-        // happens if hostname binary is not found.
-        hostname = "unknown";
-      }
-    }
-    if (hostname == null || hostname.isEmpty()) {
-      // if it still isn't set, default it.
-      hostname = "unknown";
-    }
-    return hostname;
   }
 
   public static Gfsh getInstance(boolean launchShell, String[] args, GfshConfig gfshConfig)
