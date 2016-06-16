@@ -1,0 +1,34 @@
+---
+title:  Cache and Region Snapshots
+---
+
+Snapshots allow you to save region data and reload it later. A typical use case is loading data from one environment into another, such as capturing data from a production system and moving it into a smaller QA or development system.
+
+In effect, you can load data from one distributed system into another distributed system. Administrators export a snapshot of a region or an entire cache (multiple regions) and later import the snapshot into another region or distributed system by using the `RegionSnapshotService` or `CacheSnapshotService` interface and the `Region.getSnapshotService` or `Cache.getSnapshotService` method.
+
+The snapshot file is a binary file that contains all data from a particular region. The binary format contains serialized key/value pairs and supports PDX type registry to allow the deserialization of PDX data. The snapshot can be directly imported into a region or read entry-by-entry for further processing or transformation into other formats.
+
+**Note:**
+The previous `Region.loadSnapshot` and `Region.saveSnapshot` APIs have been deprecated. Data written in this format is not compatible with the new APIs.
+
+-   **[Usage and Performance Notes](../../../latest/managing/cache_snapshots/using_cache_and_region_snapshots.html)**
+
+    Optimize the cache and region snapshot feature by understanding how it performs.
+
+-   **[Exporting Cache and Region Snapshots](../../../latest/managing/cache_snapshots/exporting_a_snapshot.html)**
+
+    To save <span class="keyword">GemFire</span> cache or region data to a snapshot that you can later load into another distributed system or region, use the `cache.getSnapshotService.save` API, `region.getSnapshotService.save` API, or the `gfsh` command-line interface (`export data`).
+
+-   **[Importing Cache and Region Snapshots](../../../latest/managing/cache_snapshots/importing_a_snapshot.html)**
+
+    To import a <span class="keyword">GemFire</span> cache or region data snapshot that you previously exported into another distributed system or region, use the `cache.getSnapshotService.load` API, `region.getSnapshotService.load` API, or the `gfsh` command-line interface (`import data`).
+
+-   **[Filtering Entries During Import or Export](../../../latest/managing/cache_snapshots/filtering_snapshot_entries.html)**
+
+    You can customize your snapshot by filtering entries during the import or export of a region or a cache.
+
+-   **[Reading Snapshots Programmatically](../../../latest/managing/cache_snapshots/read_snapshots_programmatically.html)**
+
+    You can read a snapshot entry-by-entry for further processing or transformation into other formats.
+
+

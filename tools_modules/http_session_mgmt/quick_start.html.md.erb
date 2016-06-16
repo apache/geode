@@ -1,0 +1,107 @@
+---
+title:  HTTP Session Management Quick Start
+---
+
+In this section you download, install, and set up the HTTP Session Management modules.
+
+<a id="quick_start__section_6A4A00B6DA404E10A5C29E5E31101445"></a>
+## Quick Start Instructions
+
+1.  Download and install one of the application servers.
+
+    | Supported Application Server | Version                     | Download Location                                                                                                                                                                                                         |
+    |------------------------------|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+    | tc Server                    | 2.9, 2.8, 2.7, 2.6, and 2.5 | [https://my.vmware.com/web/vmware/info/slug/application\_platform/vmware\_vfabric\_tc\_server/2\_9](https://my.vmware.com/web/vmware/info/slug/application_platform/vmware_vfabric_tc_server/2_8) |
+    | tc Server                    | 3.0 and 3.1                 | [https://network.pivotal.io/products/pivotal-tcserver](https://network.pivotal.io/products/pivotal-tcserver)                                                                          |
+    | Tomcat                       | 6.0                         | [http://tomcat.apache.org/download-60.cgi](http://tomcat.apache.org/download-60.cgi)                                                                                                  |
+    | Tomcat                       | 7.0                         | [http://tomcat.apache.org/download-70.cgi](http://tomcat.apache.org/download-70.cgi)                                                                                                  |
+    | Tomcat                       | 8.0                         | [http://tomcat.apache.org/download-80.cgi](http://tomcat.apache.org/download-80.cgi)                                                                                                  |
+    | WebLogic                     | 11g (10.3.x)                | [http://www.oracle.com/technetwork/middleware/weblogic/overview/index.html](http://www.oracle.com/technetwork/middleware/weblogic/overview/index.html)                                |
+    | WebSphere                    | 7, 8                        | [http://www.ibm.com/developerworks/downloads/ws/was/](http://www.ibm.com/developerworks/downloads/ws/was/)                                                                            |
+    | JBoss                        | 5, 6, 7                     | [http://www.jboss.org/jbossas/downloads/](http://www.jboss.org/jbossas/downloads/)                                                                                                    |
+
+    The generic HTTP Session Management Module for AppServers is implemented as a servlet filter and should work on any application server platform that supports the Java Servlet 2.4 specification.
+
+2.  The HTTP Session Management Modules installation .zip files are located in the `tools/Modules` directory of the <span class="keyword">GemFire</span> product installation directory. Locate the .zip file for the HTTP Session Management Module that you wish to install. Unzip the appropriate HTTP Session Management Module into the specified directory for your application server:
+    | Supported Application Server | Version                     | Module                                                   | Target Location for Module                                                       |
+    |------------------------------|-----------------------------|----------------------------------------------------------|----------------------------------------------------------------------------------|
+    | tc Server                    | 2.5, 2.6, 2.7, 2.8, and 2.9 | HTTP Session Management Module for Pivotal tc Server     | `<tc Server root                                                 dir>/templates` |
+    | tc Server                    | 3.0                         | HTTP Session Management Module for Pivotal tc Server 3.0 | `<tc Server root                                                 dir>/templates` |
+    | Tomcat                       | 6.0 and 7.0                 | HTTP Session Management Module for Tomcat                | `$CATALINA_HOME`                                                                 |
+    | WebLogic                     | 11g (10.3.x)                | HTTP Session Management Module for AppServers            | *any directory*                                                                  |
+    | WebSphere                    | 7, 8                        | HTTP Session Management Module for AppServers            | *any directory*                                                                  |
+    | JBoss                        | 5, 6, 7                     | HTTP Session Management Module for AppServers            | *any directory*                                                                  |
+
+3.  Complete the appropriate set up instructions for your application server described in the following sections:
+    -   [Additional Quick Start Instructions for tc Server Module](quick_start.html#quick_start__section_EE60463F524A46B7B83CE74C1C3E8E0E)
+    -   [Additional Quick Start Instructions for Tomcat Module](quick_start.html#quick_start__section_4689A4FA609A4F4FB091F03E9BECA4DB)
+    -   [Additional Instructions for AppServers Module](quick_start.html#quick_start__section_1587C3E55F06406EBD4AB13014A406D4)
+
+<a id="quick_start__section_EE60463F524A46B7B83CE74C1C3E8E0E"></a>
+
+## Additional Quick Start Instructions for tc Server Module
+
+These steps provide a basic starting point for using the tc Server module. For more configuration options, see [HTTP Session Management Module for Pivotal tc Server](session_mgmt_tcserver.html). As a prerequisite, module set up requires a JAVA\_HOME environment variable set to the java installation.
+
+1.  Navigate to the root directory of tc Server.
+2.  Create a <span class="keyword">GemFire</span> instance using one of the provided templates and start the instance after starting up a locator. For example:
+
+    ``` pre
+    $ gfsh start locator --name=locator1
+    $ ./tcruntime-instance.sh create my_instance_name --template geode-p2p
+    $ ./tcruntime-ctl.sh my_instance_name start
+    ```
+
+    This will create and run a <span class="keyword">GemFire</span> instance using the peer-to-peer topology and default configuration values. Another <span class="keyword">GemFire</span> instance on another system can be created and started in the same way.
+
+    If you need to pin your tc Server instance to a specific tc Server runtime version, use the `--version` option when creating the instance.
+
+<a id="quick_start__section_4689A4FA609A4F4FB091F03E9BECA4DB"></a>
+
+## Additional Quick Start Instructions for Tomcat Module
+
+These steps provide a basic starting point for using the Tomcat module. For more configuration options, see [HTTP Session Management Module for Tomcat](session_mgmt_tomcat.html).
+
+1.  Modify Tomcat's `server.xml` and `context.xml` files. Configuration is slightly different depending on the topology you are setting up and the version of Tomcat you are using.
+
+    For example, in a peer-to-peer configuration using Tomcat 7, you would add the following entry within the `<server>` element of server.xml:
+
+    ``` pre
+    <Listener className="com.gemstone.gemfire.modules.session.catalina.
+                             PeerToPeerCacheLifecycleListener"
+                             locator="localhost[10334]" />
+    ```
+
+    and the following entry within the `<context>` tag in the context.xml file:
+
+    ``` pre
+    <Manager className="com.gemstone.gemfire.modules.session.catalina.
+                             Tomcat7DeltaSessionManager"/> 
+    ```
+
+    See [Setting Up the HTTP Module for Tomcat](tomcat_setting_up_the_module.html) for additional instructions.
+
+2.  Restart the application server.
+
+<a id="quick_start__section_1587C3E55F06406EBD4AB13014A406D4"></a>
+
+## Additional Instructions for AppServers Module
+
+These steps provide a basic starting point for using the AppServers module with WebLogic, WebSphere or JBoss. For more configuration options, see [HTTP Session Management Module for AppServers](session_mgmt_weblogic.html).
+
+**Note:**
+-   The `modify_war` script relies upon a GEODE environment variable. Set the GEODE environment variable to the <span class="keyword">GemFire</span> product directory; this is the parent directory of `bin`.
+-   The `modify_war` script, described below, relies on files within the distribution tree and should not be run outside of a complete distribution.
+-   The `modify_war` script is a `bash` script and does not run on Windows.
+
+To set up the AppServers module, perform the following steps:
+
+1.  Run the `modify_war` script against an existing `.war` or `.ear` file to integrate the necessary components. The example below will create a configuration suitable for a peer-to-peer <span class="keyword">GemFire</span> system, placing the necessary libraries into `WEB-INF/lib` for wars and `lib` for ears and modifying any `web.xml` files:
+
+    ``` pre
+    $ bin/modify_war -w my-app.war -p gemfire.property.locators=localhost[10334] \
+                      -t peer-to-peer
+    ```
+
+2.  A new war file will be created called `session-my-app.war`. This file can now be deployed to the server.
+

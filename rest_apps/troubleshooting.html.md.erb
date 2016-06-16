@@ -1,0 +1,150 @@
+<a id="topic_r5z_lj5_m4"></a>
+
+# Troubleshooting and FAQ
+
+This section provides troubleshooting guidance and frequently asked questions about <span class="keyword">GemFire</span> Developer REST APIs.
+
+-   **[Key Types and JSON Support](../../latest/rest_apps/troubleshooting.html#concept_gsv_zd5_m4)**
+
+    When defining regions (your REST resources), you must only use scalar values for keys and also set value constraints in order to avoid producing JSON that cannot be parsed by <span class="keyword">GemFire</span>.
+
+## Checking if the REST API Service is Up and Running
+
+Use the ping endpoint to verify whether the REST API server is available.
+
+Use the `/gemfire-api/v1/ping` endpoint to check REST API server availability:
+
+For example:
+
+``` pre
+curl -i http://localhost:7070/gemfire-api/v1/ping 
+```
+
+Example success response:
+
+``` pre
+200 OK
+```
+
+If the server is not available, your client will receive an HTTP error code and message.
+
+## Key Types and JSON Support
+
+When defining regions (your REST resources), you must only use scalar values for keys and also set value constraints in order to avoid producing JSON that cannot be parsed by <span class="keyword">GemFire</span>.
+
+If <span class="keyword">GemFire</span> regions are not defined with scalar values as keys and value constraints, then you may receive the following error message (even though the JSON is technically valid) in your REST client applications:
+``` pre
+Json doc specified in request body is malformed..!!'
+```
+
+For example, the following JSON documents are not supported by <span class="keyword">GemFire</span>:
+
+## Unsupported JSON Example 1
+
+``` pre
+[
+     1,
+     [],
+     [
+         4,
+         "hello",
+         {}
+     ],
+     {
+         "array": []
+     }
+]
+```
+
+## Unsupported JSON Example 2
+
+``` pre
+[[[[[[[[[[[[[[[[[[["Not too deep"]]]]]]]]]]]]]]]]]]]
+```
+
+## Unsupported JSON Example 3
+
+``` pre
+[1,2,3,"hello"]
+```
+
+## Unsupported JSON Example 4
+
+``` pre
+[
+    "JSON Test Pattern pass1",
+    {
+        "object with 1 member": [
+            "array with 1 element"
+        ]
+    },
+    {},
+    [],
+    -42,
+    true,
+    false,
+    null,
+    {
+        "integer": 1234567890,
+        "real": -9876.54321,
+        "e": 1.23456789e-13,
+        "E": 1.23456789e+34,
+        "": 2.3456789012e+76,
+        "zero": 0,
+        "one": 1,
+        "space": " ",
+        "quote": "\"",
+        "backslash": "\\",
+        "controls": "\b\f\n\r\t",
+        "slash": "/ & /",
+        "alpha": "abcdefghijklmnopqrstuvwyz",
+        "ALPHA": "ABCDEFGHIJKLMNOPQRSTUVWYZ",
+        "digit": "0123456789",
+        "0123456789": "digit",
+        "special": "`1~!@#$%^&*()_+-={':[,]}|;.</>?",
+        "true": true,
+        "false": false,
+        "null": null,
+        "array": [],
+        "object": {},
+        "address": "50 St. James Street",
+        "url": "http://www.JSON.org/",
+        "comment": "// /* <!-- --",
+        "# -- --> */": " ",
+        " s p a c e d ": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+        ],
+        "compact": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+        ],
+        "jsontext": "{\"object with 1 member\":[\"array with 1 element\"]}",
+        "quotes": "&#34; \" %22 0x22 034 &#x22;",
+        "/\\\"\b\f\n\r\t`1~!@#$%^&*()_+-=[]{}|;:',./<>?": "A key can be any string"
+    },
+    0.5,
+    98.6,
+    99.44,
+    1066,
+    10,
+    1,
+    0.1,
+    1,
+    2,
+    2,
+    "rosebud"
+]
+```
+
+

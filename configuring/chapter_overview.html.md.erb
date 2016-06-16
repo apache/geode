@@ -1,0 +1,67 @@
+---
+title:  Configuring and Running a Cluster
+---
+
+You use the `gfsh` command-line utility to configure your <span class="keyword">Pivotal GemFire</span> cluster (also called a "distributed system"). The cluster configuration service persists the cluster configurations and distributes the configurations to members of the cluster. There are also several additional ways to configure a cluster.
+
+You use `gfsh` to configure regions, disk stores, members, and other <span class="keyword">GemFire</span> objects. You also use gfsh to start and stop locators, servers, and <span class="keyword">GemFire</span> monitoring tools. As you execute these commands, the cluster configuration service persists the configuration. When new members join the cluster, the service distributes the configuration to the new members.
+
+`gfsh` is the recommended means of configuring and managing your <span class="keyword">Pivotal GemFire</span> cluster, however you can still configure many aspects of a cluster using the older methods of the cache.xml and gemfire.properties files. See [cache.xml](../reference/topics/chapter_overview_cache_xml.html#cache_xml) and the [Reference](../reference/book_intro.html#reference) for configuration parameters. You can also configure some aspects of a cluster using a Java API. See [Managing Pivotal GemFire](../managing/book_intro.html#managing_gemfire_intro).
+
+-   **[Overview of the Cluster Configuration Service](../../latest/configuring/cluster_config/gfsh_persist.html)**
+
+    The <span class="keyword">Pivotal GemFire</span> cluster configuration service persists cluster configurations created by gfsh commands to the locators in a cluster and distributes the configurations to members of the cluster.
+
+-   **[Tutorial—Creating and Using a Cluster Configuration](../../latest/configuring/cluster_config/persisting_configurations.html)**
+
+    A short walk-through that uses a single computer to demonstrate how to use gfsh to create a cluster configuration for a <span class="keyword">GemFire</span> cluster.
+
+-   **[Deploying Application JARs to Pivotal GemFire Members](../../latest/configuring/cluster_config/deploying_application_jars.html)**
+
+    You can dynamically deploy your application JAR files to specific members or to all members in your distributed system. <span class="keyword">GemFire</span> automatically keeps track of JAR file versions; autoloads the deployed JAR files to the CLASSPATH; and auto-registers any functions that the JAR contains.
+
+-   **[Using Member Groups](../../latest/configuring/cluster_config/using_member_groups.html)**
+
+    <span class="keyword">Pivotal GemFire</span> allows you to organize your distributed system members into logical member groups.
+
+-   **[Exporting and Importing Cluster Configurations](../../latest/configuring/cluster_config/export-import.html)**
+
+    The cluster configuration service exports and imports configurations created using `gfsh` for an entire <span class="keyword">Pivotal GemFire</span> cluster.
+
+-   **[Cluster Configuration Files and Troubleshooting](../../latest/configuring/cluster_config/gfsh_config_troubleshooting.html)**
+
+    When you use the cluster configuration service in <span class="keyword">GemFire</span>, you can examine the generated configuration files in the `cluster_config` directory on the locator. gfsh saves configuration files at the cluster-level and at the individual group-level.
+
+-   **[Loading Existing Configuration Files into Cluster Configuration](../../latest/configuring/cluster_config/gfsh_load_from_shared_dir.html)**
+
+    To load an existing cache.xml or gemfire.properties configuration file into a new cluster, use the `--load-cluster-configuration-from-dir` parameter when starting up the locator.
+
+-   **[Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../configuring/cluster_config/gfsh_remote.html)**
+
+    You can connect gfsh via HTTP or HTTPS to a remote cluster and manage the cluster using gfsh commands.
+
+-   **[Deploying Configuration Files without the Cluster Configuration Service](../../latest/configuring/running/deploying_config_files.html)**
+
+    You can deploy your <span class="keyword">Pivotal GemFire</span> configuration files in your system directory structure or in jar files. You determine how you want to deploy your configuration files and set them up accordingly.
+
+-   **[Starting Up and Shutting Down Your System](../../latest/configuring/running/starting_up_shutting_down.html)**
+
+    Determine the proper startup and shutdown procedures, and write your startup and shutdown scripts.
+
+-   **[Running GemFire Locator Processes](../../latest/configuring/running/running_the_locator.html)**
+
+    The locator is a <span class="keyword">GemFire</span> process that tells new, connecting members where running members are located and provides load balancing for server use.
+
+-   **[Running GemFire Server Processes](../../latest/configuring/running/running_the_cacheserver.html)**
+
+    A <span class="keyword">GemFire</span> server is a process that runs as a long-lived, configurable member of a client/server system.
+
+-   **[Managing System Output Files](../../latest/configuring/running/managing_output_files.html)**
+
+    <span class="keyword">GemFire</span> output files are optional and can become quite large. Work with your system administrator to determine where to place them to avoid interfering with other system activities.
+
+-   **[Firewall Considerations](../../latest/configuring/running/firewall_ports_config.html)**
+
+    You can configure and limit port usage for situations that involve firewalls, for example, between client-server or server-server connections.
+
+

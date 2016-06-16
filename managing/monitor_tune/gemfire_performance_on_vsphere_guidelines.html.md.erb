@@ -1,0 +1,133 @@
+<a id="topic_F48990A6A37144988D49E132E17E117C"></a>
+
+# Operating System Guidelines
+
+Use the latest supported version of the guest OS, and use Java large paging.
+
+-   **Use the latest supported version of the guest operating system**. This guideline is probably the most important. Upgrade the guest OS to a recent version supported by <span class="keyword">GemFire</span>. For example, for RHEL, use at least version 7.0 or for SLES, use at least 11.0. For Windows, use Windows Server 2012. For RedHat Linux users, it is particularly beneficial to use RHEL 7 since there are specific enhancements in the RHEL 7 release that improve virtualized latency sensitive workloads.
+-   **Use Java large paging in guest OS**. Configure Java on the guest OS to use large pages. Add the following command line option when launching Java:
+
+    ``` pre
+    -XX:+UseLargePages
+    ```
+
+<a id="topic_D8393B1A75364E46B0F959F0DE820E9E"></a>
+
+## NUMA, CPU, and BIOS Settings
+
+This section provides VMware- recommended NUMA, CPU, and BIOS settings for your hardware and virtual machines.
+
+-   Always enable hyper-threading, and do not overcommit CPU.
+-   For most production <span class="keyword">Pivotal GemFire</span> servers, always use virtual machines with at least two vCPUs .
+-   Apply non-uniform memory access (NUMA) locality by sizing virtual machines to fit within the NUMA node.
+-   VMware recommends the following BIOS settings:
+    -   **BIOS Power Management Mode:** Maximum Performance.
+    -   **CPU Power and Performance Management Mode:** Maximum Performance.
+    -   **Processor Settings:**Turbo Mode enabled.
+    -   **Processor Settings:**C States disabled.
+
+**Note:**
+Settings may vary slightly depending on your hardware make and model. Use the settings above or equivalents as needed.
+
+<a id="topic_7A5F1EAD7A6C4E21BB1FF7CF3B625BC5"></a>
+
+## Physical and Virtual NIC Settings
+
+These guidelines help you reduce latency.
+
+-   **Physical NIC:** VMware recommends that you disable interrupt coalescing on the physical NIC of your ESXi host by using the following command:
+
+    ``` pre
+    ethtool -C vmnicX rx-usecs 0 rx-frames 1 rx-usecs-irq 0 rx-frames-irq 0
+    ```
+
+    where `vmnicX` is the physical NIC as reported by the ESXi command:
+
+    ``` pre
+    esxcli network nic list
+    ```
+
+    You can verify that your settings have taken effect by issuing the command:
+
+    ``` pre
+    ethtool -C vmnicX
+    ```
+
+    If you restart the ESXi host, the above configuration must be reapplied.
+
+    **Note:**
+    Disabling interrupt coalescing can reduce latency in virtual machines; however, it can impact performance and cause higher CPU utilization. It can also defeat the benefits of Large Receive Offloads (LRO) because some physical NICs (such as Intel 10GbE NICs) automatically disable LRO when interrupt coalescing is disabled. See [http://kb.vmware.com/kb/1027511](http://kb.vmware.com/kb/1027511) for more details.
+
+-   **Virtual NIC:** Use the following guidelines when configuring your virtual NICs:
+    -   Use VMXNET3 virtual NICs for your latency-sensitive or otherwise performance-critical virtual machines. See [http://kb.vmware.com/kb/1001805](http://kb.vmware.com/kb/1001805) for details on selecting the appropriate type of virtual NIC for your virtual machine.
+    -   VMXNET3 supports adaptive interrupt coalescing that can help drive high throughput to virtual machines that have multiple vCPUs with parallelized workloads (multiple threads), while minimizing latency of virtual interrupt delivery. However, if your workload is extremely sensitive to latency, VMware recommends that you disable virtual interrupt coalescing for your virtual NICs. You can do this programmatically via API or by editing your virtual machine's .vmx configuration file. Refer to your vSphere API Reference or VMware ESXi documentation for specific instructions.
+
+<a id="topic_E6EB8AB6CCEF435A98B48B867FE9BFEB"></a>
+
+## VMware vSphere vMotion and DRS Cluster Usage
+
+This topic discusses use limitations of vSphere vMotion, including the use of it with DRS.
+
+-   When you first commission the data management system, place VMware vSphere Distributed Resource Scheduler™ (DRS) in manual mode to prevent an automatic VMware vSphere vMotion® operation that can affect response times.
+-   Reduce or eliminate the use of vMotion to migrate <span class="keyword">GemFire</span> virtual machines when they are under heavy load.
+-   Do not allow vMotion migrations with <span class="keyword">Pivotal GemFire</span> locator processes, as the latency introduced to this process can cause other members of the <span class="keyword">Pivotal GemFire</span> servers to falsely suspect that other members are dead.
+-   Use dedicated <span class="keyword">Pivotal GemFire</span> vSphere DRS clusters. This is especially important when you consider that the physical NIC and virtual NIC are specifically tuned to disable Interrupt Coalescing on every NIC of an ESXi host in the cluster. This type of tuning benefits <span class="keyword">GemFire</span> workloads, but it can hurt other non-<span class="keyword">Pivotal GemFire</span> workloads that are memory throughput-bound as opposed to latency sensitive as in the case of <span class="keyword">Pivotal GemFire</span> workloads.
+-   If using a dedicated vSphere DRS cluster is not an option, and <span class="keyword">Pivotal GemFire</span> must run in a shared DRS cluster, make sure that DRS rules are set up not to perform vMotion migrations on <span class="keyword">GemFire</span> virtual machines.
+-   If you must use vMotion for migration, VMware recommends that all vMotion migration activity of <span class="keyword">Pivotal GemFire</span> members occurs over 10GbE, during periods of low activity and scheduled maintenance windows.
+
+<a id="topic_E53BBF3D09A54953B02DCE2BD00D51E0"></a>
+
+## Placement and Organization of Virtual Machines
+
+This section provides guidelines on JVM instances and placement of redundant copies of cached data.
+
+-   Have one JVM instance per virtual machine.
+-   Increasing the heap space to service the demand for more data is better than installing a second instance of a JVM on a single virtual machine. If increasing the JVM heap size is not an option, consider placing the second JVM on a separate newly created virtual machine, thus promoting more effective horizontal scalability. As you increase the number of <span class="keyword">Pivotal GemFire</span> servers, also increase the number of virtual machines to maintain a 1:1:1 ratio among the <span class="keyword">Pivotal GemFire</span> server, the JVM, and the virtual machines.
+-   Size for a minimum of four vCPU virtual machines with one <span class="keyword">Pivotal GemFire</span> server running in one JVM instance. This allows ample CPU cycles for the garbage collector, and the rest for user transactions.
+-   Because <span class="keyword">Pivotal GemFire</span> can place redundant copies of cached data on any virtual machine, it is possible to inadvertently place two redundant data copies on the same ESX/ESXi host. This is not optimal if a host fails. To create a more robust configuration, use VM1-to-VM2 anti-affinity rules, to indicate to vSphere that VM1 and VM2 can never be placed on the same host because they hold redundant data copies.
+
+<a id="topic_567308E9DE07406BB5BF420BE77B6558"></a>
+
+## Virtual Machine Memory Reservation
+
+This section provides guidelines for sizing and setting memory.
+
+-   Set memory reservation at the virtual machine level so that ESXi provides and locks down the needed physical memory upon virtual machine startup. Once allocated, ESXi does not allow the memory to be taken away.
+-   Do not overcommit memory for <span class="keyword">GemFire</span> hosts.
+-   When sizing memory for a <span class="keyword">GemFire</span> server within one JVM on one virtual machine, the total reserved memory for the virtual machine should not exceed what is available within one NUMA node for optimal performance.
+
+<a id="topic_424B940584044CF6A685E86802548A27"></a>
+
+## vSphere High Availability and <span class="keyword">Pivotal GemFire</span>
+
+On <span class="keyword">Pivotal GemFire</span> virtual machines, disable vSphere High Availability (HA).
+
+If you are using a dedicated <span class="keyword">Pivotal GemFire</span> DRS cluster, then you can disable HA across the cluster. However, if you are using a shared cluster, exclude <span class="keyword">GemFire</span> virtual machines from vSphere HA.
+
+Additionally, to support high availability, you can also set up anti-affinity rules between the <span class="keyword">Pivotal GemFire</span> virtual machines to prevent two <span class="keyword">Pivotal GemFire</span> servers from running on the same ESXi host within the same DRS cluster.
+
+<a id="topic_913B15841C4249A68697F3D91281A645"></a>
+
+## Storage Guidelines
+
+This section provides storage guidelines for persistence files, binaries, logs, and more.
+
+-   Use the PVSCSI driver for I/O intensive <span class="keyword">Pivotal GemFire</span> workloads.
+-   Align disk partitions at the VMFS and guest operating system levels.
+-   Provision VMDK files as eagerzeroedthick to avoid lazy zeroing for <span class="keyword">Pivotal GemFire</span> members.
+-   Use separate VMDKs for <span class="keyword">Pivotal GemFire</span> persistence files, binaries, and logs.
+-   Map a dedicated LUN to each VMDK.
+-   For Linux virtual machines, use NOOP scheduling as the I/O scheduler instead of Completely Fair Queuing (CFQ). Starting with the Linux kernel 2.6, CFQ is the default I/O scheduler in many Linux distributions. See [http://kb.vmware.com/kb/2011861](http://kb.vmware.com/kb/2011861) for more information.
+
+<a id="topic_628F038FD4954E56BF4192F17FD3D119"></a>
+
+## Additional Resources
+
+VMware provides additional resources for optimizing vSphere, Java applications, and <span class="keyword">Pivotal GemFire</span>.
+
+-   "Performance Best Practices for VMware vSphere 5.0" - [http://www.vmware.com/pdf/Perf\_Best\_Practices\_vSphere5.0.pdf](http://www.vmware.com/pdf/Perf_Best_Practices_vSphere5.0.pdf)
+-   "Best Practices for Performance Tuning of Latency-Sensitive Workloads in vSphere Virtual Machines" - [http://www.vmware.com/files/pdf/techpaper/VMW-Tuning-Latency-Sensitive-Workloads.pdf](http://www.vmware.com/files/pdf/techpaper/VMW-Tuning-Latency-Sensitive-Workloads.pdf)
+-   "Enterprise Java Applications on VMware - Best Practices Guide" - [http://www.vmware.com/resources/techresources/1087](http://www.vmware.com/resources/techresources/1087)
+-   "High Performance Data with VMware Pivotal™ GemFire® Best Practices Guide" - [https://www.vmware.com/files/pdf/techpaper/vmw-vfabric-gemFire-best-practices-guide.pdf](https://www.vmware.com/files/pdf/techpaper/vmw-vfabric-gemFire-best-practices-guide.pdf)
+
+

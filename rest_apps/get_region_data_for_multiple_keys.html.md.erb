@@ -1,0 +1,223 @@
+---
+title:  GET /gemfire-api/v1/{region}/{key1},{key2},...,{keyN}
+---
+
+Read data for multiple keys in the region.
+
+## Resource URL
+
+``` pre
+http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/queries[?ignoreMissingKey=true]
+```
+
+## Parameters
+
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Description</th>
+<th>Example Values</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ignoreMissingKey</td>
+<td><strong>Optional</strong>. Boolean to indicate whether to return non-existing keys as null responses. Use this to prevent 400 errors.</td>
+<td>true
+<p>false</p></td>
+</tr>
+</tbody>
+</table>
+
+## Example Requests
+
+``` pre
+GET /gemfire-api/v1/orders/1,2,13,4,5?ignoreMissingKey=true
+Request Payload: null
+Accept: application/json
+
+
+GET /gemfire-api/v1/orders/1,3
+Request Payload: null
+Accept: application/json
+```
+
+## Example Success Responses
+
+``` pre
+Response Payload: application/json
+
+200 OK
+Server: Apache-Coyote/1.1
+Content-Location: http://localhost:8080/gemfire-api/v1/orders/13,2,1,5,4
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 18 Jan 2014 21:39:04 GMT
+
+
+{
+    "orders": [
+        null,
+        {
+            "@type": "com.gemstone.gemfire.rest.internal.web.controllers.Order",
+            "purchaseOrderNo": 1112,
+            "customerId": 102,
+            "description": "Purchase order for company - B",
+            "orderDate": "02/10/2014",
+            "deliveryDate": "02/20/2014",
+            "contact": "John Doe",
+            "email": "john.doe@mycompany.com",
+            "phone": "01-2048096",
+            "totalPrice": 350,
+            "items": [
+                {
+                    "itemNo": 1,
+                    "description": "Product-AAAA",
+                    "quantity": 10,
+                    "unitPrice": 20,
+                    "totalPrice": 200
+                },
+                {
+                    "itemNo": 2,
+                    "description": "Product-BBB",
+                    "quantity": 15,
+                    "unitPrice": 10,
+                    "totalPrice": 150
+                }
+            ]
+        },
+        {
+            "@type": "com.gemstone.gemfire.rest.internal.web.controllers.Order",
+            "purchaseOrderNo": 11101,
+            "customerId": 101,
+            "description": "Purchase order for company - A",
+            "orderDate": "01/10/2014",
+            "deliveryDate": "01/20/2014",
+            "contact": "Jane Doe",
+            "email": "jane.doe@yourcompany.com",
+            "phone": "020-2048096",
+            "totalPrice": 205,
+            "items": [
+                {
+                    "itemNo": 1,
+                    "description": "Product-1",
+                    "quantity": 5,
+                    "unitPrice": 10,
+                    "totalPrice": 50
+                },
+                {
+                    "itemNo": 3,
+                    "description": "Product-3",
+                    "quantity": 10,
+                    "unitPrice": 100,
+                    "totalPrice": 1000
+                },
+                {
+                    "itemNo": 1,
+                    "description": "Product-2",
+                    "quantity": 10,
+                    "unitPrice": 15.5,
+                    "totalPrice": 155
+                }
+            ]
+        },
+        null,
+        null
+    ]
+}
+
+
+200 OK
+Server: Apache-Coyote/1.1
+Content-Location: http://localhost:8080/gemfire-api/v1/orders/3,1
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 18 Jan 2014 21:39:04 GMT
+ 
+{
+  "orders" : [ {
+    "purchaseOrderNo" : 1112,
+    "customerId" : 102,
+    "description" : "Purchase order for company - B",
+    "orderDate" : "02/10/2014",
+    "deliveryDate" : "02/20/2014",
+    "contact" : "John Doe",
+    "email" : "john.doe@mycompany.com",
+    "phone" : "01-2048096",
+    "items" : [ {
+      "itemNo" : 1,
+      "description" : "Product-AAAA",
+      "quantity" : 10,
+      "unitPrice" : 20.0,
+      "totalPrice" : 200.0
+    }, {
+      "itemNo" : 2,
+      "description" : "Product-BBB",
+      "quantity" : 15,
+      "unitPrice" : 10.0,
+      "totalPrice" : 150.0
+    } ],
+    "totalPrice" : 350.0
+  }, {
+    "purchaseOrderNo" : 111,
+    "customerId" : 101,
+    "description" : "Purchase order for company - A",
+    "orderDate" : "01/10/2014",
+    "deliveryDate" : "01/20/2014",
+    "contact" : "Jane Doe",
+    "email" : "jane.doe@yourcompany.com",
+    "phone" : "020-2048096",
+    "items" : [ {
+      "itemNo" : 1,
+      "description" : "Product-1",
+      "quantity" : 5,
+      "unitPrice" : 10.0,
+      "totalPrice" : 50.0
+    }, {
+      "itemNo" : 1,
+      "description" : "Product-2",
+      "quantity" : 10,
+      "unitPrice" : 15.5,
+      "totalPrice" : 155.0
+    } ],
+    "totalPrice" : 205.0
+  } ]
+}
+```
+
+## Error Codes
+
+| Status Code     | Description                                                                                                                                                                                                                                             |
+|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 400 BAD REQUEST | Returned if one or more of the supplied keys is not found in the region and ignoreMissingKey=false (default if parameter is not specified); returned if the specified value for the ignoreMissingKey parameter is a value other than 'true' or 'false'. |
+| 404 NOT FOUND   | If the specified region does not exist.                                                                                                                                                                                                                 |
+
+## Example Error Response
+
+``` pre
+GET /gemfire-api/v1/orders/1,2,13,4,5
+Request Payload: null
+Accept: application/json
+Response Payload: application/json
+
+400 BAD_REQUEST
+Server: Apache-Coyote/1.1
+Content-Type: application/json
+Content-Length: 51
+Date: Wed, 21 May 2014 11:24:00 GMT
+Connection: close
+ 
+"Requested keys [13,4,5] not exist in region [orders]"
+```
+
+## Implementation Notes
+
+The response body sets the region name as key to the array of values. For example "orders" : &lt;VALUE\_ARRAY&gt;.
+
+

@@ -1,0 +1,20 @@
+---
+title:  Configuring RMI Registry Ports and RMI Connectors
+---
+
+<span class="keyword">GemFire</span> programmatically emulates out-of-the-box JMX provided by Java and creates a JMXServiceURL with RMI Registry and RMI Connector ports on all manageable members.
+
+<a id="concept_BC793A7ACF9A4BD9A29C2DCC6894767D__section_143531EBBCF94033B8058FCF5F8A5A0D"></a>
+## Configuring JMX Manager Port and Bind Addresses
+
+You can configure a specific connection port and address when launching a process that will host the <span class="keyword">GemFire</span> JMX Manager. To do this, specify values for the `jmx-manager-bind-address`, which specifies the JMX manager's IP address and `jmx-manager-port`, which defines the RMI connection port.
+
+The default <span class="keyword">GemFire</span> JMX Manager RMI port is 1099. You may need to modify this default if 1099 is reserved for other uses.
+
+<a id="concept_BC793A7ACF9A4BD9A29C2DCC6894767D__section_BF6352A05CE94F35A8355232D22AC2BC"></a>
+
+## Using Out-of-the-Box RMI Connectors
+
+If for some reason you need to use standard JMX RMI in your deployment for other monitoring purposes, set the <span class="keyword">GemFire</span> property `jmx-manager-port` to 0 on any members where you want to use standard JMX RMI.
+
+If you use out-of-the-box JMX RMI instead of starting an embedded <span class="keyword">GemFire</span> JMX Manager, you should consider setting `-Dsun.rmi.dgc.server.gcInterval=Long.MAX_VALUE-1` when starting the JVM for customer applications and client processes. Every <span class="keyword">GemFire</span> process internally sets this setting before creating and starting the JMX RMI connector in order to prevent full garbage collection from pausing processes.

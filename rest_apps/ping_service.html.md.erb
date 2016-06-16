@@ -1,0 +1,37 @@
+---
+title:  \[HEAD | GET\] /gemfire-api/v1/ping
+---
+
+Mechanism to check for REST API server and service availability.
+
+## Resource URL
+
+``` pre
+http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/ping
+```
+
+## Parameters
+
+None.
+
+## Example Request
+
+``` pre
+HEAD /gemfire/v1/ping
+GET /gemfire/v1/ping
+```
+
+## Example Success Response
+
+``` pre
+200 OK
+```
+
+## Error Codes
+
+| Status Code               | Description                                                                                  |
+|---------------------------|----------------------------------------------------------------------------------------------|
+| 404 NOT FOUND             | The Developer REST API service is not available.                                             |
+| 500 INTERNAL SERVER ERROR | Encountered error at server. Check the <span class="keyword">GemFire</span> exception trace. |
+
+

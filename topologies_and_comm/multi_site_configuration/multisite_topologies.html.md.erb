@@ -1,0 +1,58 @@
+---
+title:  Multi-site (WAN) Topologies
+---
+
+To configure your multi-site topology, you should understand the recommended topologies and the topologies to avoid.
+
+<a id="multisite_topologies__section_26A561471249495A847B4C3854EE04C9"></a>
+This section describes <span class="keyword">GemFire</span>'s support for various topologies. Depending on your application needs, there may be several topologies that work. These are considerations to keep in mind:
+
+-   When a <span class="keyword">GemFire</span> site receives a message from a gateway sender, it forwards it to the other sites it knows about, excluding those sites that it knows have already seen the message. Each message contains the initial sender's ID and the ID of each of the sites the initial sender sent to, so no site forwards to those sites. However, messages do not pick up the ID of the sites they pass through, so it is possible in certain topologies for more than one copy of a message to be sent to one site.
+-   In some configurations, the loss of one site affects how other sites communicate with one another.
+
+<a id="multisite_topologies__section_7ECE1AFB1F94446FAA0A9FD504217C76"></a>
+
+## Parallel Multi-site Topology
+
+A parallel network topology is one where all sites know about each other. This is a robust configuration, where any one of the sites can go down without disrupting communication between the other sites. A parallel topology also guarantees that no site receives multiple copies of the same message.
+
+The parallel topology for three sites is shown in this figure. In this scenario, if site 1 sends an update to site 2, site 2 forwards to site 3. If site 1 sends an update to sites 2 and 3, neither forwards to the other. Likewise for any other initiating site. If any site is removed, the remaining two maintain a parallel topology.
+
+<img src="../../images/multisite-topology-parallel.png" id="multisite_topologies__image_6CB125A80DF74DCE96A94020F7003DAE" class="image" />
+
+<a id="multisite_topologies__section_17EC1FD63A5241159FE2ED07F72CD5DC"></a>
+
+## Serial Multi-site Topology
+
+A serial network topology is one where each site only knows about one other site. Data is passed from one site to the next serially. This figure shows the topology for three sites. In this scenario, if site 1 sends updates to site 2, site 2 forwards to site 3. Site 3 does not send the updates back to site 1.
+
+<img src="../../images/multisite-topology-serial.png" id="multisite_topologies__image_876567BB077C4398BEFB13EEC34DA53C" class="image" />
+
+The serial topology guarantees that every site receives one copy of each message sent by any site. With a serial installation, every site must stay up to maintain the topology. The failure of any site breaks the serial link. If site 2 went down, for example, site 3 could send to site 1, but site 1 could not send to site 3.
+
+<a id="multisite_topologies__section_AA3A864753DF4C218133C0A7460D2D19"></a>
+
+## Hybrid Multi-site Topology
+
+A hybrid network topology contains both parallel and serial connections. There are numerous such configurations.
+
+The following figure shows a hybrid topology composed of a serial topology with an additional link directly from site 1 to site 3, creating a parallel topology between sites 1 and 3. With this topology, no site can receive the same update twice.
+
+<img src="../../images/multisite-topology-hybrid-1.png" id="multisite_topologies__image_7656D6CEC2C947F8BFE67A0BB0BA5FDE" class="image" />
+
+With this hybrid topology, if site 2 went down, it would not affect communication between sites 1 and 3, because both could still send to the other. If site 3 went down, however, site 2 would not be able to send to site 1.
+
+In the figure below, sites 2 and 3 are isolated from one another. This topology might work for an application where there is one producer (site 1) and multiple consumers that have nothing to gain from being connected to each other. This topology also guarantees that no site receives the same update twice.
+
+<img src="../../images/multisite-topology-hybrid-2.png" id="multisite_topologies__image_1904C515A3224BE09589921A15D6D59B" class="image" />
+
+<a id="multisite_topologies__section_8D7912BF9D8549A491D9AE5E0DC3CC1F"></a>
+
+## Unsupported Topologies
+
+This section lists topologies that do not work and are unsupported.
+
+In the topology shown in the next figure, some sites might receive multiple copies of the same message. If site 1 sends a message to sites 2 and 3, sites 2 and 3 will both forward to site 4.
+
+<img src="../../images/multisite-topology-avoid-3.png" id="multisite_topologies__image_710EB20403C942D0B756F9D22B3359A6" class="image" />
+

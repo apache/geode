@@ -1,0 +1,61 @@
+---
+title:  echo
+---
+
+Echo the given text, which may include system and user variables.
+
+The command can also echo gfsh environment properties (using '[set variable](set.html)' command) if variable name is pre-pended with '$' - like UNIX.
+
+See [Useful gfsh Shell Variables](../useful_gfsh_shell_variables.html#concept_731ECA5E40E943CBA5C1198A0745D8EE) for a list of gfsh environment variables.
+
+**Availability:** Online or offline.
+
+**Syntax:**
+
+``` pre
+echo [--string=value]
+```
+
+<a id="concept_2828E2617F6A49D7BB811917BE268704__table_uwf_sch_2w"></a>
+
+| Name                                            | Description                                                                                                  |
+|-------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| <span class="keyword parmname">--string </span> | String to be echoed. For example, `SYS_USER                                 variable is set to ${SYS_USER}`. |
+
+: <span class="tablecap">Table 1. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+echo --string="Hello World!"
+echo --string="Hello World! This is ${SYS_USER}"
+echo --string=${APP_FETCH_SIZE}
+
+//To see all the variable set in the shell:
+echo --string=$*
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>echo --string=$*
+           Property            | Value
+------------------------------ | -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+APP_FETCH_SIZE                 | 1000
+APP_LAST_EXIT_STATUS           | 0
+APP_LOG_FILE                   | /home/stymon/gfsh-2013-03-04_12-13-44.log
+APP_NAME                       | gfsh
+APP_PWD                        | /home/stymon
+APP_QUERY_RESULTS_DISPLAY_MODE | table
+APP_QUIET_EXECUTION            | false
+SYS_CLASSPATH                  | /home/stymon/Pivotal_GemFire_701_b40169/lib/gemfire.jar:/home/stymon/Pivotal_GemFire_701_b40169/lib/antlr.jar:/home/stymon/Pivotal_GemFire_701_b40169/lib/gfsh-dependencies.jar:/home/stymon/Pivotal_GemFire_701_b40169/lib/pulse-dependencies.jar:.:/home/stymon/Pivotal_GemFire_701_b40169/lib/gemfire.jar:/home/stymon/Pivotal_GemFire_701_b40169/lib/antlr.jar:/home/stymon/Pivotal_GemFire_701_b40169/lib/gfSecurityImpl.jar:/home/stymon/Pivotal_GemFire_701_b40169/lib/jackson-core-asl-1.9.9.jar:/home/stymon/Pivotal_GemFire_701_b40169/lib/commons-logging.jar:/home/stymon/Pivotal_GemFire_701_b40169/lib/tomcat-embed-core.jar:/home/stymon/Pivotal_GemFire_701_b40169/lib/tomcat-embed-logging-juli.jar:/home/stymon/Pivotal_GemFire_701_b40169/lib/tomcat-embed-jasper.jar:/home/stymon/Pivotal_GemFire_701_b40169/SampleCode/tutorial/classes:/home/stymon/Pivotal_GemFire_701_b40169/SampleCode/helloworld/classes:/home/stymon/Pivotal_GemFire_701_b40169/SampleCode/quickstart/classes:/home/stymon/Pivotal_GemFire_701_b40169/SampleCode/examples/dist/classes:/usr/java/jdk1.8.0_60/jre/../lib/tools.jar
+SYS_GEMFIRE_DIR                | /home/stymon/Pivotal_GemFire_701_b40169
+SYS_HOST_NAME                  | stymon
+SYS_JAVA_VERSION               | 1.8.0_60
+SYS_OS                         | Linux
+SYS_OS_LINE_SEPERATOR          | 
+SYS_USER                       | stymon
+SYS_USER_HOME                  | /home/stymon
+```
+
+

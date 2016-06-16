@@ -1,0 +1,27 @@
+---
+title:  How Multi-site (WAN) Systems Work
+---
+
+The <span class="keyword">Pivotal GemFire</span> multi-site implementation connects disparate distributed systems. The systems act as one when they are coupled, and they act as independent systems when communication between sites fails. The coupling is tolerant of weak or slow links between distributed system sites. A wide-area network (WAN) is the main use case for the multi-site topology.
+
+-   **[Overview of Multi-site Caching](../../../latest/topologies_and_comm/topology_concepts/multisite_overview.html#topic_70045702D3994BC692E75102CE01BD7C)**
+
+    A multi-site installation consists of two or more distributed systems that are loosely coupled. Each site manages its own distributed system, but region data is distributed to remote sites using one or more logical connections.
+
+-   **[Consistency for WAN Updates](../../../latest/topologies_and_comm/topology_concepts/multisite_overview.html#topic_C74A0961937640B199396DC925D8D782)**
+
+    <span class="keyword">GemFire</span> ensures that all copies of a region eventually reach a consistent state on all members and clients that host the region, including <span class="keyword">GemFire</span> members that distribute region events across a WAN.
+
+-   **[Discovery for Multi-Site Systems](../../../latest/topologies_and_comm/topology_concepts/multisite_overview.html#topic_1742957C8D4B4F7590847EB8DB6CD4F7)**
+
+    Each <span class="keyword">GemFire</span> cluster in a WAN configuration uses locators to discover remote clusters as well as local members.
+
+-   **[Gateway Senders](../../../latest/topologies_and_comm/topology_concepts/multisite_overview.html#topic_9AA37B43642D4DE19072CA3367C849BA)**
+
+    A <span class="keyword">GemFire</span> cluster uses a *gateway sender* to distribute region events to another, remote <span class="keyword">GemFire</span> cluster. You can create multiple gateway sender configurations to distribute region events to multiple remote clusters, and/or to distribute region events concurrently to another remote cluster.
+
+-   **[Gateway Receivers](../../../latest/topologies_and_comm/topology_concepts/multisite_overview.html#topic_4DB3D9CF01AD4F4899457D1250468D00)**
+
+    A gateway receiver configures a physical connection for receiving region events from gateway senders in one or more remote <span class="keyword">GemFire</span> clusters.
+
+

@@ -1,0 +1,90 @@
+---
+title:  Region Shortcuts
+---
+
+This topic describes the various region shortcuts you can use to configure <span class="keyword">GemFire</span> regions.
+
+Region shortcuts are groupings of pre-configured attributes that define the characteristics of a region. You can use a region shortcut as a starting point when configuring regions and you can add additional configurations to customize your application. To reference a region shortcut in a <span class="keyword">GemFire</span> `cache.xml` file, use the `refid` attribute of the `<region>` element. For example:
+
+``` pre
+<region name="myRegion" refid="PARTITION_REDUNDANT"/>
+```
+
+You can override the default values and add additional configurations within a `<region-attributes>` element of the `cache.xml` file. For example, the following configuration overrides the <span class="keyword parmname">local-max-memory</span> setting and adds the <span class="keyword parmname">recovery-delay</span> attribute:
+
+``` pre
+<region name="myRegion" refid="PARTITION_REDUNDANT">
+    <region-attributes>
+        <partition-attributes 
+          local-max-memory="512" 
+           recovery-delay=-1/>
+    </region-attributes>
+</region>
+```
+
+You can also create your own, named region shortcuts for common custom configurations. See [Region Shortcuts and Custom Named Region Attributes](../../basic_config/data_regions/region_shortcuts.html).
+
+To configure a region using the gfsh command-line tool, specify the shortcut name with the `--type` argument. For example:
+
+``` pre
+gfsh>create region --name=myRegion --type=PARTITION_REDUNDANT
+```
+
+**Note:**
+If you change the cache.xml file that defines a region, you must restart the member before the changes take effect.
+
+For more information about configuring regions, see [Data Region Management](../../basic_config/data_regions/managing_data_regions.html#data_regions).
+
+For more information about using the various types of <span class="keyword">GemFire</span> regions and when to use them, see [Region Types](../../developing/region_options/region_types.html#region_types).
+
+-   **[Region Shortcuts Quick Reference](../../../latest/reference/topics/region_shortcuts_table.html)**
+
+    This section provides a quick reference for all region shortcuts.
+
+-   **[LOCAL](../../../latest/reference/topics/region_shortcuts_reference.html#reference_w2h_3cd_lk)**
+
+-   **[LOCAL\_HEAP\_LRU](../../../latest/reference/topics/region_shortcuts_reference.html#reference_wd5_lpy_lk)**
+
+-   **[LOCAL\_OVERFLOW](../../../latest/reference/topics/region_shortcuts_reference.html#reference_adk_y4y_lk)**
+
+-   **[LOCAL\_PERSISTENT](../../../latest/reference/topics/region_shortcuts_reference.html#reference_l5r_y4y_lk)**
+
+-   **[LOCAL\_PERSISTENT\_OVERFLOW](../../../latest/reference/topics/region_shortcuts_reference.html#reference_a45_y4y_lk)**
+
+-   **[PARTITION](../../../latest/reference/topics/region_shortcuts_reference.html#reference_ow5_4qy_lk)**
+
+-   **[PARTITION\_HEAP\_LRU](../../../latest/reference/topics/region_shortcuts_reference.html#reference_twx_y4y_lk)**
+
+-   **[PARTITION\_OVERFLOW](../../../latest/reference/topics/region_shortcuts_reference.html#reference_js1_z4y_lk)**
+
+-   **[PARTITION\_PERSISTENT](../../../latest/reference/topics/region_shortcuts_reference.html#reference_d4k_jpy_lk)**
+
+-   **[PARTITION\_PERSISTENT\_OVERFLOW](../../../latest/reference/topics/region_shortcuts_reference.html#reference_v5l_jpy_lk)**
+
+-   **[PARTITION\_PROXY](../../../latest/reference/topics/region_shortcuts_reference.html#reference_v4m_jpy_lk)**
+
+-   **[PARTITION\_PROXY\_REDUNDANT](../../../latest/reference/topics/region_shortcuts_reference.html#reference_c1n_jpy_lk)**
+
+-   **[PARTITION\_REDUNDANT](../../../latest/reference/topics/region_shortcuts_reference.html#reference_shn_jpy_lk)**
+
+-   **[PARTITION\_REDUNDANT\_HEAP\_LRU](../../../latest/reference/topics/region_shortcuts_reference.html#reference_m4n_jpy_lk)**
+
+-   **[PARTITION\_REDUNDANT\_OVERFLOW](../../../latest/reference/topics/region_shortcuts_reference.html#reference_own_jpy_lk)**
+
+-   **[PARTITION\_REDUNDANT\_PERSISTENT](../../../latest/reference/topics/region_shortcuts_reference.html#reference_bd4_jpy_lk)**
+
+-   **[PARTITION\_REDUNDANT\_PERSISTENT\_OVERFLOW](../../../latest/reference/topics/region_shortcuts_reference.html#reference_xqq_tvc_lk)**
+
+-   **[REPLICATE](../../../latest/reference/topics/region_shortcuts_reference.html#reference_wq4_jpy_lk)**
+
+-   **[REPLICATE\_HEAP\_LRU](../../../latest/reference/topics/region_shortcuts_reference.html#reference_xx4_jpy_lk)**
+
+-   **[REPLICATE\_OVERFLOW](../../../latest/reference/topics/region_shortcuts_reference.html#reference_t2p_jpy_lk)**
+
+-   **[REPLICATE\_PERSISTENT](../../../latest/reference/topics/region_shortcuts_reference.html#reference_emp_jpy_lk)**
+
+-   **[REPLICATE\_PERSISTENT\_OVERFLOW](../../../latest/reference/topics/region_shortcuts_reference.html#reference_tsp_jpy_lk)**
+
+-   **[REPLICATE\_PROXY](../../../latest/reference/topics/region_shortcuts_reference.html#reference_n1q_jpy_lk)**
+
+

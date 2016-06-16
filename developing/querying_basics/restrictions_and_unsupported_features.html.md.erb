@@ -1,0 +1,21 @@
+---
+title:  Query Language Restrictions and Unsupported Features
+---
+
+At a high level, <span class="keyword">GemFire</span> does not support the following querying features:
+
+-   GROUPBY is not supported.
+-   Indexes targeted for joins across more than one region are not supported
+-   Static method invocations. For example, the following query is invalid:
+
+    ``` pre
+    SELECT DISTINCT * FROM /QueryRegion0 WHERE aDay = Day.Wednesday
+    ```
+
+-   Aggregate functions are not supported.
+-   You cannot create an index on fields using Set/List types (Collection types) that are not comparable. The OQL index implementation expects fields to be Comparable. To workaround this, you can create a custom Collection type that implements Comparable.
+-   ORDER BY is only supported with DISTINCT queries.
+
+In addition, there are some specific limitations on partitioned region querying. See [Partitioned Region Query Restrictions](../query_additional/partitioned_region_query_restrictions.html#concept_5353476380D44CC1A7F586E5AE1CE7E8).
+
+

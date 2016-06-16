@@ -1,0 +1,15 @@
+---
+title:  Connection Thread Settings and Performance
+---
+
+When many peer processes are started concurrently, you can improve the distributed system connect time can by setting the p2p.HANDSHAKE\_POOL\_SIZE system property value to the expected number of members.
+
+This property controls the number of threads that can be used to establish new TCP/IP connections between peer caches. The threads are discarded if they are idle for 60 seconds.
+
+The default value for p2p.HANDSHAKE\_POOL\_SIZE is 10. This command-line specification sets the number of threads to 100:
+
+``` pre
+-Dp2p.HANDSHAKE_POOL_SIZE=100
+```
+
+

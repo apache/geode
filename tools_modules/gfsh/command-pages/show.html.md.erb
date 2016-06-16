@@ -1,0 +1,302 @@
+<a id="topic_7171CA38456645D5B08C16FD73AD0B2A"></a>
+
+# show
+
+Display deadlocks, logs, metrics and missing disk-stores.
+
+-   **[show dead-locks](../../../../latest/tools_modules/gfsh/command-pages/show.html#topic_1125347FAD6541DF995C9999650165B1)**
+
+    Display any deadlocks in the <span class="keyword">GemFire</span> distributed system.
+
+-   **[show log](../../../../latest/tools_modules/gfsh/command-pages/show.html#topic_45AAEDAC3AFF46EC9BB68B24FC9A32B3)**
+
+    Display the log for a member.
+
+-   **[show metrics](../../../../latest/tools_modules/gfsh/command-pages/show.html#topic_6EB786C63AEB46179EEE8FA18624295A)**
+
+    Display or export metrics for the entire distributed system, a member or a region.
+
+-   **[show missing-disk-stores](../../../../latest/tools_modules/gfsh/command-pages/show.html#topic_7B3D624D5B4F41D1A0F8A9C3C8B2E780)**
+
+    Display a summary of the disk stores that are currently missing from a distributed system.
+
+-   **[show subscription-queue-size](../../../../latest/tools_modules/gfsh/command-pages/show.html#topic_395C96B500AD430CBF3D3C8886A4CD2E)**
+
+    Shows the number of events in the subscription queue.
+
+<a id="topic_1125347FAD6541DF995C9999650165B1"></a>
+
+## show dead-locks
+
+Display any deadlocks in the <span class="keyword">GemFire</span> distributed system.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+show dead-locks --file=value
+```
+
+<a id="topic_1125347FAD6541DF995C9999650165B1__table_hhr_njf_2w"></a>
+
+| Name                                         | Description                                                                         |
+|----------------------------------------------|-------------------------------------------------------------------------------------|
+| <span class="keyword parmname">--file</span> | *Required.* Name of the file to which dependencies between members will be written. |
+
+: <span class="tablecap">Table 1. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+show dead-locks --file=deadlocks.txt
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>show dead-locks --file=deadlocks.txt
+No dead lock detected.
+
+Please view the dependencies between the members in file : deadlocks.txt
+```
+
+<a id="topic_45AAEDAC3AFF46EC9BB68B24FC9A32B3"></a>
+
+## show log
+
+Display the log for a member.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+show log --member=value [--lines=value]
+```
+
+<a id="topic_45AAEDAC3AFF46EC9BB68B24FC9A32B3__table_mwp_qjf_2w"></a>
+
+<span class="tablecap">Table 2. Parameters</span>
+Name
+Description
+<span class="keyword parmname">--member</span>
+*Required.* Name/ID of the member whose log file will be displayed.
+ 
+<span class="keyword parmname">--lines</span>
+Number of lines from the log file to display. The maximum is 100.
+0
+
+**Example Commands:**
+
+``` pre
+show log --member=locator1 --lines=5
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>show log --member=locator1 --lines=5
+SystemLog:
+[info 2012/09/25 14:04:51.340 PDT locator1 <RMI TCP Connection(14)-192.168.129.1
+29> tid=0x57] (tid=12 msgId=4) Parent region for "region1/subregion1" doesnt exi
+st.
+
+[info 2012/09/25 14:04:51.372 PDT locator1 <RMI TCP Connection(14)-192.168.129.1
+29> tid=0x57] (tid=12 msgId=5) Error occurred while executing "create region --n
+ame=region1/subregion1 --type=LOCAL".
+
+[info 2012/09/25 15:14:34.314 PDT locator1 <RMI TCP Connection(159)-192.168.129.
+129> tid=0x68] (tid=13 msgId=6) Error occurred while executing "show log --membe
+r=server1 --lines=5".
+```
+
+<a id="topic_6EB786C63AEB46179EEE8FA18624295A"></a>
+
+## show metrics
+
+Display or export metrics for the entire distributed system, a member or a region.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+show metrics [--member=value] [--region=value] [--file=value] 
+[--port=value] [--categories=value(,value)*]
+```
+
+<a id="topic_6EB786C63AEB46179EEE8FA18624295A__table_l4n_tjf_2w"></a>
+
+<table>
+<caption><span class="tablecap">Table 3. Parameters</span></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="keyword parmname">--member</span></td>
+<td>Name/ID of the member whose metrics will be displayed/exported.</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--region</span></td>
+<td>Name/Path of the region whose metrics will be displayed/exported.</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--file</span></td>
+<td>Name of the file to which metrics will be written.</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--port</span></td>
+<td>Port number of the Cache Server whose metrics are to be displayed/exported. This can only be used along with the <code class="ph codeph">--member</code> parameter.</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--categories</span></td>
+<td>Categories available based upon the parameters specified (listed above) are:
+<ul>
+<li><strong>no parameters specified</strong>: cluster, cache, diskstore, query</li>
+<li><strong>region specified</strong>: cluster, region, partition, diskstore, callback, eviction</li>
+<li><strong>member specified</strong>: member, jvm, region, serialization, communication, function, transaction, diskstore, lock, eviction, distribution</li>
+<li><strong>member and region specified</strong>: region, partition, diskstore, callback, eviction</li>
+</ul></td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 3. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+// Metrics for the entire system
+show metrics 
+// Metrics for a region:
+show metrics --region=region1
+// Metrics for a given member
+show metrics --member=server1
+// Metrics for a region on a member
+show metrics --region=region1 --member=server1
+//  Metrics for a member and the cacheserver it hosts
+// NOTE: port option only work when used with --member option
+show metrics --member=server1 --port=10334
+// Export metrics for the entire system
+show metrics --file=data/stats/system-stats.csv
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>show metrics
+
+Cluster-wide Metrics
+
+  Type    |        Metric         | Value
+--------- | --------------------- | -----
+cluster   | totalHeapSize         | 123
+cache     | totalRegionEntryCount | 0
+          | totalRegionCount      | 0
+          | totalMissCount        | 0
+          | totalHitCount         | 0
+diskstore | totalBytesOnDisk      | 0
+          | diskReadsRate         | 0
+          | diskWritesRate        | 0
+          | flushTimeAvgLatency   | 0
+          | totalBackupInProgress | 0
+query     | queryRequestRate      | 0
+          
+```
+
+<a id="topic_7B3D624D5B4F41D1A0F8A9C3C8B2E780"></a>
+
+## show missing-disk-stores
+
+Display a summary of the disk stores that are currently missing from a distributed system.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+show missing-disk-stores
+```
+
+**Example Commands:**
+
+``` pre
+show missing-disk-stores
+```
+
+**Sample Output:**
+
+``` pre
+gfsh> show missing-disk-stores
+
+           Disk Store ID             |   Host    |               Directory                                           
+------------------------------------ | --------- | -------------------------------------
+60399215-532b-406f-b81f-9b5bd8d1b55a | excalibur | /usr/local/gemfire/deploy/disk_store1
+```
+
+<a id="topic_395C96B500AD430CBF3D3C8886A4CD2E"></a>
+
+## show subscription-queue-size
+
+Shows the number of events in the subscription queue.
+
+If a CQ name is provided, it counts the number of events in the subscription queue for the specified CQ.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+show subscription-queue-size --durable-client-Id=value 
+ [--member=value] [--group=value]
+```
+
+<a id="topic_395C96B500AD430CBF3D3C8886A4CD2E__table_rcq_zjf_2w"></a>
+
+| Name                                                       | Description                                                                  |
+|------------------------------------------------------------|------------------------------------------------------------------------------|
+| <span class="keyword parmname">--durable-client-id </span> | *Required.* The ID used to identify the durable client.                      |
+| <span class="keyword parmname">--durable-cq-name </span>   | The name that identifies the CQ.                                             |
+| <span class="keyword parmname">--member </span>            | Name/Id of the member for which subscription queue events are to be counted. |
+| <span class="keyword parmname">--group</span>              | Group of members for which subscription queue events are to be counted.      |
+
+: <span class="tablecap">Table 4. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+show subscription-queue-size --durable-client-id=client1
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>show subscription-queue-size --durable-client-Id=client1
+member  | subcription-queue-size for durable-client : "client1".
+------- | ------------------------------------------------------
+server3 | 1
+server4 | 0
+```
+
+**Error Messages:**
+
+``` pre
+gfsh>show subscription-queue-size --durable-client-Id=client1
+
+No client found with client-id : client1
+Occurred on members
+1.server4
+2.server1
+3.server3
+```
+
+

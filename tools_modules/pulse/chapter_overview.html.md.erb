@@ -1,0 +1,27 @@
+---
+title:  <span class="keyword">GemFire</span> Pulse
+---
+
+<span class="keyword">GemFire</span> Pulse is a Web Application that provides a graphical dashboard for monitoring vital, real-time health and performance of <span class="keyword">GemFire</span> clusters, members, and regions.
+
+Use Pulse to examine total memory, CPU, and disk space used by members, uptime statistics, client connections, WAN connections, and critical notifications. Pulse communicates with a <span class="keyword">GemFire</span> JMX manager to provide a complete view of your <span class="keyword">GemFire</span> deployment. You can drill down from a high-level cluster view to examine individual members and even regions within a member, to filter the type of information and level of detail.
+
+By default, <span class="keyword">GemFire</span> Pulse runs in an embedded container within a <span class="keyword">GemFire</span> JMX manager node. You can optionally deploy Pulse to a Web application server of your choice, so that the tool runs independently of your <span class="keyword">GemFire</span> clusters. Hosting Pulse on an application server also enables you to use SSL for accessing the application.
+
+-   **[Pulse Quick Start (Embedded Mode)](../../../latest/tools_modules/pulse/quickstart.html#topic_523F6DE33FE54307BBE8F83BB7D9355D)**
+
+    Use Pulse in embedded mode to monitor a <span class="keyword">GemFire</span> deployment directly from a <span class="keyword">GemFire</span> JMX Manager. By default, the embedded Pulse application connects to the local JMX Manager that hosts the Pulse application. Optionally, configure Pulse to connect to a <span class="keyword">GemFire</span> system of your choice.
+
+-   **[Hosting Pulse on a Web Application Server](../../../latest/tools_modules/pulse/quickstart.html#topic_795C97B46B9843528961A094EE520782)**
+
+    Host Pulse on a dedicated Web application server to make the Pulse application available at a consistent address, or to use SSL for accessing the Pulse application. When you host Pulse in this way, you also configure Pulse to connect to a specific locator or JMX Manager node for monitoring.
+
+-   **[Configuring Pulse Authentication](../../../latest/tools_modules/pulse/quickstart.html#topic_AC9FFAA6FB044279BAED7A3E099E07AC)**
+
+    Pulse requires all users to authenticate themselves before they can use the Pulse Web application. If you have configured JMX authentication on the <span class="keyword">GemFire</span> JMX Manager node, the Pulse Web application itself may also need to authenticate itself to the <span class="keyword">GemFire</span> JMX Manager node on startup.
+
+-   **[Using Pulse Views](../../../latest/tools_modules/pulse/quickstart.html#topic_F0ECE9E8179541CCA3D6C5F4FBA84404)**
+
+    Pulse provides a variety of different views to help you monitor <span class="keyword">GemFire</span> clusters, members, and regions.
+
+

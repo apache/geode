@@ -1,0 +1,67 @@
+---
+title:  Managing a Client Cache
+---
+
+You have several options for client cache configuration. Start your client cache using a combination of XML declarations and API calls. Close the client cache when you are done.
+
+<a id="managing_a_client_cache__section_566044C44C434926A7A9FBAB2BF463BF"></a>
+<span class="keyword">GemFire</span> clients are processes that send most or all of their data requests and updates to a <span class="keyword">GemFire</span> server system. Clients run as standalone processes, without peers of their own.
+
+**Note:**
+<span class="keyword">GemFire</span> automatically configures the distributed system for your `ClientCache` as standalone, which means the client has no peers. Do not try to set the `gemfire.properties` `mcast-port` or `locators` for a client application or the system will throw an exception.
+
+1.  Create your client cache:
+    1.  In your `cache.xml`, use the `client-cache` DOCTYPE and configure your cache inside a `<client-cache>` element. Configure your server connection pool and your regions as needed. Example:
+
+        ``` pre
+        <?xml version="1.0" encoding="UTF-8"?>
+        <client-cache
+            xmlns="http://schema.pivotal.io/gemfire/cache"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
+            version="8.1">
+            <pool name="serverPool">
+                <locator host="host1" port="44444"/>
+            </pool>
+            <region name="exampleRegion" refid="PROXY"/>
+        </client-cache>
+        ```
+
+        **Note:**
+        Applications that use a `client-cache` may want to set `concurrency-checks-enabled` to false for a region in order to see all events for that region. <span class="keyword">GemFire</span> server members can continue using concurrency checks, but they will pass all events to the client cache. This configuration ensures that the client sees all region events, but it does not prevent the client cache region from becoming out-of-sync with the server cache. See [Consistency for Region Updates](../../developing/distributed_regions/region_entry_versions.html#topic_CF2798D3E12647F182C2CEC4A46E2045).
+
+    2.  If you use multiple server pools, configure the pool name explicitly for each client region. Example:
+
+        ``` pre
+        <pool name="svrPool1">
+            <locator host="host1" port="40404"/>
+        </pool>
+        <pool name="svrPool2">
+            <locator host="host2" port="40404"/>
+        </pool>
+        <region name="clientR1" refid="PROXY" pool-name="svrPool1"/>  
+        <region name="clientR2" refid="PROXY" pool-name="svrPool2"/>
+        <region name="clientsPrivateR" refid="LOCAL"/>
+        ```
+
+    3.  In your Java client application, create the cache using the `ClientCacheFactory` `create` method. Example:
+
+        ``` pre
+        ClientCache clientCache = new ClientCacheFactory().create();
+        ```
+
+        This creates the server connections and initializes the client’s cache according to your `gemfire.properties` and `cache.xml` specifications.
+
+2.  Close your cache when you are done using the `close` method of your `Cache` instance:
+
+    ``` pre
+    cache.close();
+    ```
+
+    If your client is durable and you want to maintain your durable queues while the client cache is closed, use:
+
+    ``` pre
+    clientCache.close(true);
+    ```
+
+

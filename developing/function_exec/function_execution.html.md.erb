@@ -1,0 +1,249 @@
+---
+title:  Executing a Function in <span class="keyword">Pivotal GemFire</span>
+---
+
+<a id="function_execution__section_BE483D79B81C49EE9855F506ED5AB014"></a>
+In this procedure it is assumed that you have your members and regions defined where you want to run functions.
+
+Main tasks:
+
+1.  Write the function code.
+2.  Register the function on all servers where you want to execute the function. The easiest way to register a function is to use the `gfsh` `deploy` command to deploy the JAR file containing the function code. Deploying the JAR automatically registers the function for you. See [Register the Function Automatically by Deploying a JAR](function_execution.html#function_execution__section_164E27B88EC642BA8D2359B18517B624) for details. Alternatively, you can write the XML or application code to register the function. See [Register the Function Programmatically](function_execution.html#function_execution__section_1D1056F843044F368FB76F47061FCD50) for details.
+3.  Write the application code to run the function and, if the function returns results, to handle the results.
+4.  If your function returns results and you need special results handling, code a custom `ResultsCollector` implementation and use it in your function execution.
+
+<a id="function_execution__section_7D43B0C628D54F579D5C434D3DF69B3C"></a>
+
+## Write the Function Code
+
+To write the function code, you implement the `Function` interface or extend the `FunctionAdapter` class. Both are in the `com.gemstone.gemfire.cache.execute` package. The adapter class provides some default implementations for methods, which you can override.
+
+Code the methods you need for the function. These steps do not have to be done in this order.
+
+1.  Code `getId` to return a unique name for your function. You can use this name to access the function through the `FunctionService` API.
+2.  For high availability:
+    1.  Code `isHa` to return true to indicate to <span class="keyword">GemFire</span> that it can re-execute your function after one or more members fails
+    2.  Code your function to return a result
+    3.  Code `hasResult` to return true
+
+3.  Code `hasResult` to return true if your function returns results to be processed and false if your function does not return any data - the fire and forget function. `FunctionAdapter` `hasResult` returns true by default.
+4.  If the function will be executed on a region, code `optimizeForWrite` to return false if your function only reads from the cache, and true if your function updates the cache. The method only works if, when you are running the function, the `Execution` object is obtained through a `FunctionService` `onRegion` call. `FunctionAdapter` `optimizeForWrite` returns false by default.
+5.  Code the `execute` method to perform the work of the function.
+    1.  Make `execute` thread safe to accommodate simultaneous invocations.
+    2.  For high availability, code `execute` to accommodate multiple identical calls to the function. Use the `RegionFunctionContext` `isPossibleDuplicate` to determine whether the call may be a high-availability re-execution. This boolean is set to true on execution failure and is false otherwise.
+        **Note:**
+        The `isPossibleDuplicate` boolean can be set following a failure from another member’s execution of the function, so it only indicates that the execution might be a repeat run in the current member.
+
+    3.  Use the function context to get information about the execution and the data:
+        -   The context holds the function ID, the `ResultSender` object for passing results back to the originator, and function arguments provided by the member where the function originated.
+        -   The context provided to the function is the `FunctionContext`, which is automatically extended to `RegionFunctionContext` if you get the `Execution` object through a `FunctionService` `onRegion` call.
+        -   For data dependent functions, the `RegionFunctionContext` holds the `Region` object, the `Set` of key filters, and a boolean indicating multiple identical calls to the function, for high availability implementations.
+        -   For partitioned regions, the `PartitionRegionHelper` provides access to additional information and data for the region. For single regions, use `getLocalDataForContext`. For colocated regions, use `getLocalColocatedRegions`.
+            **Note:**
+            When you use `PartitionRegionHelper.getLocalDataForContext`, `putIfAbsent` may not return expected results if you are working on local data set instead of the region.
+
+    4.  To propagate an error condition or exception back to the caller of the function, throw a FunctionException from the `execute` method. <span class="keyword">GemFire</span> transmits the exception back to the caller as if it had been thrown on the calling side. See the Java API documentation for [FunctionException](/releases/latest/javadoc/com/gemstone/gemfire/cache/execute/FunctionException.html/) for more information.
+
+Example function code:
+
+``` pre
+package quickstart;
+
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
+import com.gemstone.gemfire.cache.execute.FunctionAdapter;
+import com.gemstone.gemfire.cache.execute.FunctionContext;
+import com.gemstone.gemfire.cache.execute.RegionFunctionContext;
+import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
+
+public class MultiGetFunction extends FunctionAdapter {
+
+  public void execute(FunctionContext fc) { 
+    if(! (fc instanceof RegionFunctionContext)){
+       throw new FunctionException("This is a data aware function, and has 
+to be called using FunctionService.onRegion.");
+    }
+    RegionFunctionContext context = (RegionFunctionContext)fc;
+    Set keys = context.getFilter();
+    Set keysTillSecondLast = new HashSet(); 
+    int setSize = keys.size();
+    Iterator keysIterator = keys.iterator();
+    for(int i = 0; i < (setSize -1); i++)
+    {
+      keysTillSecondLast.add(keysIterator.next());
+    }
+    for (Object k : keysTillSecondLast) {
+      context.getResultSender().sendResult(
+          (Serializable)PartitionRegionHelper.getLocalDataForContext(context)
+              .get(k));
+    }
+    Object lastResult = keysIterator.next();
+    context.getResultSender().lastResult(
+        (Serializable)PartitionRegionHelper.getLocalDataForContext(context)
+            .get(lastResult));
+  }
+
+  public String getId() {
+    return getClass().getName();
+  }
+}
+```
+
+<a id="function_execution__section_164E27B88EC642BA8D2359B18517B624"></a>
+
+## Register the Function Automatically by Deploying a JAR
+
+When you deploy a JAR file that contains a Function (in other words, contains a class that implements the Function interface), the Function will be automatically registered via the `FunctionService.registerFunction` method.
+
+To register a function by using `gfsh`:
+
+1.  Package your class files into a JAR file.
+2.  Start a `gfsh` prompt. If necessary, start a Locator and connect to the <span class="keyword">GemFire</span> distributed system where you want to run the function.
+3.  At the gfsh prompt, type the following command:
+
+    ``` pre
+    gfsh>deploy --jar=group1_functions.jar
+    ```
+
+    where group1\_functions.jar corresponds to the JAR file that you created in step 1.
+
+If another JAR file is deployed (either with the same JAR filename or another filename) with the same Function, the new implementation of the Function will be registered, overwriting the old one. If a JAR file is undeployed, any Functions that were auto-registered at the time of deployment will be unregistered. Since deploying a JAR file that has the same name multiple times results in the JAR being un-deployed and re-deployed, Functions in the JAR will be unregistered and re-registered each time this occurs. If a Function with the same ID is registered from multiple differently named JAR files, the Function will be unregistered if either of those JAR files is re-deployed or un-deployed.
+
+See [Deploying Application JARs to Pivotal GemFire Members](../../configuring/cluster_config/deploying_application_jars.html#concept_4436C021FB934EC4A330D27BD026602C) for more details on deploying JAR files.
+
+<a id="function_execution__section_1D1056F843044F368FB76F47061FCD50"></a>
+
+## Register the Function Programmatically
+
+This section applies to functions that are invoked using the `Execution.execute(String functionId)` signature. When this method is invoked, the calling application sends the function ID to all members where the `Function.execute` is to be run. Receiving members use the ID to look up the function in the local `FunctionService`. In order to do the lookup, all of the receiving member must have previously registered the function with the function service.
+
+The alternative to this is the `Execution.execute(Function function)` signature. When this method is invoked, the calling application serializes the instance of `Function` and sends it to all members where the `Function.execute` is to be run. Receiving members deserialize the `Function` instance, create a new local instance of it, and run execute from that. This option is not available for non-Java client invocation of functions on servers.
+
+Your Java servers must register functions that are invoked by non-Java clients. You may want to use registration in other cases to avoid the overhead of sending `Function` instances between members.
+
+Register your function using one of these methods:
+
+-   XML:
+
+    ``` pre
+    <cache>
+        ...
+        </region>
+    <function-service>
+      <function>
+        <class-name>com.bigFatCompany.tradeService.cache.func.TradeCalc</class-name>
+      </function>
+    </function-service>
+    ```
+
+-   Java:
+
+    ``` pre
+    myFunction myFun = new myFunction();
+    FunctionService.registerFunction(myFun);
+    ```
+
+    **Note:**
+    Modifying a function instance after registration has no effect on the registered function. If you want to execute a new function, you must register it with a different identifier.
+
+<a id="function_execution__section_6A0F4C9FB77C477DA5D995705C8BDD5E"></a>
+
+## Run the Function
+
+This assumes you’ve already followed the steps for writing and registering the function.
+
+In every member where you want to explicitly execute the function and process the results, you can use the `gfsh` command line to run the function or you can write an application to run the function.
+
+**Running the Function Using gfsh**
+
+1.  Start a gfsh prompt.
+2.  If necessary, start a Locator and connect to the <span class="keyword">GemFire</span> distributed system where you want to run the function.
+3.  At the gfsh prompt, type the following command:
+
+    ``` pre
+    gfsh> execute function --id=function_id
+    ```
+
+    Where *function\_id* equals the unique ID assigned to the function. You can obtain this ID using the `Function.getId` method.
+
+See [Function Execution Commands](../../tools_modules/gfsh/quick_ref_commands_by_area.html#topic_8BB061D1A7A9488C819FE2B7881A1278) for more `gfsh` commands related to functions.
+
+**Running the Function via API Calls**
+
+1.  Use one of the `FunctionService` `on*` methods to create an `Execute` object. The `on*` methods, `onRegion`, `onMembers`, etc., define the highest level where the function is run. For colocated partitioned regions, use `onRegion` and specify any one of the colocated regions. The function run using `onRegion` is referred to as a data dependent function - the others as data-independent functions.
+2.  Use the `Execution` object as needed for additional function configuration. You can:
+    -   Provide a key `Set` to `withFilters` to narrow the execution scope for `onRegion` `Execution` objects. You can retrieve the key set in your `Function` `execute` method through `RegionFunctionContext.getFilter`.
+    -   Provide function arguments to `withArgs`. You can retrieve these in your `Function` `execute` method through `FunctionContext.getArguments`.
+    -   Define a custom `ResultCollector`
+
+3.  Call the `Execution` object to `execute` method to run the function.
+4.  If the function returns results, call `getResult` from the results collector returned from `execute` and code your application to do whatever it needs to do with the results.
+    **Note:**
+    For high availability, you must call the `getResult` method.
+
+Example of running the function - for executing members:
+
+``` pre
+MultiGetFunction function = new MultiGetFunction();
+FunctionService.registerFunction(function);
+    
+writeToStdout("Press Enter to continue.");
+stdinReader.readLine();
+    
+Set keysForGet = new HashSet();
+keysForGet.add("KEY_4");
+keysForGet.add("KEY_9");
+keysForGet.add("KEY_7");
+
+Execution execution = FunctionService.onRegion(exampleRegion)
+    .withFilter(keysForGet)
+    .withArgs(Boolean.TRUE)
+    .withCollector(new MyArrayListResultCollector());
+
+ResultCollector rc = execution.execute(function);
+// Retrieve results, if the function returns results
+List result = (List)rc.getResult();
+```
+
+<a id="function_execution__section_F2AFE056650B4BF08BC865F746BFED38"></a>
+
+## Write a Custom Results Collector
+
+This topic applies to functions that return results.
+
+When you execute a function that returns results, the function stores the results into a `ResultCollector` and returns the `ResultCollector` object. The calling application can then retrieve the results through the `ResultCollector` `getResult` method. Example:
+
+``` pre
+ResultCollector rc = execution.execute(function);
+List result = (List)rc.getResult();
+```
+
+<span class="keyword">GemFire</span>’s default `ResultCollector` collects all results into an `ArrayList`. Its `getResult` methods block until all results are received. Then they return the full result set.
+
+To customize results collecting:
+
+1.  Write a class that extends `ResultCollector` and code the methods to store and retrieve the results as you need. Note that the methods are of two types:
+    1.  `addResult` and `endResults` are called by <span class="keyword">GemFire</span> when results arrive from the `Function` instance `SendResults` methods
+    2.  `getResult` is available to your executing application (the one that calls `Execution.execute`) to retrieve the results
+
+2.  Use high availability for `onRegion` functions that have been coded for it:
+    1.  Code the `ResultCollector` `clearResults` method to remove any partial results data. This readies the instance for a clean function re-execution.
+    2.  When you invoke the function, call the result collector `getResult` method. This enables the high availability functionality.
+
+3.  In your member that calls the function execution, create the `Execution` object using the `withCollector` method, and passing it your custom collector. Example:
+
+    ``` pre
+    Execution execution = FunctionService.onRegion(exampleRegion)
+        .withFilter(keysForGet)
+        .withArgs(Boolean.TRUE)
+        .withCollector(new MyArrayListResultCollector());
+    ```
+
+<a id="function_execution__section_638E1FB9B08F4CC4B62C07DDB3661C14"></a>
+
+## Targeting Single Members of a Member Group or Entire Member Groups
+
+To execute a data independent function on a group of members or one member in a group of members, you can write your own nested function. You will need to write one nested function if you are executing the function from client to server and another nested function if you are executing a function from server to all members.

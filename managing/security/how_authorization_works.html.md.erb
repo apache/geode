@@ -1,0 +1,19 @@
+---
+title:  How Authorization Works
+---
+
+The security framework establishes trust between members during authentication. In a client/server system, you can use this trust to grant or withhold a client's cache access and modification requests.
+
+Access rights can be checked before the client operation is performed and before results of the operation are sent back to the client. Access control is done according to your configurations and programmatic plug-ins.
+
+<img src="../../images/security-4.gif" id="how_authorization_works__image_254428E85E8B47F9B558DA4C5DC02B93" class="image" />
+The principal, which you associate with the client when it is authenticated, is used by the authorization plug-in to allow or disallow each operation. <span class="keyword">GemFire</span> security invokes this callback with the principal and the requested operation, and permits or bars the operation depending on the result of the callback. The callback also has access to the operation data, such as the key and value for a `put`, which you can use to determine authorization. In addition, you can program the callback to change some of the operation data, such as the value for a `put` or the operation result.
+
+All client operations sent to the server can be authorized. The operations checked by the server are listed in `com.gemstone.gemfire.cache.operations.OperationContext.OperationCode`.
+
+**Note:**
+`Region` query shortcut methods are all sent to the server as `query` operations.
+
+All client operations that return a result (like `get` and `query`) and all notifications can also be authorized in the post-operation phase where the callback can peek and even modify the result being sent out.
+
+

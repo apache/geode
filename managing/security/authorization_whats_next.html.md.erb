@@ -1,0 +1,22 @@
+---
+title:  Performance and Programming Considerations
+---
+
+This section provides guidelines for improving the efficiency of the authorization process.
+
+<a id="authorization_whats_next__section_9C1C676CDC474310AD9D31F1E897C022"></a>
+## Performance
+
+For each new connection request from the client, the system authenticates the connection, and instantiates the callback for authorization of data requests and data updates coming in on that connection. Program to cache as much information as you can in the `AccessControl.init` method phase for quick authorization of each operation on the connection. Then you can use the cached information in `AccessControl.authorizeOperation`, which is called for every client operation.
+
+The efficiency of the `authorizeOperation` method directly affects the overall throughput of the <span class="keyword">GemFire</span> cache.
+
+<a id="authorization_whats_next__section_96657E491DDD47569C4E375B0355E1A3"></a>
+
+## Programming
+
+Authorization in the post-operation phase occurs after the operation is complete and before the results are sent to the client. If the operations are not using `FunctionService`, the callback can modify the results of certain operations, such as `query`, `get` and `keySet`. For example, a post-operation callback for a query operation can filter out sensitive data or data that the client should not receive. For all operations, the callback can completely disallow the operation. However, if the operations are using `FunctionService`, the callback cannot modify the results of the operations, but can only completely allow or disallow the operation.
+
+With querying, regions used in the query are obtained in the initial parsing phase. The region list is then passed to the post-operation callback unparsed. In addition, this callback is invoked for updates that are sent by the server to the client on the notification channel. This includes updates from a continuous query registered on the server by the client. The operation proceeds if it is allowed by the callback; otherwise a `NotAuthorizedException` is sent back to the client and the client throws the exception back to the caller.
+
+For more advanced requirements like per-object authorization, you could modify the cache value in a `put` operation by the callback in the pre-operation phase to add an authorization token. This token would be propagated through the cache to all cache servers. The token can then be used for fast authorization during region `get` and `query` operations, and it can be removed from the object by changing the operation result. This makes the entire process completely transparent to the clients.

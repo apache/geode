@@ -1,0 +1,42 @@
+---
+title:  Changing the File Specifications
+---
+
+You can change all file specifications in the `gemfire.properties` file and at the command line.
+
+**Note:**
+<span class="keyword">GemFire</span> applications can use the API to pass `java.lang.System properties` to the distributed system connection. This changes file specifications made at the command line and in the `gemfire.properties`. You can verify an application’s property settings in the configuration information logged at application startup. The configuration is listed when the `gemfire.properties` `log-level` is set to `config` or lower.
+
+This invocation of the application, `testApplication.TestApp1`, provides non-default specifications for both the `cache.xml` and `gemfire.properties`:
+
+``` pre
+java -Dgemfire.cache-xml-file=
+/gemfireSamples/examples/dist/cacheRunner/queryPortfolios.xml 
+-DgemfirePropertyFile=defaultConfigs/gemfire.properties
+testApplication.TestApp1 
+```
+
+The gfsh start server command can use the same specifications:
+
+``` pre
+gfsh>start server
+-J-Dgemfire.cache-xml-file=/gemfireSamples/examples/dist/cacheRunner/queryPortfolios.xml 
+-J-DgemfirePropertyFile=defaultConfigs/gemfire.properties
+```
+
+You can also change the specifications for the `cache.xml` file inside the `gemfire.properties` file.
+
+**Note:**
+Specifications in `gemfire.properties` files cannot use environment variables.
+
+Example `gemfire.properties` file with non-default `cache.xml` specification:
+
+``` pre
+#Tue May 09 17:53:54 PDT 2006
+mcast-address=224.0.0.250
+mcast-port=10333
+locators=
+cache-xml-file=/gemfireSamples/examples/dist/cacheRunner/queryPortfolios.xml
+```
+
+

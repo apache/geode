@@ -1,0 +1,31 @@
+---
+title:  Adding JSON Documents to the <span class="keyword">GemFire</span> Cache
+---
+
+The `JSONFormatter` API allows you to put JSON formatted documents into regions and retrieve them later by storing the documents internally as PdxInstances.
+
+<span class="keyword">GemFire</span> now supports the use of JSON formatted documents natively. When you add a JSON document to a <span class="keyword">GemFire</span> cache, you call the JSONFormatter APIs to transform them into the PDX format (as a `PdxInstance`), which enables <span class="keyword">GemFire</span> to understand the JSON document at a field level.
+
+In terms of querying and indexing, because the documents are stored internally as PDX, applications can index on any field contained inside the JSON document including any nested field (within JSON objects or JSON arrays.) Any queries run on these stored documents will return PdxInstances as results. To update a JSON document stored in <span class="keyword">GemFire</span> , you can execute a function on the PdxInstance.
+
+You can then use the `JSONFormatter` to convert the PdxInstance results back into the JSON document.
+
+`JSONFormatter` uses a streaming parser ([Jackson](http://wiki.fasterxml.com/JacksonHome), JSON processor) to turn JSON documents into the optimized PDX format. To use the JSONFormatter, make sure that `$GEMFIRE/lib/server-dependencies.jar` is available in your application's CLASSPATH.
+
+The `JSONFormatter` class has four static methods that are used to convert JSON document into PdxInstances and then to convert those PdxInstances back into JSON document.
+
+You need to call the following methods before putting any JSON document into the <span class="keyword">GemFire</span> region:
+
+-   `fromJSON`. Creates a PdxInstance from a JSON byte array. Returns the PdxInstance.
+-   `fromJSON`. Creates a PdxInstance from a JSON string. Returns the PdxInstance.
+
+After putting the JSON document into a region as a PdxInstance, you can execute standard <span class="keyword">GemFire</span> queries and create indexes on the JSON document in the same manner you would query or index any other <span class="keyword">GemFire</span> PdxInstance.
+
+After executing a <span class="keyword">GemFire</span> query or calling `region.get`, you can use the following methods to convert a PdxInstance back into the JSON format:
+
+-   `toJSON`. Reads a PdxInstance and returns a JSON string.
+-   `toJSONByteArray`. Reads a PdxInstance and returns a JSON byte array.
+
+For more information on using the JSONFormatter, see the Java API documentation for `com.gemstone.gemfire.pdx.JSONFormatter`.
+
+

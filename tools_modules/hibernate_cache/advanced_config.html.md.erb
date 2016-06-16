@@ -1,0 +1,36 @@
+---
+title:  Advanced Configuration of the Hibernate Cache Module
+---
+
+After you set up Hibernate to work with the <span class="keyword">GemFire</span> module, <span class="keyword">GemFire</span> will run automatically with preconfigured settings. Depending on your topology, you may want to change these settings.
+
+<span class="keyword">GemFire</span> has these default settings:
+
+-   <span class="keyword">GemFire</span> runs in a peer-to-peer configuration, rather than a client/server configuration.
+-   Locators provide member discovery and load balancing services.
+-   The cache region is replicated.
+
+These settings might not reflect your preferred usage. To change these and other settings, refer to this section.
+
+<a id="hib_cach_adv_conf__configuration_flowchart"></a>
+## Configuration Flowchart
+
+The following flowchart illustrates some of the decisions you might consider before making configuration changes. If the action says "no change req.", then no configuration change is required to run <span class="keyword">GemFire</span> in that mode. All other actions are cross-referenced below the flowchart. For more information about the common <span class="keyword">GemFire</span> topologies, refer to [Common <span class="keyword">GemFire</span> Topologies](advanced_config.html#hib_cach_adv_conf__common_gemfire_topologies). For general information on how to make configuration changes, refer to "Changing <span class="keyword">GemFire</span>'s Default Configuration".
+
+<img src="../../images/HibernateFlowchart.png" id="hib_cach_adv_conf__image_vjs_5c2_wv" class="image" />
+-   **Use a Client/Server configuration**: See [Changing the <span class="keyword">GemFire</span> Topology](changing_gemfire_default_cfg.html#changing_gemfire_default_cfg__changing_gemfire_topology) for more information.
+-   **Use a replicated region for server**: Change the server region shortcut to REPLICATE\_HEAP\_LRU as described in [Changing the Client/Server Region Attributes](changing_gemfire_default_cfg.html#changing_gemfire_default_cfg__changing_cs_region_atts).
+-   **Use a partitioned region for peer**: Change the peer region shortcut to PARTITION as described in [Changing the Peer-to-peer Region Attributes](changing_gemfire_default_cfg.html#changing_gemfire_default_cfg__changing_p2p_region_atts).
+-   **Use a CACHING\_PROXY region for client**: Change the client region shortcut to CACHING\_PROXY as described in [Changing the Client/Server Region Attributes](changing_gemfire_default_cfg.html#changing_gemfire_default_cfg__changing_cs_region_atts).
+
+<a id="hib_cach_adv_conf__common_gemfire_topologies"></a>
+
+## Common <span class="keyword">GemFire</span> Topologies
+
+Before configuring the <span class="keyword">GemFire</span> module, you must consider which basic topology is suited for your usage. The configuration process is slightly different for each topology.
+
+-   **Peer-to-Peer Configuration**. In a peer-to-peer configuration, each <span class="keyword">GemFire</span> instance within a Hibernate JVM contains its own cache. It communicates with other <span class="keyword">GemFire</span> instances as peers (rather than clients and servers). Depending on the way the <span class="keyword">GemFire</span> data region is defined, data is either replicated across all <span class="keyword">GemFire</span> peers or it is partitioned so that each instance's cache contains a portion of the entire data set. By default, data is replicated. A peer-to-peer configuration is useful when multiple systems need fast access to all data. By default, the <span class="keyword">GemFire</span> module will operate in a peer-to-peer configuration.
+    <img src="../../images_svg/hibernate_p2p.svg" id="hib_cach_adv_conf__image_B94FF72772C84014B382F949C8CA998C" class="image" />
+-   **Client/Server Configuration**. In a client/server configuration, the Hibernate JVM operates as a <span class="keyword">GemFire</span> client, which must communicate with one or more <span class="keyword">GemFire</span> servers to acquire data. A client/server configuration is useful when you want to separate the Hibernate JVM from the cached data. In this configuration, you can reduce the memory consumption of the Hibernate process since data is stored in separate <span class="keyword">GemFire</span> server processes. For instruction on running <span class="keyword">GemFire</span> in a client/server configuration, refer to [Changing the <span class="keyword">GemFire</span> Topology](changing_gemfire_default_cfg.html#changing_gemfire_default_cfg__changing_gemfire_topology).
+    <img src="../../images_svg/hibernate_cs.svg" id="hib_cach_adv_conf__image_AAB713A6A4BC4BBEB1AFD5E6668E77BD" class="image" />
+

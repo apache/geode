@@ -1,0 +1,179 @@
+---
+title:  Making Sure You Have Enough Sockets
+---
+
+The number of sockets available to your applications is governed by operating system limits.
+
+Sockets use file descriptors and the operating system’s view of your application’s socket use is expressed in terms of file descriptors. There are two limits, one on the maximum descriptors available to a single application and the other on the total number of descriptors available in the system. If you get error messages telling you that you have too many files open, you might be hitting the operating system limits with your use of sockets. Your system administrator might be able to increase the system limits so that you have more available. You can also tune your members to use fewer sockets for their outgoing connections. This section discusses socket use in <span class="keyword">GemFire</span> and ways to limit socket consumption in your <span class="keyword">GemFire</span> members.
+
+<a id="socket_comm__section_31B4EFAD6F384AB1BEBCF148D3DEA514"></a>
+## Socket Sharing
+
+You can configure socket sharing for peer-to-peer and client-to-server connections:
+
+-   **Peer-to-peer**. You can configure whether your members share sockets both at the application level and at the thread level. To enable sharing at the application level, set the `gemfire.properties` `conserve-sockets` to true. To achieve maximum throughput, however, we recommend that you set `conserve-sockets` to `false`.
+
+    At the thread level, developers can override this setting by using the DistributedSystem API method `setThreadsSocketPolicy`. You might want to enable socket sharing at the application level and then have threads that do a lot of cache work take sole ownership of their sockets. Make sure to program these threads to release their sockets as soon as possible using the `releaseThreadsSockets` method, rather than waiting for a timeout or thread death.
+
+-   **Client**. You can configure whether your clients share their socket connections to servers with the pool setting `thread-local-connections`. There is no thread override for this setting. All threads either have their own socket or they all share.
+
+<a id="socket_comm__section_6189D4E5E14F47E7882354603FBCE471"></a>
+
+## Socket Lease Time
+
+You can force the release of an idle socket connection for peer-to-peer and client-to-server connections:
+
+-   **Peer-to-peer**. For peer-to-peer threads that do not share sockets, you can use the `socket-lease-time` to make sure that no socket sits idle for too long. When a socket that belongs to an individual thread remains unused for this time period, the system automatically returns it to the pool. The next time the thread needs a socket, it creates a new socket.
+-   **Client**. For client connections, you can affect the same lease-time behavior by setting the pool `idle-timeout`.
+
+<a id="socket_comm__section_936C6562C0034A2EAC9A63FFE9FDAC36"></a>
+
+## Calculating Connection Requirements
+
+Each type of member has its own connection requirements. Clients need connections to their servers, peers need connections to peers, and so on. Many members have compound roles. Use these guidelines to figure each member’s socket needs and to calculate the combined needs of members that run on a single host system.
+
+A member’s socket use is governed by a number of factors, including:
+
+-   How many peer members it connects to
+-   How many threads it has that update the cache and whether the threads share sockets
+-   Whether it is a server or a client,
+-   How many connections come in from other processes
+
+The socket requirements described here are worst-case. Generally, it is not practical to calculate exact socket use for your applications. Socket use varies depending a number of factors including how many members are running, what their threads are doing, and whether threads share sockets.
+
+To calculate any member’s socket requirements, add up the requirements for every category that applies to the member. For example, a cache server running in a distributed system with clients connected to it has both peer-to-peer and server socket requirements.
+
+<a id="socket_comm__section_DF64BDE7B6AA47A9B08E0540CAD6DA3A"></a>
+
+## Peer-to-Peer Socket Requirements Per Member
+
+Every member of a distributed system maintains two outgoing and two incoming connections to every peer. If threads share sockets, these fixed sockets are the sockets they share.
+
+For every thread that does not share sockets, additional sockets, one in and one out, are added for each peer. This affects not only the member’s socket count, but the socket count for every member the member thread connects to.
+
+In this table:
+
+-   M is the total number of members in the distributed system.
+-   T is the number of threads in a member that own their own sockets and do not share.
+
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Peer Member Socket Description</th>
+<th>Number Used</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><p>Membership failure detection</p></td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td><p>Listener for incoming peer connections (server P2P)</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="odd">
+<td><p>Shared sockets (2 in and 2 out)</p>
+<p>Threads that share sockets use these.</p></td>
+<td><p>4 * (M-1)</p></td>
+</tr>
+<tr class="even">
+<td>This member’s thread-owned sockets (1 in and 1 out for each thread, for each peer member).</td>
+<td><p>(T * 2) * (M-1)</p></td>
+</tr>
+<tr class="odd">
+<td><p>Other member’s thread-owned sockets that connect to this member (1 in and 1 out for each). Note that this might include server threads if any of the other members are servers (see Server).</p></td>
+<td><p>Summation over (M-1) other members of (T*2)</p></td>
+</tr>
+</tbody>
+</table>
+
+**Note:**
+The threads servicing client requests add to the total count of thread-owned sockets both for this member connecting to its peers and for peers that connect to this member.
+
+<a id="socket_comm__section_0497E07414CC4E0B968B4F3A7AFD3690"></a>
+
+## Server Socket Requirements Per Server
+
+Servers use one connection for each incoming client connection. By default, each connection is serviced by a server thread. These threads that service client requests communicate with the rest of the server distributed system to satisfy the requests and distributed update operations. Each of these threads uses its own thread-owned sockets for peer-to-peer communication. So this adds to the server’s group of thread-owned sockets.
+
+The thread and connection count in the server may be limited by server configuration settings. These are max-connections and max-threads settings in the &lt;cache-server&gt; element of the `cache.xml`. These settings limit the number of connections the server accepts and the maximum number of threads that can service client requests. Both of these limit the server's overall connection requirements:
+
+-   When the connection limit is reached, the server refuses additional connections. This limits the number of connections the server uses for clients.
+-   When the thread limit is reached, threads start servicing multiple connections. This does not limit the number of client connections, but does limit the number of peer connections required to service client requests. Each server thread used for clients uses its own sockets, so it requires 2 connections to each of the server’s peers. The max-threads setting puts a cap on the number of this type of peer connection that your server needs.
+
+The server uses one socket for each incoming client pool connection. If client subscriptions are used, the server creates an additional connection to each client that enables subscriptions.
+
+In this table, M is the total number of members in the distributed system.
+
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Server Socket Description</th>
+<th>Number Used</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Listener for incoming client connections</td>
+<td><p>1</p></td>
+</tr>
+<tr class="even">
+<td>Client pool connections to server</td>
+<td>Number of pool connections to this server</td>
+</tr>
+<tr class="odd">
+<td><p>Threads servicing client requests (the lesser of the client pool connection count and the server’s max-threads setting). These connections are to the server’s peers.</p></td>
+<td><p>(2 * number of threads in a server that service client pool connections)</p>
+<p>* (M-1)</p>
+<p>These threads do not share sockets.</p></td>
+</tr>
+<tr class="even">
+<td>Subscription connections</td>
+<td><p>2 * number of client subscription connections to this server</p></td>
+</tr>
+</tbody>
+</table>
+
+With client/server installations, the number of client connections to any single server is undetermined, but <span class="keyword">GemFire</span>’s server load balancing and conditioning keeps the connections fairly evenly distributed among servers.
+
+Servers are peers in their own distributed system and have the additional socket requirements as noted in the Peer-to-Peer section above.
+
+<a id="socket_comm__section_0D46E55422D24BA1B0CD888E14FD5182"></a>
+
+## Client Socket Requirements per Client
+
+Client connection requirements are compounded by how many pools they use. The use varies according to runtime client connection needs, but will usually have maximum and minimum settings. Look for the &lt;pool&gt; element in the `cache.xml` for the configuration properties.
+
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Client Socket Description</th>
+<th>Number Used</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><p>Pool connection</p></td>
+<td><p>summation over the client pools of max-connections</p></td>
+</tr>
+<tr class="even">
+<td><p>Subscription connections</p></td>
+<td><p>2 * summation over the client pools of subscription-enabled</p></td>
+</tr>
+</tbody>
+</table>
+
+If your client acts as a peer in its own distributed system, it has the additional socket requirements as noted in the Peer-to-Peer section of this topic.

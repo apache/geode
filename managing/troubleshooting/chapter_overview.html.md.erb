@@ -1,0 +1,43 @@
+---
+title:  Troubleshooting and System Recovery
+---
+
+This section provides strategies for handling common errors and failure situations.
+
+-   **[Producing Artifacts for Troubleshooting](../../../latest/managing/troubleshooting/producing_troubleshooting_artifacts.html)**
+
+    There are several types of files that are critical for troubleshooting.
+
+-   **[Diagnosing System Problems](../../../latest/managing/troubleshooting/diagnosing_system_probs.html)**
+
+    This section provides possible causes and suggested responses for system problems.
+
+-   **[System Failure and Recovery](../../../latest/managing/troubleshooting/system_failure_and_recovery.html)**
+
+    This section describes alerts for and appropriate responses to various kinds of system failures. It also helps you plan a strategy for data recovery.
+
+-   **[Handling Forced Cache Disconnection Using Autoreconnect](../../../latest/managing/autoreconnect/member-reconnect.html)**
+
+    A <span class="keyword">GemFire</span> member may be forcibly disconnected from a <span class="keyword">GemFire</span> distributed system if the member is unresponsive for a period of time, or if a network partition separates one or more members into a group that is too small to act as the distributed system.
+
+-   **[Recovering from Application and Cache Server Crashes](../../../latest/managing/troubleshooting/recovering_from_app_crashes.html)**
+
+    When the application or cache server crashes, its local cache is lost, and any resources it owned (for example, distributed locks) are released. The member must recreate its local cache upon recovery.
+
+-   **[Recovering from Machine Crashes](../../../latest/managing/troubleshooting/recovering_from_machine_crashes.html)**
+
+    When a machine crashes because of a shutdown, power loss, hardware failure, or operating system failure, all of its applications and cache servers and their local caches are lost.
+
+-   **[Recovering from ConfictingPersistentDataExceptions](../../../latest/managing/troubleshooting/recovering_conflicting_data_exceptions.html)**
+
+    A `ConflictingPersistentDataException` while starting up persistent members indicates that you have multiple copies of some persistent data, and <span class="keyword">GemFire</span> cannot determine which copy to use.
+
+-   **[Preventing and Recovering from Disk Full Errors](../../../latest/managing/troubleshooting/prevent_and_recover_disk_full_errors.html)**
+
+    It is important to monitor the disk usage of <span class="keyword">GemFire</span> members. If a member lacks sufficient disk space for a disk store, the member attempts to shut down the disk store and its associated cache, and logs an error message. A shutdown due to a member running out of disk space can cause loss of data, data file corruption, log file corruption and other error conditions that can negatively impact your applications.
+
+-   **[Understanding and Recovering from Network Outages](../../../latest/managing/troubleshooting/recovering_from_network_outages.html)**
+
+    The safest response to a network outage is to restart all the processes and bring up a fresh data set.
+
+

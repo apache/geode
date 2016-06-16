@@ -1,0 +1,27 @@
+<a id="topic_jbt_2y4_wk"></a>
+
+# About Transactions
+
+This section covers the features of <span class="keyword">GemFire</span> transactions.
+
+<span class="keyword">GemFire</span> transactions provide the following features:
+
+-   Basic transaction properties: atomicity, consistency, isolation, and durability
+-   Rollback and commit operations along with standard <span class="keyword">GemFire</span> cache operations
+-   Ability to suspend and resume transactions
+-   High concurrency and high performance
+-   Transaction statistics gathering and archiving
+-   Compatibility with Java Transaction API (JTA) transactions, using either <span class="keyword">GemFire</span> JTA or a third-party implementation
+-   Ability to use <span class="keyword">GemFire</span> as a “last resource” in JTA transactions with multiple data sources to guarantee transactional consistency
+
+## Types of Transactions
+
+<span class="keyword">GemFire</span> supports two kinds of transactions: **<span class="keyword">GemFire</span> cache transactions** and **JTA global transactions**.
+
+<span class="keyword">GemFire</span> cache transactions are used to group the execution of cache operations and to gain the control offered by transactional commit and rollback. Applications create cache transactions by using an instance of the <span class="keyword">GemFire</span> `CacheTransactionManager`. During a transaction, cache operations are performed and distributed through <span class="keyword">GemFire</span> as usual. See [GemFire Cache Transactions](cache_transactions.html#topic_e15_mr3_5k) for details on <span class="keyword">GemFire</span> cache transactions and how these transactions work.
+
+JTA global transactions allow you to use the standard JTA interface to coordinate <span class="keyword">GemFire</span> transactions with JDBC transactions. When performing JTA global transactions, you have the option of using <span class="keyword">GemFire</span>’s own implementation of JTA or a third party’s implementation (typically application servers such as WebLogic or JBoss) of JTA. In addition, some third party JTA implementations allow you to set <span class="keyword">GemFire</span> as a “last resource” to ensure transactional consistency across data sources in the event that <span class="keyword">GemFire</span> or another data source becomes unavailable. For global transactions, applications use `java:/UserTransaction` to start and terminate transactions while <span class="keyword">GemFire</span> cache operations are performed in the same manner as regular <span class="keyword">GemFire</span> cache transactions. See [JTA Global Transactions with GemFire](JTA_transactions.html) for details on JTA Global transactions.
+
+You can also coordinate a <span class="keyword">GemFire</span> cache transaction with an external database by specifying database operations within cache and transaction application plug-ins (CacheWriters/CacheListeners and TransactionWriters/TransactionListeners.) This is an alternative to using JTA transactions. See [How to Run a GemFire Cache Transaction that Coordinates with an External Database](run_a_cache_transaction_with_external_db.html#task_sdn_2qk_2l).
+
+

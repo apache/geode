@@ -1,0 +1,19 @@
+---
+title:  Custom-Partitioning and Colocating Data
+---
+
+You can customize how <span class="keyword">Pivotal GemFire</span> groups your partitioned region data with custom partitioning and data colocation.
+
+-   **[Understanding Custom Partitioning and Data Colocation](../../../latest/developing/partitioned_regions/custom_partitioning_and_data_colocation.html)**
+
+    Custom partitioning and data colocation can be used separately or in conjunction with one another.
+
+-   **[Custom-Partition Your Region Data](../../../latest/developing/partitioned_regions/using_custom_partition_resolvers.html)**
+
+    By default, <span class="keyword">GemFire</span> partitions each data entry into a bucket using a hashing policy on the key. Additionally, the physical location of the key-value pair is abstracted away from the application. You can change these policies for a partitioned region. You can provide your own data partitioning resolver and you can additionally specify which members host which data buckets.
+
+-   **[Colocate Data from Different Partitioned Regions](../../../latest/developing/partitioned_regions/colocating_partitioned_region_data.html)**
+
+    By default, <span class="keyword">GemFire</span> allocates the data locations for a partitioned region independent of the data locations for any other partitioned region. You can change this policy for any group of partitioned regions, so that cross-region, related data is all hosted by the same member. This colocation speeds queries and other operations that access data from the regions.
+
+

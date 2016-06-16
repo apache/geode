@@ -1,0 +1,12 @@
+---
+title:  Cache Transaction Performance
+---
+
+Cache transaction performance can vary depending on the type of regions you are using.
+
+The most common region configurations for use with transactions are distributed replicated and partitioned:
+
+-   Replicated regions are better suited for running transactions on small to mid-size data sets. To ensure all or nothing behavior, at commit time, distributed transactions use the global reservation system of the <span class="keyword">GemFire</span> distributed lock service. This works well as long as the data set is reasonably small.
+-   Partitioned regions are the right choice for highly-performant, scalable operations. Transactions on partitioned regions use only local locking, and only send messages to the redundant data stores at commit time. Because of this, these transactions perform much better than distributed transactions. There are no global locks, so partitioned transactions are extremely scalable as well.
+
+

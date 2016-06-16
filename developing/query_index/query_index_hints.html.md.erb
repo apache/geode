@@ -1,0 +1,23 @@
+---
+title:  Using Query Index Hints
+---
+
+You can use the hint keyword to allow <span class="keyword">GemFire</span>'s query engine to prefer certain indexes.
+
+In cases where one index is hinted in a query, the query engine filters off the hinted index (if possible) and then iterates and filters from the resulting values.
+
+**Example:**
+
+``` pre
+<HINT 'IDIndex'> SELECT * FROM /Portfolios p WHERE p.ID > 10 AND p.owner = 'XYZ'
+```
+
+If multiple indexes are added as hints, then the query engine will try to use as many indexes as possible while giving a preference for the hinted indexes.
+
+**Example:**
+
+``` pre
+<HINT 'IDIndex', 'OwnerIndex'> SELECT * FROM /Portfolios p WHERE p.ID > 10 AND p.owner = 'XYZ' AND p.value < 100
+```
+
+

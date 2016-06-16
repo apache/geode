@@ -1,0 +1,38 @@
+---
+title:  <span class="keyword">GemFire</span> Data Serialization (DataSerializable and DataSerializer)
+---
+
+<span class="keyword">GemFire</span>'s `DataSerializable` interface gives you quick serialization of your objects.
+
+<a id="gemfire_data_serialization__section_0C84D6BF5E9748CB865E6BB944A077DE"></a>
+## Data Serialization with the DataSerializable Interface
+
+<span class="keyword">GemFire</span>'s `DataSerializable` interface gives you faster and more compact data serialization than the standard Java serialization or <span class="keyword">GemFire</span> PDX serialization. However, while <span class="keyword">GemFire</span> `DataSerializable` interface is generally more performant than <span class="keyword">GemFire</span>'s `PdxSerializable`, it requires full deserialization on the server and then reserialization to send the data back to the client.
+
+You can further speed serialization by registering the instantiator for your `DataSerializable` class through `Instantiator`, eliminating the need for reflection to find the right serializer. You can provide your own serialization through the API.
+
+The recommended way to register your custom `Instantiator` is by specifying it in the `serialization-registration` element of cache.xml.
+
+For more information, see the online Java documentation for `DataSerializable` and `DataSerializer`.
+
+**Example cache.xml:**
+
+The following provides an example of how to register an instantiator using cache.xml.
+
+``` pre
+<serialization-registration>
+<instantiator id="30">
+   <class-name>com.package.MyClass</class-name>
+</instantiator>
+</serialization-registration>
+```
+
+In addition to speeding standard object serialization, you can use the `DataSerializable` interface to serialize any custom objects you store in the cache.
+
+<a id="gemfire_data_serialization__section_B21408E7090C41B08BF300146F87648B"></a>
+
+## Serializing Your Domain Object with DataSerializer
+
+You can also use `DataSerializer` to serialize domain objects. It serializes data in the same way as `DataSerializable` but allows you to serialize classes without modifying the domain class code.
+
+See the JavaDocs on [DataSerializable](/releases/latest/javadoc/com/gemstone/gemfire/DataSerializable.html) and [DataSerializer](/releases/latest/javadoc/com/gemstone/gemfire/DataSerializer.html) for more information.

@@ -1,0 +1,32 @@
+<a id="locking-memory"></a>
+
+# Locking Memory (Linux Systems Only)
+
+On Linux systems, you can lock memory to prevent the operating system from paging out heap or off-heap memory.
+
+To use this feature:
+
+1.  Configure the operating system limits for locked memory. Increase the operating system's `ulimit -l` value (the maximum size that may be locked in memory) from the default (typically 32 KB or 64 KB) to at least the total amount of memory used by <span class="keyword">GemFire</span> for on-heap or off-heap storage. To view the current setting, enter `ulimit -a` at a shell prompt and find the value for `max locked                         memory`:
+
+    ``` pre
+    # ulimit -a
+    ...
+    max locked memory       (kbytes, -l) 64
+    ...
+    ```
+
+    Use `ulimit -l max-size-in-kbytes` to raise the limit. For example, to set the locked memory limit to 64 GB:
+
+    ``` pre
+    # ulimit -l 64000000
+    ```
+
+2.  Using locked memory in this manner increases the time required to start <span class="keyword">GemFire</span>. The additional time required to start <span class="keyword">GemFire</span> depends on the total amount of memory used, and can range from several seconds to 10 minutes or more. To improve startup time and reduce the potential of member timeouts, instruct the kernel to free operating system page caches just before starting a <span class="keyword">GemFire</span> member by issuing the following command:
+
+    ``` pre
+    $ echo 1 > /proc/sys/vm/drop_caches
+    ```
+
+3.  Start each <span class="keyword">GemFire</span> data store with the gfsh `-lock-memory=true` option. If you deploy more than one server per host, begin by starting each server sequentially. Starting servers sequentially avoids a race condition in the operating system that can cause failures (even machine crashes) if you accidentally over-allocate the available RAM. After you verify that the system configuration is stable, you can then start servers concurrently.
+
+

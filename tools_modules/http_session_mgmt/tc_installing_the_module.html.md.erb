@@ -1,0 +1,21 @@
+---
+title:  Installing the HTTP Module for tc Server
+---
+
+This topic describes how to install the HTTP session management module with tc Server templates.
+
+1.  If you do not already have tc Server, download and install the product from the [VMware tc Server download page](https://my.vmware.com/web/vmware/info/slug/application_platform/vmware_vfabric_tc_server/2_9) or the [Pivotal tc Server download page](https://network.pivotal.io/products/pivotal-tcserver). These instructions require **tc Server 2.5** or later.
+2.  The HTTP Session Management Module for tc Server is included in the <span class="keyword">Pivotal GemFire</span> installation package. After you install <span class="keyword">Pivotal GemFire</span>, you will find the module in the `tools/Modules` directory of the installation.
+
+3.  Unzip the module into the Pivotal tc Server `$CATALINA_HOME/templates` directory so that it creates `geode-p2p` and `geode-cs` subdirectories within the tc Server `templates` directory.
+4.  Copy these jar files from the Geode distribution `lib` directory to the `lib` directory of your tc server (`<instance>/lib`):
+    -   antlr jar
+    -   fastutil jar
+    -   geode-core jar
+    -   javax.transaction-api jar
+    -   jgroups jar
+    -   log4j-api jar
+    -   log4j-core jar
+    -   log4j-jul jar
+
+

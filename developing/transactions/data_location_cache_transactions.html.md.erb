@@ -1,0 +1,15 @@
+---
+title:  Data Location for Cache Transactions
+---
+
+The location where you can run your transaction depends on where you are storing your data.
+
+Transactions must operate on a data set that is hosted entirely by one member.
+
+-   For replicated or other distributed regions, the transaction uses only the data set in the member where the transaction is run.
+-   For partitioned regions, you must colocate all your transactional data in a single member. See [Colocate Data from Different Partitioned Regions](../partitioned_regions/colocating_partitioned_region_data.html).
+-   For transactions run on partitioned and distributed region mixes, you must colocate the partitioned region data and make sure the distributed region data is available in any member hosting the partitioned region data.
+
+For transactions involving partitioned regions, any member with the regions defined can orchestrate the transactional operations, regardless of whether that member hosts data for the regions. If the transactional data resides on a remote member, the transaction is carried out by proxy in the member hosting the data. The member hosting the data is referred to as the transaction host.
+
+

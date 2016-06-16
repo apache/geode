@@ -1,0 +1,68 @@
+---
+title:  Creating a Region Through the cache.xml File
+---
+
+A common way to create a data region in the <span class="keyword">Pivotal GemFire</span> cache is through `cache.xml` declarations.
+
+Before you start, configure your `<cache>` or `<client-cache>` in your `cache.xml` file and determine the region shortcut and other attributes settings your region needs. The `cache.xml` file must conform to the schema definition provided in the product's `cache-8.1.xsd`.
+
+Region creation is subject to attribute consistency checks, both internal to the cache and, if the region is not local, between all caches where the region is defined. The requirements for consistency between region attributes are detailed in the online Java API documentation.
+
+1.  
+
+    In your `cache.xml` file, create a `<region>` element for your new region as a subelement to the `<cache>` element or the `<client-cache>` element. 
+2.  
+
+    Define your region’s name and a region attributes shortcut setting, if one applies. Find the shortcut setting that most closely fits your region configuration. 
+3.  
+
+    Add other attributes as needed to customize the region’s behavior. 
+
+When you start your member with the `cache.xml` file, the region will be created.
+
+## Examples
+
+Partitioned Region Declaration
+
+``` pre
+<region name="myRegion" refid="PARTITION"/>
+```
+
+Partitioned Region Declaration with Backup to Disk
+
+``` pre
+<region name="myRegion" refid="PARTITION_PERSISTENT"/>
+```
+
+Partitioned Region Declaration with HA and Modified Storage Capacity in Host Member
+
+``` pre
+<region name="myRegion" refid="PARTITION_REDUNDANT">
+    <region-attributes>
+        <partition-attributes local-max-memory="512" />
+    </region-attributes>
+</region>
+```
+
+Replicated Region Declaration
+
+``` pre
+<region name="myRegion" refid="REPLICATE"/>
+```
+
+Replicated Region Declaration with Event Listener and Expiration
+
+``` pre
+<region name="myRegion" refid="REPLICATE">
+    <region-attributes statistics-enabled="true">
+        <entry-time-to-live>
+            <expiration-attributes timeout="60" action="destroy"/>
+        </entry-time-to-live>
+        <cache-listener>
+            <class-name>myPackage.MyCacheListener</class-name>
+        </cache-listener>
+    </region-attributes>
+</region>
+```
+
+

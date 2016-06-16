@@ -1,0 +1,46 @@
+---
+title:  Configure <span class="keyword">Pivotal GemFire</span> to Handle Network Partitioning
+---
+
+This section lists the configuration steps for network partition detection.
+
+<a id="handling_network_partitioning__section_EAF1957B6446491A938DEFB06481740F"></a>
+The system uses a combination of member coordinators and system members, designated as lead members, to detect and resolve network partitioning problems.
+
+1.  Network partition detection works in all environments. Using multiple locators mitigates the effect of network partitioning. See [Configuring Peer-to-Peer Discovery](../../topologies_and_comm/p2p_configuration/setting_up_a_p2p_system.html).
+2.  Enable partition detection consistently in all system members by setting this in their `gemfire.properties` file:
+
+    ``` pre
+    enable-network-partition-detection=true
+    ```
+
+    Enable network partition detection in all locators and in any other process that should be sensitive to network partitioning. Processes that do not have network partition detection enabled are not eligible to be the lead member, so their failure will not trigger declaration of a network partition.
+
+    All system members should have the same setting for `enable-network-partition-detection`. If they don’t, the system throws a `GemFireConfigException` upon startup.
+
+3.  You must set `enable-network-partition-detection` to true if you are using persistent partitioned regions. You **must** set `enable-network-partition-detection` to true if you are using persistent regions (partitioned or replicated). If you create a persistent region and `enable-network-partition-detection` to set to false, you will receive the following warning message:
+
+    ``` pre
+    Creating persistent region {0}, but enable-network-partition-detection is set to false.
+          Running with network partition detection disabled can lead to an unrecoverable system in the
+          event of a network split."
+    ```
+
+4.  Configure regions you want to protect from network partitioning with `DISTRIBUTED_ACK` or `GLOBAL` `scope`. Do not use `DISTRIBUTED_NO_ACK` `scope`. The region configurations provided in the region shortcut settings use `DISTRIBUTED_ACK` scope. This setting prevents operations from performed throughout the distributed system before a network partition is detected.
+    **Note:**
+    GemFire issues an alert if it detects distributed-no-ack regions when network partition detection is enabled:
+
+    ``` pre
+    Region {0} is being created with scope {1} but enable-network-partition-detection is enabled in the distributed system. 
+    This can lead to cache inconsistencies if there is a network failure.
+                                
+    ```
+
+5.  These other configuration parameters affect or interact with network partitioning detection. Check whether they are appropriate for your installation and modify as needed.
+    -   If you have network partition detection enabled, the threshold percentage value for allowed membership weight loss is automatically configured to 51. You cannot modify this value. (**Note:** The weight loss calculation uses standard rounding. Therefore, a value of 50.51 is rounded to 51 and will cause a network partition.)
+    -   Failure detection is initiated if a member's `gemfire.properties` `ack-wait-threshold` (default is 15 seconds) and `ack-severe-alert-threshold` (15 seconds) elapses before receiving a response to a message. If you modify the `ack-wait-threshold` configuration value, you should modify `ack-severe-alert-threshold` to match the other configuration value.
+    -   If the system has clients connecting to it, the clients' `cache.xml` `<cache> <pool> read-timeout` should be set to at least three times the `member-timeout` setting in the server's `gemfire.properties`. The default `<cache> <pool> read-timeout` setting is 10000 milliseconds.
+    -   You can adjust the default weights of members by specifying the system property `gemfire.member-weight` upon startup. For example, if you have some VMs that host a needed service, you could assign them a higher weight upon startup.
+    -   By default, members that are forced out of the distributed system by a network partition event will automatically restart and attempt to reconnect. Data members will attempt to reinitialize the cache. See [Handling Forced Cache Disconnection Using Autoreconnect](../autoreconnect/member-reconnect.html).
+
+

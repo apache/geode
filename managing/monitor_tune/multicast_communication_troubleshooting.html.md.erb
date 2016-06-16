@@ -1,0 +1,21 @@
+---
+title:  Troubleshooting the Multicast Tuning Process
+---
+
+Several problems may arise during the initial testing and tuning process for multicasting.
+
+**Some or All Members Cannot Communicate**
+
+If your applications and cache servers cannot talk to each other, even though they are configured correctly, you may not have multicast connectivity on your network. It’s common to have unicast connectivity, but not multicast connectivity. See your network administrator.
+
+**Multicast Is Slower Than Expected**
+
+Look for an Ethernet flow control limit. If you have mixed-speed networks that result in a multicast flooding problem, the Ethernet hardware may be trying to slow down the fast traffic.
+
+Make sure your network hardware can deal with multicast traffic and route it efficiently. Some network hardware designed to handle multicast does not perform well enough to support a full-scale production system.
+
+**Multicast Fails Unexpectedly**
+
+If you find through testing that multicast fails above a round number, for example, it works up to 100 Mbps and fails at all rates over that, suspect that it is failing because it exceeds the network rate. This problem often arises at sites where one of the secondary LANs is slower than the main network
+
+

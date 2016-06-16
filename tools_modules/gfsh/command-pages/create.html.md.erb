@@ -1,0 +1,945 @@
+<a id="topic_9663C9448D2745B387FC08F84818DDEC"></a>
+
+# create
+
+Create async-event-queues, disk-stores, gateway receivers, gateway senders, indexes, and regions.
+
+-   **[create async-event-queue](../../../../latest/tools_modules/gfsh/command-pages/create.html#topic_ryz_pb1_dk)**
+
+    Creates an asynchronous event queue for batching events before they are delivered by a gateway sender.
+
+-   **[create defined indexes](../../../../latest/tools_modules/gfsh/command-pages/create.html#topic_w2t_l3m_qq)**
+
+    Creates all the defined indexes.
+
+-   **[create disk-store](../../../../latest/tools_modules/gfsh/command-pages/create.html#topic_bkn_zty_ck)**
+
+    Defines a pool of one or more disk stores, which can be used by regions and client subscription queues, and gateway sender queues for WAN distribution.
+
+-   **[create gateway-receiver](../../../../latest/tools_modules/gfsh/command-pages/create.html#topic_a4x_pb1_dk)**
+
+    Creates a gateway receiver. You can only have one gateway receiver on each member, and unlike a gateway sender, you do not need to specify an identifier for the gateway receiver .
+
+-   **[create gateway-sender](../../../../latest/tools_modules/gfsh/command-pages/create.html#topic_hg2_bjz_ck)**
+
+    Creates a gateway sender on one or more members of a distributed system.
+
+-   **[create index](../../../../latest/tools_modules/gfsh/command-pages/create.html#topic_960A5B6FD3D84E1881EE118E299DD12D)**
+
+    Create an index that can be used when executing queries.
+
+-   **[create region](../../../../latest/tools_modules/gfsh/command-pages/create.html#topic_54B0985FEC5241CA9D26B0CE0A5EA863)**
+
+    Create a region with given path and configuration.
+
+<a id="topic_ryz_pb1_dk"></a>
+
+## create async-event-queue
+
+Creates an asynchronous event queue for batching events before they are delivered by a gateway sender.
+
+See [Configuring Multi-Site (WAN) Event Queues](../../../developing/events/configure_multisite_event_messaging.html#configure_multisite_event_messaging).
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+create async-event-queue --id=value --listener=value [--group=value(nullvalue)*]
+    [--parallel(=value)?] [--enable-batch-conflation(=value)?] [--batch-size=value]
+    [--batch-time-interval=value] [--persistent(=value)?] [--disk-store=value]
+    [--disk-synchronous(=value)?] [--max-queue-memory=value]
+    [--dispatcher-threads=value] [--order-policy=value]
+    [--gateway-event-filter=value(,value)*]
+    [--gateway-event-substitution-filter=value] 
+    [--listener-param=value(,value)*]
+```
+
+<a id="topic_ryz_pb1_dk__table_jzz_pb1_dk"></a>
+
+<table>
+<caption><span class="tablecap">Table 1. Parameters</span></caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+<th>Default Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="keyword parmname">--id</span></td>
+<td><em>Required</em>. ID of the asynchronous event queue</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--group</span></td>
+<td>The queue is created on all members of this group. If you do not specify a group the queue is created on all members.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--parallel</span></td>
+<td>Specifies whether the queue is parallel.</td>
+<td>false</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--enable-batch-conflation</span></td>
+<td>Enables batch conflation.</td>
+<td>false</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--batch-size</span></td>
+<td>Maximum number of messages that a batch can contain.</td>
+<td>100</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--batch-time-interval</span></td>
+<td>Maximum amount of time, in ms, that can elapse before a batch is delivered.</td>
+<td>5</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--persistent</span></td>
+<td>Boolean value that determines whether <span class="keyword">GemFire</span> persists this queue.</td>
+<td>false
+<p>If specified with out a value, default is true.</p></td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--disk-store</span></td>
+<td>Named disk store to use for storing queue overflow, or for persisting the queue. If you specify a value, the named disk store must exist. If you specify a null value, <span class="keyword">GemFire</span> uses the default disk store for overflow and queue persistence.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--disk-synchronous</span></td>
+<td>Specifies whether disk writes are synchronous.</td>
+<td>true</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--max-queue-memory</span></td>
+<td>Maximum amount of memory in megabytes that the queue can consume before overflowing to disk.</td>
+<td>100</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--dispatcher-threads</span></td>
+<td>Number of threads used for sending events.</td>
+<td>5</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--order-policy</span></td>
+<td>Policy for dispatching events when --dispatcher-threads is &gt; 1. Possible values are <code class="ph codeph">THREAD</code>, <code class="ph codeph">KEY</code>, <code class="ph codeph">PARTITION</code>.</td>
+<td>KEY</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--gateway-event-filter</span></td>
+<td>List of fully qualified class names of GatewayEventFilters for this queue. These classes filter events before dispatching to remote servers.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--gateway-event-substitution-filter</span></td>
+<td>Fully-qualified class name of the <code class="ph codeph">GatewayEventSubstitutionFilter</code> for this queue.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--listener</span></td>
+<td><em>Required.</em> Fully-qualified class name of Async Event Listener for this queue</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--listener-param</span></td>
+<td>Parameter name and value to be passed to the Async Event Listener class. Optionally, you can specify a value by following the parameter name with the # character and the value. For example:
+<pre class="pre codeblock"><code>--listener-param=myParam#24</code></pre></td>
+<td> </td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 1. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+create async-event-queue --id=myAEQ --listener=myApp.myListener
+```
+
+<a id="topic_w2t_l3m_qq"></a>
+
+## create defined indexes
+
+Creates all the defined indexes.
+
+See also [define index](define.html) and [clear defined indexes](clear.html).
+
+**Availability:** Online. You must be connected in <span class="keyword parmname">gfsh</span> to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+create defined indexes [--member=value] [--group=value]
+```
+
+<a id="topic_w2t_l3m_qq__table_cgy_3jm_qq"></a>
+
+| Name                                           | Description                                                        | Default |
+|------------------------------------------------|--------------------------------------------------------------------|---------|
+| <span class="keyword parmname">--member</span> | Name/Id of the member on which index will be created.              |         |
+| <span class="keyword parmname">--group</span>  | The index will be created on all the members in this member group. |         |
+
+: <span class="tablecap">Table 2. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+create defined indexes
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>create defined indexes
+Indexes successfully created. Use list indexes to get details.
+1. ubuntu(server1:17682)<v1>:27574
+```
+
+If index creation fails, you may receive an error message in gfsh similar to the following:
+
+``` pre
+gfsh>create defined indexes
+Exception : com.gemstone.gemfire.cache.query.RegionNotFoundException , 
+Message : Region ' /r3' not found: from  /r3Occurred on following members
+1. india(s1:17866)<v1>:27809
+```
+
+<a id="topic_bkn_zty_ck"></a>
+
+## create disk-store
+
+Defines a pool of one or more disk stores, which can be used by regions and client subscription queues, and gateway sender queues for WAN distribution.
+
+See [Disk Storage](../../../managing/disk_storage/chapter_overview.html)
+
+**Availability:** Online. You must be connected in <span class="keyword parmname">gfsh</span> to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+create disk-store --name=value --dir=value(,value)* [--allow-force-compaction(=value)?] 
+[--auto-compact(=value)?] [--compaction-threshold=value] [--max-oplog-size=value]
+[--queue-size=value] [--time-interval=value] [--write-buffer-size=value] [--group=value(,value)*] 
+[--disk-usage-warning-percentage=value] [--disk-usage-critical-percentage=value]
+```
+
+<a id="topic_bkn_zty_ck__table_lkn_zty_ck"></a>
+
+<table>
+<caption><span class="tablecap">Table 3. Parameters</span></caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+<th>Default Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="keyword parmname">--name</span></td>
+<td><em>Required.</em> The name of this disk store.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--dir</span></td>
+<td><em>Required.</em> One or more directory names where the disk store files are written. Optionally, directory names may be followed by <code class="ph codeph">#</code> and the maximum number of megabytes that the disk store can use in the directory. For example:
+<pre class="pre codeblock"><code>--dir=/data/ds1 
+--dir=/data/ds2#5000</code></pre>
+If the specified directory does not exist, the command will create the directory for you.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--allow-force-compaction</span></td>
+<td>Set to true to allow disk compaction to be forced on this disk store.</td>
+<td>false</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--auto-compact</span></td>
+<td>Set to true to automatically compact the disk files.</td>
+<td>true</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--compaction-threshold</span></td>
+<td>Percentage of garbage allowed before the disk store is eligible for compaction.</td>
+<td>50</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--max-oplog-size</span></td>
+<td>Maximum size, in megabytes, for an oplog file. When the oplog file reaches this size, the file is rolled over to a new file.</td>
+<td>1024</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--queue-size</span></td>
+<td>Maximum number of operations that can be asynchronously queued to be written to disk.</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--time-interval</span></td>
+<td>The number of milliseconds that can elapse before unwritten data is written to disk.</td>
+<td>1000</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname"> --group</span></td>
+<td>The name of a group of distributed system members. The disk store is created on all members of this group. If no group is specified, the disk store is created on all members.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--write-buffer-size</span></td>
+<td>The size of the write buffer that this disk store uses when writing data to disk. Larger values may increase performance but use more memory. The disk store allocates one direct memory buffer of this size.</td>
+<td>32768</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--disk-usage-warning-percentage</span></td>
+<td>Disk usage above this threshold generates a warning message. For example, if the threshold is set to 90%, then on a 1 TB drive falling under 100 GB of free disk space generates the warning.
+<p>Set to &quot;0&quot; (zero) to disable.</p></td>
+<td>90</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--disk-usage-critical-percentage</span></td>
+<td>Disk usage above this threshold generates an error message and shuts down the member's cache. For example, if the threshold is set to 99%, then falling under 10 GB of free disk space on a 1 TB drive generates the error and shuts down the cache.
+<p>Set to &quot;0&quot; (zero) to disable.</p></td>
+<td>99</td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 3. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+create disk-store --name-store1 --dir=/data/ds1
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>create disk-store --name-store1 --dir=/data/ds1
+Member  | Result
+------- | -------
+server1 | Success
+```
+
+<a id="topic_a4x_pb1_dk"></a>
+
+## create gateway-receiver
+
+Creates a gateway receiver. You can only have one gateway receiver on each member, and unlike a gateway sender, you do not need to specify an identifier for the gateway receiver .
+
+See [Gateway Receivers](../../../topologies_and_comm/topology_concepts/multisite_overview.html#topic_4DB3D9CF01AD4F4899457D1250468D00).
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+create gateway-receiver [--group=value(,value)*] [--member=value(,value)*] 
+  [--manual-start=value] [--start-port=value] [--end-port=value] [--bind-address=value] 
+  [--maximum-time-between-pings=value] [--socket-buffer-size=value]
+  [--gateway-transport-filter=value(,value)*]
+```
+
+<a id="topic_a4x_pb1_dk__table_v4x_pb1_dk"></a>
+
+<table>
+<caption><span class="tablecap">Table 4. Parameters</span></caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+<th>Default Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="keyword parmname">--group</span></td>
+<td>Gateway receivers are created on the members of this group.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--member</span></td>
+<td>Name of the distributed system member on which to create the gateway receiver.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--manual-start</span></td>
+<td>Boolean value that specifies whether you need to manually start the gateway receiver. If you supply a null value, the default is &quot;true&quot; and you will need to start the gateway receiver manually.</td>
+<td>true</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--start-port</span></td>
+<td><p>Starting port number to use when specifying the range of possible port numbers this gateway receiver will use to connects to gateway senders in other sites. <span class="keyword">GemFire</span> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
+<p>The <code class="ph codeph">STARTPORT</code> value is inclusive while the <code class="ph codeph">ENDPORT</code> value is exclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPOINT=&quot;50520&quot;</code>, <span class="keyword">GemFire</span> chooses a port value from 50510 to 50519.</p></td>
+<td>5000</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--end-port</span></td>
+<td><p>Defines the upper bound port number to use when specifying the range of possible port numbers this gateway receiver will use to for connections from gateway senders in other sites. <span class="keyword">GemFire</span> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
+<p>The <code class="ph codeph">ENDPORT</code> value is exclusive while the <code class="ph codeph">STARTPORT</code> value is inclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPOINT=&quot;50520&quot;</code>, <span class="keyword">GemFire</span> chooses a port value from 50510 to 50519.</p></td>
+<td>5500</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--bind-address</span></td>
+<td>Network address for connections from gateway senders in other sites. Specify the address as a literal string value.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--socket-buffer-size</span></td>
+<td>An integer value that sets the buffer size (in bytes) of the socket connection for this gateway receiver. This value should match the <code class="ph codeph">socket-buffer-size</code> setting of gateway senders that connect to this receiver.</td>
+<td>32768</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--gateway-transport-filter</span></td>
+<td>The fully qualified class name of the GatewayTransportFilter to be added to the Gateway receiver.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--maximum-time-between-pings</span></td>
+<td>Integer value that specifies the time interval (in milliseconds) to use between pings to connected WAN sites. This value determines the maximum amount of time that can elapse before a remote WAN site is considered offline.</td>
+<td>60000</td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 4. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+gfsh>create gatweway-receiver --member=server1
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>create gateway-receiver --member=server1
+Member  | Status
+------- | ---------------------------------------------------------------------------
+server1 | GatewayReceiver created on member "server1" and will listen on the port "0"
+```
+
+<a id="topic_hg2_bjz_ck"></a>
+
+## create gateway-sender
+
+Creates a gateway sender on one or more members of a distributed system.
+
+See [Gateway Senders](../../../topologies_and_comm/topology_concepts/multisite_overview.html#topic_9AA37B43642D4DE19072CA3367C849BA).
+
+**Note:**
+The gateway sender configuration for a specific sender `id` must be identical on each <span class="keyword">GemFire</span> member that hosts the gateway sender.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+create gateway-sender --id=value --remote-distributed-system-id=value 
+   [--group=value(,value)*] [--member=value(,value)*] [--parallel=value] 
+   [--manual-start=value] [--socket-buffer-size=value] [--socket-read-timeout=value] 
+   [--enable-batch-conflation=value] [--batch-size=value] [--batch-time-interval=value]
+   [--enable-persistence=value] [--disk-store-name=value] [--disk-synchronous=value] 
+   [--maximum-queue-memory=value] [--alert-threshold=value] [--dispatcher-threads=value] 
+   [--order-policy=value][--gateway-event-filter=value(,value)*] 
+   [--gateway-transport-filter=value(,value)*]
+```
+
+<a id="topic_hg2_bjz_ck__table_ah2_bjz_ck"></a>
+
+<table>
+<caption><span class="tablecap">Table 5. Parameters</span></caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="keyword parmname">--id</span></td>
+<td><em>Required.</em> Unique identifier for the gateway sender, usually an identifier associated with a physical location.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--remote-distributed-system-id</span></td>
+<td><em>Required.</em> ID of the remote distributed system where this gateway sender sends events.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--group</span></td>
+<td>Gateway senders are created on the members of this group.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--member</span></td>
+<td>Name of the distributed system member on which to create the gateway sender.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--parallel</span></td>
+<td>When set to true, specifies a parallel Gateway Sender.</td>
+<td>false</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--enable-batch-conflation</span></td>
+<td>Boolean value that determines whether <span class="keyword">GemFire</span> should conflate messages.</td>
+<td>false</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--manual-start</span></td>
+<td>Boolean value that specifies whether you need to manually start the gateway sender. If you supply a null value, the default is &quot;false&quot; and the gateway sender attempts to start automatically.</td>
+<td>false</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--socket-buffer-size</span></td>
+<td>Size of the socket buffer that sends messages to remote sites. This size should match the size of the <code class="ph codeph">socket-buffer-size</code> attribute of remote gateway receivers that process region events.</td>
+<td>32768</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--socket-read-timeout</span></td>
+<td>Amount of time in milliseconds that the gateway sender will wait to receive an acknowledgment from a remote site. By default this is set to 0, which means there is no timeout. If you do set this timeout, you must set it to a minimum of 30000 (milliseconds). Setting it to a lower number will generate an error message and reset the value to the default of 0.</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--batch-size</span></td>
+<td>Maximum number of messages that a batch can contain.</td>
+<td>100</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--batch-time-interval</span></td>
+<td>Maximum number of milliseconds that can elapse between sending batches.</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--enable-persistence</span></td>
+<td>Boolean value that determines whether <span class="keyword">GemFire</span> persists the gateway queue.</td>
+<td>false</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--disk-store-name</span></td>
+<td>Named disk store to use for storing the queue overflow, or for persisting the queue. If you specify a value, the named disk store must exist. If you specify a null value, <span class="keyword">GemFire</span> uses the default disk store for overflow and queue persistence.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--disk-synchronous</span></td>
+<td>For regions that write to disk, boolean that specifies whether disk writes are done synchronously for the region.</td>
+<td>true</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--maximum-queue-memory</span></td>
+<td>Maximum amount of memory in megabytes that the queue can consume before overflowing to disk.</td>
+<td>100 MB</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--alert-threshold</span></td>
+<td>Maximum number of milliseconds that a region event can remain in the gateway sender queue before <span class="keyword">GemFire</span> logs an alert.</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--dispatcher-threads</span></td>
+<td>Number of dispatcher threads that are used to process region events from a gateway sender queue or asynchronous event queue.</td>
+<td>5</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--order-policy</span></td>
+<td>When the <code class="ph codeph">dispatcher-threads</code> attribute is greater than 1, <code class="ph codeph">order-policy</code> configures the way in which multiple dispatcher threads process region events from a serial gateway queue or serial asynchronous event queue. This attribute can have one of the following values:
+<div class="p">
+<span class="keyword option">key</span>
+When distributing region events from the local queue, multiple dispatcher threads preserve the order of key updates.
+<span class="keyword option">thread</span>
+When distributing region events from the local queue, multiple dispatcher threads preserve the order in which a given thread added region events to the queue.
+<span class="keyword option">partition</span>
+When distributing region events from the local queue, multiple dispatcher threads preserve the order in which region events were added to the local queue. For a partitioned region, this means that all region events delivered to a specific partition are delivered in the same order to the remote <span class="keyword">GemFire</span> site. For a distributed region, this means that all key updates delivered to the local gateway sender queue are distributed to the remote site in the same order.
+</div>
+<p>You cannot configure the <code class="ph codeph">order-policy</code> for a parallel event queue, because parallel queues cannot preserve event ordering for regions. Only the ordering of events for a given partition (or in a given queue of a distributed region) can be preserved.</p></td>
+<td>key</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--gateway-event-filter</span></td>
+<td>A list of fully-qualified class names of GatewayEventFilters (separated by comma) to be associated with the GatewaySender. This serves as a callback for users to filter out events before dispatching to remote distributed system. For example:
+<pre class="pre codeblock"><code>gateway-event-filter=com.user.filters.MyFilter1,com.user.filters.MyFilters2</code></pre></td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--gateway-transport-filter</span></td>
+<td>The fully-qualified class name of the GatewayTransportFilter to be added to the GatewaySender.</td>
+<td> </td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 5. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+gfsh>create gateway-sender --remote-distributed-system-id="2" --id="sender2"
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>create gateway-sender --remote-distributed-system-id="2" --id="sender2"
+Member  | Status
+------- | --------------------------------------------
+server1 | GatewaySender "sender2" created on "server1"
+```
+
+<a id="topic_960A5B6FD3D84E1881EE118E299DD12D"></a>
+
+## create index
+
+Create an index that can be used when executing queries.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+See [Working with Indexes](../../../developing/query_index/query_index.html).
+
+**Syntax:**
+
+``` pre
+create index --name=value --expression=value --region=value 
+[--member=value] [--type=value] [--group=value]
+```
+
+<a id="topic_960A5B6FD3D84E1881EE118E299DD12D__table_9E1C010276AC45A59446A767A517D39F"></a>
+
+| Name                                               | Description                                                                            | Default |
+|----------------------------------------------------|----------------------------------------------------------------------------------------|---------|
+| <span class="keyword parmname">--name</span>       | *Required.* Name of the index to create.                                               |         |
+| <span class="keyword parmname">--expression</span> | *Required.* Field of the region values that are referenced by the index.               |         |
+| <span class="keyword parmname">--region</span>     | *Required.* Name/Path of the region which corresponds to the "from" clause in a query. |         |
+| <span class="keyword parmname">--member</span>     | Name/Id of the member on which index will be created.                                  |         |
+| <span class="keyword parmname">--type</span>       | Type of the index. Valid values are: `range`, `key` and `hash`.                        | `range` |
+| <span class="keyword parmname">--group</span>      | The index will be created on all the members in this member group.                     |         |
+
+: <span class="tablecap">Table 6. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+create index --name=myKeyIndex --expression=region1.Id --region=region1 --type=key
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>create index --name=myKeyIdex --expression=region1.Id --region=region1 --type=key
+Index successfully created with following details
+Name       : myKeyIdex
+Expression : region1.Id
+RegionPath : /region1
+Members which contain the index
+1. ubuntu(server1:17682)<v1>:27574
+
+gfsh>create index --name=myIndex2 --expression=exp2 --region=/exampleRegion
+Failed to create index "myIndex2" due to following reasons
+Index "myIndex2" already exists.  Create failed due to duplicate name.
+Occurred on following members
+1. ubuntu(server1:17682)<v1>:27574
+```
+
+<a id="topic_54B0985FEC5241CA9D26B0CE0A5EA863"></a>
+
+## create region
+
+Create a region with given path and configuration.
+
+You must specify either a `--type` or a `--template-region` for initial configuration when creating a region. Specifying a `--key-constraint` and `--value-constraint` makes object type information available during querying and indexing.
+
+See [Region Data Storage and Distribution](../../../developing/region_options/chapter_overview.html).
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+ create region --name=value [--type=value] [--template-region=value]
+    [--group=value(,value)*] [--skip-if-exists(=value)?]
+    [--key-constraint=value] [--value-constraint=value]
+    [--enable-statistics=value] [--entry-idle-time-expiration=value]
+    [--entry-idle-time-expiration-action=value]
+    [--entry-time-to-live-expiration=value]
+    [--entry-time-to-live-expiriation-action=value]
+    [--region-idle-time-expiration=value]
+    [--region-idle-time-expiration-action=value]
+    [--region-time-to-live-expiration=value]
+    [--region-time-to-live-expiration-action=value] [--disk-store=value]
+    [--enable-synchronous-disk=value] [--enable-async-conflation=value]
+    [--enable-subscription-conflation=value] [--cache-listener=value(,value)*]
+    [--cache-loader=value] [--cache-writer=value]
+    [--async-event-queue-id=value(,value)*]
+    [--gateway-sender-id=value(,value)*] [--enable-concurrency-checks=value]
+    [--enable-cloning=value] [--concurrency-level=value]
+    [--colocated-with=value] [--local-max-memory=value]
+    [--recovery-delay=value] [--redundant-copies=value]
+    [--startup-recovery-delay=value] [--total-max-memory=value]
+    [--total-num-buckets=value] [--compressor=value] [--off-heap(=value)]
+```
+
+<a id="topic_54B0985FEC5241CA9D26B0CE0A5EA863__table_4CDCDC115DD043D5B8ACAA8D4CCFB145"></a>
+
+<table>
+<caption><span class="tablecap">Table 7. Parameters</span></caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="keyword parmname">--name</span></td>
+<td><em>Required.</em> Name/Path of the region to be created.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--type</span></td>
+<td><em>Required</em> (if template-region is not specified.) Type of region to create. Options include: PARTITION, PARTITION_REDUNDANT, REPLICATE, LOCAL, etc.
+<p>To get a list of of all region type options, add the <span class="keyword parmname">--type</span> parameter and then select the TAB key to display a full list.</p></td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--template-region </span></td>
+<td><em>Required</em> (if type is not specified.) Name/Path of the region whose attributes should be duplicated when creating this region.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--group</span></td>
+<td>Group(s) of members on which the region will be created.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--skip-if-exists</span></td>
+<td>Skip region creation if the region already exists. If the parameter is specified without a value, the value is set to true. If the parameter is not specified, the value (default) is false.</td>
+<td><code class="ph codeph">true</code></td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--key-constraint</span></td>
+<td>Fully qualified class name of the objects allowed as region keys. Ensures that keys for region entries are all of the same class.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--value-constraint </span></td>
+<td>Fully qualified class name of the objects allowed as region values. If not specified, then region values can be of any class.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--enable-statistics</span></td>
+<td>Whether to gather statistics for the region. Must be true to use expiration on the region.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--entry-idle-time-expiration</span></td>
+<td>How long the region's entries can remain in the cache without being accessed.</td>
+<td>no expiration</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--entry-idle-time-expiration-action </span></td>
+<td>Action to be taken on an entry that has exceeded the idle expiration. Valid expiration actions include destroy, local-destroy, invalidate (default), local-invalidate.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--entry-time-to-live-expiration</span></td>
+<td>How long the region's entries can remain in the cache without being accessed or updated. The default is no expiration of this type.</td>
+<td>no expiration</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--entry-time-to-live-expiration-action</span></td>
+<td>Action to be taken on an entry that has exceeded the TTL expiration. Valid expiration actions include destroy, local-destroy, invalidate (default), local-invalidate.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--region-idle-time-expiration</span></td>
+<td>How long the region can remain in the cache without being accessed. The default is no expiration of this type.</td>
+<td>no expiration</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--region-idle-time-expiration-action </span></td>
+<td>Action to be taken on a region that has exceeded the idle expiration. Valid expiration actions include destroy, local-destroy, invalidate (default), local-invalidate.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--region-time-to-live-expiration </span></td>
+<td>How long the region can remain in the cache without being accessed or updated. The default is no expiration of this type.</td>
+<td>no expiration</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--region-time-to-live-expiration-action</span></td>
+<td>Action to be taken on a region that has exceeded the TTL expiration. Valid expiration actions include destroy, local-destroy, invalidate (default), local-invalidate.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--disk-store</span></td>
+<td>Disk Store to be used by this region. The [list disk-stores](list.html#topic_BC14AD57EA304FB3845766898D01BD04) command can be used to display existing disk stores.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--enable-synchronous-disk</span></td>
+<td>Whether writes are done synchronously for regions that persist data to disk.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--enable-async-conflation</span></td>
+<td>Whether to allow aggregation of asynchronous TCP/IP messages sent by the producer member of the region. A false value causes all asynchronous messages to be sent individually.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--enable-subscription-conflation</span></td>
+<td>Whether the server should conflate its messages to the client. A false value causes all server-client messages to be sent individually.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--cache-listener</span></td>
+<td>Fully qualified class name of a plug-in to be instantiated for receiving after-event notification of changes to the region and its entries. Any number of cache listeners can be configured.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--cache-loader</span></td>
+<td>Fully qualified class name of a plug-in to be instantiated for receiving notification of cache misses in the region. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--cache-writer</span></td>
+<td>Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--async-event-queue-id</span></td>
+<td>IDs of the Async Event Queues that will be used for write-behind operations.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--gateway-sender-id</span></td>
+<td>IDs of the Gateway Senders to which data will be routed.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--enable-concurrency-checks</span></td>
+<td>Whether Region Version Vectors are implemented. Region Version Vectors are an extension to the versioning scheme that aid in synchronization of replicated regions.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--enable-cloning</span></td>
+<td>Determines how fromDelta applies deltas to the local cache for delta propagation. When true, the updates are applied to a clone of the value and then the clone is saved to the cache. When false, the value is modified in place in the cache.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--concurrency-level </span></td>
+<td>Estimate of the maximum number of application threads that will concurrently access a region entry at one time. This attribute does not apply to partitioned regions.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--colocated-with </span></td>
+<td>Central Region with which this region should be colocated.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--local-max-memory</span></td>
+<td>Maximum amount of memory, in megabytes, to be used by the region in this process. (The default is 90% of available heap.)</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--recovery-delay </span></td>
+<td>Delay in milliseconds that existing members will wait before satisfying redundancy after another member crashes. The default (value of -1) indicates that redundancy will not be recovered after a a failure.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--redundant-copies </span></td>
+<td>Number of extra copies of buckets desired. Extra copies allow for both high availability in the face of VM departure (intended or unintended) and load balancing read operations. (Allowed values: 0, 1, 2 and 3)</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--startup-recovery-delay </span></td>
+<td>Delay in milliseconds that new members will wait before satisfying redundancy. -1 indicates that adding new members will not trigger redundancy recovery.</td>
+<td>The default is to recover redundancy immediately when a new member is added.</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--total-max-memory </span></td>
+<td>Maximum amount of memory, in megabytes, to be used by the region in all processes.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--total-num-buckets </span></td>
+<td>Total number of hash buckets to be used by the region in all processes.</td>
+<td>113</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--compressor</span></td>
+<td>Java class name that implements compression for the region. You can write a custom compressor that implements <code class="ph codeph">com.gemstone.gemfire.compression.Compressor</code> or you can specify the Snappy compressor (<code class="ph codeph">com.gemstone.gemfire.compression.SnappyCompressor</code>), which is bundled with <span class="keyword">GemFire</span>. See [Region Compression](../../../managing/region_compression/region_compression.html#topic_r43_wgc_gl).</td>
+<td>no compression</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--off-heap</span></td>
+<td>Specifies whether the region values are stored in heap memory or off-heap memory. When true, region values are in off-heap memory. If the parameter is specified without a value, the value of true is used.</td>
+<td>false</td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 7. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+create region --name=region1 --type=REPLICATE_PERSISTENT \
+--cache-writer=com.gemstone.gemfire.examples.MyCacheWriter \
+--group=Group1 --disk-store=DiskStore1
+
+create region --name=region12 --template-region=/region1
+
+create region --name=region2 --type=REPLICATE \
+--cache-listener=com.gemstone.gemfire.examples.MyCacheListener1,\
+com.gemstone.gemfire.examples.MyCacheListener2 \
+--group=Group1,Group2
+
+create region --name=region3 --type=PARTITION_PERSISTENT --redundant-copies=2 --total-max-memory=1000 \
+--startup-recovery-delay=5 --total-num-buckets=100 --disk-store=DiskStore2 \
+--cache-listener=com.gemstone.gemfire.examples.MyCacheListener3 \
+--group=Group2 
+
+create region --name=region4 --type=REPLICATE_PROXY --cache-listener=com.gemstone.gemfire.examples.MyCacheListener1 
+--group=Group1,Group2
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>create region --name=myRegion --type=LOCAL
+Member  | Status
+------- | ---------------------------------------
+server1 | Region "/myRegion" created on "server1"
+```
+
+

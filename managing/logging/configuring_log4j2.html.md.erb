@@ -1,0 +1,51 @@
+---
+title:  Advanced Users—Configuring Log4j 2 for <span class="keyword">GemFire</span>
+---
+
+Basic <span class="keyword">GemFire</span> logging configuration is configured via the gemfire.properties file. This topic is intended for advanced users who need increased control over logging due to integration with third-party libraries.
+
+The default `log4j2.xml` that <span class="keyword">GemFire</span> uses is stored in <span class="keyword">gemfire.jar</span> as `log4j2-default.xml`. The contents of the configuration can be viewed in the product distribution in the following location: `$GEMFIRE/defaultConfigs/log4j2.xml`.
+
+To specify your own `log4j2.xml` configuration file (or anything else supported by Log4j 2 such as .json or .yaml), use the following flag when starting up your JVM or <span class="keyword">GemFire</span> member:
+
+``` pre
+-Dlog4j.configurationFile=<location-of-your-file>
+```
+
+If the Java system property `log4j.configurationFile` is specified, then <span class="keyword">GemFire</span> will not use the `log4j2-default.xml` included in <span class="keyword">gemfire.jar</span>. However, <span class="keyword">GemFire</span> will still create and register a AlertAppender and LogWriterAppender if the `alert-level` and `log-file` <span class="keyword">GemFire</span> properties are configured. You can then use the <span class="keyword">GemFire</span> LogWriter to log to <span class="keyword">GemFire</span>'s log or to generate an Alert and receive log statements from customer's application and all third party libraries. Alternatively, you can use any front-end logging API that is configured to log to Log4j 2.
+
+## Using Different Front-End Logging APIs to Log to Log4j2
+
+You can also configure Log4j 2 to work with various popular and commonly used logging APIs. To obtain and configure the most popular front-end logging APIs to log to Log4j 2, see the instructions on the Apache Log4j 2 web site at [http://logging.apache.org/log4j/2.x/](http://logging.apache.org/log4j/2.x/).
+
+For example, if you are using:
+
+-   **Commons Logging**, download "Commons Logging Bridge" (`log4j-jcl-2.1.jar`)
+-   **SLF4J**, download "SLFJ4 Binding" (`log4j-slf4j-impl-2.1.jar`)
+-   **java.util.logging**, download the "JUL adapter" (`log4j-jul-2.1.jar`)
+
+See [http://logging.apache.org/log4j/2.x/faq.html](http://logging.apache.org/log4j/2.x/faq.html) for more examples.
+
+All three of the above JAR files are in the full distribution of Log4J 2.1 which can be downloaded at [http://logging.apache.org/log4j/2.x/download.html](http://logging.apache.org/log4j/2.x/download.html). Download the appropriate bridge, adapter, or binding JARs to ensure that <span class="keyword">GemFire</span> logging is integrated with every logging API used in various third-party libraries or in your own applications.
+
+**Note:**
+<span class="keyword">Pivotal GemFire</span> has been tested with Log4j 2.1. As newer versions of Log4j 2 come out, you can find 2.1 under Previous Releases on that page.
+
+## Customizing Your Own log4j2.xml File
+
+Advanced users may want to move away entirely from setting `log-*` gemfire properties and instead specify their own `log4j2.xml` using `-Dlog4j.configurationFile`.
+
+Custom Log4j 2 configuration in <span class="keyword">GemFire</span> comes with some caveats and notes:
+
+-   Do not use `"monitorInterval="` in your log4j2.xml file because doing so can have significant performance impact. This setting instructs Log4j 2 to monitor the log4j2.xml config file at runtime and automatically reload and reconfigure if the file changes.
+-   <span class="keyword">GemFire</span>'s default `log4j2.xml` specifies status="FATAL" because Log4j 2's StatusLogger generates warnings to standard out at ERROR level anytime <span class="keyword">GemFire</span> stops its AlertAppender or LogWriterAppender. <span class="keyword">GemFire</span> uses a lot of concurrent threads that are executing code with log statements; these threads may be logging while the <span class="keyword">GemFire</span> appenders are being stopped.
+-   <span class="keyword">GemFire</span>'s default log4j2.xml specifies `shutdownHook="disable"` because <span class="keyword">GemFire</span> has a shutdown hook which disconnects the DistributedSystem and closes the Cache, which is executing the code that performs logging. If the Log4J2 shutdown hook stops logging before <span class="keyword">GemFire</span> completes its shutdown, Log4j 2 will attempt to start back up. This restart in turn attempts to register another Log4j 2 shutdown hook which fails resulting in a FATAL level message logged by Log4j 2.
+-   The GEMFIRE\_VERBOSE marker (Log4J2 Marker are discussed on [http://logging.apache.org/log4j/2.x/manual/markers.html](http://logging.apache.org/log4j/2.x/manual/markers.html)) can be used to enable additional verbose log statements at TRACE level. Many log statements are enabled simply by enabling DEBUG or TRACE. However, even more log statements can be further enabled by using MarkerFilter to accept GEMFIRE\_VERBOSE. The default <span class="keyword">GemFire</span> `log4j2.xml` disables GEMFIRE\_VERBOSE with this line:
+
+    ``` pre
+    <MarkerFilter marker="GEMFIRE_VERBOSE" onMatch="DENY" onMismatch="NEUTRAL"/> 
+    ```
+
+    You can enable the GEMFIRE\_VERBOSE log statements by changing `onMatch="DENY"` to `onMatch="ACCEPT"`. Typically, it's more useful to simply enable DEBUG or TRACE on certain classes or packages instead of for the entire <span class="keyword">GemFire</span> product. However, this setting can be used for internal debugging purposes if all other debugging methods fail.
+
+

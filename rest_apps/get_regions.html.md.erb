@@ -1,0 +1,78 @@
+---
+title:  GET /gemfire-api/v1
+---
+
+List all available resources (regions) in the <span class="keyword">GemFire</span> cluster.
+
+## Resource URL
+
+``` pre
+http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1
+```
+
+## Parameters
+
+None.
+
+## Example Request
+
+``` pre
+GET /gemfire/v1/
+Accept: application/json
+```
+
+## Example Success Response
+
+``` pre
+Response Payload: application/json
+
+200 OK
+Server: Apache-Coyote/1.1
+Location: http://localhost:8080/gemfire-api/v1
+Content-Type: application/json
+Transfer-Encoding: chunked 
+Date: Sat, 18 Jan 2014 20:05:47 GMT
+ {
+    "regions": [
+        {
+            "name": "customers",
+            "type": "REPLICATE",
+            "key-constraint": "java.lang.String",
+            "value-constraint": "com.gemstone.gemfire.pdx.PdxInstance"
+        },
+        {
+            "name": "items",
+            "type": "REPLICATE",
+            "key-constraint": null,
+            "value-constraint": null
+        },
+        {
+            "name": "orders",
+            "type": "PARTITION",
+            "key-constraint": null,
+            "value-constraint": null
+        },
+        {
+            "name": "primitiveKVStore",
+            "type": "PARTITION",
+            "key-constraint": null,
+            "value-constraint": null
+        },
+        {
+            "name": "empty_region",
+            "type": "EMPTY",
+            "key-constraint": "java.lang.String",
+            "value-constraint": "com.gemstone.gemfire.pdx.PdxInstance"
+        }
+    ]
+}
+```
+
+## Error Codes
+
+| Status Code               | Description                                     |
+|---------------------------|-------------------------------------------------|
+| 404 NOT FOUND             | No regions were found at the provided endpoint. |
+| 500 INTERNAL SERVER ERROR | Encountered error at server:                    |
+
+

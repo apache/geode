@@ -1,0 +1,39 @@
+---
+title:  <span class="keyword">Pivotal GemFire</span> Management and Monitoring
+---
+
+<span class="keyword">Pivotal GemFire</span> provides APIs and tools for managing your distributed system and monitoring the health of your distributed system members.
+
+-   **[Management and Monitoring Features](../../../latest/managing/management/management_and_monitoring_features.html)**
+
+    <span class="keyword">Pivotal GemFire</span> uses a federated Open MBean strategy to manage and monitor all members of the distributed system. This strategy gives you a consolidated, single-agent view of the distributed system.
+
+-   **[Overview of GemFire Management and Monitoring Tools](../../../latest/managing/management/mm_overview.html)**
+
+    <span class="keyword">GemFire</span> provides a variety of management tools you can use to manage a <span class="keyword">GemFire</span> distributed system.
+
+-   **[Architecture and Components](../../../latest/managing/management/management_system_overview.html)**
+
+    <span class="keyword">GemFire</span>'s management and monitoring system consists of one JMX Manager node (there should only be one) and one or more managed nodes within a distributed system. All members in the distributed system are manageable through MBeans and <span class="keyword">GemFire</span> Management Service APIs.
+
+-   **[JMX Manager Operations](../../../latest/managing/management/jmx_manager_node.html#topic_36C918B4202D45F3AC225FFD23B11D7C)**
+
+    Any member can host an embedded JMX Manager, which provides a federated view of all MBeans for the distributed system. The member can be configured to be a manager at startup or anytime during its life by invoking the appropriate API calls on the ManagementService.
+
+-   **[Federated MBean Architecture](../../../latest/managing/management/mbean_architecture.html)**
+
+    <span class="keyword">GemFire</span> uses MBeans to manage and monitor different parts of <span class="keyword">GemFire</span>. <span class="keyword">GemFire</span>'s federated MBean architecture is scalable and allows you to have a single-agent view of a <span class="keyword">GemFire</span> distributed system.
+
+-   **[Configuring RMI Registry Ports and RMI Connectors](../../../latest/managing/management/configuring_rmi_connector.html)**
+
+    <span class="keyword">GemFire</span> programmatically emulates out-of-the-box JMX provided by Java and creates a JMXServiceURL with RMI Registry and RMI Connector ports on all manageable members.
+
+-   **[Executing gfsh Commands through the Management API](../../../latest/managing/management/gfsh_and_management_api.html)**
+
+    You can also use management APIs to execute gfsh commands programmatically.
+
+-   **[Management and Monitoring Programming Examples](../../../latest/managing/management/programming_example.html)**
+
+    One example demonstrates the use of an MBean server to manage and monitor a node in a distributed system, and the other example acts as the managed node.
+
+

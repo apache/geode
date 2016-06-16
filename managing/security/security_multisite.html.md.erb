@@ -1,0 +1,75 @@
+---
+title:  Multi-Site (WAN) Deployment Security
+---
+
+In addition to peer and client authentication, <span class="keyword">Pivotal GemFire</span> can authenticate remote sites.
+
+The following list covres guidelines for implementing security in multi-site (WAN) deployments:
+-   Implement membership authentication. Depending on your installation and security requirements, you may use a combination of peer-to-peer, client/server, and multi-site settings.
+-   Joining members provide credentials to existing members who check the credentials and either reject the joining member or approve it. In terms of multi-site authentication, gateway senders and gateway receivers mutually authenticate each other when they connect.
+-   If you want to use secure socket layer (SSL) protocol for your peer-to-peer and client/server connections, implement that. You can configure SSL separately for peer-to-peer, client/server, JMX, and WAN gateway connections.
+
+## Gateway SSL Configuration
+
+The following table lists the SSL configuration property names used to configure SSL for peer-to-peer and WAN gateway connections. Remember that if you do not define a client/server, JMX, or WAN property, then GemFire uses the property value defined for peer-to-peer communication (cluster-ssl\*) or the default peer-to-peer property value if unspecified.
+
+<a id="concept_65874F58A47C4D10B29248BBF0635BFC__table_jpw_wqr_n4"></a>
+
+<table>
+<caption><span class="tablecap">Table 1. SSL Configuration Property Names by Connection Type</span></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Peer-to-Peer Connection Property
+<p>(provides default value for all other connection types)</p></th>
+<th>WAN Gateway Connection Property</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>cluster-ssl-enabled</td>
+<td>gateway-ssl-enabled</td>
+</tr>
+<tr class="even">
+<td>cluster-ssl-ciphers</td>
+<td>gateway-ssl-ciphers</td>
+</tr>
+<tr class="odd">
+<td>cluster-ssl-protocols</td>
+<td>gateway-ssl-protocols</td>
+</tr>
+<tr class="even">
+<td>cluster-ssl-require-authentication</td>
+<td>gateway-ssl-require-authentication</td>
+</tr>
+<tr class="odd">
+<td>cluster-ssl-keystore-type</td>
+<td>gateway-ssl-keystore-type</td>
+</tr>
+<tr class="even">
+<td>cluster-ssl-keystore</td>
+<td>gateway-ssl-keystore</td>
+</tr>
+<tr class="odd">
+<td>cluster-ssl-keystore-password</td>
+<td>gateway-ssl-keystore-password</td>
+</tr>
+<tr class="even">
+<td>cluster-ssl-truststore</td>
+<td>gateway-ssl-truststore</td>
+</tr>
+<tr class="odd">
+<td>cluster-ssl-keystore-password</td>
+<td>gateway-ssl-keystore-password</td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 1. SSL Configuration Property Names by Connection Type</span>
+
+If you configure the above peer-to-peer SSL properties, then by default <span class="keyword">GemFire</span> uses the same SSL property values for all stream-socket communication. This includes communication between cache servers and clients, between the JMX manager and JMX clients, and between two <span class="keyword">GemFire</span> distributed systems connected by a WAN gateway.
+
+

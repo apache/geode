@@ -1,0 +1,63 @@
+---
+title:  Creating a Region Through the API
+---
+
+You can use the <span class="keyword">GemFire</span> caching API to create regions in your cache after startup. For run-time region creation, you need to use the API.
+
+Before you start, configure your `Cache` or `ClientCache` and determine the region shortcut and other attributes settings your region needs.
+
+Region creation is subject to attribute consistency checks, both internal to the cache and, if the region is not local, between all caches where the region is defined. The requirements for consistency between region attributes are detailed in the online Java API documentation.
+
+1.  
+
+    Use a region shortcut to create your region factory. 
+    -   
+
+        In peers and servers, use `com.gemstone.gemfire.cache.RegionFactory`.
+    -   
+
+        In clients, use `com.gemstone.gemfire.cache.client.ClientRegionFactory`.
+
+2.  
+
+    (Optional) Use the region factory to further configure your region. 
+3.  
+
+    Create your region from the configured region factory. 
+
+When you run your member with the region creation code, the region will be created in the cache.
+
+## Examples
+
+Creating a partitioned region using RegionFactory:
+
+``` pre
+RegionFactory rf =   
+    cache.createRegionFactory(RegionShortcut.PARTITION);
+rf.addCacheListener(new LoggingCacheListener());
+custRegion = rf.create("customer");
+```
+
+Creating a modified partitioned region using RegionFactory:
+
+``` pre
+PartitionAttributesFactory paf = new PartitionAttributesFactory<CustomerId, String>();
+paf.setPartitionResolver(new CustomerOrderResolver());
+
+RegionFactory rf = 
+    cache.createRegionFactory(RegionShortcut.PARTITION);
+rf.setPartitionAttributes(paf.create());
+rf.addCacheListener(new LoggingCacheListener());
+custRegion = rf.create("customer");
+```
+
+Creating a client region with a pool specification using ClientRegionFactory:
+
+``` pre
+ClientRegionFactory<String,String> cRegionFactory = 
+    cache.createClientRegionFactory(PROXY);
+Region<String, String> region = 
+    cRegionFactory.setPoolName("Pool3").create("DATA");
+```
+
+

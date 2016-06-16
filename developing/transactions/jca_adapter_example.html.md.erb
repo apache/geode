@@ -1,0 +1,34 @@
+---
+title:  JCA Resource Adapter Example
+---
+
+This example shows how to use the JCA Resource Adapter in <span class="keyword">GemFire</span> .
+
+``` pre
+Hashtable env = new Hashtable();
+env.put(Context.INITIAL_CONTEXT_FACTORY, “weblogic.jndi.WLInitialContextFactory”);
+env.put(Context.PROVIDER_URL, “t3://localhost:7001”);
+Context ctx = new InitialContext(env);
+UserTransaction utx = (UserTransaction) ctx.lookup(“javax.transaction.UserTransaction”);
+utx.begin();
+      // the XA Resource
+javax.sql.DataSource ds = (DataSource) ctx.lookup(“derby”);
+javax.sql.Connection derbyConn = ds.getConnection();
+Statement stmt = conn.createStatement();
+stmt.executeUpdate(“insert into test values(2,4) “);
+     // do ConnectionFactory lookup
+GFConnectionFactory cf = (GFConnectionFactory) ctx.lookup(“gfe/jca”);
+
+     // Obtaining the connection begins the LocalTransaction.
+     // If this is absent, operations will not be part of any transaction.
+GFConnection conn = cf.getConnection();
+
+testRegion.put(“foo”, “bar-”);
+utx.commit();
+
+     // the connection can also be closed within the transaction
+derbyConn.close();
+conn.close();
+```
+
+

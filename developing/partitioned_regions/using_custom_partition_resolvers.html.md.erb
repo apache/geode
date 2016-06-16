@@ -1,0 +1,207 @@
+---
+title:  Custom-Partition Your Region Data
+---
+
+By default, <span class="keyword">GemFire</span> partitions each data entry into a bucket using a hashing policy on the key. Additionally, the physical location of the key-value pair is abstracted away from the application. You can change these policies for a partitioned region. You can provide your own data partitioning resolver and you can additionally specify which members host which data buckets.
+
+<a id="custom_partition_region_data__section_CF05CE974C9C4AF78430DA55601D2158"></a>
+**Note:**
+If you are colocating data between regions and custom partitioning the data in the regions, all colocated regions must use the same custom partitioning mechanism. See [Colocate Data from Different Partitioned Regions](colocating_partitioned_region_data.html#colocating_partitioned_region_data).
+
+<a id="custom_partition_region_data__section_1D7043815DF24308ABE4C78BFDFEE686"></a>
+
+For standard partitioning, use `com.gemstone.gemfire.cache.PartitionResolver`. To implement fixed partitioning, use `com.gemstone.gemfire.cache.FixedPartitionResolver`.
+
+<a id="custom_partition_region_data__section_5A8D752F02834146A37D9430F1CA32DA"></a>
+
+**Prerequisites**
+
+-   Create partitioned regions. See [Understanding Partitioning](how_partitioning_works.html) and [Configuring Partitioned Regions](managing_partitioned_regions.html#configure_partitioned_regions).
+-   Decide whether to use standard custom partitioning or fixed custom partitioning. See [Understanding Custom Partitioning and Data Colocation](custom_partitioning_and_data_colocation.html#custom_partitioning_and_data_colocation).
+-   If you also want to colocate data from multiple regions, understand how to colocate. See [Colocate Data from Different Partitioned Regions](colocating_partitioned_region_data.html#colocating_partitioned_region_data).
+
+**Procedure**
+
+1.  Using `com.gemstone.gemfire.cache.PartitionResolver` (standard partitioning) or `com.gemstone.gemfire.cache.FixedPartitionResolver` (fixed partitioning), implement the standard partitioning resolver or the fixed partitioning resolver in one of the following locations, listed here in the search order used by <span class="keyword">GemFire</span>:
+    -   **Custom class**. You provide this class as the partition resolver to the region creation.
+    -   **Entry key**. You use the implementing key object for every operation on the region entries.
+    -   **Cache callback argument**. This implementation restricts you to using methods that accept a cache callback argument to manage the region entries. For a full list of the methods that take a callback argument, see the `Region` Javadocs.
+
+2.  If you need the resolver's `getName` method, program that.
+3.  Program the resolver's `getRoutingObject` method to return the routing object for each entry, based on how you want to group the entries. Give the same routing object to entries you want to group together. <span class="keyword">GemFire</span> will place the entries in the same bucket.
+
+    **Note:**
+    Only fields on the key should be used when creating the routing object. Do not use the value or additional metadata for this purpose.
+
+    For example, here is an implementation on a region key object that groups the entries by month and year:
+
+    ``` pre
+    Public class TradeKey implements PartitionResolver 
+    { 
+        private String tradeID; 
+        private Month month; 
+        private Year year; 
+        public TradingKey(){ } 
+        public TradingKey(Month month, Year year)
+        { 
+            this.month = month; 
+            this.year = year; 
+        } 
+        public Serializable getRoutingObject(EntryOperation opDetails)
+        { 
+            return this.month + this.year; 
+        }
+    }
+    ```
+
+4.  For fixed partitioning only, program and configure additional fixed partitioning pieces:
+    1.  Set the fixed partition attributes for each member.
+
+        These attributes define the data stored for the region by the member and must be different for different members. See `com.gemstone.gemfire.cache.FixedPartitionAttributes` for definitions of the attributes. Define each `partition-name` in your data host members for the region. For each partition name, in the member you want to host the primary copy, define it with `is-primary` set to `true`. In every member you want to host the secondary copy, define it with `is-primary` set to `false` (the default). The number of secondaries must match the number of redundant copies you have defined for the region. See [Configure High Availability for a Partitioned Region](configuring_ha_for_pr.html).
+
+        **Note:**
+        Buckets for a partition are hosted only by the members that have defined the partition name in their `FixedPartitionAttributes`.
+
+        These examples set the partition attributes for a member to be the primary host for the "Q1" partition data and a secondary host for "Q3" partition data.
+
+        -   XML:
+
+            ``` pre
+            <cache>
+               <region name="Trades">
+                  <region-attributes>
+                     <partition-attributes redundant-copies="1">
+                       <partition-resolver name="QuarterFixedPartitionResolver">
+                          <class-name>myPackage.QuarterFixedPartitionResolver</class-name>
+                       </partition-resolver>
+                       <fixed-partition-attributes partition-name="Q1" is-primary="true"/>
+                       <fixed-partition-attributes partition-name="Q3" is-primary="false" num-buckets="6"/>
+                     </partition-attributes> 
+                  </region-attributes>
+               </region>
+            </cache>
+            ```
+
+        -   Java:
+
+            ``` pre
+            FixedPartitionAttribute fpa1 = FixedPartitionAttributes.createFixedPartition("Q1", true);
+            FixedPartitionAttribute fpa3 = FixedPartitionAttributes.createFixedPartition("Q3", false, 6);
+
+            PartitionAttributesFactory paf = new PartitionAttributesFactory()
+                 .setPartitionResolver(new QuarterFixedPartitionResolver())
+                 .setTotalNumBuckets(12)
+                 .setRedundantCopies(2)
+                 .addFixedPartitionAttribute(fpa1)
+                 .addFixedPartitionAttribute(fpa3);
+
+            Cache c = new CacheFactory().create();
+
+            Region r = c.createRegionFactory()
+                .setPartitionAttributes(paf.create())
+                .create("Trades");
+            ```
+
+        -   gfsh:
+
+            You cannot specify a partition resolver using gfsh.
+
+    2.  Program the `FixedPartitionResolver` `getPartitionName` method to return the name of the partition for each entry, based on where you want the entries to reside. <span class="keyword">GemFire</span> uses `getPartitionName` and `getRoutingObject` to determine where an entry is placed.
+
+        **Note:**
+        To group entries, assign every entry in the group the same routing object and the same partition name.
+
+        This example places the data based on date, with a different partition name for each quarter-year and a different routing object for each month.
+
+        ``` pre
+        /**
+         * Returns one of four different partition names
+         * (Q1, Q2, Q3, Q4) depending on the entry's date
+         */
+        class QuarterFixedPartitionResolver implements
+            FixedPartitionResolver<String, String> {
+
+          @Override
+          public String getPartitionName(EntryOperation<String, String> opDetails,
+              Set<String> targetPartitions) {
+
+             Date date = (Date)opDetails.getKey();
+             Calendar cal = Calendar.getInstance();
+             cal.setTime(date);
+             int month = cal.get(Calendar.MONTH);
+             if (month >= 0 && month < 3) {
+                if (targetPartitions.contains("Q1")) return "Q1";
+             }
+             else if (month >= 3 && month < 6) {
+                if (targetPartitions.contains("Q2")) return "Q2";
+             }
+             else if (month >= 6 && month < 9) {
+                if (targetPartitions.contains("Q3")) return "Q3";
+             }
+             else if (month >= 9 && month < 12) {
+                if (targetPartitions.contains("Q4")) return "Q4";
+             }
+             return "Invalid Quarter";
+          }
+
+          @Override
+          public String getName() {
+             return "QuarterFixedPartitionResolver";
+          }
+
+          @Override
+          public Serializable getRoutingObject(EntryOperation<String, String> opDetails) {
+             Date date = (Date)opDetails.getKey();
+             Calendar cal = Calendar.getInstance();
+             cal.setTime(date);
+             int month = cal.get(Calendar.MONTH);
+             return month;
+          }
+
+          @Override
+          public void close() {
+          }
+        }
+        ```
+
+5.  Configure or program the region so <span class="keyword">GemFire</span> finds your resolver for every operation that you perform on the region's entries. How you do this depends on where you chose to program your custom partitioning implementation (step 1).
+    1.  **Custom class**. Define the class for the region at creation. The resolver will be used for every entry operation. Use one of these methods:
+        -   XML:
+
+            ``` pre
+            <region name="trades">
+                <region-attributes>
+                    <partition-attributes>
+                        <partition-resolver name="TradesPartitionResolver"> 
+                            <class-name>myPackage.TradesPartitionResolver
+                            </class-name>
+                        </partition-resolver>
+                    <partition-attributes>
+                </region-attributes>
+            </region>
+            ```
+
+        -   Java:
+
+            ``` pre
+            PartitionResolver resolver = new TradesPartitionResolver();
+            PartitionAttributes attrs = 
+                new PartitionAttributesFactory()
+                .setPartitionResolver(resolver).create();
+
+            Cache c = new CacheFactory().create();
+
+            Region r = c.createRegionFactory()
+                .setPartitionAttributes(attrs)
+                .create("trades");
+            ```
+
+        -   gfsh:
+
+            You cannot specify a partition resolver using gfsh.
+
+    2.  **Entry key**. Use the key object with the resolver implementation for every entry operation.
+    3.  **Cache callback argument**. Provide the argument to every call that accesses an entry. This restricts you to calls that take a callback argument.
+
+6.  If your colocated data is in a server system, add the `PartitionResolver` implementation class to the `CLASSPATH` of your Java clients. The resolver is used for single hop access to partitioned region data in the servers.
+

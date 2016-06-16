@@ -1,0 +1,54 @@
+---
+title:  Log Collection Utility
+---
+
+To aid in the troubleshooting of <span class="keyword">Pivotal GemFire</span> issues, you can use the provided log collection utility to gather and upload log files and other troubleshooting artifacts. This tool is only supported on Linux machines.
+
+This utility is used to gather log files and other troubleshooting artifacts from a <span class="keyword">GemFire</span> cluster.
+
+The tool goes through and collects all files ending with `.log`, `.err`, .`cfg`, `.gfs`, `.stack`, `.xml`, `.properties,` and `.txt` from the working directories of running <span class="keyword">GemFire</span> processes. It also obtains thread dumps for each <span class="keyword">GemFire</span> process but will not collect heap dumps.
+
+The collection utility copies all log and artifact files to its host machine and then compresses all the files. You should ensure that the machine running the utility has sufficient disk space to hold all the collected log and artifact files from the cluster.
+
+In default mode, the tool requires that a <span class="keyword">GemFire</span> process is running on each machine where the tool is gathering logs and artifact files. If you would like to collect log and artifact files from a machine or machines where <span class="keyword">GemFire</span> processes are not running, use *Static Copy Mode* by specifying the `-m` option and providing a file that lists log and artifact file locations.
+
+The utility is provided in `$GEMFIRE/tools/LogCollectionUtility`.
+
+## Usage
+
+``` pre
+java -jar gfe-logcollect.jar -c <company> -o <output dir> [OPTIONS]
+
+Required arguments:
+        -c company name to append to output filename
+        -o output directory to store all collected log files
+
+Optional arguments:
+        -a comma separated list of hosts with no spaces. EG. host1,host2,host3 (defaults to localhost)
+        -u username to use to connect via ssh (defaults to current user)
+        -i identity file to use for PKI based ssh (defaults to ~/.ssh/id_[dsa|rsa]
+        -p prompt for a password to use for ssh connections
+        -t ticket number to append to created zip file
+        -d don't clean up collected log files after the zip has been created
+        -s send the zip file to Pivotal support
+        -f ftp server to upload collected logs to.  Defaults to ftp.gemstone.com
+        -v print version of this utility
+        -h print this help information
+
+Static Copy Mode
+        -m <file> Use a file with log locations instead of scanning for logs.
+           Entries should be in the format hostname:/log/location
+```
+
+## Known Limitations
+
+The following are known limitations with the tool:
+
+1.  Only supports Linux hosts.
+2.  Requires SSH access between machines.
+3.  Requires that the username be the same for each host that this app scans. For example, you can't specify user@host1, anotherUser@host2, etc.
+4.  Requires that SSH access is available across all hosts using either the same password or the same public key.
+5.  In order to get stacks using jstack, this process must be ran as the same user who owns the <span class="keyword">GemFire</span> process.
+6.  Requires 'jps' (typically in $JAVA\_HOME/bin) to be in the user's PATH on each machine.
+
+

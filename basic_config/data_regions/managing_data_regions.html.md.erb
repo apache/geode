@@ -1,0 +1,223 @@
+---
+title:  Data Region Management
+---
+
+<span class="keyword">Pivotal GemFire</span> provides different APIs and XML configuration models to support configuration and management of your data regions.
+
+<a id="data_regions__section_18A9481217204613958897FE64105097"></a>
+You store your data in region entry key/value pairs, with keys and values being any object types your application needs.
+
+The `com.gemstone.gemfire.cache.Region` interface implements `java.util.Map`.
+
+Each region's attributes define how the data in the region is stored, distributed, and managed. Data regions can be distributed, partitioned among system members, or local to the member.
+
+You can create regions in the `cache.xml` file, by using the API, or with the gfsh command-line interface. You can use *region shortcuts* to configure commonly-used types of regions. For more information about region shortcuts, see [Region Shortcuts Reference](../../reference/topics/region_shortcuts_reference.html#reference_lt4_54c_lk).
+
+**Note:**
+If you change attributes that define a region, you must restart the member for the changes to take effect.
+
+<a id="data_regions__section_028F2602395646818680C906F205526B"></a>
+
+## The Region APIs
+
+<span class="keyword">GemFire</span>'s regions APIs provide specialized behavior for different system member types.
+
+-   **Peer/Server Region APIs**. Use these methods, interfaces, and classes for peer/server region creation. These are in the `com.gemstone.gemfire.cache` package. They correspond to declarations in the `<cache>` element for creating and configuring regions.
+    -   **`com.gemstone.gemfire.cache.Cache.createRegionFactory`** . This method takes a `RegionShortcut` `enum` to initiate region configuration, and returns a `RegionFactory`. Use `createRegionFactory()`, not "`new                                     RegionFactory`," to create a RegionFactory.
+    -   **`com.gemstone.gemfire.cache.RegionFactory`**. Provides methods to set individual region attributes and to create the region. The `create` call returns `Region`.
+    -   **`com.gemstone.gemfire.cache.RegionShortcut`**. Common region configurations can be retrieved through `Cache` `createRegionShortcut` and with the region attribute, `refid`.
+-   **Client Region APIs**. Use these methods, interfaces, and classes for client region creation. These are in the `com.gemstone.gemfire.cache.client` package. They correspond to declarations in the `<client-cache>` element for creating and configuring regions.
+
+    These are client versions of the Peer/Server Region APIs. These client APIs provide similar functionality, but are tailored to the needs and behaviors of client regions.
+
+    -   **`com.gemstone.gemfire.cache.clientCache.createRegionFactory`** . This method takes a `ClientRegionShortcut` `enum` to initiate region configuration, and returns a `ClientRegionFactory`.
+    -   **`com.gemstone.gemfire.cache.client.ClientRegionFactory`**. Provides methods to set individual region attributes and to create the region. The `create` call returns `Region`.
+    -   **`com.gemstone.gemfire.cache.client.ClientRegionShortcut`** . Common region configurations can be retrieved through `ClientCache` `createClientRegionFactory` and with the region attribute, `refid`.
+-   **Region APIs Used For All Member Types**. These interfaces and classes are used universally for region management. These are in the `com.gemstone.gemfire.cache` package. They correspond to declarations under the `<cache>` and `<client-cache>` elements for creating and configuring regions.
+    -   **`com.gemstone.gemfire.cache.Region`** . Interface for managing your regions and their entries.
+    -   **`com.gemstone.gemfire.cache.RegionAttributes`** . Object holding region configuration settings.
+    -   **`com.gemstone.gemfire.cache.createRegionFactory`**. Can be used to create `RegionAttributes` to pass to `RegionFactory` and `ClientRegionFactory`.
+
+<a id="data_regions__section_9F898C23D2164ED5BB3789FD8B1F68C3"></a>
+
+## Create and Access Data Regions
+
+Before you start, have your cache configuration defined, along with any cache-wide configuration your region requires, like disk store configuration and client server pool configuration.
+
+1.  Determine the region attributes requirements and identify the region shortcut setting that most closely matches your needs. See [Region Shortcuts and Custom Named Region Attributes](region_shortcuts.html) and [Region Shortcuts](../../reference/topics/chapter_overview_regionshortcuts.html) for more information.
+2.  Define any region attributes that are not provided in the shortcut you chose.
+3.  Create a region using any of the following methods:
+    -   gfsh. After starting up servers, a JMX manager and connecting to the cluster, execute the following command:
+
+        ``` pre
+        gfsh>create region --name=Portfolios --type=REPLICATE
+        ```
+
+    -   Declaration in the `cache.xml`:
+
+        ``` pre
+        <?xml version="1.0" encoding="UTF-8"?>
+        <cache
+            xmlns="http://schema.pivotal.io/gemfire/cache"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
+            version="8.1"
+            lock-lease="120"
+            lock-timeout="60"
+            search-timeout="300">
+        <!-- Create a region named Portfolios -->
+          <region name="Portfolios" id="REPLICATE"/>
+        </cache>
+        ```
+
+        When the `cache.xml` is loaded at cache creation, the system automatically creates any declared regions.
+
+    -   `RegionFactory` API calls:
+
+        ``` pre
+        Cache cache = CacheFactory.create();
+        RegionFactory rf = cache.createRegionFactory(REPLICATE);
+        Region pfloRegion = rf.create("Portfolios");
+        ```
+
+Once you have created your regions, you can access them through the `Cache` and `Region` APIs as full region lists or individually.
+
+<a id="data_regions__section_jn1_sry_5m"></a>
+
+## Create and Access Data Subregions
+
+An individual region can contain multiple subregions. You can use subregions to create a hierarchical namespace within your cache or to group cached objects for management purposes. The use of subregions is subject to the following restrictions:
+
+-   A region with LOCAL scope can only have subregions with LOCAL scope.
+-   You cannot create a subregion under a partitioned region or create a subregion with type PARTITION.
+-   You cannot create a subregion that has different scope (GLOBAL, DISTRIBUTED\_ACK, DISTRIBUTED\_NO\_ACK) settings than a region of the same name in another cache or than the parent region.
+-   You cannot reuse an existing region or subregion name.
+
+If the subregion is a distributed replicated region, it will be initialized with data from all other caches in this distributed system that have the same region.
+
+You can create subregions using one of the following methods:
+
+-   -   Declaration in the `cache.xml`:
+
+        ``` pre
+        <?xml version="1.0"?>
+        <cache
+            xmlns="http://schema.pivotal.io/gemfire/cache"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
+            version="8.1"
+            lock-lease="120"
+            lock-timeout="60"
+            search-timeout="300">
+        <!-- Create a region named Portfolios -->
+          <region name="Portfolios" id="REPLICATE">
+              <region name="Private" id="REPLICATE">
+              ...
+              </region>
+          </region>
+        </cache>
+        ```
+
+        When the `cache.xml` is loaded at cache creation, the system automatically creates any declared regions and subregions.
+
+    -   `RegionFactory` API calls:
+
+        ``` pre
+        Cache cache = CacheFactory.create();
+        RegionFactory rf = cache.createRegionFactory(REPLICATE);
+        Region pfloRegion = rf.create("Portfolios");
+        Region pvtSubregion = rf.createSubregion(pfloRegion, "Private");
+        ```
+
+<a id="data_regions__section_7AD53DCC71064883BFA9C53E6040D85A"></a>
+
+## Update Data Regions
+
+Update your region properties and contents through `alter region` command, the API or from `cache.xml` file declarations.
+
+-   Execute the [alter region](../../tools_modules/gfsh/command-pages/alter.html#topic_E74ED23CB60342538B2175C326E7D758) command.
+-   In the API, use `Cache` and `Region` methods to change configuration parameters and modify region structure and data.
+-   Load new XML declarations using the `Cache.loadCacheXml` method. Where possible, declarations in the new `cache.xml` file supersede existing definitions. For example, if a region declared in the `cache.xml` file already exists in the cache, its mutable attributes are modified according to the file declarations. Immutable attributes are not affected. If a region does not already exist, it is created. Entries and indexes are created or updated according to the state of the cache and the file declarations.
+
+<a id="data_regions__section_953E19F03F4541BAA3AE58118E7EA7E4"></a>
+
+## Invalidate a Region
+
+An invalidate region operation removes all entry values for a region, while leaving the entry keys intact. This operation can be invoked only through the API on a `Region` instance. Event notification occurs.
+
+``` pre
+// Invalidate the entire distributed region 
+Region.invalidateRegion(); 
+```
+
+The API also offers a method to invalidate only the entries within the local cache. This method may not be used on a replicated region, as doing so would invalidate the replication contract.
+
+``` pre
+// Invalidate the region within this member
+Region.localInvalidateRegion(); 
+```
+
+## Clear a Region
+
+A clear region operation removes all entries from a region. This operation is not available for partitioned regions. This operation can be invoked through the API on a `Region` instance:
+
+``` pre
+// Remove all entries for the region
+Region.clear(); 
+```
+
+It can be invoked with the `gfsh` command:
+
+``` pre
+gfsh>remove --region=Region1 --all 
+```
+
+Event notification occurs for a clear region operation.
+
+## Destroy a Region
+
+A destroy region operation removes the entire region. This operation can be invoked through the API on a `Region` instance:
+
+``` pre
+// Remove the entire region
+Region.destroyRegion();
+```
+
+A destroy region operation can be invoked with the `gfsh` command:
+
+``` pre
+gfsh>destroy region --name=Region1
+```
+
+Event notification occurs for a destroy region operation.
+
+A region can be destroyed by removing the region's specification from the `cache.xml` file.
+
+Destroying the region by an API invocation or by using the `gfsh                     destroy` command while all members are online is the best way to remove a region, as <span class="keyword">GemFire</span> handles all aspects of the removal, including removing the region's persistent disk stores across the online members hosting the region. Destroying the region by removing its specification from the `cache.xml` file does not remove the region's existing persistent disk stores.
+
+The destroy operation can be propagated only to online members. The system will encounter restart issues if a region is destroyed while some members are online and others are offline. As those members that were offline restart, they will block indefinitely, waiting for persistent region data that no longer exists. To fix this issue, shut down all members that are blocked waiting for the removed region. Once those members are in the offline state, use the `gfsh alter                     disk-store` command with the `--remove` option on each offline member to remove the region. Then, restart each member.
+
+An edge case results in issues when destroying a persistent region (R-removed) by removing its specification from the `cache.xml` file, and region R-removed was colocated with another persistent region (R-remains). The issue occurs because the persistent information contained within R-remains is inconsistent with the (lack of) specification of R-removed. Upon restart of R-remains, its persisted metadata refers to R-removed as a colocated region, and the startup of R-remains is dependent on that removed region. Thus, the startup of R-remains blocks, unable to complete. The issue may manifest with operations on the R-remains region such as a query, put, or get, that never finishes. To fix this issue, shut down all members with the persisted metadata that refers to the removed region. Once those members are in the offline state, use the `gfsh alter disk-store` command with the `--remove` option on each offline member to remove the region. Then, restart each member.
+
+<a id="data_regions__section_3C0A7E088FDB413297ED8C0CD606968D"></a>
+
+## Close a Region
+
+Use this to stop local caching of persistent and partitioned regions without closing the entire cache:
+
+``` pre
+Region.close();
+```
+
+The `Region.close` operation works like the `Region.localDestroyRegion` operation with these significant differences:
+
+-   The `close` method is called for every callback installed on the region.
+-   No events are invoked. Of particular note, the entry events, `beforeDestroy` and `afterDestroy`, and the region events, `beforeRegionDestroy` and `afterRegionDestroy`, are not invoked. See [Events and Event Handling](../../developing/events/chapter_overview.html#implementing_event_handlers).
+-   If persistent, the region is removed from memory but its disk files are retained.
+-   If partitioned, the region is removed from the local cache. If the partitioned region is redundant, local data caching fails over to another cache. Otherwise, local data is lost.
+
+## Using gfsh to Manage Regions
+
+You can also use gfsh commands to manage regions. There are commands to create, alter, describe, destroy, rebalance, and list the regions in your distributed system. By default, the cluster configuration service saves the cluster configuration as you execute gfsh commands. When you add new servers to the cluster, the servers receive this cluster-wide configuration and create the specified regions. You can also define *groups* that apply only to some of the servers in the cluster. Servers you start that specify a group also receive the group configuration from the cluster configuration service. See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html).
+
+See [Creating a Region with gfsh](create_a_region_with_gfsh.html#task_75639BFA7847461D9E006E91B728BB44) and the [create](../../tools_modules/gfsh/command-pages/create.html) command reference page.

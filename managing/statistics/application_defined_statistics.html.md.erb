@@ -1,0 +1,22 @@
+---
+title:  Application-Defined and Custom Statistics
+---
+
+<span class="keyword">GemFire</span> includes interfaces for defining and maintaining your own statistics.
+
+<a id="application_defined_statistics__section_88C31FA62A194947BF71AD54B5F9BAB3"></a>
+The <span class="keyword">GemFire</span> package, `com.gemstone.gemfire`, includes the following interfaces for defining and maintaining your own statistics:
+
+-   **StatisticDescriptor**. Describes an individual statistic. Each statistic has a name and information on the statistic it holds, such as its class type (long, int, etc.) and whether it is a counter that always increments, or a gauge that can vary in any manner.
+-   **StatisticsType**. Logical type that holds a list of `StatisticDescriptors` and provides access methods to them. The `StatisticDescriptors` contained by a `StatisticsType` are each assigned a unique ID within the list. `StatisticsType` is used to create a `Statistics` instance.
+-   **Statistics**. Instantiation of an existing `StatisticsType` object with methods for setting, incrementing, and getting individual `StatisticDescriptor` values.
+-   **StatisticsFactory**. Creates instances of `Statistics`. You can also use it to create instances of `StatisticDescriptor` and `StatisticsType`, because it implements `StatisticsTypeFactory`. `DistributedSystem` is an instance of `StatisticsFactory`.
+-   **StatisticsTypeFactory**. Creates instances of `StatisticDescriptor` and `StatisticsType`.
+
+The statistics interfaces are instantiated using statistics factory methods that are included in the package. For coding examples, see the online Java API documentation for `StatisticsFactory` and `StatisticsTypeFactory`.
+
+As an example, an application server might collect statistics on each client session in order to gauge whether client requests are being processed in a satisfactory manner. Long request queues or long server response times could prompt some capacity-management action such as starting additional application servers. To set this up, each session-state data point is identified and defined in a `StatisticDescriptor` instance. One instance might be a `RequestsInQueue` gauge, a non-negative integer that increments and decrements. Another could be a `RequestCount` counter, an integer that always increments. A list of these descriptors is used to instantiate a `SessionStateStats` `StatisticsType`. When a client connects, the application server uses the `StatisticsType` object to create a session-specific `Statistics` object. The server then uses the `Statistics` methods to modify and retrieve the client’s statistics. This figure illustrates the relationships between the statistics interfaces and shows the implementation of this use case.
+
+<img src="../../images/statistics-1.gif" id="application_defined_statistics__image_1fb717d9-4fe3-43c2-aeaa-bdceda5639d8" class="image" />
+
+

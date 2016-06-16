@@ -1,0 +1,36 @@
+---
+title:  Setting Up JMX Authentication for <span class="keyword">GemFire</span> Management and Monitoring
+---
+
+To force JMX clients such as `gfsh` and <span class="keyword">GemFire</span> Pulse to authenticate into the <span class="keyword">GemFire</span> management system, you must configure the JMX Manager node.
+
+By default, the JMX manager allows clients without credentials to connect. To set up JMX authentication for the management system:
+
+1.  Verify that the `jmx-manager` <span class="keyword">GemFire</span> property is set to true on any node that you want to be able to become a JMX Manager and authenticate clients. If this property is set to false or not specified, then all other jmx-manager-\* properties are ignored.
+2.  Create a password file that contains entries for the user names and passwords you want to grant access to <span class="keyword">GemFire</span>'s management and monitoring system. For example:
+
+    ``` pre
+    #the gemfiremonitor user has password Abc!@#
+    #the gemfiremanager user has password 123Gh2!
+
+    gemfiremonitor Abc!@#
+    gemfiremanager 123Gh2!
+    ```
+
+3.  On each of your JMX Manager-enabled nodes, set the property `jmx-manager-password-file` to the name of the file you created in step 2. This will require clients to authenticate when connecting to a JMX Manager node in <span class="keyword">GemFire</span>.
+4.  If you wish to further restrict access to system operations, you can also set up an access file for the JMX Manager. The access file indicates whether the users listed in the password file have the ability to read system MBeans (monitor the system) or whether they can additionally modify MBeans (perform operations). For example, you can define the following:
+
+    ``` pre
+    #the gemfiremonitor user has readonly access
+    #the gemfiremanager user has readwrite access
+
+    gemfiremonitor readonly
+    gemfiremanager readwrite
+    ```
+
+5.  On each of your JMX Manager-enabled nodes, set the <span class="keyword">GemFire</span> property `jmx-manager-access-file` to the name of the file you created in step 4. This will associate MBean permissions to the users who authenticate to the JMX Manager node in <span class="keyword">GemFire</span>.
+6.  If desired, enable SSL for your JMX Manager connections. If you enable SSL for <span class="keyword">GemFire</span> peer-to-peer connections, then by default the same SSL configuration is applied to the JMX manager. You can override the SSL configuration for JMX clients by configuring JMX manager configuration properties (such as `jmx-manager-ssl`) in the `gfsecurity.properties` file. See [Configuring SSL](implementing_ssl.html).
+
+For more information on the format of the password and access file, see [http://docs.oracle.com/javase/6/docs/technotes/guides/management/agent.html](http://docs.oracle.com/javase/6/docs/technotes/guides/management/agent.html).
+
+

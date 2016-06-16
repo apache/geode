@@ -1,0 +1,222 @@
+---
+title:  Recovering from Crashes with a Peer-to-Peer Configuration
+---
+
+When a member crashes, the remaining members continue operation as though the missing application or cache server had never existed. The recovery process differs according to region type and scope, as well as data redundancy configuration.
+
+<a id="rec_app_p2p_crash__section_1C54E03359AB4775A9211899A63362A4"></a>
+The other system members are told that it has left unexpectedly. If any remaining system member is waiting for a response (ACK), the ACK still succeeds and returns, because every member that is still alive has responded. If the lost member had ownership of a GLOBAL entry, then the next attempt to obtain that ownership acts as if no owner exists.
+
+Recovery depends on how the member has its cache configured. This section covers the following:
+
+-   Recovery for Partitioned Regions
+-   Recovery for Distributed Regions
+-   Recovery for Regions of Local Scope
+-   Recovering Data From Disk
+
+To tell whether the regions are partitioned, distributed, or local, check the `cache.xml` file. If the file contains a local scope setting, the region has no connection to any other member:
+
+``` pre
+<region-attributes scope="local">
+```
+
+If the file contains any other scope setting, it is configuring a distributed region. For example:
+
+``` pre
+<region-attributes scope="distributed-no-ack">
+```
+
+If the file includes either of the following lines, it is configuring a partitioned region.
+
+``` pre
+<partition-attributes... 
+<region-attributes data-policy="partition"/> 
+<region-attributes data-policy="persistent-partition"/>
+```
+
+The reassigned clients continue operating smoothly, as in the failover case. A successful rebalancing operation does not create any data loss.
+
+If rebalancing fails, the client fails over to an active server with the normal failover behavior.
+
+<a id="rec_app_p2p_crash__section_0E7D482DD8E84250A10070431B29AAC5"></a>
+
+## Recovery for Partitioned Regions
+
+When an application or cache server crashes, any data in local memory is lost, including any entries in a local partitioned region data store.
+
+**Recovery for Partitioned Regions With Data Redundancy**
+
+If the partitioned region is configured for redundancy and a member crashes, the system continues to operate with the remaining copies of the data. You may need to perform recovery actions depending on how many members you have lost and how you have configured redundancy in your system.
+
+By default, <span class="keyword">GemFire</span> does not make new copies of the data until a new member is brought online to replace the member that crashed. You can control this behavior using the recovery delay attributes. For more information, see [Configure High Availability for a Partitioned Region](../../developing/partitioned_regions/configuring_ha_for_pr.html).
+
+To recover, start a replacement member. The new member regenerates the lost copies and returns them to the configured redundancy level.
+
+**Note:**
+Make sure the replacement member has at least as much local memory as the old one— the `local-max-memory` configuration setting must be the same or larger. Otherwise, you can get into a situation where some entries have all their redundant copies but others don’t. In addition, until you have restarted a replacement member, any code that attempts to create or update data mapped to partition region bucket copies (primary and secondary) that have been lost can result in an exception. (New transactions unrelated to the lost data can fail as well simply because they happen to map to-- or "resolve" to-- a common bucketId).
+
+Even with high availability, you can lose data if too many applications and cache servers fail at the same time. Any lost data is replaced with new data created by the application as it returns to active work.
+
+*The number of members that can fail at the same time without losing data is equal to the number of redundant copies configured for the region.* So if redundant-copies=1, then at any given time only one member can be down without data loss. If a second goes down at the same time, any data stored by those two members will be lost.
+
+You can also lose access to all copies of your data through network failure. See [Understanding and Recovering from Network Outages](recovering_from_network_outages.html#rec_network_crash).
+
+**Recovery Without Data Redundancy**
+
+If a member crashes and there are no redundant copies, any logic that tries to interact with the bucket data is *blocked* until the primary buckets are restored from disk. (If you do not have persistence enabled, <span class="keyword">GemFire</span> will reallocate the buckets on any available remaining nodes, however you will need to recover any lost data using external mechanisms.)
+
+To recover, restart the member. The application returns to active work and automatically begins to create new data.
+
+If the members with the relevant disk stores cannot be restarted, then you will have to revoke the missing disk stores manually using gfsh. See [revoke missing-disk-store](../../tools_modules/gfsh/command-pages/revoke.html).
+
+**Maintaining and Recovering Partitioned Region Redundancy**
+
+The following alert \[ALERT-1\] (warning) is generated when redundancy for a partitioned region drops:
+
+Alert:
+
+``` pre
+[warning 2008/08/26 17:57:01.679 PDT dataStoregemfire5_jade1d_6424 
+<PartitionedRegion Message Processor2> tid=0x5c] Redundancy has dropped below 3 
+configured copies to 2 actual copies for /partitionedRegion
+```
+
+``` pre
+[warning 2008/08/26 18:13:09.059 PDT dataStoregemfire5_jade1d_6424 
+<DM-MemberEventInvoker> tid=0x1d5] Redundancy has dropped below 3 
+configured copies to 1 actual copy for /partitionedRegion
+```
+
+The following alert \[ALERT-2\] (warning) is generated when, after creation of a partitioned region bucket, the program is unable to find enough members to host the configured redundant copies:
+
+Alert:
+
+``` pre
+[warning 2008/08/27 17:39:28.876 PDT gemfire_2_4 <RMI TCP Connection(67)-10.80.250.201> 
+tid=0x1786] Unable to find sufficient members to host a bucket in the partitioned region. 
+Region name = /partitionedregion Current number of available data stores: 1 number 
+successfully allocated = 1 number needed = 2 Data stores available: 
+[pippin(21944):41927/42712] Data stores successfully allocated: 
+[pippin(21944):41927/42712] Consider starting another member
+```
+
+The following alert \[EXCEPTION-1\] (warning) and exception is generated when, after the creation of a partitioned region bucket, the program is unable to find any members to host the primary copy:
+
+Alert:
+
+``` pre
+[warning 2008/08/27 17:39:23.628 PDT gemfire_2_4 <RMI TCP Connection(66)-10.80.250.201> 
+tid=0x1888] Unable to find any members to host a bucket in the partitioned region. 
+Region name = /partitionedregion Current number of available data stores: 0 number 
+successfully allocated = 0 number needed = 2 Data stores available: 
+[] Data stores successfully allocated: [] Consider starting another member
+```
+
+Exception:
+
+``` pre
+com.gemstone.gemfire.cache.PartitionedRegionStorageException: Unable to find any members to 
+                    host a bucket in the partitioned region.
+```
+
+-   Region name = /partitionedregion
+-   Current number of available data stores: 0
+-   Number successfully allocated = 0; Number needed = 2
+-   Data stores available: \[\]
+-   Data stores successfully allocated: \[\]
+
+Response:
+
+-   Add additional members configured as data stores for the partitioned region.
+-   Consider starting another member.
+
+<a id="rec_app_p2p_crash__section_19CFA40F5EE64C4F8062BFBF7A6C1571"></a>
+
+## Recovery for Distributed Regions
+
+Restart the process. The system member recreates its cache automatically. If replication is used, data is automatically loaded from the replicated regions, creating an up-to-date cache in sync with the rest of the system. If you have persisted data but no replicated regions, data is automatically loaded from the disk store files. Otherwise, the lost data is replaced with new data created by the application as it returns to active work.
+
+<a id="rec_app_p2p_crash__section_745AB095D1FA48E392F2C1B95DC18090"></a>
+
+## Recovery for Regions of Local Scope
+
+Regions of local scope have no memory backup, but may have data persisted to disk. If the region is configured for persistence, the data remains in the region’s disk directories after a crash. The data on disk will be used to initialize the region when you restart.
+
+<a id="rec_app_p2p_crash__section_D9202624335D45BFA2FCC55D702125F7"></a>
+
+## Recovering Data from Disk
+
+When you persist a region, the entry data on disk outlives the region in memory. If the member exits or crashes, the data remains in the region’s disk directories. See [Disk Storage](../disk_storage/chapter_overview.html). If the same region is created again, this saved disk data can be used to initialize the region.
+
+Some general considerations for disk data recovery:
+
+-   Region persistence causes only entry keys and values to be stored to disk. Statistics and user attributes are not stored.
+-   If the application was writing to the disk asynchronously, the chances of data loss are greater. The choice is made at the region level, with the disk-synchronous attribute.
+-   When a region is initialized from disk, last modified time is persisted from before the member exit or crash. For information on how this might affect the region data, see [Expiration](../../developing/expiration/chapter_overview.html).
+
+**Disk Recovery for Disk Writing—Synchronous Mode and Asynchronous Mode**
+
+**Synchronous Mode of Disk Writing**
+
+Alert 1:
+
+``` pre
+DiskAccessException has occured while writing to the disk for region <Region_Name>. 
+Attempt will be made to destroy the region locally.
+```
+
+Alert 2:
+
+``` pre
+Encountered Exception in destroying the region locally
+```
+
+Description:
+
+These are error log-level alerts. Alert 2 is generated only if there was an error in destroying the region. If Alert 2 is not generated, then the region was destroyed successfully. The message indicating the successful destruction of a region is logged at the information level.
+
+Alert 3:
+
+``` pre
+Problem in stopping Cache Servers. Failover of clients is suspect
+```
+
+Description:
+
+This is an error log-level alert that is generated only if servers were supposed to stop but encountered an exception that prevented them from stopping.
+
+Response:
+
+The region may no longer exist on the member. The cache servers may also have been stopped. Recreate the region and restart the cache servers.
+
+**Asynchronous Mode of Disk Writing**
+
+Alert 1:
+
+``` pre
+Problem in Asynch writer thread for region <Region_name>. It will terminate.
+```
+
+Alert 2:
+
+``` pre
+Encountered Exception in destroying the region locally
+```
+
+Description:
+
+These are error log-level alerts. Alert 2 is generated only if there was an error in destroying the region. If Alert 2 is not generated, then the region was destroyed successfully. The message indicating the successful destruction of a region is logged at the information level.
+
+Alert 3:
+
+``` pre
+Problem in stopping Cache Servers. Failover of clients is suspect
+```
+
+Description:
+
+This is an error log-level alert that is generated only if servers were supposed to stop but encountered an exception that prevented them from stopping.
+
+Response:
+
+The region may no longer exist on the member. The cache servers may also have been stopped. Recreate the region and restart the cache servers.

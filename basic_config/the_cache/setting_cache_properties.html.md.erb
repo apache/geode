@@ -1,0 +1,22 @@
+---
+title:  Options for Configuring the Cache and Data Regions
+---
+
+To populate your <span class="keyword">Pivotal GemFire</span> cache and fine-tune its storage and distribution behavior, you need to define cached data regions and provide custom configuration for the cache and regions.
+
+<a id="setting_cache_properties__section_FB536C90C219432D93E872CBD49D66B1"></a>
+Cache configuration properties define:
+
+-   Cache-wide settings such as disk stores, communication timeouts, and settings designating the member as a server
+-   Cache data regions
+
+Configure the cache and its data regions through one or more of these methods:
+
+-   Through a persistent configuration that you define when issuing commands that use the gfsh command line utility. `gfsh` supports the administration, debugging, and deployment of <span class="keyword">Pivotal GemFire</span> processes and applications. You can use gfsh to configure regions, locators, servers, disk stores, event queues, and other objects.
+
+    As you issue commands, gfsh saves a set of configurations that apply to the entire cluster and also saves configurations that only apply to defined groups of members within the cluster. You can re-use these configurations to create a distributed system. See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html).
+
+-   Through declarations in the XML file named in the `cache-xml-file` `gemfire.properties` setting. This file is generally referred to as the `cache.xml` file, but it can have any name. See [cache.xml](../../reference/topics/chapter_overview_cache_xml.html#cache_xml).
+-   Through application calls to the `com.gemstone.gemfire.cache.CacheFactory`, `com.gemstone.gemfire.cache.Cache` and `com.gemstone.gemfire.cache.Region` APIs.
+
+

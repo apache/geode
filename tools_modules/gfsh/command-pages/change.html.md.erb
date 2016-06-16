@@ -1,0 +1,82 @@
+<a id="topic_E74ED23CB60342538B2175C326E7D758"></a>
+
+# change loglevel
+
+Changes the logging level on specified members.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+change loglevel --loglevel=value [--members=value(nullvalue)*] [--groups=value(nullvalue)*]
+```
+
+<a id="topic_E74ED23CB60342538B2175C326E7D758__table_2277A2CE8F6E4731B45FEFA2B1366DB6"></a>
+
+<table>
+<caption><span class="tablecap">Table 1. Parameters</span></caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+<th>Default Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="keyword parmname">--members</span></td>
+<td>Name or ID of one or more <span class="keyword">GemFire</span> distributed system member(s) whose logging level you want to change.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--groups</span></td>
+<td>One or more group names. The logging level changes for all members of these groups.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--loglevel</span></td>
+<td><em>Required.</em> Log level to change. Valid options are:
+<ul>
+<li><code class="ph codeph">all</code></li>
+<li><code class="ph codeph">finest</code></li>
+<li><code class="ph codeph">finer</code></li>
+<li><code class="ph codeph">fine</code></li>
+<li><code class="ph codeph">config</code></li>
+<li><code class="ph codeph">info</code></li>
+<li><code class="ph codeph">warning</code></li>
+<li><code class="ph codeph">error</code></li>
+<li><code class="ph codeph">severe</code></li>
+<li><code class="ph codeph">none</code></li>
+</ul></td>
+<td> </td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 1. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+gfsh>change loglevel --loglevel=severe --members=server1
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>change loglevel --loglevel=severe --members=server1
+
+Summary
+
+                Member                 | Changed log-level
+-------------------------------------- | -----------------
+172.16.196.144(server1:3060)<v1>:24653 | true
+```
+
+

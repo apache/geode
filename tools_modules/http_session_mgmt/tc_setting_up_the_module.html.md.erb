@@ -1,0 +1,128 @@
+---
+title:  Setting Up the HTTP Module for tc Server
+---
+
+To set up the HTTP Module for tc Server, start a tc Server instance with the appropriate tc Server template based on your preferred topology.
+
+**Note:**
+In the procedures that follow, you may be required to log in as root or use sudo to run the commands in Unix, especially if you installed Pivotal tc Server from RPM using yum.
+
+<a id="tc_setting_up_the_module__section_564B0D4008E343D7AF2791A1271B1F8E"></a>
+## Setup and Start
+
+Edit the configuration in the appropriate file for the topology to set the locator host and port. For peer-to-peer topology, edit `geode-p2p/conf/catalina.properties` to set the `geode-p2p.locators` property. For client/server topology, edit `geode-cs/conf/cache-client.xml`.
+
+Create a tc Server instance using one of these commands, choosing the appropriate template for the topology. Add the `--version` option if you need to pin your tc Server instance to a specific version of the tc Runtime:
+
+``` pre
+In Unix, for a peer-to-peer topology:
+  $ ./tcruntime-instance.sh create my_instance_name --template geode-p2p
+
+In Unix, for a peer-to-peer topology, with a pinned tc Server instance:
+  $ ./tcruntime-instance.sh create --version 6.0.32.A.RELEASE \
+  my_instance_name --template geode-p2p
+
+In Unix, for a client/server topology:
+  $ ./tcruntime-instance.sh create my_instance_name --template geode-cs
+
+In Unix, for a client/server topology, with a pinned tc Server instance:
+  $ ./tcruntime-instance.sh create  --version 6.0.32.A.RELEASE \
+  my_instance_name --template geode-cs
+
+In Windows, for a peer-to-peer topology:
+  $ tcruntime-instance.bat create my_instance_name --template geode-p2p
+
+In Windows, for a peer-to-peer topology, with a pinned tc Server instance:
+  $ tcruntime-instance.bat create --version 6.0.32.A.RELEASE ^
+  my_instance_name --template geode-p2p
+
+In Windows, for a client/server topology:
+  $ tcruntime-instance.bat create my_instance_name --template geode-cs
+
+In Windows, for a client/server topology, with a pinned tc Server instance:
+  $ tcruntime-instance.bat create  --version 6.0.32.A.RELEASE ^
+  my_instance_name --template geode-cs
+```
+
+To run, first start the locator, which will listen on its default of port number 10334:
+
+``` pre
+$ gfsh start locator --name=locator1
+```
+
+With a similar environment to this example that is for a client/server set up,
+``` pre
+TC_VER=tomcat-8.0.30.C.RELEASE
+INSTANCE=geode-cs
+CLASSPATH=$PWD/$INSTANCE/lib/geode-modules-1.0.0-incubating.M2-SNAPSHOT.jar:\
+$PWD/$INSTANCE/lib/geode-modules-tomcat7-1.0.0-incubating.M2-SNAPSHOT.jar:\
+$PWD/$TC_VER/lib/servlet-api.jar:\
+$PWD/$TC_VER/lib/catalina.jar:\
+$PWD/$TC_VER/lib/tomcat-util.jar:\
+$PWD/$TC_VER/bin/tomcat-juli.jar
+```
+
+start the server using `gfsh`:
+
+``` pre
+$ gfsh start server --name=server1 --locators=localhost[10334] \
+        --server-port=0 --classpath=$CLASSPATH
+```
+
+<a id="tc_setting_up_the_module__section_B6AA6C00DBBD44E68649BDB793578694"></a>
+
+## Starting the Application Server
+
+Once you've created a tc Server instance, you are ready to start the instance.
+
+``` pre
+In Unix: 
+  $ ./tcruntime-ctl.sh my_instance_name start
+  
+In Windows:
+  $ ./tcruntime-ctl.bat my_instance_name start
+```
+
+Refer to the [tc Server](http://www.vmware.com/products/vfabric-tcserver) documentation for more information. Once started, <span class="keyword">GemFire</span> will automatically launch within the application server process.
+
+**Note:**
+<span class="keyword">GemFire</span> session state management provides its own clustering functionality. If you are using <span class="keyword">GemFire</span>, you should NOT turn on Tomcat clustering as well.
+
+To verify that the system is running, check the log file for a message similar to:
+
+``` pre
+Mar 29, 2016 8:38:31 AM com.gemstone.gemfire.modules.session.bootstrap.AbstractCache
+lifecycleEvent
+INFO: Initializing GemFire Modules
+Modules version: 1.0.0-incubating.M2-SNAPSHOT
+Java version:   1.0.0-incubating.M2-SNAPSHOT user1 032916 2016-03-29 07:49:26 -0700
+javac 1.8.0_66
+Native version: native code unavailable
+Source revision: c36591b73243c7ee3a0186710338453d12efe364
+Source repository: develop
+Running on: /10.118.33.250, 8 cpu(s), x86_64 Mac OS X 10.11.4
+```
+
+Information is also logged within the <span class="keyword">GemFire</span> log file, which by default is named `gemfire_modules.log`.
+
+<a id="tc_setting_up_the_module__section_B2396FB0879248DBA85ADFDBBEFA987E"></a>
+
+## Configuring Non-Sticky Session Replication
+
+Some situations require that sessions be 'non-sticky', which means that client requests can be directed to any server in a cluster of application servers instead of the same server each time. To achieve this, you must configure your deployment as described for the following topologies.
+
+**Peer-to-Peer**
+
+For peer-to-peer topologies, apply the following settings to enable non-sticky sessions to work correctly:
+
+-   Java system property `gemfire.loadClassOnEveryDeserialization=true`. Set this property by editing the `bin/setenv.sh` file.
+-   `prefer.deserialized.form=false`. Set this property in `conf/catalina.properties`.
+
+**Client-server**
+
+For client-server topologies, only the Java system property `gemfire.loadClassOnEveryDeserialization=true` must be set, in the `bin/setenv.sh file`.
+
+**Note:**
+Non-sticky sessions cause a performance impact because sessions need to be re-created every time a request hits a different server. This may not be noticeable when the session attributes are small, but may become more evident as the session attributes increase in size and/or number.
+
+

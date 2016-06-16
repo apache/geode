@@ -1,0 +1,25 @@
+---
+title:  System Member Performance
+---
+
+You can modify some configuration parameters to improve system member performance.
+
+Before doing so, you should understand [Basic Configuration and Programming](../../basic_config/book_intro.html).
+
+-   **[Distributed System Member Properties](../../../latest/managing/monitor_tune/system_member_performance_distributed_system_member.html)**
+
+    Several performance-related properties apply to a cache server or application that connects to the distributed system.
+
+-   **[JVM Memory Settings and System Performance](../../../latest/managing/monitor_tune/system_member_performance_jvm_mem_settings.html)**
+
+    You configure JVM memory settings for the Java application by adding parameters to the java invocation. For the cache server, you add them to the command-line parameters for the gfsh `start server` command.
+
+-   **[Garbage Collection and System Performance](../../../latest/managing/monitor_tune/system_member_performance_garbage.html)**
+
+    If your application exhibits unacceptably high latencies, you might improve performance by modifying your JVM’s garbage collection behavior.
+
+-   **[Connection Thread Settings and Performance](../../../latest/managing/monitor_tune/system_member_performance_connection_thread_settings.html)**
+
+    When many peer processes are started concurrently, you can improve the distributed system connect time can by setting the p2p.HANDSHAKE\_POOL\_SIZE system property value to the expected number of members.
+
+

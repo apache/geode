@@ -1,0 +1,71 @@
+<a id="topic_523F6DE33FE54307BBE8F83BB7D9355D"></a>
+
+# <span class="keyword">GemFire</span> Redis Adapter
+
+The <span class="keyword">GemFire</span> Redis adapter allows <span class="keyword">GemFire</span> to function as a drop-in replacement for a Redis data store, letting Redis applications take advantage of <span class="keyword">GemFire</span>’s scaling capabilities without changing their client code. Redis clients connect to a <span class="keyword">GemFire</span> server in the same way they connect to a Redis server, using an IP address and a port number.
+
+-   **[Using the Redis Adapter](../../latest/tools_modules/redis_adapter.html#using-the-redis-adapter)**
+
+-   **[How the Redis Adapter Works](../../latest/tools_modules/redis_adapter.html#how-the-redis-adapter-works)**
+
+-   **[Advantages of GemFire over a Redis Server](../../latest/tools_modules/redis_adapter.html#advantages-of-geode-over-redis)**
+
+## Using the Redis Adapter
+
+To use the Redis Adapter, you will need three pieces of information:
+
+1.  The port number through which clients will communicate
+2.  The IP address of the host where the server is to reside
+3.  A choice of which attributes you will use for a <span class="keyword">GemFire</span> partitioned region
+
+The IP address and port number should be the same ones coded in the Redis clients.
+
+In order to take advantage of <span class="keyword">GemFire</span>’s scaling capabilities, you should specify the <span class="keyword">GemFire</span> region as one of the types that use the PARTITION data policy. PARTITION is the default. Other possibilities include PARTITION\_REDUNDANT and PARTITION\_PERSISTENT. (See [“Region Shortcuts Quick Reference”](../reference/topics/region_shortcuts_table.html) for a complete list.)
+
+To implement a <span class="keyword">GemFire</span> instance using the Redis Adapter:
+
+1.  Install <span class="keyword">GemFire</span> on the system where the server is to reside.
+2.  Use gfsh to start a <span class="keyword">GemFire</span> server, specifying the three configuration options described above:
+    -   Use `--redis-port` to specify the port. This parameter is required -- the <span class="keyword">GemFire</span> server will listen on this port for Redis commands.
+    -   Use `--redis-bind-address` to specify the IP address of the server host. This parameter is optional. If not specified, the default is determined from the /etc/hosts file.
+    -   Use `--J=-Dgemfireredis.regiontype` to specify the region type. This parameter is optional. If not specified, regiontype is set to PARTITION.
+
+For example:
+
+``` pre
+gfsh> start server --name=server1 --redis-bind-address=localhost \
+ --redis-port=11211 --J=-Dgemfireredis.regiontype=PARTITION_PERSISTENT
+```
+
+Redis clients can then connect to the server at localhost:11211.
+
+## How the Redis Adapter Works
+
+The <span class="keyword">GemFire</span> Redis Adapter supports all Redis data structures, including
+
+-   String
+-   List
+-   Hash
+-   Set
+-   SortedSet
+-   HyperLogLog
+
+In <span class="keyword">GemFire</span> these data structures are implemented using partitioned regions. In most cases, <span class="keyword">GemFire</span> allocates one partitioned region for each data structure. For example, each Sorted Set is allocated its own partitioned region, in which the key is the user data and the value is the user-provided score, and entries are indexed by score. The two exceptions to this design are data types String and HyperLogLog. All Strings are allocated to a single partitioned region. Similarly, all HyperLogLogs are allocated to a single region. Regions use <span class="keyword">GemFire</span>’s OQL and indexes.
+
+The <span class="keyword">GemFire</span> Redis Adapter supports all Redis commands for each of the Redis data structures. (See the Javadocs for the GemFireRedisServer class for a detailed list.) The <span class="keyword">GemFire</span> server’s responses to Redis commands are identical to those of a Redis server with the following exceptions, resulting from <span class="keyword">GemFire</span>’s more extensive partitioning model:
+
+-   Any command that removes keys and returns a count of removed entries will return a count of how many entries have been removed from the local vm, rather than a total count of items removed across all members. However, all entries will be removed.
+-   Any command that returns a count of newly set members has an unspecified return value. The command will work just as the Redis protocol states, but the count will not necessarily reflect the number set compared to the number overridden.
+-   Transactions work just as they would on a Redis instance; they are local transactions. Transactions cannot be executed on data that is not local to the executing server, that is on a partitioned region in a different server instance, or that is on a persistent region that does not have transactions enabled. Also, you cannot watch or unwatch keys, as all keys within a <span class="keyword">GemFire</span> transaction are watched by default.
+
+## Advantages of <span class="keyword">GemFire</span> over a Redis Server
+
+<span class="keyword">GemFire</span>’s primary advantage is its **scalability**. While the Redis server is single threaded, <span class="keyword">GemFire</span> supports high concurrency. Many Redis clients can execute commands on the <span class="keyword">GemFire</span> server simultaneously.
+
+<span class="keyword">GemFire</span> supports **stored procedures**, which can execute on the server and report results to the requesting client.
+
+<span class="keyword">GemFire</span> architecture and management features help detect and resolve **network partitioning** problems without explicit management on the part of the Redis client.
+
+<span class="keyword">GemFire</span> **WAN replication** allows the data store to expand horizontally, across physically distant sites, while maintaining data consistency.
+
+

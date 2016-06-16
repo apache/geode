@@ -1,0 +1,172 @@
+---
+title:  Firewalls and Ports
+---
+
+Make sure your port settings are configured correctly for firewalls.
+
+<a id="concept_5ED182BDBFFA4FAB89E3B81366EBC58E__section_F9C1D7419F954DC1A305C34714C8615C"></a>
+There are several different port settings that need to be considered when using firewalls:
+
+-   Port that the cache server listens on. This is configurable using the `cache-server` element in cache.xml, on the CacheServer class in Java APIs, and as a command line option to the `gfsh start server` command.
+
+    By default, if not otherwise specified, <span class="keyword">GemFire</span> clients and servers discover each other on a pre-defined port (**40404**) on the localhost.
+
+-   Locator port. <span class="keyword">GemFire</span> clients can use the locator to automatically discover cache servers. The locator port is configurable as a command-line option to the `gfsh start locator` command. Locators are used in the peer-to-peer cache deployments to discover other processes. They can be used by clients to locate servers as an alternative to configuring clients with a collection of server addresses and ports.
+
+    By default, if not otherwise specified, <span class="keyword">GemFire</span> locators use the default multicast port **10334**.
+
+-   Since locators start up the distributed system, locators must also have their ephemeral port range and TCP port accessible to other members through the firewall.
+-   For clients, you configure the client to connect to servers using the client's pool configuration. The client's pool configuration has two options: you can create a pool with either a list of server elements or a list of locator elements. For each element, you specify the host and port. The ports specified must be made accessible through your firewall.
+
+## **Limiting Ephemeral Ports for Peer-to-Peer Membership**
+
+By default, <span class="keyword">GemFire</span> assigns *ephemeral* ports, that is, temporary ports assigned from a designated range, which can encompass a large number of possible ports. When a firewall is present, the ephemeral port range usually must be limited to a much smaller number, for example six. If you are configuring P2P communications through a firewall, you must also set each the tcp port for each process and ensure that UDP traffic is allowed through the firewall.
+
+## **Properties for Firewall and Port Configuration**
+
+This table contains properties potentially involved in firewall behavior, with a brief description of each property. Click on a property name for a link to the reference topic.
+
+Configuration
+**Configuration area**
+**Property or Setting**
+**Definition**
+peer-to-peer config
+`conserve-sockets`
+
+Specifies whether sockets are shared by the system member's threads.
+
+peer-to-peer config
+`locators`
+
+The list of locators used by system members. The list must be configured consistently for every member of the distributed system.
+
+peer-to-peer config
+`mcast-address`
+
+Address used to discover other members of the distributed system. Only used if mcast-port is non-zero. This attribute must be consistent across the distributed system.
+
+peer-to-peer config
+`mcast-port`
+
+Port used, along with the mcast-address, for multicast communication with other members of the distributed system. If zero, multicast is disabled for data distribution.
+
+peer-to-peer config
+`membership-port-range`
+
+The range of ephemeral ports available for unicast UDP messaging and for TCP failure detection in the peer-to-peer distributed system.
+
+peer-to-peer config
+`tcp-port`
+
+The TCP port to listen on for cache communications.
+
+Configuration
+Configuration Area
+**Property or Setting**
+**Definition**
+cache server config
+`hostname-for-clients`
+
+Hostname or IP address to pass to the client as the location where the server is listening.
+
+cache server config
+`max-connections`
+
+Maximum number of client connections for the server. When the maximum is reached, the server refuses additional client connections.
+
+cache server config
+`port` (cache.xml) or `--port` parameter to the gfsh start server command
+
+Port that the server listens on for client communication.
+
+## Default Port Configurations
+
+Default Ports
+**Port Name**
+
+Related Configuration Setting
+**Default Port**
+
+Cache Server
+
+`port` (cache.xml)
+
+40404
+HTTP
+
+`http-service-port`
+7070
+Locator
+
+`start-locator` (for embedded locators) or `--port` parameter to the gfsh start locator command.
+*if not specified upon startup or in the start-locator property, uses default multicast port 10334*
+Membership Port Range
+
+`membership-port-range`
+1024 to 65535
+Memcached Port
+
+`memcached-port`
+*not set*
+Multicast
+
+`mcast-port`
+10334
+RMI
+
+`jmx-manager-port`
+1099
+TCP
+
+`tcp-port`
+ephemeral port
+
+## **Properties for Firewall and Port Configuration in Multi-Site (WAN) Configurations**
+
+Each gateway receiver uses a port to listen for incoming communication from one or more gateway senders communication between <span class="keyword">GemFire</span> sites. The full range of port values for gateway receivers must be made accessible within the firewall from across the WAN.
+
+This table contains properties potentially involved in firewall behavior, with a brief description of each property. Click on a property name for a link to the [gemfire.properties and gfsecurity.properties (GemFire Properties)](../../reference/topics/gemfire_properties.html#gemfire_properties) reference topic.
+
+Configuration
+Configuration Area
+**Property or Setting**
+**Definition**
+multi-site (WAN) config
+[hostname-for-senders](../../reference/topics/gfe_cache_xml.html#gateway-receiver)
+
+Hostname or IP address of the gateway receiver used by gateway senders to connect.
+
+multi-site (WAN) config
+[remote-locators](../../reference/topics/gemfire_properties.html#gemfire_properties)
+List of locators (and their ports) that are available on the remote WAN site.
+
+multi-site (WAN) config
+[start-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) and [end-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) (cache.xml) or `--start-port` and `--end-port` parameters to the gfsh start gateway receiver command
+
+Port range that the gateway receiver can use to listen for gateway sender communication.
+
+## Default Port Configuration
+
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><p><strong>Port Name</strong></p></th>
+<th>Related Configuration Setting</th>
+<th><p><strong>Default Port</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><p>Gateway Receiver</p></td>
+<td><p>[start-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) and [end-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) (cache.xml) or <code class="ph codeph">--start-port</code> and <code class="ph codeph">--end-port</code> parameters to the <code class="ph codeph">gfsh start gateway receiver</code> command</p></td>
+<td><em>not set</em> Each gateway receiver uses a single port to accept connections from gateway senders in other systems. However, the configuration of a gateway receiver specifies a range of possible port values to use. <span class="keyword">GemFire</span> selects an available port from the specified range when the gateway receiver starts. Configure your firewall so that the full range of possible port values is accessible by gateway senders from across the WAN.</td>
+</tr>
+</tbody>
+</table>
+
+

@@ -1,0 +1,13 @@
+---
+title:  Preventing Network Partitions
+---
+
+This section provides a short list of things you can do to prevent network partition from occurring.
+
+To avoid a network partition:
+
+-   Use NIC teaming for redundant connectivity. See [http://www.cisco.com/en/US/docs/solutions/Enterprise/Data_Center/vmware/VMware.html#wp696452](http://www.cisco.com/en/US/docs/solutions/Enterprise/Data_Center/vmware/VMware.html#wp696452) for more information.
+-   It is best if all servers share a common network switch. Having multiple network switches increases the possibility of a network partition occurring. If multiple switches must be used, redundant routing paths should be available, if possible. The weight of members sharing a switch in a multi-switch configuration will determine which partition survives if there is an inter-switch failure.
+-   In terms of <span class="keyword">GemFire</span> configuration, consider the weighting of members. For example, you could assign important processes a higher weight.
+
+

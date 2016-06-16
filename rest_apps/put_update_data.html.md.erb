@@ -1,0 +1,67 @@
+---
+title:  PUT /gemfire-api/v1/{region}/{key}
+---
+
+Update or insert (put) data for key in region.
+
+## Resource URL
+
+``` pre
+http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/{region}/{key}
+```
+
+## Parameters
+
+See [PUT /gemfire-api/v1/{region}/{key}?op=REPLACE](put_replace_data.html#topic_itv_mg5_m4) and [PUT /gemfire-api/v1/{region}/{key}?op=CAS](put_update_cas_data.html#topic_itv_mg5_m4).
+
+## Example Request
+
+``` pre
+PUT /gemfire-api/v1/orders/2
+Request Payload: application/json
+Content-Type: application/json
+Accept: application/json
+{
+    "@type": "com.gemstone.gemfire.web.rest.domain.Order",
+     "purchaseOrderNo": 1121,
+     "customerId": 1012,
+     "description":  "Order for XYZ Corp",
+     "orderDate":  "02/10/2014",
+     "deliveryDate":  "02/20/2014",
+     "contact":  "Pie Doe",
+     "email":  "pie.doe@myCompany.com",
+     "phone":  "01-2048096",
+     "totalPrice": 225,
+     "items": [
+        {
+             "itemNo": 1,
+             "description": "Product-100",
+             "quantity": 10,
+             "unitPrice": 5,
+             "totalPrice": 50
+        }
+    ]
+}
+```
+
+## Example Success Response
+
+``` pre
+Response Payload:  null
+
+200 OK
+```
+
+## Error Codes
+
+| Status Code               | Description                                                                                                                        |
+|---------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| 400 BAD REQUEST           | Returned if supplied key is an invalid format.                                                                                     |
+| 404 NOT FOUND             | Returned if the region is not found.                                                                                               |
+| 500 INTERNAL SERVER ERROR | Error encountered at <span class="keyword">GemFire</span> server. Check the HTTP response body for a stack trace of the exception. |
+
+## Implementation Notes
+
+This operation is idempotent, meaning multiple identical requests should have the same effect as the initial request.
+
+

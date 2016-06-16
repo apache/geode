@@ -1,0 +1,58 @@
+---
+title:  Starting gfsh
+---
+
+Before you start gfsh, confirm that you have set JAVA\_HOME and that your PATH variable includes the gfsh executable.
+
+To manage servers and locators properly, `gfsh` requires the `tools.jar` file (provided with the JDK) exist in the CLASSPATH.
+
+**Note:**
+On Windows, you must have the JAVA\_HOME environment variable set properly to use start, stop and status commands for both locators and servers.
+
+To launch the gfsh command-line interface, execute the following command at the prompt on any machine that is currently installed with <span class="keyword">Pivotal GemFire</span>:
+
+**Start gfsh on Windows:**
+
+``` pre
+<product_directory>\bin\gfsh.bat 
+```
+
+where &lt;*product\_directory*&gt; corresponds to the location where you installed <span class="keyword">Pivotal GemFire</span>.
+
+**Start gfsh on Unix:**
+
+``` pre
+<product_directory>/bin/gfsh
+```
+
+where &lt;*product\_directory*&gt; corresponds to the location where you installed <span class="keyword">Pivotal GemFire</span>. If you installed <span class="keyword">Pivotal GemFire</span> using RPM, the default product directory installation location is `/opt/pivotal/gemfire`. Upon execution, the `gfsh` script appends the required Pivotal GemFire and JDK Jar libraries to your existing CLASSPATH.
+
+If you have successfully started `gfsh`, the `gfsh` splash screen and prompt appears.
+
+``` pre
+c:\PivotalGemFire80\Latest>gfsh.bat
+    _________________________     __
+   / _____/ ______/ ______/ /____/ /
+  / /  __/ /___  /_____  / _____  /
+ / /__/ / ____/  _____/ / /    / /
+/______/_/      /______/_/    /_/    v8.0.0
+
+Monitor and Manage Geode
+gfsh>
+```
+
+You can also run some gfsh commands directly within your terminal without entering a `gfsh` prompt. For example, on Unix/Linux you could enter:
+
+``` pre
+$ gfsh start server --name=server1
+```
+
+or on Windows:
+
+``` pre
+prompt> gfsh start server --name=server1
+```
+
+See [Creating and Running gfsh Command Scripts](command_scripting.html#concept_9B2F7550F16C4717831AD40A56922259) for more information.
+
+

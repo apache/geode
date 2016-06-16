@@ -1,0 +1,51 @@
+---
+title:  Managing <span class="keyword">Pivotal GemFire</span>
+---
+
+*Managing <span class="keyword">Pivotal GemFire</span>* describes how to plan and implement tasks associated with managing, monitoring, and troubleshooting <span class="keyword">Pivotal GemFire</span>.
+
+-   **[Pivotal GemFire Management and Monitoring](../../latest/managing/management/management_and_monitoring.html)**
+
+    <span class="keyword">Pivotal GemFire</span> provides APIs and tools for managing your distributed system and monitoring the health of your distributed system members.
+
+-   **[Managing Heap and Off-heap Memory](../../managing/heap_use/heap_management.html)**
+
+    By default, <span class="keyword">Pivotal GemFire</span> uses the JVM heap. <span class="keyword">Pivotal GemFire</span> also offers an option to store data off heap. This section describes how to manage heap and off-heap memory to best support your application.
+
+-   **[Disk Storage](../../latest/managing/disk_storage/chapter_overview.html)**
+
+    With <span class="keyword">Pivotal GemFire</span> disk stores, you can persist data to disk as a backup to your in-memory copy and overflow data to disk when memory use gets too high.
+
+-   **[Cache and Region Snapshots](../../latest/managing/cache_snapshots/chapter_overview.html)**
+
+    Snapshots allow you to save region data and reload it later. A typical use case is loading data from one environment into another, such as capturing data from a production system and moving it into a smaller QA or development system.
+
+-   **[Region Compression](../../latest/managing/region_compression/region_compression.html)**
+
+    This section describes region compression, its benefits and usage.
+
+-   **[Network Partitioning](../../latest/managing/network_partitioning/chapter_overview.html)**
+
+    <span class="keyword">Pivotal GemFire</span> architecture and management features help detect and resolve network partition problems.
+
+-   **[Security](../../managing/security/chapter_overview.html)**
+
+    The security framework establishes trust between members and authorizes cache operations from clients based on that trust. You establish trust by verifying credentials when one process connects to another.
+
+-   **[Performance Tuning and Configuration](../../latest/managing/monitor_tune/chapter_overview.html)**
+
+    A collection of tools and controls allow you to monitor and adjust <span class="keyword">Pivotal GemFire</span> performance.
+
+-   **[Logging](../../latest/managing/logging/logging.html)**
+
+    Comprehensive logging messages help you confirm system configuration and debug problems in configuration and code.
+
+-   **[Statistics](../../latest/managing/statistics/chapter_overview.html)**
+
+    Every application and server in a distributed system can access statistical data about <span class="keyword">Pivotal GemFire</span> operations. You can configure the gathering of statistics by using the `alter runtime` command of `gfsh` or in the `gemfire.properties` file to facilitate system analysis and troubleshooting.
+
+-   **[Troubleshooting and System Recovery](../../latest/managing/troubleshooting/chapter_overview.html)**
+
+    This section provides strategies for handling common errors and failure situations.
+
+

@@ -1,0 +1,739 @@
+<a id="topic_3151ACDA3677431BB5059EB7FCB47D87"></a>
+
+# start
+
+Start servers, locators, gateway senders and gateway receivers, and monitoring tools.
+
+<a id="topic_67738A5B68E84DEE95D1C92DAB2E26E5"></a>
+
+## start gateway-receiver
+
+Start the gateway receiver on a given member or group of members.
+
+Note that you can only have one gateway receiver on each member, and unlike a gateway sender, you do not need to specify an identifier for the gateway receiver.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+start gateway-receiver [--group=value(,value)*] [--member=value]
+```
+
+<a id="topic_67738A5B68E84DEE95D1C92DAB2E26E5__table_eyh_3vg_2w"></a>
+
+| Name                                           | Description                                                      |
+|------------------------------------------------|------------------------------------------------------------------|
+| <span class="keyword parmname">--member</span> | Name or ID of the member on which to start the Gateway Receiver. |
+| <span class="keyword parmname">--group</span>  | Group(s) of members on which to start the Gateway Receiver.      |
+
+: <span class="tablecap">Table 1. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+start gateway-receiver
+start gateway-receiver --member=member1
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>start gateway-receiver
+      Member                | Result | Message
+--------------------------- | -------| -----------------------------------------------------------------------
+pc13(2266)<v6>:56852        | OK     | GatewayReceiver is started on member pc13(2266)<v6>:56852
+pc13(Manager:2242)<v5>:57631| Error  | GatewayReceiver is not available on member pc13(Manager:2242)<v5>:57631
+pc13(2275)<v7>:47480        | OK     | GatewayReceiver is started on member pc13(2275)<v7>:47480
+pc13(2293)<v8>:55472        | OK     | GatewayReceiver is started on member pc13(2293)<v8>:55472
+
+gfsh>start gateway-receiver --member=pc13(2266)<v14>:36579
+GatewayReceiver is started on member pc13(2266)<v14>:36579
+
+gfsh>start gateway-receiver --group=RG1
+         Member      | Result | Message
+-------------------- | -------| ----------------------------------------------------------
+pc13(2275)<v23>:27484| OK     | GatewayReceiver is started on member pc13(2275)<v23>:27484
+pc13(2293)<v24>:55810| OK     | GatewayReceiver is started on member pc13(2293)<v24>:55810
+pc13(2266)<v22>:4522 | OK     | GatewayReceiver is started on member pc13(2266)<v22>:4522
+```
+
+<a id="topic_AB8BA3F42B9645A8BE9BD97CE2F839A8"></a>
+
+## start gateway-sender
+
+Start the gateway sender on a member or members.
+
+For information on how to configure a gateway sender, see [Configure Gateway Senders](../../../topologies_and_comm/multi_site_configuration/setting_up_a_multisite_system.html#setting_up_a_multisite_system__section_1500299A8F9A4C2385680E337F5D3DEC).
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+start gateway-sender --id=value [--group=value(,value)*] [--member=value]
+```
+
+<a id="topic_AB8BA3F42B9645A8BE9BD97CE2F839A8__table_gxc_lvg_2w"></a>
+
+| Name                                           | Description                                               |
+|------------------------------------------------|-----------------------------------------------------------|
+| <span class="keyword parmname">--id</span>     | *Required.* ID of the GatewaySender.                      |
+| <span class="keyword parmname">--group</span>  | Group(s) of members on which to start the Gateway Sender. |
+| <span class="keyword parmname">--member</span> | Member used to start the Gateway Sender                   |
+
+: <span class="tablecap">Table 2. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+start gateway-sender --id=sender1-NY
+start gateway-sender --id=sender1-NY --member=server1
+start gateway-sender --id=sender1-NY --group=MemberGroup1,MemberGroup2
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>start gateway-sender --id=ln
+ Member                       |  Result |                   Message
+------------------------------| ------- | -------------------------------------------------------------------------
+pc13(30614)<v6>:63670         | OK      | GatewaySender ln is started on member pc13(30614)<v6>:63670
+pc13(30621)<v7>:36015         | OK      | GatewaySender ln is started on member pc13(30621)<v7>:36015
+pc13(30633)<v8>:13633         | OK      | GatewaySender ln is started on member pc13(30633)<v8>:13633
+pc13(Manager:30588)<v5>:42792 | Error   | GatewaySender ln is not available on member pc13(Manager:30588)<v5>:42792
+
+gfsh>start gateway-sender --id=ln --member=pc13(30614)<v14>:44519
+GatewaySender ln is started on member pc13(30614)<v14>:44519
+gfsh>start gateway-sender --id=ln --group=SenderGroup1
+Member                 | Result| Message
+---------------------- | ------| ------------------------------------------------------------
+pc13(30614)<v18>:15201 | OK    | GatewaySender ln is started on member pc13(30614)<v18>:15201
+pc13(30621)<v19>:61437 | OK    | GatewaySender ln is started on member pc13(30621)<v19>:61437
+pc13(30633)<v20>:22567 | OK    | GatewaySender ln is started on member pc13(30633)<v20>:22567
+```
+
+<a id="topic_D00507416F3944DFAB48D2FA2B9E4A31"></a>
+
+## start jconsole
+
+Start the JDK JConsole monitoring application in a separate process.
+
+JConsole automatically connects to a running JMX Manager node if one is available.
+
+Note that you must have a JDK installed (not just a JRE) and the correct PATH and JAVA\_HOME environment variables set.
+
+See [Browsing GemFire MBeans through JConsole](../../../managing/management/mbeans_jconsole.html) for an example of using JConsole with the <span class="keyword">GemFire</span><span class="keyword">GemFire</span> management and monitoring system.
+
+**Availability:** Online or offline.
+
+**Syntax:**
+
+``` pre
+start jconsole [--interval=<seconds>] [--notile] [--version] 
+[--J<jconsole JVM options>]
+```
+
+<a id="topic_D00507416F3944DFAB48D2FA2B9E4A31__table_uck_4vg_2w"></a>
+
+| Name                                               | Description                                                                                                                                                                                                                                                                                                                                                                                                | Default Value |
+|----------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| <span class="keyword parmname">--interval</span>   | Set the update interval to n seconds (default is 4 seconds). (Equivalent to JConsole's `-interval=n`)                                                                                                                                                                                                                                                                                                      | 4             |
+| <span class="keyword parmname">--notile</span>     | Whether to initially tile windows for two or more connections. This parameter is passed as `-notile` to JConsole.                                                                                                                                                                                                                                                                                          | false         |
+| <span class="keyword parmname">--pluginpath</span> | "Directories or JAR files which are searched for JConsole plugins. The path should contain a provider-configuration file named:`\n" + "                                         META-INF/services/com.sun.tools.jconsole.JConsolePlugin\n"` + "containing one line for each plugin specifying the fully qualified class name of the class implementing the `com.sun.tools.jconsole.JConsolePlugin` class." |               |
+| <span class="keyword parmname">--version</span>    | Display the JConsole version information. This parameter is passed as `-version` to JConsole.                                                                                                                                                                                                                                                                                                              | false         |
+| <span class="keyword parmname">--J</span>          | Arguments passed to the JVM on which JConsole runs                                                                                                                                                                                                                                                                                                                                                         |               |
+
+: <span class="tablecap">Table 3. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+gfsh./> start jconsole --interval=8 --notile;
+Running JDK JConsole
+
+gfsh./> start jconsole --version;
+JConsole version "1.6.0_31-b04-415"
+Java(TM) SE Runtime Environment (build 1.6.0_31-b04-415-11M3646)
+Java HotSpot(TM) 64-Bit Server VM (build 20.6-b01-415, mixed mode)
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>start jconsole
+Running JDK JConsole
+```
+
+The JConsole application appears and auto-connects to a JMX Manager node if one is available:
+
+<img src="../../../images/JConsole.png" id="topic_D00507416F3944DFAB48D2FA2B9E4A31__image_AAB6A784AD4B4BD1B5155AC796C22F82" class="image imagecenter" />
+
+**Error Messages:**
+
+``` pre
+An error occurred while launching JConsole = %1$s
+
+Connecting by the GemFire member's name or ID is not currently supported.
+Please specify the member as '<hostname|IP>[PORT].
+
+An IO error occurred while launching JConsole.
+Please ensure that JAVA_HOME is set to the JDK installation 
+or the JDK bin directory is in the system PATH.
+
+JConsole could not be found.\nPlease ensure that JAVA_HOME is set to the 
+JDK installation or the JDK bin directory is in the system PATH.
+```
+
+<a id="topic_5B5BF8BEE905463D8B7762B89E2D65E7"></a>
+
+## start jvisualvm
+
+Start the JDK's Java VisualVM monitoring application in a separate process.
+
+**Availability:** Online or offline.
+
+**Syntax:**
+
+``` pre
+start jvisualvm [--J=value(,value)*]
+```
+
+<a id="topic_5B5BF8BEE905463D8B7762B89E2D65E7__table_ssp_svg_2w"></a>
+
+| Name                                      | Description                                                                                                    |
+|-------------------------------------------|----------------------------------------------------------------------------------------------------------------|
+| <span class="keyword parmname">--J</span> | VM-option passed to the spawned CacheServer VM. For example: `-J-Dfoo.bar=true` for setting foo.bar to 'true'. |
+
+: <span class="tablecap">Table 4. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+start jvisualvm
+```
+
+**Sample Output:** <img src="../../../images/jvisualvm.png" id="topic_5B5BF8BEE905463D8B7762B89E2D65E7__image_BDA0F3A31F784C5FBBB5999EDA2BD942" class="image" />
+
+<a id="topic_591260CF25D64562A0EDD7260D2AC6D4"></a>
+
+## start locator
+
+Start a locator.
+
+The command creates a subdirectory and log file named after the locator. If the locator detects that no other JMX Manager exists, then the locator will automatically start an embedded JMX Manager and connect the current `gfsh` session to the JMX Manager.
+
+**Note:** You must have `JAVA_HOME` set before starting gfsh to use this command.
+
+In addition, if gfsh is not already connected to a JMX Manager, the gfsh console will automatically connect to the new embedded JMX Manager started by the new locator.
+
+**Note:** When both `--max-heap` and `--initial-heap` are specified during locator startup, additional GC parameters are specified internally by <span class="keyword">GemFire</span>'s Resource Manager. If you do not want the additional default GC properties set by the Resource Manager, then use the`-Xms` and `-Xmx` JVM options. See [Controlling Heap Use with the Resource Manager](../../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
+
+**Availability:** Online or offline.
+
+**Syntax:**
+
+``` pre
+start locator --name=value [--bind-address=value] [--force(=value)] [--group=value] [--hostname-for-clients=value]
+ [--locators=value] [--log-level=value] [--mcast-address=value] [--mcast-port=value] [--port=value] [--dir=value] 
+ [--properties-file=value] [--security-properties-file=value] [--initial-heap=value] [--max-heap=value] 
+ [--connect(=value)] [--enable-cluster-configuration(=value)] [--load-from-cluster-configuration-dir(=value)]
+ [--cluster-config-dir=value] [--J=value(,value)*] 
+```
+
+<a id="topic_591260CF25D64562A0EDD7260D2AC6D4__table_hly_vvg_2w"></a>
+
+<table>
+<caption><span class="tablecap">Table 5. Parameters</span></caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+<th>Default Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="keyword parmname">--name</span></td>
+<td><em>Required.</em> Name to be used for this <span class="keyword">GemFire</span><span class="keyword">GemFire</span> locator service.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--bind-address</span></td>
+<td>IP address on which the locator will be bound.</td>
+<td>bound to all addresses</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--force</span></td>
+<td>Whether to allow the PID file from a previous locator run to be overwritten.</td>
+<td>false</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--group</span></td>
+<td>Group(s) the locator will be a part of.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--hostname-for-clients</span></td>
+<td>Hostname or IP address that will be sent to clients so they can connect to this locator.</td>
+<td>uses the bind-address to which the locator is bound).</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--locators</span></td>
+<td>List of locators used by this locator to join the appropriate <span class="keyword">GemFire</span><span class="keyword">GemFire</span> cluster.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--log-level</span></td>
+<td>Level of output logged to the locator log file. Possible values for log-level include: finest, finer, fine, config, info, warning, severe, none.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--mcast-address </span></td>
+<td>IP address or hostname used to bind the UPD socket for multi-cast networking so the locator can locate other members in the <span class="keyword">GemFire</span><span class="keyword">GemFire</span> cluster. If mcast-port is zero, then mcast-address is ignored.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--mcast-port</span></td>
+<td>Port used for multi-cast networking so the locator can locate other members of the <span class="keyword">GemFire</span> cluster. A zero value disables mcast.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--port</span></td>
+<td>Port the locator will listen on.</td>
+<td>10334</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--dir</span></td>
+<td>Directory in which the Locator will be started and run.</td>
+<td><span class="ph filepath">./&lt;locator-member-name&gt;</span></td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--properties-file</span></td>
+<td>Specify the <code class="ph codeph">gemfire.properties</code> file for configuring the locator's distributed system. The file's path should be absolute or relative to gfsh's working directory.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--security-properties-file</span></td>
+<td>The <span class="ph filepath">gfsecurity.properties</span> file for configuring the Locator's security configuration in the distributed system. The file's path can be absolute or relative to gfsh's working directory.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--initial-heap</span></td>
+<td>Size has the same format as the <code class="ph codeph">-Xmx</code>/<code class="ph codeph">-Xms</code> JVM options.
+<div class="note note">
+**Note:** If you use the <code class="ph codeph">-J-Xms</code> and <code class="ph codeph">-J-Xmx</code> JVM properties instead of <code class="ph codeph">-initial-heap</code> and <code class="ph codeph">-max-heap</code>, then <span class="keyword">GemFire</span><span class="keyword">GemFire</span> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
+</div></td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--max-heap</span></td>
+<td>Size has the same format as the <code class="ph codeph">-Xmx</code>/<code class="ph codeph">-Xms</code> JVM options
+<div class="note note">
+**Note:** If you use the <code class="ph codeph">-J-Xms</code> and <code class="ph codeph">-J-Xmx</code> JVM properties instead of <code class="ph codeph">-initial-heap</code> and <code class="ph codeph">-max-heap</code>, then <span class="keyword">GemFire</span><span class="keyword">GemFire</span> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
+</div></td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--connect</span></td>
+<td>When connect is set to false, gfsh does not automatically connect to the locator which is started using this command.</td>
+<td>true</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--enable-cluster-configuration</span></td>
+<td>Enables cluster configuration behavior where locators maintain configurations for all members of a distributed system. See [Overview of the Cluster Configuration Service](../../../configuring/cluster_config/gfsh_persist.html).</td>
+<td>true</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--load-from-cluster-configuration-dir</span></td>
+<td>Loads the cluster configuration from the <span class="ph filepath">shared-config</span> directory. (When set to false, the configuration is loaded from the disk store of the internal, persistent region used by the locator to persist the configuration.)</td>
+<td>false</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--cluster-config-dir</span></td>
+<td>Directory used by the cluster configuration service to store the cluster configuration on the filesystem</td>
+<td>cluster-config</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--J </span></td>
+<td>Argument passed to the JVM on which the Locator will run. For example, specifying <code class="ph codeph">--J=-Dfoo.bar=true</code> sets property &quot;foo.bar&quot; to &quot;true&quot;.
+<div class="note note">
+**Note:**
+<div class="p">
+If the argument you are passing contains spaces or commas, enclose the option in single quotes. For example:
+<pre class="pre codeblock"><code>start locator --name=locator1 --port=9009 --mcast-port=0\
+--J=&#39;-Dgemfire.remote-locators=10.116.34.222[9009],10.116.35.225[9009]&#39;</code></pre>
+</div>
+</div></td>
+<td>none</td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 5. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+start locator --name=locator1
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>start locator --name=locator3
+Starting a GemFire Locator in /home/stymon/locator3...
+................................
+Locator in /home/stymon/locator3 on ubuntu.local[10334] as locator3 is currently online.
+Process ID: 1898
+Uptime: 19 seconds
+GemFire Version: 8.0.0
+Java Version: 1.7.0_65
+Log File: /home/stymon/locator3/locator3.log
+JVM Arguments: -Dgemfire.default.locators=192.168.129.145[40402] 
+-Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false 
+-Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true 
+-Dsun.rmi.dgc.server.gcInterval=9223372036854775806
+Class-Path: /home/stymon/Pivotal_GemFire_800_b48258_Linux/lib/locator-dependencies.jar:
+/usr/local/java/lib/tools.jar
+
+Cluster configuration service is up and running.
+```
+
+<a id="topic_E906BA7D9E7F4C5890FEFA7ECD40DD77"></a>
+
+## start pulse
+
+Launch the <span class="keyword">GemFire</span> Pulse monitoring dashboard tool in the user's default system browser and navigates the user to the landing page (login page).
+
+For more information on <span class="keyword">GemFire</span> Pulse, see [GemFire Pulse](../../pulse/chapter_overview.html).
+
+**Availability:** Online or offline.
+
+**Syntax:**
+
+``` pre
+start pulse [--url=value]
+```
+
+<a id="topic_E906BA7D9E7F4C5890FEFA7ECD40DD77__table_cv3_w54_k4eee"></a>
+
+| Name                                        | Description                      | Default                       |
+|---------------------------------------------|----------------------------------|-------------------------------|
+| <span class="keyword parmname">--url</span> | URL of the Pulse Web application | `http://localhost:7070/pulse` |
+
+: <span class="tablecap">Table 6. Parameters</span>
+
+**Example Commands:**
+
+``` pre
+start pulse
+start pulse --url=http://gemfire.mycompany.com:7070/pulse
+```
+
+**Sample Output:** See [GemFire Pulse](../../pulse/chapter_overview.html) for examples of Pulse.
+
+<a id="topic_3764EE2DB18B4AE4A625E0354471738A"></a>
+
+## start server
+
+Start a <span class="keyword">GemFire</span> cache server process.
+
+**Note:** When both <span class="keyword parmname">--max-heap</span> and <span class="keyword parmname">--initial-heap</span> are specified during locator startup, additional GC parameters are specified internally by <span class="keyword">GemFire</span>'s Resource Manager. If you do not want the additional default GC properties set by the Resource Manager, then use the `-Xms` and `-Xmx` JVM options. See [Controlling Heap Use with the Resource Manager](../../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
+
+**Availability:** Online or offline.
+
+**Syntax:**
+
+``` pre
+start server --name=value [--assign-buckets(=value)] [--bind-address=value]
+    [--cache-xml-file=value] [--classpath=value] [--disable-default-server(=value)]
+    [--disable-exit-when-out-of-memory(=value)] [--enable-time-statistics(=value)]
+    [--force(=value)] [--properties-file=value] [--security-properties-file=value]
+    [--group=value] [--locators=value] [--locator-wait-time=value] [--log-level=value]
+    [--mcast-address=value] [--mcast-port=value] [--memcached-port=value]
+    [--memcached-protocol=value] [--rebalance(=value)] [--server-bind-address=value]
+    [--server-port=value] [--spring-xml-location=value]
+    [--statistic-archive-file=value] [--dir=value] [--initial-heap=value]
+    [--max-heap=value] [--use-cluster-configuration(=value)] [--J=value(,value)*]
+    [--critical-heap-percentage=value] [--critical-off-heap-percentage=value] 
+    [--eviction-heap-percentage=value] [--eviction-off-heap-percentage=value]
+    [--hostname-for-clients=value] [--max-connections=value]
+    [--message-time-to-live=value] [--max-message-count=value] [--max-threads=value]
+    [--socket-buffer-size=value] [--lock-memory=value] [--off-heap-memory-size=value] 
+```
+
+<a id="topic_3764EE2DB18B4AE4A625E0354471738A__table_at5_bwg_2w"></a>
+
+<table>
+<caption><span class="tablecap">Table 7. Parameters</span></caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+<th>Default Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="keyword parmname">--name</span></td>
+<td><em>Required.</em> Member name for this <span class="keyword">GemFire</span> Cache Server service.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--assign-buckets</span></td>
+<td>Whether to assign buckets to the partitioned regions of the cache on server start.</td>
+<td>false</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--bind-address</span></td>
+<td>The IP address on which the Server will be bound.</td>
+<td>binds to all addresses</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--cache-xml-file</span></td>
+<td>Specifies the name of the XML file or resource to initialize the cache with when it is created.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--classpath</span></td>
+<td>Location of user classes required by the Cache Server. This path is appended to the current CLASSPATH.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--disable-default-server</span></td>
+<td>Whether the cache server will be started by default. If the parameter is specified without a value, the value is set to true. If set to true, the cache server acts as a peer.</td>
+<td>false</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--disable-exit-when-out-of-memory</span></td>
+<td>Prevents the JVM from exiting when an OutOfMemoryError occurs.</td>
+<td>false</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--enable-time-statistics</span></td>
+<td>Causes additional time-based statistics to be gathered for <span class="keyword">GemFire</span> operations.</td>
+<td>true</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--properties-file</span></td>
+<td>The <span class="ph filepath">gemfire.properties</span> file for configuring the Cache Server's distributed system. The file's path can be absolute or relative to the gfsh working directory.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--security-properties-file</span></td>
+<td>The <span class="ph filepath">gfsecurity.properties</span> file for configuring the Server's security configuration in the distributed system. The file's path can be absolute or relative to gfsh directory.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--group</span></td>
+<td>Group(s) the Cache Server will be a part of.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--force</span></td>
+<td>Whether to allow the PID file from a previous Cache Server run to be overwritten.</td>
+<td>false</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--locators </span></td>
+<td>Sets the list of locators used by the Cache Server to join the appropriate <span class="keyword">GemFire</span> cluster.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--locator-wait-time</span></td>
+<td>Sets the number of seconds the server will wait for a locator to become available during startup before giving up.</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--log-level</span></td>
+<td>Sets the level of output logged to the Cache Server log file. Possible values for log-level include: finest, finer, fine, config, info, warning, severe, none.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--mcast-address</span></td>
+<td>The IP address or hostname used to bind the UDP socket for multi-cast networking so the Cache Server can locate other members in the <span class="keyword">GemFire</span> cluster. If mcast-port is zero, then mcast-address is ignored.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--mcast-port</span></td>
+<td>Sets the port used for multi-cast networking so the Cache Server can locate other members of the <span class="keyword">GemFire</span> cluster. A zero value disables mcast.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--memcached-port</span></td>
+<td>If specified and is non-zero, sets the port number for an embedded Gemcached server and starts the Gemcached server.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--memcached-protocol</span></td>
+<td>Sets the protocol used by an embedded Gemcached server. Valid values are <code class="ph codeph">BINARY</code> and <code class="ph codeph">ASCII.</code> If you omit this property, the ASCII protocol is used.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--server-bind-address</span></td>
+<td>IP address on which the Server will be bound.</td>
+<td>binds to all addresses</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--server-port</span></td>
+<td>Port the Server will listen on for client connections.</td>
+<td>40404</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--spring-xml-location</span></td>
+<td>Specifies the location of a Spring XML configuration file(s) for bootstrapping and configuring a <span class="keyword">GemFire</span> Server. This configuration file can exist on the CLASSPATH (default) or any location supported by Spring's Resource(Loader) location specifiers (for example, classpath:, file:, etc). ResourceLoader is described in the [Spring documentation](http://docs.spring.io/spring/docs/4.0.9.RELEASE/spring-framework-reference/htmlsingle/#resources-resourceloader).</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--rebalance</span></td>
+<td>Whether to initiate rebalancing across the <span class="keyword">GemFire</span> cluster.</td>
+<td>false</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--dir</span></td>
+<td>Specify the directory in which the server will run in. This directory is written to the location where you started <code class="ph codeph">gfsh</code>.</td>
+<td>If not specified, the directory is named after the server.</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--statistic-archive-file </span></td>
+<td>The file that statistic samples are written to. An empty string (default) disables statistic archival.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--initial-heap</span></td>
+<td>Initial size of the heap in the same format as the JVM -Xms parameter.
+<div class="note note">
+**Note:** If you use the <code class="ph codeph">--J=-Xms</code> and <code class="ph codeph">--J=-Xmx</code> JVM properties instead of <code class="ph codeph">--initial-heap</code> and <code class="ph codeph">--max-heap</code>, then <span class="keyword">GemFire</span> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
+</div></td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--max-heap</span></td>
+<td>Maximum size of the heap in the same format as the JVM -Xmx parameter.
+<div class="note note">
+**Note:** If you use the <code class="ph codeph">--J=-Xms</code> and <code class="ph codeph">--J=-Xmx</code> JVM properties instead of <code class="ph codeph">--initial-heap</code> and <code class="ph codeph">--max-heap</code>, then <span class="keyword">GemFire</span> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
+</div></td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--J</span></td>
+<td>Argument passed to the JVM on which the Cache Server will run. For example, <code class="ph codeph">--J=-Dfoo.bar=true</code> will set the property &quot;foo.bar&quot; to &quot;true&quot;.
+<p>If the argument you are passing contains spaces or commas, enclose the option in single quotes.</p></td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--use-cluster-configuration</span></td>
+<td>Specifies whether the server requests a cluster configuration from the locator. See [Overview of the Cluster Configuration Service](../../../configuring/cluster_config/gfsh_persist.html).</td>
+<td>true</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--critical-heap-percentage</span></td>
+<td>Set the percentage of heap at or above which the cache is considered in danger of becoming inoperable due to garbage collection pauses or out of memory exceptions. Past the threshold, operations that require heap space will throw a <code class="ph codeph">LowMemoryException</code>. This feature requires additional VM flags to perform properly; you must set <code class="ph codeph">--initial-heap</code> and <code class="ph codeph">--max-heap</code> or the corresponding JVM properties to use this threshold. You must also set <code class="ph codeph">--max-heap</code> and <code class="ph codeph">--initial-heap</code> to the same value.</td>
+<td>0 (no critical heap threshold enforced)</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--critical-off-heap-percentage</span></td>
+<td>The percentage of off-heap memory used at or above which the cache is considered in danger of becoming inoperable due to out of memory exceptions. Past the threshold, operations that require heap space will throw a <code class="ph codeph">LowMemoryException</code>.</td>
+<td>0 (no critical off-heap threshold enforced)</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--eviction-heap-percentage</span></td>
+<td>Set the percentage of heap at or above which the eviction should begin on Regions configured for HeapLRU eviction. Changing this value may cause eviction to begin immediately. Only one change to this attribute or critical heap percentage will be allowed at any given time and its effect will be fully realized before the next change is allowed. This feature requires additional VM flags to perform properly; you must set <code class="ph codeph">--initial-heap</code> and <code class="ph codeph">--max-heap</code> or the corresponding JVM properties to use this threshold. You must also set <code class="ph codeph">--max-heap</code> and <code class="ph codeph">--initial-heap</code> to the same value.</td>
+<td><ul>
+<li>0, if no region is configured with heap eviction</li>
+<li>If <code class="ph codeph">critical-heap-percentage</code> is set to a non-zero value, 5% less than that value.</li>
+<li>80%, if <code class="ph codeph">critical-heap-percentage</code> is not configured.</li>
+</ul></td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--eviction-off-heap-percentage</span></td>
+<td>The percentage of off-heap memory used at or above which the eviction should begin on regions configured for off-heap and HeapLRU eviction. Changing this value may cause eviction to begin immediately. Only one change to this attribute or critical off-heap percentage will be allowed at any given time, and its effect will be fully realized before the next change is allowed.</td>
+<td><ul>
+<li>0, if no region is configured with heap eviction</li>
+<li>If <code class="ph codeph">critical-off-heap-percentage</code> is set to a non-zero value, 5% less than that value.</li>
+<li>80%, if <code class="ph codeph">critical-off-heap-percentage</code> is not configured.</li>
+</ul></td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--hostname-for-clients</span></td>
+<td>Sets the ip address or host name that this cache server is to listen on for client connections. Setting a specific hostname-for-clients causes server locators to use this value when telling clients how to connect to this cache server. This is useful in the case where the cache server may refer to itself with one hostname, but the clients need to use a different hostname to find the cache server. The value &quot;&quot; causes the bind-address to be given to clients. A null value will be treated the same as the default &quot;&quot;.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--max-connections</span></td>
+<td>Sets the maxium number of client connections allowed. When the maximum is reached the cache server will stop accepting connections</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--message-time-to-live</span></td>
+<td>Sets the time (in seconds ) after which a message in the client queue will expire.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--max-message-count</span></td>
+<td>Sets maximum number of messages that can be enqueued in a client-queue.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--max-threads</span></td>
+<td>Sets the maxium number of threads allowed in this cache server to service client requests. The default of 0 causes the cache server to dedicate a thread for every client connection.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--socket-buffer-size</span></td>
+<td>Sets the buffer size in bytes of the socket connection for this CacheServer. The default is 32768 bytes.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">--lock-memory</span></td>
+<td>(Linux only) When true, the member's heap and off-heap memory are locked in RAM, preventing them from being paged to disk. You must increase the related <code class="ph codeph">ulimit</code> operating system resource to allow the OS to lock memory chunks of sufficient size.</td>
+<td>false</td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">--off-heap-memory-size</span></td>
+<td>The integer quantity of off-heap memory to be used for storing region values. Specified in Gigabytes with a 'g' suffix, or Megabytes with an 'm' suffix. For example, allocate a 2 Gigabyte off-heap space with <code class="ph codeph">--off-heap-memory-size=2g</code>. The default value of 0 does not use any off-heap memory.</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 7. Parameters</span>
+
+<a id="topic_3764EE2DB18B4AE4A625E0354471738A__section_A50120613D3C4A848463236C4EFF18C7"></a>
+### Examples
+
+``` pre
+gfsh>start server --name=server1
+gfsh>start server --name=server2 --server-port=40405
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>start server --name=server1 --server-port=40406
+Starting a GemFire Server in /home/stymon/server1...
+....................................................
+Server in /home/stymon/server1 on ubuntu.local[40406] as server1 is currently online.
+Process ID: 32209
+Uptime: 47 seconds
+GemFire Version: 8.0.0
+Java Version: 1.7.0_65
+Log File: /home/stymon/server1/server1.log
+JVM Arguments: -Dgemfire.default.locators=192.168.129.145[40402] -Dgemfire.use-cluster-configuration=true 
+-XX:OnOutOfMemoryError="kill -9 %p" -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true 
+-Dsun.rmi.dgc.server.gcInterval=9223372036854775806
+Class-Path: /home/stymon/Pivotal_GemFire_800_b48258_Linux/lib/server-dependencies.jar:/usr/local/java/lib/tools.jar
+```
+
+
