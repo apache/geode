@@ -17,10 +17,6 @@
 package com.gemstone.gemfire.cache.lucene;
 
 import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
-import static javax.swing.Action.DEFAULT;
-import static org.hamcrest.Matchers.isA;
-import static org.junit.Assert.assertEquals;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +27,6 @@ import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.util.CharTokenizer;
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -39,9 +34,7 @@ import org.junit.rules.ExpectedException;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.lucene.test.TestObject;
-import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.pdx.JSONFormatter;
 import com.gemstone.gemfire.pdx.PdxInstance;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
@@ -57,7 +50,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   protected static final String REGION_NAME = "index";
 
   @Test()
-  public void shouldNotTokenizeWordsWithKeywordAnalyzer() throws ParseException {
+  public void shouldNotTokenizeWordsWithKeywordAnalyzer() throws Exception {
     Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
     fields.put("field1", new StandardAnalyzer());
     fields.put("field2", new KeywordAnalyzer());
@@ -117,7 +110,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   }
 
   @Test()
-  public void shouldTokenizeUsingMyCharacterAnalyser() throws ParseException {
+  public void shouldTokenizeUsingMyCharacterAnalyser() throws Exception {
     Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
     // not to specify field1's analyzer, it should use standard analyzer
     // Note: fields has to contain "field1", otherwise, field1 will not be tokenized
@@ -145,7 +138,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   }
 
   @Test()
-  public void shouldAllowNullInFieldValue() throws ParseException {
+  public void shouldAllowNullInFieldValue() throws Exception {
     Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
     fields.put("field1", null);
     fields.put("field2", null);
@@ -163,7 +156,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   }
 
   @Test()
-  public void queryJsonObject() throws ParseException {
+  public void queryJsonObject() throws Exception {
     Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
     fields.put("name", null);
     fields.put("lastName", null);
@@ -186,7 +179,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   }
 
   @Test()
-  public void shouldAllowQueryOnRegionWithStringValue() throws ParseException {
+  public void shouldAllowQueryOnRegionWithStringValue() throws Exception {
     luceneService.createIndex(INDEX_NAME, REGION_NAME, LuceneService.REGION_VALUE_FIELD);
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION)
       .create(REGION_NAME);
@@ -199,7 +192,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   }
 
   @Test()
-  public void throwFunctionExceptionWhenGivenBadQuery() {
+  public void throwFunctionExceptionWhenGivenBadQuery() throws Exception {
     LuceneService luceneService = LuceneServiceProvider.get(cache);
     luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION)
@@ -212,15 +205,8 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
       });
 
 
-    thrown.expect(FunctionException.class);
-    thrown.expectCause(isA(QueryException.class));
-    try {
-      query.search();
-    } catch(FunctionException e) {
-      assertEquals(LuceneQueryException.class, e.getCause().getClass());
-      throw e;
-    }
-
+    thrown.expect(LuceneQueryException.class);
+    query.search();
   }
   
   private PdxInstance insertAJson(Region region, String key) {
@@ -253,14 +239,14 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     return pdx;
   }
 
-  private void verifyQuery(String query, String defaultField, String ... expectedKeys) throws ParseException {
+  private void verifyQuery(String query, String defaultField, String ... expectedKeys) throws Exception {
     final LuceneQuery<String, Object> queryWithStandardAnalyzer = luceneService.createLuceneQueryFactory().create(
       INDEX_NAME, REGION_NAME, query, defaultField);
 
     verifyQueryKeys(queryWithStandardAnalyzer, expectedKeys);
   }
   
-  private void verifyQuery(String query, String DEFAULT_FIELD, HashMap expectedResults) throws ParseException {
+  private void verifyQuery(String query, String DEFAULT_FIELD, HashMap expectedResults) throws Exception {
     final LuceneQuery<String, Object> queryWithStandardAnalyzer = luceneService.createLuceneQueryFactory().create(
       INDEX_NAME, REGION_NAME, query, DEFAULT_FIELD);
 

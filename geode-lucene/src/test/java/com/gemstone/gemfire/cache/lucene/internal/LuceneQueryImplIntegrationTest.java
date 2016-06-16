@@ -61,7 +61,7 @@ public class LuceneQueryImplIntegrationTest extends LuceneIntegrationTest {
   }
 
   @Test
-  public void shouldInvokeLuceneFunctionWithCorrectArguments() {
+  public void shouldInvokeLuceneFunctionWithCorrectArguments() throws Exception {
     // Register a fake function to observe the function invocation
     FunctionService.unregisterFunction(LuceneFunction.ID);
     TestLuceneFunction function = new TestLuceneFunction();
