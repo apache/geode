@@ -30,18 +30,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -1335,6 +1324,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     List<InternalDistributedMember> recipients;
     if (currentView.size() > 4) {
       HashSet<InternalDistributedMember> filter = new HashSet<InternalDistributedMember>();
+      for (Enumeration<InternalDistributedMember> e = suspectedMemberInView.keys(); e.hasMoreElements();) {
+        filter.add(e.nextElement());
+      }
       for (int i = 0; i < requests.size(); i++) {
         filter.add(requests.get(i).getSuspectMember());
       }

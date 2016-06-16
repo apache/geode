@@ -99,7 +99,7 @@ public class NetViewJUnitTest {
     
     members.get(numMembers-1).getNetMember().setPreferredForCoordinator(true);
     List<InternalDistributedMember> preferred = view.getPreferredCoordinators(Collections.<InternalDistributedMember>singleton(members.get(1)), members.get(0), 2);
-    assertEquals(3, preferred.size());
+    assertEquals(2, preferred.size());
     assertEquals(members.get(numMembers-1), preferred.get(0));
   }
   
