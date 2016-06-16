@@ -20,9 +20,11 @@
 package com.gemstone.gemfire.cache.lucene.internal;
 
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
 import com.gemstone.gemfire.cache.lucene.LuceneQuery;
+import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
@@ -55,7 +57,7 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
   }
 
   @Override
-  public LuceneQueryResults<K, V> search() {
+  public LuceneQueryResults<K, V> search() throws LuceneQueryException {
     TopEntriesCollectorManager manager = new TopEntriesCollectorManager(null, limit);
     LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(query, indexName, manager, limit);
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
@@ -66,9 +68,16 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
         .execute(LuceneFunction.ID);
     
     //TODO provide a timeout to the user?
-    TopEntries entries = rc.getResult();
-    
-    return new LuceneQueryResultsImpl<K, V>(entries.getHits(), region, pageSize);
+    try {
+      TopEntries entries = rc.getResult();
+      return new LuceneQueryResultsImpl<K, V>(entries.getHits(), region, pageSize);
+    } catch(FunctionException e) {
+      if(e.getCause() instanceof LuceneQueryException) {
+        throw new LuceneQueryException(e);
+      } else {
+        throw e;
+      }
+    }
   }
 
   @Override

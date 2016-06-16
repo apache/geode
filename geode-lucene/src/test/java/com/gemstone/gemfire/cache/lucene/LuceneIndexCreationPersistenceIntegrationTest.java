@@ -24,8 +24,11 @@ import static junitparams.JUnitParamsRunner.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+
+import junit.framework.AssertionFailedError;
 
 import com.jayway.awaitility.Awaitility;
 import junitparams.JUnitParamsRunner;
@@ -92,7 +95,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
   }
 
   @Test
-  public void shouldRecoverPersistentIndexWhenDataStillInQueue() throws ParseException, InterruptedException {
+  public void shouldRecoverPersistentIndexWhenDataStillInQueue() throws Exception {
     createIndex(cache, "field1", "field2");
     Region dataRegion = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
       .create(REGION_NAME);
@@ -113,7 +116,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
   }
 
   @Test
-  public void shouldRecoverPersistentIndexWhenDataIsWrittenToIndex() throws ParseException, InterruptedException {
+  public void shouldRecoverPersistentIndexWhenDataIsWrittenToIndex() throws Exception {
     createIndex(cache, "field1", "field2");
     Region dataRegion = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
       .create(REGION_NAME);
@@ -132,7 +135,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
 
   @Test
   @Parameters(method = "getRegionShortcuts")
-  public void shouldHandleMultipleIndexes(RegionShortcut shortcut) throws ParseException {
+  public void shouldHandleMultipleIndexes(RegionShortcut shortcut) throws Exception {
     LuceneServiceProvider.get(this.cache).createIndex(INDEX_NAME+"_1", REGION_NAME, "field1");
     LuceneServiceProvider.get(this.cache).createIndex(INDEX_NAME+"_2", REGION_NAME, "field2");
     Region region = cache.createRegionFactory(shortcut).create(REGION_NAME);
@@ -159,10 +162,14 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
     });
   }
 
-  private void verifyQueryResultSize(String indexName, String regionName, String queryString, String defaultField, int size) throws ParseException {
+  private void verifyQueryResultSize(String indexName, String regionName, String queryString, String defaultField, int size) throws Exception {
     LuceneQuery query = luceneService.createLuceneQueryFactory().create(indexName, regionName, queryString, defaultField);
     Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
-      assertEquals(size, query.search().size());
+      try {
+        assertEquals(size, query.search().size());
+      } catch(LuceneQueryException e) {
+        throw new RuntimeException(e);
+      }
     });
   }
 

@@ -31,6 +31,7 @@ import java.util.List;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.ResultSender;
+import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
 import com.gemstone.gemfire.cache.lucene.internal.InternalLuceneService;
@@ -240,7 +241,7 @@ public class LuceneFunctionJUnitTest {
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
     when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
-    when(queryProvider.getQuery(eq(mockIndex))).thenThrow(QueryException.class);
+    when(queryProvider.getQuery(eq(mockIndex))).thenThrow(LuceneQueryException.class);
     LuceneFunction function = new LuceneFunction();
 
     function.execute(mockContext);

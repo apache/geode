@@ -33,4 +33,8 @@ public class LuceneQueryException extends GemFireCheckedException {
   public LuceneQueryException(final String message, final Throwable cause) {
     super(message, cause);
   }
+
+  public LuceneQueryException(final Throwable cause) {
+    super(cause);
+  }
 }

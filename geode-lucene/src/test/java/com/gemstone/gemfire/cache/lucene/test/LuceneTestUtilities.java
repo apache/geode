@@ -33,6 +33,7 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQuery;
+import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
 import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
@@ -90,7 +91,7 @@ public class LuceneTestUtilities {
   /**
    * Verify that a query returns the expected list of keys. Ordering is ignored.
    */
-  public static <K> void  verifyQueryKeys(LuceneQuery<K,Object> query,K ... expectedKeys) {
+  public static <K> void  verifyQueryKeys(LuceneQuery<K,Object> query,K ... expectedKeys) throws LuceneQueryException {
     Set<K> expectedKeySet = new HashSet<>(Arrays.asList(expectedKeys));
     Set<K> actualKeySet = new HashSet<>();
     final LuceneQueryResults<K, Object> results = query.search();
@@ -104,7 +105,7 @@ public class LuceneTestUtilities {
   /**
    * Verify that a query returns the expected map of key-value. Ordering is ignored.
    */
-  public static <K> void verifyQueryKeyAndValues(LuceneQuery<K,Object> query, HashMap expectedResults) {
+  public static <K> void verifyQueryKeyAndValues(LuceneQuery<K,Object> query, HashMap expectedResults) throws LuceneQueryException {
     HashMap actualResults = new HashMap<>();
     final LuceneQueryResults<K, Object> results = query.search();
     while(results.hasNextPage()) {
