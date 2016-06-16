@@ -208,7 +208,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     //Create a query that throws an exception
     final LuceneQuery<Object, Object> query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
       (index) -> {
-        throw new QueryException("Bad query");
+        throw new LuceneQueryException("Bad query");
       });
 
 
@@ -217,7 +217,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     try {
       query.search();
     } catch(FunctionException e) {
-      assertEquals(QueryException.class, e.getCause().getClass());
+      assertEquals(LuceneQueryException.class, e.getCause().getClass());
       throw e;
     }
 
