@@ -19,7 +19,13 @@
 
 package com.gemstone.gemfire.cache.lucene.internal;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.execute.Execution;
 import com.gemstone.gemfire.cache.execute.FunctionException;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
@@ -28,6 +34,7 @@ import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
 import com.gemstone.gemfire.cache.lucene.PageableLuceneQueryResults;
+import com.gemstone.gemfire.cache.lucene.internal.distributed.EntryScore;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunctionContext;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntries;
@@ -57,20 +64,36 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
   }
 
   @Override
+  public Collection<K> findKeys() throws LuceneQueryException {
+    TopEntries entries = findTopEntries();
+    final List<EntryScore> hits = entries.getHits();
+
+    return hits.stream()
+      .map(hit -> (K) hit.getKey())
+      .collect(Collectors.toList());
+  }
+
+  @Override
   public PageableLuceneQueryResults<K, V> findPages() throws LuceneQueryException {
+    TopEntries entries = findTopEntries();
+
+    return new PageableLuceneQueryResultsImpl<K, V>(entries.getHits(), region, pageSize);
+  }
+
+  private TopEntries findTopEntries() throws LuceneQueryException {
     TopEntriesCollectorManager manager = new TopEntriesCollectorManager(null, limit);
     LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(query, indexName, manager, limit);
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
 
-    ResultCollector<TopEntriesCollector, TopEntries> rc = (ResultCollector<TopEntriesCollector, TopEntries>) FunctionService.onRegion(region)
+    ResultCollector<TopEntriesCollector, TopEntries> rc = (ResultCollector<TopEntriesCollector, TopEntries>) onRegion()
         .withArgs(context)
         .withCollector(collector)
         .execute(LuceneFunction.ID);
-    
+
     //TODO provide a timeout to the user?
+    TopEntries entries;
     try {
-      TopEntries entries = rc.getResult();
-      return new PageableLuceneQueryResultsImpl<K, V>(entries.getHits(), region, pageSize);
+      entries = rc.getResult();
     } catch(FunctionException e) {
       if(e.getCause() instanceof LuceneQueryException) {
         throw new LuceneQueryException(e);
@@ -78,6 +101,11 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
         throw e;
       }
     }
+    return entries;
+  }
+
+  protected Execution onRegion() {
+    return FunctionService.onRegion(region);
   }
 
   @Override
