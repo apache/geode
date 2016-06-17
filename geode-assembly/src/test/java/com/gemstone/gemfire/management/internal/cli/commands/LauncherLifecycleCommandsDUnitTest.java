@@ -365,7 +365,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     String resultString = toString(result);
 
     assertTrue(resultString, resultString.contains(
-        MessageFormat.format(CliStrings.GEMFIRE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, StringUtils.EMPTY_STRING,
+        MessageFormat.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, StringUtils.EMPTY_STRING,
             gemfirePropertiesPathname)));
   }
 
@@ -391,7 +391,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     String resultString = toString(result);
 
     assertTrue(resultString, resultString.contains(
-        MessageFormat.format(CliStrings.GEMFIRE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ",
+        MessageFormat.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ",
             gemfireSecurityPropertiesPathname)));
   }
 
@@ -432,7 +432,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     String resultString = toString(result);
 
     assertTrue(resultString, resultString.contains(
-        MessageFormat.format(CliStrings.GEMFIRE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, StringUtils.EMPTY_STRING,
+        MessageFormat.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, StringUtils.EMPTY_STRING,
             gemfirePropertiesFile)));
   }
 
@@ -453,7 +453,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     String resultString = toString(result);
 
     assertTrue(resultString, resultString.contains(
-        MessageFormat.format(CliStrings.GEMFIRE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ",
+        MessageFormat.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ",
             gemfireSecuritiesPropertiesFile)));
   }
 

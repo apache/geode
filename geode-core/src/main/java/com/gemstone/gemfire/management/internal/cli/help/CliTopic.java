@@ -34,22 +34,22 @@ public class CliTopic implements Comparable<CliTopic> {
   private static final Map<String, String> nameDescriptionMap = new HashMap<String, String>();
 
   static {
-    nameDescriptionMap.put(CliStrings.DEFAULT_TOPIC_GEMFIRE,    CliStrings.DEFAULT_TOPIC_GEMFIRE__DESC);
-    nameDescriptionMap.put(CliStrings.TOPIC_GEMFIRE_REGION,     CliStrings.TOPIC_GEMFIRE_REGION__DESC);
-    nameDescriptionMap.put(CliStrings.TOPIC_GEMFIRE_WAN,        CliStrings.TOPIC_GEMFIRE_WAN__DESC);
-    nameDescriptionMap.put(CliStrings.TOPIC_GEMFIRE_JMX,        CliStrings.TOPIC_GEMFIRE_JMX__DESC);
-    nameDescriptionMap.put(CliStrings.TOPIC_GEMFIRE_DISKSTORE,  CliStrings.TOPIC_GEMFIRE_DISKSTORE__DESC);
-    nameDescriptionMap.put(CliStrings.TOPIC_GEMFIRE_LOCATOR,    CliStrings.TOPIC_GEMFIRE_LOCATOR__DESC);
-    nameDescriptionMap.put(CliStrings.TOPIC_GEMFIRE_SERVER,     CliStrings.TOPIC_GEMFIRE_SERVER__DESC);
-    nameDescriptionMap.put(CliStrings.TOPIC_GEMFIRE_MANAGER,    CliStrings.TOPIC_GEMFIRE_MANAGER__DESC);
-    nameDescriptionMap.put(CliStrings.TOPIC_GEMFIRE_STATISTICS, CliStrings.TOPIC_GEMFIRE_STATISTICS__DESC);
-    nameDescriptionMap.put(CliStrings.TOPIC_GEMFIRE_LIFECYCLE,  CliStrings.TOPIC_GEMFIRE_LIFECYCLE__DESC);
-    nameDescriptionMap.put(CliStrings.TOPIC_GEMFIRE_M_AND_M,    CliStrings.TOPIC_GEMFIRE_M_AND_M__DESC);
-    nameDescriptionMap.put(CliStrings.TOPIC_GEMFIRE_DATA,       CliStrings.TOPIC_GEMFIRE_DATA__DESC);
-    nameDescriptionMap.put(CliStrings.TOPIC_GEMFIRE_CONFIG,     CliStrings.TOPIC_GEMFIRE_CONFIG__DESC);
-    nameDescriptionMap.put(CliStrings.TOPIC_GEMFIRE_FUNCTION,   CliStrings.TOPIC_GEMFIRE_FUNCTION__DESC);
-    nameDescriptionMap.put(CliStrings.TOPIC_GEMFIRE_HELP,       CliStrings.TOPIC_GEMFIRE_HELP__DESC);
-    nameDescriptionMap.put(CliStrings.TOPIC_GEMFIRE_DEBUG_UTIL, CliStrings.TOPIC_GEMFIRE_DEBUG_UTIL__DESC);
+    nameDescriptionMap.put(CliStrings.DEFAULT_TOPIC_GEODE,    CliStrings.DEFAULT_TOPIC_GEODE__DESC);
+    nameDescriptionMap.put(CliStrings.TOPIC_GEODE_REGION,     CliStrings.TOPIC_GEODE_REGION__DESC);
+    nameDescriptionMap.put(CliStrings.TOPIC_GEODE_WAN,        CliStrings.TOPIC_GEODE_WAN__DESC);
+    nameDescriptionMap.put(CliStrings.TOPIC_GEODE_JMX,        CliStrings.TOPIC_GEODE_JMX__DESC);
+    nameDescriptionMap.put(CliStrings.TOPIC_GEODE_DISKSTORE,  CliStrings.TOPIC_GEODE_DISKSTORE__DESC);
+    nameDescriptionMap.put(CliStrings.TOPIC_GEODE_LOCATOR,    CliStrings.TOPIC_GEODE_LOCATOR__DESC);
+    nameDescriptionMap.put(CliStrings.TOPIC_GEODE_SERVER,     CliStrings.TOPIC_GEODE_SERVER__DESC);
+    nameDescriptionMap.put(CliStrings.TOPIC_GEODE_MANAGER,    CliStrings.TOPIC_GEODE_MANAGER__DESC);
+    nameDescriptionMap.put(CliStrings.TOPIC_GEODE_STATISTICS, CliStrings.TOPIC_GEODE_STATISTICS__DESC);
+    nameDescriptionMap.put(CliStrings.TOPIC_GEODE_LIFECYCLE,  CliStrings.TOPIC_GEODE_LIFECYCLE__DESC);
+    nameDescriptionMap.put(CliStrings.TOPIC_GEODE_M_AND_M,    CliStrings.TOPIC_GEODE_M_AND_M__DESC);
+    nameDescriptionMap.put(CliStrings.TOPIC_GEODE_DATA,       CliStrings.TOPIC_GEODE_DATA__DESC);
+    nameDescriptionMap.put(CliStrings.TOPIC_GEODE_CONFIG,     CliStrings.TOPIC_GEODE_CONFIG__DESC);
+    nameDescriptionMap.put(CliStrings.TOPIC_GEODE_FUNCTION,   CliStrings.TOPIC_GEODE_FUNCTION__DESC);
+    nameDescriptionMap.put(CliStrings.TOPIC_GEODE_HELP,       CliStrings.TOPIC_GEODE_HELP__DESC);
+    nameDescriptionMap.put(CliStrings.TOPIC_GEODE_DEBUG_UTIL, CliStrings.TOPIC_GEODE_DEBUG_UTIL__DESC);
     nameDescriptionMap.put(CliStrings.TOPIC_GFSH,               CliStrings.TOPIC_GFSH__DESC);
   }
 

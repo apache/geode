@@ -47,7 +47,7 @@ public class GfshHelpCommands implements CommandMarker{
   }
   
   @CliCommand(value = CliStrings.HELP, help = CliStrings.HELP__HELP)
-  @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_HELP})
+  @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GEODE_HELP })
   public Result obtainHelp(
       @CliArgument(name = CliStrings.HELP__COMMAND, 
                  argumentContext = CliStrings.PARAM_CONTEXT_HELP, 
@@ -59,7 +59,7 @@ public class GfshHelpCommands implements CommandMarker{
   
   
   @CliCommand(value = CliStrings.HINT, help = CliStrings.HINT__HELP)
-  @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_HELP})
+  @CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GEODE_HELP })
   public Result hint(
       @CliArgument(name = CliStrings.HINT__TOPICNAME, 
                 argumentContext = ConverterHint.HINTTOPIC, 

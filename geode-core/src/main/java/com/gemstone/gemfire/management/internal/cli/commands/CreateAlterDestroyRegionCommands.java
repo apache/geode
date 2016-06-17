@@ -108,7 +108,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand (value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
-  @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
+  @CliMetaData (relatedTopic = CliStrings.TOPIC_GEODE_REGION, writesToSharedConfiguration = true)
   @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result createRegion(
       @CliOption (key = CliStrings.CREATE_REGION__REGION,
@@ -437,7 +437,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   }  
   
   @CliCommand (value = CliStrings.ALTER_REGION, help = CliStrings.ALTER_REGION__HELP)
-  @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
+  @CliMetaData (relatedTopic = CliStrings.TOPIC_GEODE_REGION, writesToSharedConfiguration = true)
   public Result alterRegion(
       @CliOption (key = CliStrings.ALTER_REGION__REGION,
                   mandatory = true,
@@ -457,7 +457,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       Integer entryExpirationIdleTime,
       @CliOption (key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION,
                   unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = CliMetaData.ANNOTATION_DEFAULT_VALUE,
+                  specifiedDefaultValue = "INVALIDATE",
                   help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP)
       String entryExpirationIdleTimeAction,
       @CliOption (key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTIMETOLIVE,
@@ -467,7 +467,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       Integer entryExpirationTTL,
       @CliOption (key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION,
                   unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = CliMetaData.ANNOTATION_DEFAULT_VALUE,
+                  specifiedDefaultValue = "INVALIDATE",
                   help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION__HELP)
       String entryExpirationTTLAction,
       @CliOption (key = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIME,
@@ -477,7 +477,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       Integer regionExpirationIdleTime, 
       @CliOption (key = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIMEACTION,
                   unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = CliMetaData.ANNOTATION_DEFAULT_VALUE,
+                  specifiedDefaultValue = "INVALIDATE",
                   help = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIMEACTION__HELP)
       String regionExpirationIdleTimeAction,
       @CliOption (key = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTL,
@@ -487,7 +487,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       Integer regionExpirationTTL, 
       @CliOption (key = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION,
                   unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = CliMetaData.ANNOTATION_DEFAULT_VALUE,
+                  specifiedDefaultValue = "INVALIDATE",
                   help = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION__HELP)
       String regionExpirationTTLAction,          
       @CliOption (key = CliStrings.ALTER_REGION__CACHELISTENER,
@@ -498,12 +498,12 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       String[] cacheListeners,
       @CliOption (key = CliStrings.ALTER_REGION__CACHELOADER,
                   unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = CliMetaData.ANNOTATION_DEFAULT_VALUE,
+                  specifiedDefaultValue = "help",
                   help = CliStrings.ALTER_REGION__CACHELOADER__HELP)
       String cacheLoader,
       @CliOption (key = CliStrings.ALTER_REGION__CACHEWRITER,
                   unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = CliMetaData.ANNOTATION_DEFAULT_VALUE,
+                  specifiedDefaultValue = "null",
                   help = CliStrings.ALTER_REGION__CACHEWRITER__HELP)
       String cacheWriter,
       @CliOption (key = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID,
@@ -997,7 +997,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = { CliStrings.DESTROY_REGION }, help = CliStrings.DESTROY_REGION__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
+  @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_REGION, writesToSharedConfiguration = true)
   @ResourceOperation(resource=Resource.DATA, operation = OperationCode.MANAGE)
   public Result destroyRegion(
       @CliOption(key = CliStrings.DESTROY_REGION__REGION,
@@ -1031,7 +1031,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
 
       if (regionMembersList.size() == 0) {
         return ResultBuilder.createUserErrorResult(
-            CliStrings.format(CliStrings.DESTROY_REGION__MSG__COULDNOT_FIND_REGIONPATH_0_IN_GEMFIRE,
+            CliStrings.format(CliStrings.DESTROY_REGION__MSG__COULDNOT_FIND_REGIONPATH_0_IN_GEODE,
                 new Object[]{regionPath, "jmx-manager-update-rate milliseconds"}));
       }
 

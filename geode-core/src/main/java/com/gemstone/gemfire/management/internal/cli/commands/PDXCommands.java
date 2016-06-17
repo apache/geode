@@ -52,7 +52,7 @@ public class PDXCommands extends AbstractCommandsSupport{
 
 
   @CliCommand (value = CliStrings.CONFIGURE_PDX, help = CliStrings.CONFIGURE_PDX__HELP)
-  @CliMetaData (relatedTopic = CliStrings.TOPIC_GEMFIRE_REGION, writesToSharedConfiguration = true)
+  @CliMetaData (relatedTopic = CliStrings.TOPIC_GEODE_REGION, writesToSharedConfiguration = true)
   @ResourceOperation( resource=Resource.DATA, operation = OperationCode.MANAGE)
   public Result configurePDX(
       @CliOption (key = CliStrings.CONFIGURE_PDX__READ__SERIALIZED,
@@ -174,7 +174,7 @@ public class PDXCommands extends AbstractCommandsSupport{
   }
 
   @CliCommand (value = CliStrings.PDX_RENAME, help = CliStrings.PDX_RENAME__HELP)
-  @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEMFIRE_DISKSTORE})
+  @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEODE_DISKSTORE })
   @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result pdxRename(
       @CliOption (key = CliStrings.PDX_RENAME_OLD,
@@ -230,7 +230,7 @@ public class PDXCommands extends AbstractCommandsSupport{
   
   // The pdx delete-field command has been disabled until it has native client support.
 //  @CliCommand (value = CliStrings.PDX_DELETE_FIELD, help = CliStrings.PDX_DELETE_FIELD__HELP)
-//  @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEMFIRE_DISKSTORE})
+//  @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEODE_DISKSTORE})
 //  public Result pdxDeleteField( 
 //      @CliOption (key = CliStrings.PDX_CLASS,
 //      mandatory=true,

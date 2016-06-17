@@ -183,7 +183,7 @@ public class MiscellaneousCommands implements CommandMarker {
 
 
   @CliCommand(value = CliStrings.SHUTDOWN, help = CliStrings.SHUTDOWN__HELP)
-  @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_LIFECYCLE },
+  @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEODE_LIFECYCLE },
       interceptor = "com.gemstone.gemfire.management.internal.cli.commands.MiscellaneousCommands$Interceptor")
   @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
   public Result shutdown(
@@ -325,7 +325,7 @@ public class MiscellaneousCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.GC, help = CliStrings.GC__HELP)
-  @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_DEBUG_UTIL })
+  @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEODE_DEBUG_UTIL })
   @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
   public Result gc(
       @CliOption(key = CliStrings.GC__GROUP, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.GC__GROUP__HELP)
@@ -416,7 +416,7 @@ public class MiscellaneousCommands implements CommandMarker {
 
 
   @CliCommand(value = CliStrings.NETSTAT, help = CliStrings.NETSTAT__HELP)
-  @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_DEBUG_UTIL })
+  @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEODE_DEBUG_UTIL })
   @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   //TODO : Verify the auto-completion for multiple values.
   public Result netstat(
@@ -570,7 +570,7 @@ public class MiscellaneousCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.SHOW_DEADLOCK, help = CliStrings.SHOW_DEADLOCK__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEMFIRE_DEBUG_UTIL })
+  @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEODE_DEBUG_UTIL })
   @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result showDeadlock(
       @CliOption(key = CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE,
@@ -620,7 +620,7 @@ public class MiscellaneousCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.SHOW_LOG, help = CliStrings.SHOW_LOG_HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEMFIRE_DEBUG_UTIL })
+  @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEODE_DEBUG_UTIL })
   @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result showLog(
       @CliOption(key = CliStrings.SHOW_LOG_MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.SHOW_LOG_MEMBER_HELP, mandatory = true) String memberNameOrId,
@@ -768,7 +768,7 @@ public class MiscellaneousCommands implements CommandMarker {
     return result;
   }
   @CliCommand(value = CliStrings.EXPORT_LOGS, help = CliStrings.EXPORT_LOGS__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEMFIRE_SERVER, CliStrings.TOPIC_GEMFIRE_DEBUG_UTIL })
+  @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_DEBUG_UTIL })
   @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result exportLogs(
       @CliOption(key = CliStrings.EXPORT_LOGS__DIR,
@@ -990,7 +990,7 @@ public class MiscellaneousCommands implements CommandMarker {
    * @return Stack Trace
    */
   @CliCommand(value = CliStrings.EXPORT_STACKTRACE, help = CliStrings.EXPORT_STACKTRACE__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEMFIRE_DEBUG_UTIL })
+  @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEODE_DEBUG_UTIL })
   @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result exportStackTrace(
       @CliOption(key = CliStrings.EXPORT_STACKTRACE__MEMBER,
@@ -1091,7 +1091,7 @@ public class MiscellaneousCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.SHOW_METRICS, help = CliStrings.SHOW_METRICS__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEMFIRE_STATISTICS })
+  @CliMetaData(shellOnly = false, relatedTopic = { CliStrings.TOPIC_GEODE_STATISTICS })
   @ResourceOperation(resource = Resource.CLUSTER, operation= OperationCode.READ)
   public Result showMetrics(
       @CliOption(key = { CliStrings.SHOW_METRICS__MEMBER }, optionContext = ConverterHint.ALL_MEMBER_IDNAME, help = CliStrings.SHOW_METRICS__MEMBER__HELP) String memberNameOrId,
