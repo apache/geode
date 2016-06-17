@@ -63,7 +63,7 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
   private final LoadSharedConfigurationFunction loadSharedConfiguration = new LoadSharedConfigurationFunction();
 
   @CliCommand(value = { CliStrings.EXPORT_SHARED_CONFIG }, help = CliStrings.EXPORT_SHARED_CONFIG__HELP)
-  @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.ExportImportSharedConfigurationCommands$ExportInterceptor",  readsSharedConfiguration=true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
+  @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.ExportImportSharedConfigurationCommands$ExportInterceptor",  readsSharedConfiguration=true, relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG })
   @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result exportSharedConfig(
       @CliOption(key = { CliStrings.EXPORT_SHARED_CONFIG__FILE}, 
@@ -114,7 +114,7 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
   }
 
   @CliCommand(value = { CliStrings.IMPORT_SHARED_CONFIG }, help = CliStrings.IMPORT_SHARED_CONFIG__HELP)
-  @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.ExportImportSharedConfigurationCommands$ImportInterceptor", writesToSharedConfiguration=true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_CONFIG})
+  @CliMetaData(interceptor = "com.gemstone.gemfire.management.internal.cli.commands.ExportImportSharedConfigurationCommands$ImportInterceptor", writesToSharedConfiguration=true, relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG })
   @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.MANAGE)
   @SuppressWarnings("unchecked")
   public Result importSharedConfig(

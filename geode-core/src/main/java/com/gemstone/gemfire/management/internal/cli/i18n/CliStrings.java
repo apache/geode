@@ -28,14 +28,10 @@ import java.text.MessageFormat;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
-/**-*
- * Contains 'String' constants used as key to the Localized strings to be used
+/**-
+ *  * Contains 'String' constants used as key to the Localized strings to be used
  * in classes under <code>com.gemstone.gemfire.management.internal.cli</code>
  * for Command Line Interface (CLI).
- *
- * @since GemFire 7.0
- */
-/*-
  * NOTES:
  * 1. CONVENTIONS: Defining constants for Command Name, option, argument, help:
  * 1.1 Command Name:
@@ -63,54 +59,56 @@ import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
  *
  * 2. Defining Topic constants:
  * 2.1 The constants' names should begin with "TOPIC_"
- *     E.g. TOPIC_GEMFIRE_REGION
+ *     E.g. TOPIC_GEODE_REGION
  * 2.2 Topic brief description should be defined with suffix "__DESC".
- *     E.g. TOPIC_GEMFIRE_REGION__DESC
+ *     E.g. TOPIC_GEODE_REGION__DESC
  *
  * 3. Order for adding constants: It should be alphabetically sorted at least
  *    on the first name within the current group
+ *
+ * @since GemFire 7.0
  */
 public class CliStrings {
 
   /*-*************************************************************************
    *************                  T O P I C S                  ***************
    ***************************************************************************/
-  public static final String DEFAULT_TOPIC_GEMFIRE = "GemFire";
-  public static final String DEFAULT_TOPIC_GEMFIRE__DESC = "vFabric GemFire is a distributed data management platform providing dynamic scalability, high performance and database-like persistence.";
-  public static final String TOPIC_GEMFIRE_REGION = "Region";
-  public static final String TOPIC_GEMFIRE_REGION__DESC = "A region is the core building block of the vFabric GemFire distributed system. Cached data is organized into regions and all data puts, gets, and querying activities are done against them.";
-  public static final String TOPIC_GEMFIRE_WAN = "WAN";
-  public static final String TOPIC_GEMFIRE_WAN__DESC = "For multiple data centers in remote locations, GemFire provides a WAN gateway to facilitate data sharing. The WAN gateway connects two or more remote sites and then sends asynchronous, batched updates as data is changed.";
-  public static final String TOPIC_GEMFIRE_JMX = "JMX";
-  public static final String TOPIC_GEMFIRE_JMX__DESC = "JMX technology provides the tools for building distributed, Web-based, modular and dynamic solutions for managing and monitoring devices, applications, and service-driven networks.";
-  public static final String TOPIC_GEMFIRE_DISKSTORE = "Disk Store";
-  public static final String TOPIC_GEMFIRE_DISKSTORE__DESC = "Disk stores are used to persist data to disk as a backup to your in-memory copy or as overflow storage when memory use is too high.";
-  public static final String TOPIC_GEMFIRE_LOCATOR = "Locator";
-  public static final String TOPIC_GEMFIRE_LOCATOR__DESC = "JVMs running GemFire discover each other through a TCP service named the locator.";
-  public static final String TOPIC_GEMFIRE_SERVER = "Server";
-  public static final String TOPIC_GEMFIRE_SERVER__DESC = "A server is GemFire cluster member which holds a GemFire cache. Depending on the topology used it can refer to either a system that responds to client requests or a system that is only a peer to other members.";
-  public static final String TOPIC_GEMFIRE_MANAGER = "Manager";
-  public static final String TOPIC_GEMFIRE_MANAGER__DESC = "The Manager is a member which has the additional role of a managing & monitoring the GemFire distributed system.";
-  public static final String TOPIC_GEMFIRE_STATISTICS = "Statistics";
-  public static final String TOPIC_GEMFIRE_STATISTICS__DESC = "Every application and server in a vFabric GemFire distributed system can be configured to perform statistical data collection for analysis.";
-  public static final String TOPIC_GEMFIRE_LIFECYCLE = "Lifecycle";
-  public static final String TOPIC_GEMFIRE_LIFECYCLE__DESC = "Launching, execution and termination of GemFire cluster members such as servers and locators.";
-  public static final String TOPIC_GEMFIRE_M_AND_M = "Management-Monitoring";
-  public static final String TOPIC_GEMFIRE_M_AND_M__DESC = "The management of and monitoring of GemFire systems using GemFire tools, such as vFabric GemFire Pulse or VSD or Data Browser, and JConsole, which is provided with the JDK(TM)";
-  public static final String TOPIC_GEMFIRE_DATA = "Data";
-  public static final String TOPIC_GEMFIRE_DATA__DESC = "User data as stored in regions of the GemFire distributed system.";
-  public static final String TOPIC_GEMFIRE_CONFIG = "Configuration";
-  public static final String TOPIC_GEMFIRE_CONFIG__DESC = "Configuration of vFabric GemFire Cache & Servers/Locators hosting the Cache.";
-  public static final String TOPIC_GEMFIRE_FUNCTION = "Function Execution";
-  public static final String TOPIC_GEMFIRE_FUNCTION__DESC = "The function execution service provides solutions for these application use cases: \n\tAn application that executes a server-side transaction or carries out data updates using the GemFire distributed locking service. \n\tAn application that needs to initialize some of its components once on each server, which might be used later by executed functions. Initialization and startup of a third-party service, such as a messaging service. \n\tAny arbitrary aggregation operation that requires iteration over local data sets that can be done more efficiently through a single call to the cache server. \n\tAny kind of external resource provisioning that can be done by executing a function on a server.";
-  public static final String TOPIC_GEMFIRE_HELP = "Help";
-  public static final String TOPIC_GEMFIRE_HELP__DESC = "Provides usage information for gfsh & its commands.";
-  public static final String TOPIC_GEMFIRE_DEBUG_UTIL = "Debug-Utility";
-  public static final String TOPIC_GEMFIRE_DEBUG_UTIL__DESC = "Debugging aids & utilities to use with vFabric GemFire.";
+  public static final String DEFAULT_TOPIC_GEODE = "Geode";
+  public static final String DEFAULT_TOPIC_GEODE__DESC = "Apache Geode is a distributed data management platform providing dynamic scalability, high performance and database-like persistence.";
+  public static final String TOPIC_GEODE_REGION = "Region";
+  public static final String TOPIC_GEODE_REGION__DESC = "A region is the core building block of the Apache Geode distributed system. Cached data is organized into regions and all data puts, gets, and querying activities are done against them.";
+  public static final String TOPIC_GEODE_WAN = "WAN";
+  public static final String TOPIC_GEODE_WAN__DESC = "For multiple data centers in remote locations, Geode provides a WAN gateway to facilitate data sharing. The WAN gateway connects two or more remote sites and then sends asynchronous, batched updates as data is changed.";
+  public static final String TOPIC_GEODE_JMX = "JMX";
+  public static final String TOPIC_GEODE_JMX__DESC = "JMX technology provides the tools for building distributed, Web-based, modular and dynamic solutions for managing and monitoring devices, applications, and service-driven networks.";
+  public static final String TOPIC_GEODE_DISKSTORE = "Disk Store";
+  public static final String TOPIC_GEODE_DISKSTORE__DESC = "Disk stores are used to persist data to disk as a backup to your in-memory copy or as overflow storage when memory use is too high.";
+  public static final String TOPIC_GEODE_LOCATOR = "Locator";
+  public static final String TOPIC_GEODE_LOCATOR__DESC = "JVMs running Geode discover each other through a TCP service named the locator.";
+  public static final String TOPIC_GEODE_SERVER = "Server";
+  public static final String TOPIC_GEODE_SERVER__DESC = "A server is Geode cluster member which holds a Geode cache. Depending on the topology used it can refer to either a system that responds to client requests or a system that is only a peer to other members.";
+  public static final String TOPIC_GEODE_MANAGER = "Manager";
+  public static final String TOPIC_GEODE_MANAGER__DESC = "The Manager is a member which has the additional role of a managing & monitoring the Geode distributed system.";
+  public static final String TOPIC_GEODE_STATISTICS = "Statistics";
+  public static final String TOPIC_GEODE_STATISTICS__DESC = "iEvery application and server in a Apache Geode distributed system can be configured to perform statistical data collection for analysis.";
+  public static final String TOPIC_GEODE_LIFECYCLE = "Lifecycle";
+  public static final String TOPIC_GEODE_LIFECYCLE__DESC = "Launching, execution and termination of Geode cluster members such as servers and locators.";
+  public static final String TOPIC_GEODE_M_AND_M = "Management-Monitoring";
+  public static final String TOPIC_GEODE_M_AND_M__DESC = "The management of and monitoring of Geode systems using Geode tools, such as Apache Geode Pulse or Data Browser, and JConsole, which is provided with the JDK(TM)";
+  public static final String TOPIC_GEODE_DATA = "Data";
+  public static final String TOPIC_GEODE_DATA__DESC = "User data as stored in regions of the Geode distributed system.";
+  public static final String TOPIC_GEODE_CONFIG = "Configuration";
+  public static final String TOPIC_GEODE_CONFIG__DESC = "Configuration of Apache Geode Cache & Servers/Locators hosting the Cache.";
+  public static final String TOPIC_GEODE_FUNCTION = "Function Execution";
+  public static final String TOPIC_GEODE_FUNCTION__DESC = "The function execution service provides solutions for these application use cases: \n\tAn application that executes a server-side transaction or carries out data updates using the Geode distributed locking service. \n\tAn application that needs to initialize some of its components once on each server, which might be used later by executed functions. Initialization and startup of a third-party service, such as a messaging service. \n\tAny arbitrary aggregation operation that requires iteration over local data sets that can be done more efficiently through a single call to the cache server. \n\tAny kind of external resource provisioning that can be done by executing a function on a server.";
+  public static final String TOPIC_GEODE_HELP = "Help";
+  public static final String TOPIC_GEODE_HELP__DESC = "Provides usage information for gfsh & its commands.";
+  public static final String TOPIC_GEODE_DEBUG_UTIL = "Debug-Utility";
+  public static final String TOPIC_GEODE_DEBUG_UTIL__DESC = "Debugging aids & utilities to use with Apache Geode.";
   public static final String TOPIC_GFSH = "GFSH";
-  public static final String TOPIC_GFSH__DESC = "The GemFire SHell";
+  public static final String TOPIC_GFSH__DESC = "The Geode Shell";
   public static final String TOPIC_SHARED_CONFIGURATION = "Cluster Configuration";
-  public static final String TOPIC_SHARED_CONFIGURATION_HELP = "Configuration for cluster and various groups. It consists of cache.xml, gemfire properties and deployed jars.\nChanges due to gfshs command are persisted to the locator hosting the cluster configuration service.";
+  public static final String TOPIC_SHARED_CONFIGURATION_HELP = "Configuration for cluster and various groups. It consists of cache.xml, geode properties and deployed jars.\nChanges due to gfshs command are persisted to the locator hosting the cluster configuration service.";
   public static final String TOPIC_CHANGELOGLEVEL = "User can change the log-level for a  member run time and generate log contents as per the need";
 
   /*-*************************************************************************
@@ -118,10 +116,10 @@ public class CliStrings {
    * *************************************************************************/
 
   public static final String DESKSTOP_APP_RUN_ERROR_MESSAGE = "Running desktop applications is not supported on %1$s.";
-  public static final String GEMFIRE_HOME_NOT_FOUND_ERROR_MESSAGE = "The GEMFIRE environment variable was not defined.  Please set the GEMFIRE environment variable to the directory where GemFire is installed.";
+  public static final String GEODE_HOME_NOT_FOUND_ERROR_MESSAGE = "The GEODE environment variable was not defined.  Please set the GEODE environment variable to the directory where GEODE is installed.";
   public static final String JAVA_HOME_NOT_FOUND_ERROR_MESSAGE = "Unable to locate the Java executables and dependencies.  Please set the JAVA_HOME environment variable.";
-  public static final String CACHE_XML_NOT_FOUND_MESSAGE = "Warning: The GemFire cache XML file {0} could not be found.";
-  public static final String GEMFIRE_0_PROPERTIES_1_NOT_FOUND_MESSAGE = "Warning: The GemFire {0}properties file {1} could not be found.";
+  public static final String CACHE_XML_NOT_FOUND_MESSAGE = "Warning: The Geode cache XML file {0} could not be found.";
+  public static final String GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE = "Warning: The Geode {0}properties file {1} could not be found.";
   public static final String MEMBER_NOT_FOUND_ERROR_MESSAGE = "Member {0} could not be found.  Please verify the member name or ID and try again.";
   public static final String NO_MEMBERS_IN_GROUP_ERROR_MESSAGE = "No caching members for group {0} could be found.  Please verify the group and try again.";
   public static final String NO_MEMBERS_FOUND_MESSAGE = "No Members Found";
@@ -132,7 +130,7 @@ public class CliStrings {
   public static final String REGION_NOT_FOUND = "Region : {0} not found";
   public static final String INVALID_REGION_NAME = "Invalid region name";
   public static final String INVALID_FILE_EXTENTION = "Invalid file type, the file extension must be \"{0}\"";
-  public static final String GEMFIRE_DATA_FILE_EXTENSION = ".gfd";
+  public static final String GEODE_DATA_FILE_EXTENSION = ".gfd";
   public static final String LOCATOR_HEADER = "Locator";
   public static final String ERROR__MSG__HEADER = "Error";
   public static final String ZIP_FILE_EXTENSION=".zip";
@@ -372,7 +370,7 @@ public class CliStrings {
   public static final String CONNECT__DEFAULT_SSL_BASE_URL = "https://localhost:" + DistributionConfig.DEFAULT_HTTP_SERVICE_PORT + "/gemfire/v1";
   public static final String CONNECT__URL__HELP = "Indicates the base URL to the Manager's HTTP service.  For example: 'http://<host>:<port>/gemfire/v1' Default is '" + CONNECT__DEFAULT_BASE_URL + "'";
   public static final String CONNECT__USE_HTTP = "use-http";
-  public static final String CONNECT__USE_HTTP__HELP = "Connects to Manager by sending HTTP requests to HTTP service hostint the Management REST API.  You must first 'disconnect' in order to reconnect to the Manager via locator or jmx-manager using JMX.";
+  public static final String CONNECT__USE_HTTP__HELP = "Connects to Manager by sending HTTP requests to HTTP service hosting the Management REST API.  You must first 'disconnect' in order to reconnect to the Manager via locator or jmx-manager using JMX.";
   public static final String CONNECT__USERNAME = "user";
   public static final String CONNECT__USERNAME__HELP = "User name to securely connect to the jmx-manager. If the --password parameter is not specified then it will be prompted for.";
   public static final String CONNECT__PASSWORD = "password";
@@ -401,8 +399,8 @@ public class CliStrings {
   public static final String CONNECT__MSG__ALREADY_CONNECTED = "Already connected to: {0}";
   public static final String CONNECT__MSG__SUCCESS = "Successfully connected to: {0}";
   public static final String CONNECT__MSG__ERROR = "Could not connect to : {0}. {1}";
-  public static final String CONNECT__MSG__SERVICE_UNAVAILABLE_ERROR = "Could not find a GemFire jmx-manager service at {0}.";
-  public static final String CONNECT__MSG__COULD_NOT_CONNECT_TO_LOCATOR_0 = "Could not connect to GemFire Locator service at {0}.";
+  public static final String CONNECT__MSG__SERVICE_UNAVAILABLE_ERROR = "Could not find a Geode jmx-manager service at {0}.";
+  public static final String CONNECT__MSG__COULD_NOT_CONNECT_TO_LOCATOR_0 = "Could not connect to Geode Locator service at {0}.";
   public static final String CONNECT__MSG__COULD_NOT_READ_CONFIG_FROM_0 = "Could not read config from {0}.";
   public static final String CONNECT__MSG__COULD_NOT_CONNECT_TO_LOCATOR_0_POSSIBLY_SSL_CONFIG_ERROR = "Could not connect to Locator at {0}."+Gfsh.LINE_SEPARATOR+"Possible reason: Wrong or no SSL configuration provided.";
   public static final String CONNECT__MSG__COULD_NOT_CONNECT_TO_MANAGER_0_POSSIBLY_SSL_CONFIG_ERROR = "Could not connect to Manager at {0}."+Gfsh.LINE_SEPARATOR+"Possible reason: Wrong or no SSL configuration provided.";
@@ -561,7 +559,7 @@ public class CliStrings {
   public static final String CREATE_REGION__USEATTRIBUTESFROM = "template-region";
   public static final String CREATE_REGION__USEATTRIBUTESFROM__HELP = "Name/Path of the region whose attributes should be duplicated when creating this region.";
   public static final String CREATE_REGION__SKIPIFEXISTS = "skip-if-exists";
-  public static final String CREATE_REGION__SKIPIFEXISTS__HELP = "Skip region ceation if the region already exists.";
+  public static final String CREATE_REGION__SKIPIFEXISTS__HELP = "Skip region creation if the region already exists.";
   public static final String CREATE_REGION__KEYCONSTRAINT = "key-constraint";
   public static final String CREATE_REGION__KEYCONSTRAINT__HELP = "Fully qualified class name of the objects allowed as region keys. Ensures that keys for region entries are all of the same class.";
   public static final String CREATE_REGION__VALUECONSTRAINT = "value-constraint";
@@ -668,7 +666,7 @@ public class CliStrings {
       + CliStrings.LIST_REGION + "\" to verify region exists.";
   public static final String CREATE_REGION__MSG__USE_ATTRIBUTES_FORM_REGIONS_EXISTS_BUT_DIFFERENT_SCOPE_OR_DATAPOLICY_USE_DESCRIBE_REGION_FOR_0 = "The region mentioned for \""
       + CliStrings.CREATE_REGION__USEATTRIBUTESFROM
-      + "\" exists in this GemFire Cluster but with different Scopes or Data Policies on different members. For details, use command \""
+      + "\" exists in this Geode Cluster but with different Scopes or Data Policies on different members. For details, use command \""
       + CliStrings.DESCRIBE_REGION + "\" for \"{0}\".";
   public static final String CREATE_REGION__MSG__USE_ATTRIBUTES_FROM_REGION_0_IS_NOT_WITH_PERSISTENCE = CREATE_REGION__USEATTRIBUTESFROM
       + " region \"{0}\" is not persistent.";
@@ -685,7 +683,7 @@ public class CliStrings {
   public static final String CREATE_REGION__MSG__0_IS_A_PR_CANNOT_HAVE_SUBREGIONS = "\"{0}\" is a Partitioned Region and cannot have Subregions.";
 
   public static final String CREATE_REGION__COMPRESSOR = "compressor";
-  public static final String CREATE_REGION__COMPRESSOR__HELP = "The fully-qualifed class name of the Compressor to use when compressing region entry values.  The default is no compression.";
+  public static final String CREATE_REGION__COMPRESSOR__HELP = "The fully-qualified class name of the Compressor to use when compressing region entry values.  The default is no compression.";
   public static final String CREATE_REGION__MSG__INVALID_COMPRESSOR = "{0} is an invalid Compressor."; // leave space in the end
 
   public static final String CREATE_REGION__OFF_HEAP = "off-heap";
@@ -730,7 +728,7 @@ public class CliStrings {
   public static final String DESCRIBE_DISK_STORE__MEMBER__HELP = "Name/Id of the member with the disk store to be described.";
   public static final String DESCRIBE_DISK_STORE__NAME = "name";
   public static final String DESCRIBE_DISK_STORE__NAME__HELP = "Name of the disk store to be described.";
-  public static final String DESCRIBE_DISK_STORE__ERROR_MESSAGE = "An error occurred while collecting Disk Store information for member (%1$s) with disk store (%2$s) in the GemFire cluster: %3$s";
+  public static final String DESCRIBE_DISK_STORE__ERROR_MESSAGE = "An error occurred while collecting Disk Store information for member (%1$s) with disk store (%2$s) in the Geode cluster: %3$s";
 
   /* 'describe member' command */
   public static final String DESCRIBE_MEMBER = "describe member";
@@ -754,7 +752,7 @@ public class CliStrings {
   
   /* 'export offline-disk-store' command */
   public static final String EXPORT_OFFLINE_DISK_STORE = "export offline-disk-store";
-  public static final String EXPORT_OFFLINE_DISK_STORE__HELP = "Export region data from an offline disk store into gemfire snapshot files.";
+  public static final String EXPORT_OFFLINE_DISK_STORE__HELP = "Export region data from an offline disk store into Geode snapshot files.";
   public static final String EXPORT_OFFLINE_DISK_STORE__DISKSTORENAME = "name";
   public static final String EXPORT_OFFLINE_DISK_STORE__DISKSTORENAME__HELP = "Name of the disk store to be exported.";
   public static final String EXPORT_OFFLINE_DISK_STORE__DIR = "dir";
@@ -834,12 +832,12 @@ public class CliStrings {
   public static final String DESTROY_REGION__REGION__HELP = "Name/Path of the region to be removed.";
 
   public static final String DESTROY_REGION__MSG__REGIONPATH_0_NOT_VALID = "Region path \"{0}\" is not valid.";
-  public static final String DESTROY_REGION__MSG__COULDNOT_FIND_REGIONPATH_0_IN_GEMFIRE = "Could not find a Region with Region path \"{0}\" in this GemFire cluster. If region was recently created, please wait for at least {1} to allow the associated Management resources to be federated.";
+  public static final String DESTROY_REGION__MSG__COULDNOT_FIND_REGIONPATH_0_IN_GEODE = "Could not find a Region with Region path \"{0}\" in this Geode cluster. If region was recently created, please wait for at least {1} to allow the associated Management resources to be federated.";
   public static final String DESTROY_REGION__MSG__AND_ITS_SUBREGIONS = "and its subregions";
   public static final String DESTROY_REGION__MSG__REGION_0_1_DESTROYED = "\"{0}\" {1} destroyed successfully.";
   public static final String DESTROY_REGION__MSG__ERROR_OCCURRED_WHILE_DESTROYING_0_REASON_1 = "Error occurred while destroying region \"{0}\". Reason: {1}";
   public static final String DESTROY_REGION__MSG__UNKNOWN_RESULT_WHILE_DESTROYING_REGION_0_REASON_1 = "Unknown result while destroying region \"{0}\". Reason: {1}";
-  public static final String DESTROY_REGION__MSG__COULDNOT_FIND_MEMBER_WITH_REGION_0 = "Could not find a GemFire member which hosts a region with Region path \"{0}\"";
+  public static final String DESTROY_REGION__MSG__COULDNOT_FIND_MEMBER_WITH_REGION_0 = "Could not find a Geode member which hosts a region with Region path \"{0}\"";
   public static final String DESTROY_REGION__MSG__SPECIFY_REGIONPATH_TO_DESTROY = "Please specify region path for the region to be destroyed.";
   public static final String DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1 = "Error while destroying region {0}. Reason: {1}";
 
@@ -1139,7 +1137,7 @@ public class CliStrings {
   /* list index */
   public static final String LIST_INDEX = "list indexes";
   public static final String LIST_INDEX__HELP = "Display the list of indexes created for all members.";
-  public static final String LIST_INDEX__ERROR_MESSAGE = "An error occurred while collecting all Index information across the GemFire cluster: %1$s";
+  public static final String LIST_INDEX__ERROR_MESSAGE = "An error occurred while collecting all Index information across the Geode cluster: %1$s";
   public static final String LIST_INDEX__INDEXES_NOT_FOUND_MESSAGE = "No Indexes Found";
   public static final String LIST_INDEX__STATS = "with-stats";
   public static final String LIST_INDEX__STATS__HELP = "Whether statistics should also be displayed.";
@@ -1147,7 +1145,7 @@ public class CliStrings {
   /* list disk-store command */
   public static final String LIST_DISK_STORE = "list disk-stores";
   public static final String LIST_DISK_STORE__HELP = "Display disk stores for all members.";
-  public static final String LIST_DISK_STORE__ERROR_MESSAGE = "An error occurred while collecting Disk Store information for all members across the GemFire cluster: %1$s";
+  public static final String LIST_DISK_STORE__ERROR_MESSAGE = "An error occurred while collecting Disk Store information for all members across the Geode cluster: %1$s";
   public static final String LIST_DISK_STORE__DISK_STORES_NOT_FOUND_MESSAGE = "No Disk Stores Found";
 
   /* 'list member' command */
@@ -1262,7 +1260,7 @@ public class CliStrings {
   public static final String QUERY__MSG__INVALID_QUERY = "Query is invalid due for error : <{0}>";
   public static final String QUERY__MSG__REGIONS_NOT_FOUND = "Cannot find regions <{0}> in any of the members";
   public static final String QUERY__MSG__NOT_SUPPORTED_ON_MEMBERS = CliStrings.QUERY
-      + " command should be used only from shell. Use QueryService API for running query inside Gemfire VMs";
+      + " command should be used only from shell. Use QueryService API for running query inside Geode VMs";
 
   /* 'rebalance' command */
   public static final String REBALANCE = "rebalance";
@@ -1387,7 +1385,7 @@ public class CliStrings {
 
   /* show dead-lock command */
   public static final String SHOW_DEADLOCK = "show dead-locks";
-  public static final String SHOW_DEADLOCK__HELP = "Display any deadlocks in the GemFire distributed system.";
+  public static final String SHOW_DEADLOCK__HELP = "Display any deadlocks in the Geode distributed system.";
   public static final String SHOW_DEADLOCK__DEPENDENCIES__FILE = "file";
   public static final String SHOW_DEADLOCK__DEPENDENCIES__FILE__HELP = "Name of the file to which dependencies between members will be written.";
   public static final String SHOW_DEADLOCK__NO__DEADLOCK = "No deadlock was detected.";
@@ -1569,18 +1567,18 @@ public class CliStrings {
 
   /* start gfmon command */
   public static final String START_PULSE = "start pulse";
-  public static final String START_PULSE__ERROR = "An error occurred while launching Gemfire Pulse - %1$s";
+  public static final String START_PULSE__ERROR = "An error occurred while launching Geode Pulse - %1$s";
   public static final String START_PULSE__HELP = "Open a new window in the default Web browser with the URL for the Pulse application.";
-  public static final String START_PULSE__RUN = "Launched GemFire Pulse";
+  public static final String START_PULSE__RUN = "Launched Geode Pulse";
   public static final String START_PULSE__URL = "url";
   public static final String START_PULSE__URL__HELP = "URL of the Pulse Web application.";
-  public static final String START_PULSE__URL__NOTFOUND = "Could not find the URL for GemFire Pulse.";
+  public static final String START_PULSE__URL__NOTFOUND = "Could not find the URL for Geode Pulse.";
 
   /* 'start jsonsole' command */
   public static final String START_JCONSOLE = "start jconsole";
-  public static final String START_JCONSOLE__HELP = "Start the JDK's JConsole tool in a separate process. JConsole will be launched, but connecting to GemFire must be done manually.";
+  public static final String START_JCONSOLE__HELP = "Start the JDK's JConsole tool in a separate process. JConsole will be launched, but connecting to Geode must be done manually.";
   public static final String START_JCONSOLE__CATCH_ALL_ERROR_MESSAGE = "An error occurred while launching JConsole = %1$s";
-  public static final String START_JCONSOLE__CONNECT_BY_MEMBER_NAME_ID_ERROR_MESSAGE = "Connecting by the GemFire member's name or ID is not currently supported.\nPlease specify the member as '<hostname|IP>[PORT].";
+  public static final String START_JCONSOLE__CONNECT_BY_MEMBER_NAME_ID_ERROR_MESSAGE = "Connecting by the Geode member's name or ID is not currently supported.\nPlease specify the member as '<hostname|IP>[PORT].";
   public static final String START_JCONSOLE__INTERVAL = "interval";
   public static final String START_JCONSOLE__INTERVAL__HELP = "Update internal (in seconds). This parameter is passed as -interval to JConsole.";
   public static final String START_JCONSOLE__IO_EXCEPTION_MESSAGE = "An IO error occurred while launching JConsole.\nPlease ensure that JAVA_HOME is set to the JDK installation or the JDK bin directory is in the system PATH.";
@@ -1599,7 +1597,7 @@ public class CliStrings {
 
   /* 'start jvisualvm command' */
   public static final String START_JVISUALVM = "start jvisualvm";
-  public static final String START_JVISUALVM__HELP = "Start the JDK's Java VisualVM (jvisualvm) tool in a separate process. Java VisualVM will be launched, but connecting to GemFire must be done manually.";
+  public static final String START_JVISUALVM__HELP = "Start the JDK's Java VisualVM (jvisualvm) tool in a separate process. Java VisualVM will be launched, but connecting to Geode must be done manually.";
   public static final String START_JVISUALVM__ERROR_MESSAGE = "An error occurred while launching Java VisualVM - %1$s";
   public static final String START_JVISUALVM__EXPECTED_JDK_VERSION_ERROR_MESSAGE = "Java VisualVM was not bundled with the JDK until version 1.6.\nDownload and install Java VisualVM to the JDK bin directory separately.";
   public static final String START_JVISUALVM__J = "J";
@@ -1625,19 +1623,19 @@ public class CliStrings {
   public static final String START_LOCATOR__INCLUDE_SYSTEM_CLASSPATH = "include-system-classpath";
   public static final String START_LOCATOR__INCLUDE_SYSTEM_CLASSPATH__HELP = "Includes the System CLASSPATH on the Locator's CLASSPATH. The System CLASSPATH is not included by default.";
   public static final String START_LOCATOR__LOCATORS = LOCATORS;
-  public static final String START_LOCATOR__LOCATORS__HELP = "Sets the list of Locators used by this Locator to join the appropriate GemFire cluster.";
+  public static final String START_LOCATOR__LOCATORS__HELP = "Sets the list of Locators used by this Locator to join the appropriate Geode cluster.";
   public static final String START_LOCATOR__LOG_LEVEL = LOG_LEVEL;
   public static final String START_LOCATOR__LOG_LEVEL__HELP = "Sets the level of output logged to the Locator log file.  Possible values for log-level include: finest, finer, fine, config, info, warning, severe, none.";
   public static final String START_LOCATOR__MCAST_ADDRESS = MCAST_ADDRESS;
-  public static final String START_LOCATOR__MCAST_ADDRESS__HELP = "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Locator can communicate other members in the GemFire cluster using a common multicast address and port.  If mcast-port is zero, then mcast-address is ignored.";
+  public static final String START_LOCATOR__MCAST_ADDRESS__HELP = "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Locator can communicate other members in the Geode cluster using a common multicast address and port.  If mcast-port is zero, then mcast-address is ignored.";
   public static final String START_LOCATOR__MCAST_PORT = MCAST_PORT;
-  public static final String START_LOCATOR__MCAST_PORT__HELP = "Sets the port used for multi-cast networking so the Locator can communicate with other members of the GemFire cluster.  A zero value disables mcast.";
+  public static final String START_LOCATOR__MCAST_PORT__HELP = "Sets the port used for multi-cast networking so the Locator can communicate with other members of the Geode cluster.  A zero value disables mcast.";
   public static final String START_LOCATOR__MEMBER_NAME = "name";
-  public static final String START_LOCATOR__MEMBER_NAME__HELP = "The member name to give this Locator in the GemFire cluster.";
+  public static final String START_LOCATOR__MEMBER_NAME__HELP = "The member name to give this Locator in the Geode cluster.";
   public static final String START_LOCATOR__PORT = "port";
   public static final String START_LOCATOR__PORT__HELP = "Port the Locator will listen on.";
   public static final String START_LOCATOR__PROPERTIES = "properties-file";
-  public static final String START_LOCATOR__PROPERTIES__HELP = "The gemfire.properties file for configuring the Locator's distributed system. The file's path can be absolute or relative to the gfsh working directory (--dir=).";
+  public static final String START_LOCATOR__PROPERTIES__HELP = "The geode.properties file for configuring the Locator's distributed system. The file's path can be absolute or relative to the gfsh working directory (--dir=).";
   public static final String START_LOCATOR__SECURITY_PROPERTIES = "security-properties-file";
   public static final String START_LOCATOR__SECURITY_PROPERTIES__HELP = "The gfsecurity.properties file for configuring the Locator's security configuration in the distributed system. The file's path can be absolute or relative to gfsh directory (--dir=).";
   public static final String START_LOCATOR__INITIALHEAP = "initial-heap";
@@ -1648,7 +1646,7 @@ public class CliStrings {
   public static final String START_LOCATOR__MAXHEAP__HELP = "Maximum size of the heap in the same format as the JVM -Xmx parameter.";
   public static final String START_LOCATOR__GENERAL_ERROR_MESSAGE = "An error occurred while attempting to start a Locator in %1$s on %2$s: %3$s";
   public static final String START_LOCATOR__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE = "The Locator process terminated unexpectedly with exit status %1$d. Please refer to the log file in %2$s for full details.%n%n%3$s";
-  public static final String START_LOCATOR__RUN_MESSAGE = "Starting a GemFire Locator in %1$s...";
+  public static final String START_LOCATOR__RUN_MESSAGE = "Starting a Geode Locator in %1$s...";
   public static final String START_LOCATOR__MSG__COULD_NOT_CREATE_DIRECTORY_0_VERIFY_PERMISSIONS = "Could not create directory {0}. Please verify directory path or user permissions.";
   public static final String START_LOCATOR__CONNECT = "connect";
   public static final String START_LOCATOR__CONNECT__HELP = "When connect is set to false , Gfsh does not automatically connect to the locator which is started using this command.";
@@ -1679,14 +1677,14 @@ public class CliStrings {
   public static final String START_MANAGER__MAXHEAP__HELP = "Maximum size of the heap in the same format as the JVM -Xmx parameter.";
   public static final String START_MANAGER__INITIALHEAP = "initial-heap";
   public static final String START_MANAGER__INITIALHEAP__HELP = "Initial size of the heap in the same format as the JVM -Xms parameter.";
-  public static final String START_MANAGER__GEMFIREPROPS = "G";
-  public static final String START_MANAGER__GEMFIREPROPS__HELP = "GemFire property passed as a <name>=<value> pair.";
+  public static final String START_MANAGER__GEODEPROPS = "G";
+  public static final String START_MANAGER__GEODEPROPS__HELP = "Geode property passed as a <name>=<value> pair.";
   public static final String START_MANAGER__J = "J";
   public static final String START_MANAGER__J__HELP = "Argument passed to the JVM on which the Locator will run. For example, --J=-Dfoo.bar=true will set the property \"foo.bar\" to \"true\".";
 
   /* 'start server' command */
   public static final String START_SERVER = "start server";
-  public static final String START_SERVER__HELP = "Start a GemFire Cache Server.";
+  public static final String START_SERVER__HELP = "Start a Geode Cache Server.";
   public static final String START_SERVER__ASSIGN_BUCKETS = "assign-buckets";
   public static final String START_SERVER__ASSIGN_BUCKETS__HELP = "Whether to assign buckets to the partitioned regions of the cache on server start.";
   public static final String START_SERVER__BIND_ADDRESS = "bind-address";
@@ -1702,7 +1700,7 @@ public class CliStrings {
   public static final String START_SERVER__DISABLE_EXIT_WHEN_OUT_OF_MEMORY = "disable-exit-when-out-of-memory";
   public static final String START_SERVER__DISABLE_EXIT_WHEN_OUT_OF_MEMORY_HELP = "Prevents the JVM from exiting when an OutOfMemoryError occurs.";
   public static final String START_SERVER__ENABLE_TIME_STATISTICS = ENABLE_TIME_STATISTICS;
-  public static final String START_SERVER__ENABLE_TIME_STATISTICS__HELP = "Causes additional time-based statistics to be gathered for GemFire operations.";
+  public static final String START_SERVER__ENABLE_TIME_STATISTICS__HELP = "Causes additional time-based statistics to be gathered for Geode operations.";
   public static final String START_SERVER__FORCE = "force";
   public static final String START_SERVER__FORCE__HELP = "Whether to allow the PID file from a previous Cache Server run to be overwritten.";
   public static final String START_SERVER__GROUP = "group";
@@ -1714,9 +1712,9 @@ public class CliStrings {
   public static final String START_SERVER__J = "J";
   public static final String START_SERVER__J__HELP = "Argument passed to the JVM on which the server will run. For example, --J=-Dfoo.bar=true will set the system property \"foo.bar\" to \"true\".";
   public static final String START_SERVER__LOCATORS = LOCATORS;
-  public static final String START_SERVER__LOCATORS__HELP = "Sets the list of Locators used by the Cache Server to join the appropriate GemFire cluster.";
+  public static final String START_SERVER__LOCATORS__HELP = "Sets the list of Locators used by the Cache Server to join the appropriate Geode cluster.";
   public static final String START_SERVER__LOCK_MEMORY = ConfigurationProperties.LOCK_MEMORY;
-  public static final String START_SERVER__LOCK_MEMORY__HELP = "Causes GemFire to lock heap and off-heap memory pages into RAM. This prevents the operating system from swapping the pages out to disk, which can cause severe performance degradation. When you use this option, also configure the operating system limits for locked memory.";
+  public static final String START_SERVER__LOCK_MEMORY__HELP = "Causes Geode to lock heap and off-heap memory pages into RAM. This prevents the operating system from swapping the pages out to disk, which can cause severe performance degradation. When you use this option, also configure the operating system limits for locked memory.";
   public static final String START_SERVER__LOCATOR_WAIT_TIME = "locator-wait-time";
   public static final String START_SERVER__LOCATOR_WAIT_TIME_HELP = "Sets the number of seconds the server will wait for a locator to become available during startup before giving up.";
   public static final String START_SERVER__LOG_LEVEL = LOG_LEVEL;
@@ -1724,38 +1722,38 @@ public class CliStrings {
   public static final String START_SERVER__MAXHEAP = "max-heap";
   public static final String START_SERVER__MAXHEAP__HELP = "Maximum size of the heap in the same format as the JVM -Xmx parameter.";
   public static final String START_SERVER__MCAST_ADDRESS = MCAST_ADDRESS;
-  public static final String START_SERVER__MCAST_ADDRESS__HELP = "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Cache Server can communicate with other members in the GemFire cluster.  If mcast-port is zero, then mcast-address is ignored.";
+  public static final String START_SERVER__MCAST_ADDRESS__HELP = "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Cache Server can communicate with other members in the Geode cluster.  If mcast-port is zero, then mcast-address is ignored.";
   public static final String START_SERVER__MCAST_PORT = MCAST_PORT;
-  public static final String START_SERVER__MCAST_PORT__HELP = "Sets the port used for multi-cast networking so the Cache Server can communicate with other members of the GemFire cluster.  A zero value disables mcast.";
+  public static final String START_SERVER__MCAST_PORT__HELP = "Sets the port used for multi-cast networking so the Cache Server can communicate with other members of the Geode cluster.  A zero value disables mcast.";
   public static final String START_SERVER__NAME = "name";
-  public static final String START_SERVER__NAME__HELP = "The member name to give this Cache Server in the GemFire cluster.";
+  public static final String START_SERVER__NAME__HELP = "The member name to give this Cache Server in the Geode cluster.";
   public static final String START_SERVER__MEMCACHED_PORT = MEMCACHED_PORT;
-  public static final String START_SERVER__MEMCACHED_PORT__HELP = "Sets the port that the GemFire memcached service listens on for memcached clients.";
+  public static final String START_SERVER__MEMCACHED_PORT__HELP = "Sets the port that the Geode memcached service listens on for memcached clients.";
   public static final String START_SERVER__MEMCACHED_PROTOCOL = MEMCACHED_PROTOCOL;
-  public static final String START_SERVER__MEMCACHED_PROTOCOL__HELP = "Sets the protocol that the GemFire memcached service uses (ASCII or BINARY).";
+  public static final String START_SERVER__MEMCACHED_PROTOCOL__HELP = "Sets the protocol that the Geode memcached service uses (ASCII or BINARY).";
   public static final String START_SERVER__MEMCACHED_BIND_ADDRESS = MEMCACHED_BIND_ADDRESS;
-  public static final String START_SERVER__MEMCACHED_BIND_ADDRESS__HELP = "Sets the IP address the GemFire memcached service listens on for memcached clients. The default is to bind to the first non-loopback address for this machine.";
+  public static final String START_SERVER__MEMCACHED_BIND_ADDRESS__HELP = "Sets the IP address the Geode memcached service listens on for memcached clients. The default is to bind to the first non-loopback address for this machine.";
   public static final String START_SERVER__OFF_HEAP_MEMORY_SIZE = ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
   public static final String START_SERVER__OFF_HEAP_MEMORY_SIZE__HELP = "The total size of off-heap memory specified as off-heap-memory-size=<n>[g|m]. <n> is the size. [g|m] indicates whether the size should be interpreted as gigabytes or megabytes. A non-zero size causes that much memory to be allocated from the operating system and reserved for off-heap use.";
   public static final String START_SERVER__PROPERTIES = "properties-file";
-  public static final String START_SERVER__PROPERTIES__HELP = "The gemfire.properties file for configuring the Cache Server's distributed system. The file's path can be absolute or relative to the gfsh working directory.";
+  public static final String START_SERVER__PROPERTIES__HELP = "The geode.properties file for configuring the Cache Server's distributed system. The file's path can be absolute or relative to the gfsh working directory.";
   public static final String START_SERVER__REDIS_PORT = ConfigurationProperties.REDIS_PORT;
-  public static final String START_SERVER__REDIS_PORT__HELP = "Sets the port that the GemFire Redis service listens on for Redis clients.";
+  public static final String START_SERVER__REDIS_PORT__HELP = "Sets the port that the Geode Redis service listens on for Redis clients.";
   public static final String START_SERVER__REDIS_BIND_ADDRESS = ConfigurationProperties.REDIS_BIND_ADDRESS;
-  public static final String START_SERVER__REDIS_BIND_ADDRESS__HELP = "Sets the IP address the GemFire Redis service listens on for Redis clients. The default is to bind to the first non-loopback address for this machine.";
+  public static final String START_SERVER__REDIS_BIND_ADDRESS__HELP = "Sets the IP address the Geode Redis service listens on for Redis clients. The default is to bind to the first non-loopback address for this machine.";
   public static final String START_SERVER__REDIS_PASSWORD = ConfigurationProperties.REDIS_PASSWORD;
-  public static final String START_SERVER__REDIS_PASSWORD__HELP = "Sets the authentication password for GemFireRedisServer";
+  public static final String START_SERVER__REDIS_PASSWORD__HELP = "Sets the authentication password for GeodeRedisServer";
   public static final String START_SERVER__SECURITY_PROPERTIES = "security-properties-file";
   public static final String START_SERVER__SECURITY_PROPERTIES__HELP = "The gfsecurity.properties file for configuring the Server's security configuration in the distributed system. The file's path can be absolute or relative to gfsh directory.";
   public static final String START_SERVER__REBALANCE = "rebalance";
-  public static final String START_SERVER__REBALANCE__HELP = "Whether to initiate rebalancing across the GemFire cluster.";
+  public static final String START_SERVER__REBALANCE__HELP = "Whether to initiate rebalancing across the Geode cluster.";
   public static final String START_SERVER__SERVER_BIND_ADDRESS = SERVER_BIND_ADDRESS;
   public static final String START_SERVER__SERVER_BIND_ADDRESS__HELP = "The IP address that this distributed system's server sockets in a client-server topology will be bound. If set to an empty string then all of the local machine's addresses will be listened on.";
   public static final String START_SERVER__SERVER_PORT = "server-port";
   public static final String START_SERVER__SERVER_PORT__HELP = "The port that the distributed system's server sockets in a client-server topology will listen on.  The default server-port is "
       + CacheServer.DEFAULT_PORT + ".";
   public static final String START_SERVER__SPRING_XML_LOCATION = "spring-xml-location";
-  public static final String START_SERVER__SPRING_XML_LOCATION_HELP = "Specifies the location of a Spring XML configuration file(s) for bootstrapping and configuring a GemFire Server.";
+  public static final String START_SERVER__SPRING_XML_LOCATION_HELP = "Specifies the location of a Spring XML configuration file(s) for bootstrapping and configuring a Geode Server.";
   public static final String START_SERVER__STATISTIC_ARCHIVE_FILE = STATISTIC_ARCHIVE_FILE;
   public static final String START_SERVER__STATISTIC_ARCHIVE_FILE__HELP = "The file that statistic samples are written to.  An empty string (default) disables statistic archival.";
   // public static final String START_SERVER__START_LOCATOR = "start-locator";
@@ -1763,9 +1761,9 @@ public class CliStrings {
   // "To start embedded Locator with given endpoints in the format: host[port]. If no endpoints are given defaults (localhost[10334]) are assumed.";
   public static final String START_SERVER__USE_CLUSTER_CONFIGURATION = USE_CLUSTER_CONFIGURATION;
   public static final String START_SERVER__USE_CLUSTER_CONFIGURATION__HELP = "When set to true, the server requests the configuration from locator's cluster configuration service.";
-  public static final String START_SERVER__GENERAL_ERROR_MESSAGE = "An error occurred while attempting to start a GemFire Cache Server: %1$s";
+  public static final String START_SERVER__GENERAL_ERROR_MESSAGE = "An error occurred while attempting to start a Geode Cache Server: %1$s";
   public static final String START_SERVER__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE = "The Cache Server process terminated unexpectedly with exit status %1$d. Please refer to the log file in %2$s for full details.%n%n%3$s";
-  public static final String START_SERVER__RUN_MESSAGE = "Starting a GemFire Server in %1$s...";
+  public static final String START_SERVER__RUN_MESSAGE = "Starting a Geode Server in %1$s...";
   public static final String START_SERVER__MSG__COULD_NOT_CREATE_DIRECTORY_0_VERIFY_PERMISSIONS = "Could not create directory {0}. Please verify directory path or user permissions.";
   
   public static final String START_SERVER__CRITICAL__HEAP__PERCENTAGE = "critical-heap-percentage";
@@ -1826,14 +1824,14 @@ public class CliStrings {
   public static final String START_VSD__FILE__HELP = "File or directory from which to read the statistics archive(s).";
   public static final String START_VSD__ERROR_MESSAGE = "An error occurred while launching VSD - %1$s";
   public static final String START_VSD__HELP = "Start VSD in a separate process.";
-  public static final String START_VSD__NOT_FOUND_ERROR_MESSAGE = "The location of VSD could not be found.  Please ensure VSD was properly installed under GemFire home (%1$s).";
-  public static final String START_VSD__RUN = "Launched GemFire Visual Statistics Display (VSD) (see GemFire log files for issues on start)";
+  public static final String START_VSD__NOT_FOUND_ERROR_MESSAGE = "The location of VSD could not be found.  Please ensure VSD was properly installed under Geode home (%1$s).";
+  public static final String START_VSD__RUN = "Launched Geode Visual Statistics Display (VSD) (see Geode log files for issues on start)";
 
   /* start databrowser command */
   public static final String START_DATABROWSER = "start data-browser";
   public static final String START_DATABROWSER__HELP = "Start Data Browser in a separate process.";
-  public static final String START_DATABROWSER__NOT_FOUND_ERROR_MESSAGE = "The location of DataBrowser could not be found.  Please ensure DataBrowser was properly installed under GemFire home (%1$s).";
-  public static final String START_DATABROWSER__RUN = "Launched GemFire DataBrowser (see GemFire log files for issues on start)";
+  public static final String START_DATABROWSER__NOT_FOUND_ERROR_MESSAGE = "The location of DataBrowser could not be found.  Please ensure DataBrowser was properly installed under Geode home (%1$s).";
+  public static final String START_DATABROWSER__RUN = "Launched Geode DataBrowser (see Geode log files for issues on start)";
   public static final String START_DATABROWSER__ERROR = "An error occurred while launching DataBrowser - %1$s";
 
   /* status gateway-receiver */
@@ -1862,7 +1860,7 @@ public class CliStrings {
   public static final String STATUS_LOCATOR__HOST = "host";
   public static final String STATUS_LOCATOR__HOST__HELP = "Hostname or IP address on which the Locator is running.";
   public static final String STATUS_LOCATOR__MEMBER = "name";
-  public static final String STATUS_LOCATOR__MEMBER__HELP = "Member name or ID of the Locator in the GemFire cluster.";
+  public static final String STATUS_LOCATOR__MEMBER__HELP = "Member name or ID of the Locator in the Geode cluster.";
   public static final String STATUS_LOCATOR__PID = "pid";
   public static final String STATUS_LOCATOR__PID__HELP = "Process ID (PID) of the running Locator.";
   public static final String STATUS_LOCATOR__PORT = "port";
@@ -1872,15 +1870,15 @@ public class CliStrings {
 
   /* 'status server' command */
   public static final String STATUS_SERVER = "status server";
-  public static final String STATUS_SERVER__HELP = "Display the status of a GemFire Cache Server.";
+  public static final String STATUS_SERVER__HELP = "Display the status of a Geode Cache Server.";
   public static final String STATUS_SERVER__DIR = "dir";
   public static final String STATUS_SERVER__DIR__HELP = "Working directory in which the Cache Server is running. The default is the current directory.";
-  public static final String STATUS_SERVER__GENERAL_ERROR_MESSAGE = "An error occurred while attempting to determine the status of GemFire Cache server: %1$s";
+  public static final String STATUS_SERVER__GENERAL_ERROR_MESSAGE = "An error occurred while attempting to determine the status of Geode Cache server: %1$s";
   public static final String STATUS_SERVER__MEMBER = "name";
-  public static final String STATUS_SERVER__MEMBER__HELP = "Member name or ID of the Cache Server in the GemFire cluster.";
-  public static final String STATUS_SERVER__NO_SERVER_FOUND_FOR_MEMBER_ERROR_MESSAGE = "No GemFire Cache Server with member name or ID {0} could be found.";
+  public static final String STATUS_SERVER__MEMBER__HELP = "Member name or ID of the Cache Server in the Geode cluster.";
+  public static final String STATUS_SERVER__NO_SERVER_FOUND_FOR_MEMBER_ERROR_MESSAGE = "No Geode Cache Server with member name or ID {0} could be found.";
   public static final String STATUS_SERVER__PID = "pid";
-  public static final String STATUS_SERVER__PID__HELP = "Process ID (PID) of the running GemFire Cache Server.";
+  public static final String STATUS_SERVER__PID__HELP = "Process ID (PID) of the running Geode Cache Server.";
 
   /* stop gateway-reciver */
   public static final String STOP_GATEWAYRECEIVER = "stop gateway-receiver";
@@ -1906,28 +1904,28 @@ public class CliStrings {
   public static final String STOP_LOCATOR__DIR = "dir";
   public static final String STOP_LOCATOR__DIR__HELP = "Working directory in which the Locator is running. The default is the current directory.";
   public static final String STOP_LOCATOR__MEMBER = "name";
-  public static final String STOP_LOCATOR__MEMBER__HELP = "Member name or ID of the Locator in the GemFire cluster.";
+  public static final String STOP_LOCATOR__MEMBER__HELP = "Member name or ID of the Locator in the Geode cluster.";
   public static final String STOP_LOCATOR__PID = "pid";
   public static final String STOP_LOCATOR__PID__HELP = "The process id (PID) of the running Locator.";
   public static final String STOP_LOCATOR__GENERAL_ERROR_MESSAGE = "An error occurred while attempting to stop a Locator: %1$s";
   public static final String STOP_LOCATOR__LOCATOR_IS_CACHE_SERVER_ERROR_MESSAGE = "The Locator identified by {0} is also a cache server and cannot be shutdown using 'stop locator'.  Please use 'stop server' instead.";
   public static final String STOP_LOCATOR__NO_LOCATOR_FOUND_FOR_MEMBER_ERROR_MESSAGE = "No Locator with member name or ID {0} could be found.";
-  public static final String STOP_LOCATOR__NOT_LOCATOR_ERROR_MESSAGE = "The GemFire member identified by {0} is not a Locator and cannot be shutdown using 'stop locator'.";
+  public static final String STOP_LOCATOR__NOT_LOCATOR_ERROR_MESSAGE = "The Geode member identified by {0} is not a Locator and cannot be shutdown using 'stop locator'.";
   public static final String STOP_LOCATOR__SHUTDOWN_MEMBER_MESSAGE = "Locator {0} has been requested to stop.";
   public static final String STOP_LOCATOR__STOPPING_LOCATOR_MESSAGE = "Stopping Locator running in %1$s on %2$s as %3$s...%nProcess ID: %4$d%nLog File: %5$s";
 
   /* 'stop server' command */
   public static final String STOP_SERVER = "stop server";
-  public static final String STOP_SERVER__HELP = "Stop a GemFire Cache Server.";
+  public static final String STOP_SERVER__HELP = "Stop a Geode Cache Server.";
   public static final String STOP_SERVER__DIR = "dir";
   public static final String STOP_SERVER__DIR__HELP = "Working directory in which the Cache Server is running. The default is the current directory.";
   public static final String STOP_SERVER__GENERAL_ERROR_MESSAGE = "An error occurred while attempting to stop a Cache Server: %1$s";
-  public static final String STOP_SERVER__MEMBER_IS_NOT_SERVER_ERROR_MESSAGE = "Attempting to stop a GemFire member that is not a Cache Server using 'stop server'; the operation is not permitted.";
+  public static final String STOP_SERVER__MEMBER_IS_NOT_SERVER_ERROR_MESSAGE = "Attempting to stop a Geode member that is not a Cache Server using 'stop server'; the operation is not permitted.";
   public static final String STOP_SERVER__MEMBER = "name";
-  public static final String STOP_SERVER__MEMBER__HELP = "Member name or ID of the Cache Server in the GemFire cluster.";
+  public static final String STOP_SERVER__MEMBER__HELP = "Member name or ID of the Cache Server in the Geode cluster.";
   public static final String STOP_SERVER__NO_SERVER_FOUND_FOR_MEMBER_ERROR_MESSAGE = "No Cache Server with member name or ID {0} could be found.";
   public static final String STOP_SERVER__PID = "pid";
-  public static final String STOP_SERVER__PID__HELP = "Process ID (PID) of the running GemFire Cache Server.";
+  public static final String STOP_SERVER__PID__HELP = "Process ID (PID) of the running Geode Cache Server.";
   public static final String STOP_SERVER__SHUTDOWN_MEMBER_MESSAGE = "Cache Server {0} has been requested to stop.";
   public static final String STOP_SERVER__STOPPING_SERVER_MESSAGE = "Stopping Cache Server running in %1$s on %2$s as %3$s...%nProcess ID: %4$d%nLog File: %5$s";
 
@@ -2151,7 +2149,7 @@ public class CliStrings {
   
   
   public static final String CONFIGURE_PDX = "configure pdx";
-  public static final String CONFIGURE_PDX__HELP = "Configures GemFire's Portable Data eXchange for all the cache(s) in the cluster. This command would not take effect on the running members in the system.\n This command persists the pdx configuration in the locator with cluster configuration service. \n This command should be issued before starting any data members.";
+  public static final String CONFIGURE_PDX__HELP = "Configures Geode's Portable Data eXchange for all the cache(s) in the cluster. This command would not take effect on the running members in the system.\n This command persists the pdx configuration in the locator with cluster configuration service. \n This command should be issued before starting any data members.";
   public static final String CONFIGURE_PDX__READ__SERIALIZED = "read-serialized";
   public static final String CONFIGURE_PDX__READ__SERIALIZED__HELP = "Set to true to have PDX deserialization produce a PdxInstance instead of an instance of the domain class";
   public static final String CONFIGURE_PDX__IGNORE__UNREAD_FIELDS = "ignore-unread-fields";

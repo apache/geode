@@ -121,7 +121,7 @@ public class ShellCommands implements CommandMarker {
   }
 
   @CliCommand(value = { CliStrings.CONNECT }, help = CliStrings.CONNECT__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEMFIRE_JMX, CliStrings.TOPIC_GEMFIRE_MANAGER })
+  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_MANAGER })
   public Result connect(
     @CliOption(key = { CliStrings.CONNECT__LOCATOR },
       unspecifiedDefaultValue = ConnectionEndpointConverter.DEFAULT_LOCATOR_ENDPOINTS,
@@ -478,7 +478,7 @@ public class ShellCommands implements CommandMarker {
       if (!StringUtils.isBlank(gfSecurityPropertiesPathToUse)) {
         // User specified gfSecurity properties doesn't exist
         if (!IOUtils.isExistingPathname(gfSecurityPropertiesPathToUse)) {
-          gfshInstance.printAsSevere(CliStrings.format(CliStrings.GEMFIRE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ", gfSecurityPropertiesPathToUse));
+          gfshInstance.printAsSevere(CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ", gfSecurityPropertiesPathToUse));
         }
         else {
           gfSecurityPropertiesUrl = new File(gfSecurityPropertiesPathToUse).toURI().toURL();
@@ -701,7 +701,7 @@ public class ShellCommands implements CommandMarker {
 
 
   @CliCommand(value = { CliStrings.DISCONNECT }, help = CliStrings.DISCONNECT__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEMFIRE_JMX, CliStrings.TOPIC_GEMFIRE_MANAGER })
+  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_MANAGER })
   public Result disconnect() {
     Result result = null;
 
@@ -736,7 +736,7 @@ public class ShellCommands implements CommandMarker {
 
 
   @CliCommand(value = { CliStrings.DESCRIBE_CONNECTION }, help = CliStrings.DESCRIBE_CONNECTION__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEMFIRE_JMX })
+  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_JMX })
   public Result describeConnection() {
     Result result = null;
     try {
@@ -831,7 +831,7 @@ public class ShellCommands implements CommandMarker {
 
   //Enable when "use region" command is required. See #46110
   //  @CliCommand(value = { CliStrings.USE_REGION }, help = CliStrings.USE_REGION__HELP)
-  //  @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEMFIRE_REGION})
+  //  @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_REGION})
   //  public Result useRegion(
   //      @CliArgument(name = CliStrings.USE_REGION__REGION,
   //                   unspecifiedDefaultValue = "/",
@@ -845,7 +845,7 @@ public class ShellCommands implements CommandMarker {
   //  }
 
   @CliCommand(value = { CliStrings.DEBUG }, help = CliStrings.DEBUG__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEMFIRE_DEBUG_UTIL })
+  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_DEBUG_UTIL })
   public Result debug(
     @CliOption(key = CliStrings.DEBUG__STATE,
       unspecifiedDefaultValue = "OFF",
@@ -1026,7 +1026,7 @@ public class ShellCommands implements CommandMarker {
 
 
   @CliCommand(value = CliStrings.ENCRYPT, help = CliStrings.ENCRYPT__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_DEBUG_UTIL })
+  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEODE_DEBUG_UTIL })
   public Result encryptPassword(
     @CliOption(key = CliStrings.ENCRYPT_STRING,
       help = CliStrings.ENCRYPT_STRING__HELP,

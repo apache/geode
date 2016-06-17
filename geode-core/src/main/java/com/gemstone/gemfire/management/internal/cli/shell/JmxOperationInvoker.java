@@ -184,7 +184,7 @@ public class JmxOperationInvoker implements OperationInvoker {
     if (!StringUtils.isBlank(gfSecurityPropertiesPathToUse)) {
       // User specified gfSecurity properties doesn't exist
       if (!IOUtils.isExistingPathname(gfSecurityPropertiesPathToUse)) {
-        gfshInstance.printAsSevere(CliStrings.format(CliStrings.GEMFIRE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ", gfSecurityPropertiesPathToUse));
+        gfshInstance.printAsSevere(CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ", gfSecurityPropertiesPathToUse));
       } else {
         gfSecurityPropertiesUrl = new File(gfSecurityPropertiesPathToUse).toURI().toURL();
       }

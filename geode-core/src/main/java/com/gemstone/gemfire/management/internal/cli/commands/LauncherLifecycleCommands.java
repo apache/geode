@@ -146,7 +146,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = CliStrings.START_LOCATOR, help = CliStrings.START_LOCATOR__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_LOCATOR, CliStrings.TOPIC_GEMFIRE_LIFECYCLE })
+  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE })
   public Result startLocator(
       @CliOption(key = CliStrings.START_LOCATOR__MEMBER_NAME,
           mandatory = true,
@@ -266,14 +266,14 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       gemfirePropertiesPathname = CliUtil.resolvePathname(gemfirePropertiesPathname);
 
       if (!StringUtils.isBlank(gemfirePropertiesPathname) && !IOUtils.isExistingPathname(gemfirePropertiesPathname)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(CliStrings.GEMFIRE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
+        return ResultBuilder.createUserErrorResult(CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
             StringUtils.EMPTY_STRING, gemfirePropertiesPathname));
       }
 
       gemfireSecurityPropertiesPathname = CliUtil.resolvePathname(gemfireSecurityPropertiesPathname);
 
       if (!StringUtils.isBlank(gemfireSecurityPropertiesPathname) && !IOUtils.isExistingPathname(gemfireSecurityPropertiesPathname)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(CliStrings.GEMFIRE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
+        return ResultBuilder.createUserErrorResult(CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
             "Security ", gemfireSecurityPropertiesPathname));
       }
 
@@ -714,7 +714,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = CliStrings.STATUS_LOCATOR, help = CliStrings.STATUS_LOCATOR__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_LOCATOR, CliStrings.TOPIC_GEMFIRE_LIFECYCLE })
+  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE })
   public Result statusLocator(@CliOption(key = CliStrings.STATUS_LOCATOR__MEMBER,
       optionContext = ConverterHint.LOCATOR_MEMBER_IDNAME,
       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -782,7 +782,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = CliStrings.STOP_LOCATOR, help = CliStrings.STOP_LOCATOR__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_LOCATOR, CliStrings.TOPIC_GEMFIRE_LIFECYCLE })
+  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE })
   @ResourceOperation(resource = OperationContext.Resource.CLUSTER, operation = OperationContext.OperationCode.MANAGE)
   public Result stopLocator(@CliOption(key = CliStrings.STOP_LOCATOR__MEMBER,
       optionContext = ConverterHint.LOCATOR_MEMBER_IDNAME,
@@ -1248,7 +1248,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = CliStrings.START_SERVER, help = CliStrings.START_SERVER__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_SERVER, CliStrings.TOPIC_GEMFIRE_LIFECYCLE })
+  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_LIFECYCLE })
   public Result startServer(@CliOption(key = CliStrings.START_SERVER__ASSIGN_BUCKETS,
       unspecifiedDefaultValue = "false",
       specifiedDefaultValue = "true",
@@ -1478,14 +1478,14 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       gemfirePropertiesPathname = CliUtil.resolvePathname(gemfirePropertiesPathname);
 
       if (!StringUtils.isBlank(gemfirePropertiesPathname) && !IOUtils.isExistingPathname(gemfirePropertiesPathname)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(CliStrings.GEMFIRE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
+        return ResultBuilder.createUserErrorResult(CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
             StringUtils.EMPTY_STRING, gemfirePropertiesPathname));
       }
 
       gemfireSecurityPropertiesPathname = CliUtil.resolvePathname(gemfireSecurityPropertiesPathname);
 
       if (!StringUtils.isBlank(gemfireSecurityPropertiesPathname) && !IOUtils.isExistingPathname(gemfireSecurityPropertiesPathname)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(CliStrings.GEMFIRE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
+        return ResultBuilder.createUserErrorResult(CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
             "Security ", gemfireSecurityPropertiesPathname));
       }
 
@@ -1804,7 +1804,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = CliStrings.STATUS_SERVER, help = CliStrings.STATUS_SERVER__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_SERVER, CliStrings.TOPIC_GEMFIRE_LIFECYCLE })
+  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_LIFECYCLE })
   public Result statusServer(@CliOption(key = CliStrings.STATUS_SERVER__MEMBER,
       optionContext = ConverterHint.MEMBERIDNAME,
       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -1866,7 +1866,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = CliStrings.STOP_SERVER, help = CliStrings.STOP_SERVER__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_SERVER, CliStrings.TOPIC_GEMFIRE_LIFECYCLE })
+  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_LIFECYCLE })
   @ResourceOperation(resource = OperationContext.Resource.CLUSTER, operation = OperationContext.OperationCode.MANAGE)
   public Result stopServer(@CliOption(key = CliStrings.STOP_SERVER__MEMBER,
       optionContext = ConverterHint.MEMBERIDNAME,
@@ -1954,7 +1954,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   }
 
   //@CliCommand(value=CliStrings.START_MANAGER, help=CliStrings.START_MANAGER__HELP)
-  //@CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GEMFIRE_MANAGER, CliStrings.TOPIC_GEMFIRE_JMX, CliStrings.TOPIC_GEMFIRE_LIFECYCLE})
+  //@CliMetaData(shellOnly=true, relatedTopic = {CliStrings.TOPIC_GEODE_MANAGER, CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_LIFECYCLE})
   public Result startManager(@CliOption(key = CliStrings.START_MANAGER__MEMBERNAME,
       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
       help = CliStrings.START_MANAGER__MEMBERNAME__HELP)
@@ -1987,15 +1987,15 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.START_MANAGER__J__HELP)
           Map<String, String> systepProps,
-      @CliOption(key = CliStrings.START_MANAGER__GEMFIREPROPS,
+      @CliOption(key = CliStrings.START_MANAGER__GEODEPROPS,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.START_MANAGER__GEMFIREPROPS__HELP)
+          help = CliStrings.START_MANAGER__GEODEPROPS__HELP)
           Map<String, String> gemfireProps) {
     return ResultBuilder.createInfoResult("Not-implemented");
   }
 
   @CliCommand(value = CliStrings.START_JCONSOLE, help = CliStrings.START_JCONSOLE__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_MANAGER, CliStrings.TOPIC_GEMFIRE_JMX, CliStrings.TOPIC_GEMFIRE_M_AND_M })
+  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEODE_MANAGER, CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_M_AND_M })
   public Result startJConsole(@CliOption(key = CliStrings.START_JCONSOLE__INTERVAL,
       unspecifiedDefaultValue = "4",
       help = CliStrings.START_JCONSOLE__INTERVAL__HELP)
@@ -2174,7 +2174,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = CliStrings.START_JVISUALVM, help = CliStrings.START_JVISUALVM__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_MANAGER, CliStrings.TOPIC_GEMFIRE_JMX, CliStrings.TOPIC_GEMFIRE_M_AND_M })
+  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEODE_MANAGER, CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_M_AND_M })
   public Result startJVisualVM(@CliOption(key = CliStrings.START_JCONSOLE__J,
       optionContext = ConverterHint.STRING_LIST,
       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -2254,7 +2254,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = CliStrings.START_PULSE, help = CliStrings.START_PULSE__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_MANAGER, CliStrings.TOPIC_GEMFIRE_JMX, CliStrings.TOPIC_GEMFIRE_M_AND_M })
+  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEODE_MANAGER, CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_M_AND_M })
   // TODO change url parameter type to URL when I figure out the Converter logic in Gfsh
   public Result startPulse(@CliOption(key = CliStrings.START_PULSE__URL,
       unspecifiedDefaultValue = "http://localhost:7070/pulse",
@@ -2336,13 +2336,13 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   }
 
   @CliCommand(value = CliStrings.START_VSD, help = CliStrings.START_VSD__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_M_AND_M, CliStrings.TOPIC_GEMFIRE_STATISTICS })
+  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEODE_M_AND_M, CliStrings.TOPIC_GEODE_STATISTICS })
   public Result startVsd(@CliOption(key = CliStrings.START_VSD__FILE, help = CliStrings.START_VSD__FILE__HELP)
   final String[] statisticsArchiveFilePathnames) {
     try {
       String gemfireHome = System.getenv("GEMFIRE");
 
-      assertState(!StringUtils.isBlank(gemfireHome), CliStrings.GEMFIRE_HOME_NOT_FOUND_ERROR_MESSAGE);
+      assertState(!StringUtils.isBlank(gemfireHome), CliStrings.GEODE_HOME_NOT_FOUND_ERROR_MESSAGE);
 
       assertState(IOUtils.isExistingPathname(getPathToVsd()), String.format(CliStrings.START_VSD__NOT_FOUND_ERROR_MESSAGE,
           gemfireHome));
@@ -2447,12 +2447,12 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   // NOTE as of 8.0, this command is no more!
   //@CliCommand(value=CliStrings.START_DATABROWSER, help=CliStrings.START_DATABROWSER__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEMFIRE_M_AND_M })
+  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEODE_M_AND_M })
   public Result startDataBrowser() {
     try {
       String gemfireHome = System.getenv("GEMFIRE");
 
-      assertState(!StringUtils.isBlank(gemfireHome), CliStrings.GEMFIRE_HOME_NOT_FOUND_ERROR_MESSAGE);
+      assertState(!StringUtils.isBlank(gemfireHome), CliStrings.GEODE_HOME_NOT_FOUND_ERROR_MESSAGE);
 
       if (isConnectedAndReady() && (getGfsh().getOperationInvoker() instanceof JmxOperationInvoker)) {
         String dataBrowserPath = getPathToDataBrowser();

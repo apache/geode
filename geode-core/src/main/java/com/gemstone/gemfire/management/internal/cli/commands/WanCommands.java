@@ -75,7 +75,7 @@ public class WanCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.CREATE_GATEWAYSENDER, help = CliStrings.CREATE_GATEWAYSENDER__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN, writesToSharedConfiguration=true)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN, writesToSharedConfiguration=true)
   @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result createGatewaySender(
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GROUP,
@@ -192,7 +192,7 @@ public class WanCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.START_GATEWAYSENDER, help = CliStrings.START_GATEWAYSENDER__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result startGatewaySender(
       @CliOption(key = CliStrings.START_GATEWAYSENDER__ID,
@@ -335,7 +335,7 @@ public class WanCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.PAUSE_GATEWAYSENDER, help = CliStrings.PAUSE_GATEWAYSENDER__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result pauseGatewaySender(
       @CliOption(key = CliStrings.PAUSE_GATEWAYSENDER__ID,
@@ -428,7 +428,7 @@ public class WanCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.RESUME_GATEWAYSENDER, help = CliStrings.RESUME_GATEWAYSENDER__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource=Resource.DATA, operation = OperationCode.MANAGE)
   public Result resumeGatewaySender(
       @CliOption(key = CliStrings.RESUME_GATEWAYSENDER__ID,
@@ -568,7 +568,7 @@ public class WanCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.STOP_GATEWAYSENDER, help = CliStrings.STOP_GATEWAYSENDER__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result stopGatewaySender(
       @CliOption(key = CliStrings.STOP_GATEWAYSENDER__ID,
@@ -644,7 +644,7 @@ public class WanCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.CREATE_GATEWAYRECEIVER, help = CliStrings.CREATE_GATEWAYRECEIVER__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation( resource=Resource.DATA, operation = OperationCode.MANAGE)
   public Result createGatewayReceiver(
       @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__GROUP,
@@ -724,7 +724,7 @@ public class WanCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.LOAD_BALANCE_GATEWAYSENDER, help = CliStrings.LOAD_BALANCE_GATEWAYSENDER__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result loadBalanceGatewaySender(
       @CliOption(key = CliStrings.LOAD_BALANCE_GATEWAYSENDER__ID,
@@ -790,7 +790,7 @@ public class WanCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.START_GATEWAYRECEIVER, help = CliStrings.START_GATEWAYRECEIVER__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result startGatewayReceiver(
       @CliOption(key = CliStrings.START_GATEWAYRECEIVER__GROUP,
@@ -852,7 +852,7 @@ public class WanCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.STOP_GATEWAYRECEIVER, help = CliStrings.STOP_GATEWAYRECEIVER__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result stopGatewayReceiver(
 
@@ -926,7 +926,7 @@ public class WanCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.LIST_GATEWAY, help = CliStrings.LIST_GATEWAY__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result listGateway(
       @CliOption(key = CliStrings.LIST_GATEWAY__MEMBER,
@@ -1017,7 +1017,7 @@ public class WanCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.STATUS_GATEWAYSENDER, help = CliStrings.STATUS_GATEWAYSENDER__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result statusGatewaySender(
       @CliOption(key = CliStrings.STATUS_GATEWAYSENDER__ID,
@@ -1084,7 +1084,7 @@ public class WanCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.STATUS_GATEWAYRECEIVER, help = CliStrings.STATUS_GATEWAYRECEIVER__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEMFIRE_WAN)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = Resource.CLUSTER, operation = OperationCode.READ)
   public Result statusGatewayReceiver(
       @CliOption(key = CliStrings.STATUS_GATEWAYRECEIVER__GROUP,

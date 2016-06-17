@@ -95,8 +95,9 @@ public class DataCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.REBALANCE, help = CliStrings.REBALANCE__HELP)
-  @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_DATA,
-      CliStrings.TOPIC_GEMFIRE_REGION })
+  @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEODE_DATA,
+      CliStrings.TOPIC_GEODE_REGION
+  })
   @ResourceOperation(resource = Resource.DATA, operation = OperationCode.MANAGE)
   public Result rebalance(
       @CliOption(key = CliStrings.REBALANCE__INCLUDEREGION, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.REBALANCE__INCLUDEREGION__HELP) String[] includeRegions,
@@ -833,8 +834,9 @@ public class DataCommands implements CommandMarker {
   
 
   @CliCommand(value = CliStrings.EXPORT_DATA, help = CliStrings.EXPORT_DATA__HELP)
-  @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_DATA,
-      CliStrings.TOPIC_GEMFIRE_REGION })
+  @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEODE_DATA,
+      CliStrings.TOPIC_GEODE_REGION
+  })
   public Result exportData(
       @CliOption(key = CliStrings.EXPORT_DATA__REGION, mandatory = true, optionContext = ConverterHint.REGIONPATH, help = CliStrings.EXPORT_DATA__REGION__HELP) String regionName,
       @CliOption(key = CliStrings.EXPORT_DATA__FILE, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, mandatory = true, help = CliStrings.EXPORT_DATA__FILE__HELP) String filePath,
@@ -846,10 +848,10 @@ public class DataCommands implements CommandMarker {
         .getDistributedMemberByNameOrId(memberNameOrId);
     Result result = null;
 
-    if (!filePath.endsWith(CliStrings.GEMFIRE_DATA_FILE_EXTENSION)) {
+    if (!filePath.endsWith(CliStrings.GEODE_DATA_FILE_EXTENSION)) {
       return ResultBuilder.createUserErrorResult(CliStrings.format(
           CliStrings.INVALID_FILE_EXTENTION,
-          CliStrings.GEMFIRE_DATA_FILE_EXTENSION));
+          CliStrings.GEODE_DATA_FILE_EXTENSION));
     }
     try {
       if (targetMember != null) {
@@ -889,8 +891,9 @@ public class DataCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.IMPORT_DATA, help = CliStrings.IMPORT_DATA__HELP)
-  @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEMFIRE_DATA,
-      CliStrings.TOPIC_GEMFIRE_REGION })
+  @CliMetaData(relatedTopic = { CliStrings.TOPIC_GEODE_DATA,
+      CliStrings.TOPIC_GEODE_REGION
+  })
   public Result importData(
       @CliOption(key = CliStrings.IMPORT_DATA__REGION, optionContext = ConverterHint.REGIONPATH, mandatory = true, help = CliStrings.IMPORT_DATA__REGION__HELP) String regionName,
       @CliOption(key = CliStrings.IMPORT_DATA__FILE, mandatory = true, unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, help = CliStrings.IMPORT_DATA__FILE__HELP) String filePath,
@@ -905,10 +908,10 @@ public class DataCommands implements CommandMarker {
       final DistributedMember targetMember = CliUtil
           .getDistributedMemberByNameOrId(memberNameOrId);
 
-      if (!filePath.endsWith(CliStrings.GEMFIRE_DATA_FILE_EXTENSION)) {
+      if (!filePath.endsWith(CliStrings.GEODE_DATA_FILE_EXTENSION)) {
         return ResultBuilder.createUserErrorResult(CliStrings.format(
             CliStrings.INVALID_FILE_EXTENTION,
-            CliStrings.GEMFIRE_DATA_FILE_EXTENSION));
+            CliStrings.GEODE_DATA_FILE_EXTENSION));
       }
       if (targetMember != null) {
         final String args[] = { regionName, filePath };
@@ -946,7 +949,8 @@ public class DataCommands implements CommandMarker {
   }
 
   @CliMetaData(shellOnly = false, relatedTopic = {
-      CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
+      CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION
+  })
   @CliCommand(value = { CliStrings.PUT }, help = CliStrings.PUT__HELP)
   public Result put(
       @CliOption(key = { CliStrings.PUT__KEY }, mandatory = true, help = CliStrings.PUT__KEY__HELP) String key,
@@ -1014,7 +1018,8 @@ public class DataCommands implements CommandMarker {
   }
 
   @CliMetaData(shellOnly = false, relatedTopic = {
-      CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
+      CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION
+  })
   @CliCommand(value = { CliStrings.GET }, help = CliStrings.GET__HELP)
   public Result get(
       @CliOption(key = { CliStrings.GET__KEY }, mandatory = true, help = CliStrings.GET__KEY__HELP) String key,
@@ -1069,7 +1074,8 @@ public class DataCommands implements CommandMarker {
   }
 
   @CliMetaData(shellOnly = false, relatedTopic = {
-      CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
+      CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION
+  })
   @CliCommand(value = { CliStrings.LOCATE_ENTRY }, help = CliStrings.LOCATE_ENTRY__HELP)
   public Result locateEntry(
       @CliOption(key = { CliStrings.LOCATE_ENTRY__KEY }, mandatory = true, help = CliStrings.LOCATE_ENTRY__KEY__HELP) String key,
@@ -1117,7 +1123,8 @@ public class DataCommands implements CommandMarker {
   }
 
   @CliMetaData(shellOnly = false, relatedTopic = {
-      CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
+      CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION
+  })
   @CliCommand(value = { CliStrings.REMOVE }, help = CliStrings.REMOVE__HELP)
   @ResourceOperation(resource=Resource.DATA, operation = OperationCode.MANAGE)
   public Result remove(
@@ -1170,7 +1177,8 @@ public class DataCommands implements CommandMarker {
   }
 
   @CliMetaData(shellOnly = false, relatedTopic = {
-      CliStrings.TOPIC_GEMFIRE_DATA, CliStrings.TOPIC_GEMFIRE_REGION })
+      CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION
+  })
   @MultiStepCommand
   @CliCommand(value = { CliStrings.QUERY }, help = CliStrings.QUERY__HELP)
   public Object query(

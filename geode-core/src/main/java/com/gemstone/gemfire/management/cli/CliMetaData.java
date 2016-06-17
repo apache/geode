@@ -22,7 +22,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.gemstone.gemfire.management.internal.cli.CliAroundInterceptor;
-import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 
 /**
  * An annotation to define additional meta-data for commands.
@@ -54,7 +53,7 @@ public @interface CliMetaData {
   boolean writesToSharedConfiguration() default false;
   
   /** In help, topics that are related to this command **/
-  String[] relatedTopic() default com.gemstone.gemfire.management.internal.cli.i18n.CliStrings.DEFAULT_TOPIC_GEMFIRE;
+  String[] relatedTopic() default com.gemstone.gemfire.management.internal.cli.i18n.CliStrings.DEFAULT_TOPIC_GEODE;
 
   /**
    * The fully qualified name of a class which implements the
