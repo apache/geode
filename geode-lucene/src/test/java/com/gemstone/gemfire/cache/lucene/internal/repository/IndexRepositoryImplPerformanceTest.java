@@ -196,7 +196,7 @@ public class IndexRepositoryImplPerformanceTest {
           }
         });
         
-        LuceneQueryResults<Object, Object> results = luceneQuery.search();
+        PageableLuceneQueryResults<Object, Object> results = luceneQuery.findPages();
         return results.size();
       }
     });

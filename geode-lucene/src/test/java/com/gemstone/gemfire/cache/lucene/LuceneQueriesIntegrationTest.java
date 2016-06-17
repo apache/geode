@@ -206,7 +206,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
 
     thrown.expect(LuceneQueryException.class);
-    query.search();
+    query.findPages();
   }
   
   private PdxInstance insertAJson(Region region, String key) {

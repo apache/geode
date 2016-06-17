@@ -32,7 +32,7 @@ import com.gemstone.gemfire.annotations.Experimental;
  * @param <V> The type of the value
  */
 @Experimental
-public interface LuceneQueryResults<K, V> {
+public interface PageableLuceneQueryResults<K, V> {
   /**
    * @return total number of hits for this query
    */

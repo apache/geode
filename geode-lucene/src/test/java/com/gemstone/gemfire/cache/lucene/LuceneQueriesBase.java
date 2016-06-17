@@ -150,7 +150,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
       LuceneService service = LuceneServiceProvider.get(cache);
       LuceneQuery<Integer, TestObject> query;
       query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "text:world", DEFAULT_FIELD);
-      LuceneQueryResults<Integer, TestObject> results = query.search();
+      PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
       assertEquals(3, results.size());
       List<LuceneResultStruct<Integer, TestObject>> page = results.getNextPage();
 
@@ -171,7 +171,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
       LuceneService service = LuceneServiceProvider.get(cache);
       LuceneQuery<Integer, TestObject> query;
       query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, queryString, defaultField);
-      LuceneQueryResults<Integer, TestObject> results = query.search();
+      PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
       assertEquals(results.size(), expectedResultsSize);
     });
   }

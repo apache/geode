@@ -24,18 +24,18 @@ import java.util.List;
 import java.util.Map;
 
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
+import com.gemstone.gemfire.cache.lucene.PageableLuceneQueryResults;
 import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.EntryScore;
 
 /**
- * Implementation of LuceneQueryResults that fetchs a page at a time
+ * Implementation of PageableLuceneQueryResults that fetchs a page at a time
  * from the server, given a set of EntryScores (key and score).
  *
  * @param <K> The type of the key
  * @param <V> The type of the value
  */
-public class LuceneQueryResultsImpl<K,V> implements LuceneQueryResults<K,V> {
+public class PageableLuceneQueryResultsImpl<K,V> implements PageableLuceneQueryResults<K,V> {
 
   /**
    *  list of docs matching search query
@@ -62,7 +62,7 @@ public class LuceneQueryResultsImpl<K,V> implements LuceneQueryResults<K,V> {
    */
   private int pageSize;
   
-  public LuceneQueryResultsImpl(List<EntryScore> hits, Region<K,V> userRegion, int pageSize) {
+  public PageableLuceneQueryResultsImpl(List<EntryScore> hits, Region<K,V> userRegion, int pageSize) {
     this.hits = hits;
     this.userRegion = userRegion;
     this.pageSize = pageSize == 0 ? Integer.MAX_VALUE : pageSize;

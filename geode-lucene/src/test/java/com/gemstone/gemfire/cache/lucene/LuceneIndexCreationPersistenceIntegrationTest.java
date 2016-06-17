@@ -24,16 +24,13 @@ import static junitparams.JUnitParamsRunner.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-
-import junit.framework.AssertionFailedError;
 
 import com.jayway.awaitility.Awaitility;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.apache.lucene.queryparser.classic.ParseException;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -112,7 +109,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
     LuceneQuery<Object, Object> query = luceneService.createLuceneQueryFactory()
       .create(INDEX_NAME, REGION_NAME,
         "field1:world", DEFAULT_FIELD);
-    assertEquals(1, query.search().size());
+    assertEquals(1, query.findPages().size());
   }
 
   @Test
@@ -130,7 +127,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
     LuceneQuery<Object, Object> query = luceneService.createLuceneQueryFactory()
       .create(INDEX_NAME, REGION_NAME,
       "field1:world", DEFAULT_FIELD);
-    assertEquals(1, query.search().size());
+    assertEquals(1, query.findPages().size());
   }
 
   @Test
@@ -166,7 +163,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
     LuceneQuery query = luceneService.createLuceneQueryFactory().create(indexName, regionName, queryString, defaultField);
     Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
       try {
-        assertEquals(size, query.search().size());
+        assertEquals(size, query.findPages().size());
       } catch(LuceneQueryException e) {
         throw new RuntimeException(e);
       }
