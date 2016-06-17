@@ -1148,12 +1148,9 @@ public abstract class AbstractDistributionConfig
   }
 
   public static final InetAddress _getDefaultMcastAddress() {
-    String ipLiteral;
-    if ( SocketCreator.preferIPv6Addresses() ) {
-      ipLiteral = "FF38::1234"; // fix for bug 30014
-    } else {
-      ipLiteral = "239.192.81.1"; // fix for bug 30014
-    }
+    //Default MCast address can be just IPv4 address.
+    //On IPv6 machines, JGroups converts IPv4 address to equivalent IPv6 address.
+    String ipLiteral = "239.192.81.1";
     try {
       return InetAddress.getByName(ipLiteral);
     } catch (UnknownHostException ex) {

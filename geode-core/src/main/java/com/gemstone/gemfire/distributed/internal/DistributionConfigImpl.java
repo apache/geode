@@ -280,7 +280,7 @@ public class DistributionConfigImpl
   protected boolean enableSharedConfiguration = DistributionConfig.DEFAULT_ENABLE_CLUSTER_CONFIGURATION;
   protected boolean useSharedConfiguration = DistributionConfig.DEFAULT_USE_CLUSTER_CONFIGURATION;
   protected boolean loadSharedConfigurationFromDir = DistributionConfig.DEFAULT_LOAD_CLUSTER_CONFIG_FROM_DIR;
-  protected String clusterConfigDir = DistributionConfig.DEFAULT_CLUSTER_CONFIGURATION_DIR;
+  protected String clusterConfigDir = "";
   
   
   private int httpServicePort = DEFAULT_HTTP_SERVICE_PORT;
