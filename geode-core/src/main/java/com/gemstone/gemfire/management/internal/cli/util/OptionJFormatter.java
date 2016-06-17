@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.management.internal.cli.util;
 
+/**
+ * Inserts quotes around the values of any --J options.
+ */
 public class OptionJFormatter {
 
   private static final String J_OPTION = "--J=";
@@ -27,6 +30,9 @@ public class OptionJFormatter {
   private String command;
   private StringBuilder formatted;
 
+  /**
+   * Returns command with quotes inserted around the values of any --J options.
+   */
   public String formatCommand(String command){
     if (!containsJopt(command)) {
       return command;
@@ -96,7 +102,10 @@ public class OptionJFormatter {
     return formatted.toString();
   }
 
-  public boolean containsJopt(String cmd){
+  /**
+   * Returns true if command contains any --J options.
+   */
+  boolean containsJopt(String cmd){
     if (cmd.contains("--J")){
       return true;
     }
