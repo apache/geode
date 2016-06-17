@@ -43,11 +43,11 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
   private boolean isBucketSorted = false;
   private int dispatcherThreads = 1;
   private OrderPolicy orderPolicy = OrderPolicy.KEY;
-  private boolean ignoreEvictionAndExpiration = true;
-  
+  private boolean forwardExpirationDestroy = false;
+
   public AsyncEventQueueCreation() {
   }
-  
+
   public AsyncEventQueueCreation(String id, GatewaySenderAttributes senderAttrs, AsyncEventListener eventListener) {
     this.id = id;
     this.batchSize = senderAttrs.batchSize;
@@ -64,9 +64,9 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
     this.isBucketSorted = senderAttrs.isBucketSorted;
     this.gatewayEventFilters = senderAttrs.eventFilters;
     this.gatewayEventSubstitutionFilter = senderAttrs.eventSubstitutionFilter;
-    this.ignoreEvictionAndExpiration = senderAttrs.ignoreEvictionAndExpiration;
+    this.forwardExpirationDestroy = senderAttrs.forwardExpirationDestroy;
   }
-  
+
   @Override
   public AsyncEventListener getAsyncEventListener() {
     return this.asyncEventListener;
@@ -215,12 +215,12 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
     this.isBucketSorted = isBucketSorted;
   }
 
-  public void setIgnoreEvictionAndExpiration(boolean ignore) {
-    this.ignoreEvictionAndExpiration = ignore;
+  public void setForwardExpirationDestroy(boolean forward) {
+    this.forwardExpirationDestroy = forward;
   }
-  
+
   @Override
-  public boolean isIgnoreEvictionAndExpiration() {
-    return this.ignoreEvictionAndExpiration;
+  public boolean isForwardExpirationDestroy() {
+    return this.forwardExpirationDestroy;
   }
 }

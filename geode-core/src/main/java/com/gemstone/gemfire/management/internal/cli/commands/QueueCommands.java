@@ -105,15 +105,15 @@ public class QueueCommands implements CommandMarker {
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS,
                  unspecifiedDefaultValue = "true",
                  specifiedDefaultValue = "true",
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS__HELP) 
+                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS__HELP)
       Boolean diskSynchronous,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__IGNORE_EVICTION_EXPIRATION,
-                 unspecifiedDefaultValue = "true",
-                 specifiedDefaultValue = "true",
-                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__IGNORE_EVICTION_EXPIRATION__HELP) 
+      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__FORWARD_EXPIRATION_DESTROY,
+                 unspecifiedDefaultValue = "false",
+                 specifiedDefaultValue = "false",
+                 help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__FORWARD_EXPIRATION_DESTROY__HELP)
       Boolean ignoreEvictionAndExpiration,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY,
-                 unspecifiedDefaultValue = "100", 
+                 unspecifiedDefaultValue = "100",
                  help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY__HELP)
       int maxQueueMemory,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISPATCHERTHREADS,
@@ -166,13 +166,13 @@ public class QueueCommands implements CommandMarker {
         return crex.getResult();
       }
 
-      AsyncEventQueueFunctionArgs aeqArgs = new AsyncEventQueueFunctionArgs(id, parallel, 
+      AsyncEventQueueFunctionArgs aeqArgs = new AsyncEventQueueFunctionArgs(id, parallel,
           enableBatchConflation, batchSize,batchTimeInterval,
-          persistent, diskStore, diskSynchronous, maxQueueMemory, dispatcherThreads, orderPolicy, 
-          gatewayEventFilters, gatewaySubstitutionListener, listener, listenerProperties, 
+          persistent, diskStore, diskSynchronous, maxQueueMemory, dispatcherThreads, orderPolicy,
+          gatewayEventFilters, gatewaySubstitutionListener, listener, listenerProperties,
           ignoreEvictionAndExpiration);
 
-      ResultCollector<?, ?> rc = CliUtil.executeFunction(new CreateAsyncEventQueueFunction(), 
+      ResultCollector<?, ?> rc = CliUtil.executeFunction(new CreateAsyncEventQueueFunction(),
           aeqArgs, targetMembers);
 
       List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());

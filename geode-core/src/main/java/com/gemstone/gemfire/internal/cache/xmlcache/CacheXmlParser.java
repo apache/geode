@@ -2312,16 +2312,16 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
                 .toLocalizedString(new Object[] { id, orderPolicy }));
       }
     }
-    
-    // forward eviction and expiration events.
-    String ignoreEvictionExpiration = atts.getValue(IGNORE_EVICTION_AND_EXPIRATION);
-    if (ignoreEvictionExpiration != null) {
-      asyncEventQueueCreation.setIgnoreEvictionAndExpiration(Boolean.parseBoolean(ignoreEvictionExpiration));
+
+    // forward expiration destroy events.
+    String forward = atts.getValue(FORWARD_EXPIRATION_DESTROY);
+    if (forward != null) {
+      asyncEventQueueCreation.setForwardExpirationDestroy(Boolean.parseBoolean(forward));
     }
-    
+
     stack.push(asyncEventQueueCreation);
   }
-  
+
   private void endAsyncEventListener() {
     Declarable d = createDeclarable();
     if (!(d instanceof AsyncEventListener)) {
@@ -2352,7 +2352,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     factory.setMaximumQueueMemory(asyncEventChannelCreation.getMaximumQueueMemory());
     factory.setDispatcherThreads(asyncEventChannelCreation.getDispatcherThreads());
     factory.setOrderPolicy(asyncEventChannelCreation.getOrderPolicy());
-    factory.setIgnoreEvictionAndExpiration(asyncEventChannelCreation.isIgnoreEvictionAndExpiration());
+    factory.setForwardExpirationDestroy(asyncEventChannelCreation.isForwardExpirationDestroy());
     List<GatewayEventFilter> gatewayEventFilters = asyncEventChannelCreation.getGatewayEventFilters();
     for (GatewayEventFilter gatewayEventFilter : gatewayEventFilters) {
       factory.addGatewayEventFilter(gatewayEventFilter);

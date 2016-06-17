@@ -171,19 +171,15 @@ public interface AsyncEventQueueFactory {
       GatewayEventSubstitutionFilter filter);
 
   /**
-   * Ignores the eviction and expiration events.
-   * By default its set to ignore eviction and expiration events (true), by
-   * setting it to false, the AEQ will receive destroy events due to eviction
-   * and expiration action.
-   * Note, setting this to false doesn't propagate invalidate events due to
-   * expiration action.
+   * Forwards destroy operations from expiration action to AsynEventQueue.
+   * By default the expiration destroy events are not added to AEQ, by
+   * setting this attribute to true adds destroy event to AEQ.
    *
-   * @param ignore 
-   *        boolean to indicate whether to ignore eviction and expiration events. 
+   * @param forward
+   *        boolean to indicate whether to forward expiration destroy events.
    */
-  public AsyncEventQueueFactory setIgnoreEvictionAndExpiration(boolean ignore);
+  public AsyncEventQueueFactory setForwardExpirationDestroy(boolean forward);
 
-  
   /**
    * Creates the <code>AsyncEventQueue</code>. It accepts Id of AsyncEventQueue
    * and instance of AsyncEventListener. Multiple queues can be created using

@@ -63,7 +63,7 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
 
     try {
       AsyncEventQueueFunctionArgs aeqArgs =  (AsyncEventQueueFunctionArgs)context.getArguments();
-      
+
       GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
 
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
@@ -82,7 +82,7 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
           .setPersistent(aeqArgs.isPersistent())
           .setDiskStoreName(aeqArgs.getDiskStoreName())
           .setDiskSynchronous(aeqArgs.isDiskSynchronous())
-          .setIgnoreEvictionAndExpiration(aeqArgs.isIgnoreEvictionAndExpiration())
+          .setForwardExpirationDestroy(aeqArgs.isForwardExpirationDestroy())
           .setMaximumQueueMemory(aeqArgs.getMaxQueueMemory())
           .setDispatcherThreads(aeqArgs.getDispatcherThreads())
           .setOrderPolicy(OrderPolicy.valueOf(aeqArgs.getOrderPolicy()));
@@ -94,13 +94,13 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
           asyncEventQueueFactory.addGatewayEventFilter((GatewayEventFilter) newInstance(gatewayEventFilterKlass, CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER));
         }
       }
-      
+
       String gatewaySubstitutionFilter = aeqArgs.getGatewaySubstitutionFilter();
       if (gatewaySubstitutionFilter != null) {
         Class<?> gatewayEventSubstitutionFilterKlass = forName(gatewaySubstitutionFilter, CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER);
         asyncEventQueueFactory.setGatewayEventSubstitutionListener((GatewayEventSubstitutionFilter<?,?>) newInstance(gatewayEventSubstitutionFilterKlass, CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER));
       }
-    
+
       String listenerClassName = aeqArgs.getListenerClassName();
       Object listenerInstance;
       Class<?> listenerClass = InternalDataSerializer.getCachedClass(listenerClassName);
@@ -111,7 +111,7 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
         if (!(listenerInstance instanceof Declarable)) {
           throw new IllegalArgumentException("Listener properties were provided, but the listener specified does not implement Declarable.");
         }
-        
+
         ((Declarable) listenerInstance).init(listenerProperties);
 
         Map<Declarable, Properties> declarablesMap = new HashMap<Declarable, Properties>();

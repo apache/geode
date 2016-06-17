@@ -757,8 +757,8 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   protected static final String ASYNC_EVENT_LISTENER = "async-event-listener";
   public static final String ASYNC_EVENT_QUEUE = "async-event-queue";
   protected static final String ASYNC_EVENT_QUEUE_IDS = "async-event-queue-ids";
-  protected static final String IGNORE_EVICTION_AND_EXPIRATION = "ignore-eviction-expiration";
-  
+  protected static final String FORWARD_EXPIRATION_DESTROY = "forward-expiration-destroy";
+
   /** The name of the <code>compressor</code> attribute */
   protected static final String COMPRESSOR = "compressor";
   /** The name of the <code>off-heap</code> attribute

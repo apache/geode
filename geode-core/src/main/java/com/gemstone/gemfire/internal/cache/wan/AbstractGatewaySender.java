@@ -137,9 +137,9 @@ public abstract class AbstractGatewaySender implements GatewaySender,
   protected List<GatewayTransportFilter> transFilters;
 
   protected List<AsyncEventListener> listeners;
-  
-  protected boolean ignoreEvictionAndExpiration;
-  
+
+  protected boolean forwardExpirationDestroy;
+
   protected GatewayEventSubstitutionFilter substitutionFilter;
   
   protected LocatorDiscoveryCallback locatorDiscoveryCallback;
@@ -272,9 +272,9 @@ public abstract class AbstractGatewaySender implements GatewaySender,
       initializeEventIdIndex();
     }
     this.isBucketSorted = attrs.isBucketSorted();
-    this.ignoreEvictionAndExpiration = attrs.isIgnoreEvictionAndExpiration();
+    this.forwardExpirationDestroy = attrs.isForwardExpirationDestroy();
   }
-  
+
   public GatewaySenderAdvisor getSenderAdvisor() {
     return senderAdvisor;
   }
@@ -346,11 +346,11 @@ public abstract class AbstractGatewaySender implements GatewaySender,
   public boolean hasListeners() {
     return !this.listeners.isEmpty();
   }
-  
-  public boolean isIgnoreEvictionAndExpiration() {
-    return this.ignoreEvictionAndExpiration;
+
+  public boolean isForwardExpirationDestroy() {
+    return this.forwardExpirationDestroy;
   }
-  
+
   public boolean isManualStart() {
     return this.manualStart;
   }
@@ -809,26 +809,23 @@ public abstract class AbstractGatewaySender implements GatewaySender,
     {
       return false;
     }
-    
-    // Eviction and expirations are not passed to WAN.
-    // Eviction and Expiration are passed to AEQ based on its configuration.
+    // Check for eviction and expiration events.
     if (event.getOperation().isLocal() || event.getOperation().isExpiration()) {
-      // Check if its AEQ and AEQ is configured to forward eviction/expiration events.
-      if (this.isAsyncEventQueue() && !this.isIgnoreEvictionAndExpiration()) {
+      // Check if its AEQ and is configured to forward expiration destroy events.
+      if (event.getOperation().isExpiration() && this.isAsyncEventQueue() && this.isForwardExpirationDestroy()) {
         return true;
       }
       return false;
     }
-    
     return true;
   }
-  
-  
+
+
   public void distribute(EnumListenerEvent operation, EntryEventImpl event,
       List<Integer> allRemoteDSIds) {
-    
+
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    
+
     // If this gateway is not running, return
     if (!isRunning()) {
       if (isDebugEnabled) {
@@ -836,20 +833,20 @@ public abstract class AbstractGatewaySender implements GatewaySender,
       }
       return;
     }
-    
+
     final GatewaySenderStats stats = getStatistics();
     stats.incEventsReceived();
-   
+
     if (!checkForDistribution(event, stats)) {
-      getStatistics().incEventsNotQueued();
+      stats.incEventsNotQueued();
       return;
     }
-    
+
     // this filter is defined by Asif which exist in old wan too. new wan has
     // other GatewaEventFilter. Do we need to get rid of this filter. Cheetah is
-    // not cinsidering this filter
+    // not considering this filter
     if (!this.filter.enqueueEvent(event)) {
-      getStatistics().incEventsFiltered();
+      stats.incEventsFiltered();
       return;
     }
     // released by this method or transfers ownership to TmpQueueEvent
@@ -861,7 +858,7 @@ public abstract class AbstractGatewaySender implements GatewaySender,
 
     setModifiedEventId(clonedEvent);
     Object callbackArg = clonedEvent.getRawCallbackArgument();
-    
+
     if (isDebugEnabled) {
       // We can't deserialize here for logging purposes so don't
       // call getNewValue.

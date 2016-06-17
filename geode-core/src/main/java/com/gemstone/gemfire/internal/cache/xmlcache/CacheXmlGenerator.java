@@ -1523,9 +1523,9 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
       // eviction and expiration events
       if (this.version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
-        if (generateDefaults() || asyncEventQueue.isIgnoreEvictionAndExpiration() != (GatewaySender.DEFAULT_IGNORE_EVICTION_EXPIRATION))
-          atts.addAttribute("", "", IGNORE_EVICTION_AND_EXPIRATION, "", String.valueOf(asyncEventQueue
-              .isIgnoreEvictionAndExpiration()));
+        if (generateDefaults() || asyncEventQueue.isForwardExpirationDestroy() != (GatewaySender.DEFAULT_FORWARD_EXPIRATION_DESTROY))
+          atts.addAttribute("", "", FORWARD_EXPIRATION_DESTROY, "", String.valueOf(asyncEventQueue
+              .isForwardExpirationDestroy()));
       }
       // disk-synchronous
       if (generateDefaults() || asyncEventQueue.isDiskSynchronous() != GatewaySender.DEFAULT_DISK_SYNCHRONOUS)

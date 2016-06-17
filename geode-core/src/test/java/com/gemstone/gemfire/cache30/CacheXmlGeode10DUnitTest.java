@@ -254,7 +254,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
 
   @SuppressWarnings("rawtypes")
   @Test
-  public void testAsyncEventQueueIsEnableEvictionAndExpirationAttribute() {
+  public void testAsyncEventQueueIsForwardExpirationDestroyAttribute() {
 
     final String regionName = "testAsyncEventQueueIsEnableEvictionAndExpirationAttribute";
 
@@ -262,22 +262,22 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     final CacheCreation cache = new CacheCreation();
     AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
 
-    
+
     AsyncEventListener listener = new MyAsyncEventListenerGeode10();
 
-    // Test for default ignoreEvictionAndExpiration attribute value (which is true)
-    String aeqId1 = "aeqWithDefaultIgnoreEE";
+    // Test for default forwardExpirationDestroy attribute value (which is false)
+    String aeqId1 = "aeqWithDefaultFED";
     factory.create(aeqId1,listener);
     AsyncEventQueue aeq1 = cache.getAsyncEventQueue(aeqId1);
-    assertTrue(aeq1.isIgnoreEvictionAndExpiration());
+    assertFalse(aeq1.isForwardExpirationDestroy());
 
-    // Test by setting ignoreEvictionAndExpiration attribute value.
-    String aeqId2 = "aeqWithIgnoreEEsetToFalse";
-    factory.setIgnoreEvictionAndExpiration(false);
+    // Test by setting forwardExpirationDestroy attribute value.
+    String aeqId2 = "aeqWithFEDsetToTrue";
+    factory.setForwardExpirationDestroy(true);
     factory.create(aeqId2,listener);
 
     AsyncEventQueue aeq2 = cache.getAsyncEventQueue(aeqId2);
-    assertFalse(aeq2.isIgnoreEvictionAndExpiration());
+    assertTrue(aeq2.isForwardExpirationDestroy());
 
     // Create region and set the AsyncEventQueue
     final RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
@@ -287,17 +287,16 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     assertNotNull(regionBefore);
     assertTrue(regionBefore.getAttributes().getAsyncEventQueueIds().size() == 1);
 
-
     testXml(cache);
 
     final Cache c = getCache();
     assertNotNull(c);
 
     aeq1 = c.getAsyncEventQueue(aeqId1);
-    assertTrue(aeq1.isIgnoreEvictionAndExpiration());
+    assertFalse(aeq1.isForwardExpirationDestroy());
 
     aeq2 = c.getAsyncEventQueue(aeqId2);
-    assertFalse(aeq2.isIgnoreEvictionAndExpiration());
+    assertTrue(aeq2.isForwardExpirationDestroy());
 
     final Region regionAfter = c.getRegion(regionName);
     assertNotNull(regionAfter);

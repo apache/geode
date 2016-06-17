@@ -200,9 +200,9 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
    public boolean isBucketSorted() {
     // TODO Auto-generated method stub
     return false;
-  }     
-   
-   public boolean isIgnoreEvictionAndExpiration() {
-     return ((AbstractGatewaySender)this.sender).isIgnoreEvictionAndExpiration();
+  }
+
+   public boolean isForwardExpirationDestroy() {
+     return ((AbstractGatewaySender)this.sender).isForwardExpirationDestroy();
    }
 }

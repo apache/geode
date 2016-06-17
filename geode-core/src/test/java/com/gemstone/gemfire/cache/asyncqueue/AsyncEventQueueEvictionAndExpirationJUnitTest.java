@@ -17,9 +17,14 @@
 package com.gemstone.gemfire.cache.asyncqueue;
 
 import com.gemstone.gemfire.cache.*;
+import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
+import com.gemstone.gemfire.internal.cache.LocalRegion;
+import com.gemstone.gemfire.internal.cache.PartitionedRegion;
+import com.gemstone.gemfire.internal.cache.wan.AbstractGatewaySender;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.jayway.awaitility.Awaitility;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,6 +37,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -41,12 +47,16 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
   
   private AsyncEventQueue aeq;
   private Cache cache;
+  private Region region;
+  String aeqId;
+  List<AsyncEvent> events = new ArrayList<AsyncEvent>();
   
   @Rule 
   public TestName name = new TestName();
   
   @Before
-  public void getCache() {
+  public void setup() {
+    events.clear();
     try {
        cache = CacheFactory.getAnyInstance();
     } catch (Exception e) {
@@ -55,10 +65,11 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
     if (null == cache) {
       cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
     }
+    aeqId = name.getMethodName();
   }
 
   @After
-  public void destroyCache() {
+  public void tearDown() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache = null;
@@ -67,19 +78,19 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
 
   
   @Test
-  public void isIgnoreEvictionAndExpirationAttributeTrueByDefault() {
+  public void isForwardExpirationDestroyAttributeFalseByDefault() {
     AsyncEventListener al = mock(AsyncEventListener.class);
     aeq = cache.createAsyncEventQueueFactory().create("aeq", al);
     // Test for default value of isIgnoreEvictionAndExpiration setting.
-    assertTrue(aeq.isIgnoreEvictionAndExpiration());
+    assertFalse(aeq.isForwardExpirationDestroy());
   }
   
   @Test
-  public void canSetFalseForIgnoreEvictionAndExpiration() {
+  public void canSetTrueForForwardExpirationDestroy() {
     AsyncEventListener al = mock(AsyncEventListener.class);
-    aeq = cache.createAsyncEventQueueFactory().setIgnoreEvictionAndExpiration(false).create("aeq", al);
+    aeq = cache.createAsyncEventQueueFactory().setForwardExpirationDestroy(true).create("aeq", al);
     // Test for default value of isIgnoreEvictionAndExpiration setting.
-    assertFalse(aeq.isIgnoreEvictionAndExpiration());
+    assertTrue(aeq.isForwardExpirationDestroy());
   }
   
   
@@ -87,182 +98,298 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
   public void evictionDestroyOpEventsNotPropogatedByDefault() {
     // For Replicated Region with eviction-destroy op.
     // Number of expected events 2. Two for create and none for eviction destroy.
-    createPopulateAndVerifyEvents(false /*isPR */, true /* ignoreEvictionExpiration */, 
-        2 /* expectedEvents */ , true /* eviction */, false /* evictionOverflow */, 
-        false /* expirationDestroy */, false /* expirationInvalidate */, 
-        false /* checkForDestroyOp */, false /* checkForInvalidateOp */);
+    createRegionAeqAndPopulate(false /*isPR */, false /* forwardExpirationDestroy */, 
+        true /* eviction */, false /* evictionOverflow */, 
+        false /* expirationDestroy */, false /* expirationInvalidate */);
+
+    // Wait for region to evict/expire events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(1, region.size()));
+
+    // Validate events that are not queued.
+    // This guarantees that eviction/expiration is performed and events are
+    // sent all the way to Gateway.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(1, getEventsNotQueuedSize(aeqId)));
+
+    // The AQListner should get expected events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+
   }
 
   @Test
   public void evictionDestroyOpEventsNotPropogatedByDefaultForPR() {
     // For PR with eviction-destroy op.
     // Number of expected events 2. Two for create and none for eviction destroy.
-    createPopulateAndVerifyEvents(true /*isPR */, true /* ignoreEvictionExpiration */, 
-        2 /* expectedEvents */ , true /* eviction */, false /* evictionOverflow */, 
-        false /* expirationDestroy */, false /* expirationInvalidate */, 
-        false /* checkForDestroyOp */, false /* checkForInvalidateOp */);
+    createRegionAeqAndPopulate(true /*isPR */, false /* forwardExpirationDestroy */, 
+        true /* eviction */, false /* evictionOverflow */,
+        false /* expirationDestroy */, false /* expirationInvalidate */);
+
+    // Wait for region to evict/expire events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(1, region.size()));
+
+   // Validate events that are not queued.
+   // This guarantees that eviction/expiration is performed and events are
+   // sent all the way to Gateway.
+   // In case of eviction one event is evicted that should not be queued.
+   Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(1, getEventsNotQueuedSize(aeqId)));
+
+   // The AQListner should get expected events.
+   Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+    
   }
 
   @Test
   public void expirationDestroyOpEventsNotPropogatedByDefault() {
     // For Replicated Region with expiration-destroy op.
     // Number of expected events 2. Two for create and none for eviction destroy.
-    createPopulateAndVerifyEvents(false /*isPR */, true /* ignoreEvictionExpiration */, 
-        2 /* expectedEvents */ , false /* eviction */, false /* evictionOverflow */, 
-        true /* expirationDestroy */, false /* expirationInvalidate */, 
-        false /* checkForDestroyOp */, false /* checkForInvalidateOp */);
+    createRegionAeqAndPopulate(false /*isPR */, false /* forwardExpirationDestroy */, 
+        false /* eviction */, false /* evictionOverflow */, 
+        true /* expirationDestroy */, false /* expirationInvalidate */);
+
+    // Wait for region to evict/expire events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(0, region.size()));
+
+    // Validate events that are not queued.
+    // This guarantees that eviction/expiration is performed and events are
+    // sent all the way to Gateway.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, getEventsNotQueuedSize(aeqId)));
+
+    // The AQListner should get expected events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+
   }
 
   @Test
   public void expirationDestroyOpEventsNotPropogatedByDefaultForPR() {
     // For PR with expiration-destroy op.
-    // Number of expected events 2. Two for create and none for eviction destroy.
-    createPopulateAndVerifyEvents(true /*isPR */, true /* ignoreEvictionExpiration */, 
-        2 /* expectedEvents */ , false /* eviction */, false /* evictionOverflow */, 
-        true /* expirationDestroy */, false /* expirationInvalidate */, 
-        false /* checkForDestroyOp */, false /* checkForInvalidateOp */);
+    // Number of expected events 2. Two for create and none for eviction destroy.    
+    createRegionAeqAndPopulate(true /*isPR */, false /* forwardExpirationDestroy */, 
+        false /* eviction */, false /* evictionOverflow */, 
+        true /* expirationDestroy */, false /* expirationInvalidate */);
+
+    // Wait for region to evict/expire events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(0, region.size()));
+
+    // Validate events that are not queued.
+    // This guarantees that eviction/expiration is performed and events are
+    // sent all the way to Gateway.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, getEventsNotQueuedSize(aeqId)));
+
+    // The AQListner should get expected events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+
   }
 
   @Test
   public void expirationInvalidOpEventsNotPropogatedByDefault() {
     // For Replicated Region with expiration-invalid op.
-    // Number of expected events 2. Two for create and none for eviction destroy.
-    createPopulateAndVerifyEvents(false /*isPR */, true /* ignoreEvictionExpiration */, 
-        2 /* expectedEvents */ , false /* eviction */, false /* evictionOverflow */, 
-        false /* expirationDestroy */, true /* expirationInvalidate */, 
-        false /* checkForDestroyOp */, false /* checkForInvalidateOp */);
+    // Number of expected events 2. Two for create and none for eviction destroy.    
+    createRegionAeqAndPopulate(false /*isPR */, false /* forwardExpirationDestroy */, 
+        false /* eviction */, false /* evictionOverflow */, 
+        false /* expirationDestroy */, true /* expirationInvalidate */);
+
+    LocalRegion lr = (LocalRegion)region;
+    // Wait for region to evict/expire events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, lr.getCachePerfStats().getInvalidates()));
+    // The AQListner should get expected events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+
+    
   }
 
   @Test
   public void expirationInvalidOpEventsNotPropogatedByDefaultForPR() {
     // For Replicated Region with expiration-invalid op.
     // Number of expected events 2. Two for create and none for eviction destroy.
-    createPopulateAndVerifyEvents(true /*isPR */, true /* ignoreEvictionExpiration */, 
-        2 /* expectedEvents */ , false /* eviction */, false /* evictionOverflow */, 
-        false /* expirationDestroy */, true /* expirationInvalidate */, 
-        false /* checkForDestroyOp */, false /* checkForInvalidateOp */);
+    createRegionAeqAndPopulate(true /*isPR */, false /* forwardExpirationDestroy */, 
+        false /* eviction */, false /* evictionOverflow */, 
+        false /* expirationDestroy */, true /* expirationInvalidate */);
+
+    LocalRegion lr = (LocalRegion)region;
+    // Wait for region to evict/expire events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, lr.getCachePerfStats().getInvalidates()));
+    // The AQListner should get expected events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
   }
   
   @Test
-  public void evictionPropogatedUsingIgnoreEvictionAndExpirationAttribute() {
+  public void evictionNotPropogatedUsingForwardExpirationDestroyAttribute() {
     // For Replicated Region with eviction-destroy op.
-    // Number of expected events 3. Two for create and One for eviction destroy.
-    createPopulateAndVerifyEvents(false /*isPR */, false /* ignoreEvictionExpiration */, 
-        3 /* expectedEvents */ , true /* eviction */, false /* evictionOverflow */, 
-        false /* expirationDestroy */, false /* expirationInvalidate */, 
-        true /* checkForDestroyOp */, false /* checkForInvalidateOp */);
+    // Number of expected events 2. Two for create and none for eviction destroy.
+    createRegionAeqAndPopulate(false /*isPR */, true /* forwardExpirationDestroy */, 
+        true /* eviction */, false /* evictionOverflow */, 
+        false /* expirationDestroy */, false /* expirationInvalidate */);
+
+    // Wait for region to evict/expire events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(1, region.size()));
+
+    // Validate events that are not queued.
+    // This guarantees that eviction/expiration is performed and events are
+    // sent all the way to Gateway.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(1, getEventsNotQueuedSize(aeqId)));
+
+    // The AQListner should get expected events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+
+    
   }
 
   @Test
-  public void evictionPropogatedUsingIgnoreEvictionAndExpirationAttributeForPR() {
+  public void evictionNotPropogatedUsingForwardExpirationDestroyAttributeForPR() {
     // For PR with eviction-destroy op.
-    // Number of expected events 3. Two for create and One for eviction destroy.
-    createPopulateAndVerifyEvents(true /*isPR */, false /* ignoreEvictionExpiration */, 
-        3 /* expectedEvents */ , true /* eviction */, false /* evictionOverflow */, 
-        false /* expirationDestroy */, false /* expirationInvalidate */, 
-        true /* checkForDestroyOp */, false /* checkForInvalidateOp */);
+    // Number of expected events 3. Two for create and none for eviction destroy.
+    createRegionAeqAndPopulate(true /*isPR */, true /* forwardExpirationDestroy */, 
+        true /* eviction */, false /* evictionOverflow */, 
+        false /* expirationDestroy */, false /* expirationInvalidate */);
+
+    // Wait for region to evict/expire events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(1, region.size()));
+
+    // Validate events that are not queued.
+    // This guarantees that eviction/expiration is performed and events are
+    // sent all the way to Gateway.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(1, getEventsNotQueuedSize(aeqId)));
+
+    // The AQListner should get expected events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+
+
   }
 
   @Test
-  public void overflowNotPropogatedUsingIgnoreEvictionAndExpirationAttribute() {
+  public void overflowNotPropogatedUsingForwardExpirationDestroyAttribute() {
     // For Replicated Region with eviction-overflow op.
     // Number of expected events 2. Two for create and non for eviction overflow.
-    createPopulateAndVerifyEvents(false /*isPR */, false /* ignoreEvictionExpiration */,  
-        2 /* expectedEvents */ , false /* eviction */, true /* evictionOverflow */, 
-        false /* expirationDestroy */, false /* expirationInvalidate */, 
-        false /* checkForDestroyOp */, false /* checkForInvalidateOp */);
+    createRegionAeqAndPopulate(false /*isPR */, true /* forwardExpirationDestroy */,  
+        false /* eviction */, true /* evictionOverflow */, 
+        false /* expirationDestroy */, false /* expirationInvalidate */);
+    
+    // Wait for region to evict/expire events.
+    LocalRegion lr = (LocalRegion)region;
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(1, lr.getDiskRegion().getStats().getNumOverflowOnDisk()));
+    // The AQListner should get expected events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
   }
 
   @Test
-  public void overflowNotPropogatedUsingIgnoreEvictionAndExpirationAttributeForPR() {
+  public void overflowNotPropogatedUsingForwardExpirationDestroyAttributeForPR() {
     // For PR with eviction-overflow op.
     // Number of expected events 2. Two for create and non for eviction overflow.
-    createPopulateAndVerifyEvents(true /*isPR */, false /* ignoreEvictionExpiration */,  
-        2 /* expectedEvents */ , false /* eviction */, true /* evictionOverflow */, 
-        false /* expirationDestroy */, false /* expirationInvalidate */, 
-        false /* checkForDestroyOp */, false /* checkForInvalidateOp */);
+    createRegionAeqAndPopulate(true /*isPR */, true /* forwardExpirationDestroy */,  
+        false /* eviction */, true /* evictionOverflow */, 
+        false /* expirationDestroy */, false /* expirationInvalidate */);
+    
+    // Wait for region to evict/expire events.
+    PartitionedRegion pr = (PartitionedRegion)region;
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(1, pr.getDiskRegionStats().getNumOverflowOnDisk()));
+    // The AQListner should get expected events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+
   }
 
   @Test
-  public void expirationDestroyPropogatedUsingIgnoreEvictionAndExpirationAttribute() {
+  public void expirationDestroyPropogatedUsingForwardExpirationDestroyAttribute() {
     // For Replicated Region with expiration-destroy op.
     // Number of expected events 4. Two for create and Two for expiration destroy.
-    createPopulateAndVerifyEvents(false /*isPR */, false /* ignoreEvictionExpiration */,  
-        4 /* expectedEvents */ , false /* eviction */, false /* evictionOverflow */, 
-        true /* expirationDestroy */, false /* expirationInvalidate */, 
-        true /* checkForDestroyOp */, false /* checkForInvalidateOp */);    
+    createRegionAeqAndPopulate(false /*isPR */, true /* forwardExpirationDestroy */,  
+        false /* eviction */, false /* evictionOverflow */, 
+        true /* expirationDestroy */, false /* expirationInvalidate */); 
+    
+    // Wait for region to evict/expire events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(0, region.size()));
+    
+    Awaitility.await().atMost(120, TimeUnit.SECONDS).until(() -> assertEquals(4, getEventsReceived(aeqId)));
+    
+    // The AQListner should get expected events.
+    Awaitility.await().atMost(120, TimeUnit.SECONDS).until(() -> assertEquals(4, events.size()));
+    
+    assertTrue("Expiration event not arrived", checkForOperation(events, false, true));
+        
   }
 
   @Test
-  public void expirationDestroyPropogatedUsingIgnoreEvictionAndExpirationAttributeForPR() {
+  public void expirationDestroyPropogatedUsingForwardExpirationDestroyAttributeForPR() {
     // For PR with expiration-destroy op.
     // Number of expected events 4. Two for create and Two for expiration destroy.
-    createPopulateAndVerifyEvents(true /*isPR */, false /* ignoreEvictionExpiration */,  
-        4 /* expectedEvents */ , false /* eviction */, false /* evictionOverflow */, 
-        true /* expirationDestroy */, false /* expirationInvalidate */, 
-        true /* checkForDestroyOp */, false /* checkForInvalidateOp */);    
+    createRegionAeqAndPopulate(true /*isPR */, true /* forwardExpirationDestroy */,  
+        false /* eviction */, false /* evictionOverflow */, 
+        true /* expirationDestroy */, false /* expirationInvalidate */); 
+    
+    // Wait for region to evict/expire events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(0, region.size()));
+    
+    Awaitility.await().atMost(120, TimeUnit.SECONDS).until(() -> assertEquals(4, getEventsReceived(aeqId)));
+    
+    // The AQListner should get expected events.
+    Awaitility.await().atMost(120, TimeUnit.SECONDS).until(() -> assertEquals(4, events.size()));
+    
+    assertTrue("Expiration event not arrived", checkForOperation(events, false, true));
+
   }
 
   @Test
-  public void expirationInvalidateNotPropogatedUsingIgnoreEvictionAndExpirationAttribute() {
+  public void expirationInvalidateNotPropogatedUsingForwardExpirationDestroyAttribute() {
     // For Replicated Region with expiration-invalidate op.
     // Currently invalidate event callbacks are not made to GateWay sender.
     // Invalidates are not sent to AEQ.
     // Number of expected events 2. None for expiration invalidate.
-    createPopulateAndVerifyEvents(false /*isPR */, false /* ignoreEvictionExpiration */,  
-        2 /* expectedEvents */ , false /* eviction */, false /* evictionOverflow */, 
-        false /* expirationDestroy */, true /* expirationInvalidate */, 
-        false /* checkForDestroyOp */, false /* checkForInvalidateOp */);
+    createRegionAeqAndPopulate(false /*isPR */, true /* forwardExpirationDestroy */,
+        false /* eviction */, false /* evictionOverflow */, 
+        false /* expirationDestroy */, true /* expirationInvalidate */);
+    
+ // Wait for region to evict/expire events.
+    LocalRegion lr = (LocalRegion)region;
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, lr.getCachePerfStats().getInvalidates()));
+    
+    // The AQListner should get expected events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+    
   }
 
   @Test
-  public void expirationInvalidateNotPropogatedUsingIgnoreEvictionAndExpirationAttributeForPR() {
+  public void expirationInvalidateNotPropogatedUsingForwardExpirationDestroyAttributeForPR() {
     // For PR with expiration-invalidate op.
     // Currently invalidate event callbacks are not made to GateWay sender.
     // Invalidates are not sent to AEQ.
     // Number of expected events 2. None for expiration invalidate.
-    createPopulateAndVerifyEvents(true /*isPR */, false /* ignoreEvictionExpiration */,  
-        2 /* expectedEvents */ , false /* eviction */, false /* evictionOverflow */, 
-        false /* expirationDestroy */, true /* expirationInvalidate */, 
-        false /* checkForDestroyOp */, false /* checkForInvalidateOp */);
+    createRegionAeqAndPopulate(true /*isPR */, true /* forwardExpirationDestroy */,
+        false /* eviction */, false /* evictionOverflow */, 
+        false /* expirationDestroy */, true /* expirationInvalidate */);
+    
+    // Wait for region to evict/expire events.
+    LocalRegion lr = (LocalRegion)region;
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, lr.getCachePerfStats().getInvalidates()));
+    
+    // The AQListner should get expected events.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+
   }
 
   
-  
-  private void createPopulateAndVerifyEvents(boolean isPR, boolean ignoreEvictionExpiration, int expectedEvents, boolean eviction, boolean evictionOverflow, 
-      boolean expirationDestroy, boolean expirationInvalidate, boolean checkForDestroyOp, boolean checkForInvalidateOp) {
-    
+
+  private void createRegionAeqAndPopulate(boolean isPR, boolean forwardExpirationDestroy, boolean eviction, boolean evictionOverflow, 
+      boolean expirationDestroy, boolean expirationInvalidate) {
     // String aeqId = "AEQTest";
     String aeqId = name.getMethodName();
-    
-    // To store AEQ events for validation.
-    List<AsyncEvent> events = new ArrayList<AsyncEvent>();
-    
-    // Create AEQ
-    createAsyncEventQueue(aeqId, ignoreEvictionExpiration, events);    
-    
-    // Create region with eviction/expiration
-    Region r = createRegion("ReplicatedRegionForAEQ", isPR, aeqId, eviction, evictionOverflow, expirationDestroy, expirationInvalidate);
-    
-    // Populate region with two entires.
-    r.put("Key-1", "Value-1");
-    r.put("Key-2", "Value-2");
-    
-    // The AQListner should get two events. One for create, one for destroy.
-    Awaitility.await().atMost(100, TimeUnit.SECONDS).until(() -> {return (events.size() == expectedEvents);});
-    
-    // Check for the expected operation.
-    if (checkForDestroyOp) {
-      assertTrue("Expiration event not arrived", checkForOperation(events, false, true));
-    }
 
-    if (checkForInvalidateOp) {
-      assertTrue("Invalidate event not arrived", checkForOperation(events, true, false));
-    }
+    // Create AEQ
+    createAsyncEventQueue(aeqId, forwardExpirationDestroy, events);
+
+    region = createRegion("ReplicatedRegionForAEQ", isPR, aeqId, eviction, evictionOverflow, expirationDestroy, expirationInvalidate);
     
-    // Test complete. Destroy region.
-    r.destroyRegion();
+    // Populate region with two entries.
+    region.put("Key-1", "Value-1");
+    region.put("Key-2", "Value-2");
+    
+    try {
+      Thread.sleep(2000);
+    } catch (Exception ex) {}
   }
+
+
+  private void waitForAEQEventsNotQueued() {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {return (getEventsNotQueuedSize(aeqId) >= 1);});
+  }
+  
 
   private boolean checkForOperation(List<AsyncEvent> events, boolean invalidate, boolean destroy) {
     boolean found = false;
@@ -278,11 +405,24 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
     }
     return found;
   }
+  
+  public int getEventsNotQueuedSize(String aeqId) {
+    AsyncEventQueueImpl aeq  = (AsyncEventQueueImpl)cache.getAsyncEventQueue(aeqId);
+    AbstractGatewaySender sender = (AbstractGatewaySender)aeq.getSender();
+    return sender.getStatistics().getEventsNotQueued();
+  }
 
-  private void createAsyncEventQueue(String id, boolean ignoreEvictionExpiration, List<AsyncEvent> storeEvents) {
+
+  public int getEventsReceived(String aeqId) {
+    AsyncEventQueueImpl aeq  = (AsyncEventQueueImpl)cache.getAsyncEventQueue(aeqId);
+    AbstractGatewaySender sender = (AbstractGatewaySender)aeq.getSender();
+    return sender.getStatistics().getEventsReceived();
+  }
+
+  private void createAsyncEventQueue(String id, boolean forwardExpirationDestroy, List<AsyncEvent> storeEvents) {
     AsyncEventListener al = this.createAsyncListener(storeEvents);
     aeq = cache.createAsyncEventQueueFactory().setParallel(false)
-        .setIgnoreEvictionAndExpiration(ignoreEvictionExpiration)
+        .setForwardExpirationDestroy(forwardExpirationDestroy)
         .setBatchSize(1).setBatchTimeInterval(1).create(id, al);
   }
   
@@ -318,16 +458,16 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
       
       @Override
       public void close() {
-        // TODO Auto-generated method stub
       }
 
       @Override
       public boolean processEvents(List<AsyncEvent> arg0) {
-        System.out.println("AEQ Listener.process()");
-        new Exception("Stack trace for AsyncEventQueue").printStackTrace();
-        // TODO Auto-generated method stub
-        aeList.addAll(arg0);
-        System.out.println("AEQ Event :" + arg0);
+        try {
+          synchronized(aeList) {
+            aeList.add(arg0.get(0));
+          }
+        } catch (Exception ex) {
+        }
         return true;
       }
     };

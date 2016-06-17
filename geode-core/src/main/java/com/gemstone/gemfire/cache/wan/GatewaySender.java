@@ -93,13 +93,13 @@ public interface GatewaySender {
       .getInteger(
           DistributionConfig.GEMFIRE_PREFIX + "cache.gatewaySender.defaultParallelismForReplicatedRegion",
           113).intValue();  
-  
+
   public static final int DEFAULT_DISTRIBUTED_SYSTEM_ID = -1;
 
   public static final int DEFAULT_DISPATCHER_THREADS = 5;
-  
-  public static final boolean DEFAULT_IGNORE_EVICTION_EXPIRATION = true;
-  
+
+  public static final boolean DEFAULT_FORWARD_EXPIRATION_DESTROY = false;
+
   public static final OrderPolicy DEFAULT_ORDER_POLICY = OrderPolicy.KEY;
   /**
    * The default maximum amount of memory (MB) to allow in the queue before

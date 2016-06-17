@@ -23,7 +23,7 @@ import java.util.Properties;
  * This class stores the arguments provided for create async event queue command.
  */
 public class AsyncEventQueueFunctionArgs implements Serializable {
-  
+
   private static final long serialVersionUID = -6524494645663740872L;
 
   private String asyncEventQueueId;
@@ -35,13 +35,13 @@ public class AsyncEventQueueFunctionArgs implements Serializable {
   private String diskStoreName;
   private boolean diskSynchronous;
   private int maxQueueMemory;
-  private int dispatcherThreads; 
+  private int dispatcherThreads;
   private String orderPolicy;
   private String[] gatewayEventFilters;
   private String gatewaySubstitutionFilter;
   private String listenerClassName;
   private Properties listenerProperties;
-  private boolean ignoreEvictionAndExpiration;
+  private boolean forwardExpirationDestroy;
 
   public AsyncEventQueueFunctionArgs(String asyncEventQueueId,
       boolean isParallel, boolean enableBatchConflation, int batchSize,
@@ -49,7 +49,7 @@ public class AsyncEventQueueFunctionArgs implements Serializable {
       boolean diskSynchronous, int maxQueueMemory, int dispatcherThreads,
       String orderPolicy, String[] gatewayEventFilters,
       String gatewaySubstitutionFilter, String listenerClassName,
-      Properties listenerProperties, boolean ignoreEvictionAndExpiration) {
+      Properties listenerProperties, boolean forwardExpirationDestroy) {
     this.asyncEventQueueId = asyncEventQueueId;
     this.isParallel = isParallel;
     this.enableBatchConflation = enableBatchConflation;
@@ -65,7 +65,7 @@ public class AsyncEventQueueFunctionArgs implements Serializable {
     this.gatewaySubstitutionFilter = gatewaySubstitutionFilter;
     this.listenerClassName = listenerClassName;
     this.listenerProperties = listenerProperties;
-    this.ignoreEvictionAndExpiration = ignoreEvictionAndExpiration;
+    this.forwardExpirationDestroy = forwardExpirationDestroy;
   }
 
   public String getAsyncEventQueueId() {
@@ -128,7 +128,7 @@ public class AsyncEventQueueFunctionArgs implements Serializable {
     return listenerProperties;
   }
 
-  public boolean isIgnoreEvictionAndExpiration() {
-    return ignoreEvictionAndExpiration;
+  public boolean isForwardExpirationDestroy() {
+    return forwardExpirationDestroy;
   }
 }

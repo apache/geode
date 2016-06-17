@@ -82,9 +82,9 @@ public class GatewaySenderAttributes {
   public boolean isBucketSorted = GatewaySenderAttributes.DEFAULT_IS_BUCKETSORTED;
   
   public boolean isMetaQueue = GatewaySenderAttributes.DEFAULT_IS_META_QUEUE;
-  
-  public boolean ignoreEvictionAndExpiration = GatewaySender.DEFAULT_IGNORE_EVICTION_EXPIRATION;
-  
+
+  public boolean forwardExpirationDestroy = GatewaySender.DEFAULT_FORWARD_EXPIRATION_DESTROY;
+
   public int getSocketBufferSize() {
     return this.socketBufferSize;
   }
@@ -194,9 +194,9 @@ public class GatewaySenderAttributes {
   public boolean isMetaQueue() {
     return this.isMetaQueue;
   }
-  
-  public boolean isIgnoreEvictionAndExpiration() {
-    return this.ignoreEvictionAndExpiration;
+
+  public boolean isForwardExpirationDestroy() {
+    return this.forwardExpirationDestroy;
   }
 
 }
