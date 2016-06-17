@@ -380,10 +380,7 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
     region.put("Key-1", "Value-1");
     region.put("Key-2", "Value-2");
     
-    try {
-      Thread.sleep(2000);
-    } catch (Exception ex) {}
-  }
+   }
 
 
   private void waitForAEQEventsNotQueued() {
