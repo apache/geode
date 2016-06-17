@@ -29,7 +29,7 @@ public interface LuceneQuery<K, V> {
   /**
    * Execute the search and get results. 
    */
-  public LuceneQueryResults<K, V> search() throws LuceneQueryException;
+  public PageableLuceneQueryResults<K, V> findPages() throws LuceneQueryException;
   
   /**
    * Get page size setting of current query. 

@@ -36,7 +36,7 @@ import com.gemstone.gemfire.cache.execute.FunctionAdapter;
 import com.gemstone.gemfire.cache.execute.FunctionContext;
 import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.lucene.LuceneIntegrationTest;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
+import com.gemstone.gemfire.cache.lucene.PageableLuceneQueryResults;
 import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunctionContext;
@@ -69,7 +69,7 @@ public class LuceneQueryImplIntegrationTest extends LuceneIntegrationTest {
 
     StringQueryProvider provider = new StringQueryProvider(null, DEFAULT_FIELD);
     LuceneQueryImpl<Object, Object> query = new LuceneQueryImpl<>("index", region, provider, null, LIMIT, 20);
-    LuceneQueryResults<Object, Object> results = query.search();
+    PageableLuceneQueryResults<Object, Object> results = query.findPages();
 
     assertTrue(function.wasInvoked);
     assertEquals(2f * LIMIT, results.getMaxScore(), 0.01);

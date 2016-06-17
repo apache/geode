@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import org.apache.logging.log4j.Logger;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
@@ -34,14 +32,12 @@ import com.gemstone.gemfire.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import com.gemstone.gemfire.cache.lucene.LuceneIndex;
 import com.gemstone.gemfire.cache.lucene.LuceneQuery;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
-import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
+import com.gemstone.gemfire.cache.lucene.PageableLuceneQueryResults;
 import com.gemstone.gemfire.cache.lucene.LuceneService;
 import com.gemstone.gemfire.cache.lucene.LuceneServiceProvider;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexForPartitionedRegion;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneServiceImpl;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
-import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.pdx.JSONFormatter;
 import com.gemstone.gemfire.pdx.PdxInstance;
 
@@ -94,7 +90,7 @@ public class LuceneTestUtilities {
   public static <K> void  verifyQueryKeys(LuceneQuery<K,Object> query,K ... expectedKeys) throws LuceneQueryException {
     Set<K> expectedKeySet = new HashSet<>(Arrays.asList(expectedKeys));
     Set<K> actualKeySet = new HashSet<>();
-    final LuceneQueryResults<K, Object> results = query.search();
+    final PageableLuceneQueryResults<K, Object> results = query.findPages();
     while(results.hasNextPage()) {
       results.getNextPage().stream()
         .forEach(struct -> actualKeySet.add(struct.getKey()));
@@ -107,7 +103,7 @@ public class LuceneTestUtilities {
    */
   public static <K> void verifyQueryKeyAndValues(LuceneQuery<K,Object> query, HashMap expectedResults) throws LuceneQueryException {
     HashMap actualResults = new HashMap<>();
-    final LuceneQueryResults<K, Object> results = query.search();
+    final PageableLuceneQueryResults<K, Object> results = query.findPages();
     while(results.hasNextPage()) {
       results.getNextPage().stream()
         .forEach(struct -> {

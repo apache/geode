@@ -39,7 +39,7 @@ import com.gemstone.gemfire.cache.lucene.internal.distributed.EntryScore;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class LuceneQueryResultsImplJUnitTest {
+public class PageableLuceneQueryResultsImplJUnitTest {
 
   private List<EntryScore> hits;
   private List<LuceneResultStruct> expected = new ArrayList<LuceneResultStruct>();
@@ -75,14 +75,14 @@ public class LuceneQueryResultsImplJUnitTest {
   public void testMaxStore() {
     hits.set(5, new EntryScore("key_5", 502));
     
-    LuceneQueryResultsImpl<String, String> results = new LuceneQueryResultsImpl<String, String>(hits, null, 5);
+    PageableLuceneQueryResultsImpl<String, String> results = new PageableLuceneQueryResultsImpl<String, String>(hits, null, 5);
     
     assertEquals(502, results.getMaxScore(), 0.1f);
   }
   
   @Test
   public void testPagination() {
-    LuceneQueryResultsImpl<String, String> results = new LuceneQueryResultsImpl<String, String>(hits, userRegion, 10);
+    PageableLuceneQueryResultsImpl<String, String> results = new PageableLuceneQueryResultsImpl<String, String>(hits, userRegion, 10);
     
     assertEquals(23, results.size());
     
@@ -106,7 +106,7 @@ public class LuceneQueryResultsImplJUnitTest {
   
   @Test
   public void testNoPagination() {
-    LuceneQueryResultsImpl<String, String> results = new LuceneQueryResultsImpl<String, String>(hits, userRegion, 0);
+    PageableLuceneQueryResultsImpl<String, String> results = new PageableLuceneQueryResultsImpl<String, String>(hits, userRegion, 0);
     
     assertEquals(23, results.size());
     
