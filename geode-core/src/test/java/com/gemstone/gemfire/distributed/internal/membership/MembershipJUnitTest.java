@@ -245,11 +245,12 @@ public class MembershipJUnitTest {
       // boot up a locator
       int port = AvailablePortHelper.getRandomAvailableTCPPort();
       InetAddress localHost = SocketCreator.getLocalHost();
-
+      Properties p = new Properties();
+      p.setProperty(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
       // this locator will hook itself up with the first MembershipManager
       // to be created
       l = InternalLocator.startLocator(port, new File(""), null,
-        null, null, localHost, false, new Properties(), true, false, null,
+        null, null, localHost, false, p, true, false, null,
         false);
 
       // create configuration objects
