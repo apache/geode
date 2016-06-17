@@ -32,6 +32,8 @@ import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.test.dunit.*;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -405,6 +407,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1563: JMX RMI (java.rmi.NoSuchObjectException: no such object in table)
   @Test
   public void testExecuteFunctionOnGroups() {
     Properties localProps = new Properties();
