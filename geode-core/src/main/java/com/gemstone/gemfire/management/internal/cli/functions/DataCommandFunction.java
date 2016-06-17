@@ -609,9 +609,12 @@ public class DataCommandFunction extends FunctionAdapter implements  InternalEnt
         valueObject = getClassObject(value,valueClass);
       }catch(ClassNotFoundException e){
         return DataCommandResult.createPutResult(key, null, null, "ClassNotFoundException " + valueClass, false); 
-      }      
-      
-      Object returnValue = region.put(keyObject,valueObject);
+      }
+      Object returnValue;
+      if (putIfAbsent && region.containsKey(keyObject))
+        returnValue = region.get(keyObject);
+      else
+        returnValue = region.put(keyObject,valueObject);
       Object array[] = getJSONForNonPrimitiveObject(returnValue);             
       DataCommandResult result = DataCommandResult.createPutResult(key, array[1], null, null, true);
       if(array[0]!=null)

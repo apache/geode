@@ -16,7 +16,32 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.IgnoredException.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.PartitionAttributes;
+import com.gemstone.gemfire.cache.PartitionAttributesFactory;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.cache.query.data.Portfolio;
 import com.gemstone.gemfire.cache.query.internal.CompiledValue;
@@ -32,7 +57,11 @@ import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.HeadlessGfsh;
 import com.gemstone.gemfire.management.internal.cli.domain.DataCommandRequest;
-import com.gemstone.gemfire.management.internal.cli.dto.*;
+import com.gemstone.gemfire.management.internal.cli.dto.Car;
+import com.gemstone.gemfire.management.internal.cli.dto.Key1;
+import com.gemstone.gemfire.management.internal.cli.dto.ObjectWithCharAttr;
+import com.gemstone.gemfire.management.internal.cli.dto.Value1;
+import com.gemstone.gemfire.management.internal.cli.dto.Value2;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonArray;
 import com.gemstone.gemfire.management.internal.cli.json.GfJsonException;
@@ -42,21 +71,17 @@ import com.gemstone.gemfire.management.internal.cli.result.CompositeResultData.S
 import com.gemstone.gemfire.management.internal.cli.result.ResultData;
 import com.gemstone.gemfire.management.internal.cli.result.TabularResultData;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.IgnoredException.addIgnoredException;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
  * Dunit class for testing gemfire data commands : get, put, remove, select, rebalance
@@ -815,7 +840,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     final VM vm1 = Host.getHost(0).getVM(1);
     final VM vm2 = Host.getHost(0).getVM(2);
 
-
+    // Seed the region with some keys
     SerializableRunnable putKeys = new SerializableRunnable() {
       @Override
       public void run() {
@@ -833,6 +858,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     };
     vm1.invoke(putKeys);
 
+    // Now try to replace all existing keys with new values to test --skip-if-exists.  Values should not be replaced if the key is present.
     for (int i = 0; i < COUNT; i++) {
       String command = "put";
       String key = keyPrefix + i;
@@ -844,20 +870,18 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       validateResult(cmdResult, true);
     }
 
+    // Verify that none of the values were replaced
     SerializableRunnable checkPutIfAbsentKeys = new SerializableRunnable() {
       @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion(DATA_REGION_NAME_PATH);
         assertNotNull(region);
-        for (int i = COUNT + 1; i < COUNT; i++) {
+        for (int i = 0; i < COUNT; i++) {
           String key = keyPrefix + i;
-          String notExpectedvalue = valuePrefix + i + i;
-          String expectedvalue = valuePrefix + i;
-          String value = (String) region.get(key);
-          assertNotNull(value);
-          assertEquals(value, expectedvalue);
-          if (value.equals(notExpectedvalue)) fail("Value is overriden even if put-If-absent was true");
+          String expected = valuePrefix + i;
+          String actual = (String) region.get(key);
+          assertEquals("--skip-if-exists=true failed to preserve value", expected, actual);
         }
       }
     };
