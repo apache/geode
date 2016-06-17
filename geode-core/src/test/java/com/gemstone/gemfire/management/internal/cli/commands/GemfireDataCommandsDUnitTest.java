@@ -1810,6 +1810,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1551: org.eclipse.jetty.io.EofException
   @Test
   public void testSimulateForEntireDS() {
     setupTestRebalanceForEntireDS();
