@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.gemstone.gemfire.management.internal.cli.commands;
 
 import org.junit.experimental.categories.Category;
@@ -43,7 +42,7 @@ import org.junit.runners.Suite;
   DeployCommandsDUnitTest.class,
   DiskStoreCommandsDUnitTest.class,
   FunctionCommandsDUnitTest.class,
-  GemfireDataCommandsDUnitTest.class,
+  //GemfireDataCommandsDUnitTest.class, restore when GEODE-1565 is fixed
   GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest.class,
   IndexCommandsDUnitTest.class,
   ListAndDescribeDiskStoreCommandsDUnitTest.class,
