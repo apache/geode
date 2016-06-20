@@ -21,7 +21,6 @@ package com.gemstone.gemfire.cache.lucene.test;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -100,8 +99,8 @@ public class LuceneTestUtilities {
   public static <K> void verifyQueryKeyAndValues(LuceneQuery<K,Object> query, HashMap expectedResults) throws LuceneQueryException {
     HashMap actualResults = new HashMap<>();
     final PageableLuceneQueryResults<K, Object> results = query.findPages();
-    while(results.hasNextPage()) {
-      results.getNextPage().stream()
+    while(results.hasNext()) {
+      results.next().stream()
         .forEach(struct -> {
           Object value = struct.getValue();
           if (value instanceof PdxInstance) {

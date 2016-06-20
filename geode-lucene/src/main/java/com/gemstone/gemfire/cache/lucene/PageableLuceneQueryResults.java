@@ -19,6 +19,7 @@
 
 package com.gemstone.gemfire.cache.lucene;
 
+import java.util.Iterator;
 import java.util.List;
 
 import com.gemstone.gemfire.annotations.Experimental;
@@ -32,7 +33,7 @@ import com.gemstone.gemfire.annotations.Experimental;
  * @param <V> The type of the value
  */
 @Experimental
-public interface PageableLuceneQueryResults<K, V> {
+public interface PageableLuceneQueryResults<K, V> extends Iterator<List<LuceneResultStruct<K,V>>> {
   /**
    * @return total number of hits for this query
    */
@@ -48,10 +49,10 @@ public interface PageableLuceneQueryResults<K, V> {
    * 
    * @return a page of results, or null if there are no more pages
    */
-  public List<LuceneResultStruct<K, V>> getNextPage();
+  public List<LuceneResultStruct<K, V>> next();
 
   /**
    *  True if there another page of results. 
    */
-  public boolean hasNextPage();
+  public boolean hasNext();
 }

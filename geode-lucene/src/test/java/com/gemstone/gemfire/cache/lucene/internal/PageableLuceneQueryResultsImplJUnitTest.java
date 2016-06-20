@@ -22,13 +22,17 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -36,10 +40,14 @@ import org.mockito.stubbing.Answer;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.EntryScore;
+import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntries;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class PageableLuceneQueryResultsImplJUnitTest {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   private List<EntryScore<String>> hits;
   private List<LuceneResultStruct> expected = new ArrayList<LuceneResultStruct>();
@@ -86,22 +94,23 @@ public class PageableLuceneQueryResultsImplJUnitTest {
     
     assertEquals(23, results.size());
     
-    assertTrue(results.hasNextPage());
+    assertTrue(results.hasNext());
     
-    List<LuceneResultStruct<String, String>> next  = results.getNextPage();
+    List<LuceneResultStruct<String, String>> next  = results.next();
     assertEquals(expected.subList(0, 10), next);
     
-    assertTrue(results.hasNextPage());
-    next  = results.getNextPage();
+    assertTrue(results.hasNext());
+    next  = results.next();
     assertEquals(expected.subList(10, 20), next);
     
-    assertTrue(results.hasNextPage());
-    next  = results.getNextPage();
+    assertTrue(results.hasNext());
+    next  = results.next();
     assertEquals(expected.subList(20, 23), next);
     
     
-    assertFalse(results.hasNextPage());
-    assertNull(results.getNextPage());
+    assertFalse(results.hasNext());
+    thrown.expect(NoSuchElementException.class);
+    results.next();
   }
   
   @Test
@@ -110,13 +119,24 @@ public class PageableLuceneQueryResultsImplJUnitTest {
     
     assertEquals(23, results.size());
     
-    assertTrue(results.hasNextPage());
+    assertTrue(results.hasNext());
     
-    List<LuceneResultStruct<String, String>> next  = results.getNextPage();
+    List<LuceneResultStruct<String, String>> next  = results.next();
     assertEquals(expected, next);
     
-    assertFalse(results.hasNextPage());
-    assertNull(results.getNextPage());
+    assertFalse(results.hasNext());
+    thrown.expect(NoSuchElementException.class);
+    results.next();
+  }
+
+  @Test
+  public void shouldThrowNoSuchElementExceptionFromNextWithNoMorePages() {
+    PageableLuceneQueryResultsImpl<String, String> results = new PageableLuceneQueryResultsImpl<>(
+      Collections.emptyList(), userRegion, 0);
+
+    assertFalse(results.hasNext());
+    thrown.expect(NoSuchElementException.class);
+    results.next();
   }
 
 }

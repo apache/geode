@@ -126,7 +126,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
       query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "text:world", DEFAULT_FIELD);
       PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
       assertEquals(3, results.size());
-      List<LuceneResultStruct<Integer, TestObject>> page = results.getNextPage();
+      List<LuceneResultStruct<Integer, TestObject>> page = results.next();
 
       Map<Integer, TestObject> data = new HashMap<Integer, TestObject>();
       for (LuceneResultStruct<Integer, TestObject> row : page) {

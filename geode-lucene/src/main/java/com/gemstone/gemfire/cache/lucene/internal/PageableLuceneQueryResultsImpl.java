@@ -22,6 +22,7 @@ package com.gemstone.gemfire.cache.lucene.internal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.lucene.PageableLuceneQueryResults;
@@ -69,9 +70,9 @@ public class PageableLuceneQueryResultsImpl<K,V> implements PageableLuceneQueryR
   }
 
   @Override
-  public List<LuceneResultStruct<K,V>> getNextPage() {
-    if(!hasNextPage()) {
-      return null;
+  public List<LuceneResultStruct<K,V>> next() {
+    if(!hasNext()) {
+      throw new NoSuchElementException();
     }
     
     int end = currentHit + pageSize;
@@ -84,7 +85,7 @@ public class PageableLuceneQueryResultsImpl<K,V> implements PageableLuceneQueryR
     }
     
     Map<K,V> values = userRegion.getAll(keys);
-    
+
     ArrayList<LuceneResultStruct<K,V>> results = new ArrayList<LuceneResultStruct<K,V>>(hits.size());
     for(EntryScore<K> score : scores) {
       V value = values.get(score.getKey());
@@ -98,7 +99,7 @@ public class PageableLuceneQueryResultsImpl<K,V> implements PageableLuceneQueryR
   }
 
   @Override
-  public boolean hasNextPage() {
+  public boolean hasNext() {
     return hits.size() > currentHit;
   }
 

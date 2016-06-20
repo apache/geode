@@ -122,10 +122,10 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     final LuceneQuery<Object, Object> query = addValuesAndCreateQuery();
 
     final PageableLuceneQueryResults<Object, Object> pages = query.findPages();
-    assertTrue(pages.hasNextPage());
+    assertTrue(pages.hasNext());
     assertEquals(3, pages.size());
-    final List<LuceneResultStruct<Object, Object>> page1 = pages.getNextPage();
-    final List<LuceneResultStruct<Object, Object>> page2 = pages.getNextPage();
+    final List<LuceneResultStruct<Object, Object>> page1 = pages.next();
+    final List<LuceneResultStruct<Object, Object>> page2 = pages.next();
     List<LuceneResultStruct<Object, Object>> allEntries=new ArrayList<>();
     allEntries.addAll(page1);
     allEntries.addAll(page2);
