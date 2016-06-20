@@ -314,6 +314,7 @@ public class ServerHandShakeProcessor {
       long uniqueId;
       if(principal instanceof Subject){
         uniqueId = connection.getClientUserAuths().putSubject((Subject)principal);
+        logger.info("Put subject in Map: "+uniqueId+" for "+ ((Subject)principal).getPrincipal());
       }
       else {
         //this sets principal in map as well....

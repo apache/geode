@@ -787,11 +787,10 @@ public class ServerConnection implements Runnable {
         // if a subject exists for this uniqueId, binds the subject to this thread so that we can do authorization later
         if(AcceptorImpl.isIntegratedSecurity() && !isInternalMessage()) {
           long uniqueId = getUniqueId();
-          logger.info(command + " received with uniqueId "+uniqueId);
           Subject subject = this.clientUserAuths.getSubject(uniqueId);
           if(subject!=null) {
             threadState = GeodeSecurityUtil.bindSubject(subject);
-            logger.info("binding " + subject.getPrincipal() + " to the current thread");
+            logger.info( command + " with " + uniqueId + ", binding " + subject.getPrincipal() + " to the current thread executing ");
           }
         }
 
@@ -1058,6 +1057,7 @@ public class ServerConnection implements Runnable {
         Subject subject = (Subject)principal;
         uniqueId = this.clientUserAuths.putSubject(subject);
         logger.info("Put subject in Map: "+uniqueId+" for "+ subject.getPrincipal());
+        logger.info(this.clientUserAuths);
       }
       else {
         //this sets principal in map as well....

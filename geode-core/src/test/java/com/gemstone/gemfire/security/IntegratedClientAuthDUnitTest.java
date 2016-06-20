@@ -85,24 +85,24 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
     keys.add("key1");
     keys.add("key2");
 
-    // have one client log in as authorized user to put some data in the regions first.
-    client2.invoke(()->{
-      Cache cache = SecurityTestUtils.createCacheClient("authRegionUser", "1234567", port, SecurityTestUtils.NO_EXCEPTION);
-      final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
-      region.putAll(allValues);
-      cache.close();
-    });
+//    // have one client log in as authorized user to put some data in the regions first.
+//    client2.invoke(()->{
+//      Cache cache = SecurityTestUtils.createCacheClient("authRegionUser", "1234567", port, SecurityTestUtils.NO_EXCEPTION);
+//      final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+//      region.putAll(allValues);
+//      cache.close();
+//    });
 
     // client1 connects to server as a user not authorized to do any operations
     AsyncInvocation ai1 =  client1.invokeAsync(()->{
       Cache cache = SecurityTestUtils.createCacheClient("stranger", "1234567", port, SecurityTestUtils.NO_EXCEPTION);
       final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
 
-      assertNotAuthorized(()->region.put("key3", "value3"), "[DATA:WRITE:AuthRegion:key3]");
-      assertNotAuthorized(()->region.get("key3"), "[DATA:READ:AuthRegion:key3]");
+      assertNotAuthorized(()->region.put("key3", "value3"), "DATA:WRITE:AuthRegion:key3");
+      assertNotAuthorized(()->region.get("key3"), "DATA:READ:AuthRegion:key3");
 
       //putall
-      assertNotAuthorized(()->region.putAll(allValues), "[DATA:WRITE:AuthRegion]");
+      assertNotAuthorized(()->region.putAll(allValues), "DATA:WRITE:AuthRegion");
 
       // not authorized for either keys, get no record back
       Map keyValues =  region.getAll(keys);
@@ -145,10 +145,10 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
       Cache cache = SecurityTestUtils.createCacheClient("key1User", "1234567", port, SecurityTestUtils.NO_EXCEPTION);
       final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
 
-      assertNotAuthorized(()->region.put("key2", "value1"), "[DATA:WRITE:AuthRegion:key2]");
-      assertNotAuthorized(()->region.get("key2"), "[DATA:READ:AuthRegion:key2]");
+      assertNotAuthorized(()->region.put("key2", "value1"), "DATA:WRITE:AuthRegion:key2");
+      assertNotAuthorized(()->region.get("key2"), "DATA:READ:AuthRegion:key2");
 
-      assertNotAuthorized(()->region.putAll(allValues), "[DATA:WRITE:AuthRegion]");
+      assertNotAuthorized(()->region.putAll(allValues), "DATA:WRITE:AuthRegion");
 
       // only authorized for one recrod
       Map keyValues =  region.getAll(keys);
