@@ -41,13 +41,13 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class PageableLuceneQueryResultsImplJUnitTest {
 
-  private List<EntryScore> hits;
+  private List<EntryScore<String>> hits;
   private List<LuceneResultStruct> expected = new ArrayList<LuceneResultStruct>();
   private Region<String, String> userRegion;
   
   @Before
   public void setUp() {
-    hits = new ArrayList<EntryScore>();
+    hits = new ArrayList<EntryScore<String>>();
     
     for(int i =0; i < 23; i++) {
       hits.add(new EntryScore("key_" + i, i));
@@ -73,7 +73,7 @@ public class PageableLuceneQueryResultsImplJUnitTest {
   
   @Test
   public void testMaxStore() {
-    hits.set(5, new EntryScore("key_5", 502));
+    hits.set(5, new EntryScore<String>("key_5", 502));
     
     PageableLuceneQueryResultsImpl<String, String> results = new PageableLuceneQueryResultsImpl<String, String>(hits, null, 5);
     
