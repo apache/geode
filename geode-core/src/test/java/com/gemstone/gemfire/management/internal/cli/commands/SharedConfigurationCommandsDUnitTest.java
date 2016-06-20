@@ -175,7 +175,7 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
       public Object call() {
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost:" + locator1Port);
+        localProps.setProperty(LOCATORS, "localhost[" + locator1Port+"]");
         localProps.setProperty(GROUPS, groupName);
         localProps.setProperty(NAME, "DataMember");
         getSystem(localProps);
@@ -289,7 +289,7 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
         locatorProps.setProperty(MCAST_PORT, "0");
         locatorProps.setProperty(LOG_LEVEL, "fine");
         locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
-        locatorProps.setProperty(LOCATORS, "localhost:" + locator1Port);
+        locatorProps.setProperty(LOCATORS, "localhost[" + locator1Port+"]");
 
         try {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator2Port, locatorLogFile, null, locatorProps);

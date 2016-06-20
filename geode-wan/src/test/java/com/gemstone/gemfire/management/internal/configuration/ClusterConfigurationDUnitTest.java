@@ -181,7 +181,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         workingDir.mkdirs();
 
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
         localProps.setProperty(NAME, ClusterConfigurationDUnitTest.newMember);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
@@ -288,7 +288,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         workingDir.mkdirs();
 
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
         localProps.setProperty(NAME, ClusterConfigurationDUnitTest.newMember);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
@@ -358,7 +358,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         workingDir.mkdirs();
 
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
         localProps.setProperty(NAME, ClusterConfigurationDUnitTest.newMember);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
@@ -464,7 +464,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         workingDir.mkdirs();
 
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
         localProps.setProperty(NAME, ClusterConfigurationDUnitTest.newMember);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());
@@ -673,7 +673,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
         workingDir.mkdirs();
 
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost:" + locator1Port);
+        localProps.setProperty(LOCATORS, "localhost[" + locator1Port+"]");
         localProps.setProperty(NAME, ClusterConfigurationDUnitTest.dataMember);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         localProps.setProperty(DEPLOY_WORKING_DIR, workingDir.getCanonicalPath());

@@ -271,7 +271,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     if (loopback != null) {
       Properties config = new Properties();
       config.put(MCAST_PORT, "0");
-      String locators = InetAddress.getLocalHost().getHostName()+":"+DistributedTestUtils.getDUnitLocatorPort();
+      String locators = InetAddress.getLocalHost().getHostName()+"["+DistributedTestUtils.getDUnitLocatorPort()+"]";
       config.put(LOCATORS, locators);
       config.setProperty(BIND_ADDRESS, loopback.getHostAddress());
       LogWriterUtils.getLogWriter().info("attempting to connect with " + loopback +" and locators=" + locators);

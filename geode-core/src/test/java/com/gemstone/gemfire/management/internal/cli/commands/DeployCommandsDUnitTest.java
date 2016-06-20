@@ -366,7 +366,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     Properties managerProps = new Properties();
     managerProps.setProperty(MCAST_PORT, "0");
     managerProps.setProperty(GROUPS, groupName);
-    managerProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+    managerProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
     setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a JAR file

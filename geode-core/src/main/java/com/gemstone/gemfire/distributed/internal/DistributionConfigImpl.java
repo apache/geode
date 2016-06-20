@@ -837,7 +837,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
       copySSLPropsToHTTPSSLProps();
     }
 
-    // Make attributes read only
+    // Make attributes writeable only
     this.modifiable = true;
     validateConfigurationProperties(props);
     // Make attributes read only
@@ -976,23 +976,23 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
       }
 
       if (this.sourceMap.get(CLUSTER_SSL_KEYSTORE) != null) {
-        this.httpServiceSSLKeyStore = this.clusterSSLKeyStore;
+        setHttpServiceSSLKeyStore(this.clusterSSLKeyStore);
         this.sourceMap.put(HTTP_SERVICE_SSL_KEYSTORE, this.sourceMap.get(CLUSTER_SSL_KEYSTORE));
       }
       if (this.sourceMap.get(CLUSTER_SSL_KEYSTORE_TYPE) != null) {
-        this.httpServiceSSLKeyStoreType = this.clusterSSLKeyStoreType;
+        setHttpServiceSSLKeyStoreType(this.clusterSSLKeyStoreType);
         this.sourceMap.put(HTTP_SERVICE_SSL_KEYSTORE_TYPE, this.sourceMap.get(CLUSTER_SSL_KEYSTORE_TYPE));
       }
       if (this.sourceMap.get(CLUSTER_SSL_KEYSTORE_PASSWORD) != null) {
-        this.httpServiceSSLKeyStorePassword = this.clusterSSLKeyStorePassword;
+        setHttpServiceSSLKeyStorePassword(this.clusterSSLKeyStorePassword);
         this.sourceMap.put(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, this.sourceMap.get(CLUSTER_SSL_KEYSTORE_PASSWORD));
       }
       if (this.sourceMap.get(CLUSTER_SSL_TRUSTSTORE) != null) {
-        this.httpServiceSSLTrustStore = this.clusterSSLTrustStore;
+        setHttpServiceSSLTrustStore(this.clusterSSLTrustStore);
         this.sourceMap.put(HTTP_SERVICE_SSL_TRUSTSTORE, this.sourceMap.get(CLUSTER_SSL_TRUSTSTORE));
       }
       if (this.sourceMap.get(CLUSTER_SSL_TRUSTSTORE_PASSWORD) != null) {
-        this.httpServiceSSLTrustStorePassword = this.clusterSSLTrustStorePassword;
+        setHttpServiceSSLTrustStorePassword(this.clusterSSLTrustStorePassword);
         this.sourceMap.put(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD, this.sourceMap.get(CLUSTER_SSL_TRUSTSTORE_PASSWORD));
       }
       this.httpServiceSSLProperties.putAll(this.clusterSSLProperties);
@@ -1773,31 +1773,26 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   public void setClusterSSLKeyStore(String value) {
-    
     this.getClusterSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_NAME, value);
     this.clusterSSLKeyStore = value;
   }
 
   public void setClusterSSLKeyStoreType(String value) {
-    
     this.getClusterSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_TYPE_NAME, value);
     this.clusterSSLKeyStoreType = value;
   }
 
   public void setClusterSSLKeyStorePassword(String value) {
-    
     this.getClusterSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + KEY_STORE_PASSWORD_NAME, value);
     this.clusterSSLKeyStorePassword = value;
   }
 
   public void setClusterSSLTrustStore(String value) {
-    
     this.getClusterSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + TRUST_STORE_NAME, value);
     this.clusterSSLTrustStore = value;
   }
 
   public void setClusterSSLTrustStorePassword(String value) {
-    
     this.getClusterSSLProperties().setProperty(SSL_SYSTEM_PROPS_NAME + TRUST_STORE_PASSWORD_NAME, value);
     this.clusterSSLTrustStorePassword = value;
   }

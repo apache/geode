@@ -306,7 +306,7 @@ public class DistributionConfigJUnitTest {
   public void testValidLocatorAddress() {
     String address = "81.240.0.1[7056]";
     config.modifiable = true;
-    config.setStartLocator(address);
+    config.setAttributeObject(START_LOCATOR,address,ConfigSource.api());
     assertEquals(config.getStartLocator(), address);
   }
 
@@ -314,7 +314,8 @@ public class DistributionConfigJUnitTest {
   public void testInvalidLocatorAddress() {
     String address = "bad.bad[7056]";
     config.modifiable = true;
-    config.setStartLocator(address);
+//    config.setStartLocator(address);
+    config.setAttributeObject(START_LOCATOR,address,ConfigSource.api());
   }
 
   @Test

@@ -145,7 +145,7 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
         locatorProps.setProperty(NAME, locator2Name);
         locatorProps.setProperty(MCAST_PORT, "0");
         locatorProps.setProperty(LOG_LEVEL, "fine");
-        locatorProps.setProperty(LOCATORS, "localhost:" + locator1Port);
+        locatorProps.setProperty(LOCATORS, "localhost[" + locator1Port+"]");
         locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
         final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator2Port, locatorLogFile, null, locatorProps);
@@ -261,7 +261,7 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
       public Object call() {
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost:" + locator1Port);
+        localProps.setProperty(LOCATORS, "localhost[" + locator1Port+"]");
         localProps.setProperty(GROUPS, testGroup);
 
         getSystem(localProps);
@@ -324,7 +324,7 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
         locatorProps.setProperty(MCAST_PORT, "0");
         locatorProps.setProperty(LOG_LEVEL, "info");
         locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
-        locatorProps.setProperty(LOCATORS, "localhost:" + locator1Port);
+        locatorProps.setProperty(LOCATORS, "localhost[" + locator1Port+"]");
 
         try {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locator2Port, locatorLogFile, null, locatorProps);

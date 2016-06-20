@@ -16,7 +16,35 @@
  */
 package com.gemstone.gemfire.management.internal.cli.commands;
 
-import com.gemstone.gemfire.cache.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.*;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.*;
+import static com.gemstone.gemfire.test.dunit.Wait.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
+import com.gemstone.gemfire.cache.DiskStore;
+import com.gemstone.gemfire.cache.DiskStoreFactory;
+import com.gemstone.gemfire.cache.EvictionAction;
+import com.gemstone.gemfire.cache.EvictionAttributes;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionFactory;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.query.data.PortfolioPdx;
 import com.gemstone.gemfire.compression.SnappyCompressor;
 import com.gemstone.gemfire.distributed.DistributedSystemDisconnectedException;
@@ -35,26 +63,17 @@ import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.CommandResult;
 import com.gemstone.gemfire.management.internal.cli.shell.Gfsh;
 import com.gemstone.gemfire.management.internal.cli.util.CommandStringBuilder;
-import com.gemstone.gemfire.test.dunit.*;
+import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableCallable;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.dunit.VM;
+import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static com.gemstone.gemfire.test.dunit.Assert.*;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-import static com.gemstone.gemfire.test.dunit.Wait.waitForCriterion;
 
 /**
  * The DiskStoreCommandsDUnitTest class is a distributed test suite of test cases for testing the disk store commands
  * that are part of Gfsh. </p>
- *
  * @see com.gemstone.gemfire.management.internal.cli.commands.DiskStoreCommands
  * @see org.junit.Assert
  * @see org.junit.Test
@@ -88,7 +107,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     });
 
     // Create a disk store and region in the Manager (VM0) and VM1 VMs
-    for (final VM vm : (new VM[]{vm0, vm1})) {
+    for (final VM vm : (new VM[] { vm0, vm1 })) {
       final String vmName = "VM" + vm.getPid();
       vm.invoke(new SerializableRunnable() {
         public void run() {
@@ -98,7 +117,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
           diskStoreDirFile.mkdirs();
 
           DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-          diskStoreFactory.setDiskDirs(new File[]{diskStoreDirFile});
+          diskStoreFactory.setDiskDirs(new File[] { diskStoreDirFile });
           diskStoreFactory.setMaxOplogSize(1);
           diskStoreFactory.setAllowForceCompaction(true);
           diskStoreFactory.setAutoCompact(false);
@@ -207,7 +226,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     // Do our own cleanup so that the disk store directories can be removed
     super.destroyDefaultSetup();
-    for (final VM vm : (new VM[]{vm0, vm1})) {
+    for (final VM vm : (new VM[] { vm0, vm1 })) {
       final String vmName = "VM" + vm.getPid();
       vm.invoke(new SerializableRunnable() {
         public void run() {
@@ -239,7 +258,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         final Cache cache = getCache();
 
         DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-        diskStoreFactory.setDiskDirs(new File[]{diskStoreDir});
+        diskStoreFactory.setDiskDirs(new File[] { diskStoreDir });
         final DiskStore diskStore1 = diskStoreFactory.create(diskStoreName1);
         assertNotNull(diskStore1);
 
@@ -256,18 +275,14 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    CommandResult cmdResult = executeCommand(
-        "describe offline-disk-store --name=" + diskStoreName1 + " --disk-dirs=" + diskStoreDir.getAbsolutePath());
+    CommandResult cmdResult = executeCommand("describe offline-disk-store --name=" + diskStoreName1 + " --disk-dirs=" + diskStoreDir.getAbsolutePath());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
     String stringResult = commandResultToString(cmdResult);
     assertEquals(3, countLinesInString(stringResult, false));
-    assertTrue(stringContainsLine(stringResult,
-        ".*/" + region1 + ": -lru=none -concurrencyLevel=16 -initialCapacity=16 -loadFactor=0.75 -offHeap=false -compressor=none -statisticsEnabled=false"));
-    assertTrue(stringContainsLine(stringResult,
-        ".*/" + region2 + ": -lru=none -concurrencyLevel=16 -initialCapacity=16 -loadFactor=0.75 -offHeap=false -compressor=com.gemstone.gemfire.compression.SnappyCompressor -statisticsEnabled=false"));
+    assertTrue(stringContainsLine(stringResult, ".*/" + region1 + ": -lru=none -concurrencyLevel=16 -initialCapacity=16 -loadFactor=0.75 -offHeap=false -compressor=none -statisticsEnabled=false"));
+    assertTrue(stringContainsLine(stringResult, ".*/" + region2 + ": -lru=none -concurrencyLevel=16 -initialCapacity=16 -loadFactor=0.75 -offHeap=false -compressor=com.gemstone.gemfire.compression.SnappyCompressor -statisticsEnabled=false"));
 
-    cmdResult = executeCommand(
-        "describe offline-disk-store --name=" + diskStoreName1 + " --disk-dirs=" + diskStoreDir.getAbsolutePath() + " --region=/" + region1);
+    cmdResult = executeCommand("describe offline-disk-store --name=" + diskStoreName1 + " --disk-dirs=" + diskStoreDir.getAbsolutePath() + " --region=/" + region1);
     stringResult = commandResultToString(cmdResult);
     assertEquals(2, countLinesInString(stringResult, false));
     assertTrue(stringContainsLine(stringResult, ".*/" + region1 + ": .*"));
@@ -293,7 +308,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         final Cache cache = new CacheFactory(props).setPdxPersistent(true).setPdxDiskStore(diskStoreName1).create();
 
         DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-        diskStoreFactory.setDiskDirs(new File[]{diskStoreDir});
+        diskStoreFactory.setDiskDirs(new File[] { diskStoreDir });
         final DiskStore diskStore1 = diskStoreFactory.create(diskStoreName1);
         assertNotNull(diskStore1);
 
@@ -308,15 +323,13 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    CommandResult cmdResult = executeCommand(
-        "describe offline-disk-store --name=" + diskStoreName1 + " --disk-dirs=" + diskStoreDir.getAbsolutePath() + " --pdx=true");
+    CommandResult cmdResult = executeCommand("describe offline-disk-store --name=" + diskStoreName1 + " --disk-dirs=" + diskStoreDir.getAbsolutePath() + " --pdx=true");
     String stringResult = commandResultToString(cmdResult);
     assertTrue(stringContainsLine(stringResult, ".*PDX Types.*"));
     assertTrue(stringContainsLine(stringResult, ".*com\\.gemstone\\.gemfire\\.cache\\.query\\.data\\.PortfolioPdx.*"));
     assertTrue(stringContainsLine(stringResult, ".*com\\.gemstone\\.gemfire\\.cache\\.query\\.data\\.PositionPdx.*"));
     assertTrue(stringContainsLine(stringResult, ".*PDX Enums.*"));
-    assertTrue(
-        stringContainsLine(stringResult, ".*com\\.gemstone\\.gemfire\\.cache\\.query\\.data\\.PortfolioPdx\\$Day.*"));
+    assertTrue(stringContainsLine(stringResult, ".*com\\.gemstone\\.gemfire\\.cache\\.query\\.data\\.PortfolioPdx\\$Day.*"));
   }
 
   @Test
@@ -337,7 +350,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         final Cache cache = getCache();
 
         DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-        diskStoreFactory.setDiskDirs(new File[]{diskStoreDir});
+        diskStoreFactory.setDiskDirs(new File[] { diskStoreDir });
         final DiskStore diskStore1 = diskStoreFactory.create(diskStoreName1);
         assertNotNull(diskStore1);
 
@@ -390,7 +403,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         final Cache cache = getCache();
 
         DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-        diskStoreFactory.setDiskDirs(new File[]{diskStoreDir});
+        diskStoreFactory.setDiskDirs(new File[] { diskStoreDir });
         final DiskStore diskStore1 = diskStoreFactory.create(diskStoreName1);
         assertNotNull(diskStore1);
 
@@ -444,8 +457,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         locatorProps.setProperty(LOG_LEVEL, "fine");
         locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
         try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null,
-              locatorProps);
+          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null, locatorProps);
 
           WaitCriterion wc = new WaitCriterion() {
             @Override
@@ -468,7 +480,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     // Start the default manager
     Properties managerProps = new Properties();
     managerProps.setProperty(MCAST_PORT, "0");
-    managerProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+    managerProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
     setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
@@ -482,7 +494,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
         localProps.setProperty(GROUPS, groupName);
         getSystem(localProps);
         assertNotNull(getCache());
@@ -520,7 +532,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         getCache().close();
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
         localProps.setProperty(GROUPS, groupName);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         getSystem(localProps);
@@ -572,7 +584,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         getCache().close();
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
         localProps.setProperty(GROUPS, groupName);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         getSystem(localProps);
@@ -591,7 +603,6 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
   /**
    * 1) Create a disk-store in a member, get the disk-dirs. 2) Close the member. 3) Execute the command. 4) Restart the
    * member. 5) Check if the disk-store is altered.
-   *
    * @throws IOException
    * @throws ClassNotFoundException
    */
@@ -871,8 +882,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__QUEUE_SIZE, "5321");
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__TIME_INTERVAL, "2023");
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__WRITE_BUFFER_SIZE, "3110");
-    commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE,
-        diskStore1Dir1.getAbsolutePath() + "#1452637463");
+    commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, diskStore1Dir1.getAbsolutePath() + "#1452637463");
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, diskStore1Dir2.getAbsolutePath());
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -963,10 +973,10 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         Cache cache = getCache();
 
         DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-        diskStoreFactory.setDiskDirs(new File[]{diskStore1Dir1});
+        diskStoreFactory.setDiskDirs(new File[] { diskStore1Dir1 });
         diskStoreFactory.create(diskStore1Name);
 
-        diskStoreFactory.setDiskDirs(new File[]{diskStore2Dir1});
+        diskStoreFactory.setDiskDirs(new File[] { diskStore2Dir1 });
         diskStoreFactory.create(diskStore2Name);
       }
     });
@@ -989,7 +999,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         Cache cache = getCache();
 
         DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-        diskStoreFactory.setDiskDirs(new File[]{diskStore1Dir2});
+        diskStoreFactory.setDiskDirs(new File[] { diskStore1Dir2 });
         diskStoreFactory.create(diskStore1Name);
 
         RegionFactory regionFactory = cache.createRegionFactory();
@@ -998,7 +1008,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
         regionFactory.create(region1Name);
         regionFactory.create(region2Name);
 
-        diskStoreFactory.setDiskDirs(new File[]{diskStore2Dir2});
+        diskStoreFactory.setDiskDirs(new File[] { diskStore2Dir2 });
         diskStoreFactory.create(diskStore2Name);
       }
     });
@@ -1108,7 +1118,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     }
 
     DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-    diskStoreFactory.setDiskDirs(new File[]{diskStoreDirFile});
+    diskStoreFactory.setDiskDirs(new File[] { diskStoreDirFile });
     diskStoreFactory.setMaxOplogSize(1);
     diskStoreFactory.setAllowForceCompaction(true);
     diskStoreFactory.setAutoCompact(false);

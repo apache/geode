@@ -571,6 +571,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig implemen
     }
 
 
+    checkAttribute(attName,attValue);
     try {
       setter.invoke(this, attValue);
     } catch (Exception e) {

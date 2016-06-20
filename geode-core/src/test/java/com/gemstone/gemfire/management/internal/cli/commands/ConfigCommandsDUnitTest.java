@@ -458,7 +458,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     // Start the default manager
     Properties managerProps = new Properties();
     managerProps.setProperty(MCAST_PORT, "0");
-    managerProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+    managerProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
     setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
@@ -468,7 +468,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
       public Object call() throws Exception {
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
         localProps.setProperty(LOG_LEVEL, "error");
         localProps.setProperty(GROUPS, groupName);
         getSystem(localProps);

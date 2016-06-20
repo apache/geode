@@ -626,7 +626,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     // Start the default manager
     Properties managerProps = new Properties();
     managerProps.setProperty(MCAST_PORT, "0");
-    managerProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+    managerProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
     setUpJmxManagerOnVm0ThenConnect(managerProps);
 
     // Create a cache in VM 1
@@ -636,7 +636,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
       public void run() {
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
         localProps.setProperty(GROUPS, groupName);
         getSystem(localProps);
         assertNotNull(getCache());
@@ -679,7 +679,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
         localProps.setProperty(GROUPS, groupName);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         getSystem(localProps);
@@ -724,7 +724,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost:" + locatorPort);
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
         localProps.setProperty(GROUPS, groupName);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         getSystem(localProps);
