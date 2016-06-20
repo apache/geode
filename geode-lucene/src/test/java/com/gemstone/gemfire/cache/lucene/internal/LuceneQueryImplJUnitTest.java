@@ -57,6 +57,7 @@ import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntries;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntriesCollector;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntriesCollectorManager;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
+import com.gemstone.gemfire.internal.cache.ValidatingDiskRegion;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
@@ -126,6 +127,14 @@ public class LuceneQueryImplJUnitTest {
     when(collector.getResult()).thenReturn(entries);
     Collection<Object> results = query.findValues();
     assertEquals(Collections.emptyList(), results);
+  }
+
+  @Test
+  public void shouldReturnLuceneResultStructFromFindResults() throws LuceneQueryException {
+    addValueToResults();
+    List<LuceneResultStruct<String,String>> result=new ArrayList<>();
+    result.add(new LuceneResultStructImpl("hi","value",5));
+    assertEquals(result,query.findResults());
   }
 
   @Test
