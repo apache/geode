@@ -67,11 +67,11 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
 
   @Override
   public Collection<K> findKeys() throws LuceneQueryException {
-    TopEntries entries = findTopEntries();
-    final List<EntryScore> hits = entries.getHits();
+    TopEntries<K> entries = findTopEntries();
+    final List<EntryScore<K>> hits = entries.getHits();
 
     return hits.stream()
-      .map(hit -> (K) hit.getKey())
+      .map(hit -> hit.getKey())
       .collect(Collectors.toList());
   }
 
@@ -95,25 +95,25 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
 
   private PageableLuceneQueryResults<K, V> findPages(int pageSize) throws LuceneQueryException {
 
-    TopEntries entries = findTopEntries();
+    TopEntries<K> entries = findTopEntries();
 
     return new PageableLuceneQueryResultsImpl<K, V>(entries.getHits(), region, pageSize);
   }
 
 
 
-  private TopEntries findTopEntries() throws LuceneQueryException {
+  private TopEntries<K> findTopEntries() throws LuceneQueryException {
     TopEntriesCollectorManager manager = new TopEntriesCollectorManager(null, limit);
     LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(query, indexName, manager, limit);
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
 
-    ResultCollector<TopEntriesCollector, TopEntries> rc = (ResultCollector<TopEntriesCollector, TopEntries>) onRegion()
+    ResultCollector<TopEntriesCollector, TopEntries<K>> rc = (ResultCollector<TopEntriesCollector, TopEntries<K>>) onRegion()
         .withArgs(context)
         .withCollector(collector)
         .execute(LuceneFunction.ID);
 
     //TODO provide a timeout to the user?
-    TopEntries entries;
+    TopEntries<K> entries;
     try {
       entries = rc.getResult();
     } catch(FunctionException e) {

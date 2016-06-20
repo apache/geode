@@ -40,7 +40,7 @@ public class PageableLuceneQueryResultsImpl<K,V> implements PageableLuceneQueryR
   /**
    *  list of docs matching search query
    */
-  private final List<EntryScore> hits;
+  private final List<EntryScore<K>> hits;
   
   /**
    * The maximum score. Lazily evaluated
@@ -62,7 +62,7 @@ public class PageableLuceneQueryResultsImpl<K,V> implements PageableLuceneQueryR
    */
   private int pageSize;
   
-  public PageableLuceneQueryResultsImpl(List<EntryScore> hits, Region<K,V> userRegion, int pageSize) {
+  public PageableLuceneQueryResultsImpl(List<EntryScore<K>> hits, Region<K,V> userRegion, int pageSize) {
     this.hits = hits;
     this.userRegion = userRegion;
     this.pageSize = pageSize == 0 ? Integer.MAX_VALUE : pageSize;
@@ -76,17 +76,17 @@ public class PageableLuceneQueryResultsImpl<K,V> implements PageableLuceneQueryR
     
     int end = currentHit + pageSize;
     end = end > hits.size() ? hits.size() : end;
-    List<EntryScore> scores = hits.subList(currentHit, end);
+    List<EntryScore<K>> scores = hits.subList(currentHit, end);
     
     ArrayList<K> keys = new ArrayList<K>(hits.size());
-    for(EntryScore score : scores) {
-      keys.add((K) score.getKey());
+    for(EntryScore<K> score : scores) {
+      keys.add(score.getKey());
     }
     
     Map<K,V> values = userRegion.getAll(keys);
     
     ArrayList<LuceneResultStruct<K,V>> results = new ArrayList<LuceneResultStruct<K,V>>(hits.size());
-    for(EntryScore score : scores) {
+    for(EntryScore<K> score : scores) {
       V value = values.get(score.getKey());
       results.add(new LuceneResultStructImpl(score.getKey(), value, score.getScore()));
     }
@@ -110,7 +110,7 @@ public class PageableLuceneQueryResultsImpl<K,V> implements PageableLuceneQueryR
   @Override
   public float getMaxScore() {
     if(maxScore == Float.MIN_VALUE) {
-      for(EntryScore score : hits) {
+      for(EntryScore<K> score : hits) {
         maxScore = Math.max(maxScore, score.getScore());
       }
     }

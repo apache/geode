@@ -35,16 +35,16 @@ import com.gemstone.gemfire.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class TopEntriesCollectorJUnitTest {
 
-  private EntryScore r1_1 = new EntryScore("1-1", .9f);
-  private EntryScore r1_2 = new EntryScore("1-2", .7f);
-  private EntryScore r1_3 = new EntryScore("1-3", .5f);
+  private EntryScore<String> r1_1 = new EntryScore<String>("1-1", .9f);
+  private EntryScore<String> r1_2 = new EntryScore<String>("1-2", .7f);
+  private EntryScore<String> r1_3 = new EntryScore<String>("1-3", .5f);
 
-  private EntryScore r2_1 = new EntryScore("2-1", .85f);
-  private EntryScore r2_2 = new EntryScore("2-2", .65f);
+  private EntryScore<String> r2_1 = new EntryScore<String>("2-1", .85f);
+  private EntryScore<String> r2_2 = new EntryScore<String>("2-2", .65f);
 
-  private EntryScore r3_1 = new EntryScore("3-1", .8f);
-  private EntryScore r3_2 = new EntryScore("3-2", .6f);
-  private EntryScore r3_3 = new EntryScore("3-3", .4f);
+  private EntryScore<String> r3_1 = new EntryScore<String>("3-1", .8f);
+  private EntryScore<String> r3_2 = new EntryScore<String>("3-2", .6f);
+  private EntryScore<String> r3_3 = new EntryScore<String>("3-3", .4f);
 
   private TopEntriesCollectorManager manager;
 
