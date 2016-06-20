@@ -21,6 +21,7 @@ package com.gemstone.gemfire.cache.lucene.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,7 @@ import com.gemstone.gemfire.cache.lucene.LuceneQuery;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryFactory;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
+import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
 import com.gemstone.gemfire.cache.lucene.PageableLuceneQueryResults;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.EntryScore;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
@@ -74,11 +76,31 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
   }
 
   @Override
+  public Collection<V> findValues() throws LuceneQueryException {
+    PageableLuceneQueryResults<K, V> pages = findPages(0);
+    final List<LuceneResultStruct<K, V>> page = pages.getNextPage();
+    if(page == null) {
+      return Collections.emptyList();
+    }
+
+    return page.stream()
+      .map(entry -> entry.getValue())
+      .collect(Collectors.toList());
+  }
+
+  @Override
   public PageableLuceneQueryResults<K, V> findPages() throws LuceneQueryException {
+    return findPages(pageSize);
+  }
+
+  private PageableLuceneQueryResults<K, V> findPages(int pageSize) throws LuceneQueryException {
+
     TopEntries entries = findTopEntries();
 
     return new PageableLuceneQueryResultsImpl<K, V>(entries.getHits(), region, pageSize);
   }
+
+
 
   private TopEntries findTopEntries() throws LuceneQueryException {
     TopEntriesCollectorManager manager = new TopEntriesCollectorManager(null, limit);
