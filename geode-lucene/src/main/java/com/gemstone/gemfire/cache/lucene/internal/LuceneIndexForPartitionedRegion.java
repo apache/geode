@@ -124,6 +124,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       factory.setPersistent(true);
     }
     factory.setDiskSynchronous(dataRegion.getAttributes().isDiskSynchronous());
+    factory.setForwardExpirationDestroy(true);
     return factory;
   }
 
