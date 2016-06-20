@@ -17,6 +17,7 @@
 package com.gemstone.gemfire.cache.lucene;
 
 import java.util.Collection;
+import java.util.List;
 
 import com.gemstone.gemfire.annotations.Experimental;
 
@@ -38,6 +39,10 @@ public interface LuceneQuery<K, V> {
    */
   public Collection<V> findValues() throws LuceneQueryException;
 
+  /**
+   * Execute search and return list of LuceneResultStruct.
+   */
+  public List<LuceneResultStruct<K, V>> findResults() throws LuceneQueryException;
   /**
    * Execute the search and get results. 
    */

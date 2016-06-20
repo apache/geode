@@ -77,15 +77,22 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
 
   @Override
   public Collection<V> findValues() throws LuceneQueryException {
-    PageableLuceneQueryResults<K, V> pages = findPages(0);
-    final List<LuceneResultStruct<K, V>> page = pages.getNextPage();
-    if(page == null) {
-      return Collections.emptyList();
-    }
+    final List<LuceneResultStruct<K, V>> page = findResults();
 
     return page.stream()
       .map(entry -> entry.getValue())
       .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<LuceneResultStruct<K, V>> findResults() throws LuceneQueryException {
+    PageableLuceneQueryResults<K, V> pages = findPages(0);
+    final List<LuceneResultStruct<K, V>> page = pages.getNextPage();
+
+    if(page == null) {
+      return Collections.emptyList();
+    }
+    return page;
   }
 
   @Override
@@ -94,13 +101,9 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
   }
 
   private PageableLuceneQueryResults<K, V> findPages(int pageSize) throws LuceneQueryException {
-
     TopEntries<K> entries = findTopEntries();
-
     return new PageableLuceneQueryResultsImpl<K, V>(entries.getHits(), region, pageSize);
   }
-
-
 
   private TopEntries<K> findTopEntries() throws LuceneQueryException {
     TopEntriesCollectorManager manager = new TopEntriesCollectorManager(null, limit);
