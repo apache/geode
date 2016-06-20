@@ -28,7 +28,9 @@ import static org.mockito.Mockito.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -64,22 +66,19 @@ public class LuceneQueryImplJUnitTest {
   private LuceneQueryImpl<Object, Object> query;
   private Execution execution;
   private LuceneQueryProvider provider;
+  private ResultCollector<TopEntriesCollector, TopEntries> collector;
+  private Region region;
 
   @Before
   public void createMocks() {
-    Region region = mock(Region.class);
+    region = mock(Region.class);
     execution = mock(Execution.class);
-    ResultCollector<TopEntriesCollector, TopEntries> collector = mock(ResultCollector.class);
+    collector = mock(ResultCollector.class);
     provider = mock(LuceneQueryProvider.class);
 
     when(execution.withArgs(any())).thenReturn(execution);
     when(execution.withCollector(any())).thenReturn(execution);
     when(execution.execute(anyString())).thenReturn((ResultCollector) collector);
-
-    TopEntries entries = new TopEntries();
-    entries.addHit(new EntryScore("hi", 5));
-    when(collector.getResult()).thenReturn(entries);
-
 
     query = new LuceneQueryImpl<Object, Object>("index", region, provider, null, LIMIT, 20) {
       @Override protected Execution onRegion() {
@@ -88,14 +87,50 @@ public class LuceneQueryImplJUnitTest {
     };
   }
 
+  private void addValueToResults() {
+    TopEntries entries = new TopEntries();
+    entries.addHit(new EntryScore("hi", 5));
+    when(collector.getResult()).thenReturn(entries);
+
+    Map<String, String> getAllResult = new HashMap<String, String>();
+    getAllResult.put("hi", "value");
+    when(region.getAll(eq(Collections.singletonList("hi"))))
+      .thenReturn(getAllResult);
+  }
+
   @Test
   public void shouldReturnKeysFromFindKeys() throws LuceneQueryException {
+    addValueToResults();
     Collection<Object> results = query.findKeys();
     assertEquals(Collections.singletonList("hi"), results);
   }
 
   @Test
+  public void shouldReturnEmptyListFromFindKeysWithNoResults() throws LuceneQueryException {
+    TopEntries entries = new TopEntries();
+    when(collector.getResult()).thenReturn(entries);
+    Collection<Object> results = query.findKeys();
+    assertEquals(Collections.emptyList(), results);
+  }
+
+  @Test
+  public void shouldReturnValuesFromFindValues() throws LuceneQueryException {
+    addValueToResults();
+    Collection<Object> results = query.findValues();
+    assertEquals(Collections.singletonList("value"), results);
+  }
+
+  @Test
+  public void shouldReturnEmptyListFromFindValuesWithNoResults() throws LuceneQueryException {
+    TopEntries entries = new TopEntries();
+    when(collector.getResult()).thenReturn(entries);
+    Collection<Object> results = query.findValues();
+    assertEquals(Collections.emptyList(), results);
+  }
+
+  @Test
   public void shouldInvokeLuceneFunctionWithCorrectArguments() throws Exception {
+    addValueToResults();
     PageableLuceneQueryResults<Object, Object> results = query.findPages();
 
     verify(execution).execute(eq(LuceneFunction.ID));
@@ -111,6 +146,7 @@ public class LuceneQueryImplJUnitTest {
     assertEquals(1, page.size());
     LuceneResultStruct element = page.iterator().next();
     assertEquals("hi", element.getKey());
+    assertEquals("value", element.getValue());
     assertEquals(5, element.getScore(), 0.01);
   }
 }

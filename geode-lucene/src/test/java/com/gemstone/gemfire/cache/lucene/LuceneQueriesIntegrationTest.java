@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -53,6 +54,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   public ExpectedException thrown = ExpectedException.none();
   private static final String INDEX_NAME = "index";
   protected static final String REGION_NAME = "index";
+  private Region region;
 
   @Test()
   public void shouldNotTokenizeWordsWithKeywordAnalyzer() throws Exception {
@@ -117,24 +119,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   @Test()
   public void shouldPaginateResults() throws Exception {
 
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, "field1", "field2");
-    Region region = cache.createRegionFactory(RegionShortcut.PARTITION)
-      .create(REGION_NAME);
-    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
-
-    //Put two values with some of the same tokens
-    String value1 = "one three";
-    String value2 = "one two three";
-    String value3 = "one@three";
-    region.put("A", new TestObject(value1, value1));
-    region.put("B", new TestObject(value2, value2));
-    region.put("C", new TestObject(value3, value3));
-
-    index.waitUntilFlushed(60000);
-    final LuceneQuery<Object, Object> query = luceneService.createLuceneQueryFactory()
-      .setPageSize(2)
-      .create(INDEX_NAME, REGION_NAME,
-      "one", "field1");
+    final LuceneQuery<Object, Object> query = addValuesAndCreateQuery();
 
     final PageableLuceneQueryResults<Object, Object> pages = query.findPages();
     assertTrue(pages.hasNextPage());
@@ -148,6 +133,32 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     assertEquals(region.keySet(), allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
     assertEquals(region.values(), allEntries.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
 
+  }
+  @Test
+  public void shouldReturnValuesFromFindValues() throws Exception {
+    final LuceneQuery<Object, Object> query = addValuesAndCreateQuery();
+    assertEquals(region.values(), new HashSet(query.findValues()));
+  }
+
+  private LuceneQuery<Object, Object> addValuesAndCreateQuery() {
+    luceneService.createIndex(INDEX_NAME, REGION_NAME, "field1", "field2");
+    region = cache.createRegionFactory(RegionShortcut.PARTITION)
+      .create(REGION_NAME);
+    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+
+    //Put two values with some of the same tokens
+    String value1 = "one three";
+    String value2 = "one two three";
+    String value3 = "one@three";
+    region.put("A", new TestObject(value1, value1));
+    region.put("B", new TestObject(value2, value2));
+    region.put("C", new TestObject(value3, value3));
+
+    index.waitUntilFlushed(60000);
+    return luceneService.createLuceneQueryFactory()
+      .setPageSize(2)
+      .create(INDEX_NAME, REGION_NAME,
+      "one", "field1");
   }
 
   @Test()

@@ -34,6 +34,11 @@ public interface LuceneQuery<K, V> {
   public Collection<K> findKeys() throws LuceneQueryException;
 
   /**
+   * Execute search and return values.
+   */
+  public Collection<V> findValues() throws LuceneQueryException;
+
+  /**
    * Execute the search and get results. 
    */
   public PageableLuceneQueryResults<K, V> findPages() throws LuceneQueryException;
