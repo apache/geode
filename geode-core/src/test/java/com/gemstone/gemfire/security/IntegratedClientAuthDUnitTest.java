@@ -17,6 +17,7 @@
 
 package com.gemstone.gemfire.security;
 
+import static com.gemstone.gemfire.cache.query.CacheUtils.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.*;
 
@@ -36,6 +37,7 @@ import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
@@ -171,6 +173,69 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
     ai3.checkException();
   }
 
+  @Test
+  public void testDestroyInvalidate() throws InterruptedException {
+
+    // First, load up 5 keys to work with
+    SerializableRunnable putKeys = new SerializableRunnable() {
+      @Override
+      public void run() {
+        Cache cache = getCache();
+        Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+        assertNotNull(region);
+        region.clear();
+        for (int i = 0; i < 5; i++) {
+          String key = "key" + i;
+          String value = "value" + i;
+          region.put(key, value);
+        }
+        assertEquals(5, region.size());
+      }
+    };
+    server1.invoke(putKeys);
+
+    // Delete one key and invalidate another key with an authorized user.
+    AsyncInvocation ai1 = client1.invokeAsync(() -> {
+      Cache cache = SecurityTestUtils.createCacheClient("authRegionUser", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
+      final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+
+      assertEquals(region.get("key1"), "value1");
+      assertTrue(region.containsKey("key1")); // will only be true after we first get it, then it's cached locally
+
+      // Destroy key1
+      region.destroy("key1");
+      assertFalse(region.containsKey("key1"));
+
+      // Invalidate key2
+      assertNotNull("Value of key2 should not be null", region.get("key2"));
+      region.invalidate("key2");
+      assertNull("Value of key2 should have been null", region.get("key2"));
+      cache.close();
+    });
+
+    // Delete one key and invalidate another key with an unauthorized user.
+    AsyncInvocation ai2 = client2.invokeAsync(() -> {
+      Cache cache = SecurityTestUtils.createCacheClient("authRegionReader", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
+      final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+
+      assertEquals(region.get("key3"), "value3");
+      assertTrue(region.containsKey("key3")); // will only be true after we first get it, then it's cached locally
+
+      // Destroy key1
+      assertNotAuthorized(() -> region.destroy("key3"), "DATA:WRITE:AuthRegion");
+      assertTrue(region.containsKey("key3"));
+
+      // Invalidate key2
+      assertNotNull("Value of key4 should not be null", region.get("key4"));
+      assertNotAuthorized(() -> region.invalidate("key4"), "DATA:WRITE:AuthRegion");
+      assertNotNull("Value of key4 should not be null", region.get("key4"));
+      cache.close();
+    });
+    ai1.join();
+    ai2.join();
+    ai1.checkException();
+    ai2.checkException();
+  }
 
   public static void assertNotAuthorized(ThrowingCallable shouldRaiseThrowable, String permString){
     assertThatThrownBy(shouldRaiseThrowable).hasMessageContaining(permString);
