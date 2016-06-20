@@ -155,7 +155,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME);
     // Execute query to fetch all the values for "description" field.
     LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "description:\"hello world\"", DEFAULT_FIELD);
-    LuceneQueryResults<Integer, TestObject> results = query.search();
+    PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
     // The query should return 0 results.
     assertEquals(0, results.size());
   }

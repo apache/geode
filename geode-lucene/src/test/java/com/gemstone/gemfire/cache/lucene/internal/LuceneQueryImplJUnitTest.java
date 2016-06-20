@@ -19,7 +19,6 @@
 
 package com.gemstone.gemfire.cache.lucene.internal;
 
-import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -32,20 +31,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.execute.Execution;
-import com.gemstone.gemfire.cache.execute.FunctionAdapter;
-import com.gemstone.gemfire.cache.execute.FunctionContext;
-import com.gemstone.gemfire.cache.execute.FunctionService;
 import com.gemstone.gemfire.cache.execute.ResultCollector;
-import com.gemstone.gemfire.cache.lucene.LuceneIntegrationTest;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryException;
 import com.gemstone.gemfire.cache.lucene.LuceneQueryProvider;
 import com.gemstone.gemfire.cache.lucene.PageableLuceneQueryResults;
@@ -55,10 +48,6 @@ import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunction;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.LuceneFunctionContext;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntries;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntriesCollector;
-import com.gemstone.gemfire.cache.lucene.internal.distributed.TopEntriesCollectorManager;
-import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
-import com.gemstone.gemfire.internal.cache.ValidatingDiskRegion;
-import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -151,7 +140,7 @@ public class LuceneQueryImplJUnitTest {
     assertEquals("index", context.getIndexName());
 
     assertEquals(5, results.getMaxScore(), 0.01);
-    final List<LuceneResultStruct<Object, Object>> page = results.getNextPage();
+    final List<LuceneResultStruct<Object, Object>> page = results.next();
     assertEquals(1, page.size());
     LuceneResultStruct element = page.iterator().next();
     assertEquals("hi", element.getKey());

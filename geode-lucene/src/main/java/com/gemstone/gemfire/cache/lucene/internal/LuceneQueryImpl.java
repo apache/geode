@@ -19,7 +19,6 @@
 
 package com.gemstone.gemfire.cache.lucene.internal;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -87,12 +86,11 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
   @Override
   public List<LuceneResultStruct<K, V>> findResults() throws LuceneQueryException {
     PageableLuceneQueryResults<K, V> pages = findPages(0);
-    final List<LuceneResultStruct<K, V>> page = pages.getNextPage();
-
-    if(page == null) {
+    if(!pages.hasNext()) {
       return Collections.emptyList();
     }
-    return page;
+
+    return pages.next();
   }
 
   @Override
