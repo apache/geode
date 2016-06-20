@@ -391,7 +391,7 @@ public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
       public Object call() {
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost:" + locator1Port);
+        localProps.setProperty(LOCATORS, "localhost[" + locator1Port+"]");
         localProps.setProperty(NAME, "DataMember");
         getSystem(localProps);
         Cache cache = getCache();
