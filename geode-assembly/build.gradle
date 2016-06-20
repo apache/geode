@@ -164,7 +164,7 @@ def cp = {
       it.contains('slf4j-api') ||
       it.contains('spring-core') ||
       it.contains('spring-shell') ||
-      it.contains('snappy-java') ||
+      it.contains('snappy') ||
       it.contains('hbase') ||
       it.contains('jgroups') ||
       it.contains('netty') ||

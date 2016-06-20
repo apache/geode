@@ -96,9 +96,9 @@ dependencies {
     exclude module: 'spring-context-support'
     ext.optional = true
   }
-  compile ('org.xerial.snappy:snappy-java:' + project.'snappy-java.version') {
+  compile ('org.iq80.snappy:snappy:' + project.'snappy-java.version') {
     ext.optional = true
-  }
+  } 
 
   compile 'org.apache.shiro:shiro-core:' + project.'shiro.version'
  

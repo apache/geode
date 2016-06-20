@@ -56,13 +56,7 @@ public class CompressionCacheListenerOffHeapDUnitTest extends CompressionCacheLi
 
   @Override
   protected void createRegion() {
-    try {
-      SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return;
-    }
-    createCompressedRegionOnVm(getVM(TEST_VM), REGION_NAME, SnappyCompressor.getDefaultInstance(), true);
+    createCompressedRegionOnVm(getVM(TEST_VM), REGION_NAME, new SnappyCompressor(), true);
   }
   
 
