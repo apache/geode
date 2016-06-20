@@ -1464,6 +1464,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     dsProps.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     dsProps.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
     dsProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    dsProps.setProperty(MCAST_PORT, "0");
 
     startLocatorSync(vm0, new Object[] { port1, dsProps });
     startLocatorSync(vm1, new Object[] { port2, dsProps });
