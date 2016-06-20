@@ -1627,7 +1627,7 @@ public class CliStrings {
   public static final String START_LOCATOR__LOG_LEVEL = LOG_LEVEL;
   public static final String START_LOCATOR__LOG_LEVEL__HELP = "Sets the level of output logged to the Locator log file.  Possible values for log-level include: finest, finer, fine, config, info, warning, severe, none.";
   public static final String START_LOCATOR__MCAST_ADDRESS = MCAST_ADDRESS;
-  public static final String START_LOCATOR__MCAST_ADDRESS__HELP = "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Locator can communicate other members in the Geode cluster using a common multicast address and port.  If mcast-port is zero, then mcast-address is ignored.";
+  public static final String START_LOCATOR__MCAST_ADDRESS__HELP = "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Locator can communicate with other members in the Geode cluster using a common multicast address and port.  If mcast-port is zero, then mcast-address is ignored.";
   public static final String START_LOCATOR__MCAST_PORT = MCAST_PORT;
   public static final String START_LOCATOR__MCAST_PORT__HELP = "Sets the port used for multi-cast networking so the Locator can communicate with other members of the Geode cluster.  A zero value disables mcast.";
   public static final String START_LOCATOR__MEMBER_NAME = "name";
@@ -1635,7 +1635,7 @@ public class CliStrings {
   public static final String START_LOCATOR__PORT = "port";
   public static final String START_LOCATOR__PORT__HELP = "Port the Locator will listen on.";
   public static final String START_LOCATOR__PROPERTIES = "properties-file";
-  public static final String START_LOCATOR__PROPERTIES__HELP = "The geode.properties file for configuring the Locator's distributed system. The file's path can be absolute or relative to the gfsh working directory (--dir=).";
+  public static final String START_LOCATOR__PROPERTIES__HELP = "The gemfire.properties file for configuring the Locator's distributed system. The file's path can be absolute or relative to the gfsh working directory (--dir=)."; // TODO:GEODE-1466: update golden file to geode.properties
   public static final String START_LOCATOR__SECURITY_PROPERTIES = "security-properties-file";
   public static final String START_LOCATOR__SECURITY_PROPERTIES__HELP = "The gfsecurity.properties file for configuring the Locator's security configuration in the distributed system. The file's path can be absolute or relative to gfsh directory (--dir=).";
   public static final String START_LOCATOR__INITIALHEAP = "initial-heap";
@@ -1736,13 +1736,13 @@ public class CliStrings {
   public static final String START_SERVER__OFF_HEAP_MEMORY_SIZE = ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
   public static final String START_SERVER__OFF_HEAP_MEMORY_SIZE__HELP = "The total size of off-heap memory specified as off-heap-memory-size=<n>[g|m]. <n> is the size. [g|m] indicates whether the size should be interpreted as gigabytes or megabytes. A non-zero size causes that much memory to be allocated from the operating system and reserved for off-heap use.";
   public static final String START_SERVER__PROPERTIES = "properties-file";
-  public static final String START_SERVER__PROPERTIES__HELP = "The geode.properties file for configuring the Cache Server's distributed system. The file's path can be absolute or relative to the gfsh working directory.";
+  public static final String START_SERVER__PROPERTIES__HELP = "The gemfire.properties file for configuring the Cache Server's distributed system. The file's path can be absolute or relative to the gfsh working directory."; // TODO:GEODE-1466: update golden file to geode.properties
   public static final String START_SERVER__REDIS_PORT = ConfigurationProperties.REDIS_PORT;
   public static final String START_SERVER__REDIS_PORT__HELP = "Sets the port that the Geode Redis service listens on for Redis clients.";
   public static final String START_SERVER__REDIS_BIND_ADDRESS = ConfigurationProperties.REDIS_BIND_ADDRESS;
   public static final String START_SERVER__REDIS_BIND_ADDRESS__HELP = "Sets the IP address the Geode Redis service listens on for Redis clients. The default is to bind to the first non-loopback address for this machine.";
   public static final String START_SERVER__REDIS_PASSWORD = ConfigurationProperties.REDIS_PASSWORD;
-  public static final String START_SERVER__REDIS_PASSWORD__HELP = "Sets the authentication password for GeodeRedisServer";
+  public static final String START_SERVER__REDIS_PASSWORD__HELP = "Sets the authentication password for GemFireRedisServer"; // TODO:GEODE-1566: update golden file to GeodeRedisServer
   public static final String START_SERVER__SECURITY_PROPERTIES = "security-properties-file";
   public static final String START_SERVER__SECURITY_PROPERTIES__HELP = "The gfsecurity.properties file for configuring the Server's security configuration in the distributed system. The file's path can be absolute or relative to gfsh directory.";
   public static final String START_SERVER__REBALANCE = "rebalance";

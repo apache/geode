@@ -498,7 +498,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       String[] cacheListeners,
       @CliOption (key = CliStrings.ALTER_REGION__CACHELOADER,
                   unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "help",
+                  specifiedDefaultValue = "null",
                   help = CliStrings.ALTER_REGION__CACHELOADER__HELP)
       String cacheLoader,
       @CliOption (key = CliStrings.ALTER_REGION__CACHEWRITER,
