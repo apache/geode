@@ -176,22 +176,7 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
   public void testDestroyInvalidate() throws InterruptedException {
 
     // First, load up 5 keys to work with
-    SerializableRunnable putKeys = new SerializableRunnable() {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
-        assertNotNull(region);
-        region.clear();
-        for (int i = 0; i < 5; i++) {
-          String key = "key" + i;
-          String value = "value" + i;
-          region.put(key, value);
-        }
-        assertEquals(5, region.size());
-      }
-    };
-    server1.invoke(putKeys);
+    server1.invoke(generate5Keys());
 
     // Delete one key and invalidate another key with an authorized user.
     AsyncInvocation ai1 = client1.invokeAsync(() -> {
@@ -236,8 +221,58 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
     ai2.checkException();
   }
 
-  public static void assertNotAuthorized(ThrowingCallable shouldRaiseThrowable, String permString){
+  public static void assertNotAuthorized(ThrowingCallable shouldRaiseThrowable, String permString) {
     assertThatThrownBy(shouldRaiseThrowable).hasMessageContaining(permString);
+  }
+
+  private static SerializableRunnable generate5Keys() {
+    SerializableRunnable putKeys = new SerializableRunnable() {
+      @Override
+      public void run() {
+        Cache cache = getCache();
+        Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+        assertNotNull(region);
+        region.clear();
+        for (int i = 0; i < 5; i++) {
+          String key = "key" + i;
+          String value = "value" + i;
+          region.put(key, value);
+        }
+        assertEquals(5, region.size());
+      }
+    };
+    return putKeys;
+  }
+
+  @Test
+  public void testRegionClear() throws InterruptedException {
+
+    // First, load up 5 keys to work with
+    server1.invoke(generate5Keys());
+
+    // Verify that an unauthorized user can't clear the region
+    SerializableRunnable clearUnauthorized = new SerializableRunnable() {
+      @Override
+      public void run() {
+        Cache cache = SecurityTestUtils.createCacheClient("stranger", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
+        final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+        assertNotAuthorized(() -> region.clear(), "DATA:WRITE:AuthRegion");
+        cache.close();
+      }
+    };
+    client1.invoke(clearUnauthorized);
+
+    // Verify that an authorized user can clear the region
+    SerializableRunnable clearAuthorized = new SerializableRunnable() {
+      @Override
+      public void run() {
+        Cache cache = SecurityTestUtils.createCacheClient("authRegionUser", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
+        final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+        assertNotAuthorized(() -> region.clear(), "DATA:WRITE:AuthRegion");
+        cache.close();
+      }
+    };
+    client1.invoke(clearUnauthorized);
   }
 
 }
