@@ -413,10 +413,6 @@ public class ServerConnection implements Runnable {
   public Version getClientVersion() {
     return this.handshake.getVersion();
   }
-
-  public ClientUserAuths getClientUserAuths(){
-    return this.clientUserAuths;
-  }
   
   protected void setProxyId(ClientProxyMembershipID proxyId) {
     this.proxyId = proxyId;

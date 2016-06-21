@@ -87,13 +87,13 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
     keys.add("key1");
     keys.add("key2");
 
-//    // have one client log in as authorized user to put some data in the regions first.
-//    client2.invoke(()->{
-//      Cache cache = SecurityTestUtils.createCacheClient("authRegionUser", "1234567", port, SecurityTestUtils.NO_EXCEPTION);
-//      final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
-//      region.putAll(allValues);
-//      cache.close();
-//    });
+    // have one client log in as authorized user to put some data in the regions first.
+    client2.invoke(()->{
+      Cache cache = SecurityTestUtils.createCacheClient("authRegionUser", "1234567", port, SecurityTestUtils.NO_EXCEPTION);
+      final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+      region.putAll(allValues);
+      cache.close();
+    });
 
     // client1 connects to server as a user not authorized to do any operations
     AsyncInvocation ai1 =  client1.invokeAsync(()->{
@@ -164,7 +164,6 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
     });
 
     ai1.join();
-
     ai2.join();
     ai3.join();
 

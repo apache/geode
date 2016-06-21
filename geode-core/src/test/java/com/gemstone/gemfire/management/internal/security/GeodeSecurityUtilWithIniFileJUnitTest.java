@@ -22,17 +22,17 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
-import com.gemstone.gemfire.security.GemFireSecurityException;
-import com.gemstone.gemfire.security.GeodePermission;
-import com.gemstone.gemfire.test.junit.categories.SecurityTest;
-import com.gemstone.gemfire.test.junit.categories.UnitTest;
-
 import org.apache.shiro.util.ThreadContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
+import com.gemstone.gemfire.security.GemFireSecurityException;
+import com.gemstone.gemfire.security.GeodePermission;
+import com.gemstone.gemfire.test.junit.categories.SecurityTest;
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 /**
  * this test and ShiroUtilCustomRealmJUunitTest uses the same test body, but initialize the SecurityUtils differently.
@@ -141,7 +141,7 @@ public class GeodeSecurityUtilWithIniFileJUnitTest {
   }
 
   private void assertNotAuthorized(GeodePermission context){
-    assertThatThrownBy(()-> GeodeSecurityUtil.authorize(context)).isInstanceOf(GemFireSecurityException.class).hasMessageContaining("["+context.toString()+"]");
+    assertThatThrownBy(()-> GeodeSecurityUtil.authorize(context)).isInstanceOf(GemFireSecurityException.class).hasMessageContaining(context.toString());
   }
 
 }
