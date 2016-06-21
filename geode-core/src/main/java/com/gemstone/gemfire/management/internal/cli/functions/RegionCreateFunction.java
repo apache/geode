@@ -385,9 +385,10 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
       if (classToLoadName != null && !classToLoadName.isEmpty()) {
         loadedClass = (Class<K>) classPathLoader.forName(classToLoadName);
       }
-    } catch (ClassNotFoundException e) {
+    } catch (ClassNotFoundException | NoClassDefFoundError e) {
       throw new RuntimeException(CliStrings.format(CliStrings.CREATE_REGION__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1, new Object[] {classToLoadName, neededFor}), e);
-    } catch (ClassCastException e) {
+    }
+    catch (ClassCastException e) {
       throw new RuntimeException(CliStrings.format(CliStrings.CREATE_REGION__MSG__CLASS_SPECIFIED_FOR_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE, new Object[] {classToLoadName, neededFor}), e);
     }
 
