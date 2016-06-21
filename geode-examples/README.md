@@ -22,7 +22,7 @@ All examples:
 
 ### Basics
 
-*  [Replicated Region]('replicated')
+*  [Replicated Region](replicated)
 *  Partitioned Region
 *  Persistence
 *  OQL (Querying)
