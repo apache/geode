@@ -3637,21 +3637,31 @@ public abstract class AbstractRegionMap implements RegionMap {
 
   public boolean isTombstoneNotNeeded(RegionEntry re, int destroyedVersion) {
     // no need for synchronization - stale values are okay here
-    RegionEntry actualRe = getEntry(re.getKey());
     // TODO this looks like a problem for regionEntry pooling
-    if (actualRe != re) {  // null actualRe is okay here
-      return true; // tombstone was evicted at some point
+    if ( getEntry(re.getKey()) != re) {
+      // region entry was either removed (null)
+      // or changed to a different region entry.
+      // In either case the old tombstone is no longer needed.
+      return true;
     }
-    VersionStamp vs = re.getVersionStamp();
+    if (!re.isTombstone()) {
+      // if the region entry no longer contains a tombstone
+      // then the old tombstone is no longer needed
+      return true;
+    }
+    VersionStamp<?> vs = re.getVersionStamp();
     if (vs == null) {
       // if we have no VersionStamp why were we even added as a tombstone?
       // We used to see an NPE here. See bug 52092.
       logger.error("Unexpected RegionEntry scheduled as tombstone: re.getClass {} destroyedVersion {}", re.getClass(), destroyedVersion);
       return true;
     }
-    int entryVersion = vs.getEntryVersion();
-    boolean isSameTombstone = (entryVersion == destroyedVersion && re.isTombstone());
-    return !isSameTombstone;
+    if (vs.getEntryVersion() != destroyedVersion) {
+      // the version changed so old tombstone no longer needed
+      return true;
+    }
+    // region entry still has the same tombstone so we need to keep it.
+    return false;
   }
 
   /** removes a tombstone that has expired locally */
