@@ -25,9 +25,12 @@ import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
 import com.jayway.awaitility.Awaitility;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.cache.ExpirationAction;
+import com.gemstone.gemfire.cache.ExpirationAttributes;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.RegionShortcut;
 import com.gemstone.gemfire.cache.lucene.internal.LuceneIndexForPartitionedRegion;
@@ -130,6 +133,38 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     await(() -> assertTrue(fileSystemStats.getFiles() > 0));
     await(() -> assertTrue(fileSystemStats.getChunks() > 0));
     await(() -> assertTrue(fileSystemStats.getBytes() > 0));
+  }
+
+  @Test
+  public void indexShouldBeUpdatedWithRegionExpirationDestroyOperation() throws Exception {
+    luceneService.createIndex(INDEX_NAME, REGION_NAME, "title", "description");
+
+    // Configure PR with expiration operation set to destroy
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION)
+        .setEntryTimeToLive(new ExpirationAttributes(1, ExpirationAction.DESTROY))
+        .create(REGION_NAME);
+    populateRegion(region);
+    // Wait for expiration to destroy region entries. The region should be
+    // left with zero entries.
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      assertEquals(0, region.size());
+    });
+
+    LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    // Wait for events to be flushed from AEQ.
+    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME);
+    // Execute query to fetch all the values for "description" field.
+    LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "description:\"hello world\"", DEFAULT_FIELD);
+    LuceneQueryResults<Integer, TestObject> results = query.search();
+    // The query should return 0 results.
+    assertEquals(0, results.size());
+  }
+
+  private void populateRegion(Region region) {
+    region.put("object-1", new TestObject("title 1", "hello world"));
+    region.put("object-2", new TestObject("title 2", "this will not match"));
+    region.put("object-3", new TestObject("title 3", "hello world"));
+    region.put("object-4", new TestObject("hello world", "hello world"));
   }
 
   private void await(Runnable runnable) {
