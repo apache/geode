@@ -21,14 +21,17 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
+
+import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 
-import org.apache.shiro.subject.Subject;
-
 public class ClientUserAuths
 {
+  private static Logger logger = LogService.getLogger();
  // private AtomicLong counter = new AtomicLong(1);
   private Random uniqueIdGenerator = null;
   private int m_seed;

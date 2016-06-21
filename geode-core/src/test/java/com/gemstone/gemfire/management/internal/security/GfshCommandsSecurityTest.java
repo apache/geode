@@ -168,7 +168,7 @@ public class GfshCommandsSecurityTest {
       assertEquals(ResultBuilder.ERRORCODE_UNAUTHORIZED, ((ErrorResultData) result.getResultData()).getErrorCode());
       String resultMessage = result.getContent().toString();
       String permString = other.getPermission().toString();
-      assertTrue(resultMessage+" does not contain "+permString,resultMessage.contains("["+permString+"]"));
+      assertTrue(resultMessage+" does not contain "+permString,resultMessage.contains(permString));
     }
   }
 

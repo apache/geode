@@ -108,6 +108,9 @@ public class GeodeSecurityUtil {
       return null;
     }
 
+    // this makes sure it starts with a clean user object
+    ThreadContext.remove();
+
     Subject currentUser = SecurityUtils.getSubject();
 
     UsernamePasswordToken token =
