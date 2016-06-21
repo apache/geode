@@ -268,11 +268,11 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
       public void run() {
         Cache cache = SecurityTestUtils.createCacheClient("authRegionUser", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
         final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
-        assertNotAuthorized(() -> region.clear(), "DATA:WRITE:AuthRegion");
+        region.clear();
         cache.close();
       }
     };
-    client1.invoke(clearUnauthorized);
+    client2.invoke(clearAuthorized);
   }
 
 }
