@@ -8618,19 +8618,15 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         public void run() {
           final long count = CCRegion.getTombstoneCount();
           assertEquals("expected "+numEntries+" tombstones", numEntries, count);
-          // ensure that some GC is performed - due to timing it may not
-          // be the whole batch, but some amount should be done
           WaitCriterion waitForExpiration = new WaitCriterion() {
             @Override
             public boolean done() {
-              // TODO: in GEODE-561 this was changed to no longer wait for it
-              // to go to zero. But I think it should.
-              return CCRegion.getTombstoneCount() < numEntries;
+              return CCRegion.getTombstoneCount() == 0;
             }
             @Override
             public String description() {
-              return "Waiting for some tombstones to expire.  There are now " + CCRegion.getTombstoneCount()
-                + " tombstones left out of " + count + " initial tombstones";
+              return "Waiting for all tombstones to expire.  There are now " + CCRegion.getTombstoneCount()
+              + " tombstones left out of " + count + " initial tombstones";
             }
           };
           try {
