@@ -47,7 +47,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
   protected VM accessor;
 
   @Override
-  public final void postSetUp() throws Exception {
+  public void postSetUp() throws Exception {
     super.postSetUp();
     accessor = Host.getHost(0).getVM(3);
   }
@@ -65,7 +65,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
     accessor.invoke(() -> initAccessor(createIndex));
 
     putDataInRegion(accessor);
-    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
     executeTextSearch(accessor);
   }
 
@@ -79,7 +79,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
     dataStore2.invoke(() -> initDataStore(createIndex));
     accessor.invoke(() -> initAccessor(createIndex));
     putDataInRegion(accessor);
-    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
     executeTextSearch(accessor, "world", "text", 3);
     executeTextSearch(accessor, "world", "noEntriesMapped", 0);
   }
@@ -98,10 +98,10 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
     dataStore1.invoke(() -> pauseSender(getCache()));
     dataStore2.invoke(() -> pauseSender(getCache()));
     putDataInRegion(accessor);
-    assertFalse(waitForFlushBeforeExecuteTextSearch(accessor, 500));
+    assertFalse(waitForFlushBeforeExecuteTextSearch(dataStore1, 500));
     dataStore1.invoke(() -> resumeSender(getCache()));
     dataStore2.invoke(() -> resumeSender(getCache()));
-    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
     executeTextSearch(accessor);
   }
 
