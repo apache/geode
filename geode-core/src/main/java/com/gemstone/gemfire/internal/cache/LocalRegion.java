@@ -3285,15 +3285,20 @@ public class LocalRegion extends AbstractRegion
   public int getTombstoneCount() {
     return this.tombstoneCount.get();
   }
-  
   public void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion) {
+    scheduleTombstone(entry, destroyedVersion, false);
+  }
+  
+  public void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion, boolean reschedule) {
     if (destroyedVersion == null) {
       throw new NullPointerException("destroyed version tag cannot be null");
     }
 //    Object sync = TombstoneService.DEBUG_TOMBSTONE_COUNT? TombstoneService.debugSync : new Object();
 //    lastUnscheduled.set(null);
 //    synchronized(sync) {
+    if (!reschedule) {
       incTombstoneCount(1);
+    }
 //      if (entry instanceof AbstractRegionEntry) {
 //        AbstractRegionEntry are = (AbstractRegionEntry)entry;
 //        if (are.isTombstoneScheduled()) {
@@ -3303,7 +3308,7 @@ public class LocalRegion extends AbstractRegion
 //        are.setTombstoneScheduled(true);
 //      }
       if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
-        logger.trace(LogMarker.TOMBSTONE_COUNT, "scheduling tombstone for {} version={} count is {} entryMap size is {}",
+        logger.trace(LogMarker.TOMBSTONE_COUNT, "{} tombstone for {} version={} count is {} entryMap size is {}", reschedule ? "rescheduling" : "scheduling",
             entry.getKey(), entry.getVersionStamp().asVersionTag(), this.tombstoneCount.get(), this.entries.size()/*, new Exception("stack trace")*/);
         // this can be useful for debugging tombstone count problems if there aren't a lot of concurrent threads
 //        if (TombstoneService.DEBUG_TOMBSTONE_COUNT && this.entries instanceof AbstractRegionMap) {
@@ -3319,12 +3324,7 @@ public class LocalRegion extends AbstractRegion
 //  ThreadLocal<Exception> lastUnscheduledPlace = new ThreadLocal<Exception>();
   
   public void rescheduleTombstone(RegionEntry entry, VersionTag version) {
-    Object sync = TombstoneService.DEBUG_TOMBSTONE_COUNT? TombstoneService.debugSync : new Object();
-    synchronized(sync) {
-      unscheduleTombstone(entry, false); // count is off by one, so don't allow validation to take place
-      scheduleTombstone(entry, version);
-    }
-
+    scheduleTombstone(entry, version, true);
   }
   
   public void unscheduleTombstone(RegionEntry entry) {
@@ -3337,7 +3337,6 @@ public class LocalRegion extends AbstractRegion
       logger.trace(LogMarker.TOMBSTONE, "unscheduling tombstone for {} count is {} entryMap size is {}",
           entry.getKey(), this.tombstoneCount.get(), this.entries.size()/*, new Exception("stack trace")*/);
     }
-    getRegionMap().unscheduleTombstone(entry);
     if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT) && validate) {
       if (this.entries instanceof AbstractRegionMap) {
         ((AbstractRegionMap) this.entries).verifyTombstoneCount(this.tombstoneCount);
@@ -3359,7 +3358,7 @@ public class LocalRegion extends AbstractRegion
       return;
     }
     if (!this.versionVector.containsTombstoneGCVersions(regionGCVersions)) {
-      keys = this.cache.getTombstoneService().gcTombstones(this, regionGCVersions);
+      keys = this.cache.getTombstoneService().gcTombstones(this, regionGCVersions, needsTombstoneGCKeysForClients(eventID, clientRouting));
       if (keys == null) {
         // deltaGII prevented tombstone GC
         return;
@@ -3377,6 +3376,9 @@ public class LocalRegion extends AbstractRegion
   }
   
 
+  protected boolean needsTombstoneGCKeysForClients(EventID eventID, FilterInfo clientRouting) {
+    return false;
+  }
   /** pass tombstone garbage-collection info to clients 
    * @param eventID the ID of the event (see bug #50683)
    * @param routing routing info (routing is computed if this is null)
@@ -11914,9 +11916,7 @@ public class LocalRegion extends AbstractRegion
   
   /** test hook - dump the backing map for this region */
   public void dumpBackingMap() {
-    Object sync = TombstoneService.DEBUG_TOMBSTONE_COUNT? TombstoneService.debugSync : new Object();
     synchronized(this.entries) {
-      synchronized(sync) {
         if (this.entries instanceof AbstractRegionMap) {
           ((AbstractRegionMap)(this.entries)).verifyTombstoneCount(this.tombstoneCount);
         }
@@ -11924,7 +11924,6 @@ public class LocalRegion extends AbstractRegion
         if (this.entries instanceof AbstractRegionMap) {
           ((AbstractRegionMap)this.entries).dumpMap();
         }
-      }
     }
   }
   

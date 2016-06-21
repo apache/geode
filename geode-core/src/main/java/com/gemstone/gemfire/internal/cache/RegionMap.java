@@ -381,11 +381,6 @@ public interface RegionMap extends LRUMapCallbacks {
    */
   public boolean isTombstoneNotNeeded(RegionEntry re, int destroyedVersion);
   
-  /**
-   * a tombstone has been unscheduled - update LRU stats if necessary
-   */
-  public void unscheduleTombstone(RegionEntry re);
-
   public void updateEntryVersion(EntryEventImpl event);
   
   /**

@@ -191,6 +191,8 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
     //create the region in a third VM, which won't have any buckets
     vm2.invoke(createPrRegions);
 
+    final long begin = System.currentTimeMillis();
+
     //close 1 cache, which should make the bucket drop below
     //the expected redundancy level.
     vm1.invoke(new SerializableRunnable("close cache") {
@@ -200,7 +202,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
       }
     });
     
-    long elapsed = waitForBucketRecovery(vm2, 1);
+    long elapsed = waitForBucketRecovery(vm2, 1, begin);
     assertTrue("Did not wait at least 5 seconds to create the bucket. Elapsed=" + elapsed, elapsed >= 5000);
   }
 
@@ -262,7 +264,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
             + elapsed, elapsed < 5000);
     
     //wait for the bucket to be copied
-    elapsed = waitForBucketRecovery(vm2, 4);
+    elapsed = waitForBucketRecovery(vm2, 4, begin);
     assertTrue("Did not wait at least 5 seconds to create the bucket. Elapsed=" + elapsed, elapsed >= 5000);
     
     vm2.invoke(new SerializableCallable("wait for primary move") {
@@ -280,8 +282,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
     });
   }
   
-  private long waitForBucketRecovery(VM vm2, final int numBuckets) {
-    final long begin = System.currentTimeMillis();
+  private long waitForBucketRecovery(VM vm2, final int numBuckets, final long begin) {
     //wait for the bucket to be copied
     Long elapsed = (Long) vm2.invoke(new SerializableCallable("putData") {
       public Object call() {
