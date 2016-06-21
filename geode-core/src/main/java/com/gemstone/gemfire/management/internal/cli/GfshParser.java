@@ -893,7 +893,7 @@ public class GfshParser implements Parser {
           preConfigureConverters(commandTarget);
 
           try {
-            // TODO: next call invokes OptionJFormatter
+            // TODO: next call invokes HyphenFormatter
             parse = commandTarget.getOptionParser().parse(gfshMethodTarget.getRemainingBuffer());
           } catch (CliException ce) {
             if (ce instanceof CliCommandOptionException) {
@@ -925,7 +925,7 @@ public class GfshParser implements Parser {
           } else {
             if (coe != null) {
               logWrapper.fine("Handling exception: " + coe.getMessage());
-              ExceptionHandler.handleException(coe);
+              ExceptionHandler.handleException(coe); // TODO: this eats exception that would make it easier to debug GemfireDataCommandsDUnitTest
               // ExceptionHandler.handleException() only logs it on console.
               // When on member, we need to handle this.
               if (!CliUtil.isGfshVM()) {

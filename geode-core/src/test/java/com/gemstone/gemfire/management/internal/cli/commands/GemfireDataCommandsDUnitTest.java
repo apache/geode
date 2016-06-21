@@ -34,6 +34,10 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.DataPolicy;
@@ -79,9 +83,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 import com.gemstone.gemfire.test.junit.categories.FlakyTest;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * Dunit class for testing gemfire data commands : get, put, remove, select, rebalance
@@ -1765,7 +1766,6 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1484
   @Test
   public void testRebalanceCommandForSimulate() {
     setupTestRebalanceForEntireDS();
@@ -1787,7 +1787,6 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class)
   @Test
   public void testRebalanceCommandForSimulateWithNoMember() {
     setupTestRebalanceForEntireDS();
@@ -1812,7 +1811,6 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1483
   @Test
   public void testRebalanceForIncludeRegionFunction() {
     // setup();
@@ -1834,7 +1832,6 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1551: org.eclipse.jetty.io.EofException
   @Test
   public void testSimulateForEntireDS() {
     setupTestRebalanceForEntireDS();
@@ -1842,7 +1839,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     final VM manager = Host.getHost(0).getVM(0);
     manager.invoke(checkRegionMBeans);
 
-    getLogWriter().info("testSimulateForEntireDS verified Mbean and executin command");
+    getLogWriter().info("testSimulateForEntireDS verified MBean and executing command");
 
     String command = "rebalance --simulate=true";
 
@@ -1859,7 +1856,31 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1487
+  @Ignore("TODO: enable test after GEODE-1574 is fixed")
+  @Test
+  public void testSimulateForEntireDSWithTimeout() {
+    setupTestRebalanceForEntireDS();
+    //check if DistributedRegionMXBean is available so that command will not fail
+    final VM manager = Host.getHost(0).getVM(0);
+    manager.invoke(checkRegionMBeans);
+
+    getLogWriter().info("testSimulateForEntireDS verified MBean and executing command");
+
+    String command = "rebalance --simulate=true --time-out=-1";
+
+    CommandResult cmdResult = executeCommand(command);
+
+    getLogWriter().info("testSimulateForEntireDS just after executing " + cmdResult);
+
+    if (cmdResult != null) {
+      String stringResult = commandResultToString(cmdResult);
+      getLogWriter().info("testSimulateForEntireDS stringResult : " + stringResult);
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+    } else {
+      fail("testRebalanceForIncludeRegionFunction failed as did not get CommandResult");
+    }
+  }
+
   @Test
   public void testRebalanceForEntireDS() {
     setupTestRebalanceForEntireDS();
@@ -1950,7 +1971,6 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class)
   @Test
   public void testRebalanceForExcludeRegionFunction() {
     setupWith2Regions();
@@ -1968,7 +1988,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     if (cmdResult != null) {
       String stringResult = commandResultToString(cmdResult);
       getLogWriter().info("testRebalanceForExcludeRegionFunction stringResult : " + stringResult);
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
+      assertEquals("CommandResult=" + cmdResult, Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testRebalanceForIncludeRegionFunction failed as did not get CommandResult");
     }
