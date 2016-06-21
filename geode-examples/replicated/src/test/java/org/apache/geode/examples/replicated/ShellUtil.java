@@ -17,14 +17,23 @@
 
 package org.apache.geode.examples.replicated;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
 public class ShellUtil {
 
-  public Optional<Process> exec(String command) {
+  /**
+   * File name should available on the classpath
+   * @param fileName
+   * @return <Optional>Process</Optional>
+   */
+  public Optional<Process> executeFile(String fileName) {
     try {
-      return Optional.of(Runtime.getRuntime().exec(command));
+      ClassLoader classLoader = getClass().getClassLoader();
+      File file = new File(classLoader.getResource(fileName).getFile());
+
+      return Optional.of(Runtime.getRuntime().exec(file.getAbsolutePath()));
     } catch (IOException e) {
       e.printStackTrace();
     }
