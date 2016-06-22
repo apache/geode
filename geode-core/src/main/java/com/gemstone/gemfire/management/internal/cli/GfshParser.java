@@ -893,7 +893,7 @@ public class GfshParser implements Parser {
           preConfigureConverters(commandTarget);
 
           try {
-            // TODO: next call invokes HyphenFormatter
+            // TODO:KIRK: next call invokes HyphenFormatter
             parse = commandTarget.getOptionParser().parse(gfshMethodTarget.getRemainingBuffer());
           } catch (CliException ce) {
             if (ce instanceof CliCommandOptionException) {
@@ -1090,8 +1090,13 @@ public class GfshParser implements Parser {
       }
 
       // Remove outer single or double quotes if found
-      if (string != null && ((string.endsWith("\"") && string.endsWith("\"")) || (string.startsWith("\'") && string.endsWith("\'")))) {
+      boolean hasDoubleQuotes = string.startsWith("\"") && string.endsWith("\"");
+      boolean hasSingleQuotes = string.startsWith("\'") && string.endsWith("\'");
+
+      while (string != null && (hasDoubleQuotes || hasSingleQuotes)) {
         string = string.substring(1, string.length() - 1);
+        hasDoubleQuotes = string.startsWith("\"") && string.endsWith("\"");
+        hasSingleQuotes = string.startsWith("\'") && string.endsWith("\'");
       }
 
       if (converter != null) {
