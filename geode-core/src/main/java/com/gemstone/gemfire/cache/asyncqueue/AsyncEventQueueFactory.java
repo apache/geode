@@ -171,7 +171,7 @@ public interface AsyncEventQueueFactory {
       GatewayEventSubstitutionFilter filter);
 
   /**
-   * Forwards destroy operations from expiration action to AsynEventQueue.
+   * Forwards destroy operations from expiration action to AsyncEventQueue.
    * By default the expiration destroy events are not added to AEQ, by
    * setting this attribute to true adds destroy event to AEQ.
    *
