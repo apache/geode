@@ -125,6 +125,7 @@ public class JoptOptionParser implements GfshOptionParser {
         ce = processException(e);
         // TODO: joptOptionSet = e.getDetected(); // removed when geode-joptsimple was removed
       }
+      // TODO: remove quotes
       if (joptOptionSet != null) {
 
         // Make sure there are no miscellaneous, unknown strings that cannot be identified as
