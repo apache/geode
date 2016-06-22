@@ -50,7 +50,6 @@ import com.gemstone.gemfire.internal.cache.xmlcache.CacheXml;
 import com.gemstone.gemfire.internal.cache.xmlcache.ParallelGatewaySenderCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.RegionAttributesCreation;
 import com.gemstone.gemfire.internal.cache.xmlcache.SerialGatewaySenderCreation;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
@@ -101,7 +100,6 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-978: hardcoded port range, BindException
   @Test
   public void testGatewayReceiver() throws Exception{
     getSystem();

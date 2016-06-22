@@ -165,7 +165,6 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
    * The test will start several cache servers, including gateway receivers.
    * Shutdown them and verify the CacheClientNotifier for each server is correct
    */
-  @Category(FlakyTest.class) // GEODE-1183: random ports, failure to start threads, eats exceptions, time sensitive
   @Test
   public void testNormalClient2MultipleCacheServer() throws Exception {
     doMultipleCacheServer(false);

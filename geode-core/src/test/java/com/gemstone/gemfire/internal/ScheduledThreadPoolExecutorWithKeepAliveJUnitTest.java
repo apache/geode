@@ -178,7 +178,6 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
         TimeUnit.SECONDS.toNanos(10) <= end - start + SLOP); 
   }
 
-  @Category(FlakyTest.class) // GEODE-710: time sensitive, async actions, 5 second thread sleeps
   @Test
   public void testRepeatedExecution() throws InterruptedException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(

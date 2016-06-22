@@ -72,7 +72,6 @@ import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.WaitCriterion;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 /**
  * This class tests the client connection pool in GemFire.
@@ -1180,7 +1179,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    * Make sure cnx lifetime expiration working on thread local cnxs.
    * @author darrel
    */
-  @Category(FlakyTest.class) // GEODE-1197: random ports, BindException, FixMethodOrder, expiration, time sensitive, waitForCriterion, async actions
   @Test
   public void test009LifetimeExpireOnTL() throws CacheException {
     basicTestLifetimeExpire(true);

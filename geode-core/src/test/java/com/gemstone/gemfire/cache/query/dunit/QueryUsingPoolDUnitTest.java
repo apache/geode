@@ -66,7 +66,6 @@ import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
 
@@ -1025,7 +1024,6 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests client-server query using parameters (compiled queries).
    */
-  @Category(FlakyTest.class) // GEODE-1146: time senstiive, thread sleeps, uses zero port for servers (good!), async actions, AsyncInvocation orphans
   @Test
   public void testBindParamsWithMulitipleClients() throws CacheException {
 

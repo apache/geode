@@ -54,7 +54,6 @@ import com.gemstone.gemfire.test.dunit.LogWriterUtils;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
@@ -119,7 +118,6 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-364: random ports, time sensitive, waitForCriterions, magic numbers (113, 226)
   @Test
   public void testClientStatsPR() {
     Integer port0 = (Integer) member0.invoke(() -> createServerForStats(0, 113, "No_Colocation"));

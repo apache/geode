@@ -67,7 +67,6 @@ import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.Wait;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.LOCATORS;
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.MCAST_PORT;
@@ -743,7 +742,6 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
    * server joins when the client connects to the server. If the server
    * crashes or departs gracefully, the client will detect this as a crash.
    */
-  @Category(FlakyTest.class) // GEODE-1240: eats exceptions, random ports, time sensitive waits
   @Test
   public void testClientMembershipEventsInClient() throws Exception {
     getSystem();

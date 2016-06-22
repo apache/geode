@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.server.ServerLoad;
-import com.gemstone.gemfire.test.junit.categories.FlakyTest;
 import com.gemstone.gemfire.test.junit.categories.IntegrationTest;
 
 /**
@@ -43,7 +42,6 @@ public class LocatorLoadSnapshotIntegrationTest {
    * three servers.
    * @throws InterruptedException
    */
-  @Category(FlakyTest.class) // GEODE-613: lots of threads, async action, IntegrationTest-not-UnitTest, thread joins, time sensitive
   @Test
   public void testConcurrentBalancing() throws InterruptedException {
     int NUM_THREADS = 50;
