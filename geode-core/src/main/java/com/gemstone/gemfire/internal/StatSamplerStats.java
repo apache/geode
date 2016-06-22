@@ -61,7 +61,7 @@ public class StatSamplerStats {
                                                     "Total number of JVM pauses (which may or may not be full GC pauses) detected by this sampler. A JVM pause is defined as a system event which kept the statistics sampler thread from sampling for 3000 or more milliseconds. This threshold can be customized by setting the system property gemfire.statSamplerDelayThreshold (units are milliseconds).",
                                                     "jvmPauses", false),
                                  f.createIntGauge(SAMPLE_CALLBACKS,
-                                   "Total number of statistics that are sampled using callbacks.",
+                                   "Current number of statistics that are sampled using callbacks.",
                                    "resources", false),
                                  f.createIntCounter(SAMPLE_CALLBACK_ERRORS,
                                    "Total number of exceptions thrown by callbacks when performing sampling",

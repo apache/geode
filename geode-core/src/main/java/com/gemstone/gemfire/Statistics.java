@@ -466,9 +466,8 @@ public interface Statistics {
    * replaces any previously registered supplier. If the passed in suppplier is null, it
    * will remove any existing supplier
    * @return the previously registered supplier, or null if there was no previously registered supplier
-   * @throws ArrayIndexOutOfBoundsException If the id is invalid.
-   * @throws IllegalArgumentException if the type of this
-   * stat is not int
+   * @throws IllegalArgumentException If the id is invalid.
+   * @since Geode 1.0
    */
   public IntSupplier setIntSupplier(int id, IntSupplier supplier);
 
@@ -495,8 +494,7 @@ public interface Statistics {
    *         If no statistic exists with name <code>name</code> or
    *         if the statistic named <code>name</code> is not of
    *         type <code>int</code>.
-   * @throws IllegalArgumentException if the type of this
-   * stat is not int
+   * @since Geode 1.0
    */
   public IntSupplier setIntSupplier(String name, IntSupplier supplier);
 
@@ -524,8 +522,7 @@ public interface Statistics {
    *         If no statistic exists with the given <code>descriptor</code> or
    *         if the described statistic is not of
    *         type <code>int</code>.
-   * @throws IllegalArgumentException if the type of this
-   * stat is not int
+   * @since Geode 1.0
    */
   public IntSupplier setIntSupplier(StatisticDescriptor descriptor, IntSupplier supplier);
 
@@ -549,9 +546,8 @@ public interface Statistics {
    * replaces any previously registered supplier. If the passed in suppplier is null, it
    * will remove any existing supplier
    * @return the previously registered supplier, or null if there was no previously registered supplier
-   * @throws ArrayIndexOutOfBoundsException If the id is invalid.
-   * @throws IllegalArgumentException if the type of this
-   * stat is not long
+   * @throws IllegalArgumentException If the id is invalid.
+   * @since Geode 1.0
    */
   public LongSupplier setLongSupplier(int id, LongSupplier supplier);
 
@@ -578,8 +574,6 @@ public interface Statistics {
    *         If no statistic exists with name <code>name</code> or
    *         if the statistic named <code>name</code> is not of
    *         type <code>long</code>.
-   * @throws IllegalArgumentException if the type of this
-   * stat is not long
    */
   public LongSupplier setLongSupplier(String name, LongSupplier supplier);
 
@@ -607,8 +601,7 @@ public interface Statistics {
    *         If no statistic exists with the given <code>descriptor</code> or
    *         if the described statistic is not of
    *         type <code>long</code>.
-   * @throws IllegalArgumentException if the type of this
-   * stat is not long
+   * @since Geode 1.0
    */
   public LongSupplier setLongSupplier(StatisticDescriptor descriptor, LongSupplier supplier);
 
@@ -632,9 +625,8 @@ public interface Statistics {
    * replaces any previously registered supplier. If the passed in suppplier is null, it
    * will remove any existing supplier
    * @return the previously registered supplier, or null if there was no previously registered supplier
-   * @throws ArrayIndexOutOfBoundsException If the id is invalid.
-   * @throws IllegalArgumentException if the type of this
-   * stat is not double
+   * @throws IllegalArgumentException If the id is invalid.
+   * @since Geode 1.0
    */
   public DoubleSupplier setDoubleSupplier(int id, DoubleSupplier supplier);
 
@@ -661,8 +653,7 @@ public interface Statistics {
    *         If no statistic exists with name <code>name</code> or
    *         if the statistic named <code>name</code> is not of
    *         type <code>double</code>.
-   * @throws IllegalArgumentException if the type of this
-   * stat is not double
+   * @since Geode 1.0
    */
   public DoubleSupplier setDoubleSupplier(String name, DoubleSupplier supplier);
 
@@ -690,8 +681,7 @@ public interface Statistics {
    *         If no statistic exists with the given <code>descriptor</code> or
    *         if the described statistic is not of
    *         type <code>double</code>.
-   * @throws IllegalArgumentException if the type of this
-   * stat is not double
+   * @since Geode 1.0
    */
   public DoubleSupplier setDoubleSupplier(StatisticDescriptor descriptor, DoubleSupplier supplier);
 }

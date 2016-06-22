@@ -63,6 +63,44 @@ public class GfshParserIntegrationTest {
   }
 
   @Test
+  public void optionStartsWithHyphenWithoutQuotes() throws Exception {
+    String input = "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
+    Map<String, String> params = params(input, "rebalance", "rebalance");
+
+    assertThat(params.get("exclude-region")).isEqualTo("/GemfireDataCommandsDUnitTestRegion2");
+    assertThat(params.get("simulate")).isEqualTo("true");
+    assertThat(params.get("time-out")).isEqualTo("\"-1\"");
+  }
+
+  @Test
+  public void optionStartsWithHyphenWithQuotes() throws Exception {
+    String input = "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=\"-1\"";
+    Map<String, String> params = params(input, "rebalance", "rebalance");
+
+    assertThat(params.get("exclude-region")).isEqualTo("/GemfireDataCommandsDUnitTestRegion2");
+    assertThat(params.get("simulate")).isEqualTo("true");
+    assertThat(params.get("time-out")).isEqualTo("\"-1\"");
+  }
+
+  @Test
+  public void optionContainingHyphen() throws Exception {
+    String input = "rebalance --exclude-region=/The-Region --simulate=true";
+    Map<String, String> params = params(input, "rebalance", "rebalance");
+
+    assertThat(params.get("exclude-region")).isEqualTo("/The-Region");
+    assertThat(params.get("simulate")).isEqualTo("true");
+  }
+
+  @Test
+  public void optionContainingUnderscore() throws Exception {
+    String input = "rebalance --exclude-region=/The_region --simulate=true";
+    Map<String, String> params = params(input, "rebalance", "rebalance");
+
+    assertThat(params.get("exclude-region")).isEqualTo("/The_region");
+    assertThat(params.get("simulate")).isEqualTo("true");
+  }
+
+  @Test
   public void oneJOptionWithQuotes() throws Exception {
     String input = "start locator  --J=\"-Dgemfire.http-service-port=8080\" --name=loc1";
     Map<String, String> params = params(input, "start locator", "startLocator");

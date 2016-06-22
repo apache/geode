@@ -33,6 +33,8 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.SerializableRunnableIF;
 import com.gemstone.gemfire.test.dunit.VM;
 
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.TermQuery;
 import org.junit.Test;
 
 /**
@@ -47,7 +49,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
   protected VM accessor;
 
   @Override
-  public final void postSetUp() throws Exception {
+  public void postSetUp() throws Exception {
     super.postSetUp();
     accessor = Host.getHost(0).getVM(3);
   }
@@ -65,7 +67,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
     accessor.invoke(() -> initAccessor(createIndex));
 
     putDataInRegion(accessor);
-    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
     executeTextSearch(accessor);
   }
 
@@ -79,9 +81,33 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
     dataStore2.invoke(() -> initDataStore(createIndex));
     accessor.invoke(() -> initAccessor(createIndex));
     putDataInRegion(accessor);
-    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
     executeTextSearch(accessor, "world", "text", 3);
     executeTextSearch(accessor, "world", "noEntriesMapped", 0);
+  }
+
+  @Test
+  public void canQueryWithCustomLuceneQueryObject() {
+    SerializableRunnableIF createIndex = () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+    };
+    dataStore1.invoke(() -> initDataStore(createIndex));
+    dataStore2.invoke(() -> initDataStore(createIndex));
+    accessor.invoke(() -> initAccessor(createIndex));
+    putDataInRegion(accessor);
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
+
+    //Execute a query with a custom lucene query object
+    accessor.invoke(() -> {
+      Cache cache = getCache();
+      LuceneService service = LuceneServiceProvider.get(cache);
+      LuceneQuery query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, index ->  {
+        return new TermQuery(new Term("text", "world"));
+      });
+      final LuceneQueryResults results = query.search();
+      assertEquals(3, results.size());
+    });
   }
 
   @Test
@@ -98,10 +124,10 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
     dataStore1.invoke(() -> pauseSender(getCache()));
     dataStore2.invoke(() -> pauseSender(getCache()));
     putDataInRegion(accessor);
-    assertFalse(waitForFlushBeforeExecuteTextSearch(accessor, 500));
+    assertFalse(waitForFlushBeforeExecuteTextSearch(dataStore1, 500));
     dataStore1.invoke(() -> resumeSender(getCache()));
     dataStore2.invoke(() -> resumeSender(getCache()));
-    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
     executeTextSearch(accessor);
   }
 

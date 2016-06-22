@@ -19,6 +19,8 @@ package com.gemstone.gemfire.management.internal.cli.util;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -26,31 +28,31 @@ import org.junit.experimental.categories.Category;
 import com.gemstone.gemfire.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class OptionJFormatterTest {
+public class HyphenFormatterTest {
 
-  private OptionJFormatter formatter;
+  private HyphenFormatter formatter;
   
   @Before
   public void setUp() {
-    this.formatter = new OptionJFormatter();
+    this.formatter = new HyphenFormatter();
   }
 
   @Test
-  public void containsJoptShouldReturnTrueIfCmdHasJ() {
-    String cmd = "start locator --name=loc1 --J=-Dfoo=bar";
-    assertTrue(this.formatter.containsJopt(cmd));
+  public void containsOptionWithOneOptionReturnsTrue() {
+    String cmd = "start locator --name=loc1";
+    assertTrue(this.formatter.containsOption(cmd));
   }
 
   @Test
-  public void containsJoptShouldReturnFalseIfCmdDoesntHaveJ() {
-    String cmd = "start locator --name=loc1 ";
-    assertFalse(this.formatter.containsJopt(cmd));
+  public void containsOptionWithNoOptionReturnsFalse() {
+    String cmd = "start locator";
+    assertFalse(this.formatter.containsOption(cmd));
   }
 
   @Test
-  public void containsJoptShouldReturnTrueIfCmdHasMultipleJ() {
+  public void containsOptionWithMultipleOptionsReturnsTrue() {
     String cmd = "start locator --name=loc1 --J=-Dfoo=bar --J=-Dbar=foo";
-    assertTrue(this.formatter.containsJopt(cmd));
+    assertTrue(this.formatter.containsOption(cmd));
   }
 
   @Test
@@ -68,6 +70,24 @@ public class OptionJFormatterTest {
     String formattedCmd = this.formatter.formatCommand(cmd);
 
     String expected = "start locator --J=\"-Dfoo=bar\" --name=loc1";
+    assertThat(formattedCmd).isEqualTo(expected);
+  }
+
+  @Test
+  public void valueWithHyphenWithoutQuotesFails() {
+    String cmd = "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
+    String formattedCmd = this.formatter.formatCommand(cmd);
+
+    String expected = "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=\"-1\"";
+    assertThat(formattedCmd).isEqualTo(expected);
+  }
+
+  @Test
+  public void valueWithHyphenWithoutQuotes() {
+    String cmd = "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
+    String formattedCmd = this.formatter.formatCommand(cmd);
+
+    String expected = "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=\"-1\"";
     assertThat(formattedCmd).isEqualTo(expected);
   }
 
@@ -113,22 +133,6 @@ public class OptionJFormatterTest {
     String cmd = "start locator --name=loc1 --J=\"-Dfoo=bar\"";
     String formattedCmd = this.formatter.formatCommand(cmd);
     assertThat(formattedCmd).isEqualTo(cmd);
-  }
-
-  @Test
-  public void valueWithMissingEndQuote() {
-    String cmd = "start locator --J=\"-Dfoo=bar --name=loc1";
-    String formattedCmd = this.formatter.formatCommand(cmd);
-    String expected = "start locator --J=\"-Dfoo=bar\" --name=loc1";
-    assertThat(formattedCmd).isEqualTo(expected);
-  }
-
-  @Test
-  public void valueWithMissingStartQuote() {
-    String cmd = "start locator --name=loc1 --J=-Dfoo=bar\"";
-    String formattedCmd = this.formatter.formatCommand(cmd);
-    String expected = "start locator --name=loc1 --J=\"-Dfoo=bar\"";
-    assertThat(formattedCmd).isEqualTo(expected);
   }
 
   @Test
@@ -182,7 +186,15 @@ public class OptionJFormatterTest {
   public void valueContainingMultipleJWithSpaces() {
     String cmd = "start locator --name=loc1 --J=-Dfoo=this is a phrase             --J=\"-Dfoo=a short sentence\"";
     String formattedCmd = this.formatter.formatCommand(cmd);
-    String expected = "start locator --name=loc1 --J=\"-Dfoo=this is a phrase\"             --J=\"-Dfoo=a short sentence\"";
+    String expected = "start locator --name=loc1 --J=\"-Dfoo=this is a phrase\" --J=\"-Dfoo=a short sentence\"";
+    assertThat(formattedCmd).as(cmd).isEqualTo(expected);
+  }
+
+  @Test
+  public void valueContainingMultipleJWithSpaces2() {
+    String cmd = "start locator --name=loc1 --J=\"-Dfoo=this is a phrase            \" --J=\"-Dfoo=a short sentence\"";
+    String formattedCmd = this.formatter.formatCommand(cmd);
+    String expected = "start locator --name=loc1 --J=\"-Dfoo=this is a phrase            \" --J=\"-Dfoo=a short sentence\"";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
   }
 
