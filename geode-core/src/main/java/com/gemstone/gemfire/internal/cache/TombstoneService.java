@@ -113,7 +113,7 @@ public class TombstoneService  implements ResourceListener<MemoryEvent> {
   private final TombstoneSweeper replicatedTombstoneSweeper;
   private final TombstoneSweeper nonReplicatedTombstoneSweeper;
 
-  public Object blockGCLock = new Object();
+  public final Object blockGCLock = new Object();
   private int progressingDeltaGIICount; 
   
   public static TombstoneService initialize(GemFireCacheImpl cache) {
@@ -127,53 +127,19 @@ public class TombstoneService  implements ResourceListener<MemoryEvent> {
         REPLICATED_TOMBSTONE_TIMEOUT, true, new AtomicLong());
     this.nonReplicatedTombstoneSweeper = new TombstoneSweeper(cache, new ConcurrentLinkedQueue<Tombstone>(),
         CLIENT_TOMBSTONE_TIMEOUT, false, new AtomicLong());
-    startSweeper(this.replicatedTombstoneSweeper);
-    startSweeper(this.nonReplicatedTombstoneSweeper);
+    this.replicatedTombstoneSweeper.start();
+    this.nonReplicatedTombstoneSweeper.start();
   }
 
-  private void startSweeper(TombstoneSweeper tombstoneSweeper) {
-    synchronized(tombstoneSweeper) {
-      if (tombstoneSweeper.sweeperThread == null) {
-        tombstoneSweeper.sweeperThread = new Thread(LoggingThreadGroup.createThreadGroup("Destroyed Entries Processors",
-            logger), tombstoneSweeper);
-        tombstoneSweeper.sweeperThread.setDaemon(true);
-        String product = "GemFire";
-        if (tombstoneSweeper == this.replicatedTombstoneSweeper) {
-          tombstoneSweeper.sweeperThread.setName(product + " Garbage Collection Thread 1");
-        } else {
-          tombstoneSweeper.sweeperThread.setName(product + " Garbage Collection Thread 2");
-        }
-        tombstoneSweeper.sweeperThread.start();
-      }
-    }
-  }
-  
   /**
    * this ensures that the background sweeper thread is stopped
    */
   public void stop() {
-    stopSweeper(this.replicatedTombstoneSweeper);
-    stopSweeper(this.nonReplicatedTombstoneSweeper);
+    this.replicatedTombstoneSweeper.stop();
+    this.nonReplicatedTombstoneSweeper.stop();
   }
   
-  private void stopSweeper(TombstoneSweeper t) {
-    Thread sweeperThread;
-    synchronized(t) {
-      sweeperThread = t.sweeperThread;
-      t.isStopped = true;
-      if (sweeperThread != null) {
-        t.notifyAll();
-      }
-    }
-    try {
-      sweeperThread.join(100);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
-    t.tombstones.clear();
-  }
-  
-  /**
+ /**
    * Tombstones are markers placed in destroyed entries in order to keep the
    * entry around for a while so that it's available for concurrent modification
    * detection.
@@ -481,41 +447,35 @@ public class TombstoneService  implements ResourceListener<MemoryEvent> {
      * are resurrected they are left in this queue and the sweeper thread
      * figures out that they are no longer valid tombstones.
      */
-    final Queue<Tombstone> tombstones;
+    private final Queue<Tombstone> tombstones;
     /**
      * The size, in bytes, of the queue
      */
-    final AtomicLong queueSize;
+    private final AtomicLong queueSize;
     /**
      * the thread that handles tombstone expiration.  It reads from the
      * tombstone queue.
      */
-    Thread sweeperThread;
+    private final Thread sweeperThread;
     /**
      * whether this sweeper accumulates expired tombstones for batch removal
      */
-    boolean batchMode;
-    /**
-     * this suspends batch expiration.  It is intended for administrative use
-     * so an operator can suspend the garbage-collection of tombstones for
-     * replicated/partitioned regions if a persistent member goes off line
-     */
-    volatile boolean batchExpirationSuspended;
+    private final boolean batchMode;
     /**
      * The sweeper thread's current tombstone.
      * Only set by the run() thread while holding the currentTombstoneLock.
      * Read by other threads while holding the currentTombstoneLock.
      */
-    Tombstone currentTombstone;
+    private Tombstone currentTombstone;
     /**
      * a lock protecting the value of currentTombstone from changing
      */
-    final StoppableReentrantLock currentTombstoneLock;
+    private final StoppableReentrantLock currentTombstoneLock;
     /**
      * tombstones that have expired and are awaiting batch removal.  This
      * variable is only accessed by the sweeper thread and so is not guarded
      */
-    Set<Tombstone> expiredTombstones;
+    private Set<Tombstone> expiredTombstones;
     
     /**
      * count of entries to forcibly expire due to memory events
@@ -554,13 +514,34 @@ public class TombstoneService  implements ResourceListener<MemoryEvent> {
       this.expiryTime = expiryTime;
       this.tombstones = tombstones;
       this.queueSize = queueSize;
+      this.batchMode = batchMode;
       if (batchMode) {
-        this.batchMode = true;
         this.expiredTombstones = new HashSet<Tombstone>();
       }
       this.currentTombstoneLock = new StoppableReentrantLock(cache.getCancelCriterion());
+      this.sweeperThread = new Thread(LoggingThreadGroup.createThreadGroup("Destroyed Entries Processors", logger), this);
+      this.sweeperThread.setDaemon(true);
+      String product = "GemFire";
+      String threadName = product + " Garbage Collection Thread " + (batchMode ? "1" : "2");
+      this.sweeperThread.setName(threadName);
     }
-    
+
+  synchronized void start() {
+    this.sweeperThread.start();
+  }
+
+  synchronized void stop() {
+    this.isStopped = true;
+    if (this.sweeperThread != null) {
+      notifyAll();
+    }
+    try {
+      this.sweeperThread.join(100);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+    getQueue().clear();
+  }
 
     public Tombstone lockAndGetCurrentTombstone() {
       this.currentTombstoneLock.lock();
@@ -579,21 +560,6 @@ public class TombstoneService  implements ResourceListener<MemoryEvent> {
       return this.tombstones;
     }
 
-    /** stop tombstone removal for sweepers that have batchMode==true */
-    @SuppressWarnings("unused")
-    void suspendBatchExpiration() {
-      this.batchExpirationSuspended = true;
-    }
-    
-    
-    /** enables tombstone removal for sweepers that have batchMode==true */
-    @SuppressWarnings("unused")
-    void resumeBatchExpiration () {
-      if (this.batchExpirationSuspended) {
-        this.batchExpirationSuspended = false; // volatile write
-      }
-    }
-    
     /** force a batch GC */
     void forceBatchExpiration() {
       this.forceBatchExpiration = true;
@@ -607,9 +573,9 @@ public class TombstoneService  implements ResourceListener<MemoryEvent> {
     
     /** if we should GC the batched tombstones, this method will initiate the operation */
     private void processBatch() {
-      if ((!batchExpirationSuspended &&
-          (this.forceBatchExpiration || (this.expiredTombstones.size() >= EXPIRED_TOMBSTONE_LIMIT)))
-        || testHook_batchExpired != null) {
+      if (this.forceBatchExpiration 
+          || this.expiredTombstones.size() >= EXPIRED_TOMBSTONE_LIMIT
+          || testHook_batchExpired != null) {
         this.forceBatchExpiration = false;
         expireBatch();
       }
@@ -852,7 +818,7 @@ public class TombstoneService  implements ResourceListener<MemoryEvent> {
               lastScanTime = now;
               long start = now;
               // see if any have been superseded
-              for (Iterator<Tombstone> it = tombstones.iterator(); it.hasNext(); ) {
+              for (Iterator<Tombstone> it = getQueue().iterator(); it.hasNext(); ) {
                 Tombstone test = it.next();
                 if (it.hasNext()) {
                   if (test.region.getRegionMap().isTombstoneNotNeeded(test.entry, test.getEntryVersion())) {
