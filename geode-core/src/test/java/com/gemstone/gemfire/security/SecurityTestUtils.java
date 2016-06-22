@@ -282,8 +282,7 @@ public final class SecurityTestUtils {
 
     RegionAttributes attrs = factory.create();
 
-    cache.createRegion(REGION_NAME, attrs);
-
+    Region region = cache.createRegion(REGION_NAME, attrs);
     int port = serverPort <= 0 ? 0 : serverPort;
 
     CacheServer server1 = cache.addCacheServer();
@@ -305,6 +304,7 @@ public final class SecurityTestUtils {
     catch (Exception ex) {
       fail("Got unexpected exception when starting server", ex);
     }
+
     return server1.getPort();
   }
 

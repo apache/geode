@@ -17,7 +17,7 @@
 
 package com.gemstone.gemfire.security;
 
-import static com.gemstone.gemfire.cache.query.CacheUtils.*;
+import static com.gemstone.gemfire.security.SecurityTestUtils.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.*;
 
@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -44,24 +45,36 @@ import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
-
-  private VM server1 = null;
   private VM client1 = null;
   private VM client2 = null;
   private VM client3 = null;
   private int serverPort;
 
   @Before
-  public void before(){
+  public void before() throws Exception{
     final Host host = Host.getHost(0);
-    server1 = host.getVM(0);
     client1 = host.getVM(1);
     client2 = host.getVM(2);
     client3 = host.getVM(3);
-    serverPort = server1.invoke(() -> {
-      JSONAuthorization.setUpWithJsonFile("clientServer.json");
-      return SecurityTestUtils.createCacheServer(JSONAuthorization.class.getName()+".create");
-    });
+
+    JSONAuthorization.setUpWithJsonFile("clientServer.json");
+    serverPort =  SecurityTestUtils.createCacheServer(JSONAuthorization.class.getName()+".create");
+    Region region = getCache().getRegion(SecurityTestUtils.REGION_NAME);
+    assertEquals(0, region.size());
+    for (int i = 0; i < 5; i++) {
+      String key = "key" + i;
+      String value = "value" + i;
+      region.put(key, value);
+    }
+    assertEquals(5, region.size());
+  }
+
+  @After
+  public void after(){
+    client1.invoke(() -> closeCache());
+    client2.invoke(() -> closeCache());
+    client3.invoke(() -> closeCache());
+    closeCache();
   }
 
   @Test
@@ -78,7 +91,6 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testGetPutAuthorization() throws InterruptedException {
-    int port = serverPort;
     Map<String, String> allValues = new HashMap<String, String>();
     allValues.put("key1", "value1");
     allValues.put("key2", "value2");
@@ -87,17 +99,9 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
     keys.add("key1");
     keys.add("key2");
 
-    // have one client log in as authorized user to put some data in the regions first.
-    client2.invoke(()->{
-      Cache cache = SecurityTestUtils.createCacheClient("authRegionUser", "1234567", port, SecurityTestUtils.NO_EXCEPTION);
-      final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
-      region.putAll(allValues);
-      cache.close();
-    });
-
     // client1 connects to server as a user not authorized to do any operations
     AsyncInvocation ai1 =  client1.invokeAsync(()->{
-      Cache cache = SecurityTestUtils.createCacheClient("stranger", "1234567", port, SecurityTestUtils.NO_EXCEPTION);
+      Cache cache = SecurityTestUtils.createCacheClient("stranger", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
       final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
 
       assertNotAuthorized(()->region.put("key3", "value3"), "DATA:WRITE:AuthRegion:key3");
@@ -122,7 +126,7 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
 
     // client2 connects to user as a user authorized to use AuthRegion region
     AsyncInvocation ai2 =  client2.invokeAsync(()->{
-      Cache cache = SecurityTestUtils.createCacheClient("authRegionUser", "1234567", port, SecurityTestUtils.NO_EXCEPTION);
+      Cache cache = SecurityTestUtils.createCacheClient("authRegionUser", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
       final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
 
       region.put("key3", "value3");
@@ -138,13 +142,11 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
       // keyset
       Set keySet = region.keySet();
       assertEquals(3, keySet.size());
-
-      cache.close();
     });
 
     // client3 connects to user as a user authorized to use key1 in AuthRegion region
     AsyncInvocation ai3 =  client3.invokeAsync(()->{
-      Cache cache = SecurityTestUtils.createCacheClient("key1User", "1234567", port, SecurityTestUtils.NO_EXCEPTION);
+      Cache cache = SecurityTestUtils.createCacheClient("key1User", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
       final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
 
       assertNotAuthorized(()->region.put("key2", "value1"), "DATA:WRITE:AuthRegion:key2");
@@ -159,8 +161,6 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
       // keyset
       Set keySet = region.keySet();
       assertEquals(1, keySet.size());
-
-      cache.close();
     });
 
     ai1.join();
@@ -174,9 +174,6 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testDestroyInvalidate() throws InterruptedException {
-
-    // First, load up 5 keys to work with
-    server1.invoke(generate5Keys());
 
     // Delete one key and invalidate another key with an authorized user.
     AsyncInvocation ai1 = client1.invokeAsync(() -> {
@@ -194,7 +191,7 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
       assertNotNull("Value of key2 should not be null", region.get("key2"));
       region.invalidate("key2");
       assertNull("Value of key2 should have been null", region.get("key2"));
-      cache.close();
+
     });
 
     // Delete one key and invalidate another key with an unauthorized user.
@@ -225,31 +222,8 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
     assertThatThrownBy(shouldRaiseThrowable).hasMessageContaining(permString);
   }
 
-  private static SerializableRunnable generate5Keys() {
-    SerializableRunnable putKeys = new SerializableRunnable() {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
-        assertNotNull(region);
-        region.clear();
-        for (int i = 0; i < 5; i++) {
-          String key = "key" + i;
-          String value = "value" + i;
-          region.put(key, value);
-        }
-        assertEquals(5, region.size());
-      }
-    };
-    return putKeys;
-  }
-
   @Test
   public void testRegionClear() throws InterruptedException {
-
-    // First, load up 5 keys to work with
-    server1.invoke(generate5Keys());
-
     // Verify that an unauthorized user can't clear the region
     SerializableRunnable clearUnauthorized = new SerializableRunnable() {
       @Override
@@ -257,7 +231,6 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
         Cache cache = SecurityTestUtils.createCacheClient("stranger", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
         final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
         assertNotAuthorized(() -> region.clear(), "DATA:WRITE:AuthRegion");
-        cache.close();
       }
     };
     client1.invoke(clearUnauthorized);
@@ -269,7 +242,6 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
         Cache cache = SecurityTestUtils.createCacheClient("authRegionUser", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
         final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
         region.clear();
-        cache.close();
       }
     };
     client2.invoke(clearAuthorized);

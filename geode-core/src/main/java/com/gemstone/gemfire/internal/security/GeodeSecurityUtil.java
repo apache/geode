@@ -269,6 +269,7 @@ public class GeodeSecurityUtil {
     }
     catch (ShiroException e) {
       String msg = currentUser.getPrincipal() + " not authorized for " + context;
+      logger.info(msg);
       throw new NotAuthorizedException(msg, e);
     }
   }

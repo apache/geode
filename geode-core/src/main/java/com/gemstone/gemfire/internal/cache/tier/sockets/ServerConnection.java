@@ -786,7 +786,6 @@ public class ServerConnection implements Runnable {
           Subject subject = this.clientUserAuths.getSubject(uniqueId);
           if(subject!=null) {
             threadState = GeodeSecurityUtil.bindSubject(subject);
-            logger.info( command + " with " + uniqueId + ", binding " + subject.getPrincipal() + " to the current thread executing ");
           }
         }
 
@@ -1052,7 +1051,6 @@ public class ServerConnection implements Runnable {
       if(principal instanceof Subject){
         Subject subject = (Subject)principal;
         uniqueId = this.clientUserAuths.putSubject(subject);
-        logger.info("Put subject in Map: "+uniqueId+" for "+ subject.getPrincipal());
         logger.info(this.clientUserAuths);
       }
       else {
