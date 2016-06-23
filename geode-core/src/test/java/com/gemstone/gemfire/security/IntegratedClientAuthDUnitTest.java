@@ -17,8 +17,6 @@
 
 package com.gemstone.gemfire.security;
 
-import static com.gemstone.gemfire.security.SecurityTestUtils.*;
-import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -27,55 +25,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
-import org.junit.After;
-import org.junit.Before;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.SerializableRunnable;
+import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
-import com.gemstone.gemfire.test.dunit.Host;
-import com.gemstone.gemfire.test.dunit.SerializableRunnable;
-import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
-import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-
 @Category(DistributedTest.class)
-public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
-  private VM client1 = null;
-  private VM client2 = null;
-  private VM client3 = null;
-  private int serverPort;
-
-  @Before
-  public void before() throws Exception{
-    final Host host = Host.getHost(0);
-    client1 = host.getVM(1);
-    client2 = host.getVM(2);
-    client3 = host.getVM(3);
-
-    JSONAuthorization.setUpWithJsonFile("clientServer.json");
-    serverPort =  SecurityTestUtils.createCacheServer(JSONAuthorization.class.getName()+".create");
-    Region region = getCache().getRegion(SecurityTestUtils.REGION_NAME);
-    assertEquals(0, region.size());
-    for (int i = 0; i < 5; i++) {
-      String key = "key" + i;
-      String value = "value" + i;
-      region.put(key, value);
-    }
-    assertEquals(5, region.size());
-  }
-
-  @After
-  public void after(){
-    client1.invoke(() -> closeCache());
-    client2.invoke(() -> closeCache());
-    client3.invoke(() -> closeCache());
-    closeCache();
-  }
+public class IntegratedClientAuthDUnitTest extends AbstractIntegratedClientAuthDistributedTest {
 
   @Test
   public void testAuthentication(){
@@ -218,10 +178,6 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
     ai2.checkException();
   }
 
-  public static void assertNotAuthorized(ThrowingCallable shouldRaiseThrowable, String permString) {
-    assertThatThrownBy(shouldRaiseThrowable).hasMessageContaining(permString);
-  }
-
   @Test
   public void testRegionClear() throws InterruptedException {
     // Verify that an unauthorized user can't clear the region
@@ -246,5 +202,6 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
     };
     client2.invoke(clearAuthorized);
   }
-
 }
+
+

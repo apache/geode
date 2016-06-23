@@ -33,6 +33,7 @@ import com.gemstone.gemfire.cache.DynamicRegionFactory;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.operations.RegisterInterestOperationContext;
 import com.gemstone.gemfire.i18n.StringId;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 import java.io.IOException;
 import java.util.List;
@@ -174,8 +175,9 @@ public class RegisterInterestList66 extends BaseCommand {
           s, servConn);
       servConn.setAsTrue(RESPONDED);
     }
-    else { // key not null
+    GeodeSecurityUtil.authorizeRegionRead(regionName);
 
+   // key not null
       LocalRegion region = (LocalRegion)crHelper.getRegion(regionName);
       if (region == null) {
         logger.info(LocalizedMessage.create(LocalizedStrings.RegisterInterestList_0_REGION_NAMED_1_WAS_NOT_FOUND_DURING_REGISTER_INTEREST_LIST_REQUEST, new Object[]{servConn.getName(), regionName}));
@@ -260,7 +262,6 @@ public class RegisterInterestList66 extends BaseCommand {
         // bserverStats.incInt(destroyResponsesId, 1);
       } // isPrimary
       // } // region not null
-    } // key not null
   }
 
 }
