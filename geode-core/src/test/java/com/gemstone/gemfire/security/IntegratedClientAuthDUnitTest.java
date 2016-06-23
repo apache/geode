@@ -35,6 +35,8 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.dunit.Host;
@@ -116,11 +118,6 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
 
       Set keySet = region.keySet();
       assertEquals(0, keySet.size());
-
-//      Query query = cache.getQueryService().newQuery("select * from /AuthRegion");
-//      Object result = query.execute();
-
-      cache.close();
     });
 
 
@@ -170,6 +167,41 @@ public class IntegratedClientAuthDUnitTest extends JUnit4DistributedTestCase {
     ai1.checkException();
     ai2.checkException();
     ai3.checkException();
+  }
+
+  @Test
+  public void testQuery(){
+    client1.invoke(()-> {
+      Cache cache = SecurityTestUtils.createCacheClient("stranger", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
+      final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+
+      String query = "select * from /AuthRegion";
+      assertNotAuthorized(()->region.query(query), "DATA:READ:AuthRegion");
+
+      Pool pool = PoolManager.find(region);
+      assertNotAuthorized(()->pool.getQueryService().newQuery(query).execute(), "DATA:READ:AuthRegion");
+    });
+  }
+
+  @Test
+  public void testDestroyRegion() throws InterruptedException {
+    client1.invoke(()-> {
+      Cache cache = SecurityTestUtils.createCacheClient("dataWriter", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
+      Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+      assertNotAuthorized(()->region.destroyRegion(), "DATA:MANAGE");
+    });
+
+    client2.invoke(()-> {
+      Cache cache = SecurityTestUtils.createCacheClient("authRegionManager", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
+      Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+      assertNotAuthorized(()->region.destroyRegion(), "DATA:MANAGE");
+    });
+
+    client3.invoke(()-> {
+      Cache cache = SecurityTestUtils.createCacheClient("super-user", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
+      Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+      region.destroyRegion();
+    });
   }
 
   @Test

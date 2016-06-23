@@ -19,12 +19,16 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+
+import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.tier.Command;
-import com.gemstone.gemfire.internal.cache.tier.sockets.*;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-
-import java.io.IOException;
+import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
+import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerStats;
+import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
+import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
  
 public class CloseConnection extends BaseCommand {
 
@@ -52,7 +56,6 @@ public class CloseConnection extends BaseCommand {
     }
 
     try {
-      // clientHost = theSocket.getInetAddress().getCanonicalHostName();
       servConn.setClientDisconnectCleanly();
       String clientHost = servConn.getSocketHost();
       int clientPort = servConn.getSocketPort();
