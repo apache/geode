@@ -24,6 +24,7 @@ import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.*;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.NotAuthorizedException;
 import com.gemstone.gemfire.cache.DynamicRegionFactory;
 import com.gemstone.gemfire.cache.operations.UnregisterInterestOperationContext;
@@ -96,7 +97,9 @@ public class UnregisterInterest extends BaseCommand {
           s, servConn);
       servConn.setAsTrue(RESPONDED);
     }
-    else {
+
+    GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());
+
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {
         // TODO SW: This is a workaround for DynamicRegionFactory
@@ -146,7 +149,6 @@ public class UnregisterInterest extends BaseCommand {
       // DistributionStats.getStatTime() - start);
       // bserverStats.incInt(destroyResponsesId, 1);
       // }
-    }
   }
 
 }
