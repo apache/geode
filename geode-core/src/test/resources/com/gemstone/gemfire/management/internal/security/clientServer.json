@@ -122,6 +122,13 @@
       ]
     },
     {
+      "name": "dataWriter",
+      "password": "1234567",
+      "roles": [
+        "data-write"
+      ]
+    },
+    {
       "name":"authRegionUser",
       "password": "1234567",
       "roles": [

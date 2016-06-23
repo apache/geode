@@ -16,25 +16,30 @@
  */
 package com.gemstone.gemfire.security;
 
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.Pool;
+import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
-public class IntegratedClientAuthDUnitTest extends AbstractIntegratedClientAuthDistributedTest {
+public class IntegratedClientQueryAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
 
   @Test
-  public void testAuthentication(){
-    int port = serverPort;
-    client1.invoke("logging in super-user with correct password", () -> {
-      SecurityTestUtils.createCacheClient("super-user", "1234567", port, SecurityTestUtils.NO_EXCEPTION);
-    });
+  public void testQuery(){
+    client1.invoke(()-> {
+      Cache cache = SecurityTestUtils.createCacheClient("stranger", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
+      final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
 
-    client2.invoke("logging in super-user with wrong password", () -> {
-      SecurityTestUtils.createCacheClient("super-user", "wrong", port, SecurityTestUtils.AUTHFAIL_EXCEPTION);
+      String query = "select * from /AuthRegion";
+      assertNotAuthorized(()->region.query(query), "DATA:READ:AuthRegion");
+
+      Pool pool = PoolManager.find(region);
+      assertNotAuthorized(()->pool.getQueryService().newQuery(query).execute(), "DATA:READ:AuthRegion");
     });
   }
+
 }
-
-

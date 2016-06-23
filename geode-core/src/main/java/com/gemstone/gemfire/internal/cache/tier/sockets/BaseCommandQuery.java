@@ -31,7 +31,6 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.cache.query.internal.CqEntry;
 import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
-import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
 import com.gemstone.gemfire.cache.query.internal.cq.ServerCQ;
 import com.gemstone.gemfire.cache.query.internal.types.CollectionTypeImpl;
 import com.gemstone.gemfire.cache.query.internal.types.StructTypeImpl;
@@ -45,6 +44,7 @@ import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequestPP;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 public abstract class BaseCommandQuery extends BaseCommand {
 
@@ -109,6 +109,10 @@ public abstract class BaseCommandQuery extends BaseCommand {
     }
     // Process the query request
     try {
+      // integrated security
+      for(Object regionName:regionNames){
+        GeodeSecurityUtil.authorizeRegionRead(regionName.toString());
+      }
 
       // Execute query
       // startTime = GenericStats.getTime();
@@ -149,11 +153,6 @@ public abstract class BaseCommandQuery extends BaseCommand {
         }
         result = queryContext.getQueryResult();
       }
-
-      // endTime = System.currentTimeMillis();
-      // System.out.println("Query executed in: " + (endTime-startTime) + "ms");
-      // GenericStats.endTime0(startTime);
-
 
       if (result instanceof SelectResults) {
         SelectResults selectResults = (SelectResults)result;

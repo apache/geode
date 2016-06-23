@@ -1221,13 +1221,6 @@ public abstract class BaseCommand implements Command {
           }
         }
 
-//        try { // TODO:SECURITY: Swapnil: do we need to throw or continue?
-//          GeodeSecurityUtil.authorizeRegionRead(region.getName(), key.toString());
-//        }
-//        catch (NotAuthorizedException e){
-//          continue;
-//        }
-
         ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
         data = region.get(key, null, true, true, true, id, versionHolder, true);
         versionTag = versionHolder.getVersionTag();
