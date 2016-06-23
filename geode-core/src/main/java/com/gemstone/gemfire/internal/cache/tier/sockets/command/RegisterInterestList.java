@@ -161,6 +161,7 @@ public class RegisterInterestList extends BaseCommand {
       writeChunkedErrorResponse(msg, MessageType.REGISTER_INTEREST_DATA_ERROR,
           s, servConn);
       servConn.setAsTrue(RESPONDED);
+      return;
     }
 
     GeodeSecurityUtil.authorizeRegionRead(regionName);

@@ -180,6 +180,7 @@ public class RegisterInterest61 extends BaseCommand {
       writeChunkedErrorResponse(msg, MessageType.REGISTER_INTEREST_DATA_ERROR,
           message.toLocalizedString(), servConn);
       servConn.setAsTrue(RESPONDED);
+      return;
     }
 
     if(interestType == InterestType.REGULAR_EXPRESSION)

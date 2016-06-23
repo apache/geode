@@ -96,6 +96,7 @@ public class UnregisterInterest extends BaseCommand {
       writeErrorResponse(msg, MessageType.UNREGISTER_INTEREST_DATA_ERROR,
           s, servConn);
       servConn.setAsTrue(RESPONDED);
+      return;
     }
 
     GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());

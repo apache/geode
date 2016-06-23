@@ -32,6 +32,7 @@ import com.gemstone.gemfire.cache.DynamicRegionFactory;
 import com.gemstone.gemfire.cache.InterestResultPolicy;
 import com.gemstone.gemfire.cache.operations.RegisterInterestOperationContext;
 import com.gemstone.gemfire.i18n.StringId;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -171,94 +172,95 @@ public class RegisterInterestList61 extends BaseCommand {
       writeChunkedErrorResponse(msg, MessageType.REGISTER_INTEREST_DATA_ERROR,
           s, servConn);
       servConn.setAsTrue(RESPONDED);
+      return;
     }
-    else { // key not null
 
-      LocalRegion region = (LocalRegion)crHelper.getRegion(regionName);
-      if (region == null) {
-        logger.info(LocalizedMessage.create(LocalizedStrings.RegisterInterestList_0_REGION_NAMED_1_WAS_NOT_FOUND_DURING_REGISTER_INTEREST_LIST_REQUEST, new Object[]{servConn.getName(), regionName}));
-        // writeChunkedErrorResponse(msg,
-        // MessageType.REGISTER_INTEREST_DATA_ERROR, message);
-        // responded = true;
-      } // else { // region not null
-      try {
-        AuthorizeRequest authzRequest = servConn.getAuthzRequest();
-        if (authzRequest != null) {
-          // TODO SW: This is a workaround for DynamicRegionFactory
-          // registerInterest calls. Remove this when the semantics of
-          // DynamicRegionFactory are cleaned up.
-          if (!DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
-            RegisterInterestOperationContext registerContext = authzRequest
-                .registerInterestListAuthorize(regionName, keys, policy);
-            keys = (List)registerContext.getKey();
-          }
+    GeodeSecurityUtil.authorizeRegionRead(regionName);
+
+    LocalRegion region = (LocalRegion)crHelper.getRegion(regionName);
+    if (region == null) {
+      logger.info(LocalizedMessage.create(LocalizedStrings.RegisterInterestList_0_REGION_NAMED_1_WAS_NOT_FOUND_DURING_REGISTER_INTEREST_LIST_REQUEST, new Object[]{servConn.getName(), regionName}));
+      // writeChunkedErrorResponse(msg,
+      // MessageType.REGISTER_INTEREST_DATA_ERROR, message);
+      // responded = true;
+    } // else { // region not null
+    try {
+      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      if (authzRequest != null) {
+        // TODO SW: This is a workaround for DynamicRegionFactory
+        // registerInterest calls. Remove this when the semantics of
+        // DynamicRegionFactory are cleaned up.
+        if (!DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
+          RegisterInterestOperationContext registerContext = authzRequest
+              .registerInterestListAuthorize(regionName, keys, policy);
+          keys = (List)registerContext.getKey();
         }
-        // Register interest
-        servConn.getAcceptor().getCacheClientNotifier()
-            .registerClientInterest(regionName, keys, servConn.getProxyID(),
-                isDurable, sendUpdatesAsInvalidates,
-                true, regionDataPolicyPartBytes[0], true);
       }
-      catch (Exception ex) {
+      // Register interest
+      servConn.getAcceptor().getCacheClientNotifier()
+          .registerClientInterest(regionName, keys, servConn.getProxyID(),
+              isDurable, sendUpdatesAsInvalidates,
+              true, regionDataPolicyPartBytes[0], true);
+    }
+    catch (Exception ex) {
+      // If an interrupted exception is thrown , rethrow it
+      checkForInterrupt(servConn, ex);
+      // Otherwise, write an exception message and continue
+      writeChunkedException(msg, ex, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    }
+
+    // Update the statistics and write the reply
+    // bserverStats.incLong(processDestroyTimeId,
+    // DistributionStats.getStatTime() - start);
+    // start = DistributionStats.getStatTime();
+
+    boolean isPrimary = servConn.getAcceptor().getCacheClientNotifier()
+        .getClientProxy(servConn.getProxyID()).isPrimary();
+    if (!isPrimary) {
+      chunkedResponseMsg.setMessageType(MessageType.RESPONSE_FROM_SECONDARY);
+      chunkedResponseMsg.setTransactionId(msg.getTransactionId());
+      chunkedResponseMsg.sendHeader();
+      chunkedResponseMsg.setLastChunk(true);
+      if (logger.isDebugEnabled()) {
+        logger.debug("{}: Sending register interest response chunk from secondary for region: {} for key: {} chunk=<{}>", servConn.getName(), regionName, key, chunkedResponseMsg);
+      }
+      chunkedResponseMsg.sendChunk(servConn);
+    }
+    else { // isPrimary
+      // Send header which describes how many chunks will follow
+      chunkedResponseMsg.setMessageType(MessageType.RESPONSE_FROM_PRIMARY);
+      chunkedResponseMsg.setTransactionId(msg.getTransactionId());
+      chunkedResponseMsg.sendHeader();
+
+      // Send chunk response
+      try {
+        fillAndSendRegisterInterestResponseChunks(region, keys,
+            InterestType.KEY, policy, servConn);
+        servConn.setAsTrue(RESPONDED);
+      }
+      catch (Exception e) {
         // If an interrupted exception is thrown , rethrow it
-        checkForInterrupt(servConn, ex);
-        // Otherwise, write an exception message and continue
-        writeChunkedException(msg, ex, false, servConn);
+        checkForInterrupt(servConn, e);
+
+        // otherwise send the exception back to client
+        writeChunkedException(msg, e, false, servConn);
         servConn.setAsTrue(RESPONDED);
         return;
       }
 
-      // Update the statistics and write the reply
-      // bserverStats.incLong(processDestroyTimeId,
-      // DistributionStats.getStatTime() - start);
-      // start = DistributionStats.getStatTime();
-
-      boolean isPrimary = servConn.getAcceptor().getCacheClientNotifier()
-          .getClientProxy(servConn.getProxyID()).isPrimary();
-      if (!isPrimary) {
-        chunkedResponseMsg.setMessageType(MessageType.RESPONSE_FROM_SECONDARY);
-        chunkedResponseMsg.setTransactionId(msg.getTransactionId());
-        chunkedResponseMsg.sendHeader();
-        chunkedResponseMsg.setLastChunk(true);
-        if (logger.isDebugEnabled()) {
-          logger.debug("{}: Sending register interest response chunk from secondary for region: {} for key: {} chunk=<{}>", servConn.getName(), regionName, key, chunkedResponseMsg);
-        }
-        chunkedResponseMsg.sendChunk(servConn);
+      if (logger.isDebugEnabled()) {
+        // logger.debug(getName() + ": Sent chunk (1 of 1) of register interest
+        // response (" + chunkedResponseMsg.getBufferLength() + " bytes) for
+        // region " + regionName + " key " + key);
+        logger.debug("{}: Sent register interest response for the following {} keys in region {}: {}", servConn.getName(), numberOfKeys, regionName, keys);
       }
-      else { // isPrimary
-        // Send header which describes how many chunks will follow
-        chunkedResponseMsg.setMessageType(MessageType.RESPONSE_FROM_PRIMARY);
-        chunkedResponseMsg.setTransactionId(msg.getTransactionId());
-        chunkedResponseMsg.sendHeader();
-
-        // Send chunk response
-        try {
-          fillAndSendRegisterInterestResponseChunks(region, keys,
-              InterestType.KEY, policy, servConn);
-          servConn.setAsTrue(RESPONDED);
-        }
-        catch (Exception e) {
-          // If an interrupted exception is thrown , rethrow it
-          checkForInterrupt(servConn, e);
-
-          // otherwise send the exception back to client
-          writeChunkedException(msg, e, false, servConn);
-          servConn.setAsTrue(RESPONDED);
-          return;
-        }
-
-        if (logger.isDebugEnabled()) {
-          // logger.debug(getName() + ": Sent chunk (1 of 1) of register interest
-          // response (" + chunkedResponseMsg.getBufferLength() + " bytes) for
-          // region " + regionName + " key " + key);
-          logger.debug("{}: Sent register interest response for the following {} keys in region {}: {}", servConn.getName(), numberOfKeys, regionName, keys);
-        }
-        // bserverStats.incLong(writeDestroyResponseTimeId,
-        // DistributionStats.getStatTime() - start);
-        // bserverStats.incInt(destroyResponsesId, 1);
-      } // isPrimary
-      // } // region not null
-    } // key not null
+      // bserverStats.incLong(writeDestroyResponseTimeId,
+      // DistributionStats.getStatTime() - start);
+      // bserverStats.incInt(destroyResponsesId, 1);
+    } // isPrimary
+    // } // region not null
   }
 
 }
