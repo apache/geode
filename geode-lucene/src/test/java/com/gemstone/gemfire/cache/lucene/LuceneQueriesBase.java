@@ -105,7 +105,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
       LuceneQuery query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, index ->  {
         return new TermQuery(new Term("text", "world"));
       });
-      final LuceneQueryResults results = query.search();
+      final PageableLuceneQueryResults results = query.findPages();
       assertEquals(3, results.size());
     });
   }
