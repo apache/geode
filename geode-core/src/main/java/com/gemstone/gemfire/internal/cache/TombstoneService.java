@@ -20,8 +20,6 @@ import com.gemstone.gemfire.CancelException;
 import com.gemstone.gemfire.SystemFailure;
 import com.gemstone.gemfire.cache.util.ObjectSizer;
 import com.gemstone.gemfire.distributed.internal.DistributionConfig;
-import com.gemstone.gemfire.internal.cache.control.MemoryEvent;
-import com.gemstone.gemfire.internal.cache.control.ResourceListener;
 import com.gemstone.gemfire.internal.cache.versions.CompactVersionHolder;
 import com.gemstone.gemfire.internal.cache.versions.VersionSource;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
@@ -50,7 +48,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * and timing out tombstones.
  * 
  */
-public class TombstoneService  implements ResourceListener<MemoryEvent> {
+public class TombstoneService {
   private static final Logger logger = LogService.getLogger();
   
   /**
@@ -949,18 +947,4 @@ public class TombstoneService  implements ResourceListener<MemoryEvent> {
       currentTombstone = null;
     }
   } // class TombstoneSweeper
-
-  /* (non-Javadoc)
-   * @see com.gemstone.gemfire.internal.cache.control.ResourceListener#onEvent(java.lang.Object)
-   */
-  @Override
-  public void onEvent(MemoryEvent event) {
-    if (event.isLocal()) {
-      if (event.getState().isEviction() && !event.getPreviousState().isEviction()) {
-        this.replicatedTombstoneSweeper.forceBatchExpiration();
-      }
-    }
-  }
-
-
 }
