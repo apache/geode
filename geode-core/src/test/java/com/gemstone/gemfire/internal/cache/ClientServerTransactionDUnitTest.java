@@ -36,6 +36,9 @@ import java.util.concurrent.TimeUnit;
 
 import javax.naming.Context;
 import javax.transaction.UserTransaction;
+
+import com.jayway.awaitility.Awaitility;
+
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 import com.gemstone.gemfire.cache.*;
@@ -87,6 +90,14 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
   protected void postSetUpClientServerTransactionDUnitTest() throws Exception {
   }
 
+
+  private Integer createRegionsAndStartServerWithTimeout(VM vm, boolean accessor, int txTimeoutSecs) {
+    return createRegionOnServerWithTimeout(vm, true, accessor, txTimeoutSecs);
+  }
+  private Integer createRegionOnServerWithTimeout(VM vm, final boolean startServer,
+      final boolean accessor, final int txTimeoutSecs) {
+    return createRegionOnServerWithTimeout(vm, startServer, accessor, 0, txTimeoutSecs);
+  }
   private Integer createRegionsAndStartServer(VM vm, boolean accessor) {
     return createRegionOnServer(vm, true, accessor);
   }
@@ -98,14 +109,20 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     return createRegionOnServer(vm, startServer, accessor, 0);
   }
   private Integer createRegionOnServer(VM vm, final boolean startServer, final boolean accessor, final int redundantCopies) {
+    return createRegionOnServerWithTimeout(vm, startServer, accessor, redundantCopies, 10);
+  }
+  
+  private Integer createRegionOnServerWithTimeout(VM vm, final boolean startServer, final boolean accessor, 
+      final int redundantCopies, final int txTimeoutSecs) {
     return (Integer)vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         createRegion(accessor, redundantCopies, null);
+        TXManagerImpl txMgr = (TXManagerImpl) getCache().getCacheTransactionManager();
+        txMgr.setTransactionTimeToLiveForTest(txTimeoutSecs);
         if (startServer) {
           int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
           CacheServer s = getCache().addCacheServer();
           s.setPort(port);
-          ((CacheServerImpl)s).setTransactionTimeToLive(10);
           s.start();
           return port;
         }
@@ -126,11 +143,12 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         InternalDistributedSystem system = getSystem(props);
         Cache cache = CacheFactory.create(system);
         cache.createRegion(OTHER_REGION,af.create());
+        TXManagerImpl txMgr = (TXManagerImpl) cache.getCacheTransactionManager();
+        txMgr.setTransactionTimeToLiveForTest(10);
         if (startServer) {
           int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
           CacheServer s = cache.addCacheServer();
           s.setPort(port);
-          ((CacheServerImpl)s).setTransactionTimeToLive(10);
           s.start();
           return port;
         }
@@ -162,9 +180,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         ClientCacheFactory ccf = new ClientCacheFactory();
-        ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port);
-        ccf.setPoolSubscriptionEnabled(false);
-        ccf.set(LOG_LEVEL, getDUnitLogLevel());
+        setCCF(port, ccf);
         // these settings were used to manually check that tx operation stats were being updated
         //ccf.set(STATISTIC_SAMPLING_ENABLED, "true");
         //ccf.set(STATISTIC_ARCHIVE_FILE, "clientStats.gfs");
@@ -195,10 +211,11 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     // a client VM
     final int serverPort = (Integer)accessor.invoke(new SerializableCallable("create cache server") {
       public Object call() throws Exception {
+        TXManagerImpl txMgr = (TXManagerImpl) getCache().getCacheTransactionManager();
+        txMgr.setTransactionTimeToLiveForTest(10);
         int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
         CacheServer s = getCache().addCacheServer();
         s.setPort(port);
-        ((CacheServerImpl)s).setTransactionTimeToLive(10);
         s.start();
         return port;
       }
@@ -222,10 +239,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final int port1 = createRegionsAndStartServer(datastore1, false);
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
     ClientCacheFactory ccf = new ClientCacheFactory();
-    ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
-    ccf.setPoolSubscriptionEnabled(false);
-
-    ccf.set(LOG_LEVEL, getDUnitLogLevel());
+    setCCF(port1, ccf);
 
     ClientCache cCache = getClientCache(ccf);
     
@@ -250,13 +264,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     TXManagerImpl mgr = getGemfireCache().getTxManager();
     mgr.begin();
-    for (int i=0; i<5; i++) {
-      CustId custId = new CustId(i);
-      Customer cust = new Customer("name"+i, "address"+i);
-      getGemfireCache().getLogger().info("putting:"+custId);
-      pr.put(custId, cust);
-      r.put(i, "value"+i);
-    }
+    doTxOps(r, pr);
     boolean exceptionThrown = false;
     try {
       otherRegion.put("tx", "not allowed");
@@ -290,14 +298,12 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     
     disconnectAllFromDS(); // some other VMs seem to be hanging around and have the region this tests uses
 
-    final int port1 = createRegionsAndStartServer(accessor, true);
-    createRegionOnServer(datastore, false, false);
+    final int port1 = createRegionsAndStartServerWithTimeout(accessor, true, 5);
+    createRegionOnServerWithTimeout(datastore, false, false, 5);
 
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
     ClientCacheFactory ccf = new ClientCacheFactory();
-    ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
-    ccf.setPoolSubscriptionEnabled(false);
-    ccf.set(LOG_LEVEL, getDUnitLogLevel());
+    setCCF(port1, ccf);
     ClientCache cCache = getClientCache(ccf);
     ClientRegionFactory<CustId, Customer> custrf = cCache
       .createClientRegionFactory(cachingProxy ? ClientRegionShortcut.CACHING_PROXY : ClientRegionShortcut.PROXY);
@@ -308,13 +314,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     TXManagerImpl mgr = getGemfireCache().getTxManager();
     mgr.begin();
-    for (int i=0; i<5; i++) {
-      CustId custId = new CustId(i);
-      Customer cust = new Customer("name"+i, "address"+i);
-      getGemfireCache().getLogger().info("putting:"+custId);
-      pr.put(custId, cust);
-      r.put(i, "value"+i);
-    }
+    doTxOps(r, pr);
 
     final DistributedMember myId = cCache.getDistributedSystem().getDistributedMember(); 
     
@@ -358,6 +358,188 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     } finally {
       cCache.close();
     }
+  }
+  
+  @Test
+  public void testCleanupAfterClientAndProxyFailure() {
+    Host host = Host.getHost(0);
+    VM accessor = host.getVM(0);
+    VM datastore = host.getVM(1);
+    final boolean cachingProxy = false;
+    
+    disconnectAllFromDS(); // some other VMs seem to be hanging around and have the region this tests uses
+
+    final int port1 = createRegionsAndStartServerWithTimeout(accessor, true, 5);
+    createRegionOnServerWithTimeout(datastore, false, false, 5);
+
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
+    ClientCacheFactory ccf = new ClientCacheFactory();
+    setCCF(port1, ccf);
+    ClientCache cCache = getClientCache(ccf);
+    ClientRegionFactory<CustId, Customer> custrf = cCache
+      .createClientRegionFactory(cachingProxy ? ClientRegionShortcut.CACHING_PROXY : ClientRegionShortcut.PROXY);
+    ClientRegionFactory<Integer, String> refrf = cCache
+      .createClientRegionFactory(cachingProxy ? ClientRegionShortcut.CACHING_PROXY : ClientRegionShortcut.PROXY);
+    Region<Integer, String> r = refrf.create(D_REFERENCE);
+    Region<CustId, Customer> pr = custrf.create(CUSTOMER);
+
+    TXManagerImpl mgr = getGemfireCache().getTxManager();
+    mgr.begin();
+    doTxOps(r, pr);
+
+    final DistributedMember myId = cCache.getDistributedSystem().getDistributedMember(); 
+    
+    SerializableCallable verifyExists = new SerializableCallable("verify txstate for client exists") {
+      public Object call() throws Exception {
+        TXManagerImpl txmgr = getGemfireCache().getTxManager();
+        Set states = txmgr.getTransactionsForClient((InternalDistributedMember)myId);
+        assertEquals(1, states.size()); // only one in-progress transaction
+        return null;
+      }
+    };
+
+    accessor.invoke(verifyExists);
+    datastore.invoke(verifyExists);
+    
+    accessor.invoke(()->closeCache());
+    accessor.invoke(()->disconnectFromDS());
+    
+    SerializableCallable verifyExpired = new SerializableCallable("verify txstate is expired") {
+      public Object call() throws Exception {
+        final TXManagerImpl txmgr = getGemfireCache().getTxManager();
+        return verifyTXStateExpired(myId, txmgr);
+      }
+    };
+    try {
+      datastore.invoke(verifyExpired);
+    } finally {
+      cCache.close();
+    }
+  }
+
+  void doTxOps(Region<Integer, String> r, Region<CustId, Customer> pr) {
+    for (int i=0; i<5; i++) {
+      CustId custId = new CustId(i);
+      Customer cust = new Customer("name"+i, "address"+i);
+      getGemfireCache().getLogger().info("putting:"+custId);
+      pr.put(custId, cust);
+      r.put(i, "value"+i);
+    }
+  }
+  
+  public static DistributedMember getVMDistributedMember() {
+    return InternalDistributedSystem.getAnyInstance().getDistributedMember();
+  }
+  
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testFailoverAfterProxyFailure() throws InterruptedException {
+    Host host = Host.getHost(0);
+    VM accessor = host.getVM(0);
+    VM datastore = host.getVM(1);
+    VM accessor2 = host.getVM(2);
+    final boolean cachingProxy = false;
+    
+    disconnectAllFromDS(); // some other VMs seem to be hanging around and have the region this tests uses
+
+    int[] ports = new int[2];
+    ports[0] = createRegionsAndStartServerWithTimeout(accessor, true, 5);
+    ports[1] = createRegionsAndStartServerWithTimeout(accessor2, true, 5);
+    createRegionOnServerWithTimeout(datastore, false, false, 5);
+    
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
+    ClientCacheFactory ccf = new ClientCacheFactory();
+    setCCF(ports, ccf);
+    ClientCache cCache = getClientCache(ccf);
+    ClientRegionFactory<CustId, Customer> custrf = cCache
+      .createClientRegionFactory(cachingProxy ? ClientRegionShortcut.CACHING_PROXY : ClientRegionShortcut.PROXY);
+    ClientRegionFactory<Integer, String> refrf = cCache
+      .createClientRegionFactory(cachingProxy ? ClientRegionShortcut.CACHING_PROXY : ClientRegionShortcut.PROXY);
+    Region<Integer, String> r = refrf.create(D_REFERENCE);
+    Region<CustId, Customer> pr = custrf.create(CUSTOMER);
+
+    TXManagerImpl mgr = getGemfireCache().getTxManager();
+    mgr.begin();
+    doTxOps(r, pr);
+
+    final DistributedMember myId = cCache.getDistributedSystem().getDistributedMember(); 
+    final DistributedMember accessorId = (DistributedMember)accessor.invoke(() -> ClientServerTransactionDUnitTest.getVMDistributedMember());
+    final DistributedMember accessor2Id = (DistributedMember)accessor2.invoke(() -> ClientServerTransactionDUnitTest.getVMDistributedMember());
+    
+    SerializableCallable verifyExists = new SerializableCallable("verify txstate for client exists") {
+      public Object call() throws Exception {
+        TXManagerImpl txmgr = getGemfireCache().getTxManager();
+        Set<TXId> states = txmgr.getTransactionsForClient((InternalDistributedMember)myId);
+        assertEquals(1, states.size()); // only one in-progress transaction
+        return null;
+      }
+    };
+
+    datastore.invoke(verifyExists);
+    
+    SerializableCallable getProxyServer = new SerializableCallable("get proxy server") {
+      public Object call() throws Exception {
+        final TXManagerImpl txmgr = getGemfireCache().getTxManager();
+        DistributedMember proxyServer = null;
+        TXStateProxyImpl tx = null;
+        Set<TXStateProxy> states = txmgr.getTransactionStatesForClient((InternalDistributedMember)myId);
+        assertEquals(1, states.size()); 
+        Iterator<TXStateProxy> iterator = states.iterator();
+        if (iterator.hasNext()) {
+          tx = (TXStateProxyImpl)iterator.next();
+          assertTrue(tx.isRealDealLocal());
+          proxyServer = ((TXState)tx.realDeal).getProxyServer();
+        }
+        return proxyServer;
+      }
+    };
+    
+    final DistributedMember proxy = (DistributedMember) datastore.invoke(getProxyServer);
+    
+    if (proxy.equals(accessorId)) {
+      accessor.invoke(()->closeCache());
+      accessor.invoke(()->disconnectFromDS());
+    } else {
+      assertTrue(proxy.equals(accessor2Id));
+      accessor2.invoke(()->closeCache());
+      accessor2.invoke(()->disconnectFromDS());
+    }
+    
+    doTxOps(r, pr);
+    
+    SerializableCallable verifyProxyServerChanged = new SerializableCallable("verify proxy server is updated") {
+      public Object call() throws Exception {
+        final TXManagerImpl txmgr = getGemfireCache().getTxManager();
+        TXStateProxyImpl tx = null;
+        Set<TXStateProxy> states = txmgr.getTransactionStatesForClient((InternalDistributedMember)myId);
+        assertEquals(1, states.size()); 
+        Iterator<TXStateProxy> iterator = states.iterator();
+        if (iterator.hasNext()) {
+          tx = (TXStateProxyImpl)iterator.next();
+          assertTrue(tx.isRealDealLocal());
+        }
+        return verifyProxyServerChanged(tx, proxy);
+      }
+    };
+    try {
+      datastore.invoke(verifyProxyServerChanged);
+    } finally {
+      cCache.close();
+    }
+  }
+
+  void setCCF(final int port1, ClientCacheFactory ccf) {
+    ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
+    ccf.setPoolSubscriptionEnabled(false);
+    ccf.set(LOG_LEVEL, getDUnitLogLevel());
+  }
+  
+  void setCCF(final int[] ports, ClientCacheFactory ccf) {
+    for (int port: ports) {
+      ccf.addPoolServer("localhost", port);
+    }
+    ccf.setPoolSubscriptionEnabled(false);
+    ccf.set(LOG_LEVEL, getDUnitLogLevel());
   }
 
   @Test
@@ -1371,9 +1553,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     client.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         ClientCacheFactory ccf = new ClientCacheFactory();
-        ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
-        ccf.setPoolSubscriptionEnabled(false);
-        ccf.set(LOG_LEVEL, getDUnitLogLevel());
+        setCCF(port1, ccf);
         ClientCache cCache = getClientCache(ccf);
         ClientRegionFactory<CustId, Customer> custrf = cCache
             .createClientRegionFactory(ClientRegionShortcut.PROXY);
@@ -2785,9 +2965,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
           ClientCacheFactory ccf = new ClientCacheFactory();
           ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port);
-          ccf.addPoolServer("localhost", port2);
-          ccf.setPoolSubscriptionEnabled(false);
-          ccf.set(LOG_LEVEL, getDUnitLogLevel());
+          setCCF(port2, ccf);
           // these settings were used to manually check that tx operation stats were being updated
           //ccf.set(STATISTIC_SAMPLING_ENABLED, "true");
           //ccf.set(STATISTIC_ARCHIVE_FILE, "clientStats.gfs");
@@ -3472,5 +3650,33 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         return null;
       }
     });
+  }
+
+  Object verifyTXStateExpired(final DistributedMember myId, final TXManagerImpl txmgr) {
+    try {
+      Wait.waitForCriterion(new WaitCriterion() {
+        public boolean done() {
+          Set states = txmgr.getTransactionsForClient((InternalDistributedMember)myId);
+          com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter().info("found " + states.size() + " tx states for " + myId);
+          return states.isEmpty();
+        }
+        public String description() {
+          return "Waiting for transaction state to expire";
+        }
+      }, 15000, 500, true);
+      return null;
+    } finally {
+      getGemfireCache().getDistributedSystem().disconnect();
+    }
+  }
+  
+  Object verifyProxyServerChanged(final TXStateProxyImpl tx, final DistributedMember newProxy) {
+    try {
+      Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
+      .atMost(30, TimeUnit.SECONDS).until(() -> !((TXState)tx.realDeal).getProxyServer().equals(newProxy));
+      return null;
+    } finally {
+      getGemfireCache().getDistributedSystem().disconnect();
+    }
   }
 }

@@ -1044,4 +1044,13 @@ public class TXStateProxyImpl implements TXStateProxy {
   public boolean isCreatedOnDistTxCoordinator() {
     return false;
   }
+
+  @Override
+  public void updateProxyServer(InternalDistributedMember proxy) {
+    //only update in TXState if it has one
+    if (this.realDeal != null && this.realDeal.isRealDealLocal() 
+        && isOnBehalfOfClient()) {
+      ((TXState)this.realDeal).setProxyServer(proxy);
+    }
+  }
 }

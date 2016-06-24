@@ -51,6 +51,7 @@ import com.gemstone.gemfire.cache.TransactionWriter;
 import com.gemstone.gemfire.cache.TransactionWriterException;
 import com.gemstone.gemfire.cache.UnsupportedOperationInTransactionException;
 import com.gemstone.gemfire.cache.client.internal.ServerRegionDataAccess;
+import com.gemstone.gemfire.distributed.DistributedMember;
 import com.gemstone.gemfire.distributed.TXManagerCancelledException;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.Assert;
@@ -138,6 +139,8 @@ public class TXState implements TXStateInterface {
   private Map<EventID, Boolean> seenResults = new HashMap<EventID, Boolean>();
 
   static final TXEntryState ENTRY_EXISTS = new TXEntryState();
+  
+  private volatile DistributedMember proxyServer;
 
   public TXState(TXStateProxy proxy,boolean onBehalfOfRemoteStub) 
   {
@@ -1848,5 +1851,13 @@ public class TXState implements TXStateInterface {
   @Override
   public boolean isCreatedOnDistTxCoordinator() {
     return false;
+  }
+  
+  public void setProxyServer(DistributedMember proxyServer) {
+    this.proxyServer = proxyServer;
+  }
+  
+  public DistributedMember getProxyServer() {
+    return this.proxyServer;
   }
 }

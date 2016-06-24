@@ -79,7 +79,6 @@ public class CacheClientNotifier {
    * @param acceptorStats        
    * @param maximumMessageCount
    * @param messageTimeToLive 
-   * @param transactionTimeToLive - ttl for txstates for disconnected clients
    * @param listener 
    * @param overflowAttributesList 
    * @return A <code>CacheClientNotifier</code> instance
@@ -87,13 +86,11 @@ public class CacheClientNotifier {
   public static synchronized CacheClientNotifier getInstance(Cache cache,
       CacheServerStats acceptorStats,
       int maximumMessageCount, int messageTimeToLive,
-      int transactionTimeToLive,
       ConnectionListener listener, List overflowAttributesList, boolean isGatewayReceiver)
   {
     if (ccnSingleton == null) {
       ccnSingleton = new CacheClientNotifier(cache, acceptorStats, maximumMessageCount, 
-          messageTimeToLive, transactionTimeToLive,
-          listener, overflowAttributesList, isGatewayReceiver);
+          messageTimeToLive, listener, overflowAttributesList, isGatewayReceiver);
     }
     
     if (!isGatewayReceiver && ccnSingleton.getHaContainer() == null) {
@@ -114,9 +111,6 @@ public class CacheClientNotifier {
   public static CacheClientNotifier getInstance(){
     return ccnSingleton;
   }
-
-  /** the amount of time in seconds to keep a disconnected client's txstates around */
-  private final int transactionTimeToLive;
   
   /**
    * Writes a given message to the output stream
@@ -2080,15 +2074,13 @@ public class CacheClientNotifier {
    * @param acceptorStats
    * @param maximumMessageCount
    * @param messageTimeToLive
-   * @param transactionTimeToLive - ttl for txstates for disconnected clients
    * @param listener a listener which should receive notifications
    *          abouts queues being added or removed.
    * @param overflowAttributesList
    */
   private CacheClientNotifier(Cache cache, CacheServerStats acceptorStats, 
-      int maximumMessageCount, int messageTimeToLive, int transactionTimeToLive,
-      ConnectionListener listener,
-      List overflowAttributesList, boolean isGatewayReceiver) {
+      int maximumMessageCount, int messageTimeToLive, 
+      ConnectionListener listener, List overflowAttributesList, boolean isGatewayReceiver) {
     // Set the Cache
     this.setCache((GemFireCacheImpl)cache);
     this.acceptorStats = acceptorStats;
@@ -2104,7 +2096,6 @@ public class CacheClientNotifier {
 
     this.maximumMessageCount = maximumMessageCount;
     this.messageTimeToLive = messageTimeToLive;
-    this.transactionTimeToLive = transactionTimeToLive;
 
     // Initialize the statistics
     StatisticsFactory factory ;
@@ -2688,14 +2679,6 @@ public class CacheClientNotifier {
         }
       }
     }
-  }
-
-
-  /**
-   * @return the time-to-live for abandoned transactions, in seconds
-   */
-  public int getTransactionTimeToLive() {
-    return this.transactionTimeToLive;
   }
 }
 

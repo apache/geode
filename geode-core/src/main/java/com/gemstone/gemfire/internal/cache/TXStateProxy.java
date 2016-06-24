@@ -21,6 +21,7 @@ package com.gemstone.gemfire.internal.cache;
 
 import com.gemstone.gemfire.cache.client.internal.ServerRegionDataAccess;
 import com.gemstone.gemfire.distributed.DistributedMember;
+import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
 
 /**
@@ -92,4 +93,6 @@ public interface TXStateProxy extends TXStateInterface {
    * @param progress
    */
   public void setInProgress(boolean progress);
+  
+  public void updateProxyServer(InternalDistributedMember proxy);
 }
