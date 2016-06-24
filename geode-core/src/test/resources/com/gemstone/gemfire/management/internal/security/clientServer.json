@@ -136,6 +136,14 @@
       ]
     },
     {
+      "name": "dataUser",
+      "password": "1234567",
+      "roles": [
+        "data-read",
+        "data-write"
+      ]
+    },
+    {
       "name":"authRegionUser",
       "password": "1234567",
       "roles": [
