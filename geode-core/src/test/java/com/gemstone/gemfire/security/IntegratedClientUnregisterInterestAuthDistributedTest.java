@@ -27,7 +27,7 @@ import org.junit.experimental.categories.Category;
 @Category(DistributedTest.class)
 public class IntegratedClientUnregisterInterestAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest{
   @Test
-  public void testRegisterInterest() throws InterruptedException {
+  public void testUnregisterInterest() throws InterruptedException {
     // client2 connects to user as a user authorized to use AuthRegion region
     AsyncInvocation ai1 =  client2.invokeAsync(()->{
       Cache cache = SecurityTestUtils.createCacheClient("authRegionUser", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
