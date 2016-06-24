@@ -129,6 +129,13 @@
       ]
     },
     {
+      "name": "dataReader",
+      "password": "1234567",
+      "roles": [
+        "data-read"
+      ]
+    },
+    {
       "name":"authRegionUser",
       "password": "1234567",
       "roles": [
