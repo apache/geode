@@ -3672,12 +3672,15 @@ public abstract class AbstractRegionMap implements RegionMap {
     synchronized(this._getOwner().getSizeGuard()) { // do this sync first; see bug 51985
         synchronized (re) {
           int entryVersion = re.getVersionStamp().getEntryVersion();
-          boolean isTombstone = re.isTombstone();
-          boolean isSameTombstone = (entryVersion == destroyedVersion && isTombstone);
-          if (isSameTombstone || (isTombstone && entryVersion < destroyedVersion)) {
+          if (!re.isTombstone() || entryVersion > destroyedVersion) {
             if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
-              // logs are at info level for TomstoneService.DEBUG_TOMBSTONE_COUNT so customer doesn't have to use fine level
-              if (isSameTombstone) {
+              logger.trace(LogMarker.TOMBSTONE_COUNT,
+                  "tombstone for {} was resurrected with v{}; destroyed version was v{}; count is {}; entryMap size is {}",
+                  re.getKey(), re.getVersionStamp().getEntryVersion(), destroyedVersion, this._getOwner().getTombstoneCount(), size());
+            }
+          } else {
+            if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
+              if (entryVersion == destroyedVersion) {
                 // logging this can put tremendous pressure on the log writer in tests
                 // that "wait for silence"
                 logger.trace(LogMarker.TOMBSTONE_COUNT,
@@ -3711,12 +3714,6 @@ public abstract class AbstractRegionMap implements RegionMap {
             } catch (RegionDestroyedException e) {
               //if the region has been destroyed, the tombstone is already
               //gone. Catch an exception to avoid an error from the GC thread.
-            }
-          } else {
-            if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
-              logger.trace(LogMarker.TOMBSTONE_COUNT,
-                  "tombstone for {} was resurrected with v{}; destroyed version was v{}; count is {}; entryMap size is {}",
-                  re.getKey(), re.getVersionStamp().getEntryVersion(), destroyedVersion, this._getOwner().getTombstoneCount(), size());
             }
           }
         }
