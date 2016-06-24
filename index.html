@@ -79,18 +79,18 @@
             </a>
         <nav class="collapse navbar-collapse bf-navbar-collapse" role="navigation">
             <ul class="nav navbar-nav navbar-right">
-                <li class=""><a href="/community/"><span class="fa fa-users"></span></a></li>
-                <li class=""><a href="/docs/"><span class="fa fa-book"></span></a></li>
-                <li><a href="http://github.com/apache/incubator-geode" target="_blank"><span class="fa fa-github-square"></span></a></li>
+                <li class=""><a href="/community/"><span class="icns icon-group"></span></a></li>
+                <li class=""><a href="/docs/"><span class="icns icon-book"></span></a></li>
+                <li><a href="http://github.com/apache/incubator-geode" target="_blank"><span class="icns icon-github-sign"></span></a></li>
                 <!--<li><a href="https://trello.com/b/exQmJIOn/usergrid" target="_blank"><span class="icns icon-trello"></span></a></li>-->
                 <li><a href="https://issues.apache.org/jira/browse/GEODE/"
-                       target="_blank"><span class="fa fa-bug"></span></a></li>
-                <li><a href="http://stackoverflow.com/search?q=Apache%20Geode" target="_blank"><span class="fa fa-stack-overflow"></span></a></li>
-                <li><a href="/community/#mailing-lists"><span class="fa fa-envelope"></span></a></li>
+                       target="_blank"><span class="icns icon-bug"></span></a></li>
+                <li><a href="http://stackoverflow.com/search?q=Apache%20Geode" target="_blank"><span class="icns icon-stackexchange"></span></a></li>
+                <li><a href="/community/#mailing-lists"><span class="icns icon-envelope"></span></a></li>
                 <!-- <li><a href="/community/#live"><span class="icns icon-comments"></span></a></li> -->
-                <li><a href="https://twitter.com/apachegeode" target="_blank"><span class="fa fa-twitter"></span></a></li>
-                <li><a href="https://cwiki.apache.org/confluence/display/geode/" target="_blank"><span class="fa fa-pencil-square-o"></span></a></li>
-                <li><a href="/releases/"><span class="fa fa-arrow-circle-o-down"></span></a></li>
+                <li><a href="https://twitter.com/apachegeode" target="_blank"><span class="icns icon-twitter"></span></a></li>
+                <li><a href="https://cwiki.apache.org/confluence/display/geode/" target="_blank"><span class="icns icon-edit"></span></a></li>
+                <li><a href="/releases/"><span class="icns icon-releases"></span></a></li>
             </ul>
         </nav>
     </div>
@@ -145,87 +145,56 @@ under the License. -->
     <div class="container">
         <div class="row">
             <div class="col-md-4">
-                <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="fa fa-sitemap"></i></div>
+                <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-sitemap"></i></div>
                 <h3>Replication and Partitioning</h3>
                 <p>Data can easily be partitioned (sharded) or replicated between nodes allowing performance to scale as needed. Durability is ensured through redundant in-memory copies and disk-based persistence.</p>
             </div>
             <div class="col-md-4">
-                <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="fa fa-hdd-o"></i></div>
+                <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-hdd"></i></div>
                 <h3>Persistence</h3>
                 <p>Super fast write-ahead-logging (WAL) persistence with a shared-nothing architecture that is optimized for fast parallel recovery of nodes or an entire cluster.</p>
             </div>
             <div class="col-md-4">
-                <div class="bf-icon-wrap"><i aria-hidden="true" class="fa fa-rocket"></i></div>
+                <div class="bf-icon-wrap"><i aria-hidden="true" class="icon-rocket"></i></div>
                 <h3>Performance</h3>
                 <p>Linear-scaling low latency for transactions, reads, writes and query processing of indexed or unindexed data.</p>
             </div>
         </div>
         <div class="row">
             <div class="col-md-4">
-                <div class="bf-icon-wrap" style="font-size:40px; vertical-align: 15px;"><i aria-hidden="true" class="fa fa-fast-forward"></i><i aria-hidden="true" class="fa fa-dashboard"></i></div>
+                <div class="bf-icon-wrap" style="font-size:40px; vertical-align: 15px;"><i aria-hidden="true" class="icon-fast-forward"></i><i aria-hidden="true" class="icon-dashboard"></i></div>
                 <h3>In-Memory Storage</h3>
                 <p>Blazing fast in-memory storage optimized for large heaps, with the option of using off-heap storage, compression and features such as disk-overflow, eviction and expiration of data.</p>
             </div>
             <div class="col-md-4">
-                <div class="bf-icon-wrap"><span style="font-size:60px" aria-hidden="true" class="fa fa-cogs"></span></div>
+                <div class="bf-icon-wrap"><span style="font-size:60px" aria-hidden="true" class="icon-cogs"></span></div>
                 <h3>Functions</h3>
                 <p>Distributed location-aware user functions can be deployed and executed by the same nodes storing relevant sharded data for fast parallel processing. Failed operations can be retried on replicant nodes.</p>
             </div>
             <div class="col-md-4">
-                <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="fa fa-credit-card"></i></div>
+                <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-credit-card"></i></div>
                 <h3>Transactions</h3>
                 <p>ACID distributed transactions support efficient and safe coordinated operations on colocated data. Transactions can be initiated or suspended by either a client or a server.</p>
             </div>
         </div>
         <div class="row">
           <div class="col-md-4">
-              <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="fa fa-table"></i></div>
+              <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-table"></i></div>
               <h3>OQL and Indexes</h3>
               <p>Object Query Language allows distributed query execution on hot and cold data, with SQL-like capabilities, including joins.<br/>
               Multiple kinds of indexes can be defined and consistently maintained across the cluster.</p>
           </div>
           <div class="col-md-4">
-              <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="fa fa-bolt"></i></div>
+              <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-bolt"></i></div>
               <h3>Events</h3>
               <p>Clients can be notified about server-side data events, and servers can react synchronously or asynchronously with guaranteed delivery of ordered events.</p>
           </div>
           <div class="col-md-4">
-              <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="fa fa-cloud"></i></div>
+              <div class="bf-icon-wrap"><i style="font-size:65px; vertical-align: -5px;" aria-hidden="true" class="icon-cloud"></i></div>
               <h3>Clustering</h3>
               <p>Highly scalable, robust advanced clustering technology with failure detection, dynamic scaling, and network-partition detection algorithms.</p>
           </div>
         </div>
-        <div class="row">
-          <div class="col-md-4">
-              <div class="bf-icon-wrap" style="font-size:30px; vertical-align: 15px;" aria-hidden="true"><i class="fa fa-cloud"></i><i style="font-size:15px; vertical-align: 15px;" class="fa fa-exchange fa-8x"></i><i class="fa fa-cloud"></i></div>
-              <h3>Multi-Cluster</h3>
-              <p>Geode clusters can be replicated over WAN in various topologies: active-active, active-passive, ring, hub-spoke, star, etc.</p>
-          </div>
-          <div class="col-md-4">
-              <div class="bf-icon-wrap" style="font-size:30px; vertical-align: -5px;" aria-hidden="true"><i class="fa fa-bullhorn"></i><i class="fa fa-laptop"></i></div>
-              <h3>Continuous Query</h3>
-              <p>Clients can stay up to date by registering OQL queries with the Geode servers, making event-driven applications possible.</p>
-          </div>
-          <div class="col-md-4">
-              <div class="bf-icon-wrap" style="font-size:30px; vertical-align: -5px;" aria-hidden="true"><i class="fa fa-desktop"></i><i class="fa fa-laptop"></i></div>
-              <h3>Clients</h3>
-              <p>Clients are available for Java. (C++, C# .NET and Node.js coming soon.) A REST API is available for all other languages.</p>
-          </div>
-        </div>
-      <div class="row">
-          <div class="col-md-4">
-              <div></div>
-          </div>
-          <div class="col-md-4">
-              <div class="bf-icon-wrap" style="font-size:65px; vertical-align: -5px;" aria-hidden="true"><i class="fa fa-plug"></i></div>
-              <h3>Adapters</h3>
-              <p>Geode can be used as a drop-in replacement for Redis and memcached, allowing users of these caches to use Geode's server-side features like WAN.</p>
-          </div>
-          <div class="col-md-4">
-              <div></div>
-          </div>
-        </div>
-
     </div>
 
     </div>
