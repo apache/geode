@@ -188,145 +188,146 @@ public class Destroy65 extends BaseCommand {
       }
       writeErrorResponse(msg, MessageType.DESTROY_DATA_ERROR, errMessage.toString(), servConn);
       servConn.setAsTrue(RESPONDED);
-    } else {
-      LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
-      if (region == null) {
-        String reason = LocalizedStrings.Destroy__0_WAS_NOT_FOUND_DURING_DESTROY_REQUEST.toLocalizedString(regionName);
-        writeRegionDestroyedEx(msg, regionName, reason, servConn);
-        servConn.setAsTrue(RESPONDED);
-      } else {
-        // Destroy the entry
-        ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
-        long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-        long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-        EventID eventId = new EventID(servConn.getEventMemberIDByteArray(), threadId, sequenceId);
-        EventIDHolder clientEvent = new EventIDHolder(eventId);
+      return;
+    }
 
-        Breadcrumbs.setEventId(eventId);
+    LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
+    if (region == null) {
+      String reason = LocalizedStrings.Destroy__0_WAS_NOT_FOUND_DURING_DESTROY_REQUEST.toLocalizedString(regionName);
+      writeRegionDestroyedEx(msg, regionName, reason, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    }
 
-        // msg.isRetry might be set by v7.0 and later clients
-        if (msg.isRetry()) {
-          //          if (logger.isDebugEnabled()) {
-          //            logger.debug("DEBUG: encountered isRetry in Destroy65");
-          //          }
-          clientEvent.setPossibleDuplicate(true);
-          if (region.getAttributes().getConcurrencyChecksEnabled()) {
-            // recover the version tag from other servers
-            clientEvent.setRegion(region);
-            if (!recoverVersionTagForRetriedOperation(clientEvent)) {
-              clientEvent.setPossibleDuplicate(false); // no-one has seen this event
-            }
-          }
+    // for integrated security
+    GeodeSecurityUtil.authorizeRegionWrite(regionName, key.toString());
+
+    // Destroy the entry
+    ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
+    long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    EventID eventId = new EventID(servConn.getEventMemberIDByteArray(), threadId, sequenceId);
+    EventIDHolder clientEvent = new EventIDHolder(eventId);
+
+    Breadcrumbs.setEventId(eventId);
+
+    // msg.isRetry might be set by v7.0 and later clients
+    if (msg.isRetry()) {
+      //          if (logger.isDebugEnabled()) {
+      //            logger.debug("DEBUG: encountered isRetry in Destroy65");
+      //          }
+      clientEvent.setPossibleDuplicate(true);
+      if (region.getAttributes().getConcurrencyChecksEnabled()) {
+        // recover the version tag from other servers
+        clientEvent.setRegion(region);
+        if (!recoverVersionTagForRetriedOperation(clientEvent)) {
+          clientEvent.setPossibleDuplicate(false); // no-one has seen this event
         }
-
-        // for integrated security
-        GeodeSecurityUtil.authorizeRegionWrite(regionName, key.toString());
-
-        try {
-          AuthorizeRequest authzRequest = servConn.getAuthzRequest();
-          if (authzRequest != null) {
-            // TODO SW: This is to handle DynamicRegionFactory destroy
-            // calls. Rework this when the semantics of DynamicRegionFactory are
-            // cleaned up.
-            if (DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
-              RegionDestroyOperationContext destroyContext = authzRequest.destroyRegionAuthorize((String) key, callbackArg);
-              callbackArg = destroyContext.getCallbackArg();
-            } else {
-              DestroyOperationContext destroyContext = authzRequest.destroyAuthorize(regionName, key, callbackArg);
-              callbackArg = destroyContext.getCallbackArg();
-            }
-          }
-          if (operation == null || operation == Operation.DESTROY) {
-            region.basicBridgeDestroy(key, callbackArg, servConn.getProxyID(), true, clientEvent);
-          } else {
-            // this throws exceptions if expectedOldValue checks fail
-            try {
-              if (expectedOldValue == null) {
-                expectedOldValue = Token.INVALID;
-              }
-              if (operation == Operation.REMOVE && msg.isRetry() && clientEvent.getVersionTag() != null) {
-                // the operation was successful last time it was tried, so there's
-                // no need to perform it again.  Just return the version tag and
-                // success status
-                if (logger.isDebugEnabled()) {
-                  logger.debug("remove(k,v) operation was successful last time with version {}", clientEvent.getVersionTag());
-                }
-                // try the operation anyway to ensure that it's been distributed to all servers
-                try {
-                  region.basicBridgeRemove(key, expectedOldValue, callbackArg, servConn.getProxyID(), true, clientEvent);
-                } catch (EntryNotFoundException e) {
-                  // ignore, and don't set entryNotFoundForRemove because this was a successful
-                  // operation - bug #51664
-                }
-              } else {
-                region.basicBridgeRemove(key, expectedOldValue, callbackArg, servConn.getProxyID(), true, clientEvent);
-                if (logger.isDebugEnabled()) {
-                  logger.debug("region.remove succeeded");
-                }
-              }
-            } catch (EntryNotFoundException e) {
-              servConn.setModificationInfo(true, regionName, key);
-              if (logger.isDebugEnabled()) {
-                logger.debug("writing entryNotFound response");
-              }
-              entryNotFoundForRemove = true;
-            }
-          }
-          servConn.setModificationInfo(true, regionName, key);
-        } catch (EntryNotFoundException e) {
-          // Don't send an exception back to the client if this
-          // exception happens. Just log it and continue.
-          logger.info(LocalizedMessage.create(LocalizedStrings.Destroy_0_DURING_ENTRY_DESTROY_NO_ENTRY_WAS_FOUND_FOR_KEY_1, new Object[] {
-            servConn.getName(),
-            key
-          }));
-          entryNotFoundForRemove = true;
-        } catch (RegionDestroyedException rde) {
-          writeException(msg, rde, false, servConn);
-          servConn.setAsTrue(RESPONDED);
-          return;
-        } catch (Exception e) {
-          // If an interrupted exception is thrown , rethrow it
-          checkForInterrupt(servConn, e);
-
-          // If an exception occurs during the destroy, preserve the connection
-          writeException(msg, e, false, servConn);
-          servConn.setAsTrue(RESPONDED);
-          if (e instanceof GemFireSecurityException) {
-            // Fine logging for security exceptions since these are already
-            // logged by the security logger
-            if (logger.isDebugEnabled()) {
-              logger.debug("{}: Unexpected Security exception", servConn.getName(), e);
-            }
-          } else {
-            logger.warn(LocalizedMessage.create(LocalizedStrings.Destroy_0_UNEXPECTED_EXCEPTION, servConn.getName()), e);
-          }
-          return;
-        }
-
-        // Update the statistics and write the reply
-        now = DistributionStats.getStatTime();
-        stats.incProcessDestroyTime(now - start);
-
-        if (region instanceof PartitionedRegion) {
-          PartitionedRegion pr = (PartitionedRegion) region;
-          if (pr.isNetworkHop() != (byte) 0) {
-            writeReplyWithRefreshMetadata(msg, servConn, pr, entryNotFoundForRemove, pr.isNetworkHop(), clientEvent.getVersionTag());
-            pr.setIsNetworkHop((byte) 0);
-            pr.setMetadataVersion((byte) 0);
-          } else {
-            writeReply(msg, servConn, entryNotFoundForRemove | clientEvent.getIsRedestroyedEntry(), clientEvent.getVersionTag());
-          }
-        } else {
-          writeReply(msg, servConn, entryNotFoundForRemove | clientEvent.getIsRedestroyedEntry(), clientEvent.getVersionTag());
-        }
-        servConn.setAsTrue(RESPONDED);
-        if (logger.isDebugEnabled()) {
-          logger.debug("{}: Sent destroy response for region {} key {}", servConn.getName(), regionName, key);
-        }
-        stats.incWriteDestroyResponseTime(DistributionStats.getStatTime() - start);
       }
     }
+
+    try {
+      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      if (authzRequest != null) {
+        // TODO SW: This is to handle DynamicRegionFactory destroy
+        // calls. Rework this when the semantics of DynamicRegionFactory are
+        // cleaned up.
+        if (DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
+          RegionDestroyOperationContext destroyContext = authzRequest.destroyRegionAuthorize((String) key, callbackArg);
+          callbackArg = destroyContext.getCallbackArg();
+        } else {
+          DestroyOperationContext destroyContext = authzRequest.destroyAuthorize(regionName, key, callbackArg);
+          callbackArg = destroyContext.getCallbackArg();
+        }
+      }
+      if (operation == null || operation == Operation.DESTROY) {
+        region.basicBridgeDestroy(key, callbackArg, servConn.getProxyID(), true, clientEvent);
+      } else {
+        // this throws exceptions if expectedOldValue checks fail
+        try {
+          if (expectedOldValue == null) {
+            expectedOldValue = Token.INVALID;
+          }
+          if (operation == Operation.REMOVE && msg.isRetry() && clientEvent.getVersionTag() != null) {
+            // the operation was successful last time it was tried, so there's
+            // no need to perform it again.  Just return the version tag and
+            // success status
+            if (logger.isDebugEnabled()) {
+              logger.debug("remove(k,v) operation was successful last time with version {}", clientEvent.getVersionTag());
+            }
+            // try the operation anyway to ensure that it's been distributed to all servers
+            try {
+              region.basicBridgeRemove(key, expectedOldValue, callbackArg, servConn.getProxyID(), true, clientEvent);
+            } catch (EntryNotFoundException e) {
+              // ignore, and don't set entryNotFoundForRemove because this was a successful
+              // operation - bug #51664
+            }
+          } else {
+            region.basicBridgeRemove(key, expectedOldValue, callbackArg, servConn.getProxyID(), true, clientEvent);
+            if (logger.isDebugEnabled()) {
+              logger.debug("region.remove succeeded");
+            }
+          }
+        } catch (EntryNotFoundException e) {
+          servConn.setModificationInfo(true, regionName, key);
+          if (logger.isDebugEnabled()) {
+            logger.debug("writing entryNotFound response");
+          }
+          entryNotFoundForRemove = true;
+        }
+      }
+      servConn.setModificationInfo(true, regionName, key);
+    } catch (EntryNotFoundException e) {
+      // Don't send an exception back to the client if this
+      // exception happens. Just log it and continue.
+      logger.info(LocalizedMessage.create(LocalizedStrings.Destroy_0_DURING_ENTRY_DESTROY_NO_ENTRY_WAS_FOUND_FOR_KEY_1, new Object[] {
+        servConn.getName(), key
+      }));
+      entryNotFoundForRemove = true;
+    } catch (RegionDestroyedException rde) {
+      writeException(msg, rde, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    } catch (Exception e) {
+      // If an interrupted exception is thrown , rethrow it
+      checkForInterrupt(servConn, e);
+
+      // If an exception occurs during the destroy, preserve the connection
+      writeException(msg, e, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      if (e instanceof GemFireSecurityException) {
+        // Fine logging for security exceptions since these are already
+        // logged by the security logger
+        if (logger.isDebugEnabled()) {
+          logger.debug("{}: Unexpected Security exception", servConn.getName(), e);
+        }
+      } else {
+        logger.warn(LocalizedMessage.create(LocalizedStrings.Destroy_0_UNEXPECTED_EXCEPTION, servConn.getName()), e);
+      }
+      return;
+    }
+
+    // Update the statistics and write the reply
+    now = DistributionStats.getStatTime();
+    stats.incProcessDestroyTime(now - start);
+
+    if (region instanceof PartitionedRegion) {
+      PartitionedRegion pr = (PartitionedRegion) region;
+      if (pr.isNetworkHop() != (byte) 0) {
+        writeReplyWithRefreshMetadata(msg, servConn, pr, entryNotFoundForRemove, pr.isNetworkHop(), clientEvent.getVersionTag());
+        pr.setIsNetworkHop((byte) 0);
+        pr.setMetadataVersion((byte) 0);
+      } else {
+        writeReply(msg, servConn, entryNotFoundForRemove | clientEvent.getIsRedestroyedEntry(), clientEvent.getVersionTag());
+      }
+    } else {
+      writeReply(msg, servConn, entryNotFoundForRemove | clientEvent.getIsRedestroyedEntry(), clientEvent.getVersionTag());
+    }
+    servConn.setAsTrue(RESPONDED);
+    if (logger.isDebugEnabled()) {
+      logger.debug("{}: Sent destroy response for region {} key {}", servConn.getName(), regionName, key);
+    }
+    stats.incWriteDestroyResponseTime(DistributionStats.getStatTime() - start);
 
 
   }

@@ -27,14 +27,16 @@ public class GeodePermission extends WildcardPermission {
   public enum Resource {
     NULL,
     CLUSTER,
-    DATA
+    DATA,
+    FUNCTION
   }
 
   public enum Operation {
     NULL,
     MANAGE,
     WRITE,
-    READ;
+    READ,
+    EXEC
   }
 
   public Resource getResource() {

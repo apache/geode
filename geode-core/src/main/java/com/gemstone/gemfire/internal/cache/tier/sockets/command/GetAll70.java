@@ -57,14 +57,12 @@ public class GetAll70 extends BaseCommand {
   /**
    * client wants values to be serialized as byte arrays, not objects
    */
- // private boolean requestSerializedValues;
-
+  // private boolean requestSerializedValues;
   protected GetAll70() {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
-          throws IOException, InterruptedException {
+  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException, InterruptedException {
     Part regionNamePart = null, keysPart = null;
     String regionName = null;
     Object[] keys = null;
@@ -91,15 +89,14 @@ public class GetAll70 extends BaseCommand {
 
     if (logger.isDebugEnabled()) {
       StringBuffer buffer = new StringBuffer();
-      buffer
-              .append(servConn.getName())
-              .append(": Received getAll request (")
-              .append(msg.getPayloadLength())
-              .append(" bytes) from ")
-              .append(servConn.getSocketString())
-              .append(" for region ")
-              .append(regionName)
-              .append(" keys ");
+      buffer.append(servConn.getName())
+            .append(": Received getAll request (")
+            .append(msg.getPayloadLength())
+            .append(" bytes) from ")
+            .append(servConn.getSocketString())
+            .append(" for region ")
+            .append(regionName)
+            .append(" keys ");
       if (keys != null) {
         for (int i = 0; i < keys.length; i++) {
           buffer.append(keys[i]).append(" ");
@@ -118,42 +115,44 @@ public class GetAll70 extends BaseCommand {
         message = LocalizedStrings.GetAll_THE_INPUT_REGION_NAME_FOR_THE_GETALL_REQUEST_IS_NULL.toLocalizedString();
       }
       logger.warn("{}: {}", servConn.getName(), message);
-      writeChunkedErrorResponse(msg, MessageType.GET_ALL_DATA_ERROR, message,
-              servConn);
+      writeChunkedErrorResponse(msg, MessageType.GET_ALL_DATA_ERROR, message, servConn);
       servConn.setAsTrue(RESPONDED);
-    } else {
-      LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
-      if (region == null) {
-        String reason = " was not found during getAll request";
-        writeRegionDestroyedEx(msg, regionName, reason, servConn);
-        servConn.setAsTrue(RESPONDED);
-      } else {
-        // Send header
-        ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
-        chunkedResponseMsg.setMessageType(MessageType.RESPONSE);
-        chunkedResponseMsg.setTransactionId(msg.getTransactionId());
-        chunkedResponseMsg.sendHeader();
+      return;
+    }
 
-        // Send chunk response
-        try {
-          fillAndSendGetAllResponseChunks(region, regionName, keys, servConn, requestSerializedValues);
-          servConn.setAsTrue(RESPONDED);
-        } catch (Exception e) {
-          // If an interrupted exception is thrown , rethrow it
-          checkForInterrupt(servConn, e);
+    LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
+    if (region == null) {
+      String reason = " was not found during getAll request";
+      writeRegionDestroyedEx(msg, regionName, reason, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    }
+    // Send header
+    ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
+    chunkedResponseMsg.setMessageType(MessageType.RESPONSE);
+    chunkedResponseMsg.setTransactionId(msg.getTransactionId());
+    chunkedResponseMsg.sendHeader();
 
-          // Otherwise, write an exception message and continue
-          writeChunkedException(msg, e, false, servConn);
-          servConn.setAsTrue(RESPONDED);
-          return;
-        }
-      }
+    // Send chunk response
+    try {
+      fillAndSendGetAllResponseChunks(region, regionName, keys, servConn, requestSerializedValues);
+      servConn.setAsTrue(RESPONDED);
+    } catch (Exception e) {
+      // If an interrupted exception is thrown , rethrow it
+      checkForInterrupt(servConn, e);
+
+      // Otherwise, write an exception message and continue
+      writeChunkedException(msg, e, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
     }
   }
 
   private void fillAndSendGetAllResponseChunks(Region region,
-      String regionName, Object[] keys, ServerConnection servConn, boolean requestSerializedValues)
-      throws IOException {
+                                               String regionName,
+                                               Object[] keys,
+                                               ServerConnection servConn,
+                                               boolean requestSerializedValues) throws IOException {
 
     // Interpret null keys object as a request to get all key,value entry pairs
     // of the region; otherwise iterate each key and perform the get behavior.
@@ -176,133 +175,144 @@ public class GetAll70 extends BaseCommand {
     // So the only reason we would tell the VersionedObjectList that it needs to track keys is if we are running
     // in the old mode (which may be impossible since we only used that mode pre 7.0) in which the client told us
     // to get and return all the keys and values. I think this was used for register interest.
-    VersionedObjectList values = new VersionedObjectList(maximumChunkSize, keys == null, region.getAttributes().getConcurrencyChecksEnabled(), requestSerializedValues);
+    VersionedObjectList values = new VersionedObjectList(maximumChunkSize, keys == null, region.getAttributes()
+                                                                                               .getConcurrencyChecksEnabled(), requestSerializedValues);
     try {
-    AuthorizeRequest authzRequest = servConn.getAuthzRequest();
-    AuthorizeRequestPP postAuthzRequest = servConn.getPostAuthzRequest();
-    Get70 request = (Get70) Get70.getCommand();
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    for (int i = 0; i < numKeys; i++) {
-      // Send the intermediate chunk if necessary
-      if (values.size() == maximumChunkSize) {
-        // Send the chunk and clear the list
-        values.setKeys(null);
-        sendGetAllResponseChunk(region, values, false, servConn);
-        values.clear();
-      }
+      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      AuthorizeRequestPP postAuthzRequest = servConn.getPostAuthzRequest();
+      Get70 request = (Get70) Get70.getCommand();
+      final boolean isDebugEnabled = logger.isDebugEnabled();
+      for (int i = 0; i < numKeys; i++) {
+        // Send the intermediate chunk if necessary
+        if (values.size() == maximumChunkSize) {
+          // Send the chunk and clear the list
+          values.setKeys(null);
+          sendGetAllResponseChunk(region, values, false, servConn);
+          values.clear();
+        }
 
-      Object key;
-      boolean keyNotPresent = false;
-      if (keys != null) {
-        key = keys[i];
-      } else {
-        key = allKeysIter.next();
-      }
-      if (isDebugEnabled) {
-        logger.debug("{}: Getting value for key={}", servConn.getName(), key);
-      }
-      // Determine if the user authorized to get this key
-      GetOperationContext getContext = null;
-      if (authzRequest != null) {
-        try {
-          getContext = authzRequest.getAuthorize(regionName, key, null);
-          if (isDebugEnabled) {
-            logger.debug("{}: Passed GET pre-authorization for key={}", servConn.getName(), key);
+        Object key;
+        boolean keyNotPresent = false;
+        if (keys != null) {
+          key = keys[i];
+        } else {
+          key = allKeysIter.next();
+        }
+        if (isDebugEnabled) {
+          logger.debug("{}: Getting value for key={}", servConn.getName(), key);
+        }
+        // Determine if the user authorized to get this key
+        GetOperationContext getContext = null;
+        if (authzRequest != null) {
+          try {
+            getContext = authzRequest.getAuthorize(regionName, key, null);
+            if (isDebugEnabled) {
+              logger.debug("{}: Passed GET pre-authorization for key={}", servConn.getName(), key);
+            }
+          } catch (NotAuthorizedException ex) {
+            logger.warn(LocalizedMessage.create(LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1, new Object[] {
+              servConn.getName(),
+              key
+            }), ex);
+            values.addExceptionPart(key, ex);
+            continue;
           }
+        }
+
+        try {
+          GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());
         } catch (NotAuthorizedException ex) {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1, new Object[]{servConn.getName(), key}), ex);
+          logger.warn(LocalizedMessage.create(LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1, new Object[] {
+            servConn.getName(),
+            key
+          }), ex);
           values.addExceptionPart(key, ex);
           continue;
         }
-      }
 
-      try {
-        GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());
-      }
-      catch (NotAuthorizedException ex) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1, new Object[]{servConn.getName(), key}), ex);
-        values.addExceptionPart(key, ex);
-        continue;
-      }
+        // Get the value and update the statistics. Do not deserialize
+        // the value if it is a byte[].
+        // Getting a value in serialized form is pretty nasty. I split this out
+        // so the logic can be re-used by the CacheClientProxy.
+        Get70.Entry entry = request.getEntry(region, key, null, servConn);
+        @Retained
+        final Object originalData = entry.value;
+        Object data = originalData;
+        if (logger.isDebugEnabled()) {
+          logger.debug("retrieved key={} {}", key, entry);
+        }
+        boolean addedToValues = false;
+        try {
+          boolean isObject = entry.isObject;
+          VersionTag versionTag = entry.versionTag;
+          keyNotPresent = entry.keyNotPresent;
 
-      // Get the value and update the statistics. Do not deserialize
-      // the value if it is a byte[].
-      // Getting a value in serialized form is pretty nasty. I split this out
-      // so the logic can be re-used by the CacheClientProxy.
-      Get70.Entry entry = request.getEntry(region, key, null, servConn);
-      @Retained final Object originalData = entry.value;
-      Object data = originalData;
-      if (logger.isDebugEnabled()) {
-        logger.debug("retrieved key={} {}", key, entry);
-      }
-      boolean addedToValues = false;
-      try {
-        boolean isObject = entry.isObject;
-        VersionTag versionTag = entry.versionTag;
-        keyNotPresent = entry.keyNotPresent;
-
-        if (postAuthzRequest != null) {
-          try {
-            getContext = postAuthzRequest.getAuthorize(regionName, key, data,
-                isObject, getContext);
-            GetOperationContextImpl gci = (GetOperationContextImpl) getContext;
-            Object newData = gci.getRawValue();
-            if (newData != data) {
-              // user changed the value
-              isObject = getContext.isObject();
-              data = newData;
-            }
-          } catch (NotAuthorizedException ex) {
-            logger.warn(LocalizedMessage.create(LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1,
-                new Object[]{servConn.getName(), key}), ex);
-            values.addExceptionPart(key, ex);
-            continue;
-          } finally {
-            if (getContext != null) {
-              ((GetOperationContextImpl)getContext).release();
+          if (postAuthzRequest != null) {
+            try {
+              getContext = postAuthzRequest.getAuthorize(regionName, key, data, isObject, getContext);
+              GetOperationContextImpl gci = (GetOperationContextImpl) getContext;
+              Object newData = gci.getRawValue();
+              if (newData != data) {
+                // user changed the value
+                isObject = getContext.isObject();
+                data = newData;
+              }
+            } catch (NotAuthorizedException ex) {
+              logger.warn(LocalizedMessage.create(LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1, new Object[] {
+                servConn.getName(),
+                key
+              }), ex);
+              values.addExceptionPart(key, ex);
+              continue;
+            } finally {
+              if (getContext != null) {
+                ((GetOperationContextImpl) getContext).release();
+              }
             }
           }
-        }
 
-        data = GeodeSecurityUtil.postProcess(regionName, key, data);
+          data = GeodeSecurityUtil.postProcess(regionName, key, data);
 
-        // Add the entry to the list that will be returned to the client
-        if (keyNotPresent) {
-          values.addObjectPartForAbsentKey(key, data, versionTag);
-          addedToValues = true;
-        } else {
-          values.addObjectPart(key, data, isObject, versionTag);
-          addedToValues = true;
-        }
-      } finally {
-        if (!addedToValues || data != originalData) {
-          OffHeapHelper.release(originalData);
+          // Add the entry to the list that will be returned to the client
+          if (keyNotPresent) {
+            values.addObjectPartForAbsentKey(key, data, versionTag);
+            addedToValues = true;
+          } else {
+            values.addObjectPart(key, data, isObject, versionTag);
+            addedToValues = true;
+          }
+        } finally {
+          if (!addedToValues || data != originalData) {
+            OffHeapHelper.release(originalData);
+          }
         }
       }
-    }
 
-    // Send the last chunk even if the list is of zero size.
-    if (Version.GFE_701.compareTo(servConn.getClientVersion()) <= 0) {
-      // 7.0.1 and later clients do not expect the keys in the response
-      values.setKeys(null);
-    }
-    sendGetAllResponseChunk(region, values, true, servConn);
-    servConn.setAsTrue(RESPONDED);
+      // Send the last chunk even if the list is of zero size.
+      if (Version.GFE_701.compareTo(servConn.getClientVersion()) <= 0) {
+        // 7.0.1 and later clients do not expect the keys in the response
+        values.setKeys(null);
+      }
+      sendGetAllResponseChunk(region, values, true, servConn);
+      servConn.setAsTrue(RESPONDED);
     } finally {
       values.release();
     }
   }
 
 
-  private static void sendGetAllResponseChunk(Region region, ObjectPartList list,
-                                              boolean lastChunk, ServerConnection servConn) throws IOException {
+  private static void sendGetAllResponseChunk(Region region,
+                                              ObjectPartList list,
+                                              boolean lastChunk,
+                                              ServerConnection servConn) throws IOException {
     ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
     chunkedResponseMsg.setNumberOfParts(1);
     chunkedResponseMsg.setLastChunk(lastChunk);
     chunkedResponseMsg.addObjPartNoCopying(list);
 
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Sending {} getAll response chunk for region={}{}", servConn.getName(), (lastChunk ? " last " : " "), region.getFullPath(), (logger.isTraceEnabled()? " values=" + list + " chunk=<" + chunkedResponseMsg + ">" : ""));
+      logger.debug("{}: Sending {} getAll response chunk for region={}{}", servConn.getName(), (lastChunk ? " last " : " "), region
+        .getFullPath(), (logger.isTraceEnabled() ? " values=" + list + " chunk=<" + chunkedResponseMsg + ">" : ""));
     }
 
     chunkedResponseMsg.sendChunk(servConn);

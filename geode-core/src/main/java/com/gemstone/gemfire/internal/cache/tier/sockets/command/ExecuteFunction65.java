@@ -52,6 +52,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 /**
  * @since GemFire 6.5
@@ -68,8 +69,7 @@ public class ExecuteFunction65 extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start)
-      throws IOException {
+  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException {
     Object function = null;
     Object args = null;
     MemberMappedArgument memberMappedArg = null;
@@ -86,11 +86,10 @@ public class ExecuteFunction65 extends BaseCommand {
         functionState = AbstractExecution.HA_HASRESULT_OPTIMIZEFORWRITE;
         isReexecute = true;
       }
-      
-      if(functionState != 1) {
+
+      if (functionState != 1) {
         hasResult = (byte) ((functionState & 2) - 1);
-      }
-      else  {
+      } else {
         hasResult = functionState;
       }
       if (hasResult == 1) {
@@ -99,13 +98,12 @@ public class ExecuteFunction65 extends BaseCommand {
       }
       function = msg.getPart(1).getStringOrObject();
       args = msg.getPart(2).getObject();
-      
+
       Part part = msg.getPart(3);
       if (part != null) {
-        memberMappedArg = (MemberMappedArgument)part.getObject();
+        memberMappedArg = (MemberMappedArgument) part.getObject();
       }
-    }
-    catch (ClassNotFoundException exception) {
+    } catch (ClassNotFoundException exception) {
       logger.warn(LocalizedMessage.create(LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0, function), exception);
       if (hasResult == 1) {
         writeChunkedException(msg, exception, false, servConn);
@@ -114,157 +112,137 @@ public class ExecuteFunction65 extends BaseCommand {
       }
     }
     if (function == null) {
-      final String message = 
-        LocalizedStrings.ExecuteFunction_THE_INPUT_FUNCTION_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-          .toLocalizedString();
+      final String message = LocalizedStrings.ExecuteFunction_THE_INPUT_FUNCTION_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
+        .toLocalizedString();
       logger.warn("{}: {}", servConn.getName(), message);
       sendError(hasResult, msg, message, servConn);
       return;
     }
-    else {
-      // Execute function on the cache
-      try {
-        Function functionObject = null;
-        if (function instanceof String) {
-          functionObject = FunctionService.getFunction((String)function);
-          if (functionObject == null) {
-            final String message = 
-              LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-                .toLocalizedString(function);
+
+    // Execute function on the cache
+    try {
+      Function functionObject = null;
+      if (function instanceof String) {
+        functionObject = FunctionService.getFunction((String) function);
+        if (functionObject == null) {
+          final String message = LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED.toLocalizedString(function);
+          logger.warn("{}: {}", servConn.getName(), message);
+          sendError(hasResult, msg, message, servConn);
+          return;
+        } else {
+          byte functionStateOnServerSide = AbstractExecution.getFunctionState(functionObject.isHA(), functionObject.hasResult(), functionObject
+            .optimizeForWrite());
+          if (logger.isDebugEnabled()) {
+            logger.debug("Function State on server side: {} on client: {}", functionStateOnServerSide, functionState);
+          }
+          if (functionStateOnServerSide != functionState) {
+            String message = LocalizedStrings.FunctionService_FUNCTION_ATTRIBUTE_MISMATCH_CLIENT_SERVER.toLocalizedString(function);
             logger.warn("{}: {}", servConn.getName(), message);
             sendError(hasResult, msg, message, servConn);
             return;
           }
-          else {
-            byte functionStateOnServerSide = AbstractExecution.getFunctionState(
-                functionObject.isHA(), functionObject.hasResult(),
-                functionObject.optimizeForWrite());
-            if (logger.isDebugEnabled()) {
-              logger.debug("Function State on server side: {} on client: {}", functionStateOnServerSide, functionState);
-            }
-            if (functionStateOnServerSide != functionState) {
-              String message = LocalizedStrings.FunctionService_FUNCTION_ATTRIBUTE_MISMATCH_CLIENT_SERVER
-                  .toLocalizedString(function);
-              logger.warn("{}: {}", servConn.getName(), message);
-              sendError(hasResult, msg, message, servConn);
-              return;
-            }
-          }
         }
-        else {
-          functionObject = (Function)function;
-        }
-        FunctionStats stats = FunctionStats.getFunctionStats(functionObject.getId(), null);
-        // check if the caller is authorized to do this operation on server
-        AuthorizeRequest authzRequest = servConn.getAuthzRequest();
-        ExecuteFunctionOperationContext executeContext = null;
-        if (authzRequest != null) {
-          executeContext = authzRequest.executeFunctionAuthorize(functionObject
-              .getId(), null, null, args, functionObject.optimizeForWrite());
-        }
-        ChunkedMessage m = servConn.getFunctionResponseMessage();
-        m.setTransactionId(msg.getTransactionId());
-        ResultSender resultSender = new ServerToClientFunctionResultSender65(m,
-            MessageType.EXECUTE_FUNCTION_RESULT, servConn, functionObject, executeContext);
-        
-        InternalDistributedMember localVM = InternalDistributedSystem
-            .getAnyInstance().getDistributedMember();
-        FunctionContext context = null;
+      } else {
+        functionObject = (Function) function;
+      }
 
-        if (memberMappedArg != null) {
-          context = new FunctionContextImpl(functionObject.getId(),
-              memberMappedArg.getArgumentsForMember(localVM.getId()),
-              resultSender, isReexecute);
-        }
-        else {
-          context = new FunctionContextImpl(functionObject.getId(), args,
-              resultSender, isReexecute);
-        }
-        HandShake handShake = (HandShake)servConn.getHandshake();
-        int earlierClientReadTimeout = handShake.getClientReadTimeout();
-        handShake.setClientReadTimeout(0);
-        try {
-          long startExecution = stats.startTime();
-          stats.startFunctionExecution(functionObject.hasResult());
-          if (logger.isDebugEnabled()) {
-            logger.debug("Executing Function on Server: {} with context: {}", servConn, context);
-          }
-          GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-          HeapMemoryMonitor hmm = ((InternalResourceManager) cache.getResourceManager()).getHeapMonitor();
-          if (functionObject.optimizeForWrite() && cache != null &&
-              hmm.getState().isCritical() &&
-              !MemoryThresholds.isLowMemoryExceptionDisabled()) {
-            Set<DistributedMember> sm = Collections.singleton((DistributedMember)cache.getMyId());
-            Exception e = new LowMemoryException(LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
-                .toLocalizedString(new Object[] {functionObject.getId(), sm}), sm);
-            
-            sendException(hasResult, msg, e.getMessage(), servConn, e);
-            return;
-          }
-          functionObject.execute(context);
-          if (!((ServerToClientFunctionResultSender65)resultSender)
-              .isLastResultReceived() && functionObject.hasResult()) { 
-            throw new FunctionException( 
-                LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                .toString(functionObject.getId())); 
-          } 
-          stats.endFunctionExecution(startExecution, 
-              functionObject.hasResult()); 
-        }
-        catch (FunctionException functionException) {
-          stats.endFunctionExecutionWithException(functionObject.hasResult());
-          throw functionException;
-        }
-        catch (Exception exception) {
-          stats.endFunctionExecutionWithException(functionObject.hasResult());
-          throw new FunctionException(exception);
-        }
-        finally{
-          handShake.setClientReadTimeout(earlierClientReadTimeout);
-        }
+      GeodeSecurityUtil.authorizeFunctionExec(functionObject.getId());
+
+      FunctionStats stats = FunctionStats.getFunctionStats(functionObject.getId(), null);
+      // check if the caller is authorized to do this operation on server
+      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      ExecuteFunctionOperationContext executeContext = null;
+      if (authzRequest != null) {
+        executeContext = authzRequest.executeFunctionAuthorize(functionObject.getId(), null, null, args, functionObject.optimizeForWrite());
       }
-      catch (IOException ioException) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0, function), ioException);
-        String message = LocalizedStrings.ExecuteFunction_SERVER_COULD_NOT_SEND_THE_REPLY.toLocalizedString();
-        sendException(hasResult, msg, message, servConn, ioException);
+      ChunkedMessage m = servConn.getFunctionResponseMessage();
+      m.setTransactionId(msg.getTransactionId());
+      ResultSender resultSender = new ServerToClientFunctionResultSender65(m, MessageType.EXECUTE_FUNCTION_RESULT, servConn, functionObject, executeContext);
+
+      InternalDistributedMember localVM = InternalDistributedSystem.getAnyInstance().getDistributedMember();
+      FunctionContext context = null;
+
+      if (memberMappedArg != null) {
+        context = new FunctionContextImpl(functionObject.getId(), memberMappedArg.getArgumentsForMember(localVM.getId()), resultSender, isReexecute);
+      } else {
+        context = new FunctionContextImpl(functionObject.getId(), args, resultSender, isReexecute);
       }
-      catch (InternalFunctionInvocationTargetException internalfunctionException) {
-        // Fix for #44709: User should not be aware of
-        // InternalFunctionInvocationTargetException. No instance of
-        // InternalFunctionInvocationTargetException is giving useful
-        // information to user to take any corrective action hence logging
-        // this at fine level logging
-        // 1> In case of HA FucntionInvocationTargetException thrown. Since
-        // it is HA, function will be reexecuted on right node
-        // 2> in case of HA member departed
+      HandShake handShake = (HandShake) servConn.getHandshake();
+      int earlierClientReadTimeout = handShake.getClientReadTimeout();
+      handShake.setClientReadTimeout(0);
+      try {
+        long startExecution = stats.startTime();
+        stats.startFunctionExecution(functionObject.hasResult());
         if (logger.isDebugEnabled()) {
-          logger.debug(LocalizedMessage.create(LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0, new Object[] { function }), internalfunctionException);
+          logger.debug("Executing Function on Server: {} with context: {}", servConn, context);
         }
-        final String message = internalfunctionException.getMessage();
-        sendException(hasResult, msg, message, servConn, internalfunctionException);
-      } 
-      catch (Exception e) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0, function), e);
-        final String message = e.getMessage();
-        sendException(hasResult, msg, message, servConn,e);
+        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+        HeapMemoryMonitor hmm = ((InternalResourceManager) cache.getResourceManager()).getHeapMonitor();
+        if (functionObject.optimizeForWrite() && cache != null &&
+            hmm.getState().isCritical() &&
+            !MemoryThresholds.isLowMemoryExceptionDisabled()) {
+          Set<DistributedMember> sm = Collections.singleton((DistributedMember) cache.getMyId());
+          Exception e = new LowMemoryException(LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1.toLocalizedString(new Object[] {
+            functionObject.getId(),
+            sm
+          }), sm);
+
+          sendException(hasResult, msg, e.getMessage(), servConn, e);
+          return;
+        }
+        functionObject.execute(context);
+        if (!((ServerToClientFunctionResultSender65) resultSender).isLastResultReceived() && functionObject.hasResult()) {
+          throw new FunctionException(LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT.toString(functionObject
+            .getId()));
+        }
+        stats.endFunctionExecution(startExecution, functionObject.hasResult());
+      } catch (FunctionException functionException) {
+        stats.endFunctionExecutionWithException(functionObject.hasResult());
+        throw functionException;
+      } catch (Exception exception) {
+        stats.endFunctionExecutionWithException(functionObject.hasResult());
+        throw new FunctionException(exception);
+      } finally {
+        handShake.setClientReadTimeout(earlierClientReadTimeout);
       }
+    } catch (IOException ioException) {
+      logger.warn(LocalizedMessage.create(LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0, function), ioException);
+      String message = LocalizedStrings.ExecuteFunction_SERVER_COULD_NOT_SEND_THE_REPLY.toLocalizedString();
+      sendException(hasResult, msg, message, servConn, ioException);
+    } catch (InternalFunctionInvocationTargetException internalfunctionException) {
+      // Fix for #44709: User should not be aware of
+      // InternalFunctionInvocationTargetException. No instance of
+      // InternalFunctionInvocationTargetException is giving useful
+      // information to user to take any corrective action hence logging
+      // this at fine level logging
+      // 1> In case of HA FucntionInvocationTargetException thrown. Since
+      // it is HA, function will be reexecuted on right node
+      // 2> in case of HA member departed
+      if (logger.isDebugEnabled()) {
+        logger.debug(LocalizedMessage.create(LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0, new Object[] {
+          function
+        }), internalfunctionException);
+      }
+      final String message = internalfunctionException.getMessage();
+      sendException(hasResult, msg, message, servConn, internalfunctionException);
+    } catch (Exception e) {
+      logger.warn(LocalizedMessage.create(LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0, function), e);
+      final String message = e.getMessage();
+      sendException(hasResult, msg, message, servConn, e);
     }
   }
 
-  private void sendException(byte hasResult, Message msg, String message,
-      ServerConnection servConn, Throwable e) throws IOException {
+  private void sendException(byte hasResult, Message msg, String message, ServerConnection servConn, Throwable e)
+    throws IOException {
     if (hasResult == 1) {
-      writeFunctionResponseException(msg, MessageType.EXCEPTION, message,
-          servConn, e);
+      writeFunctionResponseException(msg, MessageType.EXCEPTION, message, servConn, e);
       servConn.setAsTrue(RESPONDED);
     }
   }
 
-  private void sendError(byte hasResult, Message msg, String message,
-      ServerConnection servConn) throws IOException {
+  private void sendError(byte hasResult, Message msg, String message, ServerConnection servConn) throws IOException {
     if (hasResult == 1) {
-      writeFunctionResponseError(msg, MessageType.EXECUTE_FUNCTION_ERROR,
-          message, servConn);
+      writeFunctionResponseError(msg, MessageType.EXECUTE_FUNCTION_ERROR, message, servConn);
       servConn.setAsTrue(RESPONDED);
     }
   }

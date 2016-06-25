@@ -114,112 +114,106 @@ public class Invalidate extends BaseCommand {
       }
       writeErrorResponse(msg, MessageType.DESTROY_DATA_ERROR, errMessage.toString(), servConn);
       servConn.setAsTrue(RESPONDED);
-    } else {
-      LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
-      if (region == null) {
-        String reason = LocalizedStrings.BaseCommand__0_WAS_NOT_FOUND_DURING_1_REQUEST.toLocalizedString(regionName, "invalidate");
-        writeRegionDestroyedEx(msg, regionName, reason, servConn);
-        servConn.setAsTrue(RESPONDED);
-      } else {
-        // Invalidate the entry
-        ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
-        long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-        long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-        EventID eventId = new EventID(servConn.getEventMemberIDByteArray(), threadId, sequenceId);
+      return;
+    }
+    LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
+    if (region == null) {
+      String reason = LocalizedStrings.BaseCommand__0_WAS_NOT_FOUND_DURING_1_REQUEST.toLocalizedString(regionName, "invalidate");
+      writeRegionDestroyedEx(msg, regionName, reason, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    }
+    // Invalidate the entry
+    ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
+    long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    EventID eventId = new EventID(servConn.getEventMemberIDByteArray(), threadId, sequenceId);
 
-        Breadcrumbs.setEventId(eventId);
+    Breadcrumbs.setEventId(eventId);
 
-        VersionTag tag = null;
+    VersionTag tag = null;
 
-        // for integrated security
-        GeodeSecurityUtil.authorizeRegionWrite(regionName, key.toString());
+    // for integrated security
+    GeodeSecurityUtil.authorizeRegionWrite(regionName, key.toString());
 
-        try {
-          /*
-           * 
-           * txtodo: doesn't seem like there is any notion of authzInvalidate
-           */
-          AuthorizeRequest authzRequest = servConn.getAuthzRequest();
-          if (authzRequest != null) {
-            InvalidateOperationContext invalidateContext = authzRequest.invalidateAuthorize(regionName, key, callbackArg);
-            callbackArg = invalidateContext.getCallbackArg();
-          }
-          EventIDHolder clientEvent = new EventIDHolder(eventId);
-
-          // msg.isRetry might be set by v7.0 and later clients
-          if (msg.isRetry()) {
-            //            if (logger.isDebugEnabled()) {
-            //              logger.debug("DEBUG: encountered isRetry in Invalidate");
-            //            }
-            clientEvent.setPossibleDuplicate(true);
-            if (region.getAttributes().getConcurrencyChecksEnabled()) {
-              // recover the version tag from other servers
-              clientEvent.setRegion(region);
-              if (!recoverVersionTagForRetriedOperation(clientEvent)) {
-                clientEvent.setPossibleDuplicate(false); // no-one has seen this event
-              }
-            }
-          }
-
-          region.basicBridgeInvalidate(key, callbackArg, servConn.getProxyID(), true, clientEvent);
-          tag = clientEvent.getVersionTag();
-          servConn.setModificationInfo(true, regionName, key);
-        } catch (EntryNotFoundException e) {
-          // Don't send an exception back to the client if this
-          // exception happens. Just log it and continue.
-          logger.info(LocalizedMessage.create(LocalizedStrings.BaseCommand_DURING_0_NO_ENTRY_WAS_FOUND_FOR_KEY_1, new Object[] {
-            "invalidate",
-            key
-          }));
-        } catch (RegionDestroyedException rde) {
-          writeException(msg, rde, false, servConn);
-          servConn.setAsTrue(RESPONDED);
-          return;
-        } catch (Exception e) {
-          // If an interrupted exception is thrown , rethrow it
-          checkForInterrupt(servConn, e);
-
-          // If an exception occurs during the destroy, preserve the connection
-          writeException(msg, e, false, servConn);
-          servConn.setAsTrue(RESPONDED);
-          if (e instanceof GemFireSecurityException) {
-            // Fine logging for security exceptions since these are already
-            // logged by the security logger
-            if (logger.isDebugEnabled()) {
-              logger.debug("{}: Unexpected Security exception", servConn.getName(), e);
-            }
-          } else {
-            logger.warn(LocalizedMessage.create(LocalizedStrings.BaseCommand_0_UNEXPECTED_EXCEPTION, servConn.getName()), e);
-          }
-          return;
-        }
-
-        // Update the statistics and write the reply
-        {
-          long oldStart = start;
-          start = DistributionStats.getStatTime();
-          stats.incProcessInvalidateTime(start - oldStart);
-        }
-        if (region instanceof PartitionedRegion) {
-          PartitionedRegion pr = (PartitionedRegion) region;
-          if (pr.isNetworkHop() != (byte) 0) {
-            writeReplyWithRefreshMetadata(msg, servConn, pr, pr.isNetworkHop(), tag);
-            pr.setIsNetworkHop((byte) 0);
-            pr.setMetadataVersion(Byte.valueOf((byte) 0));
-          } else {
-            writeReply(msg, servConn, tag);
-          }
-        } else {
-          writeReply(msg, servConn, tag);
-        }
-        servConn.setAsTrue(RESPONDED);
-        if (logger.isDebugEnabled()) {
-          logger.debug("{}: Sent invalidate response for region {} key {}", servConn.getName(), regionName, key);
-        }
-        stats.incWriteInvalidateResponseTime(DistributionStats.getStatTime() - start);
+    try {
+      AuthorizeRequest authzRequest = servConn.getAuthzRequest();
+      if (authzRequest != null) {
+        InvalidateOperationContext invalidateContext = authzRequest.invalidateAuthorize(regionName, key, callbackArg);
+        callbackArg = invalidateContext.getCallbackArg();
       }
+      EventIDHolder clientEvent = new EventIDHolder(eventId);
+
+      // msg.isRetry might be set by v7.0 and later clients
+      if (msg.isRetry()) {
+        //            if (logger.isDebugEnabled()) {
+        //              logger.debug("DEBUG: encountered isRetry in Invalidate");
+        //            }
+        clientEvent.setPossibleDuplicate(true);
+        if (region.getAttributes().getConcurrencyChecksEnabled()) {
+          // recover the version tag from other servers
+          clientEvent.setRegion(region);
+          if (!recoverVersionTagForRetriedOperation(clientEvent)) {
+            clientEvent.setPossibleDuplicate(false); // no-one has seen this event
+          }
+        }
+      }
+
+      region.basicBridgeInvalidate(key, callbackArg, servConn.getProxyID(), true, clientEvent);
+      tag = clientEvent.getVersionTag();
+      servConn.setModificationInfo(true, regionName, key);
+    } catch (EntryNotFoundException e) {
+      // Don't send an exception back to the client if this
+      // exception happens. Just log it and continue.
+      logger.info(LocalizedMessage.create(LocalizedStrings.BaseCommand_DURING_0_NO_ENTRY_WAS_FOUND_FOR_KEY_1, new Object[] {
+        "invalidate", key
+      }));
+    } catch (RegionDestroyedException rde) {
+      writeException(msg, rde, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    } catch (Exception e) {
+      // If an interrupted exception is thrown , rethrow it
+      checkForInterrupt(servConn, e);
+
+      // If an exception occurs during the destroy, preserve the connection
+      writeException(msg, e, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      if (e instanceof GemFireSecurityException) {
+        // Fine logging for security exceptions since these are already
+        // logged by the security logger
+        if (logger.isDebugEnabled()) {
+          logger.debug("{}: Unexpected Security exception", servConn.getName(), e);
+        }
+      } else {
+        logger.warn(LocalizedMessage.create(LocalizedStrings.BaseCommand_0_UNEXPECTED_EXCEPTION, servConn.getName()), e);
+      }
+      return;
     }
 
+    // Update the statistics and write the reply
+    {
+      long oldStart = start;
+      start = DistributionStats.getStatTime();
+      stats.incProcessInvalidateTime(start - oldStart);
+    }
+    if (region instanceof PartitionedRegion) {
+      PartitionedRegion pr = (PartitionedRegion) region;
+      if (pr.isNetworkHop() != (byte) 0) {
+        writeReplyWithRefreshMetadata(msg, servConn, pr, pr.isNetworkHop(), tag);
+        pr.setIsNetworkHop((byte) 0);
+        pr.setMetadataVersion(Byte.valueOf((byte) 0));
+      } else {
+        writeReply(msg, servConn, tag);
+      }
+    } else {
+      writeReply(msg, servConn, tag);
+    }
+    servConn.setAsTrue(RESPONDED);
+    if (logger.isDebugEnabled()) {
+      logger.debug("{}: Sent invalidate response for region {} key {}", servConn.getName(), regionName, key);
+    }
+    stats.incWriteInvalidateResponseTime(DistributionStats.getStatTime() - start);
   }
 
   protected void writeReply(Message origMsg, ServerConnection servConn, VersionTag tag) throws IOException {

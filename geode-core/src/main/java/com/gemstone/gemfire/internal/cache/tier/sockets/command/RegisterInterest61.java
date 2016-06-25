@@ -19,25 +19,30 @@
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+
+import com.gemstone.gemfire.cache.DynamicRegionFactory;
+import com.gemstone.gemfire.cache.InterestResultPolicy;
+import com.gemstone.gemfire.cache.operations.RegisterInterestOperationContext;
+import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.Version;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.InterestType;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.*;
+import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
+import com.gemstone.gemfire.internal.cache.tier.sockets.CacheClientProxy;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ChunkedMessage;
+import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
+import com.gemstone.gemfire.internal.cache.tier.sockets.Part;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.cache.vmotion.VMotionObserver;
 import com.gemstone.gemfire.internal.cache.vmotion.VMotionObserverHolder;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
-import com.gemstone.gemfire.cache.DynamicRegionFactory;
-import com.gemstone.gemfire.cache.InterestResultPolicy;
-import com.gemstone.gemfire.cache.operations.RegisterInterestOperationContext;
-import com.gemstone.gemfire.i18n.StringId;
 import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
-
-import java.io.IOException;
 /**
  * @since GemFire 6.1
  */
@@ -153,19 +158,6 @@ public class RegisterInterest61 extends BaseCommand {
       VMotionObserver vmo = VMotionObserverHolder.getInstance();
       vmo.vMotionBeforeRegisterInterest();
     }
-
-    /*
-    AcceptorImpl acceptor = servConn.getAcceptor();
-    
-    //  Check if the Server is running in NotifyBySubscription=true mode.
-    if (!acceptor.getCacheClientNotifier().getNotifyBySubscription()) {
-      // This should have been taken care at the client.
-      String err = LocalizedStrings.RegisterInterest_INTEREST_REGISTRATION_IS_SUPPORTED_ONLY_FOR_SERVERS_WITH_NOTIFYBYSUBSCRIPTION_SET_TO_TRUE.toLocalizedString() ;
-      writeChunkedErrorResponse(msg, MessageType.REGISTER_INTEREST_DATA_ERROR,
-          err, servConn);
-      servConn.setAsTrue(RESPONDED);  return;
-    }
-    */
     
     // Process the register interest request
     if (key == null || regionName == null) {
@@ -183,10 +175,12 @@ public class RegisterInterest61 extends BaseCommand {
       return;
     }
 
-    if(interestType == InterestType.REGULAR_EXPRESSION)
+    if(interestType == InterestType.REGULAR_EXPRESSION) {
       GeodeSecurityUtil.authorizeRegionRead(regionName);
-    else
+    }
+    else {
       GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());
+    }
 
     // input key not null
     LocalRegion region = (LocalRegion)crHelper.getRegion(regionName);

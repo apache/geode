@@ -209,6 +209,7 @@ public class Put65 extends BaseCommand {
       return;
     }
 
+    GeodeSecurityUtil.authorizeRegionWrite(regionName, key.toString());
 
     ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
     long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
@@ -268,8 +269,6 @@ public class Put65 extends BaseCommand {
       if (isDebugEnabled) {
         logger.debug("processing put65 with operation={}", operation);
       }
-
-      GeodeSecurityUtil.authorizeRegionWrite(regionName, key.toString());
 
       // If the value is 1 byte and the byte represents null,
       // attempt to create the entry. This test needs to be

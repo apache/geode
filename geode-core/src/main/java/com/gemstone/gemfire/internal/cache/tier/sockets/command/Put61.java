@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 /**
- * 
+ *
  */
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
@@ -28,7 +28,6 @@ import com.gemstone.gemfire.cache.RegionDestroyedException;
 import com.gemstone.gemfire.cache.ResourceException;
 import com.gemstone.gemfire.cache.operations.PutOperationContext;
 import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.internal.cache.EntryEventImpl;
 import com.gemstone.gemfire.internal.cache.EventID;
 import com.gemstone.gemfire.internal.cache.EventIDHolder;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
@@ -44,6 +43,7 @@ import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 import com.gemstone.gemfire.security.GemFireSecurityException;
 
 /**
@@ -62,7 +62,7 @@ public class Put61 extends BaseCommand {
 
   @Override
   public void cmdExecute(Message msg, ServerConnection servConn, long p_start)
-      throws IOException, InterruptedException {
+    throws IOException, InterruptedException {
     long start = p_start;
     Part regionNamePart = null, keyPart = null, valuePart = null, callbackArgPart = null;
     String regionName = null;
@@ -76,11 +76,9 @@ public class Put61 extends BaseCommand {
       boolean interrupted = Thread.interrupted();
       try {
         Thread.sleep(crHelper.emulateSlowServer());
-      }
-      catch (InterruptedException ugh) {
+      } catch (InterruptedException ugh) {
         interrupted = true;
-      }
-      finally {
+      } finally {
         if (interrupted) {
           Thread.currentThread().interrupt();
         }
@@ -98,9 +96,8 @@ public class Put61 extends BaseCommand {
     regionNamePart = msg.getPart(0);
     keyPart = msg.getPart(1);
     try {
-      isDelta = (Boolean)msg.getPart(2).getObject();
-    }
-    catch (Exception e) {
+      isDelta = (Boolean) msg.getPart(2).getObject();
+    } catch (Exception e) {
       writeException(msg, MessageType.PUT_DELTA_ERROR, e, false, servConn);
       servConn.setAsTrue(RESPONDED);
       // CachePerfStats not available here.
@@ -112,8 +109,7 @@ public class Put61 extends BaseCommand {
       callbackArgPart = msg.getPart(5);
       try {
         callbackArg = callbackArgPart.getObject();
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         writeException(msg, e, false, servConn);
         servConn.setAsTrue(RESPONDED);
         return;
@@ -123,8 +119,7 @@ public class Put61 extends BaseCommand {
 
     try {
       key = keyPart.getStringOrObject();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       writeException(msg, e, false, servConn);
       servConn.setAsTrue(RESPONDED);
       return;
@@ -132,7 +127,8 @@ public class Put61 extends BaseCommand {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
-      logger.debug("{}: Received 6.1{}put request ({} bytes) from {} for region {} key {}", servConn.getName(), (isDelta ? " delta " : " "), msg.getPayloadLength(), servConn.getSocketString(), regionName, key);
+      logger.debug("{}: Received 6.1{}put request ({} bytes) from {} for region {} key {}", servConn.getName(), (isDelta ? " delta " : " "), msg
+        .getPayloadLength(), servConn.getSocketString(), regionName, key);
     }
 
     // Process the put request
@@ -151,169 +147,153 @@ public class Put61 extends BaseCommand {
         }
         errMessage.append(putMsg);
       }
-      writeErrorResponse(msg, MessageType.PUT_DATA_ERROR,
-          errMessage.toString(), servConn);
+      writeErrorResponse(msg, MessageType.PUT_DATA_ERROR, errMessage.toString(), servConn);
       servConn.setAsTrue(RESPONDED);
+      return;
     }
-    else {
-      LocalRegion region = (LocalRegion)crHelper.getRegion(regionName);
-      if (region == null) {
-        String reason = " was not found during 6.1 put request";
-        writeRegionDestroyedEx(msg, regionName, reason, servConn);
-        servConn.setAsTrue(RESPONDED);
+
+    LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
+    if (region == null) {
+      String reason = " was not found during 6.1 put request";
+      writeRegionDestroyedEx(msg, regionName, reason, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    }
+
+    if (valuePart.isNull() && region.containsKey(key)) {
+      // Invalid to 'put' a null value in an existing key
+      String putMsg = " Attempted to 6.1 put a null value for existing key " + key;
+      if (isDebugEnabled) {
+        logger.debug("{}:{}", servConn.getName(), putMsg);
       }
-      else if (valuePart.isNull() && region.containsKey(key)) {
-        // Invalid to 'put' a null value in an existing key
-        String putMsg = " Attempted to 6.1 put a null value for existing key "
-            + key;
-        if (isDebugEnabled) {
-          logger.debug("{}:{}", servConn.getName(), putMsg);
-        }
-        errMessage.append(putMsg);
-        writeErrorResponse(msg, MessageType.PUT_DATA_ERROR, errMessage
-            .toString(), servConn);
-        servConn.setAsTrue(RESPONDED);
+      errMessage.append(putMsg);
+      writeErrorResponse(msg, MessageType.PUT_DATA_ERROR, errMessage.toString(), servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    }
+
+    GeodeSecurityUtil.authorizeRegionWrite(regionName, key.toString());
+
+    // try {
+    // this.eventId = (EventID)eventPart.getObject();
+    ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
+    long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    EventID eventId = new EventID(servConn.getEventMemberIDByteArray(), threadId, sequenceId);
+
+    try {
+      Object value = null;
+      if (!isDelta) {
+        value = valuePart.getSerializedForm();
       }
-      else {
-        // try {
-        // this.eventId = (EventID)eventPart.getObject();
-        ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart
-            .getSerializedForm());
-        long threadId = EventID
-            .readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-        long sequenceId = EventID
-            .readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-        EventID eventId = new EventID(servConn.getEventMemberIDByteArray(),
-            threadId, sequenceId);
-
-        try {
-          Object value = null;
-          if (!isDelta) {
-            value = valuePart.getSerializedForm();
-          } 
-          boolean isObject = valuePart.isObject();
-          boolean isMetaRegion = region.isUsedForMetaRegion();
-          msg.setMetaRegion(isMetaRegion);
-          AuthorizeRequest authzRequest = null;
-          if (!isMetaRegion) {
-            authzRequest = servConn.getAuthzRequest();
-          }
-          if (authzRequest != null) {
-            // TODO SW: This is to handle DynamicRegionFactory create
-            // calls. Rework this when the semantics of DynamicRegionFactory are
-            // cleaned up.
-            if (DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
-              authzRequest.createRegionAuthorize((String)key);
-            }
-            // Allow PUT operations on meta regions (bug #38961)
-            else {
-              PutOperationContext putContext = authzRequest.putAuthorize(
-                  regionName, key, value, isObject, callbackArg);
-              value = putContext.getValue();
-              isObject = putContext.isObject();
-              callbackArg = putContext.getCallbackArg();
-            }
-          }
-          // If the value is 1 byte and the byte represents null,
-          // attempt to create the entry. This test needs to be
-          // moved to DataSerializer or DataSerializer.NULL needs
-          // to be publicly accessible.
-          boolean result = false;
-          if (value == null && !isDelta) {
-            // Create the null entry. Since the value is null, the value of the
-            // isObject
-            // the true after null doesn't matter and is not used.
-            result = region.basicBridgeCreate(key, null, true, callbackArg,
-                servConn.getProxyID(), true, new EventIDHolder(eventId), false);
-          }
-          else {
-            // Put the entry
-            byte[] delta = null;
-            if (isDelta) {
-              delta = valuePart.getSerializedForm();              
-            }
-            result = region.basicBridgePut(key, value, delta, isObject,
-                callbackArg, servConn.getProxyID(), true, new EventIDHolder(eventId));
-          }
-          if (result) {
-            servConn.setModificationInfo(true, regionName, key);
-          }
-          else {
-            String message = servConn.getName()
-                + ": Failed to 6.1 put entry for region " + regionName
-                + " key " + key + " value " + valuePart;
-            if (isDebugEnabled) {
-              logger.debug(message);
-            }
-            throw new Exception(message);
-          }
+      boolean isObject = valuePart.isObject();
+      boolean isMetaRegion = region.isUsedForMetaRegion();
+      msg.setMetaRegion(isMetaRegion);
+      AuthorizeRequest authzRequest = null;
+      if (!isMetaRegion) {
+        authzRequest = servConn.getAuthzRequest();
+      }
+      if (authzRequest != null) {
+        // TODO SW: This is to handle DynamicRegionFactory create
+        // calls. Rework this when the semantics of DynamicRegionFactory are
+        // cleaned up.
+        if (DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
+          authzRequest.createRegionAuthorize((String) key);
         }
-        catch (RegionDestroyedException rde) {
-          writeException(msg, rde, false, servConn);
-          servConn.setAsTrue(RESPONDED);
-          return;
-        }
-        catch (ResourceException re) {
-          writeException(msg, re, false, servConn);
-          servConn.setAsTrue(RESPONDED);
-          return;
-        }
-        catch (InvalidDeltaException ide) {
-          logger.info(LocalizedMessage.create(LocalizedStrings.UpdateOperation_ERROR_APPLYING_DELTA_FOR_KEY_0_OF_REGION_1, new Object[] { key, regionName }));
-          writeException(msg, MessageType.PUT_DELTA_ERROR, ide, false, servConn);
-          servConn.setAsTrue(RESPONDED);
-          region.getCachePerfStats().incDeltaFullValuesRequested();
-          return;
-
-        }
-        catch (Exception ce) {
-          // If an interrupted exception is thrown , rethrow it
-          checkForInterrupt(servConn, ce);
-
-          // If an exception occurs during the put, preserve the connection
-          writeException(msg, ce, false, servConn);
-          servConn.setAsTrue(RESPONDED);
-          if (ce instanceof GemFireSecurityException) {
-            // Fine logging for security exceptions since these are already
-            // logged by the security logger
-            if (isDebugEnabled) {
-              logger.debug("{}: Unexpected Security exception", servConn.getName(), ce);
-            }
-          }
-          else if (isDebugEnabled) {
-            logger.debug("{}: Unexpected Exception", servConn.getName(), ce);
-          }
-          return;
-        }
-        finally {
-          long oldStart = start;
-          start = DistributionStats.getStatTime();
-          stats.incProcessPutTime(start - oldStart);
-        }
-
-        // Increment statistics and write the reply
-        if (region instanceof PartitionedRegion) {
-          PartitionedRegion pr = (PartitionedRegion)region;
-          if (pr.isNetworkHop() != (byte)0) {
-            writeReplyWithRefreshMetadata(msg, servConn,pr,pr.isNetworkHop());
-            pr.setIsNetworkHop((byte)0);
-            pr.setMetadataVersion(Byte.valueOf((byte)0));
-          }
-          else {
-            writeReply(msg, servConn);
-          }
-        }
+        // Allow PUT operations on meta regions (bug #38961)
         else {
-          writeReply(msg, servConn);
+          PutOperationContext putContext = authzRequest.putAuthorize(regionName, key, value, isObject, callbackArg);
+          value = putContext.getValue();
+          isObject = putContext.isObject();
+          callbackArg = putContext.getCallbackArg();
         }
-        servConn.setAsTrue(RESPONDED);
-        if (isDebugEnabled) {
-          logger.debug("{}: Sent 6.1 put response back to {} for region {} key {} value {}", servConn.getName(), servConn.getSocketString(), regionName, key, valuePart);
-        }
-        stats.incWritePutResponseTime(DistributionStats.getStatTime() - start);
       }
+      // If the value is 1 byte and the byte represents null,
+      // attempt to create the entry. This test needs to be
+      // moved to DataSerializer or DataSerializer.NULL needs
+      // to be publicly accessible.
+      boolean result = false;
+      if (value == null && !isDelta) {
+        // Create the null entry. Since the value is null, the value of the
+        // isObject
+        // the true after null doesn't matter and is not used.
+        result = region.basicBridgeCreate(key, null, true, callbackArg, servConn.getProxyID(), true, new EventIDHolder(eventId), false);
+      } else {
+        // Put the entry
+        byte[] delta = null;
+        if (isDelta) {
+          delta = valuePart.getSerializedForm();
+        }
+        result = region.basicBridgePut(key, value, delta, isObject, callbackArg, servConn.getProxyID(), true, new EventIDHolder(eventId));
+      }
+      if (result) {
+        servConn.setModificationInfo(true, regionName, key);
+      } else {
+        String message = servConn.getName() + ": Failed to 6.1 put entry for region " + regionName + " key " + key + " value " + valuePart;
+        if (isDebugEnabled) {
+          logger.debug(message);
+        }
+        throw new Exception(message);
+      }
+    } catch (RegionDestroyedException rde) {
+      writeException(msg, rde, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    } catch (ResourceException re) {
+      writeException(msg, re, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      return;
+    } catch (InvalidDeltaException ide) {
+      logger.info(LocalizedMessage.create(LocalizedStrings.UpdateOperation_ERROR_APPLYING_DELTA_FOR_KEY_0_OF_REGION_1, new Object[] {
+        key,
+        regionName
+      }));
+      writeException(msg, MessageType.PUT_DELTA_ERROR, ide, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      region.getCachePerfStats().incDeltaFullValuesRequested();
+      return;
+
+    } catch (Exception ce) {
+      // If an interrupted exception is thrown , rethrow it
+      checkForInterrupt(servConn, ce);
+
+      // If an exception occurs during the put, preserve the connection
+      writeException(msg, ce, false, servConn);
+      servConn.setAsTrue(RESPONDED);
+      if (ce instanceof GemFireSecurityException) {
+        // Fine logging for security exceptions since these are already
+        // logged by the security logger
+        if (isDebugEnabled) {
+          logger.debug("{}: Unexpected Security exception", servConn.getName(), ce);
+        }
+      } else if (isDebugEnabled) {
+        logger.debug("{}: Unexpected Exception", servConn.getName(), ce);
+      }
+      return;
+    } finally {
+      long oldStart = start;
+      start = DistributionStats.getStatTime();
+      stats.incProcessPutTime(start - oldStart);
     }
 
+    // Increment statistics and write the reply
+    if (region instanceof PartitionedRegion) {
+      PartitionedRegion pr = (PartitionedRegion) region;
+      if (pr.isNetworkHop() != (byte) 0) {
+        writeReplyWithRefreshMetadata(msg, servConn, pr, pr.isNetworkHop());
+        pr.setIsNetworkHop((byte) 0);
+        pr.setMetadataVersion(Byte.valueOf((byte) 0));
+      } else {
+        writeReply(msg, servConn);
+      }
+    } else {
+      writeReply(msg, servConn);
+    }
+    servConn.setAsTrue(RESPONDED);
+    if (isDebugEnabled) {
+      logger.debug("{}: Sent 6.1 put response back to {} for region {} key {} value {}", servConn.getName(), servConn.getSocketString(), regionName, key, valuePart);
+    }
+    stats.incWritePutResponseTime(DistributionStats.getStatTime() - start);
   }
 
 }

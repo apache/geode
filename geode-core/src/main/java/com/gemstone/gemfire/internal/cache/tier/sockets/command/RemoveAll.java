@@ -127,6 +127,8 @@ public class RemoveAll extends BaseCommand {
         servConn.setAsTrue(RESPONDED);
         return;
       }
+
+      GeodeSecurityUtil.authorizeRegionWrite(regionName);
       
       // part 1: eventID
       eventPart = msg.getPart(1);
@@ -209,8 +211,6 @@ public class RemoveAll extends BaseCommand {
         int timeout = msg.getPart(5 + numberOfKeys).getInt();
         servConn.setRequestSpecificTimeout(timeout);
       }
-
-      GeodeSecurityUtil.authorizeRegionWrite(regionName);
 
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {

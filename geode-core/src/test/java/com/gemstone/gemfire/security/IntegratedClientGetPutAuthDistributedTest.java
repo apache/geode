@@ -16,7 +16,7 @@
  */
 package com.gemstone.gemfire.security;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,13 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
 public class IntegratedClientGetPutAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
@@ -60,8 +60,7 @@ public class IntegratedClientGetPutAuthDistributedTest extends AbstractIntegrate
       Map keyValues =  region.getAll(keys);
       assertEquals(0, keyValues.size());
 
-      Set keySet = region.keySet();
-      assertEquals(0, keySet.size());
+      assertNotAuthorized(()->region.keySetOnServer(), "DATA:READ:AuthRegion");
     });
 
 
@@ -81,8 +80,8 @@ public class IntegratedClientGetPutAuthDistributedTest extends AbstractIntegrate
       assertEquals(2, keyValues.size());
 
       // keyset
-      Set keySet = region.keySet();
-      assertEquals(3, keySet.size());
+      Set keySet = region.keySetOnServer();
+      assertEquals(5, keySet.size());
     });
 
     // client3 connects to user as a user authorized to use key1 in AuthRegion region
@@ -100,8 +99,7 @@ public class IntegratedClientGetPutAuthDistributedTest extends AbstractIntegrate
       assertEquals(1, keyValues.size());
 
       // keyset
-      Set keySet = region.keySet();
-      assertEquals(1, keySet.size());
+      assertNotAuthorized(()->region.keySetOnServer(), "DATA:READ:AuthRegion");
     });
 
     ai1.join();

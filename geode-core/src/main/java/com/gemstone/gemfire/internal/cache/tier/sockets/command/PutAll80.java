@@ -134,6 +134,7 @@ public class PutAll80 extends BaseCommand {
         servConn.setAsTrue(RESPONDED);
         return;
       }
+
       LocalRegion region = (LocalRegion)crHelper.getRegion(regionName);
       if (region == null) {
         String reason = " was not found during putAll request";
