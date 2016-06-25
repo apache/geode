@@ -33,16 +33,16 @@ public class IntegratedClientContainsKeyAuthDistributedTest extends AbstractInte
   public void testContainsKey() throws InterruptedException {
 
     AsyncInvocation ai1 = client1.invokeAsync(() -> {
-      Cache cache = SecurityTestUtils.createCacheClient("dataReader", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
+      Cache cache = SecurityTestUtils.createCacheClient("key1User", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
       final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
       assertTrue(region.containsKeyOnServer("key1"));
+      assertNotAuthorized(() -> region.containsKeyOnServer("key3"), "DATA:READ:AuthRegion:key3");
     });
 
     AsyncInvocation ai2 = client2.invokeAsync(() -> {
       Cache cache = SecurityTestUtils.createCacheClient("authRegionReader", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
       final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
-
-      assertNotAuthorized(() -> region.containsKeyOnServer("key3"), "DATA:READ");
+      region.containsKeyOnServer("key3");
     });
     ai1.join();
     ai2.join();

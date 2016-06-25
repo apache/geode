@@ -117,7 +117,7 @@ public class ContainsKey extends BaseCommand {
       return;
     }
 
-    GeodeSecurityUtil.authorizeDataRead();
+    GeodeSecurityUtil.authorizeRegionRead(regionName, key.toString());
 
     AuthorizeRequest authzRequest = servConn.getAuthzRequest();
     if (authzRequest != null) {
