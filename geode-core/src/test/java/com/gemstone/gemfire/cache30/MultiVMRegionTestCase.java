@@ -8554,7 +8554,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // sure that all three regions are consistent
     final long oldServerTimeout = TombstoneService.REPLICATED_TOMBSTONE_TIMEOUT;
     final long oldClientTimeout = TombstoneService.CLIENT_TOMBSTONE_TIMEOUT;
-    final long oldExpiredTombstoneLimit = TombstoneService.EXPIRED_TOMBSTONE_LIMIT;
+    final int oldExpiredTombstoneLimit = TombstoneService.EXPIRED_TOMBSTONE_LIMIT;
     final boolean oldIdleExpiration = TombstoneService.IDLE_EXPIRATION;
     final double oldLimit = TombstoneService.GC_MEMORY_THRESHOLD;
     try {

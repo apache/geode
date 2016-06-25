@@ -80,7 +80,7 @@ public class TombstoneService {
    * all replicated regions, including PR buckets.  The default is
    * 100,000 expired tombstones.
    */
-  public static long EXPIRED_TOMBSTONE_LIMIT = Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "tombstone-gc-threshold", 100000);
+  public static int EXPIRED_TOMBSTONE_LIMIT = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "tombstone-gc-threshold", 100000);
   
   /**
    * The interval to scan for expired tombstones in the queues
@@ -371,31 +371,6 @@ public class TombstoneService {
     }
   }
 
-  /**
-   * Test Hook - slow operation
-   * verify whether a tombstone is scheduled for expiration
-   */
-  public boolean isTombstoneScheduled(LocalRegion r, RegionEntry re) {
-    TombstoneSweeper sweeper = this.getSweeper(r);
-    VersionSource myId = r.getVersionMember();
-    VersionTag entryTag = re.getVersionStamp().asVersionTag();
-    int entryVersion = entryTag.getEntryVersion();
-    for (Tombstone t: sweeper.getQueue()) {
-      if (t.region == r) {
-        VersionSource destroyingMember = t.getMemberID();
-        if (destroyingMember == null) {
-          destroyingMember = myId;
-        }
-        if (t.region == r
-            && t.entry.getKey().equals(re.getKey())
-            && t.getEntryVersion() == entryVersion) {
-          return true;
-        }
-      }
-    }
-    return sweeper.hasExpiredTombstone(r, re, entryTag);
-  }
-
   @Override
   public String toString() {
     return "Destroyed entries GC service.  Replicate Queue=" + this.replicatedTombstoneSweeper.getQueue().toString()
@@ -474,7 +449,7 @@ public class TombstoneService {
      * tombstones that have expired and are awaiting batch removal.  This
      * variable is only accessed by the sweeper thread and so is not guarded
      */
-    private Set<Tombstone> expiredTombstones;
+    private final List<Tombstone> expiredTombstones;
     
     /**
      * count of entries to forcibly expire due to memory events
@@ -488,6 +463,8 @@ public class TombstoneService {
     
     /**
      * Is a batch expiration in progress?
+     * Part of expireBatch is done in a background thread
+     * and until that completes batch expiration is in progress.
      */
     private volatile boolean batchExpirationInProgress;
     
@@ -515,7 +492,9 @@ public class TombstoneService {
       this.queueSize = queueSize;
       this.batchMode = batchMode;
       if (batchMode) {
-        this.expiredTombstones = new HashSet<Tombstone>();
+        this.expiredTombstones = new ArrayList<Tombstone>();
+      } else {
+        this.expiredTombstones = null;
       }
       this.currentTombstoneLock = new StoppableReentrantLock(cache.getCancelCriterion());
       this.sweeperThread = new Thread(LoggingThreadGroup.createThreadGroup("Destroyed Entries Processors", logger), this);
@@ -583,32 +562,6 @@ public class TombstoneService {
       }
     }
     
-    /** test hook - unsafe since not synchronized */
-    boolean hasExpiredTombstone(LocalRegion r, RegionEntry re, VersionTag tag) {
-      if (this.expiredTombstones == null) {
-        return false;
-      }
-      int entryVersion = tag.getEntryVersion();
-      boolean retry;
-      do {
-        retry = false;
-        try {
-          for (Tombstone t: this.expiredTombstones) {
-            if (t.region == r
-                && t.entry.getKey().equals(re.getKey())
-                && t.getEntryVersion() == entryVersion) {
-              return true;
-            }
-          }
-        } catch (ConcurrentModificationException e) {
-          retry = true;
-        }
-      } while (retry);
-      return false;
-    }
-    
-    
-    
     /** expire a batch of tombstones */
     private void expireBatch() {
       // fix for bug #46087 - OOME due to too many GC threads
@@ -630,11 +583,6 @@ public class TombstoneService {
       this.batchExpirationInProgress = true;
       boolean batchScheduled = false;
       try {
-        Set<Tombstone> expired = expiredTombstones;
-        if (expired.isEmpty()) {
-          return;
-        }
-        expiredTombstones = new HashSet<Tombstone>();
         long removalSize = 0;
 
         {
@@ -642,7 +590,7 @@ public class TombstoneService {
           //Update the GC RVV for all of the affected regions.
           //We need to do this so that we can persist the GC RVV before
           //we start removing entries from the map.
-          for (Tombstone t: expired) {
+          for (Tombstone t: expiredTombstones) {
             t.region.getVersionVector().recordGCVersion(t.getMemberID(), t.getRegionVersion());
             regionsAffected.add((DistributedRegion)t.region);
           }
@@ -661,10 +609,15 @@ public class TombstoneService {
           }
         }
 
+        // TODO seems like no need for the value of this map to be a Set.
+        // It could instead be a List, which would be nice because the per entry
+        // memory overhead for a set is much higher than an ArrayList
+        // BUT we send it to clients and the old
+        // version of them expects it to be a Set.
         final Map<DistributedRegion, Set<Object>> reapedKeys = new HashMap<>();
         
         //Remove the tombstones from the in memory region map.
-        for (Tombstone t: expired) {
+        for (Tombstone t: expiredTombstones) {
           // for PR buckets we have to keep track of the keys removed because clients have
           // them all lumped in a single non-PR region
           DistributedRegion tr = (DistributedRegion) t.region;
@@ -679,6 +632,7 @@ public class TombstoneService {
           }
           removalSize += t.getSize();
         }
+        expiredTombstones.clear();
 
         this.queueSize.addAndGet(-removalSize);
         if (!reapedKeys.isEmpty()) {
@@ -896,10 +850,8 @@ public class TombstoneService {
               }
               // test hook:  if there are expired tombstones and nothing else is expiring soon,
               // perform distributed tombstone GC
-              if (batchMode && IDLE_EXPIRATION && sleepTime >= expiryTime) {
-                if (this.expiredTombstones.size() > 0) {
-                  expireBatch();
-                }
+              if (batchMode && IDLE_EXPIRATION && sleepTime >= expiryTime && !this.expiredTombstones.isEmpty()) {
+                expireBatch();
               }
               if (sleepTime > 0) {
                 try {
