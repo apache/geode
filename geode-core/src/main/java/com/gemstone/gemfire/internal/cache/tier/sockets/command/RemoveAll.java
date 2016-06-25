@@ -210,7 +210,7 @@ public class RemoveAll extends BaseCommand {
         servConn.setRequestSpecificTimeout(timeout);
       }
 
-      GeodeSecurityUtil.authorizeDataWrite();
+      GeodeSecurityUtil.authorizeRegionWrite(regionName);
 
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       if (authzRequest != null) {

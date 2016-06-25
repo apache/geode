@@ -35,17 +35,17 @@ public class IntegratedClientRemoveAllAuthDistributedTest extends AbstractIntegr
   public void testRemoveAll() throws InterruptedException {
 
     AsyncInvocation ai1 = client1.invokeAsync(() -> {
-      Cache cache = SecurityTestUtils.createCacheClient("dataReader", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
+      Cache cache = SecurityTestUtils.createCacheClient("authRegionReader", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
       final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
-      assertNotAuthorized(() -> region.removeAll(Arrays.asList("key1", "key2", "key3", "key4")), "DATA:WRITE");
+      assertNotAuthorized(() -> region.removeAll(Arrays.asList("key1", "key2", "key3", "key4")), "DATA:WRITE:AuthRegion");
     });
 
     AsyncInvocation ai2 = client2.invokeAsync(() -> {
-      Cache cache = SecurityTestUtils.createCacheClient("dataUser", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
+      Cache cache = SecurityTestUtils.createCacheClient("authRegionWriter", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
       final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
       region.removeAll(Arrays.asList("key1", "key2", "key3", "key4"));
       assertFalse(region.containsKey("key1"));
-      assertFalse(region.containsKeyOnServer("key1"));
+      assertNotAuthorized(()->region.containsKeyOnServer("key1"), "DATA:READ:AuthRegion:key1");
     });
     ai1.join();
     ai2.join();
