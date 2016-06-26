@@ -93,8 +93,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
 
 /**
- * The LauncherLifecycleCommands class encapsulates all GemFire launcher commands for GemFire tools (like starting
- * GemFire Monitor (GFMon) and Visual Statistics Display (VSD)) as well external tools (like jconsole).
+ * The LauncherLifecycleCommands class encapsulates all Geode launcher commands for Geode tools (like starting
+ * GemFire Monitor (GFMon)) as well as external tools (like jconsole).
  * <p>
  * @see com.gemstone.gemfire.distributed.LocatorLauncher
  * @see com.gemstone.gemfire.distributed.ServerLauncher
@@ -2335,116 +2335,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
     return resourceFile;
   }
 
-  @CliCommand(value = CliStrings.START_VSD, help = CliStrings.START_VSD__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEODE_M_AND_M, CliStrings.TOPIC_GEODE_STATISTICS })
-  public Result startVsd(@CliOption(key = CliStrings.START_VSD__FILE, help = CliStrings.START_VSD__FILE__HELP)
-  final String[] statisticsArchiveFilePathnames) {
-    try {
-      String gemfireHome = System.getenv("GEMFIRE");
-
-      assertState(!StringUtils.isBlank(gemfireHome), CliStrings.GEODE_HOME_NOT_FOUND_ERROR_MESSAGE);
-
-      assertState(IOUtils.isExistingPathname(getPathToVsd()), String.format(CliStrings.START_VSD__NOT_FOUND_ERROR_MESSAGE,
-          gemfireHome));
-
-      String[] vsdCommandLine = createdVsdCommandLine(statisticsArchiveFilePathnames);
-
-      if (isDebugging()) {
-        getGfsh().printAsInfo(String.format("GemFire VSD command-line (%1$s)", Arrays.toString(vsdCommandLine)));
-      }
-
-      Process vsdProcess = Runtime.getRuntime().exec(vsdCommandLine);
-
-      getGfsh().printAsInfo(CliStrings.START_VSD__RUN);
-
-      String vsdProcessOutput = waitAndCaptureProcessStandardErrorStream(vsdProcess);
-
-      InfoResultData infoResultData = ResultBuilder.createInfoResultData();
-
-      if (!StringUtils.isBlank(vsdProcessOutput)) {
-        infoResultData.addLine(StringUtils.LINE_SEPARATOR);
-        infoResultData.addLine(vsdProcessOutput);
-      }
-
-      return ResultBuilder.buildResult(infoResultData);
-    } catch (GemFireException e) {
-      return ResultBuilder.createShellClientErrorResult(e.getMessage());
-    } catch (FileNotFoundException e) {
-      return ResultBuilder.createShellClientErrorResult(e.getMessage());
-    } catch (IllegalArgumentException e) {
-      return ResultBuilder.createShellClientErrorResult(e.getMessage());
-    } catch (IllegalStateException e) {
-      return ResultBuilder.createShellClientErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(String.format(CliStrings.START_VSD__ERROR_MESSAGE,
-          toString(t, false)));
-    }
-  }
-
-  protected String[] createdVsdCommandLine(final String[] statisticsArchiveFilePathnames) throws FileNotFoundException {
-    List<String> commandLine = new ArrayList<>();
-
-    commandLine.add(getPathToVsd());
-    commandLine.addAll(processStatisticsArchiveFiles(statisticsArchiveFilePathnames));
-
-    return commandLine.toArray(new String[commandLine.size()]);
-  }
-
-  protected String getPathToVsd() {
-    String vsdPathname = IOUtils.appendToPath(System.getenv("GEMFIRE"), "tools", "vsd", "bin", "vsd");
-
-    if (SystemUtils.isWindows()) {
-      vsdPathname += ".bat";
-    }
-
-    return vsdPathname;
-  }
-
-  protected Set<String> processStatisticsArchiveFiles(final String[] statisticsArchiveFilePathnames) throws FileNotFoundException {
-    Set<String> statisticsArchiveFiles = new TreeSet<>();
-
-    if (statisticsArchiveFilePathnames != null) {
-      for (String pathname : statisticsArchiveFilePathnames) {
-        File path = new File(pathname);
-
-        if (path.exists()) {
-          if (path.isFile()) {
-            if (StatisticsArchiveFileFilter.INSTANCE.accept(path)) {
-              statisticsArchiveFiles.add(pathname);
-            } else {
-              throw new IllegalArgumentException("A Statistics Archive File must end with a .gfs file extension.");
-            }
-          } else { // the File (path) is a directory
-            processStatisticsArchiveFiles(path, statisticsArchiveFiles);
-          }
-        } else {
-          throw new FileNotFoundException(String.format(
-              "The pathname (%1$s) does not exist.  Please check the path and try again.",
-              path.getAbsolutePath()));
-        }
-      }
-    }
-
-    return statisticsArchiveFiles;
-  }
-
-  @SuppressWarnings("null")
-  protected void processStatisticsArchiveFiles(final File path, final Set<String> statisticsArchiveFiles) {
-    if (path != null && path.isDirectory()) {
-      for (File file : path.listFiles(StatisticsArchiveFileAndDirectoryFilter.INSTANCE)) {
-        if (file.isDirectory()) {
-          processStatisticsArchiveFiles(file, statisticsArchiveFiles);
-        } else if (StatisticsArchiveFileFilter.INSTANCE.accept(file)) {
-          statisticsArchiveFiles.add(file.getAbsolutePath());
-        }
-      }
-    }
-  }
-
   // NOTE as of 8.0, this command is no more!
   //@CliCommand(value=CliStrings.START_DATABROWSER, help=CliStrings.START_DATABROWSER__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = { CliStrings.TOPIC_GEODE_M_AND_M })
@@ -2562,7 +2452,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   @CliAvailabilityIndicator({ CliStrings.START_LOCATOR, CliStrings.STOP_LOCATOR, CliStrings.STATUS_LOCATOR,
       CliStrings.START_SERVER, CliStrings.STOP_SERVER, CliStrings.STATUS_SERVER,
-      CliStrings.START_MANAGER, CliStrings.START_PULSE, CliStrings.START_VSD, CliStrings.START_DATABROWSER })
+      CliStrings.START_MANAGER, CliStrings.START_PULSE, CliStrings.START_DATABROWSER })
   public boolean launcherCommandsAvailable() {
     return true;
   }
