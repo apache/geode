@@ -16,21 +16,39 @@
  */
 package com.gemstone.gemfire.security;
 
-import static com.gemstone.gemfire.security.SecurityTestUtils.*;
+import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
+import static com.gemstone.gemfire.test.dunit.Assert.fail;
+import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
+import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
+import static com.gemstone.gemfire.test.dunit.NetworkUtils.getIPLiteral;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.*;
 
+import java.util.Properties;
+
+import com.gemstone.gemfire.cache.AttributesFactory;
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.CacheFactory;
+import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.RegionAttributes;
+import com.gemstone.gemfire.cache.RegionShortcut;
+import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
+import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
 import com.gemstone.gemfire.test.dunit.Host;
+import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.VM;
-import com.gemstone.gemfire.test.dunit.internal.JUnit4DistributedTestCase;
+import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.After;
 import org.junit.Before;
 
-public class AbstractIntegratedClientAuthDistributedTest extends JUnit4DistributedTestCase {
+public class AbstractIntegratedClientAuthDistributedTest extends JUnit4CacheTestCase {
+
+  protected static final String REGION_NAME = "AuthRegion";
 
   protected VM client1 = null;
   protected VM client2 = null;
@@ -40,14 +58,30 @@ public class AbstractIntegratedClientAuthDistributedTest extends JUnit4Distribut
   @Before
   public void before() throws Exception{
     final Host host = Host.getHost(0);
-    client1 = host.getVM(1);
-    client2 = host.getVM(2);
-    client3 = host.getVM(3);
+    this.client1 = host.getVM(1);
+    this.client2 = host.getVM(2);
+    this.client3 = host.getVM(3);
 
     JSONAuthorization.setUpWithJsonFile("clientServer.json");
-    serverPort =  SecurityTestUtils.createCacheServer(JSONAuthorization.class.getName()+".create");
-    Region region = getCache().getRegion(SecurityTestUtils.REGION_NAME);
-    assertEquals(0, region.size());
+
+    Properties props = new Properties();
+    props.setProperty(SECURITY_CLIENT_AUTHENTICATOR, JSONAuthorization.class.getName()+".create");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(SECURITY_LOG_LEVEL, "finest");
+
+    getSystem(props);
+
+    Cache cache = getCache();
+
+    Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+
+    CacheServer server1 = cache.addCacheServer();
+    server1.setPort(0);
+    server1.start();
+
+    this.serverPort = server1.getPort();
+
     for (int i = 0; i < 5; i++) {
       String key = "key" + i;
       String value = "value" + i;
@@ -56,16 +90,25 @@ public class AbstractIntegratedClientAuthDistributedTest extends JUnit4Distribut
     assertEquals(5, region.size());
   }
 
-  @After
-  public void after(){
-    client1.invoke(() -> closeCache());
-    client2.invoke(() -> closeCache());
-    client3.invoke(() -> closeCache());
+  @Override
+  public void preTearDownCacheTestCase() throws Exception {
+    Invoke.invokeInEveryVM(()->closeCache());
     closeCache();
   }
 
   public static void assertNotAuthorized(ThrowingCallable shouldRaiseThrowable, String permString) {
     assertThatThrownBy(shouldRaiseThrowable).hasMessageContaining(permString);
+  }
+
+  protected Properties createClientProperties(String userName, String password) {
+    Properties props = new Properties();
+    props.setProperty(UserPasswordAuthInit.USER_NAME, userName);
+    props.setProperty(UserPasswordAuthInit.PASSWORD, password);
+    props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(SECURITY_LOG_LEVEL, "finest");
+    return props;
   }
 
 }

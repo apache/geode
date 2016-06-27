@@ -24,13 +24,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.test.dunit.AsyncInvocation;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
 public class IntegratedClientGetPutAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
@@ -47,8 +49,12 @@ public class IntegratedClientGetPutAuthDistributedTest extends AbstractIntegrate
 
     // client1 connects to server as a user not authorized to do any operations
     AsyncInvocation ai1 =  client1.invokeAsync(()->{
-      Cache cache = SecurityTestUtils.createCacheClient("stranger", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
-      final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+      ClientCache cache = new ClientCacheFactory(createClientProperties("stranger", "1234567"))
+        .setPoolSubscriptionEnabled(true)
+        .addPoolServer("localhost", serverPort)
+        .create();
+
+      Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
 
       assertNotAuthorized(()->region.put("key3", "value3"), "DATA:WRITE:AuthRegion:key3");
       assertNotAuthorized(()->region.get("key3"), "DATA:READ:AuthRegion:key3");
@@ -66,8 +72,12 @@ public class IntegratedClientGetPutAuthDistributedTest extends AbstractIntegrate
 
     // client2 connects to user as a user authorized to use AuthRegion region
     AsyncInvocation ai2 =  client2.invokeAsync(()->{
-      Cache cache = SecurityTestUtils.createCacheClient("authRegionUser", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
-      final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+      ClientCache cache = new ClientCacheFactory(createClientProperties("authRegionUser", "1234567"))
+        .setPoolSubscriptionEnabled(true)
+        .addPoolServer("localhost", serverPort)
+        .create();
+
+      Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
 
       region.put("key3", "value3");
       assertEquals("value3", region.get("key3"));
@@ -86,8 +96,12 @@ public class IntegratedClientGetPutAuthDistributedTest extends AbstractIntegrate
 
     // client3 connects to user as a user authorized to use key1 in AuthRegion region
     AsyncInvocation ai3 =  client3.invokeAsync(()->{
-      Cache cache = SecurityTestUtils.createCacheClient("key1User", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
-      final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+      ClientCache cache = new ClientCacheFactory(createClientProperties("key1User", "1234567"))
+        .setPoolSubscriptionEnabled(true)
+        .addPoolServer("localhost", serverPort)
+        .create();
+
+      Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
 
       assertNotAuthorized(()->region.put("key2", "value1"), "DATA:WRITE:AuthRegion:key2");
       assertNotAuthorized(()->region.get("key2"), "DATA:READ:AuthRegion:key2");

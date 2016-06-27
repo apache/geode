@@ -16,8 +16,8 @@
  */
 package com.gemstone.gemfire.security;
 
-import static org.junit.Assert.*;
 
+import com.gemstone.gemfire.cache.CacheTransactionManager;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
@@ -29,57 +29,52 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
-public class IntegratedClientDestroyInvalidateAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
+public class IntegratedClientGetEntryAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest{
 
   @Test
-  public void testDestroyInvalidate() throws InterruptedException {
+  public void testGetEntry() throws InterruptedException {
+    // client1 connects to server as a user not authorized to do any operations
 
-    // Delete one key and invalidate another key with an authorized user.
-    AsyncInvocation ai1 = client1.invokeAsync(() -> {
-      ClientCache cache = new ClientCacheFactory(createClientProperties("dataUser", "1234567"))
+    AsyncInvocation ai1 =  client1.invokeAsync(()->{
+      ClientCache cache = new ClientCacheFactory(createClientProperties("stranger", "1234567"))
         .setPoolSubscriptionEnabled(true)
         .addPoolServer("localhost", serverPort)
         .create();
 
-      Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
-      assertTrue(region.containsKeyOnServer("key1"));
-
-      // Destroy key1
-      region.destroy("key1");
-      assertFalse(region.containsKeyOnServer("key1"));
-
-      // Invalidate key2
-      assertNotNull("Value of key2 should not be null", region.get("key2"));
-      region.invalidate("key2");
-      assertNull("Value of key2 should have been null", region.get("key2"));
+      CacheTransactionManager transactionManager = cache.getCacheTransactionManager();
+      transactionManager.begin();
+      try {
+        Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+        assertNotAuthorized(()->region.getEntry("key3"), "DATA:READ:AuthRegion:key3");
+      }
+      finally {
+        transactionManager.commit();
+      }
 
     });
 
-    // Delete one key and invalidate another key with an unauthorized user.
-    AsyncInvocation ai2 = client2.invokeAsync(() -> {
+    AsyncInvocation ai2 =  client2.invokeAsync(()->{
       ClientCache cache = new ClientCacheFactory(createClientProperties("authRegionReader", "1234567"))
         .setPoolSubscriptionEnabled(true)
         .addPoolServer("localhost", serverPort)
         .create();
 
-      Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+      CacheTransactionManager transactionManager = cache.getCacheTransactionManager();
+      transactionManager.begin();
+      try {
+        Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+        region.getEntry("key3");
+      }
+      finally {
+        transactionManager.commit();
+      }
 
-      assertTrue(region.containsKeyOnServer("key3"));
-
-      // Destroy key1
-      assertNotAuthorized(() -> region.destroy("key3"), "DATA:WRITE:AuthRegion");
-      assertTrue(region.containsKeyOnServer("key3"));
-
-      // Invalidate key2
-      assertNotNull("Value of key4 should not be null", region.get("key4"));
-      assertNotAuthorized(() -> region.invalidate("key4"), "DATA:WRITE:AuthRegion");
-      assertNotNull("Value of key4 should not be null", region.get("key4"));
     });
 
     ai1.join();
     ai2.join();
     ai1.checkException();
     ai2.checkException();
-  }
 
+  }
 }
