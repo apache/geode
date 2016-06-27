@@ -1720,7 +1720,7 @@ public class InternalDistributedSystem
   @Override
   public final Statistics[] getStatistics() {
     List<Statistics> statsList = this.statsList;
-    return (Statistics[])statsList.toArray(new Statistics[statsList.size()]);
+    return (Statistics[])statsList.toArray(new Statistics[0]);
   }
   
   // StatisticsFactory methods
