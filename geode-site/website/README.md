@@ -22,7 +22,7 @@ Install Pygments (Python-based syntax coloring library):
 
 Install Nanoc and other Ruby Gems needed:
 
-    $ sudo gem install nanoc -v 3.8.0
+    $ sudo gem install nanoc -v 4.2.0
     $ sudo gem install pygments.rb htmlentities pandoc-ruby nokogiri rack mime-types adsf
 
 ## How to change/update the website

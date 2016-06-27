@@ -16,6 +16,9 @@
  */
 package com.gemstone.gemfire.cache.lucene;
 
+import java.util.Collection;
+import java.util.List;
+
 import com.gemstone.gemfire.annotations.Experimental;
 
 /**
@@ -27,9 +30,23 @@ import com.gemstone.gemfire.annotations.Experimental;
 @Experimental
 public interface LuceneQuery<K, V> {
   /**
+   * Execute search and return keys.
+   */
+  public Collection<K> findKeys() throws LuceneQueryException;
+
+  /**
+   * Execute search and return values.
+   */
+  public Collection<V> findValues() throws LuceneQueryException;
+
+  /**
+   * Execute search and return list of LuceneResultStruct.
+   */
+  public List<LuceneResultStruct<K, V>> findResults() throws LuceneQueryException;
+  /**
    * Execute the search and get results. 
    */
-  public LuceneQueryResults<K, V> search() throws LuceneQueryException;
+  public PageableLuceneQueryResults<K, V> findPages() throws LuceneQueryException;
   
   /**
    * Get page size setting of current query. 
@@ -45,4 +62,5 @@ public interface LuceneQuery<K, V> {
    * Get projected fields setting of current query. 
    */
   public String[] getProjectedFieldNames();
+
 }

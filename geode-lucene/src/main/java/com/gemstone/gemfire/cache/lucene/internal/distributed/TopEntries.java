@@ -33,16 +33,18 @@ import com.gemstone.gemfire.internal.Version;
 
 /**
  * Holds a ordered collection of entries matching a search query.
+ *
+ * @param <K> the type of key
  */
-public class TopEntries implements DataSerializableFixedID {
+public class TopEntries<K> implements DataSerializableFixedID {
   // ordered collection of entries
-  private List<EntryScore> hits = new ArrayList<>();
+  private List<EntryScore<K>> hits = new ArrayList<>();
 
   // the maximum number of entries stored in this
   private int limit;
 
   // comparator to order entryScore instances
-  final Comparator<EntryScore> comparator = new EntryScoreComparator();
+  final Comparator<EntryScore<K>> comparator = new EntryScoreComparator();
 
   public TopEntries() {
     this(LuceneQueryFactory.DEFAULT_LIMIT);
@@ -61,7 +63,7 @@ public class TopEntries implements DataSerializableFixedID {
    * 
    * @param entry
    */
-  public void addHit(EntryScore entry) {
+  public void addHit(EntryScore<K> entry) {
     if (hits.size() > 0) {
       EntryScore lastEntry = hits.get(hits.size() - 1);
       if (comparator.compare(lastEntry, entry) < 0) {
@@ -86,7 +88,7 @@ public class TopEntries implements DataSerializableFixedID {
   /**
    * @return The entries collection managed by this instance
    */
-  public List<EntryScore> getHits() {
+  public List<EntryScore<K>> getHits() {
     return hits;
   }
 
@@ -101,9 +103,9 @@ public class TopEntries implements DataSerializableFixedID {
    * Compares scores of two entries using natural ordering. I.e. it returns -1 if the first entry's score is less than
    * the second one.
    */
-  class EntryScoreComparator implements Comparator<EntryScore> {
+  class EntryScoreComparator implements Comparator<EntryScore<K>> {
     @Override
-    public int compare(EntryScore o1, EntryScore o2) {
+    public int compare(EntryScore<K> o1, EntryScore<K> o2) {
       return Float.compare(o1.getScore(), o2.getScore());
     }
   }

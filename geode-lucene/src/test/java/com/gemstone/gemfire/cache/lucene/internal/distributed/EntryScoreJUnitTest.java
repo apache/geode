@@ -33,8 +33,8 @@ public class EntryScoreJUnitTest {
   @Test
   public void testSerialization() {
     LuceneServiceImpl.registerDataSerializables();
-    EntryScore entry = new EntryScore("entry", .1f);
-    EntryScore copy = CopyHelper.deepCopy(entry);
+    EntryScore<String> entry = new EntryScore<String>("entry", .1f);
+    EntryScore<String> copy = CopyHelper.deepCopy(entry);
     assertEquals("entry", copy.getKey());
     assertEquals(.1f, copy.getScore(), 0f);
   }

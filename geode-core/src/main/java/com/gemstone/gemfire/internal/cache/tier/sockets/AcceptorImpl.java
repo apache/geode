@@ -306,7 +306,6 @@ public class AcceptorImpl extends Acceptor implements Runnable
                       int socketBufferSize, int maximumTimeBetweenPings,
                       InternalCache c, int maxConnections, int maxThreads,
                       int maximumMessageCount, int messageTimeToLive,
-                      int transactionTimeToLive,
                       ConnectionListener listener,List overflowAttributesList, 
                       boolean isGatewayReceiver, List<GatewayTransportFilter> transportFilter,
                       boolean tcpNoDelay)
@@ -523,7 +522,7 @@ public class AcceptorImpl extends Acceptor implements Runnable
     this.crHelper = new CachedRegionHelper(this.cache);
 
     this.clientNotifier = CacheClientNotifier.getInstance(cache, this.stats,
-        maximumMessageCount,messageTimeToLive, transactionTimeToLive,
+        maximumMessageCount,messageTimeToLive, 
         connectionListener,overflowAttributesList, isGatewayReceiver);
     this.socketBufferSize = socketBufferSize;
 

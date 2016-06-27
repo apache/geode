@@ -84,7 +84,7 @@ public class AcceptorImplJUnitTest
           AcceptorImpl.MINIMUM_MAX_CONNECTIONS - 1,
           CacheServer.DEFAULT_MAX_THREADS,
           CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT,
-          CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,0,null,null, false, Collections.EMPTY_LIST,
+          CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,null,null, false, Collections.EMPTY_LIST,
           CacheServer.DEFAULT_TCP_NO_DELAY);
         fail("Expected an IllegalArgumentExcption due to max conns < min pool size");
       } catch (IllegalArgumentException expected) {
@@ -101,7 +101,7 @@ public class AcceptorImplJUnitTest
           0,
           CacheServer.DEFAULT_MAX_THREADS,
           CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT,
-          CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,0,null,null,false, Collections.EMPTY_LIST,
+          CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,null,null,false, Collections.EMPTY_LIST,
           CacheServer.DEFAULT_TCP_NO_DELAY);
         fail("Expected an IllegalArgumentExcption due to max conns of zero");
       } catch (IllegalArgumentException expected) {
@@ -118,7 +118,7 @@ public class AcceptorImplJUnitTest
           AcceptorImpl.MINIMUM_MAX_CONNECTIONS,
           CacheServer.DEFAULT_MAX_THREADS,
           CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT,
-          CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,0,null,null,false, Collections.EMPTY_LIST,
+          CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,null,null,false, Collections.EMPTY_LIST,
           CacheServer.DEFAULT_TCP_NO_DELAY);
         a2 = new AcceptorImpl(
           port1,
@@ -130,7 +130,7 @@ public class AcceptorImplJUnitTest
           AcceptorImpl.MINIMUM_MAX_CONNECTIONS,
           CacheServer.DEFAULT_MAX_THREADS,
           CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT,
-          CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,0,null,null,false, Collections.EMPTY_LIST,
+          CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,null,null,false, Collections.EMPTY_LIST,
           CacheServer.DEFAULT_TCP_NO_DELAY);
         fail("Expecetd a BindException while attaching to the same port");
       } catch (BindException expected) {
@@ -146,7 +146,7 @@ public class AcceptorImplJUnitTest
         AcceptorImpl.MINIMUM_MAX_CONNECTIONS,
         CacheServer.DEFAULT_MAX_THREADS,
         CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT,
-        CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,0,null,null, false, Collections.EMPTY_LIST,
+        CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,null,null, false, Collections.EMPTY_LIST,
         CacheServer.DEFAULT_TCP_NO_DELAY);
       assertEquals(port2, a3.getPort());
       InternalDistributedSystem isystem = (InternalDistributedSystem) this.cache.getDistributedSystem();

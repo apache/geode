@@ -40,7 +40,6 @@ import com.gemstone.gemfire.cache.lucene.internal.StringQueryProvider;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexRepository;
 import com.gemstone.gemfire.cache.lucene.internal.repository.IndexResultCollector;
 import com.gemstone.gemfire.cache.lucene.internal.repository.RepositoryManager;
-import com.gemstone.gemfire.cache.query.QueryException;
 import com.gemstone.gemfire.internal.cache.BucketNotFoundException;
 import com.gemstone.gemfire.internal.cache.InternalCache;
 import com.gemstone.gemfire.internal.cache.execute.InternalRegionFunctionContext;
@@ -60,11 +59,11 @@ public class LuceneFunctionJUnitTest {
 
   String regionPath = "/region";
   String indexName = "index";
-  final EntryScore r1_1 = new EntryScore("key-1-1", .5f);
-  final EntryScore r1_2 = new EntryScore("key-1-2", .4f);
-  final EntryScore r1_3 = new EntryScore("key-1-3", .3f);
-  final EntryScore r2_1 = new EntryScore("key-2-1", .45f);
-  final EntryScore r2_2 = new EntryScore("key-2-2", .35f);
+  final EntryScore<String> r1_1 = new EntryScore<String>("key-1-1", .5f);
+  final EntryScore<String> r1_2 = new EntryScore<String>("key-1-2", .4f);
+  final EntryScore<String> r1_3 = new EntryScore<String>("key-1-3", .3f);
+  final EntryScore<String> r2_1 = new EntryScore<String>("key-2-1", .45f);
+  final EntryScore<String> r2_2 = new EntryScore<String>("key-2-2", .35f);
 
   InternalRegionFunctionContext mockContext;
   ResultSender<TopEntriesCollector> mockResultSender;
