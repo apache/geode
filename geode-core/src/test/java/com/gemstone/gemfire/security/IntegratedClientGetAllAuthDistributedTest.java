@@ -17,7 +17,7 @@
 package com.gemstone.gemfire.security;
 
 import static com.gemstone.gemfire.internal.Assert.assertTrue;
-import static org.jgroups.util.Util.assertEquals;
+import static org.jgroups.util.Util.*;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -27,8 +27,6 @@ import org.junit.experimental.categories.Category;
 
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
@@ -36,24 +34,18 @@ public class IntegratedClientGetAllAuthDistributedTest extends AbstractIntegrate
 
   @Test
   public void testGetAll() {
-    client1.invoke("logging in super-user with correct password", () -> {
-      ClientCache cache = new ClientCacheFactory(createClientProperties("stranger", "1234567"))
-        .setPoolSubscriptionEnabled(true)
-        .addPoolServer("localhost", serverPort)
-        .create();
+    client1.invoke("logging in Stranger", () -> {
+      ClientCache cache = createClientCache("stranger", "1234567", serverPort);
 
-      Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+      Region region = cache.getRegion(REGION_NAME);
       Map emptyMap = region.getAll(Arrays.asList("key1", "key2", "key3", "key4"));
       assertTrue(emptyMap.isEmpty());
     });
 
-    client2.invoke("logging in super-user with correct password", () -> {
-      ClientCache cache = new ClientCacheFactory(createClientProperties("authRegionReader", "1234567"))
-        .setPoolSubscriptionEnabled(true)
-        .addPoolServer("localhost", serverPort)
-        .create();
+    client2.invoke("logging in authRegionReader", () -> {
+      ClientCache cache = createClientCache("authRegionReader", "1234567", serverPort);
 
-      Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+      Region region = cache.getRegion(REGION_NAME);
       Map filledMap = region.getAll(Arrays.asList("key1", "key2", "key3", "key4"));
       assertEquals("Map should contain 4 entries", 4, filledMap.size());
       assertTrue(filledMap.containsKey("key1"));
