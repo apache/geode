@@ -33,13 +33,13 @@ import org.junit.runner.RunWith;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
 import static junitparams.JUnitParamsRunner.$;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -50,6 +50,65 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     createIndex.run();
     getCache().createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
   }
+
+
+  @Test
+  @Parameters({"1", "2" , "10"})
+  public void verifyThatIndexObjectsAreListedWhenPresentInTheSystem(int numberOfIndexes){
+    SerializableRunnableIF createIndex = getMultipleIndexes(numberOfIndexes);
+    dataStore1.invoke(() -> initDataStore(createIndex));
+    dataStore1.invoke(() -> verifyIndexList(numberOfIndexes));
+
+    dataStore2.invoke(() -> initDataStore(createIndex));
+    dataStore2.invoke(() -> verifyIndexList(numberOfIndexes));
+  }
+
+  @Test
+  @Parameters({"1", "2" , "10"})
+  public void verifyThatIndexObjectIsRetrievedWhenPresentInTheSystem(int numberOfIndexes){
+    SerializableRunnableIF createIndex = getMultipleIndexes(numberOfIndexes);
+    dataStore1.invoke(() -> initDataStore(createIndex));
+    dataStore1.invoke(() -> verifyIndexes(numberOfIndexes));
+
+    dataStore2.invoke(() -> initDataStore(createIndex));
+    dataStore2.invoke(() -> verifyIndexes(numberOfIndexes));
+  }
+
+  @Test
+  public void verifyThatEmptyListIsOutputWhenThereAreNoIndexesInTheSystem(){
+    dataStore1.invoke(() -> verifyIndexList(0));
+    dataStore2.invoke(() -> verifyIndexList(0));
+  }
+
+  @Test
+  public void verifyNullIsReturnedWhenGetIndexIsCalledAndNoIndexesArePresent(){
+    dataStore1.invoke(() -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      assertNull(luceneService.getIndex(INDEX_NAME,REGION_NAME));
+    });
+
+    dataStore2.invoke(() -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      assertNull(luceneService.getIndex(INDEX_NAME,REGION_NAME));
+    });
+  }
+
+  @Test
+  public void verifyNullIsReturnedWhenGetIndexIsCalledWithNoMatchingIndex(){
+    SerializableRunnableIF createIndex = get2FieldsIndexes();
+    dataStore1.invoke(() -> createIndex);
+    dataStore2.invoke(() -> createIndex);
+    dataStore1.invoke(() -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      assertNull(luceneService.getIndex(INDEX_NAME+"_A",REGION_NAME));
+    });
+
+    dataStore2.invoke(() -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      assertNull(luceneService.getIndex(INDEX_NAME+"_A",REGION_NAME));
+    });
+  }
+
 
   @Test
   public void verifyDifferentFieldsFails() {
@@ -167,6 +226,35 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     dataStore2.invoke(() -> initCache(getXmlFileForTest(cacheXmlFileBaseName + ".2"), exceptionMessage));
   }
 
+  @Test
+  public void verifyXMLMultipleIndexList() {
+    dataStore1.invoke(() -> initCache(getXmlFileForTest("verifyXMLMultipleIndexList")));
+    dataStore2.invoke(() -> initCache(getXmlFileForTest("verifyXMLMultipleIndexList")));
+
+    dataStore1.invoke(() -> verifyIndexList(2));
+    dataStore2.invoke(() -> verifyIndexList(2));
+  }
+
+  @Test
+  public void verifyXMLMultipleIndexes() {
+    dataStore1.invoke(() -> initCache(getXmlFileForTest("verifyXMLMultipleIndexList")));
+    dataStore2.invoke(() -> initCache(getXmlFileForTest("verifyXMLMultipleIndexList")));
+
+    dataStore1.invoke(() -> verifyIndexes(2));
+    dataStore2.invoke(() -> verifyIndexes(2));
+  }
+
+  @Test
+  public void verifyXMLEmptyIndexList() {
+    dataStore1.invoke(() -> initCache(getXmlFileForTest("verifyXMLEmptyIndexList")));
+    dataStore2.invoke(() -> initCache(getXmlFileForTest("verifyXMLEmptyIndexList")));
+
+    dataStore1.invoke(() -> verifyIndexList(0));
+    dataStore2.invoke(() -> verifyIndexList(0));
+  }
+
+
+
   private final Object[] getXmlAndExceptionMessages() {
     return $(
         new Object[] { "verifyDifferentFieldsFails", CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS },
@@ -229,6 +317,28 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
       luceneService.createIndex(INDEX_NAME+"_1", REGION_NAME, "field1");
       luceneService.createIndex(INDEX_NAME+"_2", REGION_NAME, "field2");
     };
+  }
+
+  private SerializableRunnableIF getMultipleIndexes(final int numberOfIndexes) {
+    return () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      for(int count = 1 ; count <= numberOfIndexes; count++){
+        luceneService.createIndex(INDEX_NAME+"_"+count, REGION_NAME, "field"+count);
+      }
+    };
+  }
+
+  private void verifyIndexList(final int expectedSize) {
+    LuceneService luceneService = LuceneServiceProvider.get(getCache());
+    Collection<LuceneIndex> indexList = luceneService.getAllIndexes();
+    assertEquals(indexList.size() , expectedSize);
+  }
+
+  private void verifyIndexes(final int numberOfIndexes) {
+    LuceneService luceneService = LuceneServiceProvider.get(getCache());
+    for(int count = 1; count <= numberOfIndexes; count++){
+      assertEquals(luceneService.getIndex(INDEX_NAME+"_"+count, REGION_NAME).getName(), INDEX_NAME+"_"+count);
+    }
   }
 
   private SerializableRunnableIF getAnalyzersIndexWithNullField1() {
