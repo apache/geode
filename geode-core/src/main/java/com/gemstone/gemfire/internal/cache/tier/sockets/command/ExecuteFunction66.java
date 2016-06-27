@@ -186,7 +186,7 @@ public class ExecuteFunction66 extends BaseCommand {
         functionObject = (Function) function;
       }
 
-      GeodeSecurityUtil.authorizeFunctionExec(functionObject.getId());
+      GeodeSecurityUtil.authorizeDataWrite();
 
       FunctionStats stats = FunctionStats.getFunctionStats(functionObject.getId(), null);
       // check if the caller is authorized to do this operation on server

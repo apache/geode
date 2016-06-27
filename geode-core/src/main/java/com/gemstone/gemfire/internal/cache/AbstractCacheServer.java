@@ -117,13 +117,6 @@ public abstract class AbstractCacheServer implements CacheServer {
    * members as clients of this server leave/crash. 
    */
   protected final ClientMembershipListener listener;
-
-  /**
-   * The number of seconds to keep transaction states for disconnected clients.
-   * This allows the client to fail over to another server and still find
-   * the transaction state to complete the transaction.
-   */
-  private int transactionTimeToLive;
   
   //////////////////////  Constructors  //////////////////////
 
@@ -147,9 +140,7 @@ public abstract class AbstractCacheServer implements CacheServer {
     this.tcpNoDelay = CacheServer.DEFAULT_TCP_NO_DELAY;
     this.maximumTimeBetweenPings = CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS;
     this.maximumMessageCount = CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT;
-    this.messageTimeToLive = CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE;
-    // TODO this should be configurable in CacheServer
-    this.transactionTimeToLive = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "cacheServer.transactionTimeToLive", 180);
+    this.messageTimeToLive = CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE;    
     this.groups = CacheServer.DEFAULT_GROUPS;
     this.bindAddress = CacheServer.DEFAULT_BIND_ADDRESS;
     this.hostnameForClients = CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS;
@@ -305,14 +296,6 @@ public abstract class AbstractCacheServer implements CacheServer {
 
   public void setMaximumMessageCount(int maximumMessageCount) {
     this.maximumMessageCount = maximumMessageCount;
-  }
-  
-  public void setTransactionTimeToLive(int seconds) {
-    this.transactionTimeToLive = seconds;
-  }
-  
-  public int getTransactionTimeToLive() {
-    return this.transactionTimeToLive;
   }
   
   public int getMessageTimeToLive() {

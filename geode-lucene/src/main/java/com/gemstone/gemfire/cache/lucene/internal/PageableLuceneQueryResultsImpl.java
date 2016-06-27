@@ -22,25 +22,26 @@ package com.gemstone.gemfire.cache.lucene.internal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.lucene.LuceneQueryResults;
+import com.gemstone.gemfire.cache.lucene.PageableLuceneQueryResults;
 import com.gemstone.gemfire.cache.lucene.LuceneResultStruct;
 import com.gemstone.gemfire.cache.lucene.internal.distributed.EntryScore;
 
 /**
- * Implementation of LuceneQueryResults that fetchs a page at a time
+ * Implementation of PageableLuceneQueryResults that fetchs a page at a time
  * from the server, given a set of EntryScores (key and score).
  *
  * @param <K> The type of the key
  * @param <V> The type of the value
  */
-public class LuceneQueryResultsImpl<K,V> implements LuceneQueryResults<K,V> {
+public class PageableLuceneQueryResultsImpl<K,V> implements PageableLuceneQueryResults<K,V> {
 
   /**
    *  list of docs matching search query
    */
-  private final List<EntryScore> hits;
+  private final List<EntryScore<K>> hits;
   
   /**
    * The maximum score. Lazily evaluated
@@ -62,31 +63,31 @@ public class LuceneQueryResultsImpl<K,V> implements LuceneQueryResults<K,V> {
    */
   private int pageSize;
   
-  public LuceneQueryResultsImpl(List<EntryScore> hits, Region<K,V> userRegion, int pageSize) {
+  public PageableLuceneQueryResultsImpl(List<EntryScore<K>> hits, Region<K,V> userRegion, int pageSize) {
     this.hits = hits;
     this.userRegion = userRegion;
     this.pageSize = pageSize == 0 ? Integer.MAX_VALUE : pageSize;
   }
 
   @Override
-  public List<LuceneResultStruct<K,V>> getNextPage() {
-    if(!hasNextPage()) {
-      return null;
+  public List<LuceneResultStruct<K,V>> next() {
+    if(!hasNext()) {
+      throw new NoSuchElementException();
     }
     
     int end = currentHit + pageSize;
     end = end > hits.size() ? hits.size() : end;
-    List<EntryScore> scores = hits.subList(currentHit, end);
+    List<EntryScore<K>> scores = hits.subList(currentHit, end);
     
     ArrayList<K> keys = new ArrayList<K>(hits.size());
-    for(EntryScore score : scores) {
-      keys.add((K) score.getKey());
+    for(EntryScore<K> score : scores) {
+      keys.add(score.getKey());
     }
     
     Map<K,V> values = userRegion.getAll(keys);
-    
+
     ArrayList<LuceneResultStruct<K,V>> results = new ArrayList<LuceneResultStruct<K,V>>(hits.size());
-    for(EntryScore score : scores) {
+    for(EntryScore<K> score : scores) {
       V value = values.get(score.getKey());
       results.add(new LuceneResultStructImpl(score.getKey(), value, score.getScore()));
     }
@@ -98,7 +99,7 @@ public class LuceneQueryResultsImpl<K,V> implements LuceneQueryResults<K,V> {
   }
 
   @Override
-  public boolean hasNextPage() {
+  public boolean hasNext() {
     return hits.size() > currentHit;
   }
 
@@ -110,7 +111,7 @@ public class LuceneQueryResultsImpl<K,V> implements LuceneQueryResults<K,V> {
   @Override
   public float getMaxScore() {
     if(maxScore == Float.MIN_VALUE) {
-      for(EntryScore score : hits) {
+      for(EntryScore<K> score : hits) {
         maxScore = Math.max(maxScore, score.getScore());
       }
     }

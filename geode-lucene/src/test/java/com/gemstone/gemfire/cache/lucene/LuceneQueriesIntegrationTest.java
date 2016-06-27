@@ -17,8 +17,14 @@
 package com.gemstone.gemfire.cache.lucene;
 
 import static com.gemstone.gemfire.cache.lucene.test.LuceneTestUtilities.*;
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -48,6 +54,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   public ExpectedException thrown = ExpectedException.none();
   private static final String INDEX_NAME = "index";
   protected static final String REGION_NAME = "index";
+  private Region region;
 
   @Test()
   public void shouldNotTokenizeWordsWithKeywordAnalyzer() throws Exception {
@@ -107,6 +114,51 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     // with double quote
     // query will be--field2:one@three
     verifyQuery("field2:one@three", DEFAULT_FIELD, "C");
+  }
+
+  @Test()
+  public void shouldPaginateResults() throws Exception {
+
+    final LuceneQuery<Object, Object> query = addValuesAndCreateQuery();
+
+    final PageableLuceneQueryResults<Object, Object> pages = query.findPages();
+    assertTrue(pages.hasNext());
+    assertEquals(3, pages.size());
+    final List<LuceneResultStruct<Object, Object>> page1 = pages.next();
+    final List<LuceneResultStruct<Object, Object>> page2 = pages.next();
+    List<LuceneResultStruct<Object, Object>> allEntries=new ArrayList<>();
+    allEntries.addAll(page1);
+    allEntries.addAll(page2);
+
+    assertEquals(region.keySet(), allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
+    assertEquals(region.values(), allEntries.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
+
+  }
+  @Test
+  public void shouldReturnValuesFromFindValues() throws Exception {
+    final LuceneQuery<Object, Object> query = addValuesAndCreateQuery();
+    assertEquals(region.values(), new HashSet(query.findValues()));
+  }
+
+  private LuceneQuery<Object, Object> addValuesAndCreateQuery() {
+    luceneService.createIndex(INDEX_NAME, REGION_NAME, "field1", "field2");
+    region = cache.createRegionFactory(RegionShortcut.PARTITION)
+      .create(REGION_NAME);
+    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+
+    //Put two values with some of the same tokens
+    String value1 = "one three";
+    String value2 = "one two three";
+    String value3 = "one@three";
+    region.put("A", new TestObject(value1, value1));
+    region.put("B", new TestObject(value2, value2));
+    region.put("C", new TestObject(value3, value3));
+
+    index.waitUntilFlushed(60000);
+    return luceneService.createLuceneQueryFactory()
+      .setPageSize(2)
+      .create(INDEX_NAME, REGION_NAME,
+      "one", "field1");
   }
 
   @Test()
@@ -206,7 +258,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
 
     thrown.expect(LuceneQueryException.class);
-    query.search();
+    query.findPages();
   }
   
   private PdxInstance insertAJson(Region region, String key) {

@@ -343,7 +343,8 @@ public abstract class PartitionMessage extends DistributionMessage implements
             // NO DISTRIBUTED MESSAGING CAN BE DONE HERE!
             sendReply = false;
           } else if (tx.isInProgress()) {
-            sendReply = operateOnPartitionedRegion(dm, pr, startTime);        
+            sendReply = operateOnPartitionedRegion(dm, pr, startTime); 
+            tx.updateProxyServer(this.getSender());
           }  
         } finally {
           txMgr.unmasquerade(tx);

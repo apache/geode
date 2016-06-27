@@ -96,7 +96,7 @@ public class LuceneQueriesPersistenceIntegrationTest extends LuceneIntegrationTe
     Assert.assertTrue(0 < userRegion.getDiskRegionStats().getNumOverflowOnDisk());
 
     LuceneQuery<Integer, Type1> query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "s:world", DEFAULT_FIELD);
-    LuceneQueryResults<Integer, Type1> results = query.search();
+    PageableLuceneQueryResults<Integer, Type1> results = query.findPages();
     Assert.assertEquals(3, results.size());
   }
 

@@ -17,16 +17,17 @@
 package com.gemstone.gemfire.internal.cache.tier.sockets.command;
 
 
+import java.io.IOException;
+
+import com.gemstone.gemfire.cache.query.internal.cq.CqService;
+import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
-import com.gemstone.gemfire.internal.cache.tier.sockets.*;
-import com.gemstone.gemfire.cache.query.CqException;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
-import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
-import com.gemstone.gemfire.cache.query.internal.cq.CqService;
-
-import java.io.IOException;
+import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerStats;
+import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
+import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 
 public class GetCQStats extends BaseCQCommand {
@@ -68,22 +69,21 @@ public class GetCQStats extends BaseCQCommand {
       sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, msg
           .getTransactionId(), null, servConn);
       return;
-
     }
-    else {
-      // Process the cq request
-      try {
-        // make sure the cqservice has been created
-        // since that is what registers the stats
-        CqService cqService = crHelper.getCache().getCqService();
-        cqService.start();
-      }
-      catch (Exception e) {
-        String err = "Exception while Getting the CQ Statistics. ";
-        sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, err, msg
-            .getTransactionId(), e, servConn);
-        return;
-      }
+
+    GeodeSecurityUtil.authorizeClusterRead();
+    // Process the cq request
+    try {
+      // make sure the cqservice has been created
+      // since that is what registers the stats
+      CqService cqService = crHelper.getCache().getCqService();
+      cqService.start();
+    }
+    catch (Exception e) {
+      String err = "Exception while Getting the CQ Statistics. ";
+      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, err, msg
+          .getTransactionId(), e, servConn);
+      return;
     }
     // Send OK to client
     sendCqResponse(MessageType.REPLY, "cq stats sent successfully.", msg

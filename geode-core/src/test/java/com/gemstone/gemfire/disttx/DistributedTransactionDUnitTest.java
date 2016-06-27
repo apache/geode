@@ -138,8 +138,9 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
         CacheServer s = getCache().addCacheServer();
         s.setPort(port);
-        ((CacheServerImpl) s).setTransactionTimeToLive(10);
         s.start();
+        TXManagerImpl txMgr = (TXManagerImpl) getCache().getCacheTransactionManager();
+        txMgr.setTransactionTimeToLiveForTest(10);
         return port;
       }
     });

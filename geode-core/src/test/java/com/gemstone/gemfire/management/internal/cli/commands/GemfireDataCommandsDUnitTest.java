@@ -1856,7 +1856,6 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Ignore("TODO: enable test after GEODE-1574 is fixed")
   @Test
   public void testSimulateForEntireDSWithTimeout() {
     setupTestRebalanceForEntireDS();

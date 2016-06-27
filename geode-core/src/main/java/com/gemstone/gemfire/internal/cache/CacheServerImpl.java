@@ -264,7 +264,6 @@ public class CacheServerImpl
     setMaximumTimeBetweenPings(other.getMaximumTimeBetweenPings());
     setMaximumMessageCount(other.getMaximumMessageCount());
     setMessageTimeToLive(other.getMessageTimeToLive());
-//    setTransactionTimeToLive(other.getTransactionTimeToLive());  not implemented in CacheServer for v6.6
     setGroups(other.getGroups());
     setLoadProbe(other.getLoadProbe());
     setLoadPollInterval(other.getLoadPollInterval());
@@ -322,7 +321,6 @@ public class CacheServerImpl
                                      getMaxThreads(), 
                                      getMaximumMessageCount(),
                                      getMessageTimeToLive(),
-                                     getTransactionTimeToLive(),
                                      this.loadMonitor,
                                      overflowAttributesList, 
                                      this.isGatewayReceiver,

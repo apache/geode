@@ -138,6 +138,7 @@ public abstract class BaseCommand implements Command {
         try {
           tx = txMgr.masqueradeAs(msg, member, false);
           cmdExecute(msg, servConn, start);
+          tx.updateProxyServer(txMgr.getMemberId());
         } finally {
           txMgr.unmasquerade(tx);
         }

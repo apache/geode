@@ -62,15 +62,13 @@ public class GetFunctionAttribute extends BaseCommand {
       return;
     }
 
-    GeodeSecurityUtil.authorizeFunctionRead(functionId);
+    GeodeSecurityUtil.authorizeClusterRead();
 
     byte[] functionAttributes = new byte[3];
     functionAttributes[0] = (byte)(function.hasResult() ? 1 : 0);
     functionAttributes[1] = (byte)(function.isHA() ? 1 : 0);
     functionAttributes[2] = (byte)(function.optimizeForWrite() ? 1 : 0);
     writeResponseWithFunctionAttribute(functionAttributes, msg, servConn);
-
-
   }
 
   private void sendError(Message msg, String message, ServerConnection servConn)

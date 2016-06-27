@@ -130,7 +130,7 @@ public class ExecuteFunction extends BaseCommand {
           functionObject = (Function)function;
         }
 
-        GeodeSecurityUtil.authorizeFunctionExec(functionObject.getId());
+        GeodeSecurityUtil.authorizeDataWrite();
 
         FunctionStats stats = FunctionStats.getFunctionStats(functionObject.getId(), null);
         

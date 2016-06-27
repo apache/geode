@@ -52,7 +52,7 @@ import com.gemstone.gemfire.cache.GemFireCache;
  * 
  * The querystring is using lucene's queryparser syntax, such as "field1:zhou* AND field2:gzhou@pivotal.io"
  *  
- * LuceneQueryResults results = query.search();
+ * PageableLuceneQueryResults results = query.search();
  * 
  * If pagination is not specified:
  * List list = results.getNextPage(); // return all results in one getNextPage() call

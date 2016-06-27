@@ -281,7 +281,7 @@ public class ClientHealthMonitor {
 
   /**
    * expire the transaction states for the given client.  This uses the
-   * transactionTimeToLive setting that is inherited from the CacheServer.
+   * transactionTimeToLive setting that is inherited from the TXManagerImpl.
    * If that setting is non-positive we expire the states immediately
    * @param proxyID
    */
@@ -289,12 +289,11 @@ public class ClientHealthMonitor {
     final TXManagerImpl txMgr = (TXManagerImpl)this._cache.getCacheTransactionManager(); 
     final Set<TXId> txids = txMgr.getTransactionsForClient(
           (InternalDistributedMember)proxyID.getDistributedMember());
-    CacheClientNotifier notifier = CacheClientNotifier.getInstance();
-    if (notifier == null || this._cache.isClosed()) {
-      return; // notifier is null when shutting down
+    if (this._cache.isClosed()) {
+      return; 
     }
-    long timeout = notifier.getTransactionTimeToLive() * 1000;
-    if (txids.size() > 0) {
+    long timeout = txMgr.getTransactionTimeToLive() * 1000;
+    if (!txids.isEmpty()) {
       if (logger.isDebugEnabled()) {
         logger.debug("expiring {} transaction contexts for {} timeout={}", txids.size(), proxyID, timeout/1000);
       }

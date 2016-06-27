@@ -113,7 +113,19 @@ public class CommandRequest {
   }
 
   public Map<String, String> getParameters() {
-    final Map<String, String> parameters = new HashMap<String, String>(getUserParameters());
+    final Map<String, String> parameters = new HashMap<>();
+    for (Map.Entry<String, String> mapEntry : getUserParameters().entrySet()) {
+      String key = mapEntry.getKey();
+      String value = mapEntry.getValue();
+
+      if (hasQuotesAroundNegativeNumber(value)){
+        String trimmed = value.substring(1, value.length() - 1);
+        parameters.put(key, trimmed);
+      }
+      else {
+        parameters.put(key, value);
+      }
+    }
     parameters.putAll(getCustomParameters());
     return Collections.unmodifiableMap(parameters);
   }
@@ -128,6 +140,14 @@ public class CommandRequest {
 
   public Map<String, String> getUserParameters() {
     return getParseResult().getParamValueStrings();
+  }
+
+  private boolean hasQuotesAroundNegativeNumber(String value) {
+    if (value == null) {
+      return false;
+    } else {
+      return value.startsWith("\"") && value.endsWith("\"") && value.matches("\"-[0-9]+\"");
+    }
   }
 
 }

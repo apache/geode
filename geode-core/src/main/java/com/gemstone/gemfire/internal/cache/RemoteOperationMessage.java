@@ -245,7 +245,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage impleme
             // NO DISTRIBUTED MESSAGING CAN BE DONE HERE!
             sendReply = false;
           } else if (tx.isInProgress()) {
-            sendReply = operateOnRegion(dm, r, startTime);       
+            sendReply = operateOnRegion(dm, r, startTime);
+            tx.updateProxyServer(this.getSender());
           }  
         } finally {
           txMgr.unmasquerade(tx);

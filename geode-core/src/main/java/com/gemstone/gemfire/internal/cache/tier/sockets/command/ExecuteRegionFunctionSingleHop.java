@@ -200,7 +200,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
         functionObject = (Function) function;
       }
 
-      GeodeSecurityUtil.authorizeFunctionExec(functionObject.getId());
+      GeodeSecurityUtil.authorizeDataWrite();
 
       // check if the caller is authorized to do this operation on server
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();

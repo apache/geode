@@ -27,6 +27,7 @@ import com.gemstone.gemfire.distributed.internal.*;
 import com.gemstone.gemfire.distributed.internal.membership.InternalDistributedMember;
 import com.gemstone.gemfire.internal.SystemTimer.SystemTimerTask;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
+import com.gemstone.gemfire.internal.concurrent.ConcurrentHashSet;
 import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.logging.LogService;
 import com.gemstone.gemfire.internal.logging.log4j.LocalizedMessage;
@@ -137,7 +138,13 @@ public class TXManagerImpl implements CacheTransactionManager,
    */
   private final ThreadLocal<Boolean> isTXDistributed;
   
-
+  /**
+   * The number of seconds to keep transaction states for disconnected clients.
+   * This allows the client to fail over to another server and still find
+   * the transaction state to complete the transaction.
+   */
+  private int transactionTimeToLive;
+  
   /** Constructor that implements the {@link CacheTransactionManager}
    * interface. Only only one instance per {@link com.gemstone.gemfire.cache.Cache}
    *
@@ -155,6 +162,7 @@ public class TXManagerImpl implements CacheTransactionManager,
     this.hostedTXStates = new HashMap<TXId, TXStateProxy>();
     this.txContext = new ThreadLocal<TXStateProxy>();
     this.isTXDistributed = new ThreadLocal<Boolean>();
+    this.transactionTimeToLive = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "cacheServer.transactionTimeToLive", 180);
     currentInstance = this;
   }
 
@@ -937,6 +945,7 @@ public class TXManagerImpl implements CacheTransactionManager,
         }
       }
     }
+    expireClientTransactionsSentFromDepartedProxy(id);
   }
 
   public void memberJoined(InternalDistributedMember id) {
@@ -951,9 +960,9 @@ public class TXManagerImpl implements CacheTransactionManager,
   
 
   /**
-   * retrieve the transaction states for the given client
+   * retrieve the transaction TXIds for the given client
    * @param id the client's membership ID
-   * @return a set of the currently open transaction states
+   * @return a set of the currently open TXIds
    */
   public Set<TXId> getTransactionsForClient(InternalDistributedMember id) {
     Set<TXId> result = new HashSet<TXId>();
@@ -961,6 +970,23 @@ public class TXManagerImpl implements CacheTransactionManager,
       for (Map.Entry<TXId, TXStateProxy> entry: this.hostedTXStates.entrySet()) {
         if (entry.getKey().getMemberId().equals(id)) {
           result.add(entry.getKey());
+        }
+      }
+    }
+    return result;
+  }
+  
+  /**
+   * retrieve the transaction states for the given client
+   * @param id the client's membership ID
+   * @return a set of the currently open transaction states
+   */
+  public Set<TXStateProxy> getTransactionStatesForClient(InternalDistributedMember id) {
+    Set<TXStateProxy> result = new HashSet<TXStateProxy>();
+    synchronized (this.hostedTXStates) {
+      for (Map.Entry<TXId, TXStateProxy> entry: this.hostedTXStates.entrySet()) {
+        if (entry.getKey().getMemberId().equals(id)) {
+          result.add(entry.getValue());
         }
       }
     }
@@ -1498,6 +1524,112 @@ public class TXManagerImpl implements CacheTransactionManager,
     synchronized (this.hostedTXStates) {
       return new ArrayList<TXId>(this.hostedTXStates.keySet());
     }
+  }
+  
+  public void setTransactionTimeToLiveForTest(int seconds) {
+    this.transactionTimeToLive = seconds;
+  }
+  
+  /**
+   * @return the time-to-live for abandoned transactions, in seconds
+   */
+  public int getTransactionTimeToLive() {
+    return this.transactionTimeToLive;
+  }
+  
+  public InternalDistributedMember getMemberId() {
+    return this.distributionMgrId;
+  }
+  
+  //expire the transaction states for the lost proxy server based on timeout setting.  
+  private void expireClientTransactionsSentFromDepartedProxy(InternalDistributedMember proxyServer) {
+    if (this.cache.isClosed()) {
+      return; 
+    }
+    long timeout = getTransactionTimeToLive() * 1000;
+    if (timeout <= 0) {
+      removeTransactionsSentFromDepartedProxy(proxyServer);
+    } else {
+      if (departedProxyServers != null) departedProxyServers.add(proxyServer);  
+      SystemTimerTask task = new SystemTimerTask() {
+        @Override
+        public void run2() {
+          removeTransactionsSentFromDepartedProxy(proxyServer);
+          if (departedProxyServers != null) departedProxyServers.remove(proxyServer);
+        }
+      };
+      try {
+        ((GemFireCacheImpl)this.cache).getCCPTimer().schedule(task, timeout);
+      } catch (IllegalStateException ise) {
+        if (!((GemFireCacheImpl)this.cache).isClosed()) {
+          throw ise;
+        }
+        //task not able to be scheduled due to cache is closing,
+        //do not set it in the test hook.
+        if (departedProxyServers != null) departedProxyServers.remove(proxyServer);
+      }
+    }
+  }
+  
+  private final Set<InternalDistributedMember> departedProxyServers = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "trackScheduledToBeRemovedTx") ?
+      new ConcurrentHashSet<InternalDistributedMember>() : null;
+
+  /**
+   * provide a test hook to track departed peers
+   */
+  public Set<InternalDistributedMember> getDepartedProxyServers() {
+    return departedProxyServers;
+  }
+  
+  /**
+   * Find all client originated transactions sent from the departed proxy server.
+   * Remove them from the hostedTXStates map after the set TransactionTimeToLive period.
+   * @param proxyServer the departed proxy server
+   */
+  public void removeTransactionsSentFromDepartedProxy(InternalDistributedMember proxyServer) {
+    final Set<TXId> txIds = getTransactionsSentFromDepartedProxy(proxyServer);
+    if (txIds.isEmpty()) {
+      return;
+    }
+    if (logger.isDebugEnabled()) {
+      logger.debug("expiring the following transactions: {}", txIds);
+    }
+    synchronized (this.hostedTXStates) {
+      Iterator<Map.Entry<TXId, TXStateProxy>> iterator = this.hostedTXStates.entrySet().iterator();
+      while (iterator.hasNext()) {
+        Map.Entry<TXId,TXStateProxy> entry = iterator.next();
+        if (txIds.contains(entry.getKey())) {
+          //The TXState was not updated by any other proxy server, 
+          //The client would fail over to another proxy server.
+          //Remove it after waiting for transactionTimeToLive period.
+          entry.getValue().close();
+          iterator.remove();
+        }
+      }
+    }
+  }
+  
+  /*
+   * retrieve the transaction states for the given client from a certain proxy server.
+   * if transactions failed over, the new proxy server information should be stored
+   * in the TXState
+   * @param id the proxy server
+   * @return a set of the currently open transaction states
+   */
+  private Set<TXId> getTransactionsSentFromDepartedProxy(InternalDistributedMember proxyServer) {
+    Set<TXId> result = new HashSet<TXId>();
+    synchronized (this.hostedTXStates) {
+      for (Map.Entry<TXId, TXStateProxy> entry: this.hostedTXStates.entrySet()) {
+        TXStateProxy tx = entry.getValue();
+        if (tx.isRealDealLocal() && tx.isOnBehalfOfClient()) {
+          TXState txstate = (TXState) ((TXStateProxyImpl)tx).realDeal;          
+          if (proxyServer.equals(txstate.getProxyServer())) {
+            result.add(entry.getKey());
+          }
+        }
+      }
+    }
+    return result;
   }
   
   public void setDistributed(boolean flag) {

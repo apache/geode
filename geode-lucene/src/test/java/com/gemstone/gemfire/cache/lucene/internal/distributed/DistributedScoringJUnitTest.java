@@ -94,7 +94,7 @@ public class DistributedScoringJUnitTest {
 
     TopEntriesCollector collector = new TopEntriesCollector();
     singleIndexRepo.query(query, 100, collector);
-    List<EntryScore> singleResult = collector.getEntries().getHits();
+    List<EntryScore<String>> singleResult = collector.getEntries().getHits();
 
     IndexRepositoryImpl distIR1 = createIndexRepo();
     populateIndex(testStrings, distIR1, 0, testStrings.length / 3);
@@ -120,14 +120,14 @@ public class DistributedScoringJUnitTest {
     distIR3.query(query, 100, collector3);
     collectors.add(collector3);
 
-    List<EntryScore> distResult = manager.reduce(collectors).getEntries().getHits();
+    List<EntryScore<String>> distResult = manager.reduce(collectors).getEntries().getHits();
     
     Assert.assertEquals(singleResult.size(), distResult.size());
     Assert.assertTrue(singleResult.size() > 0);
     
     for (Iterator single = distResult.iterator(), dist = singleResult.iterator(); single.hasNext() && dist.hasNext();) {
-      EntryScore singleScore = (EntryScore) single.next();
-      EntryScore distScore = (EntryScore) dist.next();
+      EntryScore<String> singleScore = (EntryScore<String>) single.next();
+      EntryScore<String> distScore = (EntryScore<String>) dist.next();
       Assert.assertEquals(singleScore.getKey(), distScore.getKey());
     }
   }
