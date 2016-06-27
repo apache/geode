@@ -20,30 +20,22 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.operations.GetDurableCQsOperationContext;
 import com.gemstone.gemfire.cache.query.CqException;
-import com.gemstone.gemfire.cache.query.Query;
-import com.gemstone.gemfire.cache.query.internal.DefaultQuery;
 import com.gemstone.gemfire.cache.query.internal.DefaultQueryService;
 import com.gemstone.gemfire.cache.query.internal.cq.CqService;
-import com.gemstone.gemfire.cache.query.internal.cq.InternalCqQuery;
-import com.gemstone.gemfire.distributed.internal.DistributionStats;
 import com.gemstone.gemfire.internal.cache.GemFireCacheImpl;
 import com.gemstone.gemfire.internal.cache.tier.CachedRegionHelper;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.MessageType;
 import com.gemstone.gemfire.internal.cache.tier.sockets.AcceptorImpl;
-import com.gemstone.gemfire.internal.cache.tier.sockets.BaseCommand;
 import com.gemstone.gemfire.internal.cache.tier.sockets.CacheServerStats;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ChunkedMessage;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ClientProxyMembershipID;
 import com.gemstone.gemfire.internal.cache.tier.sockets.Message;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
-import com.gemstone.gemfire.internal.i18n.LocalizedStrings;
 import com.gemstone.gemfire.internal.security.AuthorizeRequest;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 
 public class GetDurableCQs extends BaseCQCommand {
@@ -74,14 +66,12 @@ public class GetDurableCQs extends BaseCQCommand {
 
     DefaultQueryService qService = null;
     CqService cqServiceForExec = null;
-    Query query = null;
-    Set cqRegionNames = null;
-    GetDurableCQsOperationContext getDurableCqsOperationContext = null;
-    InternalCqQuery cqQuery = null;
 
     try {
       qService = (DefaultQueryService) ((GemFireCacheImpl) crHelper.getCache())
           .getLocalQueryService();
+
+      GeodeSecurityUtil.authorizeClusterRead();
 
       // Authorization check
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();

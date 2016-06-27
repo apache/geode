@@ -237,13 +237,6 @@ public class GeodeSecurityUtil {
     authorize("DATA", "READ", regionName, key);
   }
 
-  public static void authorizeFunctionExec(String function){
-    authorize("FUNCTION", "EXEC", function);
-  }
-  public static void authorizeFunctionRead(String function){
-    authorize("FUNCTION", "READ", function);
-  }
-
   public static void authorize(String resource, String operation) {
     authorize(resource, operation, null);
   }
