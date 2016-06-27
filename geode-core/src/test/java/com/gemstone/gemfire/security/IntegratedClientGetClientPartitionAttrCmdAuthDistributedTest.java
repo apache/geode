@@ -19,10 +19,7 @@ package com.gemstone.gemfire.security;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.client.internal.GetClientPartitionAttributesOp;
 import com.gemstone.gemfire.cache.client.internal.PoolImpl;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
@@ -33,23 +30,13 @@ public class IntegratedClientGetClientPartitionAttrCmdAuthDistributedTest extend
   @Test
   public void testGetClientPartitionAttrCmd() {
     client1.invoke("logging in stranger", () -> {
-      ClientCache cache = new ClientCacheFactory(createClientProperties("stranger", "1234567"))
-        .setPoolSubscriptionEnabled(true)
-        .addPoolServer("localhost", serverPort)
-        .create();
-
-      Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+      ClientCache cache =createClientCache("stranger", "1234567", serverPort);
 
       assertNotAuthorized(() -> GetClientPartitionAttributesOp.execute((PoolImpl)cache.getDefaultPool(), REGION_NAME), "CLUSTER:READ");
     });
 
     client2.invoke("logging in super-user with correct password", () -> {
-      ClientCache cache = new ClientCacheFactory(createClientProperties("super-user", "1234567"))
-        .setPoolSubscriptionEnabled(true)
-        .addPoolServer("localhost", serverPort)
-        .create();
-
-      Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+      ClientCache cache = createClientCache("super-user", "1234567", serverPort);
 
       GetClientPartitionAttributesOp.execute((PoolImpl)cache.getDefaultPool(), REGION_NAME);
     });

@@ -19,8 +19,8 @@ package com.gemstone.gemfire.security;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.Pool;
 import com.gemstone.gemfire.cache.client.PoolManager;
 import com.gemstone.gemfire.cache.query.CqAttributes;
@@ -35,8 +35,8 @@ public class IntegratedClientQueryAuthDistributedTest extends AbstractIntegrated
   @Test
   public void testQuery(){
     client1.invoke(()-> {
-      Cache cache = SecurityTestUtils.createCacheClient("stranger", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
-      final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+      ClientCache cache = createClientCache("stranger", "1234567", serverPort);
+      final Region region = cache.getRegion(REGION_NAME);
 
       String query = "select * from /AuthRegion";
       assertNotAuthorized(()->region.query(query), "DATA:READ:AuthRegion");
@@ -50,8 +50,8 @@ public class IntegratedClientQueryAuthDistributedTest extends AbstractIntegrated
   public void testCQ(){
     String query = "select * from /AuthRegion";
     client1.invoke(()-> {
-      Cache cache = SecurityTestUtils.createCacheClient("stranger", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
-      Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+      ClientCache cache =createClientCache("stranger", "1234567", serverPort);
+      Region region = cache.getRegion(REGION_NAME);
       Pool pool = PoolManager.find(region);
       QueryService qs = pool.getQueryService();
 
@@ -67,8 +67,8 @@ public class IntegratedClientQueryAuthDistributedTest extends AbstractIntegrated
     });
 
     client2.invoke(()-> {
-      Cache cache = SecurityTestUtils.createCacheClient("authRegionReader", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
-      Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+      ClientCache cache =createClientCache("authRegionReader", "1234567", serverPort);
+      Region region = cache.getRegion(REGION_NAME);
       Pool pool = PoolManager.find(region);
       QueryService qs = pool.getQueryService();
 
@@ -82,8 +82,8 @@ public class IntegratedClientQueryAuthDistributedTest extends AbstractIntegrated
     });
 
     client3.invoke(()-> {
-      Cache cache = SecurityTestUtils.createCacheClient("super-user", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
-      Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+      ClientCache cache =createClientCache("super-user", "1234567", serverPort);
+      Region region = cache.getRegion(REGION_NAME);
       Pool pool = PoolManager.find(region);
       QueryService qs = pool.getQueryService();
 

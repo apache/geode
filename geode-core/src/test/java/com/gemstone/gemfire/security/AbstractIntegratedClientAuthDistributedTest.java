@@ -17,23 +17,20 @@
 package com.gemstone.gemfire.security;
 
 import static com.gemstone.gemfire.distributed.ConfigurationProperties.*;
-import static com.gemstone.gemfire.test.dunit.Assert.fail;
-import static com.gemstone.gemfire.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
-import static com.gemstone.gemfire.test.dunit.LogWriterUtils.getLogWriter;
-import static com.gemstone.gemfire.test.dunit.NetworkUtils.getIPLiteral;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.*;
 
 import java.util.Properties;
 
-import com.gemstone.gemfire.cache.AttributesFactory;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
+import org.junit.Before;
+
 import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.CacheFactory;
-import com.gemstone.gemfire.cache.DataPolicy;
 import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.RegionAttributes;
 import com.gemstone.gemfire.cache.RegionShortcut;
-import com.gemstone.gemfire.cache.Scope;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.cache.server.CacheServer;
 import com.gemstone.gemfire.management.internal.security.JSONAuthorization;
 import com.gemstone.gemfire.security.templates.UserPasswordAuthInit;
@@ -41,10 +38,6 @@ import com.gemstone.gemfire.test.dunit.Host;
 import com.gemstone.gemfire.test.dunit.Invoke;
 import com.gemstone.gemfire.test.dunit.VM;
 import com.gemstone.gemfire.test.dunit.cache.internal.JUnit4CacheTestCase;
-
-import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
-import org.junit.After;
-import org.junit.Before;
 
 public class AbstractIntegratedClientAuthDistributedTest extends JUnit4CacheTestCase {
 
@@ -109,6 +102,16 @@ public class AbstractIntegratedClientAuthDistributedTest extends JUnit4CacheTest
     props.setProperty(LOCATORS, "");
     props.setProperty(SECURITY_LOG_LEVEL, "finest");
     return props;
+  }
+
+  protected ClientCache createClientCache(String username, String password, int serverPort){
+    ClientCache cache = new ClientCacheFactory(createClientProperties(username, password))
+      .setPoolSubscriptionEnabled(true)
+      .addPoolServer("localhost", serverPort)
+      .create();
+
+    cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+    return cache;
   }
 
 }
