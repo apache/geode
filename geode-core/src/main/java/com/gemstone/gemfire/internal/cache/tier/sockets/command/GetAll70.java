@@ -127,6 +127,7 @@ public class GetAll70 extends BaseCommand {
       servConn.setAsTrue(RESPONDED);
       return;
     }
+    GeodeSecurityUtil.authorizeRegionRead(region.getName());
     // Send header
     ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
     chunkedResponseMsg.setMessageType(MessageType.RESPONSE);
