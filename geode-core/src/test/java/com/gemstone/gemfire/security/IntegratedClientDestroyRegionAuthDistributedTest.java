@@ -16,8 +16,12 @@
  */
 package com.gemstone.gemfire.security;
 
-import com.gemstone.gemfire.cache.Cache;
+import static org.assertj.core.api.Assertions.*;
+
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import org.junit.Test;
@@ -29,21 +33,34 @@ public class IntegratedClientDestroyRegionAuthDistributedTest extends AbstractIn
   @Test
   public void testDestroyRegion() throws InterruptedException {
     client1.invoke(()-> {
-      Cache cache = SecurityTestUtils.createCacheClient("dataWriter", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
-      Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+      ClientCache cache = new ClientCacheFactory(createClientProperties("dataWriter", "1234567"))
+        .setPoolSubscriptionEnabled(true)
+        .addPoolServer("localhost", serverPort)
+        .create();
+
+      Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
       assertNotAuthorized(()->region.destroyRegion(), "DATA:MANAGE");
     });
 
     client2.invoke(()-> {
-      Cache cache = SecurityTestUtils.createCacheClient("authRegionManager", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
-      Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+      ClientCache cache = new ClientCacheFactory(createClientProperties("authRegionManager", "1234567"))
+        .setPoolSubscriptionEnabled(true)
+        .addPoolServer("localhost", serverPort)
+        .create();
+
+      Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
       assertNotAuthorized(()->region.destroyRegion(), "DATA:MANAGE");
     });
 
     client3.invoke(()-> {
-      Cache cache = SecurityTestUtils.createCacheClient("super-user", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
-      Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+      ClientCache cache = new ClientCacheFactory(createClientProperties("super-user", "1234567"))
+        .setPoolSubscriptionEnabled(true)
+        .addPoolServer("localhost", serverPort)
+        .create();
+
+      Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
       region.destroyRegion();
+      assertThat(region.isDestroyed()).isTrue();
     });
   }
 

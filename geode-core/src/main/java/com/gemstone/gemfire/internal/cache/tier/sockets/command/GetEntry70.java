@@ -24,6 +24,7 @@ import com.gemstone.gemfire.internal.cache.NonLocalRegionEntry;
 import com.gemstone.gemfire.internal.cache.tier.Command;
 import com.gemstone.gemfire.internal.cache.tier.sockets.ServerConnection;
 import com.gemstone.gemfire.internal.cache.versions.VersionTag;
+import com.gemstone.gemfire.internal.security.GeodeSecurityUtil;
 
 /**
  * getEntry(key) operation performed on server.

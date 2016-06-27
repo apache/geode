@@ -16,8 +16,10 @@
  */
 package com.gemstone.gemfire.security;
 
-import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
 import com.gemstone.gemfire.test.dunit.SerializableRunnable;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
@@ -33,8 +35,12 @@ public class IntegratedClientRegionClearAuthDistributedTest extends AbstractInte
     SerializableRunnable clearUnauthorized = new SerializableRunnable() {
       @Override
       public void run() {
-        Cache cache = SecurityTestUtils.createCacheClient("stranger", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
-        final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+        ClientCache cache = new ClientCacheFactory(createClientProperties("stranger", "1234567"))
+          .setPoolSubscriptionEnabled(true)
+          .addPoolServer("localhost", serverPort)
+          .create();
+
+        Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
         assertNotAuthorized(() -> region.clear(), "DATA:WRITE:AuthRegion");
       }
     };
@@ -44,8 +50,12 @@ public class IntegratedClientRegionClearAuthDistributedTest extends AbstractInte
     SerializableRunnable clearAuthorized = new SerializableRunnable() {
       @Override
       public void run() {
-        Cache cache = SecurityTestUtils.createCacheClient("authRegionUser", "1234567", serverPort, SecurityTestUtils.NO_EXCEPTION);
-        final Region region = cache.getRegion(SecurityTestUtils.REGION_NAME);
+        ClientCache cache = new ClientCacheFactory(createClientProperties("authRegionUser", "1234567"))
+          .setPoolSubscriptionEnabled(true)
+          .addPoolServer("localhost", serverPort)
+          .create();
+
+        Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
         region.clear();
       }
     };

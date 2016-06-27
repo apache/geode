@@ -16,32 +16,47 @@
  */
 package com.gemstone.gemfire.security;
 
+import static com.googlecode.catchexception.CatchException.*;
+import static org.assertj.core.api.Assertions.*;
+
+import java.util.Arrays;
+
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.client.ClientCache;
 import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionFactory;
 import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
-import com.gemstone.gemfire.test.dunit.AsyncInvocation;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
-public class IntegratedClientUnregisterInterestAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest{
+public class IntegratedClientGetAllAuthDistributedTest extends AbstractIntegratedClientAuthDistributedTest {
+
   @Test
-  public void testUnregisterInterest() throws InterruptedException {
-    // client2 connects to user as a user authorized to use AuthRegion region
-    AsyncInvocation ai1 =  client2.invokeAsync(()->{
-      ClientCache cache = new ClientCacheFactory(createClientProperties("authRegionUser", "1234567"))
+  public void testGetAll() {
+    client1.invoke("logging in super-user with correct password", () -> {
+      ClientCache cache = new ClientCacheFactory(createClientProperties("stranger", "1234567"))
         .setPoolSubscriptionEnabled(true)
         .addPoolServer("localhost", serverPort)
         .create();
 
       Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
-      region.registerInterest("key3");
-      region.unregisterInterest("key3");  //  DATA:READ:AuthRegion:key3;
+      assertNotAuthorized(() -> region.getAll(Arrays.asList("key1", "key2", "key3", "key4")), "DATA:READ:AuthRegion");
     });
-    ai1.join();
-    ai1.checkException();
+
+    client2.invoke("logging in super-user with correct password", () -> {
+      ClientCache cache = new ClientCacheFactory(createClientProperties("authRegionReader", "1234567"))
+        .setPoolSubscriptionEnabled(true)
+        .addPoolServer("localhost", serverPort)
+        .create();
+
+      Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+      region.getAll(Arrays.asList("key1", "key2", "key3", "key4"));
+    });
   }
 }
+
+

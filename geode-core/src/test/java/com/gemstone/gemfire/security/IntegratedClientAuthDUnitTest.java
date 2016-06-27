@@ -16,6 +16,14 @@
  */
 package com.gemstone.gemfire.security;
 
+import static com.googlecode.catchexception.CatchException.*;
+import static org.assertj.core.api.Assertions.*;
+
+import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.client.ClientCacheFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionFactory;
+import com.gemstone.gemfire.cache.client.ClientRegionShortcut;
+import com.gemstone.gemfire.test.dunit.IgnoredException;
 import com.gemstone.gemfire.test.junit.categories.DistributedTest;
 
 import org.junit.Test;
@@ -25,14 +33,34 @@ import org.junit.experimental.categories.Category;
 public class IntegratedClientAuthDUnitTest extends AbstractIntegratedClientAuthDistributedTest {
 
   @Test
-  public void testAuthentication(){
-    int port = serverPort;
+  public void authWithCorrectPasswordShouldPass() {
     client1.invoke("logging in super-user with correct password", () -> {
-      SecurityTestUtils.createCacheClient("super-user", "1234567", port, SecurityTestUtils.NO_EXCEPTION);
+      ClientCache cache = new ClientCacheFactory(createClientProperties("super-user", "1234567"))
+          .setPoolSubscriptionEnabled(true)
+          .addPoolServer("localhost", serverPort)
+          .create();
+
+      ClientRegionFactory<String, String> crf = cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+
+      crf.create(REGION_NAME);
     });
+  }
+
+  @Test
+  public void authWithIncorrectPasswordShouldFail() {
+    IgnoredException.addIgnoredException(AuthenticationFailedException.class.getName());
 
     client2.invoke("logging in super-user with wrong password", () -> {
-      SecurityTestUtils.createCacheClient("super-user", "wrong", port, SecurityTestUtils.AUTHFAIL_EXCEPTION);
+      AuthenticationFailedException expected = new AuthenticationFailedException("Authentication error. Please check your username/password.");
+
+      catchException(new ClientCacheFactory(createClientProperties("super-user", "wrong"))
+          .setPoolSubscriptionEnabled(true)
+          .addPoolServer("localhost", serverPort))
+          .create();
+
+      //throw caughtException(); // TODO: gemfire-mm review as team
+
+      assertThat((Throwable)caughtException()).hasCause(expected);
     });
   }
 }
